@@ -11,14 +11,47 @@ import {
 
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
+import appStylesheetUrl from "./styles/app.css";
 
 export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
+  return [
+    {
+      rel: "preload",
+      as: "font",
+      href: "/fonts/RobotoSlab-Medium.woff2",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
+    {
+      rel: "preload",
+      as: "font",
+      href: "/fonts/RobotoSlab-Regular.woff2",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
+    {
+      rel: "preload",
+      as: "font",
+      href: "/fonts/Urbanist-Medium.woff2",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
+    {
+      rel: "preload",
+      as: "font",
+      href: "/fonts/Urbanist-Regular.woff2",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+    },
+    { rel: "icon", href: "/favicon.ico" },
+    { rel: "stylesheet", href: tailwindStylesheetUrl },
+    { rel: "stylesheet", href: appStylesheetUrl },
+  ];
 };
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Remix Notes",
+  title: "openSenseMap",
   viewport: "width=device-width,initial-scale=1",
 });
 
