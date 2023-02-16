@@ -7,6 +7,7 @@ import { createUserSession, getUserId } from "~/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { useTranslation } from "react-i18next";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -70,12 +71,17 @@ export const meta: MetaFunction = () => {
   };
 };
 
+// This tells remix to load the "home" namespace
+export let handle = { i18n: "signup" };
+
 export default function Join() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
+
+  const { t, ready } = useTranslation("signup");
 
   React.useEffect(() => {
     if (actionData?.errors?.email) {
@@ -84,6 +90,8 @@ export default function Join() {
       passwordRef.current?.focus();
     }
   }, [actionData]);
+
+  if (!ready) return <h1>Loading</h1>; // i18next may not be ready when changing route with <Link>
 
   return (
     <div className="flex min-h-full flex-col justify-center">
@@ -122,7 +130,7 @@ export default function Join() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              {t("password")}
             </label>
             <div className="mt-1">
               <input
@@ -148,11 +156,11 @@ export default function Join() {
             type="submit"
             className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
           >
-            Create Account
+            {t("create_account")}
           </button>
           <div className="flex items-center justify-center">
             <div className="text-center text-sm text-gray-500">
-              Already have an account?{" "}
+              {t("already_account")}{" "}
               <Link
                 className="text-blue-500 underline"
                 to={{
@@ -160,7 +168,7 @@ export default function Join() {
                   search: searchParams.toString(),
                 }}
               >
-                Log in
+                {t("log_in")}
               </Link>
             </div>
           </div>
