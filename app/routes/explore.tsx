@@ -15,7 +15,7 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   return (
     <div className="h-full w-full">
-      <Map longitude={7} latitude={52} />
+      <Map />
       <main className="absolute bottom-0 z-10 w-full">
         <Outlet />
       </main>
