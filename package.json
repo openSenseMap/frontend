@@ -34,6 +34,7 @@
     "/postgres-data"
   ],
   "dependencies": {
+    "@heroicons/react": "^2.0.15",
     "@prisma/client": "^4.9.0",
     "@remix-run/express": "^1.12.0",
     "@remix-run/node": "^1.12.0",
