@@ -1,3 +1,5 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./app/**/*.{ts,tsx,jsx,js}"],
@@ -48,7 +50,12 @@ module.exports = {
         500: "var(--color-violet-500)",
       },
     },
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
+        serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
+      },
+    },
   },
   plugins: [],
 };
