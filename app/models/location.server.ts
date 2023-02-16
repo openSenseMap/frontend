@@ -1,5 +1,5 @@
 export type Location = {
-  type: string;
-  coordinates: number[];
+  type: "Point";
+  coordinates: [number, number, number?];
   timestamp: Date;
-}
+};

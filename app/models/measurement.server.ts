@@ -3,4 +3,4 @@ export type Measurement = {
   sensor_id: string;
   createdAt: Date;
   location: any;
-}
+};

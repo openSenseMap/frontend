@@ -1,1 +1,1 @@
-export type Integration = {}
+export type Integration = {};

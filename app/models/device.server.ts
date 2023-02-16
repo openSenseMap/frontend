@@ -6,7 +6,21 @@ export type Device = {
   _id: string;
   name: string;
   exposure: "unknow" | "mobile" | "indoor" | "outdoor";
-  model: "custom" | "homeV2Lora" | "homeV2Ethernet" | "homeV2Wifi" | "homeEthernet" | "homeWifi" | "homeEthernetFeinstaub" | "homeWifiFeinstaub" | "luftdaten_sds011" | "luftdaten_sds011_dht11" | "luftdaten_sds011_dht22" | "luftdaten_sds011_bmp180" | "luftdaten_sds011_bme280" | "hackair_home_v2";
+  model:
+    | "custom"
+    | "homeV2Lora"
+    | "homeV2Ethernet"
+    | "homeV2Wifi"
+    | "homeEthernet"
+    | "homeWifi"
+    | "homeEthernetFeinstaub"
+    | "homeWifiFeinstaub"
+    | "luftdaten_sds011"
+    | "luftdaten_sds011_dht11"
+    | "luftdaten_sds011_dht22"
+    | "luftdaten_sds011_bmp180"
+    | "luftdaten_sds011_bme280"
+    | "hackair_home_v2";
   grouptag?: string[];
   description?: string;
   createdAt: Date;
