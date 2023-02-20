@@ -69,7 +69,7 @@ export default function NewNotePage() {
           />
         </label>
         {actionData?.errors?.title && (
-          <div className="pt-1 text-red-700" id="title-error">
+          <div className="text-red-700 pt-1" id="title-error">
             {actionData.errors.title}
           </div>
         )}
@@ -90,7 +90,7 @@ export default function NewNotePage() {
           />
         </label>
         {actionData?.errors?.body && (
-          <div className="pt-1 text-red-700" id="body-error">
+          <div className="text-red-700 pt-1" id="body-error">
             {actionData.errors.body}
           </div>
         )}
@@ -99,7 +99,7 @@ export default function NewNotePage() {
       <div className="text-right">
         <button
           type="submit"
-          className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+          className="hover:bg-blue-600 focus:bg-blue-400  rounded bg-blue-500 py-2 px-4 text-white"
         >
           Save
         </button>
