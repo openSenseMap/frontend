@@ -13,7 +13,6 @@ interface LastMeasurementProps {
 }
 
 export default function SingleValue(sensor: SingleValueProps) {
-  console.log(sensor)
   return (
     <div className="border-grey-300 lg:mb-3 mt-3 flex-1 border-r border-l border-solid pl-3 pr-3 text-center text-l lg:text-2xl">
       <div className="flex justify-center">

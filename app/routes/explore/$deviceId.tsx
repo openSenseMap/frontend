@@ -1,5 +1,5 @@
 import { json, LoaderArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useCatch, useLoaderData } from "@remix-run/react";
 import BottomBar from "~/components/bottomBar/BottomBar";
 
 export async function loader({ params }: LoaderArgs) {
@@ -8,6 +8,9 @@ export async function loader({ params }: LoaderArgs) {
     "https://api.opensensemap.org/boxes/" + params.deviceId
   );
   const data = await response.json();
+  if (data.code === "UnprocessableEntity") {
+    throw new Response("Device not found", { status: 502 });
+  }
   return json(data);
 }
 
@@ -21,4 +24,18 @@ export default function DeviceId() {
       lastUpdate={data.updatedAt}
     />
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  if (caught.status === 502) {
+    return (
+      <div>
+        <div className="flex animate-fade-in-up items-center justify-center bg-white py-10">
+          <div className="text-red-500">Oh no, we could not find this Device ID. Are you sure it exists?</div>
+        </div>
+      </div>
+    );
+  }
+  throw new Error(`Unsupported thrown response status code: ${caught.status}`);
 }
