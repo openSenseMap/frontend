@@ -3,9 +3,10 @@ import { useCatch, useLoaderData } from "@remix-run/react";
 import BottomBar from "~/components/bottomBar/BottomBar";
 
 export async function loader({ params }: LoaderArgs) {
+  console.log(process.env.OSEM_API_URL)
   // request to API with deviceID
   const response = await fetch(
-    "https://api.opensensemap.org/boxes/" + params.deviceId
+    process.env.OSEM_API_URL + "/boxes/" + params.deviceId
   );
   const data = await response.json();
   if (data.code === "UnprocessableEntity") {
