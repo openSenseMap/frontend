@@ -1,7 +1,7 @@
 import { useState } from "react";
 import SingleValue from "./SingleValue";
-import { ChevronDoubleUpIcon } from "@heroicons/react/24/solid";
-import { XCircleIcon } from "@heroicons/react/24/solid";
+import { XCircleIcon, MinusCircleIcon, ChevronDoubleUpIcon } from "@heroicons/react/24/solid";
+import { Link } from "@remix-run/react";
 
 interface BottomBarProps {
   id: string;
@@ -35,17 +35,25 @@ export default function BottomBar(device: BottomBarProps) {
           </div>
           <div className="grid basis-3/4 content-center bg-green-900 pr-2 text-right text-sm text-white">
             <div>
-              <p className="lg:inline text-xs lg:text-sm">Letzte Messung:</p>
-              <p className="lg:inline text-xs lg:text-sm"> {device.lastUpdate}</p>
+              <p className="text-xs lg:inline lg:text-sm">Letzte Messung:</p>
+              <p className="text-xs lg:inline lg:text-sm">
+                {" "}
+                {device.lastUpdate}
+              </p>
             </div>
           </div>
           <div className="flex items-center bg-green-900 pr-2">
-            <XCircleIcon
+            <MinusCircleIcon
               onClick={() => {
                 setIsOpen(!isOpen);
               }}
-              className="h-6 w-6 lg:h-8 lg:w-8 cursor-pointer text-white"
+              className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8"
             />
+          </div>
+          <div className="flex items-center bg-green-900 pr-2">
+            <Link prefetch="intent" to="/explore">
+              <XCircleIcon className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />
+            </Link>
           </div>
         </div>
         <div className="flex justify-center overflow-auto">
