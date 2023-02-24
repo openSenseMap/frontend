@@ -1,8 +1,8 @@
-import type { User, Note } from "@prisma/client";
+import type { User, Note, Device } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
-export type { Note } from "@prisma/client";
+export type { Note, Device } from "@prisma/client";
 
 export function getNote({
   id,
@@ -16,12 +16,23 @@ export function getNote({
   });
 }
 
+export function getDevice({ id }: Pick<Device, "id">) {
+  return prisma.device.findFirst({
+    select: { id: true, name: true, exposure: true },
+    where: { id },
+  });
+}
+
 export function getNoteListItems({ userId }: { userId: User["id"] }) {
   return prisma.note.findMany({
     where: { userId },
     select: { id: true, title: true },
     orderBy: { updatedAt: "desc" },
   });
+}
+
+export function getDevices() {
+  return prisma.device.findMany();
 }
 
 export function createNote({
