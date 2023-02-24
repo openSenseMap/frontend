@@ -5,6 +5,7 @@
   "scripts": {
     "build": "run-s build:*",
     "build:css": "npm run generate:css -- --env production",
+    "build:prisma": "prisma generate",
     "build:remix": "remix build",
     "build:server": "esbuild --platform=node --format=cjs ./server.ts --outdir=build --bundle",
     "dev": "run-p dev:*",
