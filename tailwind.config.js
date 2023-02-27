@@ -55,10 +55,15 @@ module.exports = {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
       },
-      animation: {
-        'fade-in-up': 'fade-in-up 1s ease-out',
-      },
       keyframes: {
+        'sidebarOpen': {
+          'from': { transform: "translateX(100%)" },
+          'to': { transform: "translateX(O)" },
+        },
+        'sidebarClose': {
+          'from': { transform: "translateX(0)" },
+          'to': { transform: "translateX(100%)" },
+        },
         'fade-in-up': {
           '0%': {
             opacity: '0',
@@ -69,6 +74,11 @@ module.exports = {
             transform: 'translateY(0)'
           },
         },
+      },
+      animation: {
+        'fade-in-up': 'fade-in-up 1s ease-out',
+        'sidebarOpen': 'sidebarOpen 300ms ease-out',
+        'sidebarClose': 'sidebarClose 300ms ease-out',
       },
     },
   },
