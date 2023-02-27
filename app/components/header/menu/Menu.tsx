@@ -2,7 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { Link } from "@remix-run/react";
 
 
-export default function Home() {
+export default function Menu() {
   return (
     <div className="box-border w-10 h-10 pointer-events-auto">
       <Dialog.Root>
