@@ -10,7 +10,7 @@ export default function NavBar() {
       <NavigationMenu.Root className="relative">
         <NavigationMenu.List className="w-full h-10">
           <NavigationMenu.Item className="w-full h-10">
-            <NavigationMenu.Trigger className="w-full h-10 bg-white data-[state=open]:rounded-t data-[state=closed]:rounded">
+            <NavigationMenu.Trigger className="w-full h-10 bg-white data-[state=open]:rounded-t-[1.25rem] data-[state=closed]:rounded-[1.25rem]">
               {!isHovered ?
                 <div className="flex items-center justify-around w-full h-10">
                   <div className="flex items-center justify-center rounded-full bg-orange-500 w-3/12 h-6">
@@ -36,7 +36,7 @@ export default function NavBar() {
                 </div>
               }
             </NavigationMenu.Trigger>
-            <NavigationMenu.Content className="flex items-center justify-around container mx-auto bg-white rounded-b">
+            <NavigationMenu.Content className="flex items-center justify-around container mx-auto bg-white rounded-b-[1.25rem]">
               <div>
                 <p>Phänomene</p>
                 <p>10.10.2022</p>
