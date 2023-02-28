@@ -6,7 +6,7 @@ export default function NavBar() {
   const [isHovered, setIsHovered] = React.useState(false);
 
   return (
-    <div className="w-1/2 h-10 mx-auto pointer-events-auto" onMouseEnter={() => setIsHovered(!isHovered)} onMouseLeave={() => setIsHovered(!isHovered)}>
+    <div className="w-1/2 h-10 mx-auto pointer-events-auto" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <NavigationMenu.Root className="relative">
         <NavigationMenu.List className="w-full h-10">
           <NavigationMenu.Item className="w-full h-10">
