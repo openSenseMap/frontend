@@ -2,16 +2,14 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
-import { getDevices, getNoteListItems } from "~/models/note.server";
+import { getNoteListItems } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
   const noteListItems = await getNoteListItems({ userId });
-  const devices = await getDevices();
-  return json({ devices });
-  // return json({ noteListItems });
+  return json({ noteListItems });
 }
 
 export default function NotesPage() {
@@ -43,12 +41,12 @@ export default function NotesPage() {
 
           <hr />
 
-          {data.devices.length === 0 ? (
+          {data.noteListItems.length === 0 ? (
             <p className="p-4">No notes yet</p>
           ) : (
             <div className="overflow-auto">
               <ol>
-                {data.devices.map((note) => (
+                {data.noteListItems.map((note) => (
                   <li key={note.id}>
                     <NavLink
                       className={({ isActive }) =>
@@ -58,7 +56,7 @@ export default function NotesPage() {
                       }
                       to={note.id}
                     >
-                      📝 {note.name}
+                      📝 {note.title}
                     </NavLink>
                   </li>
                 ))}

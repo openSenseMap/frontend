@@ -61,6 +61,9 @@ model Device {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  latitude  Float
+  longitude Float
+
   sensors Sensor[]
   // @@index([location], name: "location_idx", type: Gist)
 
