@@ -27,6 +27,13 @@ export default function Index() {
                 Check the README.md file for instructions on how to get this
                 project deployed.
               </p>
+              <Link
+                to="/explore"
+                prefetch="intent"
+                className="hover:bg-blue-50 flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-blue-700 shadow-sm sm:px-8"
+              >
+                Explore
+              </Link>
               <div className="mx-auto mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-center">
                 {user ? (
                   <Link
