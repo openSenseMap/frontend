@@ -35,7 +35,10 @@
     "/postgres-data"
   ],
   "dependencies": {
+    "@heroicons/react": "^2.0.15",
     "@prisma/client": "^4.9.0",
+    "@radix-ui/react-dialog": "^1.0.2",
+    "@radix-ui/react-navigation-menu": "^1.1.1",
     "@remix-run/express": "^1.12.0",
     "@remix-run/node": "^1.12.0",
     "@remix-run/react": "^1.12.0",
@@ -46,6 +49,7 @@
     "express": "^4.18.2",
     "express-prometheus-middleware": "^1.2.0",
     "isbot": "^3.6.5",
+    "maplibre-gl": "^2.4.0",
     "morgan": "^1.10.0",
     "postcss-import": "^15.1.0",
     "prom-client": "^14.1.1",
