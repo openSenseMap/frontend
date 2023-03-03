@@ -1,4 +1,4 @@
-import { Outlet } from "@remix-run/react";
+import { Outlet, useNavigate } from "@remix-run/react";
 import Map from "~/components/Map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import Header from "~/components/header/Header";
@@ -15,7 +15,13 @@ import type {
 } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
 import { useRef } from "react";
-import type { Point } from "geojson";
+import type { FeatureCollection, Point } from "geojson";
+import {
+  clusterCountLayer,
+  clusterLayer,
+  unclusteredPointLayer,
+} from "~/components/Map/Layers";
+import type { Device } from "@prisma/client";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -31,30 +37,9 @@ export const links: LinksFunction = () => {
   ];
 };
 
-const clusterLayer = {
-  id: "osem-data",
-  type: "circle",
-  source: "osem-data",
-  filter: ["has", "point_count"],
-  paint: {
-    "circle-color": "#5394d0",
-    "circle-radius": 20,
-  },
-};
-
-const clusterCountLayer = {
-  id: "cluster-count",
-  type: "symbol",
-  source: "osem-data",
-  filter: ["has", "point_count"],
-  layout: {
-    "text-field": "{point_count_abbreviated}",
-    "text-size": 12,
-  },
-};
-
 export default function Explore() {
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   const mapRef = useRef<MapRef>(null);
 
@@ -63,9 +48,9 @@ export default function Explore() {
       const feature = e.features[0];
 
       if (feature.layer.id === "osem-data") {
-        const source = mapRef.current.getSource("osem-data") as GeoJSONSource;
+        const source = mapRef.current?.getSource("osem-data") as GeoJSONSource;
         source.getClusterExpansionZoom(
-          feature.properties.cluster_id,
+          feature.properties?.cluster_id,
           (err, zoom) => {
             if (err) {
               return;
@@ -78,6 +63,8 @@ export default function Explore() {
             });
           }
         );
+      } else if (feature.layer.id === "unclustered-point") {
+        navigate(`/explore/${feature.properties?.id}`);
       }
     }
   };
@@ -88,17 +75,18 @@ export default function Explore() {
       <Map
         ref={mapRef}
         initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-        interactiveLayerIds={[clusterLayer.id]}
+        interactiveLayerIds={["osem-data", "unclustered-point"]}
         onClick={onMapClick}
       >
         <Source
           id="osem-data"
           type="geojson"
-          data={data.devices}
+          data={data.devices as FeatureCollection<Point, Device>}
           cluster={true}
         >
           <Layer {...clusterLayer} />
           <Layer {...clusterCountLayer} />
+          <Layer {...unclusteredPointLayer} />
         </Source>
       </Map>
       <main className="absolute bottom-0 z-10 w-full">

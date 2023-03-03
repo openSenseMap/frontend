@@ -1,6 +1,5 @@
 import type { MapProps, MapRef } from "react-map-gl";
 import { NavigationControl, Map as ReactMap } from "react-map-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { forwardRef } from "react";
 
