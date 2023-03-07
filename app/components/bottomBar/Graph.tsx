@@ -28,7 +28,6 @@ ChartJS.register(
 );
 
 export default function Graph(data: any) {
-  console.log(data)
   // Initializing state variables using the useState hook
   const [status, setStatus] = useState("");
   const [sensorData1, setSensorData1] = useState([]);
@@ -85,7 +84,9 @@ export default function Graph(data: any) {
 
   // Formatting the data for the Line component
   const lineData = {
-    labels: sensorData1.map((measurement: LastMeasurementProps) => measurement.createdAt),
+    labels: sensorData1.map(
+      (measurement: LastMeasurementProps) => measurement.createdAt
+    ),
     datasets:
       data.sensors.length === 2
         ? [
@@ -146,7 +147,7 @@ export default function Graph(data: any) {
       y: {
         title: {
           display: true,
-          text: data.sensors[0].title + " in " + data.sensors[0].unit
+          text: data.sensors[0].title + " in " + data.sensors[0].unit,
         },
         type: "linear",
         display: true,
@@ -155,7 +156,9 @@ export default function Graph(data: any) {
       y1: {
         title: {
           display: true,
-          text: data.sensors[1] ? (data.sensors[1].title + " in " + data.sensors[1].unit) : ("")//data.sensors[1].unit
+          text: data.sensors[1]
+            ? data.sensors[1].title + " in " + data.sensors[1].unit
+            : "", //data.sensors[1].unit
         },
         type: "linear",
         display: "auto",

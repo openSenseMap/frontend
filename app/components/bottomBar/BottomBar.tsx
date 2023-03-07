@@ -14,6 +14,7 @@ interface BottomBarProps {
   sensors: Array<SensorProps>;
   lastUpdate: string;
   location: [number, number];
+  selectedSensors: Array<SensorProps>;
 }
 
 export interface SensorProps {
@@ -33,7 +34,7 @@ export interface LastMeasurementProps {
 
 export default function BottomBar(device: BottomBarProps) {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
-  const [selectedSensors, setSelectedSensors] = useState<SensorProps[]>([]);
+  const [selectedSensors, setSelectedSensors] = useState<SensorProps[]>(device.selectedSensors);
 
   function handleSelectedSensors(sensor: SensorProps) {
     if (selectedSensors.includes(sensor)) {
@@ -60,8 +61,7 @@ export default function BottomBar(device: BottomBarProps) {
             <div>
               <p className="text-xs lg:inline lg:text-sm">Letzte Messung:</p>
               <p className="text-xs lg:inline lg:text-sm">
-                {" "}
-                {device.lastUpdate}
+                {" " + device.lastUpdate}
               </p>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function BottomBar(device: BottomBarProps) {
         <div className="flex justify-center overflow-auto">
           {device.sensors.map((sensor: SensorProps) => {
             return (
-              <div key={sensor._id} className={"flex-1 " + (selectedSensors.includes(sensor) ? ("bg-green-500") : (""))}
+              <div key={sensor._id} className={"flex-1 " + (selectedSensors.some((obj) => obj._id === sensor._id) ? ("bg-green-500") : (""))}
                 onClick={() => {
                   handleSelectedSensors(sensor);
                 }}
@@ -101,7 +101,6 @@ export default function BottomBar(device: BottomBarProps) {
           })}
         </div>
         {selectedSensors.length > 0 ? (<Graph sensors={selectedSensors}/>) : (null)}
-        {/* <Outlet context={device.sensors} /> */}
       </div>
       <div
         onClick={() => {
