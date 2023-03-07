@@ -3,7 +3,6 @@ import { useCatch, useLoaderData } from "@remix-run/react";
 import BottomBar from "~/components/bottomBar/BottomBar";
 
 export async function loader({ params }: LoaderArgs) {
-  console.log(process.env.OSEM_API_URL)
   // request to API with deviceID
   const response = await fetch(
     process.env.OSEM_API_URL + "/boxes/" + params.deviceId
@@ -23,6 +22,7 @@ export default function DeviceId() {
       name={data.name}
       sensors={data.sensors}
       lastUpdate={data.updatedAt}
+      location={data.currentLocation.coordinates}
     />
   );
 }

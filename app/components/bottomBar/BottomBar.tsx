@@ -1,16 +1,22 @@
 import { useState } from "react";
 import SingleValue from "./SingleValue";
-import { XCircleIcon, MinusCircleIcon, ChevronDoubleUpIcon } from "@heroicons/react/24/solid";
-import { Link } from "@remix-run/react";
+import {
+  XCircleIcon,
+  MinusCircleIcon,
+  ChevronDoubleUpIcon,
+} from "@heroicons/react/24/solid";
+import { Link, Outlet, useLocation, useNavigate } from "@remix-run/react";
+import Graph from "./Graph";
 
 interface BottomBarProps {
   id: string;
   name: string;
   sensors: Array<SensorProps>;
   lastUpdate: string;
+  location: [number, number];
 }
 
-interface SensorProps {
+export interface SensorProps {
   _id: string;
   icon: string;
   lastMeasurement: LastMeasurementProps;
@@ -19,13 +25,30 @@ interface SensorProps {
   unit: string;
 }
 
-interface LastMeasurementProps {
+export interface LastMeasurementProps {
   createdAt: string;
   value: string;
 }
 
+
 export default function BottomBar(device: BottomBarProps) {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
+  const [selectedSensors, setSelectedSensors] = useState<SensorProps[]>([]);
+
+  function handleSelectedSensors(sensor: SensorProps) {
+    if (selectedSensors.includes(sensor)) {
+      // If the sensor already exists in the array, remove it
+      setSelectedSensors(selectedSensors.filter(item => item !== sensor));
+    } else if (selectedSensors.length < 2) {
+      // If the array doesn't have two items yet, add the new sensor
+      setSelectedSensors([...selectedSensors, sensor]);
+    }
+    // Otherwise, do nothing
+    if(selectedSensors.length > 0) {
+      // TODO: add selectedSensors to query string
+    }
+  }
+
   return (
     <div>
       <div className={"bg-white " + (isOpen ? "animate-fade-in-up" : "hidden")}>
@@ -59,18 +82,26 @@ export default function BottomBar(device: BottomBarProps) {
         <div className="flex justify-center overflow-auto">
           {device.sensors.map((sensor: SensorProps) => {
             return (
-              <SingleValue
-                key={sensor._id}
-                _id={sensor._id}
-                icon={sensor.icon}
-                sensorType={sensor.sensorType}
-                title={sensor.title}
-                unit={sensor.unit}
-                lastMeasurement={sensor.lastMeasurement}
-              />
+              <div key={sensor._id} className={"flex-1 " + (selectedSensors.includes(sensor) ? ("bg-green-500") : (""))}
+                onClick={() => {
+                  handleSelectedSensors(sensor);
+                }}
+              >
+                <SingleValue
+                  key={sensor._id}
+                  _id={sensor._id}
+                  icon={sensor.icon}
+                  sensorType={sensor.sensorType}
+                  title={sensor.title}
+                  unit={sensor.unit}
+                  lastMeasurement={sensor.lastMeasurement}
+                />
+              </div>
             );
           })}
         </div>
+        {selectedSensors.length > 0 ? (<Graph sensors={selectedSensors}/>) : (null)}
+        {/* <Outlet context={device.sensors} /> */}
       </div>
       <div
         onClick={() => {
