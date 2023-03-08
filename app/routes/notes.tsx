@@ -34,7 +34,7 @@ export default function NotesPage() {
       </header>
 
       <main className="flex h-full bg-white">
-        <div className="bg-gray-50 h-full w-80 border-r">
+        <div className="bg-gray-50 h-full w-80 overflow-auto border-r">
           <Link to="new" className="block p-4 text-xl text-blue-500">
             + New Note
           </Link>
@@ -44,20 +44,24 @@ export default function NotesPage() {
           {data.noteListItems.length === 0 ? (
             <p className="p-4">No notes yet</p>
           ) : (
-            <ol>
-              {data.noteListItems.map((note) => (
-                <li key={note.id}>
-                  <NavLink
-                    className={({ isActive }) =>
-                      `block border-b p-4 text-xl ${isActive ? "bg-white" : ""}`
-                    }
-                    to={note.id}
-                  >
-                    📝 {note.title}
-                  </NavLink>
-                </li>
-              ))}
-            </ol>
+            <div className="overflow-auto">
+              <ol>
+                {data.noteListItems.map((note) => (
+                  <li key={note.id}>
+                    <NavLink
+                      className={({ isActive }) =>
+                        `block border-b p-4 text-xl ${
+                          isActive ? "bg-white" : ""
+                        }`
+                      }
+                      to={note.id}
+                    >
+                      📝 {note.title}
+                    </NavLink>
+                  </li>
+                ))}
+              </ol>
+            </div>
           )}
         </div>
 

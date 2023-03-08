@@ -1,10 +1,13 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  // extensions        = [postgis(version: "3.3.2")]
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 model User {
@@ -16,6 +19,7 @@ model User {
 
   password Password?
   notes    Note[]
+  devices  Device[]
 }
 
 model Password {
@@ -35,4 +39,50 @@ model Note {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
+}
+
+enum Exposure {
+  INDOOR
+  OUTDOOR
+  MOBILE
+  UNKNOWN
+}
+
+enum Model {
+  HOME_V2_LORA
+}
+
+model Device {
+  id       String   @id @default(uuid())
+  name     String
+  exposure Exposure
+  useAuth  Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  latitude  Float
+  longitude Float
+
+  sensors Sensor[]
+  // @@index([location], name: "location_idx", type: Gist)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+
+  // the index for that column
+  @@index([id], name: "device_id_idx", type: Hash)
+}
+
+model Sensor {
+  id         String @id @default(uuid())
+  title      String
+  unit       String
+  sensorType String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  deviceId String
 }
