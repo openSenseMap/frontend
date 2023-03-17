@@ -65,8 +65,8 @@ export default function Partners() {
   return (
     <div className="flex h-full min-h-full items-center justify-center">
       <div className="flex w-5/6 flex-col">
-        <div className="flex items-center justify-center pb-20">
-          <p className="font-serif text-6xl font-black text-blue-500 subpixel-antialiased">
+        <div className="flex items-center justify-center pb-10">
+          <p className="font-serif text-6xl font-black text-blue-100 dark:text-blue-200 subpixel-antialiased">
             Partners
           </p>
         </div>

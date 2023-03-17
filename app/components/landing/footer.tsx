@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
-    <footer className="w-full bg-white p-4 text-gray-400 sm:p-6 lg:text-lg">
-      <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8" />
+    <footer className="w-full p-4 text-gray-300 dark:text-gray-100 sm:p-6 lg:text-lg bg-white dark:bg-black">
+      <hr className="my-6 border-gray-300 dark:border-gray-100 sm:mx-auto lg:my-8" />
       <div className="sm:flex sm:items-center sm:justify-between">
         <div className="mt-4 flex w-full items-center space-x-6 sm:mt-0 sm:justify-center">
           <div className="flex w-1/2 justify-around">

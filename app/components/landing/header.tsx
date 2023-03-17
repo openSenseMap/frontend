@@ -1,21 +1,30 @@
 import { Link } from "@remix-run/react";
+import { Theme, useTheme } from "~/utils/theme-provider";
 
 export default function Header() {
+  const [, setTheme] = useTheme();
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) =>
+      prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
+    );
+  };
+
   return (
-    <nav className="rounded border-gray-200 bg-white px-2 py-2.5 shadow-md sm:px-4">
-      <div className="container mx-auto flex flex-wrap items-center justify-between font-serif">
+    <nav className="sticky top-0 bg-white dark:bg-black px-2 py-2.5 shadow-md shadow-headerBorder sm:px-4">
+      <div className="container mx-auto flex flex-wrap items-center justify-between font-serif z-50">
         <div className="flex">
           <Link to="/" className="flex items-center pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-            <span className="self-center whitespace-nowrap text-xl font-semibold">
+            <span className="self-center whitespace-nowrap text-green-100 dark:text-green-200 text-xl font-semibold">
               openSenseMap
             </span>
           </Link>
           <div
-            className="hidden w-full items-center justify-between md:order-1 md:flex md:w-auto text-lg font-bold text-gray-500"
+            className="hidden w-full items-center justify-between text-lg font-bold text-gray-400 dark:text-gray-300 md:order-1 md:flex md:w-auto"
             id="navbar-cta"
           >
-            <ul className="bg-gray-50 mt-4 flex flex-col rounded-lg border border-gray-100 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
+            <ul className="mt-4 flex flex-col rounded-lg p-4 md:mt-0 md:flex-row md:space-x-8 md:text-sm md:font-medium">
               <li>
                 <Link
                   to="/explore"
@@ -53,9 +62,10 @@ export default function Header() {
           </div>
         </div>
         <div className="flex md:order-2">
+          <button className="dark:text-white" onClick={toggleTheme}>Toggle</button>
           <button
             type="button"
-            className="mr-3 rounded-lg bg-green-500 px-5 py-2.5 text-center text-sm font-medium text-black hover:bg-green-300 focus:outline-none focus:ring-4 focus:ring-green-300 md:mr-0"
+            className="border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 dark:border-green-200 rounded-lg p-2 text-center text-sm font-medium text-black dark:bg-green-200"
           >
             <Link to="/explore" rel="intent">
               Donate

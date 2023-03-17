@@ -52,8 +52,8 @@ export default function Tools() {
   return (
     <div className="flex h-full min-h-full items-center justify-center">
       <div className="flex w-5/6 flex-col">
-        <div className="flex items-center justify-center pb-20">
-          <p className="font-serif text-6xl font-black text-blue-500 subpixel-antialiased">
+        <div className="flex items-center justify-center pb-10">
+          <p className="font-serif text-6xl font-black text-blue-100 dark:text-blue-200 subpixel-antialiased">
             Tools
           </p>
         </div>
@@ -66,9 +66,9 @@ export default function Tools() {
                   setSelectedTool(tool);
                 }}
                 className={
-                  "flex cursor-pointer items-center rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-blue-500 py-2 px-4 font-serif font-extrabold hover:border-l-2 hover:border-t-2 hover:border-b-4 hover:border-r-4 " +
+                  "flex cursor-pointer items-center rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-blue-100 dark:border-blue-200 dark:bg-blue-200 py-2 px-4 font-serif font-extrabold hover:border-l-2 hover:border-t-2 hover:border-b-4 hover:border-r-4 " +
                   (selectedTool.id === tool.id
-                    ? "bg-blue-500 text-white"
+                    ? "bg-blue-100 text-white"
                     : "text-blue-500")
                 }
               >
@@ -80,7 +80,7 @@ export default function Tools() {
         <div className="flex h-full items-center justify-center">
           <video
             autoPlay
-            className="h-full w-auto min-w-full rounded-lg border-solid border-blue-500 object-contain"
+            className="h-full w-auto min-w-full rounded-lg border-solid border-blue-100 border-8 dark:border-blue-200 object-contain"
           >
             <source src={selectedTool.video} type="video/mp4"></source>
             Your browser does not support the video tag.

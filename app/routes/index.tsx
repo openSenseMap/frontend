@@ -8,7 +8,7 @@ import UseCases from "~/components/landing/useCases";
 
 export default function Index() {
   return (
-    <>
+    <div className="bg-white dark:bg-black">
       <div className="h-screen min-h-screen">
         <Header />
         <Preview />
@@ -26,6 +26,6 @@ export default function Index() {
         <Partners />
         <Footer />
       </div>
-    </>
+    </div>
   );
 }
