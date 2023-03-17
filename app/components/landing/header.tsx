@@ -11,7 +11,7 @@ export default function Header() {
   };
 
   return (
-    <nav className="sticky top-0 bg-white dark:bg-black px-2 py-2.5 shadow-md shadow-headerBorder sm:px-4">
+    <nav className="bg-white dark:bg-black px-2 py-2.5 shadow-md shadow-headerBorder sm:px-4">
       <div className="container mx-auto flex flex-wrap items-center justify-between font-serif z-50">
         <div className="flex">
           <Link to="/" className="flex items-center pr-10">
