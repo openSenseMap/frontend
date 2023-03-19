@@ -1,3 +1,5 @@
+import { Link } from "@remix-run/react";
+
 export default function Footer() {
   return (
     <footer className="w-full p-4 text-gray-300 dark:text-gray-100 sm:p-6 lg:text-lg bg-white dark:bg-black">
@@ -5,13 +7,13 @@ export default function Footer() {
       <div className="sm:flex sm:items-center sm:justify-between">
         <div className="mt-4 flex w-full items-center space-x-6 sm:mt-0 sm:justify-center">
           <div className="flex w-1/2 justify-around">
-            <div>Kontakt</div>
-            <div>Impressum</div>
-            <div>Hedgedoc</div>
-            <div>Mattermost</div>
+            <Link target="_blank" to={"mailto:info@opensenselab.org"}>Kontakt</Link>
+            <Link target="_blank" to={"/impressum"}>Impressum</Link>
+            <Link target="_blank" to={"https://pad.opensenselab.org"}>Hedgedoc</Link>
+            <Link target="_blank" to={"https://chat.opensenselab.org"}>Mattermost</Link>
           </div>
           <div className="flex w-1/2 justify-end">
-            <a href="https://www.instagram.com/opensenselab/" className="px-8">
+            <a href="https://www.instagram.com/opensenselab/" target="_blank" className="px-8 hover:text-green-100 dark:hover:text-green-200">
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -26,7 +28,7 @@ export default function Footer() {
               </svg>
               <span className="sr-only">Instagram page</span>
             </a>
-            <a href="https://twitter.com/openSenseLab" className="px-8">
+            <a href="https://twitter.com/openSenseLab" target="_blank" className="px-8 hover:text-green-100 dark:hover:text-green-200">
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -37,7 +39,7 @@ export default function Footer() {
               </svg>
               <span className="sr-only">Twitter page</span>
             </a>
-            <a href="https://github.com/opensenselab" className="px-8">
+            <a href="https://github.com/opensenselab" target="_blank" className="px-8 hover:text-green-100 dark:hover:text-green-200">
               <svg
                 className="h-10 w-10"
                 fill="currentColor"

@@ -27,7 +27,7 @@ const features = [
 
 export default function Features() {
   return (
-    <div className="flex h-full items-center justify-center">
+    <div id="features" className="flex h-full items-center justify-center">
       <div className="w-5/6">
         <div className="flex items-center justify-center pb-10">
           <p className="font-serif text-6xl font-black text-green-100 subpixel-antialiased dark:text-green-200">

@@ -2,6 +2,29 @@ import { Link } from "@remix-run/react";
 import { Theme, useTheme } from "~/utils/themeProvider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
+const links = [
+  {
+    name: "Explore",
+    link: "/explore",
+  },
+  {
+    name: "Features",
+    link: "#features",
+  },
+  {
+    name: "Tools",
+    link: "#tools",
+  },
+  {
+    name: "Use Cases",
+    link: "#useCases",
+  },
+  {
+    name: "Partners",
+    link: "#partners",
+  },
+];
+
 export default function Header() {
   const [theme, setTheme] = useTheme();
   const toggleTheme = () => {
@@ -25,39 +48,18 @@ export default function Header() {
             id="navbar-cta"
           >
             <ul className="mt-4 flex flex-col rounded-lg p-4 md:mt-0 md:flex-row md:space-x-8 md:text-sm md:font-medium">
-              <li>
-                <Link
-                  to="/explore"
-                  rel="intent"
-                  className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200"
-                >
-                  Explore
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200"
-                >
-                  Features
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200"
-                >
-                  Tools
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200"
-                >
-                  Use cases
-                </a>
-              </li>
+              {links.map((item, index) => {
+                return (
+                  <li key={index}>
+                    <Link
+                      to={item.link}
+                      className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200"
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>

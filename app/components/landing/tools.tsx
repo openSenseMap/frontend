@@ -50,7 +50,7 @@ export default function Tools() {
   ];
   const [selectedTool, setSelectedTool] = useState(tools[0]);
   return (
-    <div className="flex h-full min-h-full items-center justify-center">
+    <div id="tools" className="flex h-full min-h-full items-center justify-center">
       <div className="flex w-5/6 flex-col">
         <div className="flex items-center justify-center pb-10">
           <p className="font-serif text-6xl font-black text-blue-100 dark:text-blue-200 subpixel-antialiased">
