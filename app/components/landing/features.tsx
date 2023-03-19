@@ -34,12 +34,12 @@ export default function Features() {
             Features
           </p>
         </div>
-        <div className="flex flex-wrap justify-around">
+        <div className="flex">
           {features.map((feature, index) => {
             return (
               <div
                 key={index}
-                className="flex w-full flex-col items-center justify-center rounded-2xl border-4 border-solid border-green-100 p-4 text-gray-300 dark:border-green-200 dark:text-gray-100 md:m-4 md:w-1/3 xl:w-1/6"
+                className="flex items-center flex-col justify-center rounded-2xl border-4 border-solid border-green-100 p-4 text-gray-300 dark:border-green-200 dark:text-gray-100 md:m-4"
               >
                 <div className="pb-4 font-serif text-2xl font-extrabold text-green-100 subpixel-antialiased dark:text-green-200">
                   {feature.title}

@@ -13,7 +13,7 @@ import { getEnv } from "./env.server";
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import appStylesheetUrl from "./styles/app.css";
-import { ThemeProvider, useTheme } from "./utils/theme-provider";
+import { ThemeProvider, useTheme } from "./utils/themeProvider";
 import clsx from "clsx";
 
 export const links: LinksFunction = () => {

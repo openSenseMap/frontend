@@ -66,7 +66,7 @@ export default function Tools() {
                   setSelectedTool(tool);
                 }}
                 className={
-                  "flex cursor-pointer items-center rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-blue-100 dark:border-blue-200 dark:bg-blue-200 py-2 px-4 font-serif font-extrabold hover:border-l-2 hover:border-t-2 hover:border-b-4 hover:border-r-4 " +
+                  "flex cursor-pointer items-center rounded-lg border-4 shadow-2xl border-solid border-blue-100 dark:border-0 dark:bg-blue-200 py-2 px-4 font-serif font-extrabold " +
                   (selectedTool.id === tool.id
                     ? "bg-blue-100 text-white"
                     : "text-blue-500")
