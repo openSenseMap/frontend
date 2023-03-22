@@ -10,10 +10,11 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
-
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import appStylesheetUrl from "./styles/app.css";
+import { ThemeProvider, useTheme } from "./utils/themeProvider";
+import clsx from "clsx";
 
 export const links: LinksFunction = () => {
   return [
@@ -64,10 +65,11 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export default function App() {
+function App() {
   const data = useLoaderData<typeof loader>();
+  const [theme] = useTheme();
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={clsx(theme)}>
       <head>
         <Meta />
         <Links />
@@ -84,5 +86,13 @@ export default function App() {
         <LiveReload />
       </body>
     </html>
+  );
+}
+
+export default function AppWithProviders() {
+  return (
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   );
 }
