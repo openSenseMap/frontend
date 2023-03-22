@@ -1,4 +1,4 @@
-import { useParams } from "@remix-run/react";
+import { useParams, useSearchParams } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -32,6 +32,8 @@ export default function Graph(data: any) {
   const [status, setStatus] = useState("");
   const [sensorData1, setSensorData1] = useState([]);
   const [sensorData2, setSensorData2] = useState([]);
+  const [searchParams] = useSearchParams();
+  const sensorIds = searchParams.getAll("sensorId");
 
   // Getting URL parameters using the useParams hook
   const params = useParams();
@@ -46,7 +48,7 @@ export default function Graph(data: any) {
         "/boxes/" +
         params.deviceId +
         "/data/" +
-        data.sensors[0]._id +
+        sensorIds[0] +
         "?from-date=" +
         new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
         "&to-date=" +
@@ -60,14 +62,14 @@ export default function Graph(data: any) {
       .catch(() => setStatus("Error"));
 
     // Fetching data for the second sensor (if applicable)
-    if (data.sensors.length > 1) {
+    if (sensorIds.length > 1) {
       setStatus("Loading");
       fetch(
         "https://api.opensensemap.org" +
           "/boxes/" +
           params.deviceId +
           "/data/" +
-          data.sensors[1]._id +
+          sensorIds[1] +
           "?from-date=" +
           new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
           "&to-date=" +

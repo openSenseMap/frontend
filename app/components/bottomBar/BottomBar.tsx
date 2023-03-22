@@ -1,11 +1,10 @@
 import { useState } from "react";
-import SingleValue from "./SingleValue";
 import {
   XCircleIcon,
   MinusCircleIcon,
   ChevronDoubleUpIcon,
 } from "@heroicons/react/24/solid";
-import { Link, Outlet, useLocation, useNavigate } from "@remix-run/react";
+import { Form, Link, useSearchParams, useSubmit } from "@remix-run/react";
 import Graph from "./Graph";
 
 interface BottomBarProps {
@@ -31,23 +30,26 @@ export interface LastMeasurementProps {
   value: string;
 }
 
-
 export default function BottomBar(device: BottomBarProps) {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
-  const [selectedSensors, setSelectedSensors] = useState<SensorProps[]>(device.selectedSensors);
 
-  function handleSelectedSensors(sensor: SensorProps) {
-    if (selectedSensors.includes(sensor)) {
-      // If the sensor already exists in the array, remove it
-      setSelectedSensors(selectedSensors.filter(item => item !== sensor));
-    } else if (selectedSensors.length < 2) {
-      // If the array doesn't have two items yet, add the new sensor
-      setSelectedSensors([...selectedSensors, sensor]);
+  const submit = useSubmit();
+  const [searchParams] = useSearchParams();
+  const sensorIds = searchParams.getAll("sensorId");
+
+  function filterSensorsById(
+    idArray: string[],
+    objectArray: SensorProps[]
+  ): SensorProps[] {
+    const filteredArray: SensorProps[] = [];
+
+    for (const obj of objectArray) {
+      if (idArray.includes(obj._id)) {
+        filteredArray.push(obj);
+      }
     }
-    // Otherwise, do nothing
-    if(selectedSensors.length > 0) {
-      // TODO: add selectedSensors to query string
-    }
+
+    return filteredArray;
   }
 
   return (
@@ -79,28 +81,43 @@ export default function BottomBar(device: BottomBarProps) {
             </Link>
           </div>
         </div>
-        <div className="flex justify-center overflow-auto">
-          {device.sensors.map((sensor: SensorProps) => {
-            return (
-              <div key={sensor._id} className={"flex-1 " + (selectedSensors.some((obj) => obj._id === sensor._id) ? ("bg-green-500") : (""))}
-                onClick={() => {
-                  handleSelectedSensors(sensor);
-                }}
+        <Form
+          method="get"
+          className="flex justify-center overflow-auto"
+          onChange={(e) => submit(e.currentTarget)}
+        >
+          {device.sensors.map((sensor) => (
+            <div className="p-4" key={sensor._id}>
+              <label
+                htmlFor={sensor._id}
+                className="flex cursor-pointer items-center justify-between"
               >
-                <SingleValue
-                  key={sensor._id}
-                  _id={sensor._id}
-                  icon={sensor.icon}
-                  sensorType={sensor.sensorType}
-                  title={sensor.title}
-                  unit={sensor.unit}
-                  lastMeasurement={sensor.lastMeasurement}
+                <input
+                  className="peer hidden"
+                  type="checkbox"
+                  name="sensorId"
+                  id={sensor._id}
+                  value={sensor._id}
+                  defaultChecked={sensorIds.includes(sensor._id)}
                 />
-              </div>
-            );
-          })}
-        </div>
-        {selectedSensors.length > 0 ? (<Graph sensors={selectedSensors}/>) : (null)}
+                <div className="block peer-checked:border-green-100 rounded-lg border-2 p-4">
+                  <div className="flex justify-center">
+                    {sensor.lastMeasurement ? (
+                      <b>{sensor.lastMeasurement.value}</b>
+                    ) : (
+                      <b>xx</b>
+                    )}
+                    <p>{sensor.unit}</p>
+                  </div>
+                  <p className="text-sm lg:text-xl">{sensor.title}</p>
+                </div>
+              </label>
+            </div>
+          ))}
+        </Form>
+        {sensorIds.length > 0 ? (
+          <Graph sensors={filterSensorsById(sensorIds, device.sensors)} />
+        ) : null}
       </div>
       <div
         onClick={() => {
