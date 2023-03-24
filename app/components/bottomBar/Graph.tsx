@@ -176,6 +176,8 @@ export default function Graph(data: any) {
 
   return (
     <div className="flex h-full w-full justify-center px-10">
+      {/* 
+// @ts-ignore */}
       <Line data={lineData} options={options}></Line>
     </div>
   );

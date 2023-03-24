@@ -56,10 +56,10 @@ export default function BottomBar(device: BottomBarProps) {
     <div>
       <div className={"bg-white " + (isOpen ? "animate-fade-in-up" : "hidden")}>
         <div className="flex">
-          <div className="text-l basis-1/4 bg-green-300 pt-6 pb-6 text-center font-bold text-green-900 lg:text-3xl">
+          <div className="text-l basis-1/4 bg-green-100 dark:bg-green-200 pt-6 pb-6 text-center font-bold lg:text-3xl">
             <p>{device.name}</p>
           </div>
-          <div className="grid basis-3/4 content-center bg-green-900 pr-2 text-right text-sm text-white">
+          <div className="grid basis-3/4 content-center bg-green-100 pr-2 text-right text-sm text-white">
             <div>
               <p className="text-xs lg:inline lg:text-sm">Letzte Messung:</p>
               <p className="text-xs lg:inline lg:text-sm">
@@ -67,7 +67,7 @@ export default function BottomBar(device: BottomBarProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center bg-green-900 pr-2">
+          <div className="flex items-center bg-green-100 pr-2">
             <MinusCircleIcon
               onClick={() => {
                 setIsOpen(!isOpen);
@@ -75,7 +75,7 @@ export default function BottomBar(device: BottomBarProps) {
               className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8"
             />
           </div>
-          <div className="flex items-center bg-green-900 pr-2">
+          <div className="flex items-center bg-green-100 pr-2">
             <Link prefetch="intent" to="/explore">
               <XCircleIcon className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />
             </Link>
