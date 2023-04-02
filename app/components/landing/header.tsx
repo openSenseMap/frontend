@@ -34,7 +34,7 @@ export default function Header() {
   };
 
   return (
-    <nav className="absolute top-0 z-50 w-full bg-white px-2 py-2.5 shadow-md shadow-headerBorder dark:bg-black sm:px-4">
+    <nav className="absolute top-0 z-50 w-full bg-white px-2 py-2.5 dark:bg-black sm:px-4 border-b-2 border-gray-400 dark:border-gray-300">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
         <div className="flex">
           <Link to="/" className="flex items-center pr-10">
@@ -44,16 +44,16 @@ export default function Header() {
             </span>
           </Link>
           <div
-            className="hidden w-full items-center justify-between text-lg font-bold text-gray-400 dark:text-gray-300 md:order-1 md:flex md:w-auto"
+            className="hidden w-full items-center justify-between text-gray-400 dark:text-gray-300 md:order-1 md:flex md:w-auto"
             id="navbar-cta"
           >
-            <ul className="mt-4 flex flex-col rounded-lg p-4 md:mt-0 md:flex-row md:space-x-8 md:text-sm md:font-medium">
+            <ul className="mt-4 flex flex-col rounded-lg p-4 md:mt-0 md:flex-row md:space-x-8 md:text-lg">
               {links.map((item, index) => {
                 return (
                   <li key={index}>
                     <Link
                       to={item.link}
-                      className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200"
+                      className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200 md:font-thin"
                     >
                       {item.name}
                     </Link>
@@ -75,7 +75,7 @@ export default function Header() {
           </div>
           <button
             type="button"
-            className="rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-sm font-medium text-black dark:border-green-200 dark:bg-green-200"
+            className="rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black dark:border-green-200 dark:bg-green-200"
           >
             <Link to="/explore" rel="intent">
               Donate
