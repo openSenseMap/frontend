@@ -1,67 +1,10 @@
-const partners = [
-  {
-    name: "Partner 1",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 2",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 3",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 4",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 5",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 6",
-    logo: "/landing/sensebox_wort_logo.png",
-  },
-  {
-    name: "Partner 7",
-    logo: "/landing/sensebox_wort_logo.png",
-  },
-  {
-    name: "Partner 8",
-    logo: "/landing/sensebox_wort_logo.png",
-  },
-  {
-    name: "Partner 9",
-    logo: "/landing/sensebox_wort_logo.png",
-  },
-  {
-    name: "Partner 10",
-    logo: "/landing/sensebox_wort_logo.png",
-  },
-  {
-    name: "Partner 11",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 12",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 13",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 14",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-  {
-    name: "Partner 15",
-    logo: "/landing/logo_ifgi_long.png",
-  },
-];
+import { Partner } from "~/lib/directus";
 
-export default function Partners() {
+type PartnersProps = {
+  data: Partner[]
+}
+
+export default function Partners({data}: PartnersProps) {
   return (
     <div id="partners" className="flex h-full min-h-full items-center justify-center text-gray-300 text-xl dark:text-gray-100">
       <div className="flex w-5/6 flex-col">
@@ -71,10 +14,10 @@ export default function Partners() {
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center">
-          {partners.map((partner, index) => {
+          {data.map((partner, index) => {
             return (
               <div key={index} className="w-1/5 p-8">
-                <img src={partner.logo} alt={partner.name}></img>
+                <img src={`${ENV.DIRECTUS_URL}/assets/${partner.logo}`} alt={partner.name}></img>
               </div>
             );
           })}

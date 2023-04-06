@@ -1,31 +1,10 @@
-const features = [
-  {
-    title: "API for all",
-    description:
-      "Die wahrscheinlich größte offene Plattform für Umwelt- und Sensordaten weltweit ermöglicht es allen Menschen kostenfrei auf umfangreiche Daten zuzugreifen, diese zu analysieren. Typography",
-    icon: "/landing/api.svg",
-  },
-  {
-    title: "Open data",
-    description:
-      "Die wahrscheinlich größte offene Plattform für Umwelt- und Sensordaten weltweit ermöglicht es allen Menschen kostenfrei auf umfangreiche Daten zuzugreifen, diese zu analysieren. Typography",
-    icon: "/landing/open-cardboard-box.png",
-  },
-  {
-    title: "Free access",
-    description:
-      "Die wahrscheinlich größte offene Plattform für Umwelt- und Sensordaten weltweit ermöglicht es allen Menschen kostenfrei auf umfangreiche Daten zuzugreifen, diese zu analysieren. Typography",
-    icon: "/landing/free.svg",
-  },
-  {
-    title: "Free registration",
-    description:
-      "Die wahrscheinlich größte offene Plattform für Umwelt- und Sensordaten weltweit ermöglicht es allen Menschen kostenfrei auf umfangreiche Daten zuzugreifen, diese zu analysieren. Typography",
-    icon: "/landing/tasks.svg",
-  },
-];
+import { Feature } from "~/lib/directus";
 
-export default function Features() {
+type FeaturesProps = {
+  data: Feature[]
+}
+
+export default function Features({data}: FeaturesProps) {
   return (
     <div id="features" className="flex h-full items-center justify-center">
       <div className="w-5/6">
@@ -35,7 +14,7 @@ export default function Features() {
           </p>
         </div>
         <div className="flex">
-          {features.map((feature, index) => {
+          {data.map((feature, index) => {
             return (
               <div
                 key={index}
@@ -46,7 +25,7 @@ export default function Features() {
                 </div>
                 <div className="text-center text-lg">{feature.description}</div>
                 <div className="pt-4">
-                  <img src={feature.icon} alt="api_svg" />
+                  <img src={`${ENV.DIRECTUS_URL}/assets/${feature.icon}`} alt="api_svg" />
                 </div>
               </div>
             );
