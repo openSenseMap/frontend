@@ -14,7 +14,7 @@ import type {
   MapRef,
 } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
-import { useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { FeatureCollection, Point } from "geojson";
 import {
   clusterCountLayer,
@@ -22,6 +22,7 @@ import {
   unclusteredPointLayer,
 } from "~/components/Map/Layers";
 import type { Device } from "@prisma/client";
+import OverlaySearch from "~/components/search/OverlaySearch";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -38,6 +39,48 @@ export const links: LinksFunction = () => {
 };
 
 export default function Explore() {
+  const [showSearch, setShowSearch] = useState<boolean>(false)
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * Focus the search input when the search overlay is displayed
+   */
+  const focusSearchInput = () => {
+    searchRef.current?.focus();
+  };
+
+  /**
+   * Display the search overlay when the ctrl + y key combination is pressed
+   * 
+   * @param event event object
+   */
+  const displaySearch = (event: any) => {
+    // console.log(`Key pressed: ${event.key}`);
+    if(event.key === 'y' && event.ctrlKey){
+      setShowSearch(!showSearch);
+      setTimeout(() => {
+        focusSearchInput();
+      }, 100); 
+    }
+    if(event.key === 'Escape'){
+      setShowSearch(false);
+    }
+  }
+
+  /**
+   * useEffect hook to attach and remove the event listener for the search overlay
+   */
+  useEffect(() => {
+    // attach the event listener
+    document.addEventListener('keydown', displaySearch);
+
+    // remove the event listener
+    return () => {
+      document.removeEventListener('keydown', displaySearch);
+    };
+  }, [displaySearch]);
+
+
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
@@ -71,7 +114,7 @@ export default function Explore() {
 
   return (
     <div className="h-full w-full">
-      <Header />
+      <Header mapRef={mapRef} devices={data.devices} />
       <Map
         ref={mapRef}
         initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
@@ -89,6 +132,7 @@ export default function Explore() {
           <Layer {...unclusteredPointLayer} />
         </Source>
       </Map>
+      { showSearch ? <OverlaySearch mapRef={mapRef} devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
       <main className="absolute bottom-0 z-10 w-full">
         <Outlet />
       </main>
