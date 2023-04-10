@@ -1,9 +1,10 @@
-import { json, LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import BottomBar from "~/components/bottomBar/BottomBar";
 
 export async function loader({ params }: LoaderArgs) {
-  console.log(process.env.OSEM_API_URL)
+  console.log(process.env.OSEM_API_URL);
   // request to API with deviceID
   const response = await fetch(
     process.env.OSEM_API_URL + "/boxes/" + params.deviceId
@@ -33,7 +34,9 @@ export function CatchBoundary() {
     return (
       <div className="absolute bottom-0 z-10 w-full">
         <div className="flex animate-fade-in-up items-center justify-center bg-white py-10">
-          <div className="text-red-500">Oh no, we could not find this Device ID. Are you sure it exists?</div>
+          <div className="text-red-500">
+            Oh no, we could not find this Device ID. Are you sure it exists?
+          </div>
         </div>
       </div>
     );

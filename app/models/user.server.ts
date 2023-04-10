@@ -1,5 +1,6 @@
 import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 
 import { prisma } from "~/db.server";
 
@@ -13,8 +14,19 @@ export async function getUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { email } });
 }
 
+const preparePasswordHash = function preparePasswordHash(
+  plaintextPassword: string
+) {
+  // first round: hash plaintextPassword with sha512
+  const hash = crypto.createHash("sha512");
+  hash.update(plaintextPassword.toString(), "utf8");
+  const hashed = hash.digest("base64"); // base64 for more entropy than hex
+
+  return hashed;
+};
+
 export async function createUser(email: User["email"], password: string) {
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
   return prisma.user.create({
     data: {
@@ -48,7 +60,7 @@ export async function verifyLogin(
   }
 
   const isValid = await bcrypt.compare(
-    password,
+    preparePasswordHash(password),
     userWithPassword.password.hash
   );
 

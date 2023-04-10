@@ -49,6 +49,7 @@ module.exports = {
       violet: {
         500: "var(--color-violet-500)",
       },
+      headerBorder: "var(--color-headerBorder)"
     },
     extend: {
       fontFamily: {
@@ -63,6 +64,14 @@ module.exports = {
         'sidebarClose': {
           'from': { transform: "translateX(0)" },
           'to': { transform: "translateX(100%)" },
+        },
+        'contentShow': {
+          'from': { opacity: 0, transform: 'translate(-50%, 0%) scale(0.5)' },
+          'to': { opacity: 1, transform: 'translate(-50%, 0%) scale(1)' },
+        },
+        'contentClose': {
+          'from': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+          'to': { opacity: 0, transform: 'translate(-50%, -48%) scale(0.5)' },
         },
         'fade-in-up': {
           '0%': {
@@ -79,6 +88,8 @@ module.exports = {
         'fade-in-up': 'fade-in-up 1s ease-out',
         'sidebarOpen': 'sidebarOpen 300ms ease-out',
         'sidebarClose': 'sidebarClose 300ms ease-out',
+        'contentShow': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'contentClose': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)'
       },
     },
   },
