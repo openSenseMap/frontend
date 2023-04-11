@@ -77,6 +77,7 @@ export default function Explore() {
         initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
         interactiveLayerIds={["osem-data", "unclustered-point"]}
         onClick={onMapClick}
+        hash={true}
       >
         <Source
           id="osem-data"
