@@ -1,15 +1,15 @@
 import { Link, Outlet, useLocation } from "@remix-run/react";
 
-function closeSidebar() {
-    let sidebar = document.getElementById("sidebar");
-    let state = sidebar?.getAttribute("data-state");
-    if (state === "open") {
-        sidebar?.setAttribute("data-state", "closed");
-    }
-    if (state === "closed") {
-        sidebar?.setAttribute("data-state", "open");
-    }
-}
+// function closeSidebar() {
+//     let sidebar = document.getElementById("sidebar");
+//     let state = sidebar?.getAttribute("data-state");
+//     if (state === "open") {
+//         sidebar?.setAttribute("data-state", "closed");
+//     }
+//     if (state === "closed") {
+//         sidebar?.setAttribute("data-state", "open");
+//     }
+// }
 
 export default function Sidebar() {
     let url = useLocation().state;

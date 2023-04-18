@@ -1,4 +1,5 @@
-import * as Dialog from '@radix-ui/react-dialog';
+// import * as Dialog from '@radix-ui/react-dialog';
+import { Bars3Icon } from '@heroicons/react/24/outline'
 import { Link, useLocation } from "@remix-run/react";
 import React from 'react';
 
@@ -46,9 +47,10 @@ export default function Menu() {
     <div className="box-border w-10 h-10 pointer-events-auto">
       <Link to="sidebar" state={location.pathname}>
         <button type="button" className="w-10 h-10 rounded-full text-black text-center hover:bg-gray-200 bg-white" onClick={toggleDrawer}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mx-auto">
+          {/* <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mx-auto">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
+          </svg> */}
+          <Bars3Icon className="w-6 h-6 mx-auto"/>
         </button>
       </Link>
     </div>

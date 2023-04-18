@@ -1,6 +1,8 @@
 export function getEnv() {
   return {
     MAPTILER_KEY: process.env.MAPTILER_KEY,
+    MAPBOX_GEOCODING_API: process.env.MAPBOX_GEOCODING_API,
+    MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
   };
 }
 

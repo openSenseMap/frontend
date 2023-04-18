@@ -1,15 +1,13 @@
-import { RefObject, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchList from "./SearchList";
-import type { MapRef } from "react-map-gl";
 
-interface Props {
+interface SearchProps {
     setShowSearch: (data: boolean) => void;
     searchRef: any;
     devices: any;
-    mapRef: RefObject<MapRef>;
 }
 
-export default function Search(props: Props) {
+export default function Search(props: SearchProps) {
     const [searchString, setSearchString] = useState<string>('');
     const [searchResultsLocation, setSearchResultsLocation] = useState<any[]>([]);
     const [searchResultsDevice, setSearchResultsDevice] = useState<any[]>([]);
@@ -20,10 +18,10 @@ export default function Search(props: Props) {
      * @param searchstring string to search for locations on mapbox geocode API
      */
     function getLocations(searchstring: string) {
-        var url: URL = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${searchstring}.json`)
+        var url: URL = new URL(ENV.MAPBOX_GEOCODING_API + `${searchstring}.json`)
 
         url.search = new URLSearchParams({
-            access_token: 'pk.eyJ1IjoiZmFiLXNjbSIsImEiOiJjbDRjengzbDcwM3A5M2Nqbm9naG0yYjM3In0.Py0bex0sl7lAZkjwzM_R2g',
+            access_token: `${ENV.MAPBOX_ACCESS_TOKEN}`,
             limit: '4',
         }).toString();
 
@@ -125,7 +123,7 @@ export default function Search(props: Props) {
                 </button>
             </div>
             { ( searchResultsLocation.length > 0 || searchResultsDevice.length > 0 ) ?
-                <SearchList mapRef={props.mapRef} searchResultsLocation={searchResultsLocation} searchResultsDevice={searchResultsDevice} setShowSearch={props.setShowSearch} />
+                <SearchList searchResultsLocation={searchResultsLocation} searchResultsDevice={searchResultsDevice} setShowSearch={props.setShowSearch} />
             : null}
         </div>
     );

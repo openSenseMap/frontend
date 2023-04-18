@@ -7,10 +7,11 @@ import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getDevices } from "~/models/device.server";
-import type {
+import {
   GeoJSONSource,
   LngLatLike,
   MapLayerMouseEvent,
+  MapProvider,
   MapRef,
 } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
@@ -114,28 +115,30 @@ export default function Explore() {
 
   return (
     <div className="h-full w-full">
-      <Header mapRef={mapRef} devices={data.devices} />
-      <Map
-        ref={mapRef}
-        initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-        interactiveLayerIds={["osem-data", "unclustered-point"]}
-        onClick={onMapClick}
-      >
-        <Source
-          id="osem-data"
-          type="geojson"
-          data={data.devices as FeatureCollection<Point, Device>}
-          cluster={true}
+      <MapProvider>
+        <Header devices={data.devices} />
+        <Map
+          ref={mapRef}
+          initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
+          interactiveLayerIds={["osem-data", "unclustered-point"]}
+          onClick={onMapClick}
         >
-          <Layer {...clusterLayer} />
-          <Layer {...clusterCountLayer} />
-          <Layer {...unclusteredPointLayer} />
-        </Source>
-      </Map>
-      { showSearch ? <OverlaySearch mapRef={mapRef} devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
-      <main className="absolute bottom-0 z-10 w-full">
-        <Outlet />
-      </main>
+          <Source
+            id="osem-data"
+            type="geojson"
+            data={data.devices as FeatureCollection<Point, Device>}
+            cluster={true}
+          >
+            <Layer {...clusterLayer} />
+            <Layer {...clusterCountLayer} />
+            <Layer {...unclusteredPointLayer} />
+          </Source>
+        </Map>
+        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
+        <main className="absolute bottom-0 z-10 w-full">
+          <Outlet />
+        </main>
+      </MapProvider>
     </div>
   );
 }
