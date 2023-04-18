@@ -1,6 +1,7 @@
 import { CpuChipIcon, GlobeEuropeAfricaIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "@remix-run/react";
-import { LngLatBounds, LngLatLike, useMap } from "react-map-gl";
+import { useMap } from "react-map-gl";
+import type { LngLatBounds, LngLatLike } from "react-map-gl";
 
 interface SearchListProps {
     searchResultsLocation: any;

@@ -50,7 +50,7 @@ export default function NavBar( props: NavBarProps) {
     return () => {
       document.removeEventListener('keydown', closeSearch);
     };
-  }, [closeSearch]);
+  });
 
   return (
     <div className="w-1/2 h-10 mx-auto pointer-events-auto">

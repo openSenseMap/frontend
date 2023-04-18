@@ -54,7 +54,7 @@ export default function Search(props: SearchProps) {
         props.devices.features.map((device: any) => { 
             if (deviceResults === 4) {
                 setSearchResultsDevice(results);
-                return;
+                return null;
             }
             if (device.properties.name.toLowerCase().includes(searchString.toLowerCase()) || device.properties.id.toLowerCase().includes(searchString.toLowerCase())) {
                 deviceResults++;

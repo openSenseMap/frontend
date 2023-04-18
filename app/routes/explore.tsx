@@ -79,7 +79,7 @@ export default function Explore() {
     return () => {
       document.removeEventListener('keydown', displaySearch);
     };
-  }, [displaySearch]);
+  });
 
 
   const data = useLoaderData<typeof loader>();
