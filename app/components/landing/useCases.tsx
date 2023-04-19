@@ -18,7 +18,7 @@ export default function UseCases({data}: UseCaseProps) {
             return (
               <div
                 key={index}
-                className="flex w-full flex-col items-center justify-start rounded-2xl border-4 border-solid border-green-100 pb-6 text-gray-300 dark:border-green-200 dark:text-gray-100 md:m-4 md:w-1/3 xl:w-1/6"
+                className="flex w-full flex-col items-center rounded-2xl border-4 border-solid border-green-100 pb-6 px-6 text-gray-300 dark:border-green-200 dark:text-gray-100 md:m-4"
               >
                 <img
                   className="rounded-t-xl"
