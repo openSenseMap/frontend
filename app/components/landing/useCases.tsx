@@ -1,31 +1,10 @@
-const useCases = [
-  {
-    title: "MINT projects",
-    description:
-      "Mit unserer Bildungsarbeit wecken wir mit der openSenseMap.org Begeisterung für MINT-Fächer.",
-    image: "/landing/usecase.png",
-  },
-  {
-    title: "MINT projects",
-    description:
-      "Mit unserer Bildungsarbeit wecken wir mit der openSenseMap.org Begeisterung für MINT-Fächer.",
-    image: "/landing/usecase.png",
-  },
-  {
-    title: "MINT projects",
-    description:
-      "Mit unserer Bildungsarbeit wecken wir mit der openSenseMap.org Begeisterung für MINT-Fächer.",
-    image: "/landing/usecase.png",
-  },
-  {
-    title: "MINT projects",
-    description:
-      "Mit unserer Bildungsarbeit wecken wir mit der openSenseMap.org Begeisterung für MINT-Fächer.",
-    image: "/landing/usecase.png",
-  },
-];
+import { UseCase } from "~/lib/directus";
 
-export default function UseCases() {
+type UseCaseProps = {
+  data: UseCase[]
+}
+
+export default function UseCases({data}: UseCaseProps) {
   return (
     <div id="useCases" className="flex h-full items-center justify-center">
       <div className="flex w-5/6 flex-col">
@@ -34,8 +13,8 @@ export default function UseCases() {
             Use Cases
           </p>
         </div>
-        <div className="flex h-full">
-          {useCases.map((useCase, index) => {
+        <div className="flex flex-wrap justify-around">
+          {data.map((useCase, index) => {
             return (
               <div
                 key={index}
@@ -43,7 +22,7 @@ export default function UseCases() {
               >
                 <img
                   className="rounded-t-xl"
-                  src={useCase.image}
+                  src={`${ENV.DIRECTUS_URL}/assets/${useCase.image}`}
                   alt="usecase"
                 />
                 <div className="py-4 font-serif text-2xl font-extrabold text-green-100 subpixel-antialiased dark:text-green-200">
