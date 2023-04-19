@@ -66,10 +66,10 @@ export default function Tools() {
                   setSelectedTool(tool);
                 }}
                 className={
-                  "flex cursor-pointer items-center rounded-lg border-4 shadow-2xl border-solid border-blue-100 dark:border-0 dark:bg-blue-200 py-2 px-4 font-serif font-extrabold " +
+                  "flex cursor-pointer items-center rounded-lg border-4 shadow-2xl border-solid border-blue-100 dark:border-0 dark:bg-blue-200 py-2 px-4 font-serif font-thin text-lg " +
                   (selectedTool.id === tool.id
                     ? "bg-blue-100 text-white"
-                    : "text-blue-500")
+                    : "text-gray-400 dark:text-black")
                 }
               >
                 <p>{tool.name}</p>
@@ -80,7 +80,7 @@ export default function Tools() {
         <div className="flex h-full items-center justify-center">
           <video
             autoPlay
-            className="h-full w-auto min-w-full rounded-lg border-solid border-blue-100 border-8 dark:border-blue-200 object-contain"
+            className="h-full w-[80%] rounded-lg border-solid border-blue-100 border-8 dark:border-blue-200 object-contain"
           >
             <source src={selectedTool.video} type="video/mp4"></source>
             Your browser does not support the video tag.

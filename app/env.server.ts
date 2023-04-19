@@ -1,6 +1,7 @@
 export function getEnv() {
   return {
     MAPTILER_KEY: process.env.MAPTILER_KEY,
+    DIRECTUS_URL: process.env.DIRECTUS_URL
   };
 }
 

@@ -7,8 +7,8 @@ export default function Preview() {
         <p className="pl-10 font-serif text-6xl font-black text-green-100 subpixel-antialiased dark:text-green-200">
           openSenseMap
         </p>
-        <div className="w-3/4 pl-10 pt-6 font-sans text-lg text-gray-300 dark:text-gray-100 xl:text-2xl self-end">
-          <p className="text-gray-500 font-extrabold">
+        <div className="w-3/4 pl-52 pt-6 font-sans text-lg text-gray-300 dark:text-gray-100 xl:text-2xl self-start">
+          <p className="text-black font-extrabold">
             Die offene Plattform für Umweltdaten
           </p>
           <p className="pt-2">
@@ -21,7 +21,7 @@ export default function Preview() {
             Klimawandel liefert.
           </p>
           <Link to="/explore" prefetch="intent">
-            <button className="mt-2 rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-green-100 p-1 text-gray-300 dark:border-green-200 dark:bg-green-200 dark:text-black">
+            <button className="mt-8 rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-green-100 p-1 text-gray-300 dark:border-green-200 dark:bg-green-200 dark:text-black">
               access OSEM
             </button>
           </Link>
