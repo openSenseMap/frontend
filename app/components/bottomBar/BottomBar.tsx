@@ -41,7 +41,8 @@ export default function BottomBar(device: BottomBarProps) {
   const timerRef = useRef<number>(0);
 
   useEffect(() => {
-    return () => clearTimeout(timerRef.current);
+    var timer = timerRef.current;
+    return () => clearTimeout(timer);
   }, []);
 
   function filterSensorsById(

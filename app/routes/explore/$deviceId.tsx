@@ -1,5 +1,6 @@
 // Importing dependencies
-import { json, LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import BottomBar from "~/components/bottomBar/BottomBar";
 
@@ -24,10 +25,11 @@ export async function loader({ params, request }: LoaderArgs) {
     sensorIds.includes(sensor._id)
   );
 
-  // Combine the device data with the selected sensors and return the result as JSON
+  // Combine the device data with the selected sensors and return the result as JSON + add env variable
   const data = {
     ...device,
     selectedSensors: selectedSensors,
+    OSEM_API_URL: process.env.OSEM_API_URL,
   };
   return json(data);
 }

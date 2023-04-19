@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from "@remix-run/react";
+import { useLoaderData, useParams, useSearchParams } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -12,9 +12,10 @@ import {
 import "chartjs-adapter-date-fns";
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { ChartOptions } from "chart.js";
+import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
-import { LastMeasurementProps } from "./BottomBar";
+import type { LastMeasurementProps } from "./BottomBar";
+import { loader } from "~/routes/explore/$deviceId";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -28,8 +29,10 @@ ChartJS.register(
 );
 
 export default function Graph(data: any) {
+  // access env variable on client side
+  const loaderData = useLoaderData<typeof loader>();
   // Initializing state variables using the useState hook
-  const [status, setStatus] = useState("");
+  //const [status, setStatus] = useState(""); //use for loading animation?
   const [sensorData1, setSensorData1] = useState([]);
   const [sensorData2, setSensorData2] = useState([]);
   const [searchParams] = useSearchParams();
@@ -40,12 +43,12 @@ export default function Graph(data: any) {
 
   // Fetching data from the API and updating state variables using the useEffect hook
   useEffect(() => {
-    setStatus("Loading");
+    //setStatus("Loading");
 
     // Fetching data for the first sensor
     fetch(
-      "https://api.opensensemap.org" +
-        "/boxes/" +
+      loaderData.OSEM_API_URL +
+        "boxes/" +
         params.deviceId +
         "/data/" +
         sensorIds[0] +
@@ -57,16 +60,16 @@ export default function Graph(data: any) {
       .then((response) => response.json())
       .then((data) => {
         setSensorData1(data);
-      })
-      .then(() => setStatus("Success"))
-      .catch(() => setStatus("Error"));
+      });
+    //.then(() => setStatus("Success"))
+    //.catch(() => setStatus("Error"));
 
     // Fetching data for the second sensor (if applicable)
     if (sensorIds.length > 1) {
-      setStatus("Loading");
+      //setStatus("Loading");
       fetch(
-        "https://api.opensensemap.org" +
-          "/boxes/" +
+        loaderData.OSEM_API_URL +
+          "boxes/" +
           params.deviceId +
           "/data/" +
           sensorIds[1] +
@@ -78,11 +81,11 @@ export default function Graph(data: any) {
         .then((response) => response.json())
         .then((data) => {
           setSensorData2(data);
-        })
-        .then(() => setStatus("Success"))
-        .catch(() => setStatus("Error"));
+        });
+      //.then(() => setStatus("Success"))
+      //.catch(() => setStatus("Error"));
     }
-  }, [data.sensors]);
+  }, [data.sensors, params.deviceId, sensorIds]);
 
   // Formatting the data for the Line component
   const lineData = {
