@@ -4,84 +4,56 @@ import { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useCatch, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-
-// Define the structure of the MyBadge object
-interface MyBadge {
-  acceptance: string;
-  badgeclass: string;
-  badgeclassOpenBadgeId: string;
-  entityId: string;
-  entityType: string;
-  expires: null | string;
-  image: string;
-  issuedOn: string;
-  issuer: string;
-  issuerOpenBadgeId: string;
-  name: string;
-  narrative: null | string;
-  openBadgeId: string;
-  pending: boolean;
-  recipient: {
-    identity: string;
-    hashed: boolean;
-    type: string;
-    plaintextIdentity: string;
-    salt: string;
-  };
-  revocationReason: null | string;
-  revoked: boolean;
-}
+import {
+  MyBadge,
+  getAllBadges,
+  getMyBadgesAccessToken,
+  getUserBackpack,
+} from "~/models/badge.server";
 
 // This function is responsible for loading data for the Profile component
 export async function loader({ params }: LoaderArgs) {
   // Extract the profile email from the URL params
   const profileMail = params.profile;
-
-  // Make a request to get an access token from the MyBadges API
-  const authRequest = new Request(process.env.MYBADGES_API_URL + "o/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "password",
-      username: `${process.env.MYBADGES_SERVERADMIN_USERNAME}`,
-      password: `${process.env.MYBADGES_SERVERADMIN_PASSWORD}`,
-      client_id: `${process.env.MYBADGES_CLIENT_ID}`,
-      client_secret: `${process.env.MYBADGES_CLIENT_SECRET}`,
-      scope: "rw:serverAdmin",
-    }),
+  // Get the access token using the getMyBadgesAccessToken function
+  const authToken = await getMyBadgesAccessToken().then((authData) => {
+    return authData.access_token;
   });
-  const authResponse = await fetch(authRequest);
-  const authData = await authResponse.json();
-  const accessToken = authData?.access_token;
+  // Retrieve the user's backpack data and all available badges from the server
+  if (profileMail && authToken) {
+    const backpackData = await getUserBackpack(profileMail, authToken).then(
+      (backpackData) => {
+        return backpackData;
+      }
+    );
 
-  // Make a request to the backpack endpoint with the bearer token
-  const backpackRequest = new Request(
-    process.env.MYBADGES_API_URL + "v2/backpack/" + profileMail,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-  const backpackResponse = await fetch(backpackRequest);
-  const backpackData = await backpackResponse.json();
+    const allBadges = await getAllBadges(authToken).then((allBadges) => {
+      return allBadges.result;
+    });
 
-  // filter the badges by issuer (only OSeM badges)
-  const filteredBadgeData = backpackData.result?.filter(
-    (badge: MyBadge) => badge.issuer === process.env.MYBADGES_ISSUERID_OSEM
-  );
-  const filteredBackpackData = {
-    success: backpackData.status.success,
-    badges: filteredBadgeData,
+    // Filter out the badges that are not owned by the user
+    const badgesNotOwned = allBadges.filter((obj1: MyBadge) => {
+      return !backpackData.some((obj2: MyBadge) => {
+        return obj1.entityId === obj2.badgeclass;
+      });
+    });
+    // Return the fetched data as JSON
+    return json({
+      success: true,
+      userBackpack: backpackData,
+      badgesNotOwned: badgesNotOwned,
+      allBadges: allBadges,
+      email: profileMail,
+    });
+  }
+  // If the user data couldn't be fetched, return an empty JSON response
+  return json({
+    success: false,
+    userBackpack: [],
+    badgesNotOwned: [],
+    allBadges: [],
     email: profileMail,
-  };
-
-  // Return the backpack data as JSON
-  return json(filteredBackpackData);
+  });
 }
 
 // Define the Profile component
@@ -122,9 +94,9 @@ export default function Profile() {
         </div>
       ) : (
         <div className="flex justify-evenly bg-white">
-          {data.badges.map((badge: MyBadge, index: number) => {
+          {data.userBackpack.map((badge: MyBadge, index: number) => {
             return (
-              <div key={index}>
+              <div key={index} className="pointer">
                 <Link
                   to={badge.badgeclassOpenBadgeId}
                   target="_blank"
@@ -135,6 +107,26 @@ export default function Profile() {
                     alt={badge.name}
                     title={badge.name}
                     className="mx-auto my-5 h-10 w-10 lg:h-20 lg:w-20"
+                  />
+                </Link>
+              </div>
+            );
+          })}
+          {data.badgesNotOwned.map((badge: MyBadge, index: number) => {
+            return (
+              <div key={index} className="pointer">
+                <Link
+                  to={badge.badgeclassOpenBadgeId}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src={badge.image}
+                    alt={badge.name}
+                    title={badge.name}
+                    className={
+                      "mx-auto my-5 h-10 w-10 grayscale lg:h-20 lg:w-20 "
+                    }
                   />
                 </Link>
               </div>

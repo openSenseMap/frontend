@@ -4,7 +4,6 @@ import { useCatch, useLoaderData } from "@remix-run/react";
 import BottomBar from "~/components/bottomBar/BottomBar";
 
 export async function loader({ params }: LoaderArgs) {
-  console.log(process.env.OSEM_API_URL);
   // request to API with deviceID
   const response = await fetch(
     process.env.OSEM_API_URL + "/boxes/" + params.deviceId
