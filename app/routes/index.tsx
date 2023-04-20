@@ -7,8 +7,8 @@ import Partners from "~/components/landing/partners";
 import Preview from "~/components/landing/preview";
 import Tools from "~/components/landing/tools";
 import UseCases from "~/components/landing/useCases";
-import { Feature, Partner, UseCase, getDirectusClient } from "~/lib/directus";
-
+import type { Feature, Partner, UseCase } from "~/lib/directus";
+import { getDirectusClient } from "~/lib/directus";
 export const loader = async () => {
   const directus = await getDirectusClient()
 

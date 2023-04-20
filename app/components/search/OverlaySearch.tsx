@@ -1,19 +1,28 @@
 import Search from "./Search";
 
 interface OverlaySearchProps {
-    setShowSearch:(data: boolean) => void;
-    searchRef: any;
-    devices: any;
+  setShowSearch: (data: boolean) => void;
+  searchRef: any;
+  devices: any;
 }
 
-
 export default function OverlaySearch(props: OverlaySearchProps) {
-    return (
-        <div className="absolute w-full h-full">
-            <div className="w-full h-full bg-black opacity-25 fixed inset-0 z-40" onClick={() => props.setShowSearch(false)} />  
-            <div data-state="open" className="items-center data-[state=open]:animate-contentShow fixed top-[20%] left-[50%] w-1/2 p-1 translate-x-[-50%] rounded-[1.25rem] bg-white shadow-xl focus:outline-none z-50">
-                <Search devices={props.devices} searchRef={props.searchRef} setShowSearch={props.setShowSearch}/>
-            </div>
-        </div>
-    );
+  return (
+    <div className="absolute h-full w-full">
+      <div
+        className="fixed inset-0 z-40 h-full w-full bg-black opacity-25"
+        onClick={() => props.setShowSearch(false)}
+      />
+      <div
+        data-state="open"
+        className="fixed top-[20%] left-[50%] z-50 w-1/2 translate-x-[-50%] items-center rounded-[1.25rem] bg-white p-1 shadow-xl focus:outline-none data-[state=open]:animate-contentShow"
+      >
+        <Search
+          devices={props.devices}
+          searchRef={props.searchRef}
+          setShowSearch={props.setShowSearch}
+        />
+      </div>
+    </div>
+  );
 }

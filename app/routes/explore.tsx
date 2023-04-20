@@ -7,13 +7,14 @@ import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getDevices } from "~/models/device.server";
-import {
+import type {
   GeoJSONSource,
   LngLatLike,
   MapLayerMouseEvent,
-  MapProvider,
   MapRef,
 } from "react-map-gl";
+
+import { MapProvider } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
 import { useState, useEffect, useRef } from "react";
 import type { FeatureCollection, Point } from "geojson";

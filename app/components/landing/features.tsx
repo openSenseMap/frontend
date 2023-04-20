@@ -1,4 +1,4 @@
-import { Feature } from "~/lib/directus";
+import type { Feature } from "~/lib/directus";
 
 type FeaturesProps = {
   data: Feature[]
