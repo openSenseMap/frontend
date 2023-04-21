@@ -5,7 +5,9 @@ import csvtojson from "csvtojson";
 const prisma = new PrismaClient();
 
 function printProgress(text: string) {
-  process.stdout.cursorTo(0);
+  if (process.stdout.cursorTo) {
+    process.stdout.cursorTo(0);
+  }
   process.stdout.write(text);
 }
 
