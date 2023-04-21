@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SearchList from "./SearchList";
+import { getHotkeyHandler } from "@mantine/hooks";
 
 interface SearchProps {
   setShowSearch: (data: boolean) => void;
@@ -69,6 +70,7 @@ export default function Search(props: SearchProps) {
           deviceId: device.properties.id,
           lng: device.properties.longitude,
           lat: device.properties.latitude,
+          type: "device"
         };
         results.push(newStructured);
         deviceResults++;
@@ -127,6 +129,10 @@ export default function Search(props: SearchProps) {
             placeholder="Suche..."
             onChange={onChangeHandler}
             value={searchString}
+            onKeyDown={getHotkeyHandler([
+              ['ctrl+k', () => props.setShowSearch(false)],
+              ['Escape', () => props.setShowSearch(false)],
+            ])}
           />
         </form>
         <button

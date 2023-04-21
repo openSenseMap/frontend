@@ -16,7 +16,8 @@ import type {
 
 import { MapProvider } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
+import { useHotkeys } from '@mantine/hooks';
 import type { FeatureCollection, Point } from "geojson";
 import {
   clusterCountLayer,
@@ -52,36 +53,16 @@ export default function Explore() {
   };
 
   /**
-   * Display the search overlay when the ctrl + y key combination is pressed
-   * 
-   * @param event event object
+   * Display the search overlay when the ctrl + k key combination is pressed
    */
-  const displaySearch = (event: any) => {
-    // console.log(`Key pressed: ${event.key}`);
-    if(event.key === 'y' && event.ctrlKey){
+  useHotkeys([
+    ['ctrl+K', () => {
       setShowSearch(!showSearch);
       setTimeout(() => {
         focusSearchInput();
-      }, 100); 
-    }
-    if(event.key === 'Escape'){
-      setShowSearch(false);
-    }
-  }
-
-  /**
-   * useEffect hook to attach and remove the event listener for the search overlay
-   */
-  useEffect(() => {
-    // attach the event listener
-    document.addEventListener('keydown', displaySearch);
-
-    // remove the event listener
-    return () => {
-      document.removeEventListener('keydown', displaySearch);
-    };
-  });
-
+      }, 100);
+    }]
+  ]);
 
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
