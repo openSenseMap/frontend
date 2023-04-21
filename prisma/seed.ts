@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import csvtojson from "csvtojson";
 
 const prisma = new PrismaClient();
@@ -11,6 +12,17 @@ function printProgress(text: string) {
   process.stdout.write(text);
 }
 
+const preparePasswordHash = function preparePasswordHash(
+  plaintextPassword: string
+) {
+  // first round: hash plaintextPassword with sha512
+  const hash = crypto.createHash("sha512");
+  hash.update(plaintextPassword.toString(), "utf8");
+  const hashed = hash.digest("base64"); // base64 for more entropy than hex
+
+  return hashed;
+};
+
 async function seed() {
   const email = "opensensemap@opensenselab.org";
 
@@ -21,7 +33,10 @@ async function seed() {
     // no worries if it doesn't exist yet
   });
 
-  const hashedPassword = await bcrypt.hash("osemrocks", 10);
+  const hashedPassword = await bcrypt.hash(
+    preparePasswordHash("osemrocks"),
+    13
+  ); // make salt_factor configurable oSeM API uses 13 by default
 
   const user = await prisma.user.create({
     data: {
