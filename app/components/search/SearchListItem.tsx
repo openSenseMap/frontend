@@ -23,7 +23,7 @@ export default function SearchListItem(props: SearchListItemProps) {
 
   return (
     <div
-      className="data-[active=false] z-50 mx-2 flex data-[active=true]:bg-blue-500"
+      className="data-[active=false]:bg-white z-50 mx-2 flex data-[active=true]:bg-green-200"
       onClick={() => {
         goTo(osem, props.item);
         props.setShowSearch(false);
@@ -39,7 +39,11 @@ export default function SearchListItem(props: SearchListItemProps) {
       }}
     >
       {props.controlPress ? (
-        <div className="w-6 text-center">{props.index + 1}</div>
+        <div className="w-6 text-center">
+          <kbd>
+            {props.index + 1}
+          </kbd>
+        </div>
       ) : null}
       <props.icon className="h-6 w-6" />
       <div className="pl-2">

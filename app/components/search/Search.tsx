@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
 import SearchList from "./SearchList";
-import { getHotkeyHandler } from "@mantine/hooks";
 
 interface SearchProps {
   setShowSearch: (data: boolean) => void;
@@ -136,10 +135,18 @@ export default function Search(props: SearchProps) {
           placeholder="Suche..."
           onChange={onChangeHandler}
           value={searchString}
-          onKeyDown={getHotkeyHandler([
-            ['ctrl+k', () => props.setShowSearch(false)],
-            ['Escape', () => props.setShowSearch(false)],
-          ])}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+              event.preventDefault();
+            }
+            if (event.key === "Escape") {
+              props.setShowSearch(false);
+            }
+            if (event.key === "k" && event.ctrlKey) {
+              event.preventDefault();
+              props.setShowSearch(false);
+            }
+          } }
         />
         <button
           className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center"
@@ -160,6 +167,14 @@ export default function Search(props: SearchProps) {
             />
           </svg>
         </button>
+      </div>
+      <div className="flex justify-around my-2">
+        <div className="text-sm text-gray-500 text-center">
+          <p>Press <kbd>Ctrl</kbd> + <kbd>k</kbd> or <kbd>Esc</kbd> to close the search.</p>
+        </div>
+        <div className="text-sm text-gray-500 text-center">
+          <p>Press <kbd>Ctrl</kbd> + <kbd>1</kbd> , <kbd>2</kbd> , ... to select a search result.</p>
+        </div>
       </div>
       {searchResultsLocation.length > 0 || searchResultsDevice.length > 0 ? (
         <SearchList

@@ -94,8 +94,10 @@ export default function SearchList(props: SearchListProps) {
     console.log(typeof Number(event.key))
     console.log(event.ctrlKey)
     if (typeof Number(event.key) === "number" && Number(event.key) <= length && event.ctrlKey ) {
+      event.preventDefault();
+      setCursor(Number(event.key)-1);
       goTo(osem, searchResultsAll[Number(event.key)-1]);
-      setShowSearchCallback(false);
+      setTimeout(() => setShowSearchCallback(false), 500);
       navigate(
         selected.type === "device"
           ? `/explore/${selected.deviceId}`
@@ -115,9 +117,9 @@ export default function SearchList(props: SearchListProps) {
   })
 
   return (
-    <div className="z-50 w-full overflow-visible rounded-[1.25rem] bg-white pb-2">
+    <div className="w-full overflow-visible rounded-[1.25rem] bg-white pb-2">
       {props.searchResultsDevice.length > 0 ? (
-        <hr className="solid m-2 border-t-2" />
+        <hr className="solid mx-2 mb-2 border-t-2" />
       ) : null}
       {props.searchResultsDevice.map((device: any) => {
         searchResultsDeviceIndex++;
@@ -130,7 +132,6 @@ export default function SearchList(props: SearchListProps) {
             item={device}
             icon={CpuChipIcon}
             setShowSearch={props.setShowSearch}
-            // setSelected={setSelected}
             setCursor={setCursor}
             controlPress={controlPress}
           />

@@ -86,7 +86,7 @@ export default function NavBar( props: NavBarProps) {
           </div>
         </div>
       ) : (
-        <div className="items-center w-full rounded-[1.25rem] bg-white shadow-xl" onMouseLeave={() => { setIsHovered(false)}} onMouseEnter={() => { setIsHovered(true)}} >
+        <div className="items-center w-full rounded-[1.25rem] bg-white shadow-xl p-1" onMouseLeave={() => { setIsHovered(false)}} onMouseEnter={() => { setIsHovered(true)}} >
           <Search devices={props.devices} searchRef={searchRef} setShowSearch={() => { setShowSearch(false); setIsHovered(false) }}/>
         </div>
       ))}
