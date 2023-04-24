@@ -1,118 +1,164 @@
+import { useState, useEffect, useCallback } from "react";
+import { useMap } from "react-map-gl";
+import { useNavigate } from "@remix-run/react";
+
 import {
   CpuChipIcon,
   GlobeEuropeAfricaIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
-import { useNavigate } from "@remix-run/react";
-import { useMap } from "react-map-gl";
-import type { LngLatBounds, LngLatLike } from "react-map-gl";
+
+import SearchListItem from "./SearchListItem";
+import { goTo } from "~/lib/searchMapHelper";
 
 interface SearchListProps {
-  searchResultsLocation: any;
-  searchResultsDevice: any;
+  searchResultsLocation: any[];
+  searchResultsDevice: any[];
   setShowSearch: (data: boolean) => void;
 }
 
 export default function SearchList(props: SearchListProps) {
-  const navigate = useNavigate();
   const { osem } = useMap();
+  const navigate = useNavigate();
 
-  /**
-   * The function that is called when the user clicks on a location without bbox property in the search results. It flies the map to the location and closes the search results.
-   *
-   * @param center the coordinate of the center of the location to fly to
-   */
-  const goToLocation = (center: LngLatLike) => {
-    osem?.flyTo({
-      center: center,
-      animate: true,
-      speed: 1.6,
-      zoom: 20,
-      essential: true,
-    });
-    props.setShowSearch(false);
-    navigate("/explore");
+  const useKeyPress = function (targetKey: string) {
+    const [keyPressed, setKeyPressed] = useState(false);
+  
+    useEffect(() => {
+      const downHandler = ({ key }: { key: string }) => {
+        if (key === targetKey) {
+          setKeyPressed(true);
+        }
+      };
+  
+      const upHandler = ({ key }: { key: string }) => {
+        if (key === targetKey) {
+          setKeyPressed(false);
+        }
+      };
+  
+      window.addEventListener("keydown", downHandler);
+      window.addEventListener("keyup", upHandler);
+  
+      return () => {
+        window.removeEventListener("keydown", downHandler);
+        window.removeEventListener("keyup", upHandler);
+      };
+    }, [targetKey]);
+  
+    return keyPressed;
   };
 
-  /**
-   * The function that is called when the user clicks on a location with the bbox property in the search results. It flies the map to the location and closes the search results.
-   *
-   * @param bbox
-   */
-  const goToLocationBBox = (bbox: LngLatBounds) => {
-    osem?.fitBounds(bbox, {
-      animate: true,
-      speed: 1.6,
-    });
-    props.setShowSearch(false);
-    navigate("/explore");
-  };
+  const downPress = useKeyPress("ArrowDown");
+  const upPress = useKeyPress("ArrowUp");
+  const enterPress = useKeyPress("Enter");
+  const controlPress = useKeyPress("Control")
+  const [cursor, setCursor] = useState(0);
+  
+  var searchResultsDeviceIndex = -1;
+  var searchResultsLocationIndex = props.searchResultsDevice.length - 1;
+  var length = props.searchResultsDevice.length + props.searchResultsLocation.length;
+  var searchResultsAll = props.searchResultsDevice.concat(props.searchResultsLocation);
+  var selected = searchResultsAll[cursor];
 
-  /**
-   * The function that is called when the user clicks on a device in the search results. It flies the map to the device and closes the search results.
-   *
-   * @param lng longitude of the device
-   * @param lat latitude of the device
-   * @param id id of the device
-   */
-  const goToDevice = (lng: number, lat: number, id: string) => {
-    osem?.flyTo({
-      center: [lng, lat],
-      animate: true,
-      speed: 1.6,
-      zoom: 15,
-      essential: true,
-    });
-    props.setShowSearch(false);
-    navigate(`/explore/${id}`);
-  };
+
+  const setShowSearchCallback = useCallback((state: boolean) => {
+    props.setShowSearch(state)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  
+
+  useEffect(() => {
+    if ((length !== 0) && downPress) {
+      setCursor((prevState) => (prevState < length - 1 ? prevState + 1 : 0));
+    }
+  }, [downPress, length]);
+  useEffect(() => {
+    if ((length !== 0) && upPress) {
+      setCursor((prevState) => (prevState > 0 ? prevState - 1 : length - 1));
+    }
+  }, [upPress, length]);
+  useEffect(() => {
+    if ((length !== 0) && enterPress) {
+      goTo(osem, selected);
+      setShowSearchCallback(false);
+      navigate(
+        selected.type === "device"
+          ? `/explore/${selected.deviceId}`
+          : "/explore"
+      );
+    }
+  }, [enterPress, length, osem, navigate, selected, setShowSearchCallback]);
+
+  const handleDigitPress = (event: any) => {
+    console.log(typeof Number(event.key))
+    console.log(event.ctrlKey)
+    if (typeof Number(event.key) === "number" && Number(event.key) <= length && event.ctrlKey ) {
+      goTo(osem, searchResultsAll[Number(event.key)-1]);
+      setShowSearchCallback(false);
+      navigate(
+        selected.type === "device"
+          ? `/explore/${selected.deviceId}`
+          : "/explore"
+      );
+    }
+  }
+
+  useEffect(() => {
+    // attach the event listener
+    window.addEventListener('keydown', handleDigitPress);
+
+    // remove the event listener
+    return () => {
+      window.removeEventListener('keydown', handleDigitPress);
+    };
+  })
 
   return (
     <div className="z-50 w-full overflow-visible rounded-[1.25rem] bg-white pb-2">
       {props.searchResultsDevice.length > 0 ? (
         <hr className="solid m-2 border-t-2" />
       ) : null}
-      <ul>
-        {props.searchResultsDevice.map((device: any) => {
-          return (
-            <li
-              onClick={() => {
-                goToDevice(device.lng, device.lat, device.deviceId);
-              }}
-              className="z-50 mx-2 flex hover:bg-gray-300"
-              key={device.deviceId}
-            >
-              <CpuChipIcon className="h-6 w-6" />
-              <p className="pl-2">{device.display_name}</p>
-            </li>
-          );
-        })}
-        {props.searchResultsLocation.length > 0 ? (
-          <hr className="solid m-2 border-t-2" />
-        ) : null}
-        {props.searchResultsLocation.map((location: any) => {
-          return (
-            <li
-              onClick={() => {
-                if (location.hasOwnProperty("bbox")) {
-                  goToLocationBBox(location.bbox);
-                } else {
-                  goToLocation(location.center);
-                }
-              }}
-              className="mx-2 flex hover:bg-gray-300"
-              key={location.id}
-            >
-              {location.place_type.includes("country") ? (
-                <GlobeEuropeAfricaIcon className="h-6 w-6" />
-              ) : (
-                <MapPinIcon className="h-6 w-6" />
-              )}
-              <p className="pl-2">{location.place_name}</p>
-            </li>
-          );
-        })}
-      </ul>
+      {props.searchResultsDevice.map((device: any) => {
+        searchResultsDeviceIndex++;
+        return (
+          <SearchListItem
+            key={device.deviceId}
+            index={searchResultsDeviceIndex}
+            active={searchResultsDeviceIndex === cursor}
+            type="device"
+            item={device}
+            icon={CpuChipIcon}
+            setShowSearch={props.setShowSearch}
+            // setSelected={setSelected}
+            setCursor={setCursor}
+            controlPress={controlPress}
+          />
+        );
+      })}
+      {props.searchResultsLocation.length > 0 ? (
+        <hr className="solid m-2 border-t-2" />
+      ) : null}
+      {props.searchResultsLocation.map((location: any) => {
+        searchResultsLocationIndex++;
+        return (
+          <SearchListItem
+            key={location.id}
+            index={searchResultsLocationIndex}
+            active={searchResultsLocationIndex === cursor}
+            type="location"
+            item={location}
+            icon={
+              location.place_type.includes("country")
+                ? GlobeEuropeAfricaIcon
+                : MapPinIcon
+            }
+            setShowSearch={props.setShowSearch}
+            setCursor={setCursor}
+            controlPress={controlPress}
+          />
+        );
+      })}
     </div>
   );
 }

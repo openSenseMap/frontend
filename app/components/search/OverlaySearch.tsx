@@ -1,8 +1,9 @@
 import Search from "./Search";
+import type { RefObject } from "react";
 
 interface OverlaySearchProps {
   setShowSearch: (data: boolean) => void;
-  searchRef: any;
+  searchRef: RefObject<HTMLInputElement>;
   devices: any;
 }
 

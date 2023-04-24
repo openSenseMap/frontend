@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import type { RefObject } from "react";
 import SearchList from "./SearchList";
 import { getHotkeyHandler } from "@mantine/hooks";
 
 interface SearchProps {
   setShowSearch: (data: boolean) => void;
-  searchRef: any;
+  searchRef: RefObject<HTMLInputElement>;
   devices: any;
 }
 
@@ -38,6 +39,9 @@ export default function Search(props: SearchProps) {
         if (data.features.length === 0) {
           setSearchResultsLocation([]);
         } else {
+          data.features.forEach((feature: any) => {
+            feature.type = "location";
+          });
           setSearchResultsLocation(data.features);
         }
       })
@@ -107,6 +111,10 @@ export default function Search(props: SearchProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchString]);
 
+  // useEffect(() => {
+  //   // setSearchResultsDeviceIndex(searchResultsDevice.length === 0 ? 0 : )
+  // })
+
   /**
    * on click handler for the reset button. It resets the search string and hides the search bar.
    */
@@ -121,20 +129,18 @@ export default function Search(props: SearchProps) {
   return (
     <div>
       <div className="flex">
-        <form className="w-full rounded-full">
-          <input
-            ref={props.searchRef}
-            type="search"
-            className="w-full rounded-full border-none focus:ring-0"
-            placeholder="Suche..."
-            onChange={onChangeHandler}
-            value={searchString}
-            onKeyDown={getHotkeyHandler([
-              ['ctrl+k', () => props.setShowSearch(false)],
-              ['Escape', () => props.setShowSearch(false)],
-            ])}
-          />
-        </form>
+        <input
+          ref={props.searchRef}
+          type="search"
+          className="w-full rounded-full border-none focus:ring-0"
+          placeholder="Suche..."
+          onChange={onChangeHandler}
+          value={searchString}
+          onKeyDown={getHotkeyHandler([
+            ['ctrl+k', () => props.setShowSearch(false)],
+            ['Escape', () => props.setShowSearch(false)],
+          ])}
+        />
         <button
           className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center"
           onClick={() => handleResetClick()}
