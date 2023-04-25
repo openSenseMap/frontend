@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import Search from '~/components/search/Search';
 import { SunIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { Calendar } from "~/../components/ui/calendar"
+
 
 interface NavBarProps {
   devices: any;
@@ -9,6 +11,7 @@ interface NavBarProps {
 export default function NavBar( props: NavBarProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
+  const [date, setDate] = React.useState<Date | undefined>(new Date())
   const searchRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -70,7 +73,7 @@ export default function NavBar( props: NavBarProps) {
           </div>
         </div>
       ) : ((isHovered && !showSearch) ? (
-        <div className="items-center w-full h-72 overflow-visible bg-white rounded-[1.25rem] p-2 shadow" onMouseLeave={() => { setIsHovered(false) }}>
+        <div className="items-center w-full overflow-visible bg-white rounded-[1.25rem] p-2 shadow" onMouseLeave={() => { setIsHovered(false) }}>
           <button onClick={() => displaySearch()} className="flex items-center justify-between pl-2 pr-3 mb-2 w-1/2 h-7 rounded-full bg-white space-x-2 mx-auto ring-1 ring-slate-900/10 hover:ring-slate-300 shadow-lg hover:bg-gray-200">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-blue-500">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -80,9 +83,14 @@ export default function NavBar( props: NavBarProps) {
               </span>
               <span className="flex-none text-xs text-gray-400 font-semibold">Ctrl + K</span>
           </button>
-          <hr className="solid border-t-2"></hr>
+          <hr className="solid border-t-2 p-2"></hr>
           <div>
-            {/* Place your content here */}
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="rounded-md border mx-auto"
+            />
           </div>
         </div>
       ) : (
