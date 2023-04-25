@@ -10,30 +10,33 @@ import UseCases from "~/components/landing/useCases";
 import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 export const loader = async () => {
-  const directus = await getDirectusClient()
+  const directus = await getDirectusClient();
 
   const useCasesResponse = await directus.items("use_cases").readByQuery({
-    fields: ["*"]
-  })
+    fields: ["*"],
+  });
 
   const featuresResponse = await directus.items("features").readByQuery({
-    fields: ["*"]
-  })
+    fields: ["*"],
+  });
 
   const partnersResponse = await directus.items("partners").readByQuery({
-    fields: ["*"]
-  })
+    fields: ["*"],
+  });
 
-  return json({ 
+  return json({
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
-    partners: partnersResponse.data
+    partners: partnersResponse.data,
   });
-}
+};
 
 export default function Index() {
-
-  const {useCases, features, partners} = useLoaderData<{useCases: UseCase[], features: Feature[], partners: Partner[]}>()
+  const { useCases, features, partners } = useLoaderData<{
+    useCases: UseCase[];
+    features: Feature[];
+    partners: Partner[];
+  }>();
 
   return (
     <div className="bg-white dark:bg-black">
