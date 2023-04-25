@@ -23,7 +23,7 @@ export default function SearchListItem(props: SearchListItemProps) {
 
   return (
     <div
-      className="data-[active=false]:bg-white z-50 mx-2 flex data-[active=true]:bg-green-200"
+      className="data-[active=false]:bg-white z-50 mx-2 flex data-[active=true]:bg-green-100 rounded-lg my-1 h-8 items-center"
       onClick={() => {
         goTo(osem, props.item);
         props.setShowSearch(false);
@@ -39,18 +39,18 @@ export default function SearchListItem(props: SearchListItemProps) {
       }}
     >
       {props.controlPress ? (
-        <div className="w-6 text-center">
+        <div className="w-6 pl-2">
           <kbd>
             {props.index + 1}
           </kbd>
         </div>
       ) : null}
-      <props.icon className="h-6 w-6" />
-      <div className="pl-2">
+      <props.icon className="h-8 w-8 pl-2" />
+      <span className="pl-2 inline-block align-middle">
         {props.type === "device"
           ? props.item.display_name
           : props.item.place_name}
-      </div>
+      </span>
     </div>
   );
 }
