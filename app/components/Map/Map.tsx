@@ -10,34 +10,35 @@ const Map = forwardRef<MapRef, MapProps>(
     ref
   ) => {
     return (
-      <ReactMap
-        dragRotate={false}
-        initialViewState={{
-          longitude: 7.5,
-          latitude: 51.5,
-          zoom: 7,
-        }}
-        mapLib={maplibregl}
-        mapStyle={
-          mapStyle ||
-          `https://api.maptiler.com/maps/streets/style.json?key=${ENV.MAPTILER_KEY}`
-        }
-        pitchWithRotate={false}
-        preserveDrawingBuffer
-        ref={ref}
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-        touchZoomRotate={false}
-        {...props}
-      >
-        {children}
-        <NavigationControl position="bottom-left" showCompass={false} />
-      </ReactMap>
+        <ReactMap
+          id="osem"
+          dragRotate={false}
+          initialViewState={{
+            longitude: 7.5,
+            latitude: 51.5,
+            zoom: 7,
+          }}
+          mapLib={maplibregl}
+          mapStyle={
+            mapStyle ||
+            `https://api.maptiler.com/maps/streets/style.json?key=${ENV.MAPTILER_KEY}`
+          }
+          pitchWithRotate={false}
+          preserveDrawingBuffer
+          ref={ref}
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+          touchZoomRotate={false}
+          {...props}
+        >
+          {children}
+          <NavigationControl position="bottom-left" showCompass={false} />
+        </ReactMap>
     );
   }
 );

@@ -3,11 +3,14 @@
   --color-white: #ffffff;
   --color-blue-100: #3d9cce;
   --color-blue-200: #1879af;
+  --color-blue-500: #3b82f6;
+  --color-blue-700: #1d4ed8;
   --color-gray-100: #b8b8b8;
   --color-gray-200: #c0bfbf;
   --color-gray-300: #717070;
   --color-gray-400: #767474;
   --color-green-100: #69ac54;
   --color-green-200: #709f61;
+  --color-orange-500: #f97316;
   --color-headerBorder: #E3E3E3;
 }
