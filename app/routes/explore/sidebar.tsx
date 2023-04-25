@@ -22,12 +22,15 @@ export default function Sidebar() {
       <div
         id="sidebar"
         data-state="open"
-        className="fixed inset-y-0 right-0 z-50 h-[100%] w-1/2 rounded-l-[1.25rem] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=open]:animate-sidebarOpen data-[state=closed]:animate-sidebarClose"
+        className="fixed inset-y-0 right-0 z-50 h-[100%] w-1/2 rounded-l-[1.25rem] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=closed]:animate-sidebarClose data-[state=open]:animate-sidebarOpen"
       >
-        <Link to="impressum">Impressum</Link>
+        <div className="flex flex-col">
+          <Link to="impressum">Impressum</Link>
+          <Link to="campaigns">Kampagnen</Link>
+        </div>
         <Link to={url}>
           <button
-            className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] items-center justify-center"
+            className="absolute right-[10px] top-[10px] inline-flex h-[25px] w-[25px] items-center justify-center"
             aria-label="Close"
           >
             <svg
