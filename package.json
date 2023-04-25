@@ -65,6 +65,7 @@
     "react-day-picker": "^8.7.1",
     "react-dom": "^18.2.0",
     "react-map-gl": "^7.0.21",
+    "shadcn-ui": "^0.1.1",
     "stream-array": "^1.1.2",
     "stringify-stream": "^1.0.5",
     "tailwind-merge": "^1.12.0",

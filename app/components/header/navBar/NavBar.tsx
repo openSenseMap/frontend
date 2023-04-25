@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Search from '~/components/search/Search';
 import { SunIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
-import { Calendar } from "~/../components/ui/calendar"
+import { Calendar } from "@/components/ui/calendar"
 
 
 interface NavBarProps {
