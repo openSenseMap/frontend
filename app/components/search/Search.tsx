@@ -152,7 +152,7 @@ export default function Search(props: SearchProps) {
           }}
         />
         <button
-          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center"
+          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center p-2"
           onClick={() => handleResetClick()}
         >
           <svg

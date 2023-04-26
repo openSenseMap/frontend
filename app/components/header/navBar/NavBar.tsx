@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import Search from "~/components/search/Search";
 import { SunIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
+import { Calendar } from "@/components/ui/calendar";
 
 interface NavBarProps {
   devices: any;
@@ -9,6 +10,7 @@ interface NavBarProps {
 export default function NavBar(props: NavBarProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
+  const [date, setDate] = React.useState<Date | undefined>(new Date());
   const searchRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -56,7 +58,7 @@ export default function NavBar(props: NavBarProps) {
     <div className="pointer-events-auto mx-auto h-10 w-1/2">
       {!isHovered && !showSearch ? (
         <div
-          className="flex h-10 w-full items-center justify-around rounded-[1.25rem] bg-white shadow-xl"
+          className="flex h-10 w-full items-center justify-around rounded-[1.25rem] border border-gray-100 bg-white shadow-xl"
           onMouseEnter={() => {
             setIsHovered(true);
           }}
@@ -74,7 +76,7 @@ export default function NavBar(props: NavBarProps) {
         </div>
       ) : isHovered && !showSearch ? (
         <div
-          className="h-72 w-full items-center overflow-visible rounded-[1.25rem] bg-white p-2 shadow"
+          className="w-full items-center overflow-visible rounded-[1.25rem] border border-gray-100 bg-white p-2 shadow"
           onMouseLeave={() => {
             setIsHovered(false);
           }}
@@ -99,15 +101,22 @@ export default function NavBar(props: NavBarProps) {
             </svg>
             <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">
-              Ctrl + K
+              <kbd>Ctrl</kbd> + <kbd>K</kbd>
             </span>
           </button>
-          <hr className="solid border-t-2"></hr>
-          <div>{/* Place your content here */}</div>
+          <hr className="solid border-t-2 p-2"></hr>
+          <div>
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="mx-auto rounded-md border"
+            />
+          </div>
         </div>
       ) : (
         <div
-          className="w-full items-center rounded-[1.25rem] bg-white p-1 shadow-xl"
+          className="w-full items-center rounded-[1.25rem] border border-gray-100 bg-white p-1 shadow-xl"
           onMouseLeave={() => {
             setIsHovered(false);
           }}
