@@ -177,10 +177,6 @@ export default function Search(props: SearchProps) {
             <Trans
               t={t}
               i18nKey={"hint_open_close"}
-              values={{
-                open: "Ctrl + K",
-                close: "Esc",
-              }}
               components={[<kbd key="open_close"></kbd>]}
             />
           </p>
@@ -190,9 +186,6 @@ export default function Search(props: SearchProps) {
             <Trans
               t={t}
               i18nKey={"hint_select_result"}
-              values={{
-                ctrl: "Ctrl",
-              }}
               components={[<kbd key="select_result"></kbd>]}
             />
           </p>
