@@ -96,7 +96,10 @@ export default function Profile() {
         <div className="flex justify-evenly bg-white">
           {data.userBackpack.map((badge: MyBadge, index: number) => {
             return (
-              <div key={index} className="pointer">
+              <div
+                key={index}
+                className="pointer x-auto my-5 flex flex-col items-center"
+              >
                 <Link
                   to={badge.badgeclassOpenBadgeId}
                   target="_blank"
@@ -106,15 +109,19 @@ export default function Profile() {
                     src={badge.image}
                     alt={badge.name}
                     title={badge.name}
-                    className="mx-auto my-5 h-10 w-10 lg:h-20 lg:w-20"
+                    className="h-10 w-10 lg:h-20 lg:w-20"
                   />
                 </Link>
+                <p>{badge.name}</p>
               </div>
             );
           })}
           {data.badgesNotOwned.map((badge: MyBadge, index: number) => {
             return (
-              <div key={index} className="pointer">
+              <div
+                key={index}
+                className="pointer x-auto my-5 flex flex-col items-center"
+              >
                 <Link
                   to={badge.badgeclassOpenBadgeId}
                   target="_blank"
@@ -124,11 +131,10 @@ export default function Profile() {
                     src={badge.image}
                     alt={badge.name}
                     title={badge.name}
-                    className={
-                      "mx-auto my-5 h-10 w-10 grayscale lg:h-20 lg:w-20 "
-                    }
+                    className={"h-10 w-10 grayscale lg:h-20 lg:w-20 "}
                   />
                 </Link>
+                <p>{badge.name}</p>
               </div>
             );
           })}
