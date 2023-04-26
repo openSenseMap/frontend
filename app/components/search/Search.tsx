@@ -149,7 +149,7 @@ export default function Search(props: SearchProps) {
           } }
         />
         <button
-          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center"
+          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center p-2"
           onClick={() => handleResetClick()}
         >
           <svg
@@ -168,11 +168,12 @@ export default function Search(props: SearchProps) {
           </svg>
         </button>
       </div>
+      <hr className="solid border-t-2 mx-2" />
       <div className="flex justify-around my-2">
-        <div className="text-sm text-gray-500 text-center">
-          <p>Press <kbd>Ctrl</kbd> + <kbd>k</kbd> or <kbd>Esc</kbd> to close the search.</p>
+        <div>
+          <p>Press <kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>Esc</kbd> to close the search.</p>
         </div>
-        <div className="text-sm text-gray-500 text-center">
+        <div>
           <p>Press <kbd>Ctrl</kbd> + <kbd>1</kbd> , <kbd>2</kbd> , ... to select a search result.</p>
         </div>
       </div>
