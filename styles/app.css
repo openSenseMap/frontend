@@ -12,6 +12,8 @@
   --color-green-100: #69ac54;
   --color-green-300: #709f61;
   --color-orange-500: #f97316;
+  --color-red-500: rgb(239 68 68);
+  --color-yellow-500: rgb(161 98 7);
   --color-headerBorder: #e3e3e3;
 
   /* shadcn color definitions */

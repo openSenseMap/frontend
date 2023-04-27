@@ -56,6 +56,9 @@ module.exports = {
       violet: {
         500: "var(--color-violet-500)",
       },
+      yellow: {
+        500: "var(--color-yellow-500)",
+      },
       headerBorder: "var(--color-headerBorder)"
     },
     extend: {
