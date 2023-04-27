@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
 import SearchList from "./SearchList";
+import { useTranslation, Trans } from "react-i18next";
 
 interface SearchProps {
   setShowSearch: (data: boolean) => void;
@@ -9,6 +10,8 @@ interface SearchProps {
 }
 
 export default function Search(props: SearchProps) {
+  let { t } = useTranslation("search");
+
   const [searchString, setSearchString] = useState<string>("");
   const [searchResultsLocation, setSearchResultsLocation] = useState<any[]>([]);
   const [searchResultsDevice, setSearchResultsDevice] = useState<any[]>([]);
@@ -73,7 +76,7 @@ export default function Search(props: SearchProps) {
           deviceId: device.properties.id,
           lng: device.properties.longitude,
           lat: device.properties.latitude,
-          type: "device"
+          type: "device",
         };
         results.push(newStructured);
         deviceResults++;
@@ -132,7 +135,7 @@ export default function Search(props: SearchProps) {
           ref={props.searchRef}
           type="search"
           className="w-full rounded-full border-none focus:ring-0"
-          placeholder="Suche..."
+          placeholder={t("placeholder").toString()}
           onChange={onChangeHandler}
           value={searchString}
           onKeyDown={(event) => {
@@ -146,10 +149,10 @@ export default function Search(props: SearchProps) {
               event.preventDefault();
               props.setShowSearch(false);
             }
-          } }
+          }}
         />
         <button
-          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center"
+          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center p-2"
           onClick={() => handleResetClick()}
         >
           <svg
@@ -168,12 +171,24 @@ export default function Search(props: SearchProps) {
           </svg>
         </button>
       </div>
-      <div className="flex justify-around my-2">
-        <div className="text-sm text-gray-500 text-center">
-          <p>Press <kbd>Ctrl</kbd> + <kbd>k</kbd> or <kbd>Esc</kbd> to close the search.</p>
+      <div className="my-2 flex justify-around">
+        <div className="text-center text-sm text-gray-500">
+          <p>
+            <Trans
+              t={t}
+              i18nKey={"hint_open_close"}
+              components={[<kbd key="open_close"></kbd>]}
+            />
+          </p>
         </div>
-        <div className="text-sm text-gray-500 text-center">
-          <p>Press <kbd>Ctrl</kbd> + <kbd>1</kbd> , <kbd>2</kbd> , ... to select a search result.</p>
+        <div className="text-center text-sm text-gray-500">
+          <p>
+            <Trans
+              t={t}
+              i18nKey={"hint_select_result"}
+              components={[<kbd key="select_result"></kbd>]}
+            />
+          </p>
         </div>
       </div>
       {searchResultsLocation.length > 0 || searchResultsDevice.length > 0 ? (
