@@ -1,6 +1,6 @@
-import Home from "./home/home";
-import NavBar from "./nav-bar/nav-bar";
-import Menu from "./menu/menu";
+import Home from "./home";
+import NavBar from "./nav-bar";
+import Menu from "./menu";
 
 interface HeaderProps {
   devices: any;
