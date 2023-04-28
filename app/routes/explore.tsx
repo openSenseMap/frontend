@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "@remix-run/react";
-import Map from "~/components/new-map";
+import Map from "~/components/map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import Header from "~/components/header";
 
