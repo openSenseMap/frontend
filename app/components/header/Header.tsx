@@ -1,6 +1,6 @@
-import Home from "./home/Home";
-import NavBar from "./navBar/NavBar";
-import Menu from "./menu/Menu";
+import Home from "./home/home";
+import NavBar from "./nav-bar/nav-bar";
+import Menu from "./menu/menu";
 
 interface HeaderProps {
   devices: any;
@@ -8,10 +8,10 @@ interface HeaderProps {
 
 export default function Header(props: HeaderProps) {
   return (
-    <div className="flex items-center p-2 w-full h-14 fixed z-10 pointer-events-none">
-        <Home />
-        <NavBar devices={props.devices} />
-        <Menu />
+    <div className="pointer-events-none fixed z-10 flex h-14 w-full items-center p-2">
+      <Home />
+      <NavBar devices={props.devices} />
+      <Menu />
     </div>
   );
 }

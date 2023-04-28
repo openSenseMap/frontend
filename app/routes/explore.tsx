@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "@remix-run/react";
-import Map from "~/components/Map";
+import Map from "~/components/map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import Header from "~/components/header/Header";
+import Header from "~/components/header/header";
 
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -17,15 +17,15 @@ import type {
 import { MapProvider } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
 import { useState, useRef } from "react";
-import { useHotkeys } from '@mantine/hooks';
+import { useHotkeys } from "@mantine/hooks";
 import type { FeatureCollection, Point } from "geojson";
 import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
-} from "~/components/Map/Layers";
+} from "~/components/map/layers";
 import type { Device } from "@prisma/client";
-import OverlaySearch from "~/components/search/OverlaySearch";
+import OverlaySearch from "~/components/search/overlay-search";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -42,7 +42,7 @@ export const links: LinksFunction = () => {
 };
 
 export default function Explore() {
-  const [showSearch, setShowSearch] = useState<boolean>(false)
+  const [showSearch, setShowSearch] = useState<boolean>(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -56,12 +56,15 @@ export default function Explore() {
    * Display the search overlay when the ctrl + k key combination is pressed
    */
   useHotkeys([
-    ['ctrl+K', () => {
-      setShowSearch(!showSearch);
-      setTimeout(() => {
-        focusSearchInput();
-      }, 100);
-    }]
+    [
+      "ctrl+K",
+      () => {
+        setShowSearch(!showSearch);
+        setTimeout(() => {
+          focusSearchInput();
+        }, 100);
+      },
+    ],
   ]);
 
   const data = useLoaderData<typeof loader>();
@@ -116,7 +119,13 @@ export default function Explore() {
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
-        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
+        {showSearch ? (
+          <OverlaySearch
+            devices={data.devices}
+            searchRef={searchRef}
+            setShowSearch={setShowSearch}
+          />
+        ) : null}
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>

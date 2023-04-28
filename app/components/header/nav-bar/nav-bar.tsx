@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import Search from "~/components/search/Search";
+import Search from "~/components/search/search";
 import { SunIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { Calendar } from "@/components/ui/calendar";
 

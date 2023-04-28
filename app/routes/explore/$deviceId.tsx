@@ -1,7 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
-import BottomBar from "~/components/bottomBar/BottomBar";
+import BottomBar from "~/components/bottom-bar/bottom-bar";
 
 export async function loader({ params }: LoaderArgs) {
   console.log(process.env.OSEM_API_URL);

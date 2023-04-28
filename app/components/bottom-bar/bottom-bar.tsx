@@ -1,6 +1,10 @@
 import { useState } from "react";
-import SingleValue from "./SingleValue";
-import { XCircleIcon, MinusCircleIcon, ChevronDoubleUpIcon } from "@heroicons/react/24/solid";
+import SingleValue from "./single-value";
+import {
+  XCircleIcon,
+  MinusCircleIcon,
+  ChevronDoubleUpIcon,
+} from "@heroicons/react/24/solid";
 import { Link } from "@remix-run/react";
 
 interface BottomBarProps {
