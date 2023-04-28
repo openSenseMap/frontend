@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "@remix-run/react";
-import Map from "~/components/map";
+import Map from "~/components/new-map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import Header from "~/components/header";
 
@@ -23,7 +23,7 @@ import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
-} from "~/components/map/layers";
+} from "~/components/new-map/layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 
