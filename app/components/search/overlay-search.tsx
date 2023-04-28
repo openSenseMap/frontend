@@ -1,4 +1,4 @@
-import Search from "./search";
+import Search from ".";
 import type { RefObject } from "react";
 
 interface OverlaySearchProps {

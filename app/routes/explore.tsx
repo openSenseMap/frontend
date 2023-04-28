@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "@remix-run/react";
 import Map from "~/components/map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import Header from "~/components/header/header";
+import Header from "~/components/header";
 
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
