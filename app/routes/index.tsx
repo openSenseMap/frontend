@@ -1,3 +1,4 @@
+import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import Features from "~/components/landing/features";
@@ -7,33 +8,46 @@ import Partners from "~/components/landing/partners";
 import Preview from "~/components/landing/preview";
 import Tools from "~/components/landing/tools";
 import UseCases from "~/components/landing/useCases";
-import { Feature, Partner, UseCase, getDirectusClient } from "~/lib/directus";
+import i18next from "~/i18next.server";
+import type { Feature, Partner, UseCase } from "~/lib/directus";
+import { getDirectusClient } from "~/lib/directus";
 
-export const loader = async () => {
-  const directus = await getDirectusClient()
+export const loader = async ({ request }: LoaderArgs) => {
+  let locale = await i18next.getLocale(request);
+  console.log("🌐 Locale detected: ", locale);
+  const directus = await getDirectusClient();
 
   const useCasesResponse = await directus.items("use_cases").readByQuery({
-    fields: ["*"]
-  })
+    fields: ["*"],
+    filter: {
+      language: locale,
+    },
+  });
 
   const featuresResponse = await directus.items("features").readByQuery({
-    fields: ["*"]
-  })
+    fields: ["*"],
+    filter: {
+      language: locale,
+    },
+  });
 
   const partnersResponse = await directus.items("partners").readByQuery({
-    fields: ["*"]
-  })
+    fields: ["*"],
+  });
 
-  return json({ 
+  return json({
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
-    partners: partnersResponse.data
+    partners: partnersResponse.data,
   });
-}
+};
 
 export default function Index() {
-
-  const {useCases, features, partners} = useLoaderData<{useCases: UseCase[], features: Feature[], partners: Partner[]}>()
+  const { useCases, features, partners } = useLoaderData<{
+    useCases: UseCase[];
+    features: Feature[];
+    partners: Partner[];
+  }>();
 
   return (
     <div className="bg-white dark:bg-black">

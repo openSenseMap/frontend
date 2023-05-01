@@ -70,7 +70,7 @@ export function CatchBoundary() {
   // If the error has a status code of 502, render an error message
   if (caught.status === 502) {
     return (
-      <div>
+      <div className="absolute bottom-0 z-10 w-full">
         <div className="flex animate-fade-in-up items-center justify-center bg-white py-10">
           <div className="text-red-500">
             Oh no, we could not find this Device ID. Are you sure it exists?

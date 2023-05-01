@@ -1,4 +1,4 @@
-import { UseCase } from "~/lib/directus";
+import type { UseCase } from "~/lib/directus";
 
 type UseCaseProps = {
   data: UseCase[]
