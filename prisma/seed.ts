@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import csvtojson from "csvtojson";
@@ -82,6 +82,10 @@ async function seed() {
         title: sensor.title,
         sensorType: sensor.sensorType,
         unit: sensor.unit,
+        lastMeasurement: {
+          value: Math.floor(Math.random() * 100),
+          createdAt: new Date().toISOString(),
+        } as Prisma.JsonObject,
       },
     });
     printProgress(`ℹ️  Imported ${j} of ${sensors.length} sensors.`);

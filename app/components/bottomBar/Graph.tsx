@@ -142,7 +142,8 @@ export default function Graph(data: any) {
         },
         adapters: {
           date: {
-            locale: de, // get preffered langunage from user object
+            // TODO: get preffered langunage from user object
+            locale: de, 
           },
         },
         ticks: {

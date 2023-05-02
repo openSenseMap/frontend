@@ -1,37 +1,37 @@
 // Importing dependencies
+import { Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
+import { typedjson } from "remix-typedjson";
 import BottomBar from "~/components/bottomBar/BottomBar";
+import { getDevice } from "~/models/device.server";
 
 export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
 
-  // Making a request to the OSEM API to fetch the device data using the device ID from the URL parameters
-  const response = await fetch(
-    process.env.OSEM_API_URL + "/boxes/" + params.deviceId
-  );
-  const device = await response.json();
+  //const device = await response.json();
 
-  // If the API returns an "UnprocessableEntity" error, throw a new error with a 502 status code
-  if (device.code === "UnprocessableEntity") {
+  if (params.deviceId) {
+    const device = await getDevice({ id: params.deviceId });
+
+    // Find all sensors from the device response that have the same id as one of the sensor array value
+    const sensorIds = stringToArray(url.searchParams.get("sensors"));
+    const selectedSensors = device?.sensors.filter((sensor: Sensor) =>
+      sensorIds.includes(sensor.id)
+    );
+
+    // Combine the device data with the selected sensors and return the result as JSON + add env variable
+    const data = {
+      device: device,
+      selectedSensors: selectedSensors,
+      OSEM_API_URL: process.env.OSEM_API_URL,
+    };
+    return typedjson(data);
+  } else {
     throw new Response("Device not found", { status: 502 });
   }
-
-  // Find all sensors from the device response that have the same id as one of the sensor array value
-  const sensorIds = stringToArray(url.searchParams.get("sensors"));
-  const selectedSensors = device.sensors.filter((sensor: any) =>
-    sensorIds.includes(sensor._id)
-  );
-
-  // Combine the device data with the selected sensors and return the result as JSON + add env variable
-  const data = {
-    ...device,
-    selectedSensors: selectedSensors,
-    OSEM_API_URL: process.env.OSEM_API_URL,
-  };
-  return json(data);
 }
 
 // Defining a function that converts a string of comma-separated values to an array of strings
@@ -50,16 +50,16 @@ export default function DeviceId() {
   const data = useLoaderData<typeof loader>();
 
   // Rendering the BottomBar component with the device data
-  return (
+  return (data?.device && data.selectedSensors) ? (
     <BottomBar
-      id={data._id}
-      name={data.name}
-      sensors={data.sensors}
-      lastUpdate={data.updatedAt}
-      location={data.currentLocation.coordinates}
+      id={data.device.id}
+      name={data.device.name}
+      sensors={data.device.sensors}
+      lastUpdate={data.device.updatedAt}
+      location={[data.device.latitude, data.device.longitude]}
       selectedSensors={data.selectedSensors}
     />
-  );
+  ) : null;
 }
 
 // Defining a CatchBoundary component to handle errors thrown by the loader

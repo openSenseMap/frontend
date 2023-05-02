@@ -19,7 +19,7 @@ import type { Point } from "geojson";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return prisma.device.findFirst({
-    select: { id: true, name: true, exposure: true },
+    select: { id: true, name: true, exposure: true, updatedAt: true, sensors: true, latitude: true, longitude: true },
     where: { id },
   });
 }
