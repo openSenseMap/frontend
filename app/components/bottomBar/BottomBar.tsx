@@ -16,7 +16,12 @@ export interface LastMeasurementProps {
   value: string;
 }
 
-export default function BottomBar(device: DeviceWithSensors) {
+export interface DeviceAndSelectedSensors {
+  device: DeviceWithSensors;
+  selectedSensors: Sensor[];
+}
+
+export default function BottomBar(data: DeviceAndSelectedSensors) {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
   const [searchParams] = useSearchParams();
   const [toastOpen, setToastOpen] = useState(false);
@@ -44,6 +49,17 @@ export default function BottomBar(device: DeviceWithSensors) {
     return filteredArray;
   }
 
+  const formattedDate = (date: Date) => {
+    return new Date(date).toLocaleString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
   return (
     <div>
       <ToastPrimitive.Provider>
@@ -52,13 +68,13 @@ export default function BottomBar(device: DeviceWithSensors) {
         >
           <div className="flex">
             <div className="text-l dark:bg-green-200 basis-1/4 bg-green-100 pt-6 pb-6 text-center font-bold lg:text-3xl">
-              <p>{device.name}</p>
+              <p>{data.device.name}</p>
             </div>
             <div className="grid basis-3/4 content-center bg-green-100 pr-2 text-right text-sm text-white">
               <div>
-                <p className="text-xs lg:inline lg:text-sm">Letzte Messung:</p>
+                <p className="text-xs lg:inline lg:text-sm">Letzte Messung: </p>
                 <p className="text-xs lg:inline lg:text-sm">
-                  {" " + device.updatedAt}
+                  {formattedDate(data.device.updatedAt)}
                 </p>
               </div>
             </div>
@@ -83,9 +99,10 @@ export default function BottomBar(device: DeviceWithSensors) {
               submit(e.currentTarget);
             }}
           >
-            {device.sensors.map((sensor: Sensor) => {
+            {data.device.sensors.map((sensor: Sensor) => {
               // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-              const lastMeasurement = sensor.lastMeasurement as Prisma.JsonObject;
+              const lastMeasurement =
+                sensor.lastMeasurement as Prisma.JsonObject;
               const value = lastMeasurement.value as string;
               return (
                 <div
@@ -143,7 +160,9 @@ export default function BottomBar(device: DeviceWithSensors) {
             })}
           </Form>
           {sensorIds.length > 0 ? (
-            <Graph sensors={filterSensorsById(sensorIds, device.sensors)} />
+            <Graph
+              sensors={filterSensorsById(sensorIds, data.device.sensors)}
+            />
           ) : null}
         </div>
         <div

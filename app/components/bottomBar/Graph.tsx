@@ -48,7 +48,7 @@ export default function Graph(data: any) {
     // Fetching data for the first sensor
     fetch(
       loaderData.OSEM_API_URL +
-        "boxes/" +
+        "/boxes/" +
         params.deviceId +
         "/data/" +
         sensorIds[0] +
@@ -69,7 +69,7 @@ export default function Graph(data: any) {
       //setStatus("Loading");
       fetch(
         loaderData.OSEM_API_URL +
-          "boxes/" +
+          "/boxes/" +
           params.deviceId +
           "/data/" +
           sensorIds[1] +

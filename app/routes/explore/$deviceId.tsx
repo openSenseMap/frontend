@@ -11,8 +11,6 @@ export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
 
-  //const device = await response.json();
-
   if (params.deviceId) {
     const device = await getDevice({ id: params.deviceId });
 
@@ -52,11 +50,7 @@ export default function DeviceId() {
   // Rendering the BottomBar component with the device data
   return (data?.device && data.selectedSensors) ? (
     <BottomBar
-      id={data.device.id}
-      name={data.device.name}
-      sensors={data.device.sensors}
-      lastUpdate={data.device.updatedAt}
-      location={[data.device.latitude, data.device.longitude]}
+      device={data.device}
       selectedSensors={data.selectedSensors}
     />
   ) : null;
