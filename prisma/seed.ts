@@ -83,7 +83,7 @@ async function seed() {
         sensorType: sensor.sensorType,
         unit: sensor.unit,
         lastMeasurement: {
-          value: Math.floor(Math.random() * 100),
+          value: (Math.random() * 100).toFixed(2),
           createdAt: new Date().toISOString(),
         } as Prisma.JsonObject,
       },

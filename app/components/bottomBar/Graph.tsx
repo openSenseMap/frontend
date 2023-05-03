@@ -45,6 +45,7 @@ export default function Graph(data: any) {
   useEffect(() => {
     //setStatus("Loading");
 
+    // TODO: move this to model and fetch from DB when measurements are stored there
     // Fetching data for the first sensor
     fetch(
       loaderData.OSEM_API_URL +
