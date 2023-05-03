@@ -86,7 +86,7 @@ export default function Graph(data: any) {
       //.then(() => setStatus("Success"))
       //.catch(() => setStatus("Error"));
     }
-  }, [params.deviceId]);
+  }, [params.deviceId, data]);
 
   // Formatting the data for the Line component
   const lineData = {
