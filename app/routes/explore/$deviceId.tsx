@@ -1,7 +1,6 @@
 // Importing dependencies
-import { Sensor } from "@prisma/client";
+import type { Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import BottomBar from "~/components/bottomBar/BottomBar";

@@ -15,7 +15,7 @@ import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
 import type { LastMeasurementProps } from "./BottomBar";
-import { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore/$deviceId";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -86,7 +86,7 @@ export default function Graph(data: any) {
       //.then(() => setStatus("Success"))
       //.catch(() => setStatus("Error"));
     }
-  }, [data.sensors, params.deviceId, sensorIds]);
+  }, [params.deviceId]);
 
   // Formatting the data for the Line component
   const lineData = {

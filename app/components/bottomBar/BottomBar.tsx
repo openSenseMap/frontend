@@ -8,8 +8,8 @@ import { Form, Link, useSearchParams, useSubmit } from "@remix-run/react";
 import Graph from "./Graph";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { Prisma, Sensor } from "@prisma/client";
-import { DeviceWithSensors } from "types";
+import type { Prisma, Sensor } from "@prisma/client";
+import type { DeviceWithSensors } from "types";
 
 export interface LastMeasurementProps {
   createdAt: Date;
