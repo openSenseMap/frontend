@@ -8,14 +8,15 @@ import { Form, Link, useSearchParams, useSubmit } from "@remix-run/react";
 import Graph from "./Graph";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { Device, Prisma, Sensor } from "@prisma/client";
+import { Prisma, Sensor } from "@prisma/client";
+import { DeviceWithSensors } from "types";
 
 export interface LastMeasurementProps {
   createdAt: Date;
   value: string;
 }
 
-export default function BottomBar(device: Device) {
+export default function BottomBar(device: DeviceWithSensors) {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
   const [searchParams] = useSearchParams();
   const [toastOpen, setToastOpen] = useState(false);
