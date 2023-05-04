@@ -113,10 +113,6 @@ export default function Search(props: SearchProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchString]);
 
-  // useEffect(() => {
-  //   // setSearchResultsDeviceIndex(searchResultsDevice.length === 0 ? 0 : )
-  // })
-
   /**
    * on click handler for the reset button. It resets the search string and hides the search bar.
    */
