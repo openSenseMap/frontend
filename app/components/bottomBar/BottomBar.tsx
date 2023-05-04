@@ -26,7 +26,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
   const [searchParams] = useSearchParams();
   const [toastOpen, setToastOpen] = useState(false);
   const submit = useSubmit();
-  const sensorIds = searchParams.getAll("sensorId");
+  const sensorIds = searchParams.getAll("sensor");
   const timerRef = useRef<number>(0);
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                       onClick={() => {
                         if (
                           !sensorIds.includes(sensor.id) &&
-                          searchParams.getAll("sensorId").length >= 2
+                          searchParams.getAll("sensor").length >= 2
                         ) {
                           if (toastOpen) {
                             setToastOpen(false);
@@ -129,12 +129,12 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                           className="peer hidden"
                           disabled={
                             !sensorIds.includes(sensor.id) &&
-                            searchParams.getAll("sensorId").length >= 2
+                            searchParams.getAll("sensor").length >= 2
                               ? true
                               : false
                           } // check if there are already two selected and this one is not one of them
                           type="checkbox"
-                          name="sensorId"
+                          name="sensor"
                           id={sensor.id}
                           value={sensor.id}
                           defaultChecked={sensorIds.includes(sensor.id)}

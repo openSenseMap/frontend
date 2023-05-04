@@ -4,7 +4,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import BottomBar from "~/components/bottomBar/BottomBar";
-import { getDevice } from "~/models/device.server";
+import { getDevice, getMeasurements } from "~/models/device.server";
 
 export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
@@ -14,10 +14,29 @@ export async function loader({ params, request }: LoaderArgs) {
     const device = await getDevice({ id: params.deviceId });
 
     // Find all sensors from the device response that have the same id as one of the sensor array value
-    const sensorIds = stringToArray(url.searchParams.get("sensors"));
-    const selectedSensors = device?.sensors.filter((sensor: Sensor) =>
+    const sensorIds = url.searchParams.getAll("sensor");
+    var sensorsToQuery = device?.sensors.filter((sensor: Sensor) =>
       sensorIds.includes(sensor.id)
     );
+
+    const selectedSensors: Sensor[] = [];
+    if (sensorsToQuery && sensorsToQuery.length > 0) {
+      await Promise.all(
+        sensorsToQuery.map(async (sensor: Sensor) => {
+          const sensorData = await getMeasurements(
+            params.deviceId,
+            sensor.id,
+            new Date(new Date().getTime() - 24 * 60 * 60 * 1000), //24 hours ago
+            new Date()
+          );
+          const sensorToAdd = {
+            ...sensor,
+            data: sensorData,
+          };
+          selectedSensors.push(sensorToAdd);
+        })
+      );
+    }
 
     // Combine the device data with the selected sensors and return the result as JSON + add env variable
     const data = {
@@ -31,27 +50,14 @@ export async function loader({ params, request }: LoaderArgs) {
   }
 }
 
-// Defining a function that converts a string of comma-separated values to an array of strings
-function stringToArray(str: string | null): string[] {
-  // If the string is null or empty, return an empty array
-  if (!str) {
-    return [];
-  }
-  // Split the string by comma and remove any leading/trailing whitespace from each value
-  return str.split(",").map((val) => val.trim());
-}
-
 // Defining the component that will render the page
 export default function DeviceId() {
   // Retrieving the data returned by the loader using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
 
   // Rendering the BottomBar component with the device data
-  return (data?.device && data.selectedSensors) ? (
-    <BottomBar
-      device={data.device}
-      selectedSensors={data.selectedSensors}
-    />
+  return data?.device && data.selectedSensors ? (
+    <BottomBar device={data.device} selectedSensors={data.selectedSensors} />
   ) : null;
 }
 

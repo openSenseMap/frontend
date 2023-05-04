@@ -19,7 +19,15 @@ import type { Point } from "geojson";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return prisma.device.findFirst({
-    select: { id: true, name: true, exposure: true, updatedAt: true, sensors: true, latitude: true, longitude: true },
+    select: {
+      id: true,
+      name: true,
+      exposure: true,
+      updatedAt: true,
+      sensors: true,
+      latitude: true,
+      longitude: true,
+    },
     where: { id },
   });
 }
@@ -55,4 +63,25 @@ export async function getDevices() {
   }
 
   return geojson;
+}
+
+export async function getMeasurements(
+  deviceId: any,
+  sensorId: any,
+  startDate: Date,
+  endDate: Date
+) {
+  const response = await fetch(
+    process.env.OSEM_API_URL +
+      "/boxes/" +
+      deviceId +
+      "/data/" +
+      sensorId +
+      "?from-date=" +
+      startDate.toISOString() + //new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
+      "&to-date=" +
+      endDate.toISOString() //new Date().toISOString()
+  );
+  const jsonData = await response.json();
+  return jsonData;
 }

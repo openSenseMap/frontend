@@ -82,6 +82,8 @@ model Sensor {
 
   lastMeasurement Json?
 
+  data Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
