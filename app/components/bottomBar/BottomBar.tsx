@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   XCircleIcon,
   MinusCircleIcon,
@@ -22,18 +22,18 @@ export interface DeviceAndSelectedSensors {
 }
 
 export default function BottomBar(data: DeviceAndSelectedSensors) {
+  // state variables
   const [isOpen, setIsOpen] = useState<Boolean>(true);
   const [searchParams] = useSearchParams();
   const [toastOpen, setToastOpen] = useState(false);
+
+  // form submission handler
   const submit = useSubmit();
+
+  // get list of selected sensor ids from URL search params
   const sensorIds = searchParams.getAll("sensor");
-  const timerRef = useRef<number>(0);
 
-  useEffect(() => {
-    var timer = timerRef.current;
-    return () => clearTimeout(timer);
-  }, []);
-
+  // helper function to filter an array of sensors by their ids
   function filterSensorsById(
     idArray: string[],
     objectArray: Sensor[]
@@ -45,10 +45,10 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
         filteredArray.push(obj);
       }
     }
-
     return filteredArray;
   }
 
+  // helper function to format a date as a string
   const formattedDate = (date: Date) => {
     return new Date(date).toLocaleString("de-DE", {
       day: "2-digit",
@@ -139,7 +139,14 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                           value={sensor.id}
                           defaultChecked={sensorIds.includes(sensor.id)}
                         />
-                        <div className="whitespace-nowrap">
+                        <div
+                          className={
+                            "whitespace-nowrap" +
+                            (sensorIds.includes(sensor.id)
+                              ? " text-green-100"
+                              : "")
+                          }
+                        >
                           <div className="w-220 min-w-150 relative flex flex-grow-0 flex-col items-center justify-center border-l border-r border-gray-300 py-2 px-6 hover:cursor-pointer hover:bg-gray-100">
                             <div>
                               <div className="flex h-8 items-center justify-center">
@@ -167,7 +174,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                             </div>
                             {sensorIds.length >= 2 &&
                             !sensorIds.includes(sensor.id) ? null : (
-                              <div className="absolute bottom-[5px] right-[5px] flex items-center justify-center text-2xl hover:bg-green-300 p-1">
+                              <div className="absolute bottom-[5px] right-[5px] flex items-center justify-center p-1 text-2xl hover:bg-green-300">
                                 {sensorIds.includes(sensor.id) ? (
                                   <div className="h-3 w-3 cursor-pointer rounded leading-3">
                                     -

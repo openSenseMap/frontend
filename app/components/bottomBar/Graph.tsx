@@ -123,7 +123,7 @@ export default function Graph(data: any) {
   };
 
   return (
-    <div>
+    <div className="shadow-inner text-gray-100">
       {loaderData.selectedSensors.length > 0 ? (
         <div className="flex h-full w-full justify-center px-10">
           {/* 
