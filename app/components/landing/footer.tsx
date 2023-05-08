@@ -13,7 +13,7 @@ export default function Footer() {
             <Link target="_blank" rel="noreferrer" to={"https://chat.opensenselab.org"}>Mattermost</Link>
           </div>
           <div className="flex w-1/2 justify-end">
-            <a href="https://www.instagram.com/opensenselab/" target="_blank" className="px-8 hover:text-green-100 dark:hover:text-green-200">
+            <a href="https://www.instagram.com/opensenselab/" target="_blank" rel="noopener noreferrer" className="px-8 hover:text-green-100 dark:hover:text-green-200">
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -28,7 +28,7 @@ export default function Footer() {
               </svg>
               <span className="sr-only">Instagram page</span>
             </a>
-            <a href="https://twitter.com/openSenseLab" target="_blank" className="px-8 hover:text-green-100 dark:hover:text-green-200">
+            <a href="https://twitter.com/openSenseLab" target="_blank" rel="noopener noreferrer" className="px-8 hover:text-green-100 dark:hover:text-green-200">
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -39,7 +39,7 @@ export default function Footer() {
               </svg>
               <span className="sr-only">Twitter page</span>
             </a>
-            <a href="https://github.com/opensenselab" target="_blank" className="px-8 hover:text-green-100 dark:hover:text-green-200">
+            <a href="https://github.com/opensenselab" target="_blank" rel="noopener noreferrer" className="px-8 hover:text-green-100 dark:hover:text-green-200">
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
