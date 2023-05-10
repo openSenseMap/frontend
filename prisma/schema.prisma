@@ -17,9 +17,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password Password?
-  notes    Note[]
-  devices  Device[]
+  password  Password?
+  notes     Note[]
+  devices   Device[]
+  campaigns Campaign[]
 }
 
 model Password {
@@ -85,4 +86,35 @@ model Sensor {
 
   device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deviceId String
+}
+
+model Campaign {
+  id                 String    @id @default(uuid())
+  title              String
+  feature            Json
+  owner              User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId            String
+  description        String
+  keywords           String[]
+  priority           Priority
+  location           String
+  participantCount   Int
+  createdAt          DateTime
+  updatedAt          DateTime
+  startDate          DateTime
+  endDate            DateTime?
+  phenomena          String[]
+  centerpoint        Json?
+  events             String[]
+  exposure           Exposure
+  location_points    Json?
+  hardware_available Boolean
+  grouptag           String[]
+}
+
+enum Priority {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
 }
