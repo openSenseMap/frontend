@@ -13,5 +13,7 @@ export const campaignSchema = z.object({
   startDate: z.date(),
   endDate: z.date().optional(),
   phenomena: z.array(z.string()),
+  exposure: z.enum(["UNKNOWN", "INDOOR", "MOBILE", "OUTDOOR"]),
+  hardware_available: z.boolean(),
   centerpoint: z.any(),
 });
