@@ -1,114 +1,115 @@
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import type { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+import { ActionArgs, LoaderArgs, json, redirect } from "@remix-run/node";
+import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
-import { FeatureContext } from "../create";
-import { Exposure, Priority } from "@prisma/client";
-import * as turf from "@turf/helpers";
-import center from "@turf/center";
-import { campaignSchema } from "~/lib/validations/campaign";
-import * as z from "zod";
-import { Switch } from "@/components/ui/switch";
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];
-
-interface PhenomenaState {
-  [phenomena: string]: boolean;
-}
-
-type PriorityType = keyof typeof Priority;
-type ExposureType = keyof typeof Exposure;
-type FormData = z.infer<typeof campaignSchema>;
 
 export async function action({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
   const formData = await request.formData();
-  const area = formData.get("feature") as any;
-  const feature = area ? JSON.parse(area) : null;
-  const turf_points = feature
-    ? turf.points(feature[0].geometry.coordinates[0])
-    : null;
-  const centerpoint = turf_points ? center(turf_points) : {};
-  console.log(centerpoint);
   const title = formData.get("title");
   const description = formData.get("description");
-  const formDataKeywords = formData.get("keywords");
-  let keywords;
-  if (formDataKeywords && typeof formDataKeywords === "string") {
-    keywords = formDataKeywords.split(" ");
-  }
+  const polygonDraw = formData.get("polygonDraw");
+  // const keywords = formData.get("keywords");
+  const keywords: string[] = [];
   const location = formData.get("location");
   const begin = formData.get("startDate");
   const startDate =
     begin && typeof begin === "string" ? new Date(begin) : undefined;
   const end = formData.get("endDate");
   const endDate = end && typeof end === "string" ? new Date(end) : undefined;
-  const createdAt = new Date();
-  const updatedAt = new Date();
-  const phenomenaString = formData.get("phenomena");
-  let phenomenaState: PhenomenaState = {};
-  if (typeof phenomenaString === "string") {
-    phenomenaState = JSON.parse(phenomenaString);
+  const phenomena = formData.get("phenomena");
+  console.log(phenomena);
+  const priority = formData.get("priority");
+
+  if (!title || typeof title != "string") {
+    return json(
+      { errors: { title: "Title is required", body: null } },
+      { status: 400 }
+    );
   }
-  const phenomena = Object.keys(phenomenaState).filter(
-    (key) => phenomenaState[key]
-  );
 
-  const priority = formData.get("priority") as PriorityType;
-  const exposure = formData.get("exposure") as ExposureType;
-  const hardware_available =
-    formData.get("hardware_available") === "on" ? true : false;
+  if (!description || typeof description != "string") {
+    return json(
+      { errors: { description: "description is required", body: null } },
+      { status: 400 }
+    );
+  }
 
-  const campaignData = {
+  if (!polygonDraw || typeof polygonDraw != "string") {
+    return json(
+      { errors: { polygonDraw: "polygonDraw is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  // if (!keywords || !Array.isArray(keywords)) {
+  //   return json(
+  //     { errors: { keywords: "keywords is required", body: null } },
+  //     { status: 400 }
+  //   );
+  // }
+
+  if (!priority || typeof priority != "string") {
+    return json(
+      { errors: { priority: "priority is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  if (!location || typeof location != "string") {
+    return json(
+      { errors: { location: "location is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  if (!startDate || !(startDate instanceof Date)) {
+    return json(
+      { errors: { startDate: "startDate is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  if (!endDate || !(endDate instanceof Date)) {
+    return json(
+      { errors: { endDate: "endDate is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  if (!phenomena || typeof phenomena != "string") {
+    return json(
+      { errors: { phenomena: "phenomena is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  const campaign = await createCampaign({
     title,
     description,
-    feature,
-    keywords: keywords || [],
+    polygonDraw,
+    keywords,
     priority,
     location,
-    participantCount: 0,
-    createdAt,
-    updatedAt,
     startDate,
     endDate,
     phenomena,
-    exposure,
-    hardware_available,
-    centerpoint,
-    owner: {
-      id: ownerId,
-    },
     ownerId,
-  };
+  });
 
-  try {
-    const newCampaign = campaignSchema.parse(campaignData);
-    const campaign = await createCampaign({
-      ...newCampaign,
-      feature: newCampaign.feature ?? {},
-      endDate: newCampaign.endDate ?? null,
-      centerpoint: newCampaign.centerpoint ?? {},
-      ownerId,
-    });
-
-    return redirect("/campaigns/");
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
-  }
+  return redirect("/campaigns/");
 }
 
 export async function loader({ params }: LoaderArgs) {
@@ -126,12 +127,12 @@ export async function loader({ params }: LoaderArgs) {
 
 export default function CreateCampaign() {
   const phenomena = useLoaderData<typeof loader>();
-  const { features } = useContext(FeatureContext);
   const [phenomenaState, setPhenomenaState] = useState(
-    Object.fromEntries(phenomena.map((p: string) => [p, false]))
+    Object.fromEntries(phenomena.map((p: any) => [p, false]))
   );
-  const [priority, setPriority] = useState("MEDIUM");
-  const [exposure, setExposure] = useState("UNKNOWN");
+
+  console.log(phenomenaState);
+
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
@@ -163,13 +164,6 @@ export default function CreateCampaign() {
               )} */}
             </div>
           </div>
-          <input
-            id="feature"
-            value={JSON.stringify(features)}
-            name="feature"
-            type="text"
-            className="hidden"
-          />
 
           <div>
             <label
@@ -198,6 +192,31 @@ export default function CreateCampaign() {
           </div>
           <div>
             <label
+              htmlFor="polygonDraw"
+              className="block text-sm font-medium text-gray-700"
+            >
+              PolygonDraw
+            </label>
+            <div className="mt-1">
+              <input
+                id="polygonDraw"
+                // ref={polygonDrawRef}
+                name="polygonDraw"
+                type="polygonDraw"
+                autoComplete="new-polygonDraw"
+                // aria-invalid={actionData?.errors?.polygonDraw ? true : undefined}
+                aria-describedby="polygonDraw-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {/* {actionData?.errors?.polygonDraw && (
+                <div className="text-red-700 pt-1" id="polygonDraw-error">
+                  {actionData.errors.polygonDraw}
+                </div>
+              )} */}
+            </div>
+          </div>
+          <div>
+            <label
               htmlFor="keywords"
               className="block text-sm font-medium text-gray-700"
             >
@@ -206,11 +225,9 @@ export default function CreateCampaign() {
             <div className="mt-1">
               <input
                 id="keywords"
-                defaultValue=""
-                placeholder="Seperate keywords by space"
                 // ref={keywordsRef}
                 name="keywords"
-                type="text"
+                type="keywords"
                 autoComplete="new-keywords"
                 // aria-invalid={actionData?.errors?.keywords ? true : undefined}
                 aria-describedby="keywords-error"
@@ -224,30 +241,28 @@ export default function CreateCampaign() {
             </div>
           </div>
           <div>
+            <label
+              htmlFor="priority"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Priority
+            </label>
             <div className="mt-1">
-              <input name="priority" type="hidden" value={priority} />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button className="w-full" variant="outline">
-                    Priority
-                    <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuRadioGroup
-                    value={priority}
-                    onValueChange={setPriority}
-                  >
-                    {Object.keys(Priority).map((key: string) => {
-                      return (
-                        <DropdownMenuRadioItem key={key} value={key}>
-                          {key}
-                        </DropdownMenuRadioItem>
-                      );
-                    })}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <input
+                id="priority"
+                // ref={priorityRef}
+                name="priority"
+                type="priority"
+                autoComplete="new-priority"
+                // aria-invalid={actionData?.errors?.priority ? true : undefined}
+                aria-describedby="priority-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {/* {actionData?.errors?.priority && (
+                <div className="text-red-700 pt-1" id="priority-error">
+                  {actionData.errors.priority}
+                </div>
+              )} */}
             </div>
           </div>
           <div>
@@ -325,6 +340,23 @@ export default function CreateCampaign() {
               )} */}
             </div>
           </div>
+          <div className="mt-1">
+            <input
+              id="phenomena"
+              // ref={startDateRef}
+              name="phenomena"
+              type="phenomena"
+              autoComplete="new-startDate"
+              // aria-invalid={actionData?.errors?.startDate ? true : undefined}
+              aria-describedby="startDate-error"
+              className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+            />
+            {/* {actionData?.errors?.startDate && (
+                <div className="text-red-700 pt-1" id="startDate-error">
+                  {actionData.errors.startDate}
+                </div>
+              )} */}
+          </div>
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -346,6 +378,12 @@ export default function CreateCampaign() {
                         })
                       }
                     >
+                      {/* <input
+                        type="hidden"
+                        name="phenomena"
+                        value={p}
+                        // onChange={handlePhenomenaSelection}
+                      /> */}
                       {p}
                     </DropdownMenuCheckboxItem>
                   );
@@ -353,40 +391,6 @@ export default function CreateCampaign() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="mt-1">
-            <input name="exposure" type="hidden" value={exposure} />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="w-full" variant="outline">
-                  Exposure
-                  <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuRadioGroup
-                  value={exposure}
-                  onValueChange={setExposure}
-                >
-                  <DropdownMenuRadioItem value={"INDOOR"}>
-                    Indoor
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value={"MOBILE"}>
-                    Mobil
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value={"OUTDOOR"}>
-                    Outdoor
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <label htmlFor="hardware_available">Hardware verfügbar</label>
-          <Switch id="hardware_available" name="hardware_available" />
-          <input
-            type="hidden"
-            name="phenomena"
-            value={JSON.stringify(phenomenaState)}
-          />
 
           {/* <input type="hidden" name="redirectTo" value={redirectTo} /> */}
           <button

@@ -22,11 +22,11 @@ export default function Sidebar() {
       <div
         id="sidebar"
         data-state="open"
-        className="fixed inset-y-0 right-0 z-50 h-[100%] w-1/2 rounded-l-[1.25rem] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=closed]:animate-sidebarClose data-[state=open]:animate-sidebarOpen"
+        className="fixed inset-y-0 right-0 z-50 h-[100%] w-1/2 overflow-y-scroll rounded-l-[1.25rem] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=closed]:animate-sidebarClose data-[state=open]:animate-sidebarOpen"
       >
         <div className="flex flex-col">
           <Link to="impressum">Impressum</Link>
-          <Link to="campaigns">Kampagnen</Link>
+          <Link to="../../campaigns">Kampagnen</Link>
         </div>
         <Link to={url}>
           <button

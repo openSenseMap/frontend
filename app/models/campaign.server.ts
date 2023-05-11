@@ -31,6 +31,8 @@ export function createCampaign({
   createdAt,
   updatedAt,
   phenomena,
+  exposure,
+  hardware_available,
   centerpoint,
 }: Pick<
   Campaign,
@@ -45,6 +47,8 @@ export function createCampaign({
   | "createdAt"
   | "updatedAt"
   | "phenomena"
+  | "exposure"
+  | "hardware_available"
   | "centerpoint"
 > & {
   ownerId: User["id"];
@@ -63,6 +67,8 @@ export function createCampaign({
       createdAt,
       updatedAt,
       phenomena,
+      exposure,
+      hardware_available,
       centerpoint: centerpoint === null ? {} : centerpoint,
       owner: {
         connect: {
