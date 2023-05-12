@@ -31,6 +31,7 @@ import { Map } from "~/components/Map";
 import { getCampaigns, updateCampaign } from "~/models/campaign.server";
 import Markers from "~/components/Map/Markers";
 import { MarkerProps } from "react-map-gl";
+import { Progress } from "~/components/ui/progress";
 
 export async function loader({ params }: LoaderArgs) {
   // request to API with deviceID
@@ -230,7 +231,13 @@ export default function Campaigns() {
                       </CardTitle>
                       <CardDescription>{item.keywords || ""}</CardDescription>
                     </CardHeader>
-                    <CardContent></CardContent>
+                    <CardContent>
+                      <Progress
+                        max={item.requiredParticipants}
+                        value={item.participantCount}
+                        // onMouseEnter={}
+                      />
+                    </CardContent>
                     <CardFooter>
                       <Accordion className="w-full" type="single" collapsible>
                         <AccordionItem value="item-1">
