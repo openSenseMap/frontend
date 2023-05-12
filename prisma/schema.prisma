@@ -93,27 +93,29 @@ model Sensor {
 }
 
 model Campaign {
-  id                 String    @id @default(uuid())
-  title              String
-  feature            Json
-  owner              User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  ownerId            String
-  description        String
-  keywords           String[]
-  priority           Priority
-  location           String
-  participantCount   Int
-  createdAt          DateTime
-  updatedAt          DateTime
-  startDate          DateTime
-  endDate            DateTime?
-  phenomena          String[]
-  centerpoint        Json?
-  events             String[]
-  exposure           Exposure
-  location_points    Json?
-  hardware_available Boolean
-  grouptag           String[]
+  id                   String    @id @default(uuid())
+  title                String
+  feature              Json
+  owner                User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId              String
+  description          String
+  keywords             String[]
+  priority             Priority
+  country              String
+  participantCount     Int
+  requiredParticipants Int?
+  requiredSensors      Int?
+  createdAt            DateTime
+  updatedAt            DateTime
+  startDate            DateTime
+  endDate              DateTime?
+  phenomena            String[]
+  centerpoint          Json?
+  events               String[]
+  exposure             Exposure
+  location_points      Json?
+  hardware_available   Boolean
+  grouptag             String[]
 }
 
 enum Priority {

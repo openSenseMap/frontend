@@ -6,7 +6,7 @@ export const campaignSchema = z.object({
   feature: z.any(),
   keywords: z.array(z.string()),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
-  location: z.string(),
+  country: z.string(),
   participantCount: z.number().int().nonnegative(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -16,4 +16,6 @@ export const campaignSchema = z.object({
   exposure: z.enum(["UNKNOWN", "INDOOR", "MOBILE", "OUTDOOR"]),
   hardware_available: z.boolean(),
   centerpoint: z.any(),
+  requiredParticipants: z.number().int().nonnegative(),
+  requiredSensors: z.number().int().nonnegative(),
 });

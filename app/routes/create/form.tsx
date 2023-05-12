@@ -50,7 +50,7 @@ export async function action({ request }: ActionArgs) {
   if (formDataKeywords && typeof formDataKeywords === "string") {
     keywords = formDataKeywords.split(" ");
   }
-  const location = formData.get("location");
+  const country = formData.get("country");
   const begin = formData.get("startDate");
   const startDate =
     begin && typeof begin === "string" ? new Date(begin) : undefined;
@@ -71,6 +71,18 @@ export async function action({ request }: ActionArgs) {
   const exposure = formData.get("exposure") as ExposureType;
   const hardware_available =
     formData.get("hardware_available") === "on" ? true : false;
+  let requiredParticipants: FormDataEntryValue | null | number = formData.get(
+    "requiredParticipants"
+  );
+  let requiredSensors: FormDataEntryValue | null | number =
+    formData.get("requiredSensors");
+  if (typeof requiredParticipants === "string") {
+    requiredParticipants = parseInt(requiredParticipants);
+  }
+  if (typeof requiredSensors === "string") {
+    requiredSensors = parseInt(requiredSensors);
+  }
+  console.log(requiredParticipants, requiredSensors);
 
   const campaignData = {
     title,
@@ -78,8 +90,10 @@ export async function action({ request }: ActionArgs) {
     feature,
     keywords: keywords || [],
     priority,
-    location,
+    country,
     participantCount: 0,
+    requiredParticipants: requiredParticipants || null,
+    requiredSensors: requiredSensors || null,
     createdAt,
     updatedAt,
     startDate,
@@ -252,25 +266,75 @@ export default function CreateCampaign() {
           </div>
           <div>
             <label
-              htmlFor="location"
+              htmlFor="requiredParticipants"
               className="block text-sm font-medium text-gray-700"
             >
-              Location
+              Gewünschte Teilnehmerzahl
             </label>
             <div className="mt-1">
               <input
-                id="location"
-                // ref={locationRef}
-                name="location"
-                type="location"
-                autoComplete="new-location"
-                // aria-invalid={actionData?.errors?.location ? true : undefined}
-                aria-describedby="location-error"
+                id="requiredParticipants"
+                // ref={requiredParticipantsRef}
+                name="requiredParticipants"
+                type="number"
+                autoComplete="new-requiredParticipants"
+                // aria-invalid={actionData?.errors?.requiredParticipants ? true : undefined}
+                aria-describedby="requiredParticipants-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.location && (
-                <div className="text-red-700 pt-1" id="location-error">
-                  {actionData.errors.location}
+              {/* {actionData?.errors?.requiredParticipants && (
+                <div className="text-red-700 pt-1" id="requiredParticipants-error">
+                  {actionData.errors.requiredParticipants}
+                </div>
+              )} */}
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="requiredSensors"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Gewünschte Anzahl Sensoren
+            </label>
+            <div className="mt-1">
+              <input
+                id="requiredSensors"
+                // ref={requiredSensorsRef}
+                name="requiredSensors"
+                type="number"
+                autoComplete="new-requiredSensors"
+                // aria-invalid={actionData?.errors?.requiredSensors ? true : undefined}
+                aria-describedby="requiredSensors-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {/* {actionData?.errors?.requiredSensors && (
+                <div className="text-red-700 pt-1" id="requiredSensors-error">
+                  {actionData.errors.requiredParticipants}
+                </div>
+              )} */}
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="country"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Land
+            </label>
+            <div className="mt-1">
+              <input
+                id="country"
+                // ref={countryRef}
+                name="country"
+                type="country"
+                autoComplete="new-country"
+                // aria-invalid={actionData?.errors?.country ? true : undefined}
+                aria-describedby="country-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {/* {actionData?.errors?.country && (
+                <div className="text-red-700 pt-1" id="country-error">
+                  {actionData.errors.country}
                 </div>
               )} */}
             </div>

@@ -25,7 +25,9 @@ export function createCampaign({
   description,
   keywords,
   priority,
-  location,
+  country,
+  requiredSensors,
+  requiredParticipants,
   startDate,
   endDate,
   createdAt,
@@ -41,7 +43,9 @@ export function createCampaign({
   | "description"
   | "keywords"
   | "priority"
-  | "location"
+  | "country"
+  | "requiredSensors"
+  | "requiredParticipants"
   | "startDate"
   | "endDate"
   | "createdAt"
@@ -61,7 +65,9 @@ export function createCampaign({
       keywords,
       priority,
       participantCount: 0,
-      location,
+      country,
+      requiredSensors,
+      requiredParticipants,
       startDate,
       endDate,
       createdAt,
