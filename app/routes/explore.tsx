@@ -26,6 +26,7 @@ import {
 } from "~/components/Map/Layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/OverlaySearch";
+import { Toaster } from "~/components/ui//toaster";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -116,6 +117,7 @@ export default function Explore() {
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
+        <Toaster />
         { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />

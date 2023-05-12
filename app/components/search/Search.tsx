@@ -171,6 +171,7 @@ export default function Search(props: SearchProps) {
           </svg>
         </button>
       </div>
+      <hr className="solid border-t-2 px-2"></hr>
       <div className="my-2 flex justify-around">
         <div className="text-center text-sm text-gray-500">
           <p>

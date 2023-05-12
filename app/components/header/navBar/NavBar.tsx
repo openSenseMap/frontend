@@ -1,17 +1,35 @@
 import React, { useEffect, useRef } from "react";
 import Search from "~/components/search/Search";
-import { SunIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
-import { Calendar } from "@/components/ui/calendar";
+import { SunIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { TimeFilter } from "~/components/header/navBar/time-filter/time-filter";
+import type { DateRange } from "react-day-picker";
+import getUserLocale from "get-user-locale";
+import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import type { Device } from "@prisma/client";
 
 interface NavBarProps {
-  devices: any;
+  devices: Device[];
 }
 
+type ValuePiece = Date | string | null;
+
+type Value = ValuePiece 
+
+
 export default function NavBar(props: NavBarProps) {
+  let { t } = useTranslation("navbar");
+
+  const [timeState, setTimeState] = React.useState("live");
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const [value, onChange] = React.useState<Value>(null);
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
+  const [singleDate, setSingleDate] = React.useState<Date | undefined>(undefined)
+  const userLocaleString = getUserLocale();
 
   /**
    * Focus the search input
@@ -54,6 +72,12 @@ export default function NavBar(props: NavBarProps) {
     };
   });
 
+  useEffect(() => {
+    console.log("dateRange", dateRange);
+    console.log("time", value);
+    console.log("singleDate", singleDate);
+  }, [dateRange, value, singleDate]);
+
   return (
     <div className="pointer-events-auto mx-auto h-10 w-1/2">
       {!isHovered && !showSearch ? (
@@ -65,12 +89,50 @@ export default function NavBar(props: NavBarProps) {
         >
           <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-orange-500">
             <SunIcon className="h-4 w-4 text-white" />
-            <div className="text-center text-white">Temperatur</div>
+            <div className="text-center text-white">
+              {t("temperature_label")}
+            </div>
           </div>
           <div className="flex h-6 w-4/12 items-center justify-center space-x-2 rounded-full bg-blue-700">
-            <CalendarDaysIcon className="h-4 w-4 text-white" />
+            <CalendarIcon className="h-4 w-4 text-white" />
             <div className="text-center text-white">
-              01.01.2022 - 05.01-2022
+              {timeState === "live" ? (
+                <span>Live</span>
+              ) : timeState === "pointintime" ? (
+                singleDate ? (
+                  <>
+                    {format(
+                      singleDate,
+                      userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
+                    )}
+                  </>
+                ) : (
+                  t("date_picker_label")
+                )
+              ) : timeState === "timeperiod" ? (
+                dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(
+                        dateRange.from,
+                        userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
+                      )}{" "}
+                      -{" "}
+                      {format(
+                        dateRange.to,
+                        userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
+                      )}
+                    </>
+                  ) : (
+                    format(
+                      dateRange.from,
+                      userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
+                    )
+                  )
+                ) : (
+                  t("date_range_picker_label")
+                )
+              ) : null}
             </div>
           </div>
         </div>
@@ -78,7 +140,9 @@ export default function NavBar(props: NavBarProps) {
         <div
           className="w-full items-center overflow-visible rounded-[1.25rem] border border-gray-100 bg-white p-2 shadow"
           onMouseLeave={() => {
-            setIsHovered(false);
+            if (!isDialogOpen) {
+              setIsHovered(false);
+            }
           }}
         >
           <button
@@ -99,24 +163,33 @@ export default function NavBar(props: NavBarProps) {
                 d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
               />
             </svg>
-            <span className="text-center text-blue-500">Suche</span>
+            <span className="text-center text-blue-500">
+              {t("search_label")}
+            </span>
             <span className="flex-none text-xs font-semibold text-gray-400">
-              <kbd>Ctrl</kbd> + <kbd>K</kbd>
+              <kbd>{t("ctrl")}</kbd> + <kbd>K</kbd>
             </span>
           </button>
-          <hr className="solid border-t-2 p-2"></hr>
-          <div>
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="mx-auto rounded-md border"
+          <hr className="solid border-t-2 px-2"></hr>
+          <div className="flex w-full justify-end p-2">
+            <TimeFilter
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              singleDate={singleDate}
+              setSingleDate={setSingleDate}
+              isDialogOpen={isDialogOpen}
+              setIsDialogOpen={setIsDialogOpen}
+              setIsHovered={setIsHovered}
+              onChange={onChange}
+              value={value}
+              timeState={timeState}
+              setTimeState={setTimeState}
             />
           </div>
         </div>
       ) : (
         <div
-          className="w-full items-center rounded-[1.25rem] border border-gray-100 bg-white p-1 shadow-xl"
+          className="w-full items-center rounded-[1.25rem] border border-gray-100 bg-white px-2 py-1 shadow-xl"
           onMouseLeave={() => {
             setIsHovered(false);
           }}
