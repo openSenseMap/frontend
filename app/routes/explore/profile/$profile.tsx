@@ -31,11 +31,22 @@ export async function loader({ params }: LoaderArgs) {
       return allBadges.result;
     });
 
+    const backpackBadgeIds = backpackData.map((badge: MyBadge) => badge.badgeclass);
+
+    const sortedBadges = [
+      ...allBadges.filter((badge: MyBadge) =>
+        backpackBadgeIds.includes(badge.entityId)
+      ),
+      ...allBadges.filter(
+        (badge: MyBadge) => !backpackBadgeIds.includes(badge.entityId)
+      ),
+    ];
+
     // Return the fetched data as JSON
     return json({
       success: true,
       userBackpack: backpackData,
-      allBadges: allBadges,
+      allBadges: sortedBadges,
       email: profileMail,
     });
   }
@@ -107,7 +118,9 @@ export default function Profile() {
                       // if so, remove the grayscale filter
                       // if not, add the grayscale filter
                       (data.userBackpack.some((obj: MyBadge) => {
-                        return obj.badgeclass === badge.entityId && !obj.revoked;
+                        return (
+                          obj.badgeclass === badge.entityId && !obj.revoked
+                        );
                       })
                         ? ""
                         : " grayscale")
