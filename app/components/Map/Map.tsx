@@ -1,29 +1,8 @@
 import type { MapProps, MapRef } from "react-map-gl";
 import { NavigationControl, Map as ReactMap } from "react-map-gl";
 import maplibregl from "maplibre-gl";
-import { forwardRef, useCallback } from "react";
-import DrawControl from "./DrawControl";
+import { forwardRef } from "react";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-
-// const onUpdate = useCallback(e => {
-//   setFeatures(currFeatures => {
-//     const newFeatures = {...currFeatures};
-//     for (const f of e.features) {
-//       newFeatures[f.id] = f;
-//     }
-//     return newFeatures;
-//   });
-// }, []);
-
-// const onDelete = useCallback(e => {
-//   setFeatures(currFeatures => {
-//     const newFeatures = {...currFeatures};
-//     for (const f of e.features) {
-//       delete newFeatures[f.id];
-//     }
-//     return newFeatures;
-//   });
-// }, []);
 
 const Map = forwardRef<MapRef, MapProps>(
   (
