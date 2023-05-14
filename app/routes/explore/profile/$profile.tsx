@@ -31,17 +31,10 @@ export async function loader({ params }: LoaderArgs) {
       return allBadges.result;
     });
 
-    // Filter out the badges that are not owned by the user
-    const badgesNotOwned = allBadges.filter((obj1: MyBadge) => {
-      return !backpackData.some((obj2: MyBadge) => {
-        return obj1.entityId === obj2.badgeclass;
-      });
-    });
     // Return the fetched data as JSON
     return json({
       success: true,
       userBackpack: backpackData,
-      badgesNotOwned: badgesNotOwned,
       allBadges: allBadges,
       email: profileMail,
     });
@@ -50,7 +43,6 @@ export async function loader({ params }: LoaderArgs) {
   return json({
     success: false,
     userBackpack: [],
-    badgesNotOwned: [],
     allBadges: [],
     email: profileMail,
   });
@@ -94,7 +86,7 @@ export default function Profile() {
         </div>
       ) : (
         <div className="flex justify-evenly bg-white">
-          {data.userBackpack.map((badge: MyBadge, index: number) => {
+          {data.allBadges.map((badge: MyBadge, index: number) => {
             return (
               <div
                 key={index}
@@ -109,29 +101,17 @@ export default function Profile() {
                     src={badge.image}
                     alt={badge.name}
                     title={badge.name}
-                    className="h-10 w-10 lg:h-20 lg:w-20"
-                  />
-                </Link>
-                <p>{badge.name}</p>
-              </div>
-            );
-          })}
-          {data.badgesNotOwned.map((badge: MyBadge, index: number) => {
-            return (
-              <div
-                key={index}
-                className="pointer x-auto my-5 flex flex-col items-center"
-              >
-                <Link
-                  to={badge.badgeclassOpenBadgeId}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img
-                    src={badge.image}
-                    alt={badge.name}
-                    title={badge.name}
-                    className={"h-10 w-10 grayscale lg:h-20 lg:w-20 "}
+                    className={
+                      "h-10 w-10 lg:h-20 lg:w-20" +
+                      // check if the badge is owned by the user
+                      // if so, remove the grayscale filter
+                      // if not, add the grayscale filter
+                      (data.userBackpack.some((obj: MyBadge) => {
+                        return obj.badgeclass === badge.entityId && !obj.revoked;
+                      })
+                        ? ""
+                        : " grayscale")
+                    }
                   />
                 </Link>
                 <p>{badge.name}</p>
