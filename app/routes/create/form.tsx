@@ -22,6 +22,7 @@ import center from "@turf/center";
 import { campaignSchema } from "~/lib/validations/campaign";
 import * as z from "zod";
 import { Switch } from "@/components/ui/switch";
+import { CountryDropdown } from "./countryDropdown";
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];
 
@@ -153,7 +154,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               Title
             </label>
@@ -188,7 +189,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               Description
             </label>
@@ -314,7 +315,7 @@ export default function CreateCampaign() {
               )} */}
             </div>
           </div>
-          <div>
+          {/* <div>
             <label
               htmlFor="country"
               className="block text-sm font-medium text-gray-700"
@@ -337,12 +338,13 @@ export default function CreateCampaign() {
                   {actionData.errors.country}
                 </div>
               )} */}
-            </div>
-          </div>
+          {/* </div>
+          </div> */}
+          <CountryDropdown />
           <div>
             <label
               htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               startDate
             </label>
@@ -367,7 +369,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="endDate"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               endDate
             </label>
@@ -393,7 +395,7 @@ export default function CreateCampaign() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
-                  Phenomena
+                  Phenomena <span className="text-red-500">&nbsp;*</span>
                   <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                 </Button>
               </DropdownMenuTrigger>
@@ -422,7 +424,7 @@ export default function CreateCampaign() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
-                  Exposure
+                  Exposure <span className="text-red-500">&nbsp;*</span>
                   <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                 </Button>
               </DropdownMenuTrigger>
@@ -444,7 +446,12 @@ export default function CreateCampaign() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <label htmlFor="hardware_available">Hardware verfügbar</label>
+          <label
+            className="after:text-red-500 after:content-['_*']"
+            htmlFor="hardware_available"
+          >
+            Hardware verfügbar
+          </label>
           <Switch id="hardware_available" name="hardware_available" />
           <input
             type="hidden"
