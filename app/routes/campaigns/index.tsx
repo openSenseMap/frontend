@@ -32,6 +32,7 @@ import { getCampaigns, updateCampaign } from "~/models/campaign.server";
 import Markers from "~/components/Map/Markers";
 import { MarkerProps } from "react-map-gl";
 import { Progress } from "~/components/ui/progress";
+import { CountryFlagIcon } from "~/components/ui/CountryFlag";
 
 export async function loader({ params }: LoaderArgs) {
   // request to API with deviceID
@@ -190,7 +191,10 @@ export default function Campaigns() {
                     <CardHeader>
                       <CardTitle>
                         <div className="flex flex-wrap">
-                          <span>{item.title}</span>
+                          <span className="flex flex-wrap">
+                            {item.title}
+                            <CountryFlagIcon country={String(item.country)} />
+                          </span>
                           <div className="ml-auto">
                             <span
                               className={clsx(
