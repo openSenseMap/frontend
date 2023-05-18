@@ -31,22 +31,11 @@ export async function loader({ params }: LoaderArgs) {
       return allBadges.result;
     });
 
-    const backpackBadgeIds = backpackData.map((badge: MyBadge) => badge.badgeclass);
-
-    const sortedBadges = [
-      ...allBadges.filter((badge: MyBadge) =>
-        backpackBadgeIds.includes(badge.entityId)
-      ),
-      ...allBadges.filter(
-        (badge: MyBadge) => !backpackBadgeIds.includes(badge.entityId)
-      ),
-    ];
-
     // Return the fetched data as JSON
     return json({
       success: true,
       userBackpack: backpackData,
-      allBadges: sortedBadges,
+      allBadges: allBadges,
       email: profileMail,
     });
   }
@@ -65,6 +54,27 @@ export default function Profile() {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
   // Get the data from the loader function using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
+  const sortedBadges = data.allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
+    // Determine if badgeA and badgeB are owned by the user and not revoked
+    const badgeAOwned = data.userBackpack.some(
+      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked
+    );
+    const badgeBOwned = data.userBackpack.some(
+      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked
+    );
+
+    // Sort badges based on ownership:
+    // Owned badges come first, followed by non-owned badges
+    if (badgeAOwned && !badgeBOwned) {
+      return -1;
+    } else if (!badgeAOwned && badgeBOwned) {
+      return 1;
+    } else {
+      // If both badges are owned or both are non-owned,
+      // maintain their original order
+      return 0;
+    }
+  });
   return (
     <div
       className={
@@ -97,7 +107,7 @@ export default function Profile() {
         </div>
       ) : (
         <div className="flex justify-evenly bg-white">
-          {data.allBadges.map((badge: MyBadge, index: number) => {
+          {sortedBadges.map((badge: MyBadge, index: number) => {
             return (
               <div
                 key={index}
