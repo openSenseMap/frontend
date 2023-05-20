@@ -40,6 +40,9 @@ module.exports = {
         700: "var(--color-green-700)",
         900: "var(--color-green-900)",
       },
+      emerald: {
+        500: "var(--color-emerald-500)",
+      },
       blue: {
         100: "var(--color-blue-100)",
         200: "var(--color-blue-200)",
