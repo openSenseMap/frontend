@@ -10,7 +10,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
@@ -23,6 +23,8 @@ import { campaignSchema } from "~/lib/validations/campaign";
 import * as z from "zod";
 import { Switch } from "@/components/ui/switch";
 import { CountryDropdown } from "./countryDropdown";
+import { useToast } from "~/components/ui/use-toast";
+import { useNavigate } from "@remix-run/react";
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];
 
@@ -39,9 +41,21 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const area = formData.get("feature") as any;
   const feature = area ? JSON.parse(area) : null;
+  // let centerpoint;
+  // if (feature.properties.centerpoint) {
+  //   console.log(feature.properties.centerpoint);
+  //   centerpoint = {
+  //     type: "Feature",
+  //     geometry: {
+  //       type: "Point",
+  //       coordinates: feature.properties.centerpoint,
+  //     },
+  //   };
+  // }
   const turf_points = feature
     ? turf.points(feature[0].geometry.coordinates[0])
     : null;
+  console.log(turf_points);
   const centerpoint = turf_points ? center(turf_points) : {};
   console.log(centerpoint);
   const title = formData.get("title");
@@ -83,7 +97,6 @@ export async function action({ request }: ActionArgs) {
   if (typeof requiredSensors === "string") {
     requiredSensors = parseInt(requiredSensors);
   }
-  console.log(requiredParticipants, requiredSensors);
 
   const campaignData = {
     title,
@@ -140,8 +153,20 @@ export async function loader({ params }: LoaderArgs) {
 }
 
 export default function CreateCampaign() {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const phenomena = useLoaderData<typeof loader>();
   const { features } = useContext(FeatureContext);
+
+  useEffect(() => {
+    if (Object.keys(features).length === 0) {
+      navigate("../area");
+      toast({
+        title: "Missing specified area",
+        description: "Please specify area of interest first",
+      });
+    }
+  }, []);
   const [phenomenaState, setPhenomenaState] = useState(
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
