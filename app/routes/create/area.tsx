@@ -1,9 +1,9 @@
 import Map from "~/components/Map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import DrawControl from "~/components/Map/DrawControl";
-import type { MapRef } from "react-map-gl";
+import { Layer, MapRef, Source } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import { useCallback, useContext, useRef, useState } from "react";
+import { useCallback, useContext, useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -19,6 +19,21 @@ import { Link } from "@remix-run/react";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import type { LinksFunction } from "@remix-run/server-runtime";
+import RadiusMode from "~/components/Map/RadiusMode";
+import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
+import circleToPolygon from "circle-to-polygon";
+// import RadiusMode from "~/components/Map/RadiusMode";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { valid } from "geojson-validation";
 
 export const links: LinksFunction = () => {
   return [
@@ -38,16 +53,72 @@ export const links: LinksFunction = () => {
 };
 
 export default function Explore() {
-  // const [drawPolygon, setDrawPolygon] = useState(false);
+  const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const { features, setFeatures } = useContext(FeatureContext);
-  const mapRef = useRef<MapRef>(null);
+  const mapRef: any = useRef();
+  // const onLoad = () => mapRef.current?.addControl(extendedDrawBar);
+
+  const addRadiusDrawControl = () => {
+    alert("HELLO");
+  };
+
+  const handleFileUpload = (event: any) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e?.target?.result;
+      if (content && typeof content === "string") {
+        const geojson = JSON.parse(content);
+        if (valid(geojson)) {
+          setGeojsonUploadData(geojson);
+          if (geojson.type === "FeatureCollection") {
+            setFeatures(geojson.features);
+          } else if (geojson.type === "Feature") {
+            setFeatures([geojson]);
+          }
+        } else {
+          console.error("Invalid GeoJSON file");
+          // Display an error message to the user or handle the error appropriately
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const onUpdate = useCallback((e: any) => {
-    setFeatures((currFeatures: any) => {
-      const updatedFeatures = e.features.map((f: any) => {
-        return { ...f };
+    if (e.features[0].properties.radius) {
+      const coordinates = [
+        e.features[0].geometry.coordinates[0],
+        e.features[0].geometry.coordinates[1],
+      ]; //[lon, lat]
+      const radius = parseInt(e.features[0].properties.radius); // in meters
+      const options = { numberOfEdges: 32 }; //optional, defaults to { numberOfEdges: 32 }
+
+      const polygon = circleToPolygon(coordinates, radius, options);
+      const updatedFeatures = {
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: polygon.coordinates[0].map((c) => {
+            return [c[0], c[1]];
+          }),
+        },
+        properties: {
+          radius: radius,
+          centerpoint: e.features[0].geometry.coordinates,
+        },
+      };
+      console.log(updatedFeatures);
+      setFeatures(updatedFeatures);
+    } else {
+      setFeatures((currFeatures: any) => {
+        const updatedFeatures = e.features.map((f: any) => {
+          return { ...f };
+        });
+        console.log(updatedFeatures);
+        return updatedFeatures;
       });
-      return updatedFeatures;
-    });
+    }
   }, []);
 
   const onDelete = useCallback((e: any) => {
@@ -81,7 +152,29 @@ export default function Explore() {
             <CardDescription>GeoJSON importieren</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button>Importieren</Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>Importieren</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>GeoJSON Datei hochladen</DialogTitle>
+                  <DialogDescription>
+                    Hier können Sie eine valide <b>.geojson</b> Datei hochladen
+                  </DialogDescription>
+                </DialogHeader>
+                <input
+                  type="file"
+                  accept=".geojson"
+                  onChange={handleFileUpload}
+                />
+                <DialogFooter>
+                  <DialogClose>
+                    <Button>Auswählen</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </div>
@@ -96,8 +189,9 @@ export default function Explore() {
         </Link>
         <MapProvider>
           <Map
-            ref={mapRef}
+            ref={(ref) => (mapRef.current = ref && ref.getMap())}
             initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
+            // onLoad={onLoad}
           >
             <GeocoderControl
               language="de"
@@ -108,11 +202,25 @@ export default function Explore() {
               position="top-left"
               displayControlsDefault={false}
               controls={{ polygon: true, point: true, trash: true }}
+              modes={{
+                ...modes,
+                radius_mode: RadiusMode,
+              }}
               onCreate={onUpdate}
               onUpdate={onUpdate}
               onDelete={onDelete}
-              // defaultMode={drawPolygon ? "draw_polygon" : "simple_select"}
             />
+            {geojsonUploadData && (
+              <Source type="geojson" data={geojsonUploadData}>
+                <Layer
+                  type="fill"
+                  paint={{
+                    "fill-color": "#ff0000",
+                    "fill-opacity": 0.5,
+                  }}
+                />
+              </Source>
+            )}
           </Map>
         </MapProvider>
       </div>
