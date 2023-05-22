@@ -16,18 +16,18 @@ import { ChevronDown } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
 import { FeatureContext } from "../create";
-import { Exposure, Priority } from "@prisma/client";
+import type { Exposure } from "@prisma/client";
+import { Priority } from "@prisma/client";
 import * as turf from "@turf/helpers";
 import center from "@turf/center";
 import { campaignSchema } from "~/lib/validations/campaign";
-import * as z from "zod";
+import type * as z from "zod";
 import { Switch } from "@/components/ui/switch";
-import { CountryDropdown } from "./countryDropdown";
 import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
 import { reverseGeocode } from "~/components/Map/GeocoderControl";
 
-type Checked = DropdownMenuCheckboxItemProps["checked"];
+// type Checked = DropdownMenuCheckboxItemProps["checked"];
 
 interface PhenomenaState {
   [phenomena: string]: boolean;
@@ -35,7 +35,7 @@ interface PhenomenaState {
 
 type PriorityType = keyof typeof Priority;
 type ExposureType = keyof typeof Exposure;
-type FormData = z.infer<typeof campaignSchema>;
+// type FormData = z.infer<typeof campaignSchema>;
 
 export async function action({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
@@ -378,7 +378,6 @@ export default function CreateCampaign() {
               )} */}
           {/* </div>
           </div> */}
-          <CountryDropdown />
           <div>
             <label
               htmlFor="startDate"
