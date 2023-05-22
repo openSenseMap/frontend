@@ -25,7 +25,7 @@ const links = [
   },
   {
     name: "Campaigns",
-    link: "/campaigns",
+    link: "/campaigns/overview",
   },
 ];
 

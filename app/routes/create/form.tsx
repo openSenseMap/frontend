@@ -145,7 +145,7 @@ export async function action({ request }: ActionArgs) {
       ownerId,
     });
 
-    return redirect("/campaigns/");
+    return redirect("/campaigns/overview");
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });
@@ -508,7 +508,7 @@ export default function CreateCampaign() {
             <Link
               className="text-blue-500 underline"
               to={{
-                pathname: "../campaigns",
+                pathname: "../campaigns/overview",
               }}
             >
               Kampagnen Übersicht

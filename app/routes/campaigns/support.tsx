@@ -31,7 +31,7 @@ export async function action({ request }: ActionArgs) {
   const edge = formData.get("edge");
   console.log(edge);
 
-  return redirect("/campaigns/");
+  return redirect("/campaigns/overview");
 }
 
 export default function Support() {
