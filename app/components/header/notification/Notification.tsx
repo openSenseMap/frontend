@@ -38,10 +38,6 @@ export default function Notification() {
             //footer content here
             return <div></div>;
           }}
-          onUnseenCountChanged={(unseenCount) => {
-            //unseen count changed
-            console.log(unseenCount);
-          }}
         >
           {({ unseenCount }) => <NotificationBell unseenCount={unseenCount} />}
         </PopoverNotificationCenter>
