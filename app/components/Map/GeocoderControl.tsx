@@ -39,6 +39,22 @@ const geocoder_api = {
       features: features,
     };
   },
+  reverseGeocode: async (config: any) => {
+    const { latitude, longitude } = config;
+
+    try {
+      const request = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2`;
+      const response = await fetch(request);
+      const result = await response.json();
+
+      const country_code = result.address.country_code;
+
+      return country_code;
+    } catch (e) {
+      console.error(`Failed to reverseGeocode with error: ${e}`);
+      return null;
+    }
+  },
 };
 
 type GeocoderControlProps = {
@@ -65,3 +81,7 @@ export default function GeocoderControl(props: GeocoderControlProps) {
 
   return null;
 }
+
+export const reverseGeocode = async (latitude: number, longitude: number) => {
+  return await geocoder_api.reverseGeocode({ latitude, longitude });
+};

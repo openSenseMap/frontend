@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { CountryDropdown } from "./countryDropdown";
 import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
+import { reverseGeocode } from "~/components/Map/GeocoderControl";
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];
 
@@ -41,9 +42,13 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const area = formData.get("feature") as any;
   const feature = area ? JSON.parse(area) : null;
-  // let centerpoint;
-  // if (feature.properties.centerpoint) {
-  //   console.log(feature.properties.centerpoint);
+  console.log(feature);
+  const turf_points = feature
+    ? turf.points(feature[0]?.geometry?.coordinates[0])
+    : null;
+  const centerpoint = turf_points ? center(turf_points) : {};
+
+  // if (feature?.properties?.centerpoint) {
   //   centerpoint = {
   //     type: "Feature",
   //     geometry: {
@@ -51,13 +56,21 @@ export async function action({ request }: ActionArgs) {
   //       coordinates: feature.properties.centerpoint,
   //     },
   //   };
+  // } else {
+  //   const turf_points = feature
+  //     ? turf.points(feature[0]?.geometry?.coordinates[0])
+  //     : null;
+  //   centerpoint = turf_points ? center(turf_points) : {};
   // }
-  const turf_points = feature
-    ? turf.points(feature[0].geometry.coordinates[0])
-    : null;
-  console.log(turf_points);
-  const centerpoint = turf_points ? center(turf_points) : {};
+
   console.log(centerpoint);
+  const geojson_centerpoint = JSON.parse(JSON.stringify(centerpoint));
+  const lat = geojson_centerpoint.geometry.coordinates[0];
+  const lng = geojson_centerpoint.geometry.coordinates[1];
+
+  const place = await reverseGeocode(lat, lng);
+  const country = place as string;
+
   const title = formData.get("title");
   const description = formData.get("description");
   const formDataKeywords = formData.get("keywords");
@@ -65,7 +78,7 @@ export async function action({ request }: ActionArgs) {
   if (formDataKeywords && typeof formDataKeywords === "string") {
     keywords = formDataKeywords.split(" ");
   }
-  const country = formData.get("country");
+  // const country = formData.get("country");
   const begin = formData.get("startDate");
   const startDate =
     begin && typeof begin === "string" ? new Date(begin) : undefined;
