@@ -25,7 +25,7 @@ export default function Search(props: SearchProps) {
     var url: URL = new URL(ENV.MAPBOX_GEOCODING_API + `${searchstring}.json`);
 
     url.search = new URLSearchParams({
-      access_token: `${ENV.MAPBOX_ACCESS_TOKEN}`,
+      access_token: `${ENV.MAPBOX_GEOCODING_ACCESS_TOKEN}`,
       limit: "4",
     }).toString();
 
