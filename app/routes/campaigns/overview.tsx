@@ -1,7 +1,7 @@
 import { LinksFunction, LoaderArgs, json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import clsx from "clsx";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Switch } from "~/components/ui/switch";
 import {
   Card,
@@ -45,12 +45,15 @@ import { BBox, FeatureCollection } from "geojson";
 import Supercluster, { AnyProps, PointFeature } from "supercluster";
 import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 type PointProperties = {
   title: string;
   cluster: boolean;
   point_count: any;
   id: string;
+  // color: string;
+  // selected: boolean;
 };
 
 export async function loader({ params }: LoaderArgs) {
@@ -74,13 +77,11 @@ export const links: LinksFunction = () => {
 export default function Campaigns() {
   const data = useLoaderData<typeof loader>();
   // const [mapLoaded, setMapLoaded] = useState(false);
-  const [viewport, setViewport] = useState({
-    latitude: 0,
-    longitude: 0,
-    width: "100vw",
-    height: "100vh",
-    zoom: 1,
-  });
+  // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
+  //   []
+  // );
+  const [selectedCampaign, setSelectedcampain] = useState("");
+  const [selectedMarker, setSelectedMarker] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("");
@@ -152,8 +153,20 @@ export default function Campaigns() {
 
   // const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const resetFilters = () => {
-    setUrgency("");
-    setSortBy("");
+    // setUrgency("");
+    // setSortBy("");
+    const allCampaigns = data.map((campaign: any) => {
+      return campaign;
+    });
+    setDisplayedCampaigns(allCampaigns as any);
+    setSelectedcampain("");
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [0, 0],
+        duration: 1000,
+        zoom: 1,
+      });
+    }
   };
 
   useEffect(() => {
@@ -217,6 +230,8 @@ export default function Campaigns() {
         point_count: 1,
         title: point?.title,
         id: point?.id,
+        color: "blue",
+        selected: false,
       },
       geometry: {
         type: "Point",
@@ -272,14 +287,35 @@ export default function Campaigns() {
       const selectedCampaign = data.filter(
         (campaign: any) => campaign.id === markerId
       );
+
+      // const updatedMarkers = markers.map((marker) => {
+      //   if (marker.properties.id === markerId) {
+      //     return {
+      //       ...marker,
+      //       properties: {
+      //         ...marker.properties,
+      //         color: "red",
+      //         selected: true,
+      //       },
+      //     };
+      //   }
+      //   return marker;
+      // });
+
+      // console.log(updatedMarkers);
+
+      // setMarkers(updatedMarkers);
+
+      setSelectedMarker(markerId);
       setDisplayedCampaigns(selectedCampaign as any);
+      setSelectedcampain(selectedCampaign[0].id);
       mapRef.current?.flyTo({
         center: [longitude, latitude],
         duration: 2000,
         zoom: 6,
       });
     },
-    []
+    [data]
   );
 
   const handleClusterClick = useCallback(
@@ -379,6 +415,23 @@ export default function Campaigns() {
             onCheckedChange={() => setShowMap(!showMap)}
           />
         </div>
+        {selectedCampaign && (
+          <div className="relative inline-block">
+            <input type="text" value={selectedCampaign.split("-")[0]} />
+            <XMarkIcon
+              onClick={() => {
+                setSelectedcampain("");
+                resetFilters();
+                mapRef.current?.flyTo({
+                  center: [0, 0],
+                  duration: 1000,
+                  zoom: 1,
+                });
+              }}
+              className="absolute right-2 top-2 ml-auto h-5 w-5"
+            />
+          </div>
+        )}
       </div>
       {data.length === 0 ? (
         <div>
@@ -407,7 +460,9 @@ export default function Campaigns() {
                       <div className="flex flex-wrap">
                         <span className="flex flex-wrap">
                           {item.title}
-                          <CountryFlagIcon country={String(item.country)} />
+                          <CountryFlagIcon
+                            country={String(item.country).toUpperCase()}
+                          />
                         </span>
                         <div className="ml-auto">
                           <span
@@ -474,7 +529,11 @@ export default function Campaigns() {
             <div className="ml-auto w-1/3">
               <MapProvider>
                 <Map
-                  initialViewState={viewport}
+                  initialViewState={{
+                    latitude: 0,
+                    longitude: 0,
+                    zoom: 1,
+                  }}
                   interactiveLayerIds={["marker-layer"]}
                   // preserveDrawingBuffer
                   // onMouseMove={handleMapMouseMove}
@@ -483,12 +542,12 @@ export default function Campaigns() {
                   onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
                   ref={mapRef}
                   style={{
-                    height: "100%",
-                    width: "100%",
-                    position: "relative",
+                    height: "60vh",
+                    width: "40vw",
+                    position: "fixed",
+                    bottom: "10px",
                     // marginTop: "2rem",
-                    marginLeft: "10px",
-                    marginRight: "10px",
+                    right: "10px",
                   }}
                 >
                   {clusters.map((cluster) => {
@@ -497,6 +556,8 @@ export default function Campaigns() {
                     // the point may be either a cluster or a crime point
                     const { cluster: isCluster, point_count: pointCount } =
                       cluster.properties;
+
+                    // const marker = markers.find((m) => m.id === cluster.id);
 
                     // we have a cluster to render
                     if (isCluster) {
@@ -526,24 +587,32 @@ export default function Campaigns() {
                       );
                     }
 
-                    // we have a single point (crime) to render
                     return (
-                      <Marker
-                        key={`${cluster.properties.id}`}
-                        latitude={latitude}
-                        longitude={longitude}
-                        onClick={() =>
-                          handleMarkerClick(
-                            cluster.properties.id,
-                            latitude,
-                            longitude
-                          )
-                        }
-                      >
-                        {/* <button className="crime-marker">
-                          <img src="/custody.svg" alt="crime doesn't pay" />
-                        </button> */}
-                      </Marker>
+                      <>
+                        <Marker
+                          // color={color}
+                          key={`${cluster.properties.id}`}
+                          latitude={latitude}
+                          longitude={longitude}
+                          onClick={() =>
+                            handleMarkerClick(
+                              cluster.properties.id,
+                              latitude,
+                              longitude
+                            )
+                          }
+                        ></Marker>
+                        <Marker
+                          key={`span-${cluster.properties.id}`}
+                          latitude={latitude}
+                          longitude={longitude}
+                          anchor="top"
+                        >
+                          <span className="font-bold">
+                            {cluster.properties.title}
+                          </span>
+                        </Marker>
+                      </>
                     );
                   })}
                   {/* <Source
