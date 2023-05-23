@@ -14,7 +14,7 @@ import {
 const links = [
   {
     name: "Overview",
-    link: ".",
+    link: "./overview",
   },
   {
     name: "Tutorial",
