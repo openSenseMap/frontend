@@ -71,7 +71,7 @@ class MyCustomControl {
     return this.mainContainer;
   }
   onRemove() {
-    this.container.parentNode.removeChild(this.container);
+    // this.container.parentNode.removeChild(this.container);
     this.map = undefined;
   }
 }

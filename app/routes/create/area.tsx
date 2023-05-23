@@ -22,6 +22,7 @@ import type { LinksFunction } from "@remix-run/server-runtime";
 import RadiusMode from "~/components/Map/RadiusMode";
 import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
 import circleToPolygon from "circle-to-polygon";
+// import CustomControl from "~/components/Map/CustomControl";
 // import RadiusMode from "~/components/Map/RadiusMode";
 import {
   Dialog,
@@ -34,6 +35,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { valid } from "geojson-validation";
+import {
+  CircleMode,
+  DragCircleMode,
+  DirectMode,
+  SimpleSelectMode,
+} from "maplibre-gl-draw-circle";
 
 export const links: LinksFunction = () => {
   return [
@@ -56,11 +63,15 @@ export default function Explore() {
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const { features, setFeatures } = useContext(FeatureContext);
   const mapRef: any = useRef();
-  // const onLoad = () => mapRef.current?.addControl(extendedDrawBar);
+  // const draw = new MapboxDraw({
 
-  const addRadiusDrawControl = () => {
-    alert("HELLO");
-  };
+  //   modes: {
+  //     ...modes,
+  //     draw_circle: CircleMode,
+  //     // draw_rectangle:
+  //   },
+  // });
+  // const onLoad = () => mapRef.current?.addControl(draw);
 
   const handleFileUpload = (event: any) => {
     const file = event.target.files[0];
@@ -200,16 +211,21 @@ export default function Explore() {
             />
             <DrawControl
               position="top-left"
+              // defaultMode="drag_circle"
               displayControlsDefault={false}
               controls={{ polygon: true, point: true, trash: true }}
-              modes={{
-                ...modes,
-                radius_mode: RadiusMode,
-              }}
+              // modes={{
+              //   ...modes,
+              //   // radius_mode: RadiusMode,
+              //   draw_circle: CircleMode,
+              //   drag_circle: DragCircleMode,
+              // }}
               onCreate={onUpdate}
               onUpdate={onUpdate}
               onDelete={onDelete}
             />
+            {/* <CustomControl /> */}
+            {/* <Button className="absolute top-1/2 left-4 z-50">Weiter</Button> */}
             {geojsonUploadData && (
               <Source type="geojson" data={geojsonUploadData}>
                 <Layer
