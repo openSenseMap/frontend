@@ -23,63 +23,64 @@ export default function SearchList(props: SearchListProps) {
 
   const useKeyPress = function (targetKey: string) {
     const [keyPressed, setKeyPressed] = useState(false);
-  
+
     useEffect(() => {
       const downHandler = ({ key }: { key: string }) => {
         if (key === targetKey) {
           setKeyPressed(true);
         }
       };
-  
+
       const upHandler = ({ key }: { key: string }) => {
         if (key === targetKey) {
           setKeyPressed(false);
         }
       };
-  
+
       window.addEventListener("keydown", downHandler);
       window.addEventListener("keyup", upHandler);
-  
+
       return () => {
         window.removeEventListener("keydown", downHandler);
         window.removeEventListener("keyup", upHandler);
       };
     }, [targetKey]);
-  
+
     return keyPressed;
   };
 
   const downPress = useKeyPress("ArrowDown");
   const upPress = useKeyPress("ArrowUp");
   const enterPress = useKeyPress("Enter");
-  const controlPress = useKeyPress("Control")
+  const controlPress = useKeyPress("Control");
   const [cursor, setCursor] = useState(0);
-  
+
   var searchResultsDeviceIndex = -1;
   var searchResultsLocationIndex = props.searchResultsDevice.length - 1;
-  var length = props.searchResultsDevice.length + props.searchResultsLocation.length;
-  var searchResultsAll = props.searchResultsDevice.concat(props.searchResultsLocation);
+  var length =
+    props.searchResultsDevice.length + props.searchResultsLocation.length;
+  var searchResultsAll = props.searchResultsDevice.concat(
+    props.searchResultsLocation
+  );
   var selected = searchResultsAll[cursor];
 
-
   const setShowSearchCallback = useCallback((state: boolean) => {
-    props.setShowSearch(state)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  
+    props.setShowSearch(state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    if ((length !== 0) && downPress) {
+    if (length !== 0 && downPress) {
       setCursor((prevState) => (prevState < length - 1 ? prevState + 1 : 0));
     }
   }, [downPress, length]);
   useEffect(() => {
-    if ((length !== 0) && upPress) {
+    if (length !== 0 && upPress) {
       setCursor((prevState) => (prevState > 0 ? prevState - 1 : length - 1));
     }
   }, [upPress, length]);
   useEffect(() => {
-    if ((length !== 0) && enterPress) {
+    if (length !== 0 && enterPress) {
       goTo(osem, selected);
       setShowSearchCallback(false);
       navigate(
@@ -91,12 +92,15 @@ export default function SearchList(props: SearchListProps) {
   }, [enterPress, length, osem, navigate, selected, setShowSearchCallback]);
 
   const handleDigitPress = (event: any) => {
-    console.log(typeof Number(event.key))
-    console.log(event.ctrlKey)
-    if (typeof Number(event.key) === "number" && Number(event.key) <= length && event.ctrlKey ) {
+    if (
+      typeof Number(event.key) === "number" &&
+      Number(event.key) <= length &&
+      event.ctrlKey
+    ) {
+      selected = searchResultsAll[Number(event.key) - 1];
       event.preventDefault();
-      setCursor(Number(event.key)-1);
-      goTo(osem, searchResultsAll[Number(event.key)-1]);
+      setCursor(Number(event.key) - 1);
+      goTo(osem, selected);
       setTimeout(() => setShowSearchCallback(false), 500);
       navigate(
         selected.type === "device"
@@ -104,17 +108,17 @@ export default function SearchList(props: SearchListProps) {
           : "/explore"
       );
     }
-  }
+  };
 
   useEffect(() => {
     // attach the event listener
-    window.addEventListener('keydown', handleDigitPress);
+    window.addEventListener("keydown", handleDigitPress);
 
     // remove the event listener
     return () => {
-      window.removeEventListener('keydown', handleDigitPress);
+      window.removeEventListener("keydown", handleDigitPress);
     };
-  })
+  });
 
   return (
     <div className="w-full overflow-visible rounded-[1.25rem] bg-white pb-2">

@@ -80,6 +80,10 @@ model Sensor {
   unit       String
   sensorType String
 
+  lastMeasurement Json?
+
+  data Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
