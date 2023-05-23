@@ -18,7 +18,7 @@ const Map = forwardRef<MapRef, MapProps>(
           zoom: 7,
         }}
         mapStyle="mapbox://styles/mapbox/streets-v12"
-        mapboxAccessToken="pk.eyJ1Ijoic2Vuc2Vib3giLCJhIjoiY2lxajNoYnNsMDBlOWkybmh2ZnhxZmMwZyJ9.inXfNk5nJf92mgUeBIEmtA"
+        mapboxAccessToken={ENV.MAPBOX_TILES_ACCESS_TOKEN}
         pitchWithRotate={false}
         preserveDrawingBuffer
         ref={ref}
