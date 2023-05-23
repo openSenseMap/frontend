@@ -4,7 +4,6 @@ export const campaignSchema = z.object({
   title: z.string().min(3).max(52),
   description: z.string(),
   feature: z.any(),
-  keywords: z.array(z.string()),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
   country: z.string(),
   participantCount: z.number().int().nonnegative(),

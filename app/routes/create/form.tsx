@@ -63,22 +63,20 @@ export async function action({ request }: ActionArgs) {
   //   centerpoint = turf_points ? center(turf_points) : {};
   // }
 
-  console.log(centerpoint);
-  const geojson_centerpoint = JSON.parse(JSON.stringify(centerpoint));
-  const lat = geojson_centerpoint.geometry.coordinates[0];
-  const lng = geojson_centerpoint.geometry.coordinates[1];
+  let country = "";
+  if (centerpoint) {
+    //@ts-ignore
+    const lat = centerpoint.geometry.coordinates[0];
+    //@ts-ignore
+    const lng = centerpoint.geometry.coordinates[1];
 
-  const place = await reverseGeocode(lat, lng);
-  const country = place as string;
+    const place = await reverseGeocode(lng, lat);
+    country = place as string;
+  }
+  console.log(country);
 
   const title = formData.get("title");
   const description = formData.get("description");
-  const formDataKeywords = formData.get("keywords");
-  let keywords;
-  if (formDataKeywords && typeof formDataKeywords === "string") {
-    keywords = formDataKeywords.split(" ");
-  }
-  // const country = formData.get("country");
   const begin = formData.get("startDate");
   const startDate =
     begin && typeof begin === "string" ? new Date(begin) : undefined;
@@ -115,7 +113,6 @@ export async function action({ request }: ActionArgs) {
     title,
     description,
     feature,
-    keywords: keywords || [],
     priority,
     country,
     participantCount: 0,
@@ -245,33 +242,6 @@ export default function CreateCampaign() {
               {/* {actionData?.errors?.description && (
                 <div className="text-red-700 pt-1" id="description-error">
                   {actionData.errors.description}
-                </div>
-              )} */}
-            </div>
-          </div>
-          <div>
-            <label
-              htmlFor="keywords"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Keywords
-            </label>
-            <div className="mt-1">
-              <input
-                id="keywords"
-                defaultValue=""
-                placeholder="Seperate keywords by space"
-                // ref={keywordsRef}
-                name="keywords"
-                type="text"
-                autoComplete="new-keywords"
-                // aria-invalid={actionData?.errors?.keywords ? true : undefined}
-                aria-describedby="keywords-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {/* {actionData?.errors?.keywords && (
-                <div className="text-red-700 pt-1" id="keywords-error">
-                  {actionData.errors.keywords}
                 </div>
               )} */}
             </div>

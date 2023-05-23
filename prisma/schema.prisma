@@ -99,9 +99,8 @@ model Campaign {
   owner                User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId              String
   description          String
-  keywords             String[]
   priority             Priority
-  country              String
+  country              String[]
   participantCount     Int
   requiredParticipants Int?
   requiredSensors      Int?

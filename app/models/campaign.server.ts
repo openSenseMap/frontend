@@ -23,7 +23,6 @@ export function createCampaign({
   feature,
   ownerId,
   description,
-  keywords,
   priority,
   country,
   requiredSensors,
@@ -41,7 +40,6 @@ export function createCampaign({
   | "title"
   | "feature"
   | "description"
-  | "keywords"
   | "priority"
   | "country"
   | "requiredSensors"
@@ -62,7 +60,6 @@ export function createCampaign({
       title,
       feature: feature === null ? {} : feature,
       description,
-      keywords,
       priority,
       participantCount: 0,
       country,
