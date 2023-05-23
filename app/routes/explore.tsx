@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "@remix-run/react";
 import Map from "~/components/Map";
-import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header/Header";
 
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
@@ -17,7 +17,7 @@ import type {
 import { MapProvider } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
 import { useState, useRef } from "react";
-import { useHotkeys } from '@mantine/hooks';
+import { useHotkeys } from "@mantine/hooks";
 import type { FeatureCollection, Point } from "geojson";
 import {
   clusterCountLayer,
@@ -36,13 +36,13 @@ export const links: LinksFunction = () => {
   return [
     {
       rel: "stylesheet",
-      href: maplibregl,
+      href: mapboxgl,
     },
   ];
 };
 
 export default function Explore() {
-  const [showSearch, setShowSearch] = useState<boolean>(false)
+  const [showSearch, setShowSearch] = useState<boolean>(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -56,12 +56,15 @@ export default function Explore() {
    * Display the search overlay when the ctrl + k key combination is pressed
    */
   useHotkeys([
-    ['ctrl+K', () => {
-      setShowSearch(!showSearch);
-      setTimeout(() => {
-        focusSearchInput();
-      }, 100);
-    }]
+    [
+      "ctrl+K",
+      () => {
+        setShowSearch(!showSearch);
+        setTimeout(() => {
+          focusSearchInput();
+        }, 100);
+      },
+    ],
   ]);
 
   const data = useLoaderData<typeof loader>();
@@ -116,7 +119,13 @@ export default function Explore() {
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
-        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
+        {showSearch ? (
+          <OverlaySearch
+            devices={data.devices}
+            searchRef={searchRef}
+            setShowSearch={setShowSearch}
+          />
+        ) : null}
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>
