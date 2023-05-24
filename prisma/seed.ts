@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { Status } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
@@ -12,6 +13,12 @@ function printProgress(text: string) {
   }
   process.stdout.write(text);
 }
+
+const randomEnumValue = (enumeration: any) => {
+  const values = Object.keys(enumeration);
+  const enumKey = values[Math.floor(Math.random() * values.length)];
+  return enumeration[enumKey];
+};
 
 const preparePasswordHash = function preparePasswordHash(
   plaintextPassword: string
@@ -62,6 +69,7 @@ async function seed() {
         userId: user.id,
         name: device.name,
         exposure: device.exposure,
+        status: randomEnumValue(Status),
         useAuth: false,
         latitude: Number(device.latitude),
         longitude: Number(device.longitude),

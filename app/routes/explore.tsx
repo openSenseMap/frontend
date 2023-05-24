@@ -23,6 +23,8 @@ import { useState, useRef, useCallback } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import type { FeatureCollection, GeoJsonProperties, Point } from "geojson";
 import {
+  clusterCountLayer,
+  clusterLayer,
   deviceStatusFilter,
   unclusteredPointLayer,
 } from "~/components/Map/Layers";
@@ -80,11 +82,10 @@ export default function Explore() {
 
   function updateMarkers() {
     const newMarkers = {};
-    const features = mapRef.current?.getMap().querySourceFeatures("osem-data");
+    const features = mapRef.current?.getMap().querySourceFeatures("devices");
 
     if (!features) return;
 
-    console.log("updateMarkers - features: ", features);
     // for every cluster on the screen, create an HTML marker for it (if we didn't yet),
     // and add it to the map if it's not there already
     for (const feature of features) {
@@ -135,11 +136,12 @@ export default function Explore() {
   }, []);
 
   const onMapClick = (e: MapLayerMouseEvent) => {
+    console.log("map click", e.features);
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
 
       if (feature.layer.id === "osem-data") {
-        const source = mapRef.current?.getSource("osem-data") as GeoJSONSource;
+        const source = mapRef.current?.getSource("devices") as GeoJSONSource;
         source.getClusterExpansionZoom(
           feature.properties?.cluster_id,
           (err, zoom) => {
@@ -163,7 +165,13 @@ export default function Explore() {
   // Used render event like in official example
   // https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
   const onRender = (event: MapboxEvent) => {
-    if (!mapRef.current?.getMap().isSourceLoaded("osem-data")) return;
+    // Return if source is not available
+    if (!mapRef.current?.getMap().getSource("devices")) return;
+
+    // Return if source is not loaded
+    if (!mapRef.current?.getMap().isSourceLoaded("devices")) return;
+
+    // Update markers if source is available and create donut chart clusters
     updateMarkers();
   };
 
@@ -185,7 +193,7 @@ export default function Explore() {
         <Map
           ref={mapRefCallback}
           initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-          interactiveLayerIds={["osem-data", "unclustered-point"]}
+          interactiveLayerIds={["unclustered-point"]}
           onClick={onMapClick}
           onData={onData}
           onSourceData={onSourceData}
@@ -193,7 +201,7 @@ export default function Explore() {
           onRender={onRender}
         >
           <Source
-            id="osem-data"
+            id="devices"
             type="geojson"
             data={data.devices as FeatureCollection<Point, Device>}
             cluster={true}
@@ -208,8 +216,8 @@ export default function Explore() {
               }
             }
           >
-            {/* <Layer {...clusterLayer} />
-            <Layer {...clusterCountLayer} /> */}
+            {/* <Layer {...clusterLayer} /> */}
+            {/* <Layer {...clusterCountLayer} /> */}
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
