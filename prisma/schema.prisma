@@ -20,6 +20,8 @@ model User {
   password Password?
   notes    Note[]
   devices  Device[]
+
+  role Role @default(USER)
 }
 
 model Password {
@@ -48,6 +50,17 @@ enum Exposure {
   UNKNOWN
 }
 
+enum Status {
+  ACTIVE
+  INACTIVE
+  OLD
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
 enum Model {
   HOME_V2_LORA
 }
@@ -56,7 +69,9 @@ model Device {
   id       String   @id @default(uuid())
   name     String
   exposure Exposure
-  useAuth  Boolean?
+  status   Status   @default(INACTIVE)
+
+  useAuth Boolean?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
