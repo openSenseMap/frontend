@@ -4,7 +4,13 @@ import {
   MinusCircleIcon,
   ChevronDoubleUpIcon,
 } from "@heroicons/react/24/solid";
-import { Form, Link, useSearchParams, useSubmit } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useNavigation,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import Graph from "./Graph";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
@@ -22,6 +28,7 @@ export interface DeviceAndSelectedSensors {
 }
 
 export default function BottomBar(data: DeviceAndSelectedSensors) {
+  const navigation = useNavigation();
   // state variables
   const [isOpen, setIsOpen] = useState<Boolean>(true);
   const [searchParams] = useSearchParams();
@@ -92,114 +99,134 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
               </Link>
             </div>
           </div>
-          <Form
-            method="get"
-            onChange={(e) => {
-              submit(e.currentTarget);
-            }}
-          >
-            <div className="-ms-overflow-style:none scrollable box-border w-full overflow-x-auto overflow-y-hidden">
-              <div className="flex justify-center whitespace-nowrap text-center">
-                {data.device.sensors.map((sensor: Sensor) => {
-                  // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-                  const lastMeasurement =
-                    sensor.lastMeasurement as Prisma.JsonObject;
-                  const value = lastMeasurement.value as string;
-                  return (
-                    <div
-                      key={sensor.id}
-                      onClick={() => {
-                        if (
-                          !sensorIds.includes(sensor.id) &&
-                          searchParams.getAll("sensor").length >= 2
-                        ) {
-                          if (toastOpen) {
-                            setToastOpen(false);
-                            setTimeout(() => {
-                              setToastOpen(true);
-                            }, 300);
-                          } else {
-                            setToastOpen(true);
-                          }
-                        }
-                      }}
-                    >
-                      <label htmlFor={sensor.id}>
-                        <input
-                          className="peer hidden"
-                          disabled={
+          <div className="relative">
+            {navigation.state === "loading" && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-300 bg-opacity-50">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-dashed border-green-300"></div>
+              </div>
+            )}
+            <Form
+              method="get"
+              onChange={(e) => {
+                submit(e.currentTarget);
+              }}
+              className={
+                navigation.state === "loading" ? "pointer-events-none" : ""
+              }
+            >
+              <div
+                className={
+                  "-ms-overflow-style:none scrollable box-border w-full overflow-x-auto overflow-y-hidden"
+                }
+              >
+                <div className="flex justify-center whitespace-nowrap text-center">
+                  {data.device.sensors.map((sensor: Sensor) => {
+                    // dont really know why this is necessary - some kind of TypeScript/i18n bug?
+                    const lastMeasurement =
+                      sensor.lastMeasurement as Prisma.JsonObject;
+                    const value = lastMeasurement.value as string;
+                    return (
+                      <div
+                        key={sensor.id}
+                        onClick={() => {
+                          if (
                             !sensorIds.includes(sensor.id) &&
                             searchParams.getAll("sensor").length >= 2
-                              ? true
-                              : false
-                          } // check if there are already two selected and this one is not one of them
-                          type="checkbox"
-                          name="sensor"
-                          id={sensor.id}
-                          value={sensor.id}
-                          defaultChecked={sensorIds.includes(sensor.id)}
-                        />
-                        <div
-                          className={
-                            "whitespace-nowrap" +
-                            (sensorIds.includes(sensor.id)
-                              ? " text-green-100"
-                              : "")
+                          ) {
+                            if (toastOpen) {
+                              setToastOpen(false);
+                              setTimeout(() => {
+                                setToastOpen(true);
+                              }, 300);
+                            } else {
+                              setToastOpen(true);
+                            }
                           }
-                        >
-                          <div className="w-220 min-w-150 relative flex flex-grow-0 flex-col items-center justify-center border-l border-r border-gray-300 py-2 px-6 hover:cursor-pointer hover:bg-gray-100">
-                            <div>
-                              <div className="flex h-8 items-center justify-center">
-                                <div className="text-4xl">
-                                  {sensor.lastMeasurement ? (
-                                    <>
-                                      <b>{value.split(".")[0]}</b>
-                                      <span className="pl-[0.1rem] text-[0.35rem]">
-                                        <span>
-                                          {value.split(".")[1] || "00"}
+                        }}
+                      >
+                        <label htmlFor={sensor.id}>
+                          <input
+                            className="peer hidden"
+                            disabled={
+                              !sensorIds.includes(sensor.id) &&
+                              searchParams.getAll("sensor").length >= 2
+                                ? true
+                                : false
+                            } // check if there are already two selected and this one is not one of them
+                            type="checkbox"
+                            name="sensor"
+                            id={sensor.id}
+                            value={sensor.id}
+                            defaultChecked={sensorIds.includes(sensor.id)}
+                          />
+                          <div
+                            className={
+                              "whitespace-nowrap" +
+                              (sensorIds.includes(sensor.id)
+                                ? " text-green-100"
+                                : "")
+                            }
+                          >
+                            <div
+                              className={
+                                "w-220 min-w-150 relative flex flex-grow-0 flex-col items-center justify-center border-l border-r border-gray-300 py-2 px-6 hover:cursor-pointer hover:bg-gray-100"
+                              }
+                            >
+                              <div>
+                                <div className="flex h-8 items-center justify-center">
+                                  <div className="text-4xl">
+                                    {sensor.lastMeasurement ? (
+                                      <>
+                                        <b>{value.split(".")[0]}</b>
+                                        <span className="pl-[0.1rem] text-[0.35rem]">
+                                          <span>
+                                            {value.split(".")[1] || "00"}
+                                          </span>
                                         </span>
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <b className="text-xs opacity-80">n/a</b>
+                                      </>
+                                    ) : (
+                                      <b className="text-xs opacity-80">n/a</b>
+                                    )}
+                                  </div>
+                                  {sensor.unit && sensor.lastMeasurement && (
+                                    <div className="relative left-[-10px] self-start text-sm font-bold">
+                                      {sensor.unit}
+                                    </div>
                                   )}
                                 </div>
-                                {sensor.unit && sensor.lastMeasurement && (
-                                  <div className="relative left-[-10px] self-start text-sm font-bold">
-                                    {sensor.unit}
-                                  </div>
-                                )}
+                                <div className="text-center">
+                                  {sensor.title}
+                                </div>
                               </div>
-                              <div className="text-center">{sensor.title}</div>
+                              {sensorIds.length >= 2 &&
+                              !sensorIds.includes(sensor.id) ? null : (
+                                <div className="absolute bottom-[5px] right-[5px] flex items-center justify-center p-1 text-2xl">
+                                  {sensorIds.includes(sensor.id) ? (
+                                    <div className="h-3 w-3 cursor-pointer rounded leading-3">
+                                      -
+                                    </div>
+                                  ) : (
+                                    <div className="h-3 w-3 cursor-pointer rounded leading-3">
+                                      +
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            {sensorIds.length >= 2 &&
-                            !sensorIds.includes(sensor.id) ? null : (
-                              <div className="absolute bottom-[5px] right-[5px] flex items-center justify-center p-1 text-2xl hover:bg-green-300">
-                                {sensorIds.includes(sensor.id) ? (
-                                  <div className="h-3 w-3 cursor-pointer rounded leading-3">
-                                    -
-                                  </div>
-                                ) : (
-                                  <div className="h-3 w-3 cursor-pointer rounded leading-3">
-                                    +
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
-                        </div>
-                      </label>
-                    </div>
-                  );
-                })}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </Form>
-          {sensorIds.length > 0 ? (
-            <Graph
-              sensors={filterSensorsById(sensorIds, data.device.sensors)}
-            />
-          ) : null}
+            </Form>
+            {sensorIds.length > 0 ? (
+              <Graph
+                sensors={filterSensorsById(sensorIds, data.device.sensors)}
+              />
+            ) : null}
+          </div>
         </div>
         <div
           onClick={() => {
