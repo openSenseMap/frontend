@@ -435,8 +435,11 @@ export default function Campaigns() {
       </div>
       {data.length === 0 ? (
         <div>
-          Zurzeit gibt es noch keine Kampagnen. Klicke hier um eine Kampagne zu
-          erstellen
+          Zurzeit gibt es noch keine Kampagnen. Klicke{" "}
+          <Link className="underlined text-blue-500" to={"../../create/area"}>
+            hier{" "}
+          </Link>
+          um die erste Kampagne zu erstellen
         </div>
       ) : (
         <div className="flex flex-wrap">
