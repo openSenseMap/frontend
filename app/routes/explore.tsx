@@ -12,21 +12,24 @@ import type {
   LngLatLike,
   MapLayerMouseEvent,
   MapRef,
+  MapSourceDataEvent,
+  MapStyleDataEvent,
+  MapboxEvent,
 } from "react-map-gl";
 
 import { MapProvider } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
 import { useState, useRef, useCallback } from "react";
 import { useHotkeys } from "@mantine/hooks";
-import type { FeatureCollection, Point } from "geojson";
+import type { FeatureCollection, GeoJsonProperties, Point } from "geojson";
 import {
-  clusterCountLayer,
-  clusterLayer,
   deviceStatusFilter,
   unclusteredPointLayer,
 } from "~/components/Map/Layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/OverlaySearch";
+import mapboxgl from "mapbox-gl";
+import createDonutChart from "~/components/Map/cluster";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -69,8 +72,46 @@ export default function Explore() {
   ]);
 
   const data = useLoaderData<typeof loader>();
-  console.log("Explore - data: ", data);
   const navigate = useNavigate();
+
+  // objects for caching and keeping track of HTML marker objects (for performance)
+  const markers = {};
+  let markersOnScreen = {};
+
+  function updateMarkers() {
+    const newMarkers = {};
+    const features = mapRef.current?.getMap().querySourceFeatures("osem-data");
+
+    if (!features) return;
+
+    console.log("updateMarkers - features: ", features);
+    // for every cluster on the screen, create an HTML marker for it (if we didn't yet),
+    // and add it to the map if it's not there already
+    for (const feature of features) {
+      const coords = feature.geometry.coordinates;
+      const props: GeoJsonProperties = feature.properties;
+      if (!props) return;
+
+      if (!props.cluster) continue;
+      const id = props.cluster_id;
+
+      let marker = markers[id];
+      if (!marker) {
+        const el = createDonutChart(props);
+        marker = markers[id] = new mapboxgl.Marker({
+          element: el,
+        }).setLngLat(coords);
+      }
+      newMarkers[id] = marker;
+
+      if (!markersOnScreen[id]) marker.addTo(mapRef.current?.getMap());
+    }
+    // for every marker we've added previously, remove those that are no longer visible
+    for (const id in markersOnScreen) {
+      if (!newMarkers[id]) markersOnScreen[id].remove();
+    }
+    markersOnScreen = newMarkers;
+  }
 
   const mapRef = useRef<MapRef | null>(null);
   const mapRefCallback = useCallback((ref: MapRef | null) => {
@@ -92,25 +133,6 @@ export default function Explore() {
       loadImage();
     }
   }, []);
-
-  // const symbolLayer = {
-  //   id: "earthquake_label",
-  //   type: "symbol",
-  //   source: "osem-data",
-  //   filter: ["!=", "cluster", true],
-  //   layout: {
-  //     "text-field": [
-  //       "number-format",
-  //       ["get", "mag"],
-  //       { "min-fraction-digits": 1, "max-fraction-digits": 1 },
-  //     ],
-  //     "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-  //     "text-size": 10,
-  //   },
-  //   paint: {
-  //     "text-color": ["case", ["<", ["get", "mag"], 3], "black", "white"],
-  //   },
-  // };
 
   const onMapClick = (e: MapLayerMouseEvent) => {
     if (e.features && e.features.length > 0) {
@@ -138,6 +160,24 @@ export default function Explore() {
     }
   };
 
+  // Used render event like in official example
+  // https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
+  const onRender = (event: MapboxEvent) => {
+    if (!mapRef.current?.getMap().isSourceLoaded("osem-data")) return;
+    updateMarkers();
+  };
+
+  // Not sure if one of these events are better suited for drawing the clusters
+  const onData = (event: MapStyleDataEvent | MapSourceDataEvent) => {
+    // console.log("onData", event);
+  };
+  const onSourceData = (event: MapSourceDataEvent) => {
+    // console.log("onSourceData", event);
+  };
+  const onLoad = (event: MapboxEvent) => {
+    // console.log("onLoad", event);
+  };
+
   return (
     <div className="h-full w-full">
       <MapProvider>
@@ -147,6 +187,10 @@ export default function Explore() {
           initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
           interactiveLayerIds={["osem-data", "unclustered-point"]}
           onClick={onMapClick}
+          onData={onData}
+          onSourceData={onSourceData}
+          onLoad={onLoad}
+          onRender={onRender}
         >
           <Source
             id="osem-data"
@@ -164,8 +208,8 @@ export default function Explore() {
               }
             }
           >
-            <Layer {...clusterLayer} />
-            <Layer {...clusterCountLayer} />
+            {/* <Layer {...clusterLayer} />
+            <Layer {...clusterCountLayer} /> */}
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
