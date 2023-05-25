@@ -362,7 +362,7 @@ export default function Campaigns() {
         </Button>
       </Link> */}
       <input
-        className="focus:ring-blue-400 mx-auto mt-20 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
+        className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
         type="text"
         placeholder="Search campaigns"
         value={searchTerm}
@@ -398,8 +398,8 @@ export default function Campaigns() {
               <DropdownMenuRadioItem value="dringlichkeit">
                 Dringlichkeit
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="erstellung">
-                Erstellung
+              <DropdownMenuRadioItem value="erstelldatum">
+                Erstelldatum
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
@@ -456,16 +456,18 @@ export default function Campaigns() {
             })}
           >
             {displayedCampaigns.map((item: any) => (
-              <Link key={item.id} to={`./${item.id}`}>
+              <Link key={item.id} to={`../${item.id}`}>
                 <Card>
                   <CardHeader>
                     <CardTitle>
                       <div className="flex flex-wrap">
                         <span className="flex flex-wrap">
                           {item.title}
-                          <CountryFlagIcon
-                            country={String(item.country).toUpperCase()}
-                          />
+                          {item.country && (
+                            <CountryFlagIcon
+                              country={String(item.country).toUpperCase()}
+                            />
+                          )}
                         </span>
                         <div className="ml-auto">
                           <span
