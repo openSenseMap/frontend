@@ -9,7 +9,7 @@ import { createInstance } from "i18next";
 import i18next from "./i18next.server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import I18NexFsBackend from "i18next-fs-backend";
-import i18nextOptions from "./i18nextOptions"; // our i18n configuration file
+import i18nextOptions from "./i18next-options"; // our i18n configuration file
 import { resolve } from "node:path";
 
 const ABORT_DELAY = 5000;
