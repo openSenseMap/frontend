@@ -181,6 +181,9 @@ export default function Menu() {
               method="post"
               onSubmit={() => {
                 setOpen(false);
+                toast({
+                  description: "Logging out ...",
+                });
               }}
             >
               <button

@@ -18,6 +18,7 @@ import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "~/components/ui/use-toast";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -187,6 +188,11 @@ export default function LoginPage() {
             <button
               type="submit"
               className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
+              onSubmit={() => {
+                toast({
+                  description: "Logging in ...",
+                });
+              }}
               disabled={isLoggingIn}
             >
               {isLoggingIn ? t("transition_label") : t("login_label")}
