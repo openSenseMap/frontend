@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export default function Header(props: HeaderProps) {
   return (
-    <div className="flex items-center p-2 w-full h-14 fixed z-10 pointer-events-none">
+    <div className="flex justify-between items-center p-2 w-full h-14 fixed z-10 pointer-events-none">
         <Home />
         <NavBar devices={props.devices} />
         <Menu />

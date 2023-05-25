@@ -79,7 +79,7 @@ export default function NavBar(props: NavBarProps) {
   }, [dateRange, value, singleDate]);
 
   return (
-    <div className="pointer-events-auto mx-auto h-10 w-1/2">
+    <div className="pointer-events-auto h-10 w-1/2">
       {!isHovered && !showSearch ? (
         <div
           className="flex h-10 w-full items-center justify-around rounded-[1.25rem] border border-gray-100 bg-white shadow-xl"
@@ -97,7 +97,7 @@ export default function NavBar(props: NavBarProps) {
             <CalendarIcon className="h-4 w-4 text-white" />
             <div className="text-center text-white">
               {timeState === "live" ? (
-                <span>Live</span>
+                <span>{t("live_label")}</span>
               ) : timeState === "pointintime" ? (
                 singleDate ? (
                   <>
