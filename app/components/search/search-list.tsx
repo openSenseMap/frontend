@@ -8,8 +8,8 @@ import {
   MapPinIcon,
 } from "@heroicons/react/24/outline";
 
-import SearchListItem from "./SearchListItem";
-import { goTo } from "~/lib/searchMapHelper";
+import SearchListItem from "./search-list-item";
+import { goTo } from "~/lib/search-map-helper";
 
 interface SearchListProps {
   searchResultsLocation: any[];
