@@ -1,4 +1,4 @@
-import { Form, Link, useSearchParams } from "@remix-run/react";
+import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import { useLoaderData } from "@remix-run/react";
@@ -40,6 +40,8 @@ export default function Menu() {
   // const url = useLocation().pathname;
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const navigation = useNavigation();
+  const isLoggingOut = Boolean(navigation.state === "submitting");
 
   const { t } = useTranslation("menu");
 
@@ -167,13 +169,14 @@ export default function Menu() {
               onSubmit={() => {
                 setOpen(false);
                 toast({
-                  description: "Successfully logged out",
+                  description: (isLoggingOut ? "Logging out ..." : "Successfully logged out"),
                 });
               }}
             >
               <button
                 type="submit"
                 className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+                disabled={isLoggingOut}
               >
                 <ArrowLeftOnRectangleIcon className="mr-2 h-5 w-5" />
                 <span>{t("logout_label")}</span>
