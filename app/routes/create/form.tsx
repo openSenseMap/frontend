@@ -496,7 +496,7 @@ export default function CreateCampaign() {
             <Link
               className="text-blue-500 underline"
               to={{
-                pathname: "../campaigns/overview",
+                pathname: "../../campaigns/overview",
               }}
             >
               Kampagnen Übersicht
