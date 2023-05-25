@@ -31,7 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function Menu() {
@@ -44,6 +44,19 @@ export default function Menu() {
   const isLoggingOut = Boolean(navigation.state === "submitting");
 
   const { t } = useTranslation("menu");
+
+  useEffect(() => {
+    if (data.user === null) {
+      toast({
+        description: "Successfully logged out",
+      });
+    }
+    if (data.user !== null) {
+      toast({
+        description: "Successfully logged in",
+      });
+    }
+  }, [data, toast]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -168,9 +181,6 @@ export default function Menu() {
               method="post"
               onSubmit={() => {
                 setOpen(false);
-                toast({
-                  description: (isLoggingOut ? "Logging out ..." : "Successfully logged out"),
-                });
               }}
             >
               <button
