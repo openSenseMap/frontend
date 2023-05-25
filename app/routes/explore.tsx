@@ -27,10 +27,14 @@ import {
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/OverlaySearch";
 import { Toaster } from "~/components/ui//toaster";
+import { getUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
-  return json({ devices });
+
+  const user = await getUser(request);
+
+  return json({ devices, user });
 }
 
 export const links: LinksFunction = () => {
