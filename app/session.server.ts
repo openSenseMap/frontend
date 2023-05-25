@@ -19,7 +19,7 @@ export const sessionStorage = createCookieSessionStorage({
 
 const USER_SESSION_KEY = "userId";
 
-export async function getSession(request: Request) {
+export async function getUserSession(request: Request) {
   const cookie = request.headers.get("Cookie");
   return sessionStorage.getSession(cookie);
 }
@@ -27,7 +27,7 @@ export async function getSession(request: Request) {
 export async function getUserId(
   request: Request
 ): Promise<User["id"] | undefined> {
-  const session = await getSession(request);
+  const session = await getUserSession(request);
   const userId = session.get(USER_SESSION_KEY);
   return userId;
 }
@@ -74,7 +74,7 @@ export async function createUserSession({
   remember: boolean;
   redirectTo: string;
 }) {
-  const session = await getSession(request);
+  const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
   return redirect(redirectTo, {
     headers: {
@@ -88,8 +88,9 @@ export async function createUserSession({
 }
 
 export async function logout(request: Request) {
-  const session = await getSession(request);
-  return redirect("/", {
+  const session = await getUserSession(request);
+  console.log("session", session);
+  return redirect("/explore", {
     headers: {
       "Set-Cookie": await sessionStorage.destroySession(session),
     },
