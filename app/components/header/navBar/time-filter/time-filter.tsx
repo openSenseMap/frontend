@@ -45,7 +45,7 @@ export function TimeFilter(props: TimeFilterProps) {
   // const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  let { t } = useTranslation("navbar");
+  const { t } = useTranslation("navbar");
   const userLocaleString = getUserLocale();
   const userLocale = userLocaleString === "de" ? de : enGB;
 
@@ -158,7 +158,7 @@ export function TimeFilter(props: TimeFilterProps) {
               <div className="mx-auto min-h-[2.5rem] w-2/3 items-center justify-center rounded-t-lg border border-b-0 border-gray-100 p-2">
                 {props.singleDate === undefined ? (
                   <div className="flex min-h-[2.5rem] items-center justify-center p-1">
-                    Please select a date
+                    {t("date_picker_label")}
                   </div>
                 ) : (
                   <div className="flex shrink grow basis-10 flex-row items-center justify-center">
@@ -269,7 +269,7 @@ export function TimeFilter(props: TimeFilterProps) {
                 {props.dateRange === undefined ||
                 props.dateRange.from === undefined ? (
                   <div className="flex min-h-[2.5rem] items-center justify-center p-1">
-                    Please select a date range
+                    {t("date_range_picker_label")}
                   </div>
                 ) : (
                   <div className="flex justify-around">
