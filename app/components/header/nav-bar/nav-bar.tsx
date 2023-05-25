@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import Search from "~/components/search/Search";
-import { SunIcon, CalendarDaysIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import Search from "~/components/search";
+import {
+  SunIcon,
+  CalendarDaysIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import { Calendar } from "@/components/ui/calendar";
 
 interface NavBarProps {
@@ -67,7 +71,7 @@ export default function NavBar(props: NavBarProps) {
             <SunIcon className="h-4 w-4 text-white" />
             <div className="text-center text-white">Temperatur</div>
           </div>
-          <div className="flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full ring-slate-900/10 bg-white pl-2 pr-3 shadow-lg ring-1">
+          <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
             <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
             <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">

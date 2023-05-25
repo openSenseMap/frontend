@@ -5,7 +5,7 @@ import {
   ChevronDoubleUpIcon,
 } from "@heroicons/react/24/solid";
 import { Form, Link, useSearchParams, useSubmit } from "@remix-run/react";
-import Graph from "./Graph";
+import Graph from "./graph";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
 import type { Prisma, Sensor } from "@prisma/client";
