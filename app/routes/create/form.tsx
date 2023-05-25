@@ -1,5 +1,5 @@
-import { Form, Link, useLoaderData } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { Form, Link, useLoaderData, useActionData } from "@remix-run/react";
+import type { ActionArgs, FormData, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import {
@@ -21,7 +21,7 @@ import { Priority } from "@prisma/client";
 import * as turf from "@turf/helpers";
 import center from "@turf/center";
 import { campaignSchema } from "~/lib/validations/campaign";
-import type * as z from "zod";
+import * as z from "zod";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
@@ -163,10 +163,15 @@ export async function loader({ params }: LoaderArgs) {
 }
 
 export default function CreateCampaign() {
+  const actionData = useActionData();
   const { toast } = useToast();
   const navigate = useNavigate();
   const phenomena = useLoaderData<typeof loader>();
   const { features } = useContext(FeatureContext);
+
+  useEffect(() => {
+    console.log(actionData);
+  }, [actionData]);
 
   useEffect(() => {
     if (Object.keys(features).length === 0) {
@@ -202,15 +207,17 @@ export default function CreateCampaign() {
                 name="title"
                 type="title"
                 autoComplete="title"
-                // aria-invalid={actionData?.errors?.title ? true : undefined}
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
                 aria-describedby="title-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.title && (
-                <div className="text-red-700 pt-1" id="email-error">
-                  {actionData.errors.email}
+              {actionData?.error?.issues[0].path[0] === "title" && (
+                <div className="pt-1 text-red-500" id="email-error">
+                  {actionData.error.issues[0].message}
                 </div>
-              )} */}
+              )}
             </div>
           </div>
           <input
@@ -235,15 +242,17 @@ export default function CreateCampaign() {
                 name="description"
                 type="description"
                 autoComplete="new-description"
-                // aria-invalid={actionData?.errors?.description ? true : undefined}
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
                 aria-describedby="description-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.description && (
-                <div className="text-red-700 pt-1" id="description-error">
-                  {actionData.errors.description}
+              {actionData?.error?.issues[0].path[0] === "description" && (
+                <div className="pt-1 text-red-500" id="description-error">
+                  {actionData.error.issues[0].message}
                 </div>
-              )} */}
+              )}
             </div>
           </div>
           <div>
@@ -287,15 +296,18 @@ export default function CreateCampaign() {
                 name="requiredParticipants"
                 type="number"
                 autoComplete="new-requiredParticipants"
-                // aria-invalid={actionData?.errors?.requiredParticipants ? true : undefined}
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
                 aria-describedby="requiredParticipants-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.requiredParticipants && (
-                <div className="text-red-700 pt-1" id="requiredParticipants-error">
-                  {actionData.errors.requiredParticipants}
+              {actionData?.error?.issues[0].path[0] ===
+                "requiredParticipants" && (
+                <div className="pt-1 text-red-500" id="description-error">
+                  {actionData.error.issues[0].message}
                 </div>
-              )} */}
+              )}
             </div>
           </div>
           <div>
@@ -312,15 +324,17 @@ export default function CreateCampaign() {
                 name="requiredSensors"
                 type="number"
                 autoComplete="new-requiredSensors"
-                // aria-invalid={actionData?.errors?.requiredSensors ? true : undefined}
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
                 aria-describedby="requiredSensors-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.requiredSensors && (
-                <div className="text-red-700 pt-1" id="requiredSensors-error">
-                  {actionData.errors.requiredParticipants}
+              {actionData?.error?.issues[0].path[0] === "requiredSensors" && (
+                <div className="pt-1 text-red-500" id="description-error">
+                  {actionData.error.issues[0].message}
                 </div>
-              )} */}
+              )}
             </div>
           </div>
           {/* <div>
@@ -362,15 +376,17 @@ export default function CreateCampaign() {
                 name="startDate"
                 type="date"
                 autoComplete="new-startDate"
-                // aria-invalid={actionData?.errors?.startDate ? true : undefined}
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
                 aria-describedby="startDate-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.startDate && (
-                <div className="text-red-700 pt-1" id="startDate-error">
-                  {actionData.errors.startDate}
+              {actionData?.error?.issues[0].path[0] === "startDate" && (
+                <div className="pt-1 text-red-500" id="description-error">
+                  {actionData.error.issues[0].message}
                 </div>
-              )} */}
+              )}
             </div>
           </div>
           <div>
@@ -386,16 +402,19 @@ export default function CreateCampaign() {
                 // ref={endDateRef}
                 name="endDate"
                 type="date"
-                autoComplete="new-phenomena"
-                // aria-invalid={actionData?.errors?.phenomena ? true : undefined}
-                aria-describedby="phenomena-error"
+                autoComplete="new-endDate"
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
+                aria-describedby="endDate-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {/* {actionData?.errors?.phenomena && (
-                <div className="text-red-700 pt-1" id="phenomena-error">
-                  {actionData.errors.phenomena}
+              {actionData?.error?.issues[0].message ===
+                "Start date must be earlier than End date." && (
+                <div className="pt-1 text-red-500" id="description-error">
+                  {actionData.error.issues[0].message}
                 </div>
-              )} */}
+              )}
             </div>
           </div>
           <div>
