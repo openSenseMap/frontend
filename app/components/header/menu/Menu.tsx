@@ -172,7 +172,7 @@ export default function Menu() {
             >
               <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
                 <ArrowRightOnRectangleIcon className="mr-2 h-5 w-5" />
-                <span>Log in</span>
+                <span className="text-green-100">{t("login_label")}</span>
               </button>
             </Link>
           ) : (
@@ -192,7 +192,7 @@ export default function Menu() {
                 disabled={isLoggingOut}
               >
                 <ArrowLeftOnRectangleIcon className="mr-2 h-5 w-5" />
-                <span>{t("logout_label")}</span>
+                <span className="text-red-500">{t("logout_label")}</span>
               </button>
             </Form>
           )}

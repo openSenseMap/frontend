@@ -150,7 +150,7 @@ export default function LoginPage() {
                   placeholder="example@opensensemap.org"
                 />
                 {actionData?.errors?.email && (
-                  <div className="text-red-700 pt-1" id="email-error">
+                  <div className="text-red-500 pt-1" id="email-error">
                     {actionData.errors.email}
                   </div>
                 )}
@@ -177,7 +177,7 @@ export default function LoginPage() {
                   placeholder="********"
                 />
                 {actionData?.errors?.password && (
-                  <div className="text-red-700 pt-1" id="password-error">
+                  <div className="text-red-500 pt-1" id="password-error">
                     {actionData.errors.password}
                   </div>
                 )}
@@ -188,7 +188,7 @@ export default function LoginPage() {
             <button
               type="submit"
               className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
-              onSubmit={() => {
+              onClick={() => {
                 toast({
                   description: "Logging in ...",
                 });
