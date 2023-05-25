@@ -36,7 +36,7 @@ export default function CreateCampaignPage() {
                     to={item.link}
                     className={({ isActive }) =>
                       isActive
-                        ? "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 underline md:p-0 md:font-thin md:hover:text-green-100"
+                        ? "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 underline md:p-0 md:font-bold md:hover:text-green-100"
                         : "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-green-100"
                     }
                   >

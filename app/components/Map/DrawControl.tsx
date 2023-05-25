@@ -43,10 +43,15 @@ class MyCustomControl {
     };
     this.containerCir.className =
       "mapbox-gl-draw_ctrl-draw-btn my-custom-control-cir";
+
+    this.containerCir.className =
+      "h-[29px] w-[29px] flex items-center justify-center";
     // this.containerCir.innerHTML = "&#x25EF";
     this.containerImgCir = document.createElement("img");
     this.containerImgCir.src =
       " https://cdn-icons-png.flaticon.com/16/808/808569.png";
+    this.containerImgCir.className = "mx-auto";
+
     this.containerCir.appendChild(this.containerImgCir);
 
     this.containerRec.onclick = () => {
@@ -55,11 +60,13 @@ class MyCustomControl {
     this.containerRec.className =
       "mapbox-gl-draw_ctrl-draw-btn my-custom-control-rec";
     // this.containerRec.innerHTML = "&#9645";
-    this.containerRec.className = "h-[29px] w-[29px]";
+    this.containerRec.className =
+      "h-[29px] w-[29px] flex items-center justify-center";
 
     this.containerImgRec = document.createElement("img");
     this.containerImgRec.src =
       "  https://cdn-icons-png.flaticon.com/16/7367/7367908.png";
+    this.containerImgRec.className = "mx-auto";
     this.containerRec.appendChild(this.containerImgRec);
 
     this.mainContainer = document.createElement("div");

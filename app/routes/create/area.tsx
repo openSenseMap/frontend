@@ -143,11 +143,9 @@ export default function Explore() {
   }, []);
 
   return (
-    <div className="flex h-full w-full">
+    <div className="grid h-full w-full grid-cols-3 gap-4">
       <div className="flex flex-col gap-3">
-        <h1 className="text-lg font-bold">
-          Schritt 1: Interessensgebiet definieren
-        </h1>
+        <h1 className="ml-2 text-lg font-bold">Interessensgebiet definieren</h1>
         <Card>
           <CardHeader>
             <CardTitle>Option 1: </CardTitle>
@@ -189,7 +187,7 @@ export default function Explore() {
           </CardContent>
         </Card>
       </div>
-      <div className="fixed inset-y-0 right-0 z-0 h-full w-2/3">
+      <div className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3">
         <Link to={"/create/form"}>
           <Button
             className="absolute top-4 right-4 z-50 ml-auto"
