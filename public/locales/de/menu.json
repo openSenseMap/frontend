@@ -1,0 +1,17 @@
+{
+  "title": "Wilkommen",
+  "subtitle": "Bitte loggen Sie sich ein, um mehr Inhalte zu sehen.",
+  "profile_label": "Profil",
+  "settings_label": "Einstellungen",
+  "my_devices_label": "Meine Geräte",
+  "add_device_label": "Gerät hinzufügen",
+  "tutorials_label": "Tutorials",
+  "api_docs_label": "API Dokumentation",
+  "faq_label": "FAQ",
+  "contact_label": "Kontakt",
+  "imprint_label": "Impressum",
+  "data_protection_label": "Datenschutz",
+  "donate_label": "Spenden",
+  "promotion_label": "Förderung",
+  "logout_label": "Ausloggen"
+}
