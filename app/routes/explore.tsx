@@ -23,7 +23,7 @@ import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
-} from "~/components/Map/Layers";
+} from "~/components/Map/layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 
