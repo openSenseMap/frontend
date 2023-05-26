@@ -37,12 +37,14 @@ export default function Header() {
     <nav className="absolute top-0 z-50 w-full border-b-2 border-gray-400 bg-white px-2 py-2.5 dark:border-gray-300 dark:bg-black sm:px-4">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
         <div className="flex">
+          {/* Osem Logo*/}
           <Link to="/" className="flex items-center pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
             <span className="dark:text-green-200 self-center whitespace-nowrap text-xl font-semibold text-green-100">
               openSenseMap
             </span>
           </Link>
+          {/* Navbar Links*/}
           <div
             className="hidden w-full items-center justify-between text-gray-400 dark:text-gray-300 md:order-1 md:flex md:w-auto"
             id="navbar-cta"
@@ -63,7 +65,9 @@ export default function Header() {
             </ul>
           </div>
         </div>
+
         <div className="flex items-center justify-center md:order-2">
+          {/* Dark Mood */}
           <div className="flex items-center justify-center pr-8">
             <button onClick={toggleTheme}>
               {theme === "light" ? (
@@ -73,6 +77,7 @@ export default function Header() {
               )}
             </button>
           </div>
+          {/* Donation */}
           <button
             type="button"
             className="dark:border-green-200 dark:bg-green-200 rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black"
@@ -81,6 +86,7 @@ export default function Header() {
               Donate
             </Link>
           </button>
+          {/* Collapsible navigation bar */}
           <button
             data-collapse-toggle="navbar-cta"
             type="button"
