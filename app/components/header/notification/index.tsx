@@ -17,12 +17,14 @@ function onNotificationClick(message: IMessage) {
 
 export default function Notification() {
   const data = useLoaderData<typeof loader>();
-  
+
   return (
     <div className="pointer-events-auto mr-4 box-border flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-black hover:bg-gray-100">
       <NovuProvider
+        backendUrl={"https://api.novu.testing.opensensemap.org"}
+        socketUrl={"https://ws.novu.testing.opensensemap.org"}
         subscriberId={data?.user?.email}
-        applicationIdentifier={"o5Ypz6hePA3V"}
+        applicationIdentifier={"VMq0Gus6SsHM"}
         //i18n={{}}
       >
         <PopoverNotificationCenter
