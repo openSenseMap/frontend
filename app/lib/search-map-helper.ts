@@ -20,7 +20,10 @@ export const goToLocation = (map: MapRef | undefined, center: LngLatLike) => {
  *
  * @param bbox
  */
-export const goToLocationBBox = (map: MapRef | undefined, bbox: LngLatBounds) => {
+export const goToLocationBBox = (
+  map: MapRef | undefined,
+  bbox: LngLatBounds
+) => {
   map?.fitBounds(bbox, {
     animate: true,
     speed: 1.6,
@@ -34,7 +37,12 @@ export const goToLocationBBox = (map: MapRef | undefined, bbox: LngLatBounds) =>
  * @param lat latitude of the device
  * @param id id of the device
  */
-export const goToDevice = (map: MapRef | undefined, lng: number, lat: number, id: string) => {
+export const goToDevice = (
+  map: MapRef | undefined,
+  lng: number,
+  lat: number,
+  id: string
+) => {
   map?.flyTo({
     center: [lng, lat],
     animate: true,
@@ -46,12 +54,12 @@ export const goToDevice = (map: MapRef | undefined, lng: number, lat: number, id
 
 export const goTo = (map: MapRef | undefined, item: any) => {
   if (item.type === "device") {
-      goToDevice(map, item.lng, item.lat, item.deviceId);
+    goToDevice(map, item.lng, item.lat, item.deviceId);
   } else if (item.type === "location") {
-      if (item.bbox) {
+    if (item.bbox) {
       goToLocationBBox(map, item.bbox);
-      } else {
+    } else {
       goToLocation(map, item.center);
-      }
+    }
   }
-}
+};
