@@ -4,12 +4,19 @@ import {
   MinusCircleIcon,
   ChevronDoubleUpIcon,
 } from "@heroicons/react/24/solid";
-import { Form, Link, useNavigation, useSearchParams, useSubmit } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useNavigation,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import Graph from "./graph";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
 import type { Prisma, Sensor } from "@prisma/client";
 import type { DeviceWithSensors } from "types";
+import Spinner from "../spinner";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -96,7 +103,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
           <div className="relative">
             {navigation.state === "loading" && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
-                <div className="h-8 w-8 animate-spin rounded-full z-50 border-4 border-dashed border-green-300"></div>
+                <Spinner />
               </div>
             )}
             <Form
@@ -215,9 +222,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                 </div>
               </div>
             </Form>
-            {sensorIds.length > 0 ? (
-              <Graph/>
-            ) : null}
+            {sensorIds.length > 0 ? <Graph /> : null}
           </div>
         </div>
         <div
