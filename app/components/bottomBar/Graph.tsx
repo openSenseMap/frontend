@@ -27,7 +27,7 @@ ChartJS.register(
   //Legend
 );
 
-export default function Graph(data: any) {
+export default function Graph() {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
 
@@ -37,7 +37,7 @@ export default function Graph(data: any) {
       (measurement: LastMeasurementProps) => measurement.createdAt
     ),
     datasets:
-    loaderData.selectedSensors.length === 2
+      loaderData.selectedSensors.length === 2
         ? [
             {
               label: loaderData.selectedSensors[0].title,
@@ -68,7 +68,7 @@ export default function Graph(data: any) {
           ],
   };
 
-  const options: ChartOptions = {
+  const options: ChartOptions<"line"> = {
     maintainAspectRatio: false,
     interaction: {
       mode: "index",
@@ -97,7 +97,10 @@ export default function Graph(data: any) {
       y: {
         title: {
           display: true,
-          text: loaderData.selectedSensors[0].title + " in " + loaderData.selectedSensors[0].unit,
+          text:
+            loaderData.selectedSensors[0].title +
+            " in " +
+            loaderData.selectedSensors[0].unit,
         },
         type: "linear",
         display: true,
@@ -107,13 +110,14 @@ export default function Graph(data: any) {
         title: {
           display: true,
           text: loaderData.selectedSensors[1]
-            ? loaderData.selectedSensors[1].title + " in " + loaderData.selectedSensors[1].unit
+            ? loaderData.selectedSensors[1].title +
+              " in " +
+              loaderData.selectedSensors[1].unit
             : "", //data.sensors[1].unit
         },
         type: "linear",
         display: "auto",
         position: "right",
-
         // grid line settings
         grid: {
           drawOnChartArea: false, // only want the grid lines for one axis to show up
@@ -123,11 +127,9 @@ export default function Graph(data: any) {
   };
 
   return (
-    <div className="shadow-inner text-gray-100">
+    <div className="text-gray-100 shadow-inner">
       {loaderData.selectedSensors.length > 0 ? (
         <div className="flex h-full w-full justify-center px-10">
-          {/* 
-// @ts-ignore */}
           <Line data={lineData} options={options}></Line>
         </div>
       ) : null}

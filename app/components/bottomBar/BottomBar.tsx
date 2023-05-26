@@ -40,21 +40,6 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
   // get list of selected sensor ids from URL search params
   const sensorIds = searchParams.getAll("sensor");
 
-  // helper function to filter an array of sensors by their ids
-  function filterSensorsById(
-    idArray: string[],
-    objectArray: Sensor[]
-  ): Sensor[] {
-    const filteredArray: Sensor[] = [];
-
-    for (const obj of objectArray) {
-      if (idArray.includes(obj.id)) {
-        filteredArray.push(obj);
-      }
-    }
-    return filteredArray;
-  }
-
   // helper function to format a date as a string
   const formattedDate = (date: Date) => {
     return new Date(date).toLocaleString("de-DE", {
@@ -101,8 +86,8 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
           </div>
           <div className="relative">
             {navigation.state === "loading" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-300 bg-opacity-50">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-dashed border-green-300"></div>
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
+                <div className="h-8 w-8 animate-spin z-50 rounded-full border-4 border-dashed border-green-300"></div>
               </div>
             )}
             <Form
@@ -221,11 +206,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                 </div>
               </div>
             </Form>
-            {sensorIds.length > 0 ? (
-              <Graph
-                sensors={filterSensorsById(sensorIds, data.device.sensors)}
-              />
-            ) : null}
+            {sensorIds.length > 0 && <Graph />}
           </div>
         </div>
         <div
