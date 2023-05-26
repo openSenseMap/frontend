@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Theme, useTheme } from "~/utils/themeProvider";
+import { Theme, useTheme } from "~/utils/theme-provider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 const links = [
@@ -34,12 +34,12 @@ export default function Header() {
   };
 
   return (
-    <nav className="absolute top-0 z-50 w-full bg-white px-2 py-2.5 dark:bg-black sm:px-4 border-b-2 border-gray-400 dark:border-gray-300">
+    <nav className="absolute top-0 z-50 w-full border-b-2 border-gray-400 bg-white px-2 py-2.5 dark:border-gray-300 dark:bg-black sm:px-4">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
         <div className="flex">
           <Link to="/" className="flex items-center pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-            <span className="self-center whitespace-nowrap text-xl font-semibold text-green-100 dark:text-green-200">
+            <span className="dark:text-green-200 self-center whitespace-nowrap text-xl font-semibold text-green-100">
               openSenseMap
             </span>
           </Link>
@@ -53,7 +53,7 @@ export default function Header() {
                   <li key={index}>
                     <Link
                       to={item.link}
-                      className="block rounded py-2 pl-3 pr-4 md:p-0 md:hover:text-green-100 dark:md:hover:text-green-200 md:font-thin"
+                      className="dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-green-100"
                     >
                       {item.name}
                     </Link>
@@ -75,7 +75,7 @@ export default function Header() {
           </div>
           <button
             type="button"
-            className="rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black dark:border-green-200 dark:bg-green-200"
+            className="dark:border-green-200 dark:bg-green-200 rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black"
           >
             <Link to="/explore" rel="intent">
               Donate
@@ -84,7 +84,7 @@ export default function Header() {
           <button
             data-collapse-toggle="navbar-cta"
             type="button"
-            className="text-gray-500 inline-flex items-center rounded-lg p-2 text-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:hidden"
+            className="inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:hidden"
             aria-controls="navbar-cta"
             aria-expanded="false"
           >

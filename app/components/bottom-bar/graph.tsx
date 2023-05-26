@@ -13,7 +13,7 @@ import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
-import type { LastMeasurementProps } from "./BottomBar";
+import type { LastMeasurementProps } from "./bottom-bar";
 import type { loader } from "~/routes/explore/$deviceId";
 
 // Registering Chart.js components that will be used in the graph
