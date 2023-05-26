@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
 import { Theme, useTheme } from "~/utils/theme-provider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import invariant from "tiny-invariant";
 
 const links = [
   {
@@ -31,6 +32,23 @@ export default function Header() {
     setTheme((prevTheme) =>
       prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
     );
+  };
+
+  const userName = "dummy user";
+  // const userName = null;
+  //* To control user menu visibility
+  const userMenu = () => {
+    console.log("🚀 ~ onClick");
+    const profileMenu = document.querySelector(".profile-menu");
+    invariant(profileMenu, "profileMenu is not found");
+    let profileMenuStatus = profileMenu.classList.contains("invisible");
+    if (profileMenuStatus) {
+      profileMenu.classList.remove("invisible");
+      profileMenu.classList.add("visible");
+    } else {
+      profileMenu.classList.remove("visible");
+      profileMenu.classList.add("invisible");
+    }
   };
 
   return (
@@ -77,6 +95,7 @@ export default function Header() {
               )}
             </button>
           </div>
+
           {/* Donation */}
           <button
             type="button"
@@ -86,6 +105,7 @@ export default function Header() {
               Donate
             </Link>
           </button>
+
           {/* Collapsible navigation bar */}
           <button
             data-collapse-toggle="navbar-cta"
@@ -109,6 +129,148 @@ export default function Header() {
               ></path>
             </svg>
           </button>
+        </div>
+
+        {/* Collapsible user menu */}
+        <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 md:order-2">
+          {/* login button */}
+          {!userName ? (
+            <a
+              href="#"
+              className="block px-4 py-2  text-lg text-gray-700"
+              role="menuitem"
+              tabIndex={-1}
+              id="user-menu-item-1"
+            >
+              Login
+            </a>
+          ) : (
+            <div className="relative ml-3">
+              <div>
+                <button
+                  type="button"
+                  className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  id="user-menu-button"
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                  onClick={userMenu}
+                >
+                  <span className="sr-only">Open user menu</span>
+                  {/* avatar icon */}
+                  <div className=" h-10 w-10 overflow-hidden rounded-full">
+                    <svg
+                      aria-hidden="true"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
+                  </div>
+                </button>
+              </div>
+
+              {/* user menu invisible */}
+              <div
+                className="profile-menu  absolute right-0 z-10 mt-2 w-48 origin-top-right divide-y divide-solid rounded-md bg-white py-1 font-mono tracking-tighter shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="user-menu-button"
+                tabIndex={-1}
+              >
+                <div>
+                  <p
+                    className="block px-4 py-2 text-sm text-gray-700"
+                    role="menuitem"
+                    tabIndex={-1}
+                    id="user-menu-item-0"
+                  >
+                    Singed in as <b>{userName}</b>
+                  </p>
+                </div>
+
+                <div>
+                  <a
+                    href="#"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                    role="menuitem"
+                    tabIndex={-1}
+                    id="user-menu-item-1"
+                  >
+                    Dashboard
+                  </a>
+
+                  <a
+                    href="#"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                    role="menuitem"
+                    tabIndex={-1}
+                    id="user-menu-item-2"
+                  >
+                    New senseBox
+                  </a>
+                </div>
+
+                <div>
+                  <a
+                    href="#"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                    role="menuitem"
+                    tabIndex={-1}
+                    id="user-menu-item-1"
+                  >
+                    Settings
+                  </a>
+
+                  <a
+                    href="#"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                    role="menuitem"
+                    tabIndex={-1}
+                    id="user-menu-item-2"
+                  >
+                    Sign out
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="sm:hidden" id="mobile-menu">
+          <div className="space-y-1 px-2 pb-3 pt-2">
+            <a
+              href="#"
+              className="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white"
+              aria-current="page"
+            >
+              Dashboard
+            </a>
+            <a
+              href="#"
+              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+            >
+              Team
+            </a>
+            <a
+              href="#"
+              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+            >
+              Projects
+            </a>
+            <a
+              href="#"
+              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+            >
+              Calendar
+            </a>
+          </div>
         </div>
       </div>
     </nav>
