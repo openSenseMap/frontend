@@ -27,7 +27,7 @@ ChartJS.register(
   //Legend
 );
 
-export default function Graph(data: any) {
+export default function Graph() {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
 
@@ -68,7 +68,7 @@ export default function Graph(data: any) {
           ],
   };
 
-  const options: ChartOptions = {
+  const options: ChartOptions<"line"> = {
     maintainAspectRatio: false,
     interaction: {
       mode: "index",
@@ -118,7 +118,6 @@ export default function Graph(data: any) {
         type: "linear",
         display: "auto",
         position: "right",
-
         // grid line settings
         grid: {
           drawOnChartArea: false, // only want the grid lines for one axis to show up
@@ -131,8 +130,6 @@ export default function Graph(data: any) {
     <div className="text-gray-100 shadow-inner">
       {loaderData.selectedSensors.length > 0 ? (
         <div className="flex h-full w-full justify-center px-10">
-          {/*
-// @ts-ignore */}
           <Line data={lineData} options={options}></Line>
         </div>
       ) : null}
