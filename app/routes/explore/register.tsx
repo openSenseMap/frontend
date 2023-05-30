@@ -4,7 +4,6 @@ import {
   Form,
   Link,
   useActionData,
-  useLocation,
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
@@ -19,7 +18,6 @@ import { safeRedirect, validateEmail } from "~/utils";
 
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "~/components/ui/use-toast";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -94,9 +92,6 @@ export default function RegisterDialog() {
   const navigation = useNavigation();
   const isCreating = Boolean(navigation.state === "submitting");
 
-  let url = useLocation().state;
-  console.log(url);
-
   React.useEffect(() => {
     if (actionData?.errors?.email) {
       emailRef.current?.focus();
@@ -104,14 +99,6 @@ export default function RegisterDialog() {
       passwordRef.current?.focus();
     }
   }, [actionData]);
-
-  React.useEffect(() => {
-    if (!isCreating) {
-      toast({
-        description: "Successfully created account",
-      });
-    }
-  }, [isCreating]);
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -164,7 +151,7 @@ export default function RegisterDialog() {
                   placeholder="example@opensensemap.org"
                 />
                 {actionData?.errors?.email && (
-                  <div className="text-red-500 pt-1" id="email-error">
+                  <div className="pt-1 text-red-500" id="email-error">
                     {actionData.errors.email}
                   </div>
                 )}
@@ -191,7 +178,7 @@ export default function RegisterDialog() {
                   placeholder="********"
                 />
                 {actionData?.errors?.password && (
-                  <div className="text-red-500 pt-1" id="password-error">
+                  <div className="pt-1 text-red-500" id="password-error">
                     {actionData.errors.password}
                   </div>
                 )}
@@ -202,11 +189,11 @@ export default function RegisterDialog() {
             <button
               type="submit"
               className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
-              onClick={() => {
-                toast({
-                  description: "Creating account ...",
-                });
-              }}
+              // onClick={() => {
+              //   toast({
+              //     description: "Creating account ...",
+              //   });
+              // }}
               disabled={isCreating}
             >
               {isCreating ? t("transition_label") : t("register_label")}

@@ -17,7 +17,6 @@ import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "~/components/ui/use-toast";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -146,7 +145,7 @@ export default function LoginPage() {
                   placeholder="example@opensensemap.org"
                 />
                 {actionData?.errors?.email && (
-                  <div className="text-red-500 pt-1" id="email-error">
+                  <div className="pt-1 text-red-500" id="email-error">
                     {actionData.errors.email}
                   </div>
                 )}
@@ -173,7 +172,7 @@ export default function LoginPage() {
                   placeholder="********"
                 />
                 {actionData?.errors?.password && (
-                  <div className="text-red-500 pt-1" id="password-error">
+                  <div className="pt-1 text-red-500" id="password-error">
                     {actionData.errors.password}
                   </div>
                 )}
@@ -184,11 +183,11 @@ export default function LoginPage() {
             <button
               type="submit"
               className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
-              onClick={() => {
-                toast({
-                  description: "Logging in ...",
-                });
-              }}
+              // onClick={() => {
+              //   toast({
+              //     description: "Logging in ...",
+              //   });
+              // }}
               disabled={isLoggingIn}
             >
               {isLoggingIn ? t("transition_label") : t("login_label")}

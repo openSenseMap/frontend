@@ -64,16 +64,32 @@ export default function Menu() {
     } else if (!firstRender && timeToToast) {
       if (data.user === null) {
         toast({
-          description: "Successfully logged out",
+          description: t("toast_logout_success"),
         });
       }
       if (data.user !== null) {
-        toast({
-          description: "Successfully logged in",
-        });
+        const creationDate = Date.parse(data.user.createdAt);
+        const now = Date.now();
+        const diff = now - creationDate;
+        console.log(diff);
+        if (diff < 10000) {
+          toast({
+            description: t("toast_user_creation_success"),
+          });
+          setTimeout(() => {
+            toast({
+              description: t("toast_login_success"),
+            });
+          }, 100);
+        } else {
+          console.log(data.user);
+          toast({
+            description: t("toast_login_success"),
+          });
+        }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.user, toast, firstRender]);
 
   return (
@@ -199,9 +215,9 @@ export default function Menu() {
               method="post"
               onSubmit={() => {
                 setOpen(false);
-                toast({
-                  description: "Logging out ...",
-                });
+                // toast({
+                //   description: "Logging out ...",
+                // });
               }}
             >
               <button

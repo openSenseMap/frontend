@@ -14,5 +14,9 @@
   "donate_label": "Spenden",
   "promotion_label": "Förderung",
   "login_label": "Einloggen",
-  "logout_label": "Ausloggen"
+  "logout_label": "Ausloggen",
+
+  "toast_login_success": "Erfolgreich eingeloggt",
+  "toast_logout_success": "Erfolgreich ausgeloggt",
+  "toast_user_creation_success": "Benutzer erfolgreich erstellt"
 }
