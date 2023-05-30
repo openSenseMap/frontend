@@ -29,6 +29,10 @@ export type Partner = {
     link: string
 }
 
+export type header = {
+    userId: string
+}
+
 type DirectusCollection = {
     use_cases: UseCase,
     features: Feature,

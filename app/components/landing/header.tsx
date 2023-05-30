@@ -1,7 +1,8 @@
-import { Link } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { Theme, useTheme } from "~/utils/theme-provider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import invariant from "tiny-invariant";
+import { header } from "~/lib/directus";
 
 const links = [
   {
@@ -26,7 +27,11 @@ const links = [
   },
 ];
 
-export default function Header() {
+type HeaderProps = {
+  data: header;
+};
+
+export default function Header(data: HeaderProps) {
   const [theme, setTheme] = useTheme();
   const toggleTheme = () => {
     setTheme((prevTheme) =>
@@ -34,8 +39,11 @@ export default function Header() {
     );
   };
 
+  //* User Id
+  const userId = data.data.userId;
+
+  //* Temp userName
   const userName = "dummy user";
-  // const userName = null;
   //* To control user menu visibility
   const userMenu = () => {
     console.log("🚀 ~ onClick");
@@ -131,12 +139,12 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Collapsible user menu */}
+        {/* Collapsible user profile menu */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 md:order-2">
           {/* login button */}
-          {!userName ? (
+          {!userId ? (
             <a
-              href="#"
+              href="/login"
               className="block px-4 py-2  text-lg text-gray-700"
               role="menuitem"
               tabIndex={-1}
@@ -176,9 +184,9 @@ export default function Header() {
                 </button>
               </div>
 
-              {/* user menu invisible */}
+              {/* user menu */}
               <div
-                className="profile-menu  absolute right-0 z-10 mt-2 w-48 origin-top-right divide-y divide-solid rounded-md bg-white py-1 font-mono tracking-tighter shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                className="profile-menu invisible absolute right-0 z-10 mt-2 w-48 origin-top-right divide-y divide-solid rounded-md bg-white py-1 font-mono tracking-tighter shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                 role="menu"
                 aria-orientation="vertical"
                 aria-labelledby="user-menu-button"
@@ -198,7 +206,7 @@ export default function Header() {
                 <div>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                     tabIndex={-1}
                     id="user-menu-item-1"
@@ -208,7 +216,7 @@ export default function Header() {
 
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                     tabIndex={-1}
                     id="user-menu-item-2"
@@ -220,7 +228,7 @@ export default function Header() {
                 <div>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                     tabIndex={-1}
                     id="user-menu-item-1"
@@ -228,49 +236,19 @@ export default function Header() {
                     Settings
                   </a>
 
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700"
-                    role="menuitem"
-                    tabIndex={-1}
-                    id="user-menu-item-2"
+                  <Form
+                    action="/logout"
+                    method="post"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    Sign out
-                  </a>
+                    <button type="submit" id="user-menu-item-2">
+                      Sign out
+                    </button>
+                  </Form>
                 </div>
               </div>
             </div>
           )}
-        </div>
-
-        <div className="sm:hidden" id="mobile-menu">
-          <div className="space-y-1 px-2 pb-3 pt-2">
-            <a
-              href="#"
-              className="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white"
-              aria-current="page"
-            >
-              Dashboard
-            </a>
-            <a
-              href="#"
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              Team
-            </a>
-            <a
-              href="#"
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              Projects
-            </a>
-            <a
-              href="#"
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              Calendar
-            </a>
-          </div>
         </div>
       </div>
     </nav>
