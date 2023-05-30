@@ -88,9 +88,6 @@ export default function LoginPage() {
   const navigation = useNavigation();
   const isLoggingIn = Boolean(navigation.state === "submitting");
 
-  let url = useLocation().state;
-  console.log(url);
-
   React.useEffect(() => {
     if (actionData?.errors?.email) {
       emailRef.current?.focus();

@@ -72,11 +72,11 @@ export default function NavBar(props: NavBarProps) {
     };
   });
 
-  useEffect(() => {
-    console.log("dateRange", dateRange);
-    console.log("time", value);
-    console.log("singleDate", singleDate);
-  }, [dateRange, value, singleDate]);
+  // useEffect(() => {
+  //   console.log("dateRange", dateRange);
+  //   console.log("time", value);
+  //   console.log("singleDate", singleDate);
+  // }, [dateRange, value, singleDate]);
 
   return (
     <div className="pointer-events-auto h-10 w-1/2">

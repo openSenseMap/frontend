@@ -31,8 +31,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+export function useFirstRender() {
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    firstRender.current = false;
+  }, []);
+
+  return firstRender.current;
+}
 
 export default function Menu() {
   const [searchParams] = useSearchParams();
@@ -42,21 +52,29 @@ export default function Menu() {
   const { toast } = useToast();
   const navigation = useNavigation();
   const isLoggingOut = Boolean(navigation.state === "submitting");
+  const [timeToToast, setTimeToToast] = useState<Boolean>(false);
 
   const { t } = useTranslation("menu");
 
+  const firstRender = useFirstRender();
+
   useEffect(() => {
-    if (data.user === null) {
-      toast({
-        description: "Successfully logged out",
-      });
+    if (!firstRender && !timeToToast) {
+      setTimeToToast(true);
+    } else if (!firstRender && timeToToast) {
+      if (data.user === null) {
+        toast({
+          description: "Successfully logged out",
+        });
+      }
+      if (data.user !== null) {
+        toast({
+          description: "Successfully logged in",
+        });
+      }
     }
-    if (data.user !== null) {
-      toast({
-        description: "Successfully logged in",
-      });
-    }
-  }, [data, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.user, toast, firstRender]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
