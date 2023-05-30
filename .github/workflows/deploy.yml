@@ -110,7 +110,12 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
       - name: 🛠 Setup Database
-        run: npx prisma migrate reset --force
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_on: error
+          command: npx prisma migrate reset --force
 
       - name: ⚙️ Build
         run: npm run build
