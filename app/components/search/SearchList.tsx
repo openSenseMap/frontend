@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useMap } from "react-map-gl";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate, useSearchParams } from "@remix-run/react";
 
 import {
   CpuChipIcon,
@@ -64,6 +64,13 @@ export default function SearchList(props: SearchListProps) {
   );
   var selected = searchResultsAll[cursor];
 
+  const [searchParams] = useSearchParams();
+  const navigateTo =
+    (selected.type === "device"
+      ? `/explore/${selected.deviceId}`
+      : "/explore") +
+    (searchParams.size > 0 ? "?" + searchParams.toString() : "");
+
   const setShowSearchCallback = useCallback((state: boolean) => {
     props.setShowSearch(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,13 +90,9 @@ export default function SearchList(props: SearchListProps) {
     if (length !== 0 && enterPress) {
       goTo(osem, selected);
       setShowSearchCallback(false);
-      navigate(
-        selected.type === "device"
-          ? `/explore/${selected.deviceId}`
-          : "/explore"
-      );
+      navigate(navigateTo);
     }
-  }, [enterPress, length, osem, navigate, selected, setShowSearchCallback]);
+  }, [enterPress, length, osem, navigate, selected, setShowSearchCallback, navigateTo]);
 
   const handleDigitPress = (event: any) => {
     if (
@@ -102,11 +105,7 @@ export default function SearchList(props: SearchListProps) {
       setCursor(Number(event.key) - 1);
       goTo(osem, selected);
       setTimeout(() => setShowSearchCallback(false), 500);
-      navigate(
-        selected.type === "device"
-          ? `/explore/${selected.deviceId}`
-          : "/explore"
-      );
+      navigate(navigateTo);
     }
   };
 

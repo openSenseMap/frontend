@@ -46,8 +46,8 @@ export function useFirstRender() {
 
 export default function Menu() {
   const [searchParams] = useSearchParams();
+  const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore")
   const data = useLoaderData<typeof loader>();
-  // const url = useLocation().pathname;
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const navigation = useNavigation();
@@ -71,7 +71,6 @@ export default function Menu() {
         const creationDate = Date.parse(data.user.createdAt);
         const now = Date.now();
         const diff = now - creationDate;
-        console.log(diff);
         if (diff < 10000) {
           toast({
             description: t("toast_user_creation_success"),
@@ -82,7 +81,6 @@ export default function Menu() {
             });
           }, 100);
         } else {
-          console.log(data.user);
           toast({
             description: t("toast_login_success"),
           });
@@ -220,6 +218,7 @@ export default function Menu() {
                 // });
               }}
             >
+              <input type="hidden" name="redirectTo" value={redirectTo} />
               <button
                 type="submit"
                 className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
