@@ -42,19 +42,19 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
   const sensorIds = searchParams.getAll("sensor");
 
   // helper function to filter an array of sensors by their ids
-  function filterSensorsById(
-    idArray: string[],
-    objectArray: Sensor[]
-  ): Sensor[] {
-    const filteredArray: Sensor[] = [];
+  // function filterSensorsById(
+  //   idArray: string[],
+  //   objectArray: Sensor[]
+  // ): Sensor[] {
+  //   const filteredArray: Sensor[] = [];
 
-    for (const obj of objectArray) {
-      if (idArray.includes(obj.id)) {
-        filteredArray.push(obj);
-      }
-    }
-    return filteredArray;
-  }
+  //   for (const obj of objectArray) {
+  //     if (idArray.includes(obj.id)) {
+  //       filteredArray.push(obj);
+  //     }
+  //   }
+  //   return filteredArray;
+  // }
 
   // helper function to format a date as a string
   const formattedDate = (date: Date) => {
