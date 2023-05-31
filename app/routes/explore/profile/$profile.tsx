@@ -2,7 +2,12 @@
 import { MinusCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useCatch, useLoaderData } from "@remix-run/react";
+import {
+  Link,
+  isRouteErrorResponse,
+  useLoaderData,
+  useRouteError,
+} from "@remix-run/react";
 import { useState } from "react";
 import {
   MyBadge,
@@ -10,41 +15,47 @@ import {
   getMyBadgesAccessToken,
   getUserBackpack,
 } from "~/models/badge.server";
+import { getUserById } from "~/models/user.server";
 
 // This function is responsible for loading data for the Profile component
-export async function loader({ params }: LoaderArgs) {
+export async function loader({ params, request }: LoaderArgs) {
   // Extract the profile email from the URL params
-  const profileMail = params.profile;
-  // Get the access token using the getMyBadgesAccessToken function
-  const authToken = await getMyBadgesAccessToken().then((authData) => {
-    return authData.access_token;
-  });
-  // Retrieve the user's backpack data and all available badges from the server
-  if (profileMail && authToken) {
-    const backpackData = await getUserBackpack(profileMail, authToken).then(
-      (backpackData) => {
-        return backpackData;
-      }
-    );
+  const profileId = params.profile;
+  if (profileId) {
+    const user = await getUserById(profileId);
 
-    const allBadges = await getAllBadges(authToken).then((allBadges) => {
-      return allBadges.result;
+    const profileMail = user?.email;
+    // Get the access token using the getMyBadgesAccessToken function
+    const authToken = await getMyBadgesAccessToken().then((authData) => {
+      return authData.access_token;
     });
+    // Retrieve the user's backpack data and all available badges from the server
+    if (profileMail && authToken) {
+      const backpackData = await getUserBackpack(profileMail, authToken).then(
+        (backpackData) => {
+          return backpackData;
+        }
+      );
 
-    // Return the fetched data as JSON
-    return json({
-      success: true,
-      userBackpack: backpackData,
-      allBadges: allBadges,
-      email: profileMail,
-    });
+      const allBadges = await getAllBadges(authToken).then((allBadges) => {
+        return allBadges.result;
+      });
+
+      // Return the fetched data as JSON
+      return json({
+        success: true,
+        userBackpack: backpackData,
+        allBadges: allBadges,
+        email: profileMail,
+      });
+    }
   }
   // If the user data couldn't be fetched, return an empty JSON response
   return json({
     success: false,
     userBackpack: [],
     allBadges: [],
-    email: profileMail,
+    email: "",
   });
 }
 
@@ -54,27 +65,29 @@ export default function Profile() {
   const [isOpen, setIsOpen] = useState<Boolean>(true);
   // Get the data from the loader function using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
-  const sortedBadges = data.allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
-    // Determine if badgeA and badgeB are owned by the user and not revoked
-    const badgeAOwned = data.userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked
-    );
-    const badgeBOwned = data.userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked
-    );
+  const sortedBadges = data.allBadges.sort(
+    (badgeA: MyBadge, badgeB: MyBadge) => {
+      // Determine if badgeA and badgeB are owned by the user and not revoked
+      const badgeAOwned = data.userBackpack.some(
+        (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked
+      );
+      const badgeBOwned = data.userBackpack.some(
+        (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked
+      );
 
-    // Sort badges based on ownership:
-    // Owned badges come first, followed by non-owned badges
-    if (badgeAOwned && !badgeBOwned) {
-      return -1;
-    } else if (!badgeAOwned && badgeBOwned) {
-      return 1;
-    } else {
-      // If both badges are owned or both are non-owned,
-      // maintain their original order
-      return 0;
+      // Sort badges based on ownership:
+      // Owned badges come first, followed by non-owned badges
+      if (badgeAOwned && !badgeBOwned) {
+        return -1;
+      } else if (!badgeAOwned && badgeBOwned) {
+        return 1;
+      } else {
+        // If both badges are owned or both are non-owned,
+        // maintain their original order
+        return 0;
+      }
     }
-  });
+  );
   return (
     <div
       className={
@@ -102,8 +115,8 @@ export default function Profile() {
         </div>
       </div>
       {!data.success ? (
-        <div className="text-red-500">
-          Oh no, we could not find this Profile. Are you sure it exists?
+        <div className="flex items-center justify-center">
+          <p className="p-4">Oh no, we could not find this Profile. Are you sure it exists?</p>
         </div>
       ) : (
         <div className="flex justify-evenly bg-white">
@@ -147,18 +160,32 @@ export default function Profile() {
   );
 }
 
-export function CatchBoundary() {
-  const caught = useCatch();
-  if (caught.status === 500) {
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  // when true, this is what used to go to `CatchBoundary`
+  if (isRouteErrorResponse(error)) {
     return (
       <div>
-        <div className="flex animate-fade-in-up items-center justify-center bg-white py-10">
-          <div className="text-red-500">
-            Oh no, we could not find this Profile. Are you sure it exists?
-          </div>
-        </div>
+        <h1>Oops</h1>
+        <p>Status: {error.status}</p>
+        <p>{error.data.message}</p>
       </div>
     );
   }
-  throw new Error(`Unsupported thrown response status code: ${caught.status}`);
+
+  // Don't forget to typecheck with your own logic.
+  // Any value can be thrown, not just errors!
+  let errorMessage = "Unknown error";
+  // if (isDefinitelyAnError(error)) {
+  //   errorMessage = error.message;
+  // }
+
+  return (
+    <div>
+      <h1>Uh oh ...</h1>
+      <p>Something went wrong.</p>
+      <pre>{errorMessage}</pre>
+    </div>
+  );
 }

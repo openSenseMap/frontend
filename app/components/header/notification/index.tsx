@@ -23,7 +23,7 @@ export default function Notification() {
       <NovuProvider
         backendUrl={"https://api.novu.testing.opensensemap.org"}
         socketUrl={"https://ws.novu.testing.opensensemap.org"}
-        subscriberId={data?.user?.email}
+        subscriberId={data?.user?.email} // TODO: change this to {data?.user?.id} here and in the API
         applicationIdentifier={"VMq0Gus6SsHM"}
         //i18n={{}}
       >
