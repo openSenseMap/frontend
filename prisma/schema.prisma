@@ -29,6 +29,7 @@ model Password {
   userId String @unique
 }
 
+//* Temp. (should be deleted at some point)
 model Note {
   id    String @id @default(cuid())
   title String
