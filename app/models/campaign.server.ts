@@ -8,6 +8,14 @@ export function getCampaign({ id }: Pick<Campaign, "id">) {
   });
 }
 
+export async function getOwnCampaigns(userId: string) {
+  return await prisma.campaign.findMany({
+    where: {
+      ownerId: userId,
+    },
+  });
+}
+
 export async function getCampaigns() {
   return await prisma.campaign.findMany({});
 }
