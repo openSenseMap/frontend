@@ -21,10 +21,10 @@ export default function Notification() {
   return (
     <div className="pointer-events-auto mr-4 box-border flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-black hover:bg-gray-100">
       <NovuProvider
-        backendUrl={"https://api.novu.testing.opensensemap.org"}
-        socketUrl={"https://ws.novu.testing.opensensemap.org"}
-        subscriberId={data?.user?.email} // TODO: change this to {data?.user?.id} here and in the API
-        applicationIdentifier={"VMq0Gus6SsHM"}
+        backendUrl={ENV.NOVU_API_URL}
+        socketUrl={ENV.NOVU_WEBSOCKET_URL}
+        subscriberId={data?.user?.id}
+        applicationIdentifier={ENV.NOVU_APPLICATION_IDENTIFIER || ""}
         //i18n={{}}
       >
         <PopoverNotificationCenter
