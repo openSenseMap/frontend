@@ -1,6 +1,6 @@
 // Import necessary components and libraries
 import { MinusCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
-import { LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
@@ -10,11 +10,11 @@ import {
 } from "@remix-run/react";
 import { useState } from "react";
 import {
-  MyBadge,
   getAllBadges,
   getMyBadgesAccessToken,
   getUserBackpack,
 } from "~/models/badge.server";
+import type { MyBadge } from "~/models/badge.server";
 import { getUserById } from "~/models/user.server";
 
 // This function is responsible for loading data for the Profile component
@@ -116,7 +116,9 @@ export default function Profile() {
       </div>
       {!data.success ? (
         <div className="flex items-center justify-center">
-          <p className="p-4">Oh no, we could not find this Profile. Are you sure it exists?</p>
+          <p className="p-4">
+            Oh no, we could not find this Profile. Are you sure it exists?
+          </p>
         </div>
       ) : (
         <div className="flex justify-evenly bg-white">
