@@ -49,3 +49,10 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Custom styles */
+@layer components {
+  .appearance-auto {
+    appearance: auto;
+  }
+}
