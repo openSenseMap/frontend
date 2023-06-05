@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import Search from "~/components/search/Search";
-import { SunIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { SunIcon, CalendarIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { TimeFilter } from "~/components/header/navBar/time-filter/time-filter";
 import type { DateRange } from "react-day-picker";
 import getUserLocale from "get-user-locale";
@@ -93,8 +93,15 @@ export default function NavBar(props: NavBarProps) {
               {t("temperature_label")}
             </div>
           </div>
-          <div className="flex h-6 w-4/12 items-center justify-center space-x-2 rounded-full bg-blue-700">
-            <CalendarIcon className="h-4 w-4 text-white" />
+          <div className="flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full ring-slate-900/10 bg-white pl-2 pr-3 shadow-lg ring-1">
+            <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
+            <span className="text-center text-blue-500">Suche</span>
+            <span className="flex-none text-xs font-semibold text-gray-400">
+              <kbd>Ctrl</kbd> + <kbd>K</kbd>
+            </span>
+          </div>
+          <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-blue-700">
+            <CalendarDaysIcon className="h-4 w-4 text-white" />
             <div className="text-center text-white">
               {timeState === "live" ? (
                 <span>{t("live_label")}</span>
@@ -149,23 +156,8 @@ export default function NavBar(props: NavBarProps) {
             onClick={() => displaySearch()}
             className="ring-slate-900/10 hover:ring-slate-300 mx-auto mb-2 flex h-7 w-1/2 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1 hover:bg-gray-200"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6 text-blue-500"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-              />
-            </svg>
-            <span className="text-center text-blue-500">
-              {t("search_label")}
-            </span>
+            <MagnifyingGlassIcon className="h-6 w-6 text-blue-500" />
+            <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">
               <kbd>{t("ctrl")}</kbd> + <kbd>K</kbd>
             </span>
