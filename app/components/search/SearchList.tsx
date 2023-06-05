@@ -62,14 +62,28 @@ export default function SearchList(props: SearchListProps) {
   var searchResultsAll = props.searchResultsDevice.concat(
     props.searchResultsLocation
   );
-  var selected = searchResultsAll[cursor];
+  const [selected, setSelected] = useState(searchResultsAll[cursor]);
 
   const [searchParams] = useSearchParams();
-  const navigateTo =
+  const [navigateTo, setNavigateTo] = useState(
     (selected.type === "device"
       ? `/explore/${selected.deviceId}`
       : "/explore") +
-    (searchParams.size > 0 ? "?" + searchParams.toString() : "");
+      (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+  );
+
+  useEffect(() => {
+    setSelected(searchResultsAll[cursor]);
+  }, [cursor, searchResultsAll]);
+
+  useEffect(() => {
+    if (selected.type === "device") {
+      setNavigateTo(`/explore/${selected.deviceId}` + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
+    } else if (selected.type === "location") {
+      setNavigateTo("/explore" + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
+    }
+    console.log(navigateTo);
+  }, [selected, searchParams, navigateTo]);
 
   const setShowSearchCallback = useCallback((state: boolean) => {
     props.setShowSearch(state);
@@ -92,7 +106,15 @@ export default function SearchList(props: SearchListProps) {
       setShowSearchCallback(false);
       navigate(navigateTo);
     }
-  }, [enterPress, length, osem, navigate, selected, setShowSearchCallback, navigateTo]);
+  }, [
+    enterPress,
+    length,
+    osem,
+    navigate,
+    selected,
+    setShowSearchCallback,
+    navigateTo,
+  ]);
 
   const handleDigitPress = (event: any) => {
     if (
@@ -100,12 +122,11 @@ export default function SearchList(props: SearchListProps) {
       Number(event.key) <= length &&
       event.ctrlKey
     ) {
-      selected = searchResultsAll[Number(event.key) - 1];
       event.preventDefault();
       setCursor(Number(event.key) - 1);
       goTo(osem, selected);
-      setTimeout(() => setShowSearchCallback(false), 500);
-      navigate(navigateTo);
+      setTimeout(() => {setShowSearchCallback(false); navigate(navigateTo);}, 500);
+      
     }
   };
 
