@@ -2,7 +2,7 @@
 import { useNavigate } from "@remix-run/react";
 import { useMap } from "react-map-gl";
 
-import { goTo } from "~/lib/searchMapHelper";
+import { goTo } from "~/lib/search-map-helper";
 
 interface SearchListItemProps {
   index: number;
@@ -23,7 +23,7 @@ export default function SearchListItem(props: SearchListItemProps) {
 
   return (
     <div
-      className="data-[active=false]:bg-white z-50 mx-2 flex data-[active=true]:bg-green-100 rounded-lg my-1 h-8 items-center"
+      className="z-50 mx-2 my-1 flex h-8 items-center rounded-lg data-[active=false]:bg-white data-[active=true]:bg-green-100"
       onClick={() => {
         goTo(osem, props.item);
         props.setShowSearch(false);
@@ -40,13 +40,11 @@ export default function SearchListItem(props: SearchListItemProps) {
     >
       {props.controlPress ? (
         <div className="w-6 pl-2">
-          <kbd>
-            {props.index + 1}
-          </kbd>
+          <kbd>{props.index + 1}</kbd>
         </div>
       ) : null}
       <props.icon className="h-8 w-8 pl-2" />
-      <span className="pl-2 inline-block align-middle">
+      <span className="inline-block pl-2 align-middle">
         {props.type === "device"
           ? props.item.display_name
           : props.item.place_name}

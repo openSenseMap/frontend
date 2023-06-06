@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
-import SearchList from "./SearchList";
+import SearchList from "./search-list";
 import { useTranslation, Trans } from "react-i18next";
 
 interface SearchProps {

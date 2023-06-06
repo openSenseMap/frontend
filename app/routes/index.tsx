@@ -8,7 +8,7 @@ import Partners from "~/components/landing/partners";
 import Preview from "~/components/landing/preview";
 import Stats from "~/components/landing/stats";
 import Tools from "~/components/landing/tools";
-import UseCases from "~/components/landing/useCases";
+import UseCases from "~/components/landing/use-cases";
 import i18next from "~/i18next.server";
 import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
