@@ -69,6 +69,7 @@ export default function SearchList(props: SearchListProps) {
     (selected.type === "device"
       ? `/explore/${selected.deviceId}`
       : "/explore") +
+      // @ts-ignore
       (searchParams.size > 0 ? "?" + searchParams.toString() : "")
   );
 
@@ -78,8 +79,10 @@ export default function SearchList(props: SearchListProps) {
 
   useEffect(() => {
     if (selected.type === "device") {
+      // @ts-ignore
       setNavigateTo(`/explore/${selected.deviceId}` + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
     } else if (selected.type === "location") {
+      // @ts-ignore
       setNavigateTo("/explore" + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
     }
     console.log(navigateTo);

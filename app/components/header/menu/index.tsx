@@ -46,6 +46,7 @@ export function useFirstRender() {
 
 export default function Menu() {
   const [searchParams] = useSearchParams();
+  // @ts-ignore
   const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore")
   const data = useLoaderData<typeof loader>();
   const [open, setOpen] = useState(false);
