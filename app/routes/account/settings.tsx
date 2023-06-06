@@ -191,8 +191,8 @@ export default function Join() {
 
                   <div className="mt-1">
                     <input
-                      id="actualPassword"
-                      name="Password"
+                      id="currentPassword"
+                      name="currentPassword"
                       type="password"
                       placeholder="Password"
                       // defaultValue={123}
