@@ -75,7 +75,7 @@ export default function Header() {
           </div>
           <button
             type="button"
-            className="dark:border-green-200 dark:bg-green-200 rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black"
+            className="dark:border-green-200 dark:text-gray-400 dark:bg-green-200 rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black"
           >
             <Link to="/explore" rel="intent">
               Donate
