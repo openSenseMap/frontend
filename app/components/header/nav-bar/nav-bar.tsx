@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import Search from "~/components/search/Search";
+import Search from "~/components/search";
 import { SunIcon, CalendarDaysIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { TimeFilter } from "~/components/header/navBar/time-filter/time-filter";
 import type { DateRange } from "react-day-picker";

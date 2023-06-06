@@ -3,7 +3,7 @@ import { useNavigate } from "@remix-run/react";
 import { useSearchParams } from "@remix-run/react";
 import { useMap } from "react-map-gl";
 
-import { goTo } from "~/lib/searchMapHelper";
+import { goTo } from "~/lib/search-map-helper";
 
 interface SearchListItemProps {
   index: number;
