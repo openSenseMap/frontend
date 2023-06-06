@@ -69,3 +69,21 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
+
+//* to validate user name in join page
+export function validateName(name: string | undefined) {
+  if( !name || name.length === 0){
+    return { isValid: false, errorMsg: "Name is required" };
+  }
+  else if(name.length < 4){
+    return { isValid: false, errorMsg: "Please use at least 4 characters." };
+  }
+  else if (
+    name &&
+    !/^[a-zA-Z0-9][a-zA-Z0-9\s._-]+[a-zA-Z0-9-_.]$/.test(name.toString())
+  ) {
+    return { isValid: false, errorMsg: "Name is invalid" };
+  }
+
+  return { isValid: true };
+}
