@@ -5,8 +5,14 @@ import * as React from "react";
 
 import { createUserSession, getUserId } from "~/session.server";
 
-import { createUser, getUserByEmail, getUserByName } from "~/models/user.server";
+import {
+  createUser,
+  getUserByEmail,
+  getUserByName,
+} from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
+import i18next from "app/i18next.server";
+
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -97,7 +103,11 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const user = await createUser(name, email, password);
+  //* get current locale
+  const locale = await i18next.getLocale(request);
+  const language = locale === "de" ? "de_DE" : "en_US";
+
+  const user = await createUser(name, email, language, password);
 
   return createUserSession({
     request,
@@ -182,7 +192,7 @@ export default function Join() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.email && (
-                <div className="text-[#FF0000] pt-1" id="email-error">
+                <div className="pt-1 text-[#FF0000]" id="email-error">
                   {actionData.errors.email}
                 </div>
               )}

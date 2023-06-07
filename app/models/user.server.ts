@@ -37,13 +37,14 @@ const preparePasswordHash = function preparePasswordHash(
   return hashed;
 };
 
-export async function createUser(name: User["name"],email: User["email"], password: string) {
+export async function createUser(name: User["name"],email: User["email"], language: User["language"], password: string) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
   return prisma.user.create({
     data: {
       name,
       email,
+      language,
       boxes: [],
       password: {
         create: {
