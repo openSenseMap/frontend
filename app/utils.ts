@@ -71,8 +71,8 @@ export function validateEmail(email: unknown): email is string {
 }
 
 //* to validate user name in join page
-export function validateName(name: string | undefined) {
-  if( !name || name.length === 0){
+export function validateName(name: string) {
+  if( name.length === 0){
     return { isValid: false, errorMsg: "Name is required" };
   }
   else if(name.length < 4){

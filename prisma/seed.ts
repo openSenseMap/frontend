@@ -25,29 +25,44 @@ const preparePasswordHash = function preparePasswordHash(
 };
 
 async function seed() {
-  const email = "opensensemap@opensenselab.org";
 
-  // cleanup the existing database
-  await prisma.sensor.deleteMany({}).catch(() => {});
-  await prisma.device.deleteMany({}).catch(() => {});
-  await prisma.user.delete({ where: { email } }).catch(() => {
-    // no worries if it doesn't exist yet
-  });
-
+  const email= "opensensemap@opensenselab.org"
   const hashedPassword = await bcrypt.hash(
     preparePasswordHash("osemrocks"),
     13
   ); // make salt_factor configurable oSeM API uses 13 by default
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
+  // initial user data
+  const dummyUser = {
+    name: "YouQam",
+    email: email,
+    role: "user",
+    language: "en_US",
+    boxes: [
+      "626680b0964297001c90fdcd",
+      "6267b74d964297001c90fdd0",
+      "6299d942fd7065001b572be0",
+      "62b418d9fd7065001b572da7",
+    ],
+    emailIsConfirmed: true,
+    password: {
+      create: {
+        hash: hashedPassword,
       },
-    },
+    }
+  };
+
+  // cleanup the existing database
+  await prisma.sensor.deleteMany({}).catch(() => {});
+  await prisma.device.deleteMany({}).catch(() => {});
+  await prisma.user.delete({ where: {email} }).catch(() => {
+    // no worries if it doesn't exist yet
+  });
+
+
+  // create intial user
+  const user = await prisma.user.create({
+    data: dummyUser
   });
 
   // Import devices and connect it to user
