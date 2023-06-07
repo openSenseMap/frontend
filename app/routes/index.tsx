@@ -69,7 +69,7 @@ export default function Index() {
                 <motion.div
                   initial={{ opacity: 0, x: -100 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ ease: "easeInOut", duration: 0.8 }}
+                  transition={{ ease: "easeInOut", duration: 0.5 }}
                 >
                   <h1 className="text-4xl font-medium tracking-tight text-gray-900 dark:text-white">
                     openSenseMap
