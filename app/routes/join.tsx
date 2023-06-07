@@ -6,7 +6,7 @@ import * as React from "react";
 import { createUserSession, getUserId } from "~/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { safeRedirect, validateEmail, validateName } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -18,25 +18,51 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
+  const name = formData.get("name");
+
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
+
+  if (!name || typeof name !== "string") {
+    return json(
+      { errors: { name: "Name is required", email: null, password: null } },
+      { status: 400 }
+    );
+  }
+
+  //* Validate userName
+  const validateUserName = validateName(name?.toString());
+  if (!validateUserName.isValid) {
+    return json(
+      {
+        errors: {
+          name: validateUserName.errorMsg,
+          password: null,
+          email: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Email is invalid", password: null } },
+      { errors: { name: null, email: "Email is invalid", password: null } },
       { status: 400 }
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
-      { errors: { email: null, password: "Password is required" } },
+      { errors: { name: null, email: null, password: "Password is required" } },
       { status: 400 }
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { email: null, password: "Password is too short" } },
+      {
+        errors: { name: null, email: null, password: "Password is too short" },
+      },
       { status: 400 }
     );
   }
@@ -46,6 +72,7 @@ export async function action({ request }: ActionArgs) {
     return json(
       {
         errors: {
+          name: null,
           email: "A user already exists with this email",
           password: null,
         },
@@ -54,7 +81,7 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const user = await createUser(email, password);
+  const user = await createUser(name, email, password);
 
   return createUserSession({
     request,
@@ -76,6 +103,7 @@ export default function Join() {
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
+  const nameRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (actionData?.errors?.email) {
@@ -86,9 +114,37 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex h-screen min-h-full flex-col items-center justify-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Name
+            </label>
+            <div className="mt-1">
+              <input
+                ref={nameRef}
+                id="name"
+                required
+                autoFocus={true}
+                name="name"
+                type="text"
+                autoComplete="name"
+                aria-invalid={actionData?.errors?.name ? true : undefined}
+                aria-describedby="name-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.errors?.name && (
+                <div className="pt-1 text-[#FF0000]" id="email-error">
+                  {actionData.errors.name}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div>
             <label
               htmlFor="email"
@@ -136,7 +192,7 @@ export default function Join() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.password && (
-                <div className="text-red-700 pt-1" id="password-error">
+                <div className="pt-1 text-[#FF0000]" id="password-error">
                   {actionData.errors.password}
                 </div>
               )}
@@ -154,7 +210,7 @@ export default function Join() {
             <div className="text-center text-sm text-gray-500">
               Already have an account?{" "}
               <Link
-                className="text-blue-500 underline"
+                className="text-[#FF0000] underline"
                 to={{
                   pathname: "/login",
                   search: searchParams.toString(),

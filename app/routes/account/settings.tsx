@@ -4,19 +4,21 @@ import {
   Form,
   useLoaderData,
 } from "@remix-run/react";
-import { getUserByName, getUsers } from "~/models/usernew.server";
+import invariant from "tiny-invariant";
+import { getUserByEmail } from "~/models/user.server";
 
-import { createUserSession, getUserId } from "~/session.server";
+import { getUserEmail, getUserId } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
+  //* get user email
+  const userEmail = await getUserEmail(request);
   //* load user data
-  const userData = await getUserByName("Matthias Pfeil Reedu 123");
-  // const userData = await getUsers();
-  console.log("userData: ", userData);
+  invariant(userEmail, `Email not found!`);
+  const userData = await getUserByEmail(userEmail);
   return json(userData);
 }
 
