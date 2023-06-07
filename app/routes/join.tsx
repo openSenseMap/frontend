@@ -5,7 +5,7 @@ import * as React from "react";
 
 import { createUserSession, getUserId } from "~/session.server";
 
-import { createUser, getUserByEmail } from "~/models/user.server";
+import { createUser, getUserByEmail, getUserByName } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
@@ -67,8 +67,24 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const existingUser = await getUserByEmail(email);
-  if (existingUser) {
+  //* check if user exist by name
+  const existingUserByName = await getUserByName(name);
+  if (existingUserByName) {
+    return json(
+      {
+        errors: {
+          name: "A user already exists with this name",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* check if user exist by email
+  const existingUserByEmail = await getUserByEmail(email);
+  if (existingUserByEmail) {
     return json(
       {
         errors: {
@@ -166,7 +182,7 @@ export default function Join() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.email && (
-                <div className="text-red-700 pt-1" id="email-error">
+                <div className="text-[#FF0000] pt-1" id="email-error">
                   {actionData.errors.email}
                 </div>
               )}

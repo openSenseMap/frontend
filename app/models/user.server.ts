@@ -15,7 +15,7 @@ export async function getUserByEmail(email: User["email"]) {
 }
 
 export async function getUserByName(name: User["name"]) {
-  return prisma.usern.findUnique({ where: { name } });
+  return prisma.user.findUnique({ where: { name } });
 }
 
 export async function deleteUserByEmail(email: User["email"]) {
@@ -23,7 +23,7 @@ export async function deleteUserByEmail(email: User["email"]) {
 }
 
 export async function getUsers() {
-  return prisma.usern.findMany();
+  return prisma.user.findMany();
 }
 
 const preparePasswordHash = function preparePasswordHash(
