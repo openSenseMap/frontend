@@ -1,13 +1,14 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Form,
-  useLoaderData,
-} from "@remix-run/react";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import React, { useState } from "react";
 import invariant from "tiny-invariant";
+import { verifyLogin } from "~/models/user.server";
+import { deleteUserByEmail } from "~/models/user.server";
 import { getUserByEmail } from "~/models/user.server";
 
 import { getUserEmail, getUserId } from "~/session.server";
+
 
 export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
@@ -22,11 +23,60 @@ export async function loader({ request }: LoaderArgs) {
   return json(userData);
 }
 
-export async function action({ request }: ActionArgs) {}
+export async function action({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  if (typeof email !== "string" || typeof password !== "string") {
+    return json(
+      {
+        errors: {
+          name: null,
+          email: null,
+          password: "Invalid password",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* if user press delete button
+  if (intent === "delete") {
+    const user = await verifyLogin(email, password);
+    if(!user){
+      return json(
+        {
+          errors: {
+            name: null,
+            email: null,
+            password: "Invalid password",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    await deleteUserByEmail(email);
+    return redirect("/");
+  }
+
+  //* won't come to this point.
+  return redirect("/");
+}
 
 export default function Join() {
-  // const actionData = useActionData<typeof action>();
-  const userData = useLoaderData<typeof loader>(); //* to get poast data
+  const userData = useLoaderData<typeof loader>();      //* to load user data
+  const actionData = useActionData<typeof action>();
+  const [passwordVal, setPasswordVal] = useState("");     //* to enable delete account button
+
+  const passwordRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (actionData?.errors?.password) {
+      passwordRef.current?.focus();
+    }
+  }, [actionData]);
 
   return (
     <div className="mt-14">
@@ -80,6 +130,7 @@ export default function Join() {
                       autoFocus={true}
                       name="name"
                       type="text"
+                      readOnly={true}
                       defaultValue={userData?.name}
                       aria-describedby="name-error"
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base"
@@ -101,6 +152,7 @@ export default function Join() {
                       id="email"
                       name="email"
                       type="email"
+                      readOnly={true}
                       defaultValue={userData?.email}
                       aria-describedby="email-error"
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base"
@@ -115,7 +167,7 @@ export default function Join() {
                       Email address is confirmed!
                     </span>
                   ) : (
-                    <span className="dark:bg-red-900 dark:text-red-300 mr-2 rounded-full bg-[#4eaf47] px-2.5 py-1 text-sm font-medium text-white">
+                    <span className="dark:bg-red-900 dark:text-red-300 mr-2 rounded-full bg-[#e77817] px-2.5 py-1 text-sm font-medium text-white">
                       Email address is not confirmed!
                     </span>
                   )}
@@ -207,6 +259,8 @@ export default function Join() {
                 <div className="flex justify-end">
                   <button
                     type="submit"
+                    name="intent"
+                    value="update"
                     disabled={false}
                     className="rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
@@ -232,25 +286,35 @@ export default function Join() {
                   </p>
                 </div>
                 <div>
-                    <input
-                      // name="Password"
-                      type="password"
-                      placeholder="Password"
-                      // defaultValue={123}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                    />
-                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    ref={passwordRef}
+                    // defaultValue={123}
+                    className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
+                    value={passwordVal}
+                    onChange={(e) => setPasswordVal(e.target.value)}
+                  />
+                  {actionData?.errors?.password && (
+                    <div className="pt-1 text-[#FF0000]" id="email-error">
+                      {actionData.errors.password}
+                    </div>
+                  )}
+                </div>
                 {/* Delete button */}
                 <div className="flex justify-end">
                   <button
                     type="submit"
-                    disabled={false}
-                    className="rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989] mb-5"
+                    name="intent"
+                    value="delete"
+                    disabled={!passwordVal}
+                    className="mb-5 rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
                     Delete account
                   </button>
                 </div>
-
               </Form>
             </div>
           </div>
