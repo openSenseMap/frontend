@@ -82,7 +82,6 @@ export default function Index() {
                     initial={{ opacity: 0, y: 100, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{
-                      ease: "easeInOut",
                       duration: 0.5,
                       delay: 0.2,
                       type: "spring",
@@ -108,7 +107,6 @@ export default function Index() {
                     initial={{ opacity: 0, y: 100, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{
-                      ease: "easeInOut",
                       duration: 0.5,
                       delay: 0.5,
                       type: "spring",
