@@ -1,4 +1,10 @@
-import { animate, motion, useInView, useMotionValue, useTransform } from "framer-motion";
+import {
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useRef } from "react";
 
 type AnimatedCounterProps = {
@@ -13,18 +19,27 @@ function AnimatedCounter({ from, to }: AnimatedCounterProps) {
   const ref = useRef(null);
   const inView = useInView(ref);
 
-  // while in view, animate the count
   useEffect(() => {
-    if (inView) {
-      const updateCount = () => {
-        if (count.get() !== to) {
-          animate(count, to, { duration: 1 });
-          requestAnimationFrame(updateCount);
-        }
-      };
+    let timeoutId: number | undefined;
 
-      requestAnimationFrame(updateCount);
+    const updateCount = () => {
+      if (count.get() !== to) {
+        animate(count, to, { duration: 1 });
+        requestAnimationFrame(updateCount);
+      }
+    };
+
+    if (inView) {
+      timeoutId = window.setTimeout(() => {
+        requestAnimationFrame(updateCount);
+      }, 450);
     }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [count, inView, to]);
 
   return <motion.span ref={ref}>{rounded}</motion.span>;

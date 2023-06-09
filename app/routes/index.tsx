@@ -15,7 +15,6 @@ import { getDirectusClient } from "~/lib/directus";
 
 export const loader = async ({ request }: LoaderArgs) => {
   let locale = await i18next.getLocale(request);
-  console.log("🌐 Locale detected: ", locale);
   const directus = await getDirectusClient();
 
   const useCasesResponse = await directus.items("use_cases").readByQuery({
@@ -53,27 +52,21 @@ export default function Index() {
   return (
     <div className="min-h-full bg-white dark:bg-black">
       <header>
-        <motion.div
-          initial={{ opacity: 0, y: -100 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ease: "easeOut", duration: 0.5 }}
-        >
-          <Header />
-        </motion.div>
+        <Header />
       </header>
       <main>
         <div className="overflow-hidden pt-8 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
               <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
+                <h1 className="text-5xl font-bold tracking-tight text-green-300 dark:text-white">
+                  openSenseMap
+                </h1>
                 <motion.div
                   initial={{ opacity: 0, x: -100 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ ease: "easeInOut", duration: 0.5 }}
                 >
-                  <h1 className="text-4xl font-medium tracking-tight text-gray-900 dark:text-white">
-                    openSenseMap
-                  </h1>
                   <p className="mt-6 ml-6 text-lg text-gray-600 dark:text-gray-100">
                     Die wahrscheinlich größte offene Plattform für Umwelt- und
                     Sensordaten weltweit ermöglicht es allen Menschen kostenfrei
@@ -105,7 +98,7 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-blue-200 dark:bg-blue-200 dark:text-white mt-8 rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-blue-100 p-2 text-gray-300 transition-all hover:scale-105 hover:bg-blue-100 hover:text-white dark:bg-blue-100">
+                        <button className="dark:border-blue-200 dark:bg-blue-200 mt-8 rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-blue-100 p-2 text-gray-300 transition-all hover:scale-105 hover:bg-blue-100 hover:text-white dark:bg-blue-100 dark:text-white">
                           Donate
                         </button>
                       </motion.div>
