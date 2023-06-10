@@ -167,7 +167,7 @@ export default function Index() {
           <Partners data={partners} />
         </div>
       </section>
-      <footer className="border-t border-gray-200">
+      <footer className="">
         <Footer />
       </footer>
     </div>
