@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { Variants } from "framer-motion";
-import { Feature } from "~/lib/directus";
-import FeatureCard from "../landing/features-card";
+import { UseCase } from "~/lib/directus";
+import UseCaseCard from "./use-cases-card";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 
-type FeaturesProps = {
-  data: Feature[];
+type UseCaseProps = {
+  data: UseCase[];
 };
 
 const variants: Variants = {
@@ -41,7 +41,7 @@ function getZIndex({
   return indexes[position()];
 }
 
-export default function App({ data }: FeaturesProps) {
+export default function UseCaseCarousel({ data }: UseCaseProps) {
   const [[activeIndex, direction], setActiveIndex] = useState<[number, number]>(
     [0, 0]
   );
@@ -49,7 +49,7 @@ export default function App({ data }: FeaturesProps) {
   const indexInArrayScope =
     ((activeIndex % data.length) + data.length) % data.length;
 
-  const visibleItems: Feature[] = [...data, ...data].slice(
+  const visibleItems: UseCase[] = [...data, ...data].slice(
     indexInArrayScope,
     indexInArrayScope + 3
   );
@@ -86,7 +86,7 @@ export default function App({ data }: FeaturesProps) {
           </div>
         </motion.button>
         <AnimatePresence mode="popLayout">
-          {visibleItems.map((item: Feature) => {
+          {visibleItems.map((item: UseCase) => {
             return (
               <motion.div
                 className="card flex h-full w-full items-center justify-center"
@@ -110,7 +110,7 @@ export default function App({ data }: FeaturesProps) {
                 exit="exit"
                 transition={{ duration: 1 }}
               >
-                <FeatureCard {...item} />
+                <UseCaseCard {...item} />
               </motion.div>
             );
           })}

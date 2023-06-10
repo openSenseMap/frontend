@@ -1,6 +1,6 @@
 import type { Feature } from "~/lib/directus";
 
-import Carousel from "../ui/carousel";
+import FeaturesCarousel from "./features-carousel";
 
 type FeaturesProps = {
   data: Feature[];
@@ -16,7 +16,7 @@ export default function Features({ data }: FeaturesProps) {
           </p>
         </div>
         <div className="flex">
-          <Carousel data={data} />
+          <FeaturesCarousel data={data} />
         </div>
       </div>
     </div>

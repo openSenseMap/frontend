@@ -152,17 +152,17 @@ export default function Index() {
           <Features data={features} />
         </div>
       </section>
-      <section className="py-20 sm:py-32">
+      <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Tools />
         </div>
       </section>
-      <section className="py-20 sm:py-32">
+      <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <UseCases data={useCases} />
         </div>
       </section>
-      <section className="py-20 sm:py-32">
+      <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Partners data={partners} />
         </div>
