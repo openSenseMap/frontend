@@ -147,7 +147,7 @@ export default function Index() {
           </div>
         </div>
       </main>
-      <section className="py-20 sm:py-32">
+      <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Features data={features} />
         </div>

@@ -4,7 +4,7 @@ export default function FeatureCard(item: Feature) {
   return (
     <div
       key={item.id}
-      className="dark:border-green-200 dark:bg-gray-100/[rgba(217,217,217,0.1)] flex flex-col items-center justify-center rounded-lg border-4 border-solid border-green-100 p-4 text-center text-gray-300 dark:text-gray-100"
+      className="dark:bg-gray-100/[rgba(217,217,217,0.1)] flex flex-col items-center justify-center rounded-xl border-4 border-solid border-green-100 bg-white p-4 text-center text-4xl text-gray-300 shadow-[5px_5px_rgba(0,_98,_90,_0.4),_8px_8px_rgba(0,_98,_90,_0.3),_11px_11px_rgba(0,_98,_90,_0.2),_14px_14px_rgba(0,_98,_90,_0.1),_17px_17px_rgba(0,_98,_90,_0.05)] dark:text-gray-100"
     >
       <div className="dark:text-green-200 pb-4 font-serif text-2xl font-extrabold text-green-100 subpixel-antialiased">
         {item.title}
