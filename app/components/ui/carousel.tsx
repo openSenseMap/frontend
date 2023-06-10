@@ -1,10 +1,8 @@
-import {
-  AnimatePresence,
-  motion,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { Variants } from "framer-motion";
 import { Feature } from "~/lib/directus";
+import FeatureCard from "../landing/features-card";
 
 type FeaturesProps = {
   data: Feature[];
@@ -43,16 +41,14 @@ function getZIndex({
 }
 
 export default function App({ data }: FeaturesProps) {
-  console.log("🚀 ~ file: carousel.tsx:61 ~ App ~ data:", data);
   const [[activeIndex, direction], setActiveIndex] = useState<[number, number]>(
     [0, 0]
   );
-  const items: string[] = ["🍔", "🍕", "🌭", "🍗"];
 
   const indexInArrayScope =
-    ((activeIndex % items.length) + items.length) % items.length;
+    ((activeIndex % data.length) + data.length) % data.length;
 
-  const visibleItems: string[] = [...items, ...items].slice(
+  const visibleItems: Feature[] = [...data, ...data].slice(
     indexInArrayScope,
     indexInArrayScope + 3
   );
@@ -63,69 +59,52 @@ export default function App({ data }: FeaturesProps) {
 
   return (
     <div className="main-wrapper flex w-full flex-col items-center">
-  <div className="wrapper m-20 flex">
-    <motion.button
-      className="arrow-button"
-      whileTap={{ scale: 0.8 }}
-      onClick={() => handleClick(-1)}
-    >
-      ◀︎
-    </motion.button>
-    <AnimatePresence mode="popLayout">
-      {visibleItems.map((item) => {
-        return (
-          <motion.div
-            className="card flex h-full w-full items-center justify-center rounded-lg bg-white text-4xl shadow-md"
-            key={item}
-            layout
-            custom={{
-              direction,
-              position: () => {
-                if (item === visibleItems[0]) {
-                  return "left";
-                } else if (item === visibleItems[1]) {
-                  return "center";
-                } else {
-                  return "right";
-                }
-              },
-            }}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 1 }}
-          >
-            <div
-              key={data[0].id}
-              className="dark:border-green-200 dark:bg-gray-100/[rgba(217,217,217,0.1)] flex flex-col items-center justify-center rounded-lg border-4 border-solid border-green-100 p-4 text-center text-gray-300 dark:text-gray-100"
-            >
-              <div className="dark:text-green-200 pb-4 font-serif text-2xl font-extrabold text-green-100 subpixel-antialiased">
-                {data[0].title}
-              </div>
-              <div className="text-center text-lg">
-                {data[0].description}
-              </div>
-              <div className="pt-4">
-                <img
-                  src={`${ENV.DIRECTUS_URL}/assets/${data[0].icon}`}
-                  alt="api_svg"
-                />
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
-    </AnimatePresence>
-    <motion.button
-      className="arrow-button"
-      whileTap={{ scale: 0.8 }}
-      onClick={() => handleClick(1)}
-    >
-      ▶︎
-    </motion.button>
-  </div>
-</div>
-
+      <div className="wrapper m-20 flex">
+        <motion.button
+          className="arrow-button"
+          whileTap={{ scale: 0.8 }}
+          onClick={() => handleClick(-1)}
+        >
+          ◀︎
+        </motion.button>
+        <AnimatePresence mode="popLayout">
+          {visibleItems.map((item: Feature) => {
+            return (
+              <motion.div
+                className="card flex h-full w-full items-center justify-center rounded-lg bg-white text-4xl shadow-md"
+                key={item.id}
+                layout
+                custom={{
+                  direction,
+                  position: () => {
+                    if (item === visibleItems[0]) {
+                      return "left";
+                    } else if (item === visibleItems[1]) {
+                      return "center";
+                    } else {
+                      return "right";
+                    }
+                  },
+                }}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 1 }}
+              >
+                <FeatureCard {...item} />
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+        <motion.button
+          className="arrow-button"
+          whileTap={{ scale: 0.8 }}
+          onClick={() => handleClick(1)}
+        >
+          ▶︎
+        </motion.button>
+      </div>
+    </div>
   );
 }
