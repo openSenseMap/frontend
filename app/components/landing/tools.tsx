@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
 
 export default function Tools() {
   const tools = [
@@ -59,7 +60,20 @@ export default function Tools() {
             Tools
           </p>
         </div>
-        <div className="flex w-full items-center justify-around py-4">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{
+            duration: 0.5,
+            delay: 0.3,
+          }}
+          variants={{
+            visible: { opacity: 1, y: 0 },
+            hidden: { opacity: 0, y: 100 },
+          }}
+          className="flex w-full items-center justify-around py-4"
+        >
           <Tabs defaultValue={tools[0].name} className="w-full">
             <div className="flex items-center justify-center pb-4">
               <TabsList>
@@ -89,7 +103,7 @@ export default function Tools() {
               );
             })}
           </Tabs>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

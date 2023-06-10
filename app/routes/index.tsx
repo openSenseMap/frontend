@@ -162,7 +162,7 @@ export default function Index() {
           <UseCases data={useCases} />
         </div>
       </section>
-      <section className="py-20 sm:py-20">
+      <section className="pt-20 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Partners data={partners} />
         </div>

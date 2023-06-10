@@ -78,7 +78,7 @@ export default function FeaturesCarousel({ data }: FeaturesProps) {
           viewport={{ once: true }}
           transition={{
             duration: 0.5,
-            delay: 0.5,
+            delay: 0.8,
             type: "spring",
             stiffness: 150,
           }}
@@ -132,7 +132,7 @@ export default function FeaturesCarousel({ data }: FeaturesProps) {
           viewport={{ once: true }}
           transition={{
             duration: 0.3,
-            delay: 0.5,
+            delay: 0.8,
             type: "spring",
             stiffness: 150,
           }}
