@@ -45,6 +45,7 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
   const [[activeIndex, direction], setActiveIndex] = useState<[number, number]>(
     [0, 0]
   );
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const indexInArrayScope =
     ((activeIndex % data.length) + data.length) % data.length;
@@ -55,7 +56,14 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
   );
 
   const handleClick = (newDirection: number): void => {
+    if (isButtonDisabled) return; // Prevent clicking if the button is disabled
+
     setActiveIndex((prevIndex) => [prevIndex[0] + newDirection, newDirection]);
+    setIsButtonDisabled(true); // Disable the button
+
+    setTimeout(() => {
+      setIsButtonDisabled(false); // Enable the button after 0.5 seconds
+    }, 1000);
   };
 
   return (

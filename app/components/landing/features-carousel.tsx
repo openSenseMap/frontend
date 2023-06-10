@@ -41,10 +41,11 @@ function getZIndex({
   return indexes[position()];
 }
 
-export default function App({ data }: FeaturesProps) {
+export default function FeaturesCarousel({ data }: FeaturesProps) {
   const [[activeIndex, direction], setActiveIndex] = useState<[number, number]>(
     [0, 0]
   );
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const indexInArrayScope =
     ((activeIndex % data.length) + data.length) % data.length;
@@ -55,7 +56,14 @@ export default function App({ data }: FeaturesProps) {
   );
 
   const handleClick = (newDirection: number): void => {
+    if (isButtonDisabled) return; // Prevent clicking if the button is disabled
+
     setActiveIndex((prevIndex) => [prevIndex[0] + newDirection, newDirection]);
+    setIsButtonDisabled(true); // Disable the button
+
+    setTimeout(() => {
+      setIsButtonDisabled(false); // Enable the button after 0.5 seconds
+    }, 1000);
   };
 
   return (
@@ -64,7 +72,7 @@ export default function App({ data }: FeaturesProps) {
         <motion.button
           className="arrow-button"
           whileTap={{ scale: 0.8 }}
-          onClick={() => handleClick(1)}
+          onClick={() => handleClick(-1)}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
