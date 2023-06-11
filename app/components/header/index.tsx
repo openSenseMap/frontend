@@ -12,11 +12,13 @@ interface HeaderProps {
 export default function Header(props: HeaderProps) {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="pointer-events-none fixed z-10 flex justify-between h-14 w-full items-center p-2">
+    <div className="pointer-events-none fixed z-10 flex h-14 w-full items-center justify-between p-2">
       <Home />
       <NavBar devices={props.devices} />
-      {data?.user?.email ? <Notification /> : null}
-      <Menu />
+      <div className="flex">
+        {data?.user?.email ? <Notification /> : null}
+        <Menu />
+      </div>
     </div>
   );
 }
