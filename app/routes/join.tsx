@@ -4,6 +4,8 @@ import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 
 import { createUserSession, getUserId } from "~/session.server";
+import * as ToastPrimitive from "@radix-ui/react-toast";
+import { clsx } from "clsx";
 
 import {
   createUser,
@@ -12,7 +14,7 @@ import {
 } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
-
+import { useState } from "react";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -131,6 +133,8 @@ export default function Join() {
   const passwordRef = React.useRef<HTMLInputElement>(null);
   const nameRef = React.useRef<HTMLInputElement>(null);
 
+  const [isOpen, setIsOpen] = useState<Boolean>(true);
+  const [toastOpen, setToastOpen] = useState(true);
   React.useEffect(() => {
     if (actionData?.errors?.email) {
       emailRef.current?.focus();
@@ -141,6 +145,47 @@ export default function Join() {
 
   return (
     <div className="flex h-screen min-h-full flex-col items-center justify-center">
+
+      {/*Toast notification */}
+      <div>
+        <ToastPrimitive.Provider>
+          <div
+            className={"bg-white " + (isOpen ? "animate-fade-in-up" : "hidden")}
+          ></div>
+          <ToastPrimitive.Root
+            open={toastOpen}
+            onOpenChange={setToastOpen}
+            className={clsx(
+              "fixed inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full md:max-w-sm",
+              "bg-white dark:bg-gray-800",
+              "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
+              "radix-state-closed:animate-toast-hide",
+              "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
+              "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
+              "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
+              "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
+              "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
+              "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+            )}
+          >
+            <div className="flex">
+              <div className="flex w-0 flex-1 items-center py-4 pl-5">
+                <div className="radix w-full">
+                  <ToastPrimitive.Title className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    Too many sensors selected
+                  </ToastPrimitive.Title>
+                  <ToastPrimitive.Description className="mt-1 text-sm text-gray-700 dark:text-gray-400">
+                    Please unselect a sensor before selecting a new one.
+                  </ToastPrimitive.Description>
+                </div>
+              </div>
+            </div>
+          </ToastPrimitive.Root>
+          <ToastPrimitive.Viewport />
+        </ToastPrimitive.Provider>
+      </div>
+      
+      {/* Form */}
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
