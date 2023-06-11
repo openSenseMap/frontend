@@ -31,7 +31,6 @@ import { getUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
-
   const user = await getUser(request);
 
   return json({ devices, user });
