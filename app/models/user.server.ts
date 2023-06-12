@@ -22,6 +22,31 @@ export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }
 
+export async function updateUserPassword(
+  userId: Password["userId"],
+  password: string
+) {
+  const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13);
+  return prisma.password.update({
+    where: { userId },
+    data: {
+      hash: hashedPassword,
+    },
+  });
+}
+
+export async function updateUserlocale(
+  email: User["email"],
+  language: User["language"]
+) {
+  return prisma.user.update({
+    where: { email },
+    data: {
+      language: language,
+    },
+  });
+}
+
 export async function getUsers() {
   return prisma.user.findMany();
 }
@@ -37,7 +62,12 @@ const preparePasswordHash = function preparePasswordHash(
   return hashed;
 };
 
-export async function createUser(name: User["name"],email: User["email"], language: User["language"], password: string) {
+export async function createUser(
+  name: User["name"],
+  email: User["email"],
+  language: User["language"],
+  password: string
+) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
   return prisma.user.create({
@@ -79,7 +109,7 @@ export async function verifyLogin(
   if (!isValid) {
     return null;
   }
-  
+
   //* exclude password property (using spread operator)
   //* const userWithoutPassword: {id: string; email: string;createdAt: Date; updatedAt: Date;}
   const { password: _password, ...userWithoutPassword } = userWithPassword;

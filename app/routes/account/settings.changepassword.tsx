@@ -1,11 +1,226 @@
-import { Form } from "@remix-run/react";
+import { Form, useActionData } from "@remix-run/react";
+import { LoaderArgs } from "@remix-run/server-runtime";
+import { ActionArgs, json, redirect } from "@remix-run/node";
+import { getUserEmail, getUserId } from "~/session.server";
+import React, { useState } from "react";
+import {
+  validatePassLength,
+  validatePassType as validatePassType,
+} from "~/utils";
+import { updateUserPassword, updateUserlocale, verifyLogin } from "~/models/user.server";
+import invariant from "tiny-invariant";
+//* Toast impl.
+import * as ToastPrimitive from "@radix-ui/react-toast";
+import { clsx } from "clsx";
 
+//*****************************************************
+export async function loader({ request }: LoaderArgs) {
+  //* if user is not logged in, redirect to home
+  const userId = await getUserId(request);
+  if (!userId) return redirect("/");
+  return json({});
+}
+
+//*****************************************************
+export async function action({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const currPass = formData.get("currentPassword");
+  const newPass = formData.get("newPassword");
+  const confirmPass = formData.get("newPasswordConfirm");
+  const passwordsList = [currPass, newPass, confirmPass];
+
+  //* validate passwords type
+  const checkPasswordsType = validatePassType(passwordsList);
+  if (!checkPasswordsType.isValid) {
+    return json(
+      {
+        errors: {
+          currPass:
+            checkPasswordsType.index == 0
+              ? "Current password is required."
+              : null,
+          newPass:
+            checkPasswordsType.index == 1 ? "New password is required." : null,
+          confirmPass:
+            checkPasswordsType.index == 2
+              ? "Password confirmation is required."
+              : null,
+          passMatch: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* validate passwords lenghts
+  const validatePasswordsLength = validatePassLength(passwordsList);
+  if (!validatePasswordsLength.isValid) {
+    return json(
+      {
+        errors: {
+          currPass:
+            validatePasswordsLength.index == 0
+              ? "Please use at least 8 characters."
+              : null,
+          newPass:
+            validatePasswordsLength.index == 1
+              ? "Please use at least 8 characters."
+              : null,
+          confirmPass:
+            validatePasswordsLength.index == 2
+              ? "Please use at least 8 characters."
+              : null,
+          passMatch: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* get user email
+  const userEmail = await getUserEmail(request);
+  invariant(userEmail, `Email not found!`);
+
+  //* validate password
+  if (typeof currPass !== "string" || currPass.length === 0) {
+    return json(
+      {
+        errors: {
+          currPass: "Password is required.",
+          newPass: null,
+          confirmPass: null,
+          passMatch: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* check both new passwords match
+  if (newPass !== confirmPass) {
+    return json(
+      {
+        errors: {
+          currPass: null,
+          newPass: null,
+          confirmPass: null,
+          passMatch: "Please make sure your passwords match.",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* check user password is correct
+  const user = await verifyLogin(userEmail, currPass);
+
+  if(!user){
+    return json(
+      {
+        errors: {
+          currPass: "Incorrect password.",
+          newPass: null,
+          confirmPass: null,
+          passMatch: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* get user ID
+  const userId = await getUserId(request);
+  invariant(userId, `userId not found!`);
+
+  if(typeof newPass !== "string" || newPass.length === 0){
+    return json(
+      {
+        errors: {
+          currPass: "Password is required.",
+          newPass: null,
+          confirmPass: null,
+          passMatch: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+  
+  //* uodate user password
+  await updateUserPassword(userId, newPass);
+
+  //* redirect to home page
+  return redirect("/");
+}
+
+//****************************************
 export default function changepassword() {
+  const actionData = useActionData<typeof action>();
+
+  //* Toast notification when user is deleted
+  const [toastOpen, setToastOpen] = useState(false);
+
+  const currPassRef = React.useRef<HTMLInputElement>(null);
+  const newPassRef = React.useRef<HTMLInputElement>(null);
+  const confirmPassRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (actionData?.errors?.currPass) {
+      currPassRef.current?.focus();
+    } else if (actionData?.errors?.newPass) {
+      newPassRef.current?.focus();
+    } else if (actionData?.errors?.confirmPass) {
+      confirmPassRef.current?.focus();
+    } else if (actionData?.errors?.passMatch) {
+      newPassRef.current?.focus();
+      setToastOpen(true);
+
+    }
+  }, [actionData]);
+
   return (
     <div className="mt-14">
       <div className="grid grid-rows-1">
         <div className="flex min-h-full items-center justify-center">
           <div className="mx-auto w-full max-w-5xl font-helvetica">
+            {/*Toast notification */}
+            <div className="mb-12">
+              <ToastPrimitive.Provider>
+                <ToastPrimitive.Root
+                  open={toastOpen}
+                  duration={3000}
+                  onOpenChange={setToastOpen}
+                  className={clsx(
+                    "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full",
+                    "bg-[#d9edf7] dark:bg-gray-800",
+                    "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
+                    "radix-state-closed:animate-toast-hide",
+                    "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
+                    "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
+                    "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
+                    "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
+                    "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
+                    "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+                  )}
+                >
+                  <div className="flex">
+                    <div className="flex w-0 flex-1 items-center py-4 pl-5">
+                      <div className="radix mr-3 w-full">
+                        <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-gray-900 dark:text-gray-100">
+                        {actionData?.errors?.passMatch}
+                          <ToastPrimitive.Close aria-label="Close">
+                            <span aria-hidden>×</span>
+                          </ToastPrimitive.Close>
+                        </ToastPrimitive.Title>
+                      </div>
+                    </div>
+                  </div>
+                  {/* <ToastPrimitive.Close>Dismiss</ToastPrimitive.Close> */}
+                </ToastPrimitive.Root>
+                <ToastPrimitive.Viewport />
+              </ToastPrimitive.Provider>
+            </div>
+
             {/* Heading */}
             <div className="inline-flex">
               {/* avatar icon */}
@@ -46,6 +261,7 @@ export default function changepassword() {
 
                   <div className="mt-1">
                     <input
+                      ref={currPassRef}
                       id="currentPassword"
                       name="currentPassword"
                       type="password"
@@ -53,6 +269,11 @@ export default function changepassword() {
                       // defaultValue={123}
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
                     />
+                    {actionData?.errors?.currPass && (
+                      <div className="pt-1 text-[#FF0000]" id="currPass-error">
+                        {actionData.errors.currPass}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -66,6 +287,7 @@ export default function changepassword() {
 
                   <div className="mt-1">
                     <input
+                      ref={newPassRef}
                       id="newPassword"
                       name="newPassword"
                       type="password"
@@ -73,6 +295,11 @@ export default function changepassword() {
                       // defaultValue={123}
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
                     />
+                    {actionData?.errors?.newPass && (
+                      <div className="pt-1 text-[#FF0000]" id="newPass-error">
+                        {actionData.errors.newPass}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -86,6 +313,7 @@ export default function changepassword() {
 
                   <div className="mt-1">
                     <input
+                      ref={confirmPassRef}
                       id="newPasswordConfirm"
                       name="newPasswordConfirm"
                       type="password"
@@ -93,6 +321,14 @@ export default function changepassword() {
                       // defaultValue={123}
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
                     />
+                    {actionData?.errors?.confirmPass && (
+                      <div
+                        className="pt-1 text-[#FF0000]"
+                        id="confirmPass-error"
+                      >
+                        {actionData.errors.confirmPass}
+                      </div>
+                    )}
                   </div>
                 </div>
 
