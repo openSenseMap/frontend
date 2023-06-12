@@ -1,7 +1,7 @@
 import { Form, useActionData } from "@remix-run/react";
 import { LoaderArgs } from "@remix-run/server-runtime";
 import { ActionArgs, json, redirect } from "@remix-run/node";
-import { getUserEmail, getUserId } from "~/session.server";
+import { getUserEmail, getUserId, logout } from "~/session.server";
 import React, { useState } from "react";
 import {
   validatePassLength,
@@ -149,8 +149,8 @@ export async function action({ request }: ActionArgs) {
   //* uodate user password
   await updateUserPassword(userId, newPass);
 
-  //* redirect to home page
-  return redirect("/");
+  //* logout
+  return logout(request);
 }
 
 //****************************************
