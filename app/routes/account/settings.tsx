@@ -6,9 +6,10 @@ import invariant from "tiny-invariant";
 import { verifyLogin } from "~/models/user.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { getUserByEmail } from "~/models/user.server";
-
 import { getUserEmail, getUserId } from "~/session.server";
-
+//* Toast impl.
+import * as ToastPrimitive from "@radix-ui/react-toast";
+import { clsx } from "clsx";
 
 export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
@@ -45,7 +46,9 @@ export async function action({ request }: ActionArgs) {
   //* if user press delete button
   if (intent === "delete") {
     const user = await verifyLogin(email, password);
-    if(!user){
+
+    //* if user does't exist
+    if (!user) {
       return json(
         {
           errors: {
@@ -58,8 +61,20 @@ export async function action({ request }: ActionArgs) {
       );
     }
 
+    //* delete user
     await deleteUserByEmail(email);
-    return redirect("/");
+
+    //* return error free to show toast msg
+    return json(
+      {
+        errors: {
+          name: null,
+          email: null,
+          password: null,
+        },
+      },
+      { status: 200 }
+    );
   }
 
   //* won't come to this point.
@@ -67,20 +82,65 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Join() {
-  const userData = useLoaderData<typeof loader>();      //* to load user data
+  const userData = useLoaderData<typeof loader>(); //* to load user data
   const actionData = useActionData<typeof action>();
-  const [passwordVal, setPasswordVal] = useState("");     //* to enable delete account button
+  const [passwordVal, setPasswordVal] = useState(""); //* to enable delete account button
+  //* Toast notification when user is deleted
+  const [toastOpen, setToastOpen] = useState(false);
 
   const passwordRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
-    if (actionData?.errors?.password) {
+    //* when password is not correct
+    if (actionData && actionData?.errors?.password) {
       passwordRef.current?.focus();
+    }
+
+    //* when password is correct
+    if (actionData && !actionData?.errors?.password) {
+      // setToastOpen(() => true)
+      //* after showing toast msg the page will be reload -> then redirect to home page from loader
+      setToastOpen(true);
     }
   }, [actionData]);
 
   return (
     <div className="mt-14">
       <div className="grid grid-rows-1">
+        {/*Toast notification */}
+        <div>
+          <ToastPrimitive.Provider>
+            <ToastPrimitive.Root
+              open={toastOpen}
+              duration={3000}
+              onOpenChange={setToastOpen}
+              className={clsx(
+                "fixed inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full md:max-w-sm",
+                "bg-[#d9edf7] dark:bg-gray-800",
+                "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
+                "radix-state-closed:animate-toast-hide",
+                "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
+                "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
+                "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
+                "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
+                "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
+                "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+              )}
+            >
+              <div className="flex">
+                <div className="flex w-0 flex-1 items-center py-4 pl-5">
+                  <div className="radix w-full">
+                    <ToastPrimitive.Title className=" text-base font-medium text-gray-900 dark:text-gray-100">
+                      Account successfully deleted.
+                    </ToastPrimitive.Title>
+                  </div>
+                </div>
+              </div>
+            </ToastPrimitive.Root>
+            <ToastPrimitive.Viewport />
+          </ToastPrimitive.Provider>
+        </div>
+
+        {/* Setting form */}
         <div className="flex min-h-full items-center justify-center">
           <div className="mx-auto w-full max-w-5xl font-helvetica">
             {/* Heading */}
