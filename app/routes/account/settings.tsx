@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import invariant from "tiny-invariant";
-import { verifyLogin } from "~/models/user.server";
+import { updateUserlocale, verifyLogin } from "~/models/user.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { getUserByEmail } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
@@ -11,6 +11,7 @@ import { getUserEmail, getUserId } from "~/session.server";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
 
+//*****************************************************
 export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
@@ -24,19 +25,47 @@ export async function loader({ request }: LoaderArgs) {
   return json(userData);
 }
 
+//*****************************************************
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const email = formData.get("email");
   const password = formData.get("password");
+  const language = formData.get("language");
 
-  if (typeof email !== "string" || typeof password !== "string") {
+  if (typeof email !== "string") {
+    return json(
+      {
+        errors: {
+          name: null,
+          email: "Invalid email",
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (typeof password !== "string") {
     return json(
       {
         errors: {
           name: null,
           email: null,
           password: "Invalid password",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (typeof language !== "string" || typeof language !== "string") {
+    return json(
+      {
+        errors: {
+          name: null,
+          email: null,
+          password: null,
         },
       },
       { status: 400 }
@@ -75,18 +104,23 @@ export async function action({ request }: ActionArgs) {
       },
       { status: 200 }
     );
+  } else if (intent === "update") {
+    await updateUserlocale(email, language);
   }
 
   //* won't come to this point.
   return redirect("/");
 }
 
-export default function Join() {
+//**********************************
+export default function settings() {
   const userData = useLoaderData<typeof loader>(); //* to load user data
   const actionData = useActionData<typeof action>();
   const [passwordVal, setPasswordVal] = useState(""); //* to enable delete account button
   //* Toast notification when user is deleted
   const [toastOpen, setToastOpen] = useState(false);
+  //* Toast notification when user is deleted
+  const [lang, setLang] = useState(userData?.language);
 
   const passwordRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
@@ -94,7 +128,6 @@ export default function Join() {
     if (actionData && actionData?.errors?.password) {
       passwordRef.current?.focus();
     }
-
     //* when password is correct
     if (actionData && !actionData?.errors?.password) {
       // setToastOpen(() => true)
@@ -250,6 +283,7 @@ export default function Join() {
                       id="language"
                       name="language"
                       defaultValue={userData?.language}
+                      onChange={(e) => setLang(e.target.value)}
                       className="appearance-auto w-full rounded border border-gray-200 px-2 py-1.5 text-base"
                     >
                       <option value="en_US">English</option>
@@ -321,7 +355,7 @@ export default function Join() {
                     type="submit"
                     name="intent"
                     value="update"
-                    disabled={false}
+                    disabled={lang === userData?.language}
                     className="rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
                     Update
