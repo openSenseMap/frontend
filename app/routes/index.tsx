@@ -11,7 +11,7 @@ import UseCases from "~/components/landing/use-cases";
 import i18next from "~/i18next.server";
 import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
-import { getUserId } from "~/session.server";
+import { getUserId, getUserName } from "~/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
   let locale = await i18next.getLocale(request);
@@ -38,13 +38,13 @@ export const loader = async ({ request }: LoaderArgs) => {
 
   //* Get user Id from session
   const userId = await getUserId(request);
-  // console.log("🚀 ~ file: index.tsx:41 ~ loader ~ userId:", userId)
+  const userName = await getUserName(request);
 
   return json({
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
     partners: partnersResponse.data,
-    header: { userId: userId },
+    header: { userId: userId, userName: userName },
   });
 };
 
@@ -53,7 +53,7 @@ export default function Index() {
     useCases: UseCase[];
     features: Feature[];
     partners: Partner[];
-    header: { userId: string };
+    header: { userId: string, userName: string };
   }>();
 
   return (

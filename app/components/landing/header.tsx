@@ -39,11 +39,10 @@ export default function Header(data: HeaderProps) {
     );
   };
 
-  //* User Id
+  //* User Id and Name
   const userId = data.data.userId;
+  const userName = data.data.userName;
 
-  //* Temp userName
-  const userName = "dummy user";
   //* To control user menu visibility
   const userMenu = () => {
     console.log("🚀 ~ onClick");

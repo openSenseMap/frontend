@@ -30,7 +30,8 @@ export type Partner = {
 }
 
 export type header = {
-    userId: string
+    userId: string,
+    userName: string
 }
 
 type DirectusCollection = {
