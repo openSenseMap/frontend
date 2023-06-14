@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Exposure, Prisma } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
@@ -25,8 +25,7 @@ const preparePasswordHash = function preparePasswordHash(
 };
 
 async function seed() {
-
-  const email= "opensensemap@opensenselab.org"
+  const email = "opensensemap@opensenselab.org";
   const hashedPassword = await bcrypt.hash(
     preparePasswordHash("osemrocks"),
     13
@@ -49,20 +48,56 @@ async function seed() {
       create: {
         hash: hashedPassword,
       },
-    }
+    },
   };
 
   // cleanup the existing database
   await prisma.sensor.deleteMany({}).catch(() => {});
   await prisma.device.deleteMany({}).catch(() => {});
-  await prisma.user.delete({ where: {email} }).catch(() => {
+  await prisma.user.delete({ where: { email } }).catch(() => {
     // no worries if it doesn't exist yet
   });
 
-
-  // create intial user
+  //* create intial user
   const user = await prisma.user.create({
-    data: dummyUser
+    data: dummyUser,
+  });
+
+  //* initial devices data
+  const dummySensors = [
+    {
+      id: "626680b0964297001c90fdcf12",
+      title: "Beleuchtungsstärke",
+      sensorType: "TSL45315",
+      unit: "lx",
+    },
+    {
+      id: "626680b0964297001c90fdce123",
+      title: "UV-Intensität",
+      sensorType: "VEML6070",
+      unit: "μW/cm²",
+    },
+  ];
+
+  const dummyDevice = {
+    id: "626680b0964297001c90fdcd2wewewe125",
+    userId: "cliknu1mw0000k8055r9gd4pk",
+    name: "Test LTR329",
+    exposure: Exposure.MOBILE,
+    useAuth: true,
+    latitude: 49.225521,
+    longitude: 6.999605,
+    model: "homeV2Wifi",
+    createdAt: new Date("2022-04-25T11:06:24.526Z"),
+    updatedAt: new Date("2022-06-28T15:06:06.437Z"),
+    sensors: {
+      create: dummySensors,
+    },
+  };
+
+  //* create intial device
+  const device = await prisma.device.create({
+    data: dummyDevice,
   });
 
   // Import devices and connect it to user

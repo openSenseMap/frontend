@@ -64,6 +64,7 @@ model Device {
   name     String
   exposure Exposure
   useAuth  Boolean?
+  model String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

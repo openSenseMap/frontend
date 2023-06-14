@@ -121,7 +121,7 @@ export default function settings() {
   const [toastOpen, setToastOpen] = useState(false);
   //* Toast notification when user is deleted
   const [lang, setLang] = useState(userData?.language);
-
+  //* To focus when an error occured
   const passwordRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
     //* when password is not correct
@@ -135,6 +135,7 @@ export default function settings() {
       setToastOpen(true);
     }
   }, [actionData]);
+  
 
   return (
     <div className="mt-14">
