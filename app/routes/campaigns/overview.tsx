@@ -45,7 +45,9 @@ import { BBox, FeatureCollection } from "geojson";
 import Supercluster, { AnyProps, PointFeature } from "supercluster";
 import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
+import h337, { Heatmap } from "heatmap.js";
+// import fs from "fs";
 
 type PointProperties = {
   title: string;
@@ -90,6 +92,82 @@ export default function Campaigns() {
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
   const [zoom, setZoom] = useState(1);
+  const [container, setContainer] = useState<HTMLElement | undefined>(
+    undefined
+  );
+  const [containerWrapper, setContainerWrapper] = useState<
+    HTMLElement | undefined
+  >(undefined);
+  const mouseData: any[][] = [];
+
+  // const convertedData = testData.map(([x, y, value]) => ({
+  //   x,
+  //   y,
+  //   value,
+  // })) as readonly h337.DataPoint<"value", "x", "y">[];
+  // console.log(convertedData);
+
+  const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
+
+  // function saveMouseDataToFile() {
+  //   const fileContents = `const mouseData = ${JSON.stringify(mouseData)};`;
+
+  //   fs.writeFile("mouseData.js", fileContents, "utf8", (err) => {
+  //     if (err) {
+  //       console.error("Error writing mouse data to file:", err);
+  //     } else {
+  //       console.log("Mouse data saved to file successfully.");
+  //     }
+  //   });
+  // }
+
+  useEffect(() => {
+    if (typeof window != "undefined") {
+      const container = document.getElementById("view")!;
+      setContainer(container);
+      const wrapper = document.getElementById("view-wrapper")!;
+      setContainerWrapper(wrapper);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   if (container) {
+  //     heatMap.current = h337.create({
+  //       container: container,
+  //       maxOpacity: 0.6,
+  //       radius: 50,
+  //       blur: 0.9,
+  //     });
+  //   }
+  //   if (containerWrapper) {
+  //     containerWrapper.onclick = function (ev: any) {
+  //       if (heatMap.current) {
+  //         heatMap.current.addData({
+  //           x: ev.layerX,
+  //           y: ev.layerY,
+  //           value: 1,
+  //         });
+  //       }
+  //     };
+  //   }
+  // }, [container, containerWrapper]);
+
+  // useEffect(() => {
+  //   if (container) {
+  //     heatMap.current = h337.create({
+  //       container: container,
+  //       maxOpacity: 0.6,
+  //       radius: 50,
+  //       blur: 0.9,
+  //     });
+  //     heatMap.current.setData({
+  //       min: 0,
+  //       max: 100,
+  //       data: convertedData,
+  //     });
+  //   }
+  // }, [container, convertedData]);
+
   // const [clusters, setClusters] = useState<
   //   (
   //     | Supercluster.PointFeature<Supercluster.AnyProps>
@@ -170,7 +248,7 @@ export default function Campaigns() {
   };
 
   useEffect(() => {
-    const filteredCampaigns = data.filter((campaign: any) => {
+    const filteredCampaigns = data.slice().filter((campaign: any) => {
       const titleMatches = campaign.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -181,13 +259,46 @@ export default function Campaigns() {
     setDisplayedCampaigns(filteredCampaigns as any);
   }, [data, searchTerm, urgency]);
 
-  // const sortedCampaigns = filteredCampaigns.sort((a: any, b: any) => {
-  //   const urgencyOrder = { urgent: 0, high: 1, medium: 2, low: 3 }; // Define urgency priority order
-  //   return (
-  //     urgencyOrder[a.priority.toLowerCase() as keyof typeof urgencyOrder] -
-  //     urgencyOrder[b.priority.toLowerCase() as keyof typeof urgencyOrder]
-  //   );
-  // });
+  useEffect(() => {
+    let sortedCampaigns;
+
+    switch (sortBy) {
+      case "erstelldatum":
+        sortedCampaigns = data
+          .slice()
+          .sort((campaignA: any, campaignB: any) => {
+            const createdAtA = new Date(campaignA.createdAt).getTime();
+            const createdAtB = new Date(campaignB.createdAt).getTime();
+            return createdAtA - createdAtB;
+          });
+        break;
+
+      case "dringlichkeit":
+        const priorityOrder = {
+          URGENT: 0,
+          HIGH: 1,
+          MEDIUM: 2,
+          LOW: 3,
+        };
+
+        sortedCampaigns = data
+          .slice()
+          .sort((campaignA: any, campaignB: any) => {
+            const priorityA =
+              priorityOrder[campaignA.priority as keyof typeof priorityOrder];
+            const priorityB =
+              priorityOrder[campaignB.priority as keyof typeof priorityOrder];
+
+            return priorityA - priorityB;
+          });
+        break;
+
+      default:
+        sortedCampaigns = data.slice();
+    }
+
+    setDisplayedCampaigns(sortedCampaigns as any);
+  }, [data, sortBy]);
 
   const centerpoints = data
     .map((campaign: any) => {
@@ -354,125 +465,132 @@ export default function Campaigns() {
   //   sortBy === "dringlichkeit" ? sortedCampaigns : filteredCampaigns;
 
   return (
-    <div className="flex flex-col ">
-      {/* <Header /> */}
-      {/* <Link to={"./create"} className="ml-auto mt-2 mr-2">
+    <div
+      id="view-wrapper"
+      onClick={(e: any) => {
+        mouseData.push([e.clientX, e.clientY, 30]);
+        console.log(mouseData);
+        localStorage.setItem("overview", JSON.stringify(mouseData));
+      }}
+      // className="flex flex-col "
+    >
+      <div id="view" className="flex flex-col">
+        {/* <Header /> */}
+        {/* <Link to={"./create"} className="ml-auto mt-2 mr-2">
         <Button size="lg" className="bg-green-300 text-lg ">
           Erstellen
         </Button>
       </Link> */}
-      <input
-        className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
-        type="text"
-        placeholder="Search campaigns"
-        value={searchTerm}
-        onChange={(event) => setSearchTerm(event.target.value)}
-      />
-      <div className="my-4 flex flex-row gap-20">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size={"lg"}>
-              Dringlichkeit{" "}
-              <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-40">
-            <DropdownMenuRadioGroup value={urgency} onValueChange={setUrgency}>
-              <DropdownMenuRadioItem value="urgent">
-                Urgent
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <input
+          className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
+          type="text"
+          placeholder="Search campaigns"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
+        <div className="my-4 flex flex-row gap-20">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size={"lg"}>
+                Dringlichkeit{" "}
+                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40">
+              <DropdownMenuRadioGroup
+                value={urgency}
+                onValueChange={setUrgency}
+              >
+                <DropdownMenuRadioItem value="urgent">
+                  Urgent
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="medium">
+                  Medium
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size={"lg"}>
-              Sortieren nach{" "}
-              <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-40">
-            <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
-              <DropdownMenuRadioItem value="dringlichkeit">
-                Dringlichkeit
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="erstelldatum">
-                Erstelldatum
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button variant={"ghost"} size={"lg"} onClick={resetFilters}>
-          Filter zurücksetzen
-        </Button>
-        <div>
-          <span>Karte anzeigen</span>
-          <Switch
-            id="showMapSwitch"
-            checked={showMap}
-            onCheckedChange={() => setShowMap(!showMap)}
-          />
-        </div>
-        {selectedCampaign && (
-          <div className="relative inline-block">
-            <input type="text" value={selectedCampaign.split("-")[0]} />
-            <XMarkIcon
-              onClick={() => {
-                setSelectedcampain("");
-                resetFilters();
-                mapRef.current?.flyTo({
-                  center: [0, 0],
-                  duration: 1000,
-                  zoom: 1,
-                });
-              }}
-              className="absolute right-2 top-2 ml-auto h-5 w-5"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size={"lg"}>
+                Sortieren nach{" "}
+                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40">
+              <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
+                <DropdownMenuRadioItem value="dringlichkeit">
+                  Dringlichkeit
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="erstelldatum">
+                  Erstelldatum
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant={"ghost"} size={"lg"} onClick={resetFilters}>
+            Filter zurücksetzen
+          </Button>
+          <div>
+            <span>Karte anzeigen</span>
+            <Switch
+              id="showMapSwitch"
+              checked={showMap}
+              onCheckedChange={() => setShowMap(!showMap)}
             />
           </div>
-        )}
-      </div>
-      {data.length === 0 ? (
-        <div>
-          Zurzeit gibt es noch keine Kampagnen. Klicke{" "}
-          <Link className="underlined text-blue-500" to={"../../create/area"}>
-            hier{" "}
-          </Link>
-          um die erste Kampagne zu erstellen
+          {selectedCampaign && (
+            <div className="relative inline-block">
+              <input type="text" value={selectedCampaign.split("-")[0]} />
+              <XMarkIcon
+                onClick={() => {
+                  setSelectedcampain("");
+                  resetFilters();
+                  mapRef.current?.flyTo({
+                    center: [0, 0],
+                    duration: 1000,
+                    zoom: 1,
+                  });
+                }}
+                className="absolute right-2 top-2 ml-auto h-5 w-5"
+              />
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="flex flex-wrap">
-          {/* <div
+        {data.length === 0 ? (
+          <div>
+            Zurzeit gibt es noch keine Kampagnen. Klicke{" "}
+            <Link className="underlined text-blue-500" to={"../../create/area"}>
+              hier{" "}
+            </Link>
+            um die erste Kampagne zu erstellen
+          </div>
+        ) : (
+          <div className="flex">
+            {/* <div
             className={clsx("p-4", {
               "w-full": !showMap,
               "w-1/4 lg:w-3/4": showMap,
             })}
           > */}
-          <div
-            className={clsx("grid", {
-              "grid-cols-3 gap-4": !showMap,
-              "grid-cols-2 gap-3": showMap,
-            })}
-          >
-            {displayedCampaigns.map((item: any) => (
-              <Link key={item.id} to={`../${item.id}`}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      <div className="flex flex-wrap">
-                        <span className="flex flex-wrap">
-                          {item.title}
-                          {item.country && (
-                            <CountryFlagIcon
-                              country={String(item.country).toUpperCase()}
-                            />
-                          )}
-                        </span>
-                        <div className="ml-auto">
+            <div
+              className={clsx("grid", {
+                "grid-cols-3 gap-4": !showMap,
+                "grid-cols-2 gap-3": showMap,
+              })}
+            >
+              {displayedCampaigns.map((item: any) => (
+                <Card key={item.id} className="md:min-w-[260px]">
+                  <Link to={`../${item.id}`}>
+                    <CardHeader>
+                      <CardTitle>
+                        <div className="flex">
                           <span
                             className={clsx(
-                              "mr-2 w-fit rounded px-2 py-1 text-white",
+                              "flex w-fit flex-wrap rounded px-2 py-1 text-sm text-white",
                               {
                                 "bg-red-500":
                                   item.priority.toLowerCase() === "urgent",
@@ -485,12 +603,12 @@ export default function Campaigns() {
                               }
                             )}
                           >
-                            {item.priority}
+                            <ClockIcon className="h-4 w-4" /> {item.priority}
                           </span>
                           {item.exposure !== "UNKNOWN" && (
                             <span
                               className={clsx(
-                                "w-fit rounded px-2 py-1 text-white",
+                                "ml-auto w-fit rounded px-2 py-1 text-sm text-white",
                                 {
                                   "bg-blue-200":
                                     item.exposure.toLowerCase() === "indoor",
@@ -505,17 +623,25 @@ export default function Campaigns() {
                             </span>
                           )}
                         </div>
-                      </div>
-                    </CardTitle>
-                    <CardDescription>{item.keywords || ""}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Progress
-                      max={item.requiredParticipants}
-                      value={item.participantCount}
-                      // onMouseEnter={}
-                    />
-                  </CardContent>
+                        <span className="flex flex-wrap">
+                          {item.title}
+                          {item.country && (
+                            <CountryFlagIcon
+                              country={String(item.country).toUpperCase()}
+                            />
+                          )}
+                        </span>
+                      </CardTitle>
+                      <CardDescription>{item.keywords || ""}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Progress
+                        max={item.requiredParticipants}
+                        value={item.participantCount}
+                        // onMouseEnter={}
+                      />
+                    </CardContent>
+                  </Link>
                   <CardFooter>
                     <Accordion className="w-full" type="single" collapsible>
                       <AccordionItem value="item-1">
@@ -527,114 +653,114 @@ export default function Campaigns() {
                     </Accordion>
                   </CardFooter>
                 </Card>
-              </Link>
-            ))}
-          </div>
-          {showMap && (
-            <div className="ml-auto w-1/3">
-              <MapProvider>
-                <Map
-                  initialViewState={{
-                    latitude: 0,
-                    longitude: 0,
-                    zoom: 1,
-                  }}
-                  interactiveLayerIds={["marker-layer"]}
-                  // preserveDrawingBuffer
-                  // onMouseMove={handleMapMouseMove}
-                  // onClick={handleMapClick}
-                  onLoad={handleMapLoad}
-                  onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
-                  ref={mapRef}
-                  style={{
-                    height: "60vh",
-                    width: "40vw",
-                    position: "fixed",
-                    bottom: "10px",
-                    // marginTop: "2rem",
-                    right: "10px",
-                  }}
-                >
-                  {clusters.map((cluster) => {
-                    // every cluster point has coordinates
-                    const [longitude, latitude] = cluster.geometry.coordinates;
-                    // the point may be either a cluster or a crime point
-                    const { cluster: isCluster, point_count: pointCount } =
-                      cluster.properties;
+              ))}
+            </div>
+            {showMap && (
+              <div className="ml-auto w-1/3">
+                <MapProvider>
+                  <Map
+                    initialViewState={{
+                      latitude: 0,
+                      longitude: 0,
+                      zoom: 1,
+                    }}
+                    interactiveLayerIds={["marker-layer"]}
+                    // preserveDrawingBuffer
+                    // onMouseMove={handleMapMouseMove}
+                    // onClick={handleMapClick}
+                    onLoad={handleMapLoad}
+                    onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
+                    ref={mapRef}
+                    style={{
+                      height: "60vh",
+                      width: "40vw",
+                      position: "fixed",
+                      bottom: "10px",
+                      // marginTop: "2rem",
+                      right: "10px",
+                    }}
+                  >
+                    {clusters.map((cluster) => {
+                      // every cluster point has coordinates
+                      const [longitude, latitude] =
+                        cluster.geometry.coordinates;
+                      // the point may be either a cluster or a crime point
+                      const { cluster: isCluster, point_count: pointCount } =
+                        cluster.properties;
 
-                    // const marker = markers.find((m) => m.id === cluster.id);
+                      // const marker = markers.find((m) => m.id === cluster.id);
 
-                    // we have a cluster to render
-                    if (isCluster) {
-                      return (
-                        <Marker
-                          key={`cluster-${cluster.id}`}
-                          latitude={latitude}
-                          longitude={longitude}
-                        >
-                          <div
-                            className="flex items-center justify-center rounded-full bg-blue-500 p-4"
-                            style={{
-                              width: `${
-                                10 + (pointCount / points.length) * 20
-                              }px`,
-                              height: `${
-                                10 + (pointCount / points.length) * 20
-                              }px`,
-                            }}
-                            onClick={() =>
-                              handleClusterClick(latitude, longitude)
-                            }
+                      // we have a cluster to render
+                      if (isCluster) {
+                        return (
+                          <Marker
+                            key={`cluster-${cluster.id}`}
+                            latitude={latitude}
+                            longitude={longitude}
                           >
-                            {pointCount}
-                          </div>
-                        </Marker>
-                      );
-                    }
+                            <div
+                              className="flex items-center justify-center rounded-full bg-blue-500 p-4"
+                              style={{
+                                width: `${
+                                  10 + (pointCount / points.length) * 20
+                                }px`,
+                                height: `${
+                                  10 + (pointCount / points.length) * 20
+                                }px`,
+                              }}
+                              onClick={() =>
+                                handleClusterClick(latitude, longitude)
+                              }
+                            >
+                              {pointCount}
+                            </div>
+                          </Marker>
+                        );
+                      }
 
-                    return (
-                      <>
-                        <Marker
-                          // color={color}
-                          key={`${cluster.properties.id}`}
-                          latitude={latitude}
-                          longitude={longitude}
-                          onClick={() =>
-                            handleMarkerClick(
-                              cluster.properties.id,
-                              latitude,
-                              longitude
-                            )
-                          }
-                        ></Marker>
-                        <Marker
-                          key={`span-${cluster.properties.id}`}
-                          latitude={latitude}
-                          longitude={longitude}
-                          anchor="top"
-                        >
-                          <span className="font-bold">
-                            {cluster.properties.title}
-                          </span>
-                        </Marker>
-                      </>
-                    );
-                  })}
-                  {/* <Source
+                      return (
+                        <>
+                          <Marker
+                            // color={color}
+                            key={`${cluster.properties.id}`}
+                            latitude={latitude}
+                            longitude={longitude}
+                            onClick={() =>
+                              handleMarkerClick(
+                                cluster.properties.id,
+                                latitude,
+                                longitude
+                              )
+                            }
+                          ></Marker>
+                          <Marker
+                            key={`span-${cluster.properties.id}`}
+                            latitude={latitude}
+                            longitude={longitude}
+                            anchor="top"
+                          >
+                            <span className="font-bold">
+                              {cluster.properties.title}
+                            </span>
+                          </Marker>
+                        </>
+                      );
+                    })}
+                    {/* <Source
                     id="clusters"
                     type="geojson"
                     data={{ type: "FeatureCollection", features: clusters }}
                   >
                     {/* @ts-ignore */}
-                  {/* <Layer {...clusterLayer} />
+                    {/* <Layer {...clusterLayer} />
                     <Layer {...clusterCountLayer} />
                   </Source>
                   <Source
                     type="geojson"
                     data={markerGeoJSOn as FeatureCollection}
                   > */}
-                  {/* TODO: Replace circles with markers */}
-                  {/* <Layer
+                    {/* TODO: Replace circles with markers */}
+                    {/* <Layer
                       id="marker-layer"
                       type="circle"
                       paint={{
@@ -642,8 +768,8 @@ export default function Campaigns() {
                         "circle-radius": 5,
                       }}
                     /> */}
-                  {/* @ts-ignore */}
-                  {/* <Layer {...unclusteredPointLayer} />
+                    {/* @ts-ignore */}
+                    {/* <Layer {...unclusteredPointLayer} />
                     <Layer
                       type="symbol"
                       layout={{
@@ -661,13 +787,14 @@ export default function Campaigns() {
                       }}
                     />
                   </Source> */}
-                </Map>
-              </MapProvider>
-            </div>
-          )}
-        </div>
-        // </div>
-      )}
+                  </Map>
+                </MapProvider>
+              </div>
+            )}
+          </div>
+          // </div>
+        )}
+      </div>
     </div>
   );
 }
