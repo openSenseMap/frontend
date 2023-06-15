@@ -2964,6 +2964,13 @@
   dependencies:
     "@types/unist" "*"
 
+"@types/heatmap.js@^2.0.37":
+  version "2.0.37"
+  resolved "https://registry.yarnpkg.com/@types/heatmap.js/-/heatmap.js-2.0.37.tgz#f8c003925b288fa39f926990a123fefeb831ccba"
+  integrity sha512-Zd1m6WaRSPnXcR1fETGnIvyRSE2rcQK21S0zIU/LWjwsrNyKBA3xdckrQhQpIdG+UTeu7WODv237s30Ky7IVXg==
+  dependencies:
+    "@types/leaflet" "^0"
+
 "@types/http-cache-semantics@*":
   version "4.0.1"
   resolved "https://registry.npmjs.org/@types/http-cache-semantics/-/http-cache-semantics-4.0.1.tgz"
@@ -3017,6 +3024,13 @@
   integrity sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==
   dependencies:
     "@types/node" "*"
+
+"@types/leaflet@^0":
+  version "0.7.36"
+  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-0.7.36.tgz#7f77ddc3e9cb9fb19a2609bff14f095ba603bc6e"
+  integrity sha512-SolNBzKdZo3F46Mx63wUA2VpYUKtQjfLVWDczv8nBjVsNMeER/zIO1P9LaPSzS2PcPxhVIRDOmBOjylZiFDaAQ==
+  dependencies:
+    "@types/geojson" "*"
 
 "@types/mapbox-gl@*", "@types/mapbox-gl@^2.6.0":
   version "2.7.10"
@@ -6738,6 +6752,11 @@ headers-polyfill@^3.1.0:
   version "3.1.2"
   resolved "https://registry.npmjs.org/headers-polyfill/-/headers-polyfill-3.1.2.tgz"
   integrity sha512-tWCK4biJ6hcLqTviLXVR9DTRfYGQMXEIUj3gwJ2rZ5wO/at3XtkI4g8mCvFdUF9l1KMBNCfmNAdnahm1cgavQA==
+
+heatmap.js@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/heatmap.js/-/heatmap.js-2.0.5.tgz#466d3b86513f5d49112a49d25700ab2730149153"
+  integrity sha512-CG2gYFP5Cv9IQCXEg3ZRxnJDyAilhWnQlAuHYGuWVzv6mFtQelS1bR9iN80IyDmFECbFPbg6I0LR5uAFHgCthw==
 
 hosted-git-info@^2.1.4:
   version "2.8.9"
