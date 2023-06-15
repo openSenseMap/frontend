@@ -139,6 +139,7 @@ export async function action({ request }: ActionArgs) {
       feature: newCampaign.feature ?? {},
       endDate: newCampaign.endDate ?? null,
       centerpoint: newCampaign.centerpoint ?? {},
+      country: [newCampaign.country],
       ownerId,
     });
 
@@ -187,8 +188,30 @@ export default function CreateCampaign() {
   );
   const [priority, setPriority] = useState("MEDIUM");
   const [exposure, setExposure] = useState("UNKNOWN");
+  const mouseData: any[][] = [];
+  // useEffect(() => {
+  //   if (container) {
+  //     heatMap.current = h337.create({
+  //       container: container,
+  //       maxOpacity: 0.6,
+  //       radius: 50,
+  //       blur: 0.9,
+  //     });
+  //     heatMap.current.setData({
+  //       min: 0,
+  //       max: 100,
+  //       data: convertedData,
+  //     });
+  //   }
+  // }, [container, convertedData]);
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div
+      className="flex min-h-full flex-col justify-center"
+      onClick={(e: any) => {
+        mouseData.push([e.clientX, e.clientY, 30]);
+        localStorage.setItem("form", JSON.stringify(mouseData));
+      }}
+    >
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>

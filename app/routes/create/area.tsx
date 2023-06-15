@@ -63,6 +63,8 @@ export default function Explore() {
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const { features, setFeatures } = useContext(FeatureContext);
   const mapRef: any = useRef();
+  const mouseData: any[][] = [];
+
   // const draw = new MapboxDraw({
 
   //   modes: {
@@ -72,6 +74,22 @@ export default function Explore() {
   //   },
   // });
   // const onLoad = () => mapRef.current?.addControl(draw);
+
+  // useEffect(() => {
+  //   if (container) {
+  //     heatMap.current = h337.create({
+  //       container: container,
+  //       maxOpacity: 0.6,
+  //       radius: 50,
+  //       blur: 0.9,
+  //     });
+  //     heatMap.current.setData({
+  //       min: 0,
+  //       max: 100,
+  //       data: convertedData,
+  //     });
+  //   }
+  // }, [container, convertedData]);
 
   const handleFileUpload = (event: any) => {
     const file = event.target.files[0];
@@ -143,7 +161,13 @@ export default function Explore() {
   }, []);
 
   return (
-    <div className="grid h-full w-full grid-cols-3 gap-4">
+    <div
+      className="grid h-full w-full grid-cols-3 gap-4"
+      onClick={(e: any) => {
+        mouseData.push([e.clientX, e.clientY, 30]);
+        localStorage.setItem("area", JSON.stringify(mouseData));
+      }}
+    >
       <div className="flex flex-col gap-3">
         <h1 className="ml-2 text-lg font-bold">Interessensgebiet definieren</h1>
         <Card>
