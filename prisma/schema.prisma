@@ -115,6 +115,7 @@ model Campaign {
   location_points      Json?
   hardware_available   Boolean
   grouptag             String[]
+  // boxIds String[]
 }
 
 enum Priority {
