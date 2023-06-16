@@ -9,7 +9,6 @@ import {
   createUser,
   getUserByEmail,
   getUserByName,
-  getUsers,
 } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
@@ -22,10 +21,6 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  //* temp
-  const allUsers = await getUsers();
-  console.log("🚀 ~ file: join.tsx:27 ~ action ~ allUsers:", allUsers);
-
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");

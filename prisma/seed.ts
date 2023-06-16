@@ -25,24 +25,19 @@ const preparePasswordHash = function preparePasswordHash(
 };
 
 async function seed() {
+  //* initial user data
   const email = "opensensemap@opensenselab.org";
   const hashedPassword = await bcrypt.hash(
     preparePasswordHash("osemrocks"),
     13
   ); // make salt_factor configurable oSeM API uses 13 by default
-
-  // initial user data
   const dummyUser = {
+    id: "cleqyv5pi00003uxdszv4mdnk", //* to connect it to imported data
     name: "YouQam",
     email: email,
     role: "user",
     language: "en_US",
-    boxes: [
-      "626680b0964297001c90fdcd",
-      "6267b74d964297001c90fdd0",
-      "6299d942fd7065001b572be0",
-      "62b418d9fd7065001b572da7",
-    ],
+    boxes: [],
     emailIsConfirmed: true,
     password: {
       create: {
@@ -51,7 +46,7 @@ async function seed() {
     },
   };
 
-  // cleanup the existing database
+  //* cleanup the existing database (if any)
   await prisma.sensor.deleteMany({}).catch(() => {});
   await prisma.device.deleteMany({}).catch(() => {});
   await prisma.user.delete({ where: { email } }).catch(() => {
@@ -66,23 +61,23 @@ async function seed() {
   //* initial devices data
   const dummySensors = [
     {
-      id: "626680b0964297001c90fdcf12",
       title: "Beleuchtungsstärke",
       sensorType: "TSL45315",
       unit: "lx",
     },
     {
-      id: "626680b0964297001c90fdce123",
       title: "UV-Intensität",
       sensorType: "VEML6070",
       unit: "μW/cm²",
     },
   ];
 
-  const dummyDevice = {
-    id: "626680b0964297001c90fdcd2wewewe125",
-    userId: "cliknu1mw0000k8055r9gd4pk",
-    name: "Test LTR329",
+  //* create one device at time, cuz (using createMany, you cannot nest relation queries -> sensors)
+  /* const dummyDevice = {
+    id: "cliuf5m9f9",
+    userId: "cliknu1mw0000k8055r9gd4pk", //* needs to be updated manually
+    // userId: user.id,
+    name: "test LTR22222",
     exposure: Exposure.MOBILE,
     useAuth: true,
     latitude: 49.225521,
@@ -94,11 +89,10 @@ async function seed() {
       create: dummySensors,
     },
   };
-
   //* create intial device
   const device = await prisma.device.create({
     data: dummyDevice,
-  });
+  }); */
 
   // Import devices and connect it to user
   const devices = await csvtojson().fromFile("prisma/devices.csv");
