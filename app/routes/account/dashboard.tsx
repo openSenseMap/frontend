@@ -60,7 +60,6 @@ export default function dashboard() {
     }
   }, [actionData]);
 
-
   return (
     <div className="mx-8 mt-14">
       <div className="grid grid-flow-col gap-8 font-helvetica tracking-wide max-md:grid-rows-2  lg:grid-rows-1">
@@ -178,6 +177,102 @@ export default function dashboard() {
                   <ToastPrimitive.Viewport />
                 </ToastPrimitive.Provider>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Second row - show devices data */}
+      <div className=" ">
+        <div className="py-8">
+          <div>
+            <h2 className="text-2xl font-semibold leading-tight">
+              List of senseBoxes
+            </h2>
+          </div>
+
+          <div className="-mx-4 overflow-x-auto px-4 py-4 sm:-mx-8 sm:px-8">
+            <div className="inline-block min-w-full overflow-hidden rounded-lg shadow">
+              <table className="min-w-full leading-normal">
+                <thead>
+                  <tr className="">
+                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2] py-3 pl-5 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
+                      Name
+                    </th>
+                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2]  py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
+                      Exposure
+                    </th>
+                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2]  py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
+                      Model
+                    </th>
+                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2]  py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
+                      senseBox ID
+                    </th>
+                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2] px-5 py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {devicesData.map((deviceData) => (
+                    <tr>
+                      <td className="border-b border-gray-200 bg-white  py-3 pl-5 text-sm">
+                        <div className="flex items-center">
+                          <div className="">
+                            <p className="whitespace-no-wrap text-gray-900">
+                              {deviceData.name}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="border-b border-gray-200 bg-white  py-5 text-sm">
+                        <p className="whitespace-no-wrap text-gray-900">
+                        {deviceData.exposure}
+                        </p>
+                      </td>
+                      <td className="border-b border-gray-200 bg-white  py-5 text-sm">
+                        <p className="whitespace-no-wrap text-gray-900">
+                        {deviceData.model}
+                        </p>
+                      </td>
+                      <td className="border-b border-gray-200 bg-white  py-5 text-sm">
+                        <p className="whitespace-no-wrap text-gray-900">
+                        {deviceData.id}
+                        </p>
+                      </td>
+                      <td className="border-b border-gray-200 bg-white px-5 py-3 text-sm">
+                        <a
+                          href="https://sensebox.de/de/go-home"
+                          target="_blank"
+                          className="btn btn-default rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+                        >
+                          Show
+                        </a>
+                        <a
+                          href="https://sensebox.de/de/go-home"
+                          target="_blank"
+                          className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+                        >
+                          Edit
+                        </a>
+                        <a
+                          href="https://sensebox.de/de/go-home"
+                          target="_blank"
+                          className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+                        >
+                          Data upload
+                        </a>
+                        <a
+                          href="https://sensebox.de/de/go-home"
+                          target="_blank"
+                          className="btn btn-default rounded-bl-none rounded-tl-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+                        >
+                          support
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
