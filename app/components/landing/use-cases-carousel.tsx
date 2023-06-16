@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Variants } from "framer-motion";
 import { UseCase } from "~/lib/directus";
 import UseCaseCard from "./use-cases-card";
@@ -41,19 +41,32 @@ function getZIndex({
   return indexes[position()];
 }
 
-export default function UseCaseCarousel({ data }: UseCaseProps) {
+export default function FeaturesCarousel({ data }: UseCaseProps) {
   const [[activeIndex, direction], setActiveIndex] = useState<[number, number]>(
     [0, 0]
   );
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth <= 768); // Adjust the breakpoint as needed
+    };
+
+    handleResize(); // Check on initial render
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const indexInArrayScope =
     ((activeIndex % data.length) + data.length) % data.length;
 
-  const visibleItems: UseCase[] = [...data, ...data].slice(
-    indexInArrayScope,
-    indexInArrayScope + 3
-  );
+  const visibleItems: UseCase[] = isMobileScreen
+    ? [data[indexInArrayScope]]
+    : [...data, ...data].slice(indexInArrayScope, indexInArrayScope + 3);
 
   const handleClick = (newDirection: number): void => {
     if (isButtonDisabled) return; // Prevent clicking if the button is disabled
@@ -62,7 +75,7 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
     setIsButtonDisabled(true); // Disable the button
 
     setTimeout(() => {
-      setIsButtonDisabled(false); // Enable the button after 0.5 seconds
+      setIsButtonDisabled(false); // Enable the button after 1 second
     }, 1000);
   };
 
@@ -80,12 +93,12 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
           visible: { opacity: 1, y: 0 },
           hidden: { opacity: 0, y: 100 },
         }}
-        className="wrapper m-10 flex"
+        className="wrapper m-2 flex md:m-10"
       >
         <motion.button
           className="arrow-button"
           whileTap={{ scale: 0.8 }}
-          onClick={() => handleClick(1)}
+          onClick={() => handleClick(-1)}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -97,16 +110,16 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
           }}
           variants={{
             visible: { opacity: 1, x: 0 },
-            hidden: { opacity: 0, x: -100 },
+            hidden: { opacity: 0, x: -50 },
           }}
         >
           <motion.div
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-3 py-3 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white"
+            className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-2 py-2 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white md:px-3 md:py-3"
           >
-            <ArrowLeftIcon className="z-20 h-6 w-6 hover:text-white" />
+            <ArrowLeftIcon className="z-20 h-2 w-2 hover:text-white md:h-6 md:w-6" />
             <span className="duration-400 ease absolute left-0 top-1/2 block h-0 w-full bg-green-300 opacity-100 transition-all group-hover:top-0 group-hover:h-full"></span>
             <span className="ease absolute left-1/2 flex h-10 w-10 -translate-x-1/2 transform items-center justify-start duration-300 group-hover:translate-x-4"></span>
           </motion.div>
@@ -156,16 +169,16 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
           }}
           variants={{
             visible: { opacity: 1, x: 0 },
-            hidden: { opacity: 0, x: 100 },
+            hidden: { opacity: 0, x: 50 },
           }}
         >
           <motion.div
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-3 py-3 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white"
+            className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-2 py-2 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white md:px-3 md:py-3"
           >
-            <ArrowRightIcon className="z-20 h-6 w-6 hover:text-white" />
+            <ArrowRightIcon className="z-20 h-2 w-2 hover:text-white md:h-6 md:w-6" />
             <span className="duration-400 ease absolute left-0 top-1/2 block h-0 w-full bg-green-300 opacity-100 transition-all group-hover:top-0 group-hover:h-full"></span>
             <span className="ease absolute left-1/2 flex h-10 w-10 -translate-x-1/2 transform items-center justify-start duration-300 group-hover:translate-x-4"></span>
           </motion.div>

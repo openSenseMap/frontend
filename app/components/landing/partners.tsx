@@ -31,10 +31,10 @@ export default function Partners({ data }: PartnersProps) {
                 }}
                 variants={{
                   visible: { opacity: 1, scale: 1, y: 0 },
-                  hidden: { opacity: 0, scale: 0, y: 100 },
+                  hidden: { opacity: 0, scale: 0, y: 50 },
                 }}
                 key={index}
-                className="w-1/5 p-8"
+                className="p-8 w-48 md:w-64"
               >
                 <img
                   src={`${ENV.DIRECTUS_URL}/assets/${partner.logo}`}
@@ -55,7 +55,7 @@ export default function Partners({ data }: PartnersProps) {
           }}
           variants={{
             visible: { opacity: 1, scale: 1, y: 0 },
-            hidden: { opacity: 0, scale: 0, y: 100 },
+            hidden: { opacity: 0, scale: 0, y: 50 },
           }}
           className="flex flex-col items-center justify-center"
         >

@@ -28,26 +28,6 @@ export default function Tools() {
       video: "/landing/stock_video.mp4",
       id: 5,
     },
-    {
-      name: "Tool 6",
-      video: "/landing/stock_video.mp4",
-      id: 6,
-    },
-    {
-      name: "Tool 7",
-      video: "/landing/stock_video.mp4",
-      id: 7,
-    },
-    {
-      name: "Tool 8",
-      video: "/landing/stock_video.mp4",
-      id: 8,
-    },
-    {
-      name: "Tool 9",
-      video: "/landing/stock_video.mp4",
-      id: 9,
-    },
   ];
   return (
     <div
