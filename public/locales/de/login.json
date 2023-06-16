@@ -1,0 +1,9 @@
+{
+  "login_label": "Einloggen",
+  "email_label": "E-Mail",
+  "password_label": "Passwort",
+  "transition_label": "Wird eingeloggt...",
+  "remember_label": "Eingeloggt bleiben",
+  "no_account_label": "Noch kein Konto?",
+  "register_label": "Registrieren"
+}

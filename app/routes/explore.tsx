@@ -26,10 +26,14 @@ import {
 } from "~/components/map/layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
+import { Toaster } from "~/components/ui//toaster";
+import { getUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
-  return json({ devices });
+  const user = await getUser(request);
+
+  return json({ devices, user });
 }
 
 export const links: LinksFunction = () => {
@@ -119,13 +123,8 @@ export default function Explore() {
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
-        {showSearch ? (
-          <OverlaySearch
-            devices={data.devices}
-            searchRef={searchRef}
-            setShowSearch={setShowSearch}
-          />
-        ) : null}
+        <Toaster />
+        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>
