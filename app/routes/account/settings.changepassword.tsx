@@ -7,7 +7,10 @@ import {
   validatePassLength,
   validatePassType as validatePassType,
 } from "~/utils";
-import { updateUserPassword, updateUserlocale, verifyLogin } from "~/models/user.server";
+import {
+  updateUserPassword,
+  verifyLogin,
+} from "~/models/user.server";
 import invariant from "tiny-invariant";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
@@ -24,10 +27,16 @@ export async function loader({ request }: LoaderArgs) {
 //*****************************************************
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
+  const intent = formData.get("intent");
   const currPass = formData.get("currentPassword");
   const newPass = formData.get("newPassword");
   const confirmPass = formData.get("newPasswordConfirm");
   const passwordsList = [currPass, newPass, confirmPass];
+
+  //* when cancel button is clicked
+  if (intent === "cancel") {
+    return redirect("/account/settings");
+  }
 
   //* validate passwords type
   const checkPasswordsType = validatePassType(passwordsList);
@@ -114,7 +123,7 @@ export async function action({ request }: ActionArgs) {
   //* check user password is correct
   const user = await verifyLogin(userEmail, currPass);
 
-  if(!user){
+  if (!user) {
     return json(
       {
         errors: {
@@ -132,7 +141,7 @@ export async function action({ request }: ActionArgs) {
   const userId = await getUserId(request);
   invariant(userId, `userId not found!`);
 
-  if(typeof newPass !== "string" || newPass.length === 0){
+  if (typeof newPass !== "string" || newPass.length === 0) {
     return json(
       {
         errors: {
@@ -145,8 +154,8 @@ export async function action({ request }: ActionArgs) {
       { status: 400 }
     );
   }
-  
-  //* uodate user password
+
+  //* update user password
   await updateUserPassword(userId, newPass);
 
   //* logout
@@ -174,7 +183,6 @@ export default function changepassword() {
     } else if (actionData?.errors?.passMatch) {
       newPassRef.current?.focus();
       setToastOpen(true);
-
     }
   }, [actionData]);
 
@@ -207,7 +215,7 @@ export default function changepassword() {
                     <div className="flex w-0 flex-1 items-center py-4 pl-5">
                       <div className="radix mr-3 w-full">
                         <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-gray-900 dark:text-gray-100">
-                        {actionData?.errors?.passMatch}
+                          {actionData?.errors?.passMatch}
                           <ToastPrimitive.Close aria-label="Close">
                             <span aria-hidden>×</span>
                           </ToastPrimitive.Close>
@@ -339,6 +347,8 @@ export default function changepassword() {
                 <div className="flex justify-end">
                   <button
                     type="submit"
+                    name="intent"
+                    value="cancel"
                     disabled={false}
                     className="rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
@@ -347,6 +357,8 @@ export default function changepassword() {
 
                   <button
                     type="submit"
+                    name="intent"
+                    value="update"
                     disabled={false}
                     className="ml-3 rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc]  disabled:text-[#8a8989]"
                   >
