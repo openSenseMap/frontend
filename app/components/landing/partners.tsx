@@ -24,7 +24,11 @@ export default function Partners({ data }: PartnersProps) {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                transition={{ ease: "backOut", duration: 0.5 }}
+                transition={{
+                  ease: "backOut",
+                  duration: 0.8,
+                  delay: index * 0.1,
+                }}
                 variants={{
                   visible: { opacity: 1, scale: 1, y: 0 },
                   hidden: { opacity: 0, scale: 0, y: 100 },
@@ -44,7 +48,11 @@ export default function Partners({ data }: PartnersProps) {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          transition={{ ease: "backOut", duration: 0.5 }}
+          transition={{
+            ease: "backOut",
+            duration: 0.5,
+            delay: data.length * 0.1 + 0.3,
+          }}
           variants={{
             visible: { opacity: 1, scale: 1, y: 0 },
             hidden: { opacity: 0, scale: 0, y: 100 },

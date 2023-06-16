@@ -68,7 +68,20 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
 
   return (
     <div className="main-wrapper flex w-full flex-col items-center">
-      <div className="wrapper m-10 flex">
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        transition={{
+          duration: 0.5,
+          delay: 0.3,
+        }}
+        variants={{
+          visible: { opacity: 1, y: 0 },
+          hidden: { opacity: 0, y: 100 },
+        }}
+        className="wrapper m-10 flex"
+      >
         <motion.button
           className="arrow-button"
           whileTap={{ scale: 0.8 }}
@@ -87,11 +100,16 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
             hidden: { opacity: 0, x: -100 },
           }}
         >
-          <div className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-3 py-3 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white">
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-3 py-3 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white"
+          >
             <ArrowLeftIcon className="z-20 h-6 w-6 hover:text-white" />
             <span className="duration-400 ease absolute left-0 top-1/2 block h-0 w-full bg-green-300 opacity-100 transition-all group-hover:top-0 group-hover:h-full"></span>
             <span className="ease absolute left-1/2 flex h-10 w-10 -translate-x-1/2 transform items-center justify-start duration-300 group-hover:translate-x-4"></span>
-          </div>
+          </motion.div>
         </motion.button>
         <AnimatePresence mode="popLayout">
           {visibleItems.map((item: UseCase) => {
@@ -141,13 +159,18 @@ export default function UseCaseCarousel({ data }: UseCaseProps) {
             hidden: { opacity: 0, x: 100 },
           }}
         >
-          <div className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-3 py-3 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white">
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-3 py-3 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white"
+          >
             <ArrowRightIcon className="z-20 h-6 w-6 hover:text-white" />
             <span className="duration-400 ease absolute left-0 top-1/2 block h-0 w-full bg-green-300 opacity-100 transition-all group-hover:top-0 group-hover:h-full"></span>
             <span className="ease absolute left-1/2 flex h-10 w-10 -translate-x-1/2 transform items-center justify-start duration-300 group-hover:translate-x-4"></span>
-          </div>
+          </motion.div>
         </motion.button>
-      </div>
+      </motion.div>
     </div>
   );
 }
