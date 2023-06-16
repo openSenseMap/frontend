@@ -62,7 +62,7 @@ export default function FeaturesCarousel({ data }: FeaturesProps) {
     setIsButtonDisabled(true); // Disable the button
 
     setTimeout(() => {
-      setIsButtonDisabled(false); // Enable the button after 0.5 seconds
+      setIsButtonDisabled(false); // Enable the button after 1 second
     }, 1000);
   };
 
