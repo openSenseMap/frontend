@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
 import { Theme, useTheme } from "~/utils/theme-provider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { useState } from "react";
 
 const links = [
   {
@@ -27,6 +28,7 @@ const links = [
 
 export default function Header() {
   const [theme, setTheme] = useTheme();
+  const [openMenu, setOpenMenu] = useState(false);
   const toggleTheme = () => {
     setTheme((prevTheme) =>
       prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
@@ -34,17 +36,19 @@ export default function Header() {
   };
 
   return (
-    <nav className="absolute top-0 z-50 w-full border-b-2 border-gray-400 bg-white px-2 py-2.5 dark:border-gray-300 dark:bg-black sm:px-4">
+    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 md:py-8 dark:border-gray-300 dark:bg-black sm:px-6 lg:px-8">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
-        <div className="flex">
-          <Link to="/" className="flex items-center pr-10">
+        <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
+          <Link to="/" className="flex items-center md:pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-            <span className="dark:text-green-200 self-center whitespace-nowrap text-xl font-semibold text-green-100">
+            <span className="dark:text-green-200 hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
               openSenseMap
             </span>
           </Link>
           <div
-            className="hidden w-full items-center justify-between text-gray-400 dark:text-gray-300 md:order-1 md:flex md:w-auto"
+            className={
+              "hidden w-full items-center justify-between text-gray-400 dark:text-gray-300 lg:order-1 lg:flex lg:w-auto "
+            }
             id="navbar-cta"
           >
             <ul className="mt-4 flex flex-col rounded-lg p-4 md:mt-0 md:flex-row md:space-x-8 md:text-lg">
@@ -64,7 +68,7 @@ export default function Header() {
           </div>
         </div>
         <div className="flex items-center justify-center md:order-2">
-          <div className="flex items-center justify-center pr-8">
+          <div className="items-center justify-center pr-8 flex">
             <button onClick={toggleTheme}>
               {theme === "light" ? (
                 <MoonIcon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
@@ -75,16 +79,17 @@ export default function Header() {
           </div>
           <button
             type="button"
-            className="dark:border-green-200 dark:bg-green-200 rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black"
+            className="dark:border-green-200 dark:bg-green-200 hidden rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black dark:text-gray-400 md:block"
           >
             <Link to="/explore" rel="intent">
               Donate
             </Link>
           </button>
           <button
+            onClick={() => setOpenMenu(!openMenu)}
             data-collapse-toggle="navbar-cta"
             type="button"
-            className="inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:hidden"
+            className="px-6 inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
             aria-controls="navbar-cta"
             aria-expanded="false"
           >
@@ -103,6 +108,25 @@ export default function Header() {
               ></path>
             </svg>
           </button>
+          {openMenu && (
+            <div
+              className="absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black ring-opacity-5"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="options-menu"
+            >
+              {links.map((item, index) => (
+                <Link
+                  key={index}
+                  to={item.link}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:text-green-100 dark:hover:text-green-200"
+                  role="menuitem"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </nav>
