@@ -36,7 +36,7 @@ export default function Header() {
   };
 
   return (
-    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 pt-2 sm:pt-0 dark:border-gray-300 dark:bg-black sm:px-6 lg:px-8">
+    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 md:py-8 dark:border-gray-300 dark:bg-black sm:px-6 lg:px-8">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center md:pr-10">
@@ -89,7 +89,7 @@ export default function Header() {
             onClick={() => setOpenMenu(!openMenu)}
             data-collapse-toggle="navbar-cta"
             type="button"
-            className="md:px-6 inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
+            className="px-6 inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
             aria-controls="navbar-cta"
             aria-expanded="false"
           >
