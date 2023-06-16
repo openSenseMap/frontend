@@ -226,30 +226,28 @@ export default function dashboard() {
                       </td>
                       <td className="border-b border-gray-200 bg-white  py-5 text-sm">
                         <p className="whitespace-no-wrap text-gray-900">
-                        {deviceData.exposure}
+                          {deviceData.exposure}
                         </p>
                       </td>
                       <td className="border-b border-gray-200 bg-white  py-5 text-sm">
                         <p className="whitespace-no-wrap text-gray-900">
-                        {deviceData.model}
+                          {deviceData.model}
                         </p>
                       </td>
                       <td className="border-b border-gray-200 bg-white  py-5 text-sm">
                         <p className="whitespace-no-wrap text-gray-900">
-                        {deviceData.id}
+                          {deviceData.id}
                         </p>
                       </td>
                       <td className="border-b border-gray-200 bg-white px-5 py-3 text-sm">
                         <a
-                          href="https://sensebox.de/de/go-home"
-                          target="_blank"
+                          href={`/explore/${deviceData.id}`}
                           className="btn btn-default rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                         >
                           Show
                         </a>
                         <a
                           href="https://sensebox.de/de/go-home"
-                          target="_blank"
                           className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                         >
                           Edit
