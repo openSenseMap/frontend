@@ -3,7 +3,7 @@ import type { Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
-import BottomBar from "~/components/bottomBar/BottomBar";
+import BottomBar from "~/components/bottom-bar/bottom-bar";
 import { getDevice, getMeasurements } from "~/models/device.server";
 
 export async function loader({ params, request }: LoaderArgs) {

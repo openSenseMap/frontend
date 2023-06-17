@@ -5,7 +5,7 @@ import I18NextHttpBackend from "i18next-http-backend";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import i18nextOptions from "./i18nextOptions";
+import i18nextOptions from "./i18next-options";
 import { getInitialNamespaces } from "remix-i18next";
 
 const hydrate = async () => {

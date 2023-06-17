@@ -1,6 +1,6 @@
 import Map from "~/components/Map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import DrawControl from "~/components/Map/DrawControl";
+import DrawControl from "~/components/Map/draw-control";
 import { Layer, MapRef, Source } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
 import { useCallback, useContext, useState, useEffect, useRef } from "react";
@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { FeatureContext } from "../create";
-import GeocoderControl from "~/components/Map/GeocoderControl";
+import GeocoderControl from "~/components/Map/geocoder-control";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import { Link } from "@remix-run/react";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import type { LinksFunction } from "@remix-run/server-runtime";
 import RadiusMode from "~/components/Map/RadiusMode";
-import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
+// import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
 import circleToPolygon from "circle-to-polygon";
 // import CustomControl from "~/components/Map/CustomControl";
 // import RadiusMode from "~/components/Map/RadiusMode";
@@ -214,7 +214,7 @@ export default function Explore() {
       <div className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3">
         <Link to={"/create/form"}>
           <Button
-            className="absolute top-4 right-4 z-50 ml-auto"
+            className="absolute right-4 top-4 z-50 ml-auto"
             disabled={Object.keys(features).length === 0}
           >
             Weiter

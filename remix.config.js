@@ -9,4 +9,7 @@ module.exports = {
     "maplibre-gl",
     "supercluster",
   ],
+  future: {
+    v2_errorBoundary: true,
+  },
 };

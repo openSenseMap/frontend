@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Theme, useTheme } from "~/utils/themeProvider";
+import { Theme, useTheme } from "~/utils/theme-provider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 const links = [

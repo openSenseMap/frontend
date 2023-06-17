@@ -25,7 +25,8 @@ import * as z from "zod";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
-import { reverseGeocode } from "~/components/Map/GeocoderControl";
+// import { reverseGeocode } from "~/components/Map/GeocoderControl";
+import { reverseGeocode } from "~/components/Map/geocoder-control";
 
 // type Checked = DropdownMenuCheckboxItemProps["checked"];
 
@@ -217,7 +218,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
             >
               Title
             </label>
@@ -254,7 +255,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="description"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
             >
               Description
             </label>
@@ -388,7 +389,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
             >
               startDate
             </label>
@@ -415,7 +416,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="endDate"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
             >
               endDate
             </label>
@@ -496,7 +497,7 @@ export default function CreateCampaign() {
             </DropdownMenu>
           </div>
           <label
-            className="after:text-red-500 after:content-['_*']"
+            className="after:content-['_*'] after:text-red-500"
             htmlFor="hardware_available"
           >
             Hardware verfügbar
