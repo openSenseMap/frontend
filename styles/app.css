@@ -5,10 +5,16 @@
   --color-blue-200: #1879af;
   --color-blue-500: #3b82f6;
   --color-blue-700: #1d4ed8;
+  --color-blue-50: #F8FAFC;
   --color-gray-100: #b8b8b8;
   --color-gray-200: #c0bfbf;
   --color-gray-300: #717070;
-  --color-gray-400: #767474;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
   --color-green-100: #69ac54;
   --color-green-300: #709f61;
   --color-red-500: #f10000;
