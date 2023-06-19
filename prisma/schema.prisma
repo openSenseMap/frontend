@@ -20,6 +20,18 @@ model User {
   password Password?
   notes    Note[]
   devices  Device[]
+
+  profile Profile?
+}
+
+model Profile {
+  id String @id @default(cuid())
+
+  name   String  @unique
+  public Boolean
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
 }
 
 model Password {
