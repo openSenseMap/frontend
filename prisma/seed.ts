@@ -58,42 +58,6 @@ async function seed() {
     data: dummyUser,
   });
 
-  //* initial devices data
-  const dummySensors = [
-    {
-      title: "Beleuchtungsstärke",
-      sensorType: "TSL45315",
-      unit: "lx",
-    },
-    {
-      title: "UV-Intensität",
-      sensorType: "VEML6070",
-      unit: "μW/cm²",
-    },
-  ];
-
-  //* create one device at time, cuz (using createMany, you cannot nest relation queries -> sensors)
-  /* const dummyDevice = {
-    id: "cliuf5m9f9",
-    userId: "cliknu1mw0000k8055r9gd4pk", //* needs to be updated manually
-    // userId: user.id,
-    name: "test LTR22222",
-    exposure: Exposure.MOBILE,
-    useAuth: true,
-    latitude: 49.225521,
-    longitude: 6.999605,
-    model: "homeV2Wifi",
-    createdAt: new Date("2022-04-25T11:06:24.526Z"),
-    updatedAt: new Date("2022-06-28T15:06:06.437Z"),
-    sensors: {
-      create: dummySensors,
-    },
-  };
-  //* create intial device
-  const device = await prisma.device.create({
-    data: dummyDevice,
-  }); */
-
   // Import devices and connect it to user
   const devices = await csvtojson().fromFile("prisma/devices.csv");
 

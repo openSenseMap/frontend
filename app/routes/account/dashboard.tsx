@@ -82,6 +82,7 @@ export default function Dashboard() {
                 <a
                   href="https://sensebox.de/de/go-home"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="btn btn-default hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                 >
                   Documentation
@@ -89,6 +90,7 @@ export default function Dashboard() {
                 <a
                   href="https://forum.sensebox.de"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="btn btn-default hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                   role="button"
                 >
@@ -255,6 +257,7 @@ export default function Dashboard() {
                         <a
                           href="https://sensebox.de/de/go-home"
                           target="_blank"
+                          rel="noopener noreferrer"
                           className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                         >
                           Data upload
@@ -262,6 +265,7 @@ export default function Dashboard() {
                         <a
                           href="https://sensebox.de/de/go-home"
                           target="_blank"
+                          rel="noopener noreferrer"
                           className="btn btn-default rounded-bl-none rounded-tl-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                         >
                           support

@@ -28,10 +28,8 @@ export async function loader({ request }: LoaderArgs) {
 //*****************************************************
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const language = formData.get("language");
+  const { intent, ...values } = Object.fromEntries(formData);
+  const { email, password, language, ...rest } = values;
 
   if (typeof email !== "string") {
     return json(
@@ -59,7 +57,7 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  if (typeof language !== "string" || typeof language !== "string") {
+  if (typeof language !== "string") {
     return json(
       {
         errors: {
@@ -72,43 +70,46 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  //* if user press delete button
-  if (intent === "delete") {
-    const user = await verifyLogin(email, password);
+  //* check button intent
+  switch (intent) {
+    case "delete": {
+      const user = await verifyLogin(email, password);
 
-    //* if user does't exist
-    if (!user) {
+      //* if user does't exist
+      if (!user) {
+        return json(
+          {
+            errors: {
+              name: null,
+              email: null,
+              password: "Invalid password",
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      //* delete user
+      await deleteUserByEmail(email);
+
+      //* return error free to show toast msg
       return json(
         {
           errors: {
             name: null,
             email: null,
-            password: "Invalid password",
+            password: null,
           },
         },
-        { status: 400 }
+        { status: 200 }
       );
     }
-
-    //* delete user
-    await deleteUserByEmail(email);
-
-    //* return error free to show toast msg
-    return json(
-      {
-        errors: {
-          name: null,
-          email: null,
-          password: null,
-        },
-      },
-      { status: 200 }
-    );
-  } else if (intent === "update") {
-    await updateUserlocale(email, language);
+    case "update": {
+      await updateUserlocale(email, language);
+      break;
+    }
   }
 
-  //* won't come to this point.
   return redirect("/");
 }
 
@@ -135,7 +136,6 @@ export default function Settings() {
       setToastOpen(true);
     }
   }, [actionData]);
-  
 
   return (
     <div className="mt-14">
