@@ -29,46 +29,24 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const { intent, ...values } = Object.fromEntries(formData);
-  const { email, password, language, ...rest } = values;
+  const { name, email, password, language, ...rest } = values;
 
-  if (typeof email !== "string") {
-    return json(
-      {
-        errors: {
-          name: null,
-          email: "Invalid email",
-          password: null,
-        },
-      },
-      { status: 400 }
-    );
+  const errors = {
+    name: name ? null : "Invalid name",
+    email: email ? null : "Invalid email",
+    password: password ? null : "Invalid password",
+    language: language ? null : "Invalid language",
+  };
+
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+  if (hasErrors) {
+    return json({ errors: errors, status: 400 });
   }
 
-  if (typeof password !== "string") {
-    return json(
-      {
-        errors: {
-          name: null,
-          email: null,
-          password: "Invalid password",
-        },
-      },
-      { status: 400 }
-    );
-  }
-
-  if (typeof language !== "string") {
-    return json(
-      {
-        errors: {
-          name: null,
-          email: null,
-          password: null,
-        },
-      },
-      { status: 400 }
-    );
-  }
+  invariant(typeof name === "string", "name must be a string");
+  invariant(typeof email === "string", "email must be a string");
+  invariant(typeof password === "string", "password must be a string");
+  invariant(typeof language === "string", "language must be a string");
 
   //* check button intent
   switch (intent) {
@@ -83,6 +61,7 @@ export async function action({ request }: ActionArgs) {
               name: null,
               email: null,
               password: "Invalid password",
+              language: null,
             },
           },
           { status: 400 }
@@ -99,6 +78,7 @@ export async function action({ request }: ActionArgs) {
             name: null,
             email: null,
             password: null,
+            language: null,
           },
         },
         { status: 200 }
