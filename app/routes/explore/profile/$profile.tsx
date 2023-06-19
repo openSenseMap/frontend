@@ -32,7 +32,7 @@ export async function loader({ params, request }: LoaderArgs) {
         success: false,
         userBackpack: [],
         allBadges: [],
-        email: "",
+        username: "",
       });
     }
 
@@ -53,7 +53,7 @@ export async function loader({ params, request }: LoaderArgs) {
           success: false,
           userBackpack: [],
           allBadges: [],
-          email: "",
+          username: "",
         });
       }
 
@@ -66,7 +66,7 @@ export async function loader({ params, request }: LoaderArgs) {
         success: true,
         userBackpack: backpackData,
         allBadges: allBadges,
-        email: profileMail,
+        username: profile.name,
       });
     }
   }
@@ -75,7 +75,7 @@ export async function loader({ params, request }: LoaderArgs) {
     success: false,
     userBackpack: [],
     allBadges: [],
-    email: "",
+    username: "",
   });
 }
 
@@ -115,7 +115,7 @@ export default function Profile() {
     >
       <div className="flex w-full justify-between bg-green-100">
         <div className="text-l basis-1/4 pb-6 pt-6 text-center font-bold text-white lg:text-3xl">
-          <p>{data.email}</p>
+          <p>{data.username}</p>
         </div>
         <div className="flex">
           <div className="flex items-center pr-2">
