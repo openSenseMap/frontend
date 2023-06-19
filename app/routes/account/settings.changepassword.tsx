@@ -7,14 +7,13 @@ import {
   validatePassLength,
   validatePassType as validatePassType,
 } from "~/utils";
-import {
-  updateUserPassword,
-  verifyLogin,
-} from "~/models/user.server";
+import { updateUserPassword, verifyLogin } from "~/models/user.server";
 import invariant from "tiny-invariant";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 //*****************************************************
 export async function loader({ request }: LoaderArgs) {
@@ -365,6 +364,23 @@ export default function changepassword() {
                     Update
                   </button>
                 </div>
+
+                {/* ui.shadcn.com components */}
+                {/* <div className="grid w-full gap-2">
+                  <Label
+                    htmlFor="newPasswordConfirm"
+                    className="block text-base font-bold tracking-normal"
+                  >
+                    Confirm new password
+                  </Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="New Password Confirm"
+                    className="rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
+                  />
+                </div> */}
+
               </Form>
             </div>
           </div>

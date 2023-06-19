@@ -214,7 +214,7 @@ export default function dashboard() {
                 </thead>
                 <tbody>
                   {devicesData.map((deviceData) => (
-                    <tr>
+                    <tr key={deviceData.id}>
                       <td className="border-b border-gray-200 bg-white  py-3 pl-5 text-sm">
                         <div className="flex items-center">
                           <div className="">
