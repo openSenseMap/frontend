@@ -468,7 +468,7 @@ export default function Campaigns() {
     <div
       id="view-wrapper"
       onClick={(e: any) => {
-        mouseData.push([e.clientX, e.clientY, 30]);
+        mouseData.push([e.pageX, e.pageY, 30]);
         console.log(mouseData);
         localStorage.setItem("overview", JSON.stringify(mouseData));
       }}

@@ -19,7 +19,7 @@ import { Link } from "@remix-run/react";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import type { LinksFunction } from "@remix-run/server-runtime";
-import RadiusMode from "~/components/Map/RadiusMode";
+// import RadiusMode from "~/components/Map/RadiusMode";
 // import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
 import circleToPolygon from "circle-to-polygon";
 // import CustomControl from "~/components/Map/CustomControl";
@@ -41,6 +41,12 @@ import {
   DirectMode,
   SimpleSelectMode,
 } from "maplibre-gl-draw-circle";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PopoverArrow,
+} from "@/components/ui/popover";
 
 export const links: LinksFunction = () => {
   return [
@@ -231,21 +237,32 @@ export default function Explore() {
               onResult={(e) => console.log(e)}
               position="top-left"
             />
-            <DrawControl
-              position="top-left"
-              // defaultMode="drag_circle"
-              displayControlsDefault={false}
-              controls={{ polygon: true, point: true, trash: true }}
-              // modes={{
-              //   ...modes,
-              //   // radius_mode: RadiusMode,
-              //   draw_circle: CircleMode,
-              //   drag_circle: DragCircleMode,
-              // }}
-              onCreate={onUpdate}
-              onUpdate={onUpdate}
-              onDelete={onDelete}
-            />
+            <Popover defaultOpen>
+              <PopoverTrigger>
+                <DrawControl
+                  position="top-left"
+                  // defaultMode="drag_circle"
+                  displayControlsDefault={false}
+                  controls={{ polygon: true, point: true, trash: true }}
+                  // modes={{
+                  //   ...modes,
+                  //   // radius_mode: RadiusMode,
+                  //   draw_circle: CircleMode,
+                  //   drag_circle: DragCircleMode,
+                  // }}
+                  onCreate={onUpdate}
+                  onUpdate={onUpdate}
+                  onDelete={onDelete}
+                />
+                <PopoverContent
+                  className="data-[state=open]:data-[side=top]:animate-slideDownAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade w-[260px] rounded bg-white p-5 shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2)] will-change-[transform,opacity] focus:shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2),0_0_0_2px_theme(colors.violet7)]"
+                  sideOffset={5}
+                >
+                  ELLO WORLD
+                  <PopoverArrow className="fill-wite" />
+                </PopoverContent>
+              </PopoverTrigger>
+            </Popover>
             {/* <CustomControl /> */}
             {/* <Button className="absolute top-1/2 left-4 z-50">Weiter</Button> */}
             {geojsonUploadData && (
