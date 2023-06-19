@@ -40,7 +40,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 //***********************************
-export default function dashboard() {
+export default function Dashboard() {
   //* to load user data
   const devicesData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();

@@ -162,7 +162,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 //****************************************
-export default function changepassword() {
+export default function Changepassword() {
   const actionData = useActionData<typeof action>();
 
   //* Toast notification when user is deleted

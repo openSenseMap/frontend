@@ -113,7 +113,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 //**********************************
-export default function settings() {
+export default function Settings() {
   const userData = useLoaderData<typeof loader>(); //* to load user data
   const actionData = useActionData<typeof action>();
   const [passwordVal, setPasswordVal] = useState(""); //* to enable delete account button
