@@ -15,6 +15,7 @@ import {
   getUserBackpack,
 } from "~/models/badge.server";
 import type { MyBadge } from "~/models/badge.server";
+import { getProfileById } from "~/models/profile.server";
 import { getUserById } from "~/models/user.server";
 
 // This function is responsible for loading data for the Profile component
@@ -23,6 +24,17 @@ export async function loader({ params, request }: LoaderArgs) {
   const profileId = params.profile;
   if (profileId) {
     const user = await getUserById(profileId);
+    const profile = await getProfileById(profileId);
+
+    if (!profile?.public) {
+      // If the profile isnt public, return an empty JSON response
+      return json({
+        success: false,
+        userBackpack: [],
+        allBadges: [],
+        email: "",
+      });
+    }
 
     const profileMail = user?.email;
     // Get the access token using the getMyBadgesAccessToken function
@@ -36,6 +48,14 @@ export async function loader({ params, request }: LoaderArgs) {
           return backpackData;
         }
       );
+      if (!backpackData) {
+        return json({
+          success: false,
+          userBackpack: [],
+          allBadges: [],
+          email: "",
+        });
+      }
 
       const allBadges = await getAllBadges(authToken).then((allBadges) => {
         return allBadges.result;
@@ -74,7 +94,6 @@ export default function Profile() {
       const badgeBOwned = data.userBackpack.some(
         (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked
       );
-
       // Sort badges based on ownership:
       // Owned badges come first, followed by non-owned badges
       if (badgeAOwned && !badgeBOwned) {
@@ -95,7 +114,7 @@ export default function Profile() {
       }
     >
       <div className="flex w-full justify-between bg-green-100">
-        <div className="text-l basis-1/4 pt-6 pb-6 text-center font-bold text-white lg:text-3xl">
+        <div className="text-l basis-1/4 pb-6 pt-6 text-center font-bold text-white lg:text-3xl">
           <p>{data.email}</p>
         </div>
         <div className="flex">
@@ -117,7 +136,7 @@ export default function Profile() {
       {!data.success ? (
         <div className="flex items-center justify-center">
           <p className="p-4">
-            Oh no, we could not find this Profile. Are you sure it exists?
+            Oh no, this does not seem like its a public profile!
           </p>
         </div>
       ) : (
