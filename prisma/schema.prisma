@@ -2,12 +2,12 @@ datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  // extensions        = [postgis(version: "3.3.2")]
+  extensions        = [timescaledb(version: "2.10.2")]
 }
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  previewFeatures = ["postgresqlExtensions", "views"]
 }
 
 model User {
@@ -104,4 +104,14 @@ model Sensor {
 
   device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deviceId String
+}
+
+// Will be a timescaledb hypertable
+model Measurement {
+  sensorId String
+  time     DateTime @default(now()) @db.Timestamptz(3)
+
+  value Float?
+
+  @@unique([sensorId, time])
 }

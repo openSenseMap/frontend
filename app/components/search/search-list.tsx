@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useMap } from "react-map-gl";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate, useSearchParams } from "@remix-run/react";
 
 import {
   CpuChipIcon,
@@ -8,8 +8,8 @@ import {
   MapPinIcon,
 } from "@heroicons/react/24/outline";
 
-import SearchListItem from "./SearchListItem";
-import { goTo } from "~/lib/searchMapHelper";
+import SearchListItem from "./search-list-item";
+import { goTo } from "~/lib/search-map-helper";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -62,7 +62,31 @@ export default function SearchList(props: SearchListProps) {
   var searchResultsAll = props.searchResultsDevice.concat(
     props.searchResultsLocation
   );
-  var selected = searchResultsAll[cursor];
+  const [selected, setSelected] = useState(searchResultsAll[cursor]);
+
+  const [searchParams] = useSearchParams();
+  const [navigateTo, setNavigateTo] = useState(
+    (selected.type === "device"
+      ? `/explore/${selected.deviceId}`
+      : "/explore") +
+      // @ts-ignore
+      (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+  );
+
+  useEffect(() => {
+    setSelected(searchResultsAll[cursor]);
+  }, [cursor, searchResultsAll]);
+
+  useEffect(() => {
+    if (selected.type === "device") {
+      // @ts-ignore
+      setNavigateTo(`/explore/${selected.deviceId}` + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
+    } else if (selected.type === "location") {
+      // @ts-ignore
+      setNavigateTo("/explore" + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
+    }
+    console.log(navigateTo);
+  }, [selected, searchParams, navigateTo]);
 
   const setShowSearchCallback = useCallback((state: boolean) => {
     props.setShowSearch(state);
@@ -83,13 +107,17 @@ export default function SearchList(props: SearchListProps) {
     if (length !== 0 && enterPress) {
       goTo(osem, selected);
       setShowSearchCallback(false);
-      navigate(
-        selected.type === "device"
-          ? `/explore/${selected.deviceId}`
-          : "/explore"
-      );
+      navigate(navigateTo);
     }
-  }, [enterPress, length, osem, navigate, selected, setShowSearchCallback]);
+  }, [
+    enterPress,
+    length,
+    osem,
+    navigate,
+    selected,
+    setShowSearchCallback,
+    navigateTo,
+  ]);
 
   const handleDigitPress = (event: any) => {
     if (
@@ -97,16 +125,11 @@ export default function SearchList(props: SearchListProps) {
       Number(event.key) <= length &&
       event.ctrlKey
     ) {
-      selected = searchResultsAll[Number(event.key) - 1];
       event.preventDefault();
       setCursor(Number(event.key) - 1);
       goTo(osem, selected);
-      setTimeout(() => setShowSearchCallback(false), 500);
-      navigate(
-        selected.type === "device"
-          ? `/explore/${selected.deviceId}`
-          : "/explore"
-      );
+      setTimeout(() => {setShowSearchCallback(false); navigate(navigateTo);}, 500);
+      
     }
   };
 

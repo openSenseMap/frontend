@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "@remix-run/react";
 import Map from "~/components/Map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
-import Header from "~/components/header/Header";
+import Header from "~/components/header";
 
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -27,15 +27,19 @@ import {
   clusterLayer,
   deviceStatusFilter,
   unclusteredPointLayer,
-} from "~/components/Map/Layers";
+} from "~/components/Map/layers";
 import type { Device } from "@prisma/client";
-import OverlaySearch from "~/components/search/OverlaySearch";
 import mapboxgl from "mapbox-gl";
 import createDonutChart from "~/components/Map/cluster";
+import OverlaySearch from "~/components/search/overlay-search";
+import { Toaster } from "~/components/ui//toaster";
+import { getUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
-  return json({ devices });
+  const user = await getUser(request);
+
+  return json({ devices, user });
 }
 
 export const links: LinksFunction = () => {
@@ -221,6 +225,7 @@ export default function Explore() {
             <Layer {...unclusteredPointLayer} />
           </Source>
         </Map>
+        <Toaster />
         {showSearch ? (
           <OverlaySearch
             devices={data.devices}

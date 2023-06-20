@@ -20,6 +20,7 @@ module.exports = {
       white: "var(--color-white)",
       black: "var(--color-black)",
       gray: {
+        50: "var(--color-gray-50)",
         100: "var(--color-gray-100)",
         200: "var(--color-gray-200)",
         300: "var(--color-gray-300)",
