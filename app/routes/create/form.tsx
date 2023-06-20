@@ -222,7 +222,7 @@ export default function CreateCampaign() {
               htmlFor="title"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
-              Title
+              Titel
             </label>
             <div className="mt-1">
               <input
@@ -259,14 +259,14 @@ export default function CreateCampaign() {
               htmlFor="description"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
-              Description
+              Beschreibung
             </label>
             <div className="mt-1">
-              <input
+              <textarea
                 id="description"
                 // ref={descriptionRef}
                 name="description"
-                type="description"
+                // type="description"
                 autoComplete="new-description"
                 aria-invalid={
                   actionData?.error?.issues[0].message ? true : undefined
@@ -287,7 +287,7 @@ export default function CreateCampaign() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="w-full" variant="outline">
-                    Priority
+                    Priorität
                     <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -393,7 +393,7 @@ export default function CreateCampaign() {
               htmlFor="startDate"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
-              startDate
+              Beginn
             </label>
             <div className="mt-1">
               <input
@@ -420,7 +420,7 @@ export default function CreateCampaign() {
               htmlFor="endDate"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
-              endDate
+              Abschluss
             </label>
             <div className="mt-1">
               <input
@@ -447,7 +447,7 @@ export default function CreateCampaign() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
-                  Phenomena <span className="text-red-500">&nbsp;*</span>
+                  Phänomene <span className="text-red-500">&nbsp;*</span>
                   <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                 </Button>
               </DropdownMenuTrigger>
@@ -476,7 +476,7 @@ export default function CreateCampaign() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
-                  Exposure <span className="text-red-500">&nbsp;*</span>
+                  Einsatz <span className="text-red-500">&nbsp;*</span>
                   <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                 </Button>
               </DropdownMenuTrigger>
