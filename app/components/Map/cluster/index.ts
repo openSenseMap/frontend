@@ -2,7 +2,7 @@ import type { Device } from "@prisma/client";
 import type { GeoJsonProperties } from "geojson";
 
 // colors to use for the categories
-const colors = ["#fed976", "#feb24c", "#fd8d3c", "#fc4e2a"];
+const colors = ["#4EAF47", "#666", "#666"];
 
 export type ClusterPropertiesType = GeoJsonProperties &
   Device & {
@@ -42,7 +42,7 @@ const createDonutChart = (props: ClusterPropertiesType) => {
       colors[i]
     );
   }
-  html += `<circle cx="${r}" cy="${r}" r="${r0}" fill="white" />
+  html += `<circle cx="${r}" cy="${r}" r="${r0}" fill="transparent" />
 <text dominant-baseline="central" transform="translate(${r}, ${r})">
 ${total.toLocaleString()}
 </text>
@@ -77,7 +77,7 @@ function donutSegment(
     r + r0 * y1
   } A ${r0} ${r0} 0 ${largeArc} 0 ${r + r0 * x0} ${
     r + r0 * y0
-  }" fill="${color}" />`;
+  }" fill="${color}" fill-opacity="0.5" />`;
 }
 
 export default createDonutChart;

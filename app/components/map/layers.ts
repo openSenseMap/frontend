@@ -1,7 +1,7 @@
 import type { LayerProps } from "react-map-gl";
 
 // colors to use for the categories
-const colors = ["#fed976", "#feb24c", "#fd8d3c", "#fc4e2a"];
+const colors = ["#4EAF47", "#666", "#666", "#666"];
 
 // filters for classifying devices into three categories based on status
 export const deviceStatusFilter = {
