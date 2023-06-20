@@ -94,7 +94,7 @@ export default function Menu() {
   }, [data.user, toast, firstRender]);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <div className="pointer-events-auto box-border h-10 w-10">
           <button
