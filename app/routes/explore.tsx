@@ -28,6 +28,7 @@ import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
+import Legend from "~/components/Map/legend";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -48,6 +49,7 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const [showClusters, setShowClusters] = useState(true);
 
   /**
    * Focus the search input when the search overlay is displayed
@@ -106,6 +108,7 @@ export default function Explore() {
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
+        <Legend sensor="temperature" />
         <Map
           ref={mapRef}
           initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
@@ -116,7 +119,7 @@ export default function Explore() {
             id="osem-data"
             type="geojson"
             data={data.devices as FeatureCollection<Point, Device>}
-            cluster={true}
+            cluster={showClusters} // TODO: allow user to toggle cluster view
           >
             <Layer {...clusterLayer} />
             <Layer {...clusterCountLayer} />
@@ -124,7 +127,13 @@ export default function Explore() {
           </Source>
         </Map>
         <Toaster />
-        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
+        {showSearch ? (
+          <OverlaySearch
+            devices={data.devices}
+            searchRef={searchRef}
+            setShowSearch={setShowSearch}
+          />
+        ) : null}
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>

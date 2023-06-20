@@ -5,7 +5,7 @@
   --color-blue-200: #1879af;
   --color-blue-500: #3b82f6;
   --color-blue-700: #1d4ed8;
-  --color-blue-50: #F8FAFC;
+  --color-blue-50: #f8fafc;
   --color-gray-100: #b8b8b8;
   --color-gray-200: #c0bfbf;
   --color-gray-300: #717070;
@@ -19,6 +19,8 @@
   --color-green-300: #709f61;
   --color-red-500: #f10000;
   --color-orange-500: #f97316;
+  --color-violet-500: #7f00ff;
+  --color-yellow-500: #eab308;
   --color-headerBorder: #e3e3e3;
 
   /* shadcn color definitions */
