@@ -623,7 +623,7 @@ export default function Campaigns() {
                             </span>
                           )}
                         </div>
-                        <span className="flex flex-wrap">
+                        <span className="mt-2 flex flex-wrap">
                           {item.title}
                           {item.country && (
                             <CountryFlagIcon
@@ -632,14 +632,19 @@ export default function Campaigns() {
                           )}
                         </span>
                       </CardTitle>
-                      <CardDescription>{item.keywords || ""}</CardDescription>
+                      {/* <CardDescription className="mt-2">
+                        {item.keywords || ""}
+                      </CardDescription> */}
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="mt-2">
                       <Progress
                         max={item.requiredParticipants}
                         value={item.participantCount}
                         // onMouseEnter={}
                       />
+                      <span>
+                        {item.requiredParticipants} Mitwirkende insgesamt
+                      </span>
                     </CardContent>
                   </Link>
                   <CardFooter>
