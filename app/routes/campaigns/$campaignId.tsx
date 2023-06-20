@@ -78,7 +78,7 @@ export default function CampaignId() {
           >
             <ClockIcon className="h-4 w-4" /> {data.priority}
           </span>
-          <h1 className="mt-6 mb-2 text-lg font-bold">
+          <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
             <b>{data.title}</b>
           </h1>
           <h2 className=" ml-4 mb-4 font-bold">
