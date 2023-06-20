@@ -153,7 +153,9 @@ export async function action({ request }: ActionArgs) {
 
 export async function loader({ params }: LoaderArgs) {
   // request to fetch all phenomena
-  const response = await fetch("https://api.sensors.wiki/phenomena/all");
+  const response = await fetch(
+    "https://api.sensors.wiki/phenomena/all?language=de"
+  );
   const data = await response.json();
   if (data.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
@@ -218,7 +220,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="title"
-              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               Title
             </label>
@@ -255,7 +257,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="description"
-              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               Description
             </label>
@@ -389,7 +391,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="startDate"
-              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               startDate
             </label>
@@ -416,7 +418,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="endDate"
-              className="after:content-['_*'] block text-sm font-medium text-gray-700 after:text-red-500"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
               endDate
             </label>
@@ -497,7 +499,7 @@ export default function CreateCampaign() {
             </DropdownMenu>
           </div>
           <label
-            className="after:content-['_*'] after:text-red-500"
+            className="after:text-red-500 after:content-['_*']"
             htmlFor="hardware_available"
           >
             Hardware verfügbar
