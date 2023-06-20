@@ -9,30 +9,35 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { useState } from "react";
+import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
 import {
   getAllBadges,
   getMyBadgesAccessToken,
   getUserBackpack,
 } from "~/models/badge.server";
 import type { MyBadge } from "~/models/badge.server";
-import { getProfileById } from "~/models/profile.server";
+import { getProfileByUserId } from "~/models/profile.server";
 import { getUserById } from "~/models/user.server";
+import { getUserId } from "~/session.server";
 
 // This function is responsible for loading data for the Profile component
 export async function loader({ params, request }: LoaderArgs) {
+  const requestingUserId = await getUserId(request);
   // Extract the profile email from the URL params
   const profileId = params.profile;
   if (profileId) {
     const user = await getUserById(profileId);
-    const profile = await getProfileById(profileId);
+    const profile = await getProfileByUserId(profileId);
 
-    if (!profile?.public) {
+    if (!profile?.public && profileId !== requestingUserId) {
       // If the profile isnt public, return an empty JSON response
       return json({
         success: false,
         userBackpack: [],
         allBadges: [],
-        username: "",
+        user: null,
+        profile: null,
+        requestingUserId: requestingUserId,
       });
     }
 
@@ -53,7 +58,9 @@ export async function loader({ params, request }: LoaderArgs) {
           success: false,
           userBackpack: [],
           allBadges: [],
-          username: "",
+          user: null,
+          profile: null,
+          requestingUserId: requestingUserId,
         });
       }
 
@@ -66,7 +73,9 @@ export async function loader({ params, request }: LoaderArgs) {
         success: true,
         userBackpack: backpackData,
         allBadges: allBadges,
-        username: profile.name,
+        user: user,
+        profile: profile,
+        requestingUserId: requestingUserId,
       });
     }
   }
@@ -75,16 +84,18 @@ export async function loader({ params, request }: LoaderArgs) {
     success: false,
     userBackpack: [],
     allBadges: [],
-    username: "",
+    user: null,
+    profile: null,
+    requestingUserId: requestingUserId,
   });
 }
 
 // Define the Profile component
 export default function Profile() {
-  // Define state for the open/closed state of the Profile component
-  const [isOpen, setIsOpen] = useState<Boolean>(true);
   // Get the data from the loader function using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
+  // Define state for the open/closed state of the Profile component
+  const [isOpen, setIsOpen] = useState<Boolean>(true);
   const sortedBadges = data.allBadges.sort(
     (badgeA: MyBadge, badgeB: MyBadge) => {
       // Determine if badgeA and badgeB are owned by the user and not revoked
@@ -107,6 +118,7 @@ export default function Profile() {
       }
     }
   );
+
   return (
     <div
       className={
@@ -115,17 +127,18 @@ export default function Profile() {
     >
       <div className="flex w-full justify-between bg-green-100">
         <div className="text-l basis-1/4 pb-6 pt-6 text-center font-bold text-white lg:text-3xl">
-          <p>{data.username}</p>
+          {/* display username */}
+          {data.profile && <p>{data.profile.name}</p>}
         </div>
         <div className="flex">
-          <div className="flex items-center pr-2">
+          {/* <div className="flex items-center pr-2">
             <MinusCircleIcon
               onClick={() => {
                 setIsOpen(!isOpen);
               }}
               className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8"
             />
-          </div>
+          </div> */}
           <div className="flex items-center pr-2">
             <Link prefetch="intent" to="/explore">
               <XCircleIcon className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />

@@ -28,12 +28,17 @@ import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
+import { getProfileByUserId } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
   const user = await getUser(request);
 
-  return json({ devices, user });
+  if (user) {
+    const profile = await getProfileByUserId(user.id);
+    return json({ devices, user, profile });
+  }
+  return json({ devices, user, profile: null });
 }
 
 export const links: LinksFunction = () => {
@@ -124,7 +129,13 @@ export default function Explore() {
           </Source>
         </Map>
         <Toaster />
-        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
+        {showSearch ? (
+          <OverlaySearch
+            devices={data.devices}
+            searchRef={searchRef}
+            setShowSearch={setShowSearch}
+          />
+        ) : null}
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>

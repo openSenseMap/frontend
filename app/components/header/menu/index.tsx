@@ -34,6 +34,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
+import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -143,21 +144,7 @@ export default function Menu() {
                 </div>
               )}
               <DropdownMenuItem>
-                <Link
-                  prefetch="intent"
-                  to={{
-                    pathname: "/explore/profile/me",
-                  }}
-                >
-                  <button
-                    className={
-                      "relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                    }
-                  >
-                    <UserCircleIcon className="mr-2 h-5 w-5" />
-                    <span>{t("profile_label")}</span>
-                  </button>
-                </Link>
+                <ProfileVisibilitySwitch />
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Cog6ToothIcon className="mr-2 h-5 w-5" />
