@@ -1,5 +1,6 @@
 // import type { LngLatBounds, LngLatLike } from "react-map-gl";
 import { useNavigate } from "@remix-run/react";
+import { useSearchParams } from "@remix-run/react";
 import { useMap } from "react-map-gl";
 
 import { goTo } from "~/lib/search-map-helper";
@@ -18,6 +19,11 @@ interface SearchListItemProps {
 export default function SearchListItem(props: SearchListItemProps) {
   const navigate = useNavigate();
   const { osem } = useMap();
+  const [searchParams] = useSearchParams();
+  const navigateTo =
+    (props.type === "device" ? `/explore/${props.item.deviceId}` : "/explore") +
+    // @ts-ignore
+    (searchParams.size > 0 ? "?" + searchParams.toString() : "");
 
   // console.log(props.index)
 
@@ -27,11 +33,7 @@ export default function SearchListItem(props: SearchListItemProps) {
       onClick={() => {
         goTo(osem, props.item);
         props.setShowSearch(false);
-        navigate(
-          props.type === "device"
-            ? `/explore/${props.item.deviceId}`
-            : "/explore"
-        );
+        navigate(navigateTo);
       }}
       data-active={props.active}
       onMouseEnter={() => {
