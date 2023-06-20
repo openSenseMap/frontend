@@ -25,13 +25,13 @@ const createDonutChart = (props: ClusterPropertiesType) => {
     total += count;
   }
   const fontSize =
-    total >= 1000 ? 22 : total >= 100 ? 20 : total >= 10 ? 18 : 16;
-  const r = total >= 1000 ? 50 : total >= 100 ? 32 : total >= 10 ? 24 : 18;
+    total >= 1000 ? 14 : total >= 100 ? 10 : total >= 10 ? 5 : 14;
+  const r = total >= 1000 ? 36 : total >= 100 ? 20 : total >= 10 ? 10 : 18;
   const r0 = Math.round(r * 0.6);
   const w = r * 2;
 
   let html = `<div>
-<svg width="${w}" height="${w}" viewbox="0 0 ${w} ${w}" text-anchor="middle" style="font: ${fontSize}px sans-serif; display: block">`;
+<svg width="${w}" height="${w}" viewbox="0 0 ${w} ${w}" text-anchor="middle" style="font: ${fontSize}px sans-serif; display: block; font-weight: bold;">`;
 
   for (let i = 0; i < counts.length; i++) {
     html += donutSegment(

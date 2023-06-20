@@ -100,7 +100,7 @@ export default function Explore() {
       if (!props.cluster) continue;
       const id = props.cluster_id;
 
-      let marker = markers[id];
+      let marker: any = markers[id];
       if (!marker) {
         const el = createDonutChart(props);
         marker = markers[id] = new mapboxgl.Marker({

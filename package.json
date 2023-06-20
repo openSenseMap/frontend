@@ -53,6 +53,7 @@
     "@remix-run/react": "^1.12.0",
     "@remix-run/server-runtime": "^1.12.0",
     "@turf/helpers": "^6.5.0",
+    "@types/mapbox-gl": "^2.7.11",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.2.1",
     "chartjs-adapter-date-fns": "^3.0.0",
