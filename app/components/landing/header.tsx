@@ -181,7 +181,7 @@ export default function Header(data: HeaderProps) {
               <div>
                 <button
                   type="button"
-                  className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-gray-800"
                   id="user-menu-button"
                   aria-expanded="false"
                   aria-haspopup="true"
@@ -189,7 +189,7 @@ export default function Header(data: HeaderProps) {
                 >
                   <span className="sr-only">Open user menu</span>
                   {/* avatar icon */}
-                  <div className=" h-10 w-10 overflow-hidden rounded-full">
+                  <div className=" h-10 w-10 overflow-hidden bg-white text-[#777] hover:text-[#333] dark:rounded-full dark:bg-[#000] hover:dark:text-[#fff]">
                     <svg
                       aria-hidden="true"
                       fill="none"

@@ -158,7 +158,7 @@ export async function action({ request }: ActionArgs) {
   await updateUserPassword(userId, newPass);
 
   //* logout
-  return logout(request);
+  return logout({request: request, redirectTo: "/explore"});
 }
 
 //****************************************
