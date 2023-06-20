@@ -169,13 +169,13 @@ export default function Explore() {
 
   return (
     <div
-      className="grid h-full w-full grid-cols-3 gap-4"
+      className="grid h-full w-full grid-cols-3 gap-4" //TODO: change grid layout
       onClick={(e: any) => {
         mouseData.push([e.clientX, e.clientY, 30]);
         localStorage.setItem("area", JSON.stringify(mouseData));
       }}
     >
-      <div className="flex flex-col gap-3">
+      <div className="flex w-2/3 flex-col gap-3">
         <h1 className="ml-2 text-lg font-bold">Interessensgebiet definieren</h1>
         <Card>
           <CardHeader>
@@ -231,6 +231,13 @@ export default function Explore() {
           <Map
             ref={(ref) => (mapRef.current = ref && ref.getMap())}
             initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
+            style={{
+              width: "60%",
+              height: "100%",
+              position: "fixed",
+              top: 0,
+              right: 0,
+            }}
             // onLoad={onLoad}
           >
             <GeocoderControl
@@ -238,30 +245,30 @@ export default function Explore() {
               onResult={(e) => console.log(e)}
               position="top-left"
             />
-            <Popover defaultOpen>
-              <PopoverTrigger>
-                <DrawControl
-                  position="top-left"
-                  // defaultMode="drag_circle"
-                  displayControlsDefault={false}
-                  controls={{ polygon: true, point: true, trash: true }}
-                  // modes={{
-                  //   ...modes,
-                  //   // radius_mode: RadiusMode,
-                  //   draw_circle: CircleMode,
-                  //   drag_circle: DragCircleMode,
-                  // }}
-                  onCreate={onUpdate}
-                  onUpdate={onUpdate}
-                  onDelete={onDelete}
-                />
-                <PopoverContent side="right" sideOffset={35}>
-                  Nutze die Symbole um unterschiedliche Flächen auf der Karte zu
-                  zeichnen
-                  <PopoverArrow />
-                </PopoverContent>
-              </PopoverTrigger>
-            </Popover>
+            {/* <Popover defaultOpen>
+              <PopoverTrigger> */}
+            <DrawControl
+              position="top-left"
+              // defaultMode="drag_circle"
+              displayControlsDefault={false}
+              controls={{ polygon: true, point: true, trash: true }}
+              // modes={{
+              //   ...modes,
+              //   // radius_mode: RadiusMode,
+              //   draw_circle: CircleMode,
+              //   drag_circle: DragCircleMode,
+              // }}
+              onCreate={onUpdate}
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+            />
+            {/* </PopoverTrigger>
+              <PopoverContent side="right" sideOffset={35}>
+                Nutze die Symbole um unterschiedliche Flächen auf der Karte zu
+                zeichnen
+                <PopoverArrow />
+              </PopoverContent>
+            </Popover> */}
             {/* <CustomControl /> */}
             {/* <Button className="absolute top-1/2 left-4 z-50">Weiter</Button> */}
             {geojsonUploadData && (
