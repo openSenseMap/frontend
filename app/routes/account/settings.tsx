@@ -29,47 +29,63 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const { intent, ...values } = Object.fromEntries(formData);
-  const { name, email, password, language, ...rest } = values;
+  const { name, email, passwordUpdate, passwordDelete, language, ...rest } =
+    values;
 
   const errors = {
     name: name ? null : "Invalid name",
     email: email ? null : "Invalid email",
-    password: password ? null : "Invalid password",
-    language: language ? null : "Invalid language",
+    passwordUpdate: passwordUpdate ? null : "Password is required",
+    passwordDelete: passwordDelete ? null : "Password is required",
   };
 
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+  /* const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
   if (hasErrors) {
     return json({ errors: errors, status: 400 });
-  }
+  } */
 
   invariant(typeof name === "string", "name must be a string");
   invariant(typeof email === "string", "email must be a string");
-  invariant(typeof password === "string", "password must be a string");
+  invariant(typeof passwordUpdate === "string", "password must be a string");
+  invariant(typeof passwordDelete === "string", "password must be a string");
   invariant(typeof language === "string", "language must be a string");
 
   //* check button intent
   switch (intent) {
-    case "delete": {
-      const user = await verifyLogin(email, password);
+    case "update": {
+      //* check password validaty
+      if (errors.passwordUpdate) {
+        return json({
+          errors: {
+            name: null,
+            email: null,
+            passwordUpdate: errors.passwordUpdate,
+            passwordDelete: null,
+          },
+          intent: intent,
+          status: 400,
+        });
+      }
 
-      //* if user does't exist
+      const user = await verifyLogin(email, passwordUpdate);
+      //* if entered password is invalid
       if (!user) {
         return json(
           {
             errors: {
               name: null,
               email: null,
-              password: "Invalid password",
-              language: null,
+              passwordUpdate: "Invalid password",
+              passwordDelete: null,
             },
+            intent: intent,
           },
           { status: 400 }
         );
       }
 
-      //* delete user
-      await deleteUserByEmail(email);
+
+      await updateUserlocale(email, language);
 
       //* return error free to show toast msg
       return json(
@@ -77,16 +93,37 @@ export async function action({ request }: ActionArgs) {
           errors: {
             name: null,
             email: null,
-            password: null,
-            language: null,
+            passwordUpdate: null,
+            passwordDelete: null,
+            passwordDe: null,
           },
+          intent: intent,
         },
         { status: 200 }
       );
     }
-    case "update": {
-      await updateUserlocale(email, language);
-      break;
+
+    case "delete": {
+      const user = await verifyLogin(email, passwordDelete);
+
+      //* if entered password is invalid
+      if (!user) {
+        return json(
+          {
+            errors: {
+              name: null,
+              email: null,
+              passwordUpdate: null,
+              passwordDelete: "Invalid password",
+            },
+            intent: intent,
+          },
+          { status: 400 }
+        );
+      }
+
+      //* delete user
+      await deleteUserByEmail(email);
     }
   }
 
@@ -97,22 +134,24 @@ export async function action({ request }: ActionArgs) {
 export default function Settings() {
   const userData = useLoaderData<typeof loader>(); //* to load user data
   const actionData = useActionData<typeof action>();
-  const [passwordVal, setPasswordVal] = useState(""); //* to enable delete account button
+  const [passwordDelVal, setPasswordVal] = useState(""); //* to enable delete account button
   //* Toast notification when user is deleted
   const [toastOpen, setToastOpen] = useState(false);
   //* Toast notification when user is deleted
   const [lang, setLang] = useState(userData?.language);
   //* To focus when an error occured
-  const passwordRef = React.useRef<HTMLInputElement>(null);
+  const passwordDelRef = React.useRef<HTMLInputElement>(null);
+  const passwordUpdRef = React.useRef<HTMLInputElement>(null);
+
   React.useEffect(() => {
     //* when password is not correct
-    if (actionData && actionData?.errors?.password) {
-      passwordRef.current?.focus();
+    if (actionData && actionData?.errors?.passwordDelete) {
+      passwordDelRef.current?.focus();
+    } else if (actionData && actionData?.errors?.passwordUpdate) {
+      passwordUpdRef.current?.focus();
     }
-    //* when password is correct
-    if (actionData && !actionData?.errors?.password) {
-      // setToastOpen(() => true)
-      //* after showing toast msg the page will be reload -> then redirect to home page from loader
+    //* when passwordUpdate is correct
+    if (actionData && !actionData?.errors?.passwordUpdate && actionData?.intent === "update") {
       setToastOpen(true);
     }
   }, [actionData]);
@@ -120,43 +159,46 @@ export default function Settings() {
   return (
     <div className="mt-14">
       <div className="grid grid-rows-1">
-        {/*Toast notification */}
-        <div>
-          <ToastPrimitive.Provider>
-            <ToastPrimitive.Root
-              open={toastOpen}
-              duration={3000}
-              onOpenChange={setToastOpen}
-              className={clsx(
-                "fixed inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full md:max-w-sm",
-                "bg-[#d9edf7] dark:bg-gray-800",
-                "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
-                "radix-state-closed:animate-toast-hide",
-                "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
-                "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
-                "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
-                "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
-                "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
-                "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
-              )}
-            >
-              <div className="flex">
-                <div className="flex w-0 flex-1 items-center py-4 pl-5">
-                  <div className="radix w-full">
-                    <ToastPrimitive.Title className=" text-base font-medium text-gray-900 dark:text-gray-100">
-                      Account successfully deleted.
-                    </ToastPrimitive.Title>
-                  </div>
-                </div>
-              </div>
-            </ToastPrimitive.Root>
-            <ToastPrimitive.Viewport />
-          </ToastPrimitive.Provider>
-        </div>
-
         {/* Setting form */}
         <div className="flex min-h-full items-center justify-center">
           <div className="mx-auto w-full max-w-5xl font-helvetica">
+            {/*Toast notification */}
+            <div className="mb-12">
+              <ToastPrimitive.Provider>
+                <ToastPrimitive.Root
+                  open={toastOpen}
+                  duration={4000}
+                  onOpenChange={setToastOpen}
+                  className={clsx(
+                    " inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
+                    "bg-[#d9edf7] dark:bg-gray-800",
+                    "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
+                    "radix-state-closed:animate-toast-hide",
+                    "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
+                    "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
+                    "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
+                    "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
+                    "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
+                    "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+                  )}
+                >
+                  <div className="flex">
+                    <div className="flex w-0 flex-1 items-center p-4">
+                      <div className="radix w-full">
+                        <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-gray-900 dark:text-gray-100">
+                          {/* Account successfully deleted. */}
+                          Profile succesfully updated.
+                          <ToastPrimitive.Close aria-label="Close">
+                            <span aria-hidden>×</span>
+                          </ToastPrimitive.Close>
+                        </ToastPrimitive.Title>
+                      </div>
+                    </div>
+                  </div>
+                </ToastPrimitive.Root>
+                <ToastPrimitive.Viewport />
+              </ToastPrimitive.Provider>
+            </div>
             {/* Heading */}
             <div className="inline-flex">
               {/* avatar icon */}
@@ -320,13 +362,18 @@ export default function Settings() {
 
                   <div className="mt-1">
                     <input
-                      id="currentPassword"
-                      name="currentPassword"
+                      id="passwordUpdate"
+                      name="passwordUpdate"
                       type="password"
                       placeholder="Password"
-                      // defaultValue={123}
+                      ref={passwordUpdRef}
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
                     />
+                    {actionData?.errors?.passwordUpdate && (
+                      <div className="pt-1 text-[#FF0000]" id="email-error">
+                        {actionData.errors.passwordUpdate}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -337,7 +384,7 @@ export default function Settings() {
                     name="intent"
                     value="update"
                     disabled={lang === userData?.language}
-                    className="rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
+                    className="rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
                     Update
                   </button>
@@ -356,25 +403,25 @@ export default function Settings() {
                     If you delete your account, all your senseBoxes and
                     measurements will be deleted.
                   </p>
-                  <p className="mt-1 mb-0">
+                  <p className="mb-0 mt-1">
                     To delete your account, please type your current password.
                   </p>
                 </div>
                 <div>
                   <input
-                    id="password"
-                    name="password"
+                    id="passwordDelete"
+                    name="passwordDelete"
                     type="password"
                     placeholder="Password"
-                    ref={passwordRef}
+                    ref={passwordDelRef}
                     // defaultValue={123}
                     className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                    value={passwordVal}
+                    value={passwordDelVal}
                     onChange={(e) => setPasswordVal(e.target.value)}
                   />
-                  {actionData?.errors?.password && (
+                  {actionData?.errors?.passwordDelete && (
                     <div className="pt-1 text-[#FF0000]" id="email-error">
-                      {actionData.errors.password}
+                      {actionData.errors.passwordDelete}
                     </div>
                   )}
                 </div>
@@ -384,8 +431,8 @@ export default function Settings() {
                     type="submit"
                     name="intent"
                     value="delete"
-                    disabled={!passwordVal}
-                    className="mb-5 rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
+                    disabled={!passwordDelVal}
+                    className="mb-5 rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
                     Delete account
                   </button>

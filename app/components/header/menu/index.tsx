@@ -127,7 +127,8 @@ export default function Menu() {
             ) : (
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  Max Mustermann
+                  {/* Max Mustermann */}
+                  {data.user.name}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {data.user.email}
@@ -148,14 +149,21 @@ export default function Menu() {
                   <ProfileVisibilitySwitch />
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem>
-                <Cog6ToothIcon className="mr-2 h-5 w-5" />
-                <span>{t("settings_label")}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CpuChipIcon className="mr-2 h-5 w-5" />
-                <span>{t("my_devices_label")}</span>
-              </DropdownMenuItem>
+
+              <Link to="/account/settings">
+                <DropdownMenuItem>
+                  <Cog6ToothIcon className="mr-2 h-5 w-5" />
+                  <span>{t("settings_label")}</span>
+                </DropdownMenuItem>
+              </Link>
+
+              <Link to="/account/dashboard">
+                <DropdownMenuItem>
+                  <CpuChipIcon className="mr-2 h-5 w-5" />
+                  <span>{t("my_devices_label")}</span>
+                </DropdownMenuItem>
+              </Link>
+
               <DropdownMenuItem>
                 <PlusCircleIcon className="mr-2 h-5 w-5" />
                 <span>{t("add_device_label")}</span>
