@@ -71,7 +71,7 @@ async function seed() {
   }
   process.stdout.write("\n");
 
-  const sensors = await csvtojson().fromFile("prisma/sensors.csv");
+  const sensors = await csvtojson().fromFile("prisma/sensors_matched_sensors_pheno_units.csv");
 
   let j = 0;
   for await (const sensor of sensors) {
@@ -83,10 +83,13 @@ async function seed() {
         title: sensor.title,
         sensorType: sensor.sensorType,
         unit: sensor.unit,
-        lastMeasurement: {
-          value: (Math.random() * 100).toFixed(2),
-          createdAt: new Date().toISOString(),
-        } as Prisma.JsonObject,
+        sensorWikiType: sensor.sensorWikiType,
+        sensorWikiUnit: sensor.sensorWikiUnit,
+        sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
+        // lastMeasurement: {
+        //   value: (Math.random() * 100).toFixed(2),
+        //   createdAt: new Date().toISOString(),
+        // } as Prisma.JsonObject,
       },
     });
     printProgress(`ℹ️  Imported ${j} of ${sensors.length} sensors.`);
