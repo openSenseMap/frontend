@@ -18,6 +18,7 @@ import { safeRedirect, validateEmail } from "~/utils";
 
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import i18next from "app/i18next.server";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -66,7 +67,21 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const user = await createUser(email, password, username?.toString());
+  //* get current locale
+  const locale = await i18next.getLocale(request);
+  const language = locale === "de" ? "de_DE" : "en_US";
+
+  //* temp -> dummy name
+  const name = "Max Mustermann";
+
+  const user = await createUser(
+    name,
+    email,
+    language,
+    password,
+    username?.toString()
+  );
+  // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
     request,
