@@ -23,6 +23,15 @@ export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }
 
+export async function updateUserName(email: User["email"], newUserName: string){
+  return prisma.user.update({
+    where: { email },
+    data: {
+      name: newUserName,
+    },
+  })
+}
+
 export async function updateUserPassword(
   userId: Password["userId"],
   password: string

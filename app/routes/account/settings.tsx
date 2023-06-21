@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import invariant from "tiny-invariant";
-import { updateUserlocale, verifyLogin } from "~/models/user.server";
+import { getUserByName, updateUserName, updateUserlocale, verifyLogin } from "~/models/user.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { getUserByEmail } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
@@ -87,6 +87,12 @@ export async function action({ request }: ActionArgs) {
 
       await updateUserlocale(email, language);
 
+      //* check if user exists by name before updating user name
+      const existingUserByName = await getUserByName(name);
+      if(!existingUserByName){
+        await updateUserName(email, name);
+      }
+
       //* return error free to show toast msg
       return json(
         {
@@ -139,6 +145,7 @@ export default function Settings() {
   const [toastOpen, setToastOpen] = useState(false);
   //* Toast notification when user is deleted
   const [lang, setLang] = useState(userData?.language);
+  const [name, setName] = useState(userData?.name);
   //* To focus when an error occured
   const passwordDelRef = React.useRef<HTMLInputElement>(null);
   const passwordUpdRef = React.useRef<HTMLInputElement>(null);
@@ -246,8 +253,8 @@ export default function Settings() {
                       autoFocus={true}
                       name="name"
                       type="text"
-                      readOnly={true}
                       defaultValue={userData?.name}
+                      onChange={(e) => setName(e.target.value)}
                       aria-describedby="name-error"
                       className="w-full rounded border border-gray-200 px-2 py-1 text-base"
                     />
@@ -383,7 +390,7 @@ export default function Settings() {
                     type="submit"
                     name="intent"
                     value="update"
-                    disabled={lang === userData?.language}
+                    disabled={lang === userData?.language && name === userData?.name}
                     className="rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
                     Update
