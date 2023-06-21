@@ -67,13 +67,17 @@ export async function action({ request }: ActionArgs) {
   if (password.length < 8) {
     return json(
       {
-        errors: { name: null, email: null, password: "Please use at least 8 characters." },
+        errors: {
+          name: null,
+          email: null,
+          password: "Please use at least 8 characters.",
+        },
       },
       { status: 400 }
     );
   }
 
-  //* check if user exist by name
+  //* check if user exists by name
   const existingUserByName = await getUserByName(name);
   if (existingUserByName) {
     return json(
@@ -88,7 +92,7 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  //* check if user exist by email
+  //* check if user exists by email
   const existingUserByEmail = await getUserByEmail(email);
   if (existingUserByEmail) {
     return json(
@@ -229,7 +233,7 @@ export default function Join() {
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <button
             type="submit"
-            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
+            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
           >
             Create Account
           </button>

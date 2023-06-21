@@ -13,12 +13,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { createUserSession, getUserId } from "~/session.server";
-import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import {
+  createUser,
+  getUserByEmail,
+  getUserByName,
+} from "~/models/user.server";
+import { safeRedirect, validateEmail, validateName } from "~/utils";
 
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import i18next from "app/i18next.server";
+import invariant from "tiny-invariant";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -28,37 +33,92 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const username = formData.get("username");
-  const email = formData.get("email");
-  const password = formData.get("password");
+  const { username, email, password } = Object.fromEntries(formData);
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/explore");
+
+  if (!username || typeof username !== "string") {
+    return json(
+      {
+        errors: {
+          username: "UserName is required",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* Validate userName
+  const validateUserName = validateName(username?.toString());
+  if (!validateUserName.isValid) {
+    return json(
+      {
+        errors: {
+          username: validateUserName.errorMsg,
+          password: null,
+          email: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Email is invalid", password: null } },
+      { errors: { username: null, email: "Email is invalid", password: null } },
       { status: 400 }
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
-      { errors: { password: "Password is required", email: null } },
+      {
+        errors: {
+          username: null,
+          password: "Password is required",
+          email: null,
+        },
+      },
       { status: 400 }
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { password: "Password is too short", email: null } },
+      {
+        errors: {
+          username: null,
+          password: "Password is too short",
+          email: null,
+        },
+      },
       { status: 400 }
     );
   }
 
-  const existingUser = await getUserByEmail(email);
-  if (existingUser) {
+  //* check if user exists by name
+  const existingUserByName = await getUserByName(username);
+  if (existingUserByName) {
     return json(
       {
         errors: {
+          username: "A user already exists with this name",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  //* check if user exists by email
+  const existingUserByEmail = await getUserByEmail(email);
+  if (existingUserByEmail) {
+    return json(
+      {
+        errors: {
+          username: null,
           email: "A user already exists with this email",
           password: null,
         },
@@ -71,17 +131,13 @@ export async function action({ request }: ActionArgs) {
   const locale = await i18next.getLocale(request);
   const language = locale === "de" ? "de_DE" : "en_US";
 
-  //* temp -> dummy name
-  const name = "Max Mustermann";
-
   const user = await createUser(
-    name,
+    username,
     email,
     language,
     password,
     username?.toString()
   );
-  // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
     request,
@@ -104,6 +160,7 @@ export default function RegisterDialog() {
     // @ts-ignore
     searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
+  const usernameRef = React.useRef<HTMLInputElement>(null);
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
@@ -111,7 +168,9 @@ export default function RegisterDialog() {
   const isCreating = Boolean(navigation.state === "submitting");
 
   React.useEffect(() => {
-    if (actionData?.errors?.email) {
+    if (actionData?.errors?.username) {
+      usernameRef.current?.focus();
+    } else if (actionData?.errors?.email) {
       emailRef.current?.focus();
     } else if (actionData?.errors?.password) {
       passwordRef.current?.focus();
@@ -152,10 +211,11 @@ export default function RegisterDialog() {
                 htmlFor="username"
                 className="block text-sm font-medium text-gray-700"
               >
-                {"Username (not required)"}
+                {"Username"}
               </Label>
               <div className="mt-1">
                 <Input
+                  ref={usernameRef}
                   id="username"
                   name="username"
                   type="text"
@@ -163,6 +223,11 @@ export default function RegisterDialog() {
                   className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
                   placeholder="Username"
                 />
+                {actionData?.errors?.username && (
+                  <div className="pt-1 text-red-500" id="password-error">
+                    {actionData.errors.username}
+                  </div>
+                )}
               </div>
             </div>
             <div>
