@@ -76,6 +76,9 @@ export async function getUserBackpack(email: string, accessToken: string) {
     }
   );
   const backpackResponse = await fetch(backpackRequest);
+  if(backpackResponse.status === 500) {
+    return null;
+  }
   const backpackData = await backpackResponse.json();
 
   // filter the badges by issuer (only OSeM badges)
