@@ -111,26 +111,6 @@ export default function Menu() {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          {data.user === null ? (
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{t("title")}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {t("subtitle")}
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col space-y-1">
-              {/* <p className="text-sm font-medium leading-none">Max Mustermann</p> */}
-              <p className="text-sm font-medium leading-none">{data.user.name}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {data.user.email}
-              </p>
-            </div>
-          )}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {data.user !== null ? (
         <div
           className={
             navigation.state === "loading" ? "pointer-events-none" : ""
