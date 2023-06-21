@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
 import { prisma } from "~/db.server";
+import { createProfile } from "./profile.server";
 
 export type { User } from "@prisma/client";
 
@@ -66,11 +67,12 @@ export async function createUser(
   name: User["name"],
   email: User["email"],
   language: User["language"],
-  password: string
+  password: string,
+  username?: string
 ) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       name,
       email,
@@ -83,6 +85,12 @@ export async function createUser(
       },
     },
   });
+
+  if (username) {
+    await createProfile(user.id, username);
+  }
+
+  return user;
 }
 
 export async function verifyLogin(

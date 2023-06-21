@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "@remix-run/react";
-import Map from "~/components/Map";
+import Map from "~/components/map";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 
@@ -23,17 +23,22 @@ import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
-} from "~/components/Map/layers";
+} from "~/components/map/layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
+import { getProfileByUserId } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
   const user = await getUser(request);
 
-  return json({ devices, user });
+  if (user) {
+    const profile = await getProfileByUserId(user.id);
+    return json({ devices, user, profile });
+  }
+  return json({ devices, user, profile: null });
 }
 
 export const links: LinksFunction = () => {

@@ -28,6 +28,7 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
+  const username = formData.get("username");
   const email = formData.get("email");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/explore");
@@ -66,6 +67,7 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+<<<<<<< HEAD
   //* get current locale
   const locale = await i18next.getLocale(request);
   const language = locale === "de" ? "de_DE" : "en_US";
@@ -74,6 +76,9 @@ export async function action({ request }: ActionArgs) {
   const name = "Max Mustermann"
 
   const user = await createUser(name, email, language, password);
+=======
+  const user = await createUser(email, password, username?.toString());
+>>>>>>> dev
 
   return createUserSession({
     request,
@@ -92,8 +97,9 @@ export const meta: MetaFunction = () => {
 export default function RegisterDialog() {
   const { t } = useTranslation("register");
   const [searchParams] = useSearchParams();
-  // @ts-ignore
-  const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore");
+  const redirectTo =
+    // @ts-ignore
+    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
@@ -138,6 +144,24 @@ export default function RegisterDialog() {
         </Link>
         <div className="mx-auto w-full max-w-md px-8">
           <Form method="post" className="space-y-6" noValidate>
+            <div>
+              <Label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700"
+              >
+                {"Username (not required)"}
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoFocus={true}
+                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                  placeholder="Username"
+                />
+              </div>
+            </div>
             <div>
               <Label
                 htmlFor="email"
