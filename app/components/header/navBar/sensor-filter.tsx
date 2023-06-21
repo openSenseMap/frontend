@@ -6,15 +6,15 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Form, useLoaderData } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
-import { LoaderArgs, json } from "@remix-run/node";
-import { getPhenomena } from "~/models/phenomena.server";
+// import { LoaderArgs, json } from "@remix-run/node";
+// import { getPhenomena } from "~/models/phenomena.server";
 
-export async function loader({ request }: LoaderArgs) {
-  // const response = await fetch("https://api.sensors.wiki/phenomena/all");
-  // const phenomena = await response.json();
-  // return json({ phenomena });
-  // const phenomena = await getPhenomena();
-}
+// export async function loader({ request }: LoaderArgs) {
+//   // const response = await fetch("https://api.sensors.wiki/phenomena/all");
+//   // const phenomena = await response.json();
+//   const phenomena = await getPhenomena();
+//   return json({ phenomena });
+// }
 
 interface SensorFilterProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
@@ -28,12 +28,12 @@ interface SensorFilterProps {
 
   onChange: (timerange: any) => void;
   value: any;
+
+  phenomena: any[];
 }
 
 export function SensorFilter(props: SensorFilterProps) {
   const { t } = useTranslation("navbar");
-  // const { phenomena } = useLoaderData<typeof loader>();
-  // console.log(phenomena);
 
   return (
     <div className={cn("grid gap-2", "w-fit", props.className)}>
@@ -58,30 +58,35 @@ export function SensorFilter(props: SensorFilterProps) {
         >
           <div className="flex flex-col gap-3 p-6">
             <ul>
-              <li
-                className={
-                  "flex gap-2 hover:text-green-100 " +
-                  (props.sensor === "all" ? "text-green-300" : "")
-                }
-              >
-                <button onClick={() => props.setSensor("all")}>
-                  <span>Alle Messstationen</span>
-                </button>
-              </li>
-              <li
-                className={
-                  "hover:text-green-100 " +
-                  (props.sensor === "temperature" ? "text-green-300" : "")
-                }
-              >
+              <li>
                 <button
-                  className="flex gap-2"
-                  onClick={() => props.setSensor("temperature")}
+                  className={
+                    "hover:text-green-100" +
+                    (props.sensor === "all" ? "text-green-300" : "")
+                  }
+                  onClick={() => props.setSensor("all")}
                 >
-                  <SunIcon className="h-4 w-4" />
-                  <span>Temperatur</span>
+                  <span>Alle Messtationen</span>
                 </button>
               </li>
+              {props.phenomena.map((p, i) => {
+                return (
+                  <li key={p.id}>
+                    <button
+                      className={
+                        "flex gap-2 hover:text-green-100" +
+                        (props.sensor === p.label.item[0].text
+                          ? "text-green-300"
+                          : "")
+                      }
+                      onClick={() => props.setSensor(p.label.item[0].text)}
+                    >
+                      <SunIcon className="h-4 w-4" />
+                      <span>{p.label.item[0].text}</span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
           <div className="flex justify-end p-3">
@@ -91,6 +96,15 @@ export function SensorFilter(props: SensorFilterProps) {
                 props.setIsDialogOpen(false);
               }}
             >
+              <label htmlFor="phenomenon"> </label>
+              <input
+                type="checkbox"
+                id="phenomenon"
+                name="phenomenon"
+                value={props.sensor}
+                className="hidden"
+                defaultChecked={true}
+              />
               <Button type="submit" className="bg-green-100">
                 {t("button")}
               </Button>

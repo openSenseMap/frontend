@@ -15,6 +15,7 @@ import { SensorFilter } from "../navBar/sensor-filter";
 
 interface NavBarProps {
   devices: Device[];
+  phenomena: any[];
 }
 
 type ValuePiece = Date | string | null;
@@ -181,6 +182,7 @@ export default function NavBar(props: NavBarProps) {
               setIsHovered={setIsHovered}
               onChange={onSensorChange}
               value={sensorvalue}
+              phenomena={props.phenomena}
             />
             <TimeFilter
               dateRange={dateRange}

@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useState } from "react";
+import { useLocation } from "@remix-run/react";
 
 interface LegendProps {
   sensor: string;
@@ -12,6 +13,7 @@ interface LegendProps {
 
 export default function Legend({ sensor }: LegendProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const title = useLocation().search.split("=")[1];
   if (sensor === "all") {
     return null;
   }
@@ -25,7 +27,7 @@ export default function Legend({ sensor }: LegendProps) {
       className="absolute bottom-0 left-1/2 z-10 w-1/3 -translate-x-1/2 transform rounded-lg bg-white p-4 shadow"
     >
       <AccordionItem value="item-1">
-        <AccordionTrigger>{isOpen ? "Temperatur" : "Legende"}</AccordionTrigger>
+        <AccordionTrigger>{isOpen ? title : "Legende"}</AccordionTrigger>
         <AccordionContent>
           <div className="mx-5">
             <div className="relative h-[3.625rem]">
@@ -124,7 +126,7 @@ export default function Legend({ sensor }: LegendProps) {
           <div className="flex flex-wrap">
             {/* prettier-ignore */}
             <div className="w-1/3 h-5 bg-gradient-to-r from-red-500 from-10% via-orange-500 via-20% to-yellow-500 to-90% "></div>
-            <div className="h-5 w-2/3 bg-gradient-to-r from-green-100 from-10% via-blue-700 via-20% to-violet-500 to-90% "></div>
+            <div className="from-10% via-20% to-90% h-5 w-2/3 bg-gradient-to-r from-green-100 via-blue-700 to-violet-500 "></div>
           </div>
         </AccordionContent>
       </AccordionItem>

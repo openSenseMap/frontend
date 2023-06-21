@@ -29,12 +29,14 @@ import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
 import Legend from "~/components/Map/legend";
+import { getPhenomena } from "~/models/phenomena.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
   const user = await getUser(request);
+  const phenomena = await getPhenomena();
 
-  return json({ devices, user });
+  return json({ devices, user, phenomena });
 }
 
 export const links: LinksFunction = () => {
