@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "@remix-run/react";
-import Map from "~/components/map";
+import Map from "~/components/Map";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 
@@ -23,7 +23,7 @@ import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
-} from "~/components/map/layers";
+} from "~/components/Map/layers";
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
@@ -124,7 +124,13 @@ export default function Explore() {
           </Source>
         </Map>
         <Toaster />
-        { showSearch ? <OverlaySearch devices={data.devices} searchRef={searchRef} setShowSearch={setShowSearch} /> : null }
+        {showSearch ? (
+          <OverlaySearch
+            devices={data.devices}
+            searchRef={searchRef}
+            setShowSearch={setShowSearch}
+          />
+        ) : null}
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>
