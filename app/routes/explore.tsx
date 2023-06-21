@@ -28,7 +28,7 @@ import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
-import Legend from "~/components/Map/legend";
+import Legend from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 
 export async function loader({ request }: LoaderArgs) {
