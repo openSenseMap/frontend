@@ -1,4 +1,5 @@
-import { LoaderArgs, json } from "@remix-run/node";
+import type { LoaderArgs} from "@remix-run/node";
+import { json } from "@remix-run/node";
 import changeProfileVisibility from "~/models/profile.server";
 
 export const action = async ({ params, request }: LoaderArgs) => {

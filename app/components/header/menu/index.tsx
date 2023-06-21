@@ -5,7 +5,7 @@ import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
 import {
   Bars3Icon,
-  UserCircleIcon,
+  // UserCircleIcon,
   CpuChipIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,

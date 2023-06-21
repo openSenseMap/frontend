@@ -1,5 +1,5 @@
 // Import necessary components and libraries
-import { MinusCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import { XCircleIcon } from "@heroicons/react/24/solid";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -9,7 +9,6 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { useState } from "react";
-import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
 import {
   getAllBadges,
   getMyBadgesAccessToken,
@@ -30,7 +29,7 @@ export async function loader({ params, request }: LoaderArgs) {
     const profile = await getProfileByUserId(profileId);
 
     if (!profile?.public && profileId !== requestingUserId) {
-      // If the profile isnt public, return an empty JSON response
+      // If the profile isnt public and the logged in user is not the same at the profile, return an empty JSON response
       return json({
         success: false,
         userBackpack: [],
@@ -95,7 +94,7 @@ export default function Profile() {
   // Get the data from the loader function using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
   // Define state for the open/closed state of the Profile component
-  const [isOpen, setIsOpen] = useState<Boolean>(true);
+  const [isOpen] = useState<Boolean>(true);
   const sortedBadges = data.allBadges.sort(
     (badgeA: MyBadge, badgeB: MyBadge) => {
       // Determine if badgeA and badgeB are owned by the user and not revoked
@@ -129,6 +128,15 @@ export default function Profile() {
         <div className="text-l basis-1/4 pb-6 pt-6 text-center font-bold text-white lg:text-3xl">
           {/* display username */}
           {data.profile && <p>{data.profile.name}</p>}
+        </div>
+        <div className="flex w-full justify-center items-center bg-green-100">
+          {data.requestingUserId === data.profile?.userId && (
+            <p className="pb-6 pt-6 text-center text-sm font-bold text-white">
+              This is your profile. It is{" "}
+              {data.profile?.public ? "public." : "private."} To change this you
+              can access the switch in the top right corner.
+            </p>
+          )}
         </div>
         <div className="flex">
           {/* <div className="flex items-center pr-2">

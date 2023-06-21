@@ -1,12 +1,11 @@
-import { Form, Link, useLoaderData, useMatches } from "@remix-run/react";
+import {  Link, useLoaderData, useMatches } from "@remix-run/react";
 import { useState } from "react";
 import { Switch } from "./ui/switch";
-import { loader } from "~/routes/explore";
-import Spinner from "./spinner";
+import type { loader } from "~/routes/explore";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export default function profileVisibilitySwitch() {
+export default function ProfileVisibilitySwitch() {
   const { t } = useTranslation("menu");
 
   // Get the data from the loader function using the useLoaderData hook
@@ -16,13 +15,13 @@ export default function profileVisibilitySwitch() {
   const [isPublic, setIsPublic] = useState<boolean>(
     data.profile?.public === true ? true : false
   );
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading] = useState<boolean>(false);
 
   const handleSwitchChange = (
     newValue: boolean | ((prevState: boolean) => boolean)
   ) => {
     // Update the state
-    setLoading(true);
+    // setLoading(true);
     setIsPublic(newValue);
 
     // Send a POST request here
@@ -34,7 +33,7 @@ export default function profileVisibilitySwitch() {
       body: JSON.stringify({ newVisibility: newValue }),
     })
       .then((response) => {
-        setLoading(false);
+        // setLoading(false);
         // Handle the response
         if (response.ok) {
           console.log("Profile visibility updated successfully");
@@ -43,7 +42,7 @@ export default function profileVisibilitySwitch() {
         }
       })
       .catch((error) => {
-        setLoading(false);
+        // setLoading(false);
         console.log(
           "An error occurred while updating profile visibility:",
           error

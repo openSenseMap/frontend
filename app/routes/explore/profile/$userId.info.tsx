@@ -1,5 +1,6 @@
-import { LoaderArgs, json } from "@remix-run/node";
-import changeProfileVisibility, {
+import type { LoaderArgs} from "@remix-run/node";
+import { json } from "@remix-run/node";
+import {
   getProfileByUserId,
 } from "~/models/profile.server";
 
