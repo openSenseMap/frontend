@@ -67,18 +67,21 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-<<<<<<< HEAD
   //* get current locale
   const locale = await i18next.getLocale(request);
   const language = locale === "de" ? "de_DE" : "en_US";
 
   //* temp -> dummy name
-  const name = "Max Mustermann"
+  const name = "Max Mustermann";
 
-  const user = await createUser(name, email, language, password);
-=======
-  const user = await createUser(email, password, username?.toString());
->>>>>>> dev
+  const user = await createUser(
+    name,
+    email,
+    language,
+    password,
+    username?.toString()
+  );
+  // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
     request,
