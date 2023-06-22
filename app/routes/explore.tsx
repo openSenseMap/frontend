@@ -31,13 +31,18 @@ import { getUser } from "~/session.server";
 import Legend from "~/components/map/legend";
 import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
+import { getProfileByUserId } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
   const user = await getUser(request);
   const phenomena = await getPhenomena();
 
-  return json({ devices, user, phenomena });
+  if (user) {
+    const profile = await getProfileByUserId(user.id);
+    return json({ devices, user, profile });
+  }
+  return json({ devices, user, phenomena, profile: null });
 }
 
 export const links: LinksFunction = () => {
