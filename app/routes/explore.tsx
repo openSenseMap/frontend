@@ -61,20 +61,7 @@ export default function Explore() {
   };
 
   //TODO: Range für array festlegen
-  // const legendValues = (values: number[]) => {
-  //   return values;
-  // };
-
-  //TODO: Range für array festlegen
   const legendColors = (values: string[]) => {
-    return values;
-  };
-
-  const legendValuePositions = (values: string[]) => {
-    return values;
-  };
-
-  const legendValueColors = (values: string[]) => {
     return values;
   };
   /**
