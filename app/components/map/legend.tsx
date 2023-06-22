@@ -6,19 +6,19 @@ import {
 } from "@/components/ui/accordion";
 import { useState } from "react";
 
+export type LegendValue = {
+  value: number;
+  color: string;
+  position: string;
+};
+
 interface LegendProps {
   title: string;
-  values: number[];
-  positions: string[];
+  values: LegendValue[];
   colors: string[];
 }
 
-export default function Legend({
-  title,
-  values,
-  colors,
-  positions,
-}: LegendProps) {
+export default function Legend({ title, values, colors }: LegendProps) {
   const [isOpen, setIsOpen] = useState(true);
   if (title === "all" || title === "") {
     return null;
@@ -41,11 +41,11 @@ export default function Legend({
                 return (
                   <div
                     key={i}
-                    className={`absolute ${positions[i]} top-0 -ml-4 flex h-12 flex-col items-center`}
+                    className={`absolute ${v.position} top-0 -ml-4 flex h-12 flex-col items-center`}
                   >
                     <svg
                       viewBox="0 0 32 34"
-                      className={`w-8 flex-none fill-${colors[i]} drop-shadow`}
+                      className={`w-8 flex-none fill-${v.color} drop-shadow`}
                     >
                       <path d="M1 4a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v19.6a4 4 0 0 1-2.118 3.53L16 34 3.118 27.13A4 4 0 0 1 1 23.6V4Z" />
                       <path
@@ -57,7 +57,7 @@ export default function Legend({
                     </svg>
                     <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
                     <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
-                      {v}
+                      {v.value}
                     </div>
                   </div>
                 );

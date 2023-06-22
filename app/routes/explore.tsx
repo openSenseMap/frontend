@@ -29,6 +29,7 @@ import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
 import Legend from "~/components/map/legend";
+import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 
 export async function loader({ request }: LoaderArgs) {
@@ -55,10 +56,14 @@ export default function Explore() {
   const pathQuery = useLocation().search.split("=");
   const legendTitle = pathQuery[0] === "?phenomenon" ? pathQuery[1] : "";
 
-  //TODO: Range für array festlegen
-  const legendValues = (values: number[]) => {
+  const legendValues = (values: LegendValue[]) => {
     return values;
   };
+
+  //TODO: Range für array festlegen
+  // const legendValues = (values: number[]) => {
+  //   return values;
+  // };
 
   //TODO: Range für array festlegen
   const legendColors = (values: string[]) => {
@@ -66,6 +71,10 @@ export default function Explore() {
   };
 
   const legendValuePositions = (values: string[]) => {
+    return values;
+  };
+
+  const legendValueColors = (values: string[]) => {
     return values;
   };
   /**
@@ -127,7 +136,13 @@ export default function Explore() {
         <Header devices={data.devices} />
         <Legend
           title={legendTitle}
-          values={legendValues([30, 20, 10, 0, -5])}
+          values={legendValues([
+            { value: 30, color: "red-500", position: "left-[5%]" },
+            { value: 20, color: "yellow-500", position: "left-[20%]" },
+            { value: 10, color: "blue-100", position: "left-[50%]" },
+            { value: 0, color: "blue-700", position: "right-[25%]" },
+            { value: -5, color: "violet-500", position: "right-[10%]" },
+          ])}
           colors={legendColors([
             "red-500",
             "orange-500",
@@ -136,13 +151,6 @@ export default function Explore() {
             "blue-700",
             "violet-500",
           ])} // MUST BE LENGTH 6 AS OF NOW
-          positions={legendValuePositions([
-            "left-[5%]",
-            "left-[20%]",
-            "left-[50%]",
-            "right-[25%]",
-            "right-[10%]",
-          ])}
         />
         <Map
           ref={mapRef}
