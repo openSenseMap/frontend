@@ -5,16 +5,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useState } from "react";
-import { useLocation } from "@remix-run/react";
 
 interface LegendProps {
-  sensor: string;
+  title: string;
+  values: number[];
+  colors: string[];
 }
 
-export default function Legend({ sensor }: LegendProps) {
+export default function Legend({ title, values, colors }: LegendProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const title = useLocation().search.split("=")[1];
-  if (sensor === "all") {
+  console.log(title);
+  if (title === "all" || title === "") {
     return null;
   }
 
@@ -24,7 +25,7 @@ export default function Legend({ sensor }: LegendProps) {
       collapsible
       defaultValue="item-1"
       onValueChange={() => setIsOpen(!isOpen)}
-      className="absolute bottom-0 left-1/2 z-10 w-1/3 -translate-x-1/2 transform rounded-lg bg-white p-4 shadow"
+      className="absolute left-0 bottom-[15%] z-10 w-1/5 rounded-lg bg-white p-4 shadow"
     >
       <AccordionItem value="item-1">
         <AccordionTrigger>{isOpen ? title : "Legende"}</AccordionTrigger>
@@ -46,7 +47,7 @@ export default function Legend({ sensor }: LegendProps) {
                 </svg>
                 <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
                 <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
-                  30
+                  {values[4]}
                 </div>
               </div>
               <div className="absolute left-[30%] top-0 -ml-4 flex h-12 flex-col items-center">
@@ -64,7 +65,7 @@ export default function Legend({ sensor }: LegendProps) {
                 </svg>
                 <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
                 <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
-                  20
+                  {values[3]}
                 </div>
               </div>
               <div className="absolute left-[50%] top-0 -mr-4 flex h-12 flex-col items-center">
@@ -82,7 +83,7 @@ export default function Legend({ sensor }: LegendProps) {
                 </svg>
                 <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
                 <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
-                  10
+                  {values[2]}
                 </div>
               </div>
               <div className="absolute right-[25%] top-0 -mr-4 flex h-12 flex-col items-center">
@@ -100,7 +101,7 @@ export default function Legend({ sensor }: LegendProps) {
                 </svg>
                 <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
                 <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
-                  0
+                  {values[1]}
                 </div>
               </div>
               <div className="absolute right-[10%] top-0 -mr-4 flex h-12 flex-col items-center">
@@ -118,7 +119,7 @@ export default function Legend({ sensor }: LegendProps) {
                 </svg>
                 <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
                 <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
-                  -5
+                  {values[0]}
                 </div>
               </div>
             </div>

@@ -61,7 +61,7 @@ export function SensorFilter(props: SensorFilterProps) {
               <li>
                 <button
                   className={
-                    "hover:text-green-100" +
+                    "hover:text-green-100 " +
                     (props.sensor === "all" ? "text-green-300" : "")
                   }
                   onClick={() => props.setSensor("all")}
@@ -74,12 +74,10 @@ export function SensorFilter(props: SensorFilterProps) {
                   <li key={p.id}>
                     <button
                       className={
-                        "flex gap-2 hover:text-green-100" +
-                        (props.sensor === p.label.item[0].text
-                          ? "text-green-300"
-                          : "")
+                        "flex gap-2 hover:text-green-100 " +
+                        (props.sensor === p.slug ? "text-green-300" : "")
                       }
-                      onClick={() => props.setSensor(p.label.item[0].text)}
+                      onClick={() => props.setSensor(p.slug)}
                     >
                       <SunIcon className="h-4 w-4" />
                       <span>{p.label.item[0].text}</span>
