@@ -54,111 +54,20 @@ export default function Explore() {
   const [showClusters, setShowClusters] = useState(true);
   const pathQuery = useLocation().search.split("=");
   const legendTitle = pathQuery[0] === "?phenomenon" ? pathQuery[1] : "";
-  let legendValues: [number, number, number, number, number];
-  let colors: [];
 
-  switch (legendTitle) {
-    case "barometric_pressure":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-      break;
-    case "relative_humidity":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
+  //TODO: Range für array festlegen
+  const legendValues = (values: number[]) => {
+    return values;
+  };
 
-      break;
-    case "temperature":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
+  //TODO: Range für array festlegen
+  const legendColors = (values: string[]) => {
+    return values;
+  };
 
-      break;
-    case "c02":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "soil_moisture":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "ambient_light":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "ultraviolet_a_light":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "humidity":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "pm25":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "pm10_concentration":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "air_temperature":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "precipitation":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "volatile_organic_compound_voc":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "voltage":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "sound_level":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "water_level":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "water_temperature":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "wind_direction":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-    case "wind_speed":
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-
-      break;
-
-    default:
-      legendValues = [1, 2, 3, 4, 5];
-      colors = [];
-      break;
-  }
-
+  const legendValuePositions = (values: string[]) => {
+    return values;
+  };
   /**
    * Focus the search input when the search overlay is displayed
    */
@@ -216,7 +125,25 @@ export default function Explore() {
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        <Legend title={legendTitle} values={legendValues} colors={[""]} />
+        <Legend
+          title={legendTitle}
+          values={legendValues([30, 20, 10, 0, -5])}
+          colors={legendColors([
+            "red-500",
+            "orange-500",
+            "yellow-500",
+            "green-100",
+            "blue-700",
+            "violet-500",
+          ])} // MUST BE LENGTH 6 AS OF NOW
+          positions={legendValuePositions([
+            "left-[5%]",
+            "left-[20%]",
+            "left-[50%]",
+            "right-[25%]",
+            "right-[10%]",
+          ])}
+        />
         <Map
           ref={mapRef}
           initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}

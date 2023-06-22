@@ -9,12 +9,17 @@ import { useState } from "react";
 interface LegendProps {
   title: string;
   values: number[];
+  positions: string[];
   colors: string[];
 }
 
-export default function Legend({ title, values, colors }: LegendProps) {
+export default function Legend({
+  title,
+  values,
+  colors,
+  positions,
+}: LegendProps) {
   const [isOpen, setIsOpen] = useState(true);
-  console.log(title);
   if (title === "all" || title === "") {
     return null;
   }
@@ -32,10 +37,35 @@ export default function Legend({ title, values, colors }: LegendProps) {
         <AccordionContent>
           <div className="mx-5">
             <div className="relative h-[3.625rem]">
-              <div className="absolute left-[5%] top-0 -ml-4 flex h-12 flex-col items-center">
+              {values.map((v, i) => {
+                return (
+                  <div
+                    key={i}
+                    className={`absolute ${positions[i]} top-0 -ml-4 flex h-12 flex-col items-center`}
+                  >
+                    <svg
+                      viewBox="0 0 32 34"
+                      className={`w-8 flex-none fill-${colors[i]} drop-shadow`}
+                    >
+                      <path d="M1 4a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v19.6a4 4 0 0 1-2.118 3.53L16 34 3.118 27.13A4 4 0 0 1 1 23.6V4Z" />
+                      <path
+                        fill="none"
+                        stroke="#000"
+                        strokeOpacity=".05"
+                        d="M5 .5h22A3.5 3.5 0 0 1 30.5 4v19.6a3.5 3.5 0 0 1-1.853 3.088L16 33.433 3.353 26.688A3.5 3.5 0 0 1 1.5 23.6V4A3.5 3.5 0 0 1 5 .5Z"
+                      />
+                    </svg>
+                    <div className="dark:bg-white/30 mt-2 h-2 w-0.5 bg-gray-700"></div>
+                    <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
+                      {v}
+                    </div>
+                  </div>
+                );
+              })}
+              {/* <div className="absolute left-[5%] top-0 -ml-4 flex h-12 flex-col items-center">
                 <svg
                   viewBox="0 0 32 34"
-                  className="w-8 flex-none fill-red-500 drop-shadow"
+                  className={`w-8 flex-none fill-${colors[0]} drop-shadow`}
                 >
                   <path d="M1 4a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v19.6a4 4 0 0 1-2.118 3.53L16 34 3.118 27.13A4 4 0 0 1 1 23.6V4Z" />
                   <path
@@ -121,13 +151,15 @@ export default function Legend({ title, values, colors }: LegendProps) {
                 <div className="absolute left-0 top-0 flex h-8 w-full items-center justify-center font-mono text-[0.6875rem] font-semibold">
                   {values[0]}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="flex flex-wrap">
             {/* prettier-ignore */}
-            <div className="w-1/3 h-5 bg-gradient-to-r from-red-500 from-10% via-orange-500 via-20% to-yellow-500 to-90% "></div>
-            <div className="from-10% via-20% to-90% h-5 w-2/3 bg-gradient-to-r from-green-100 via-blue-700 to-violet-500 "></div>
+            <div className={`w-1/3 h-5 bg-gradient-to-r from-${colors[0]} from-10% via-${colors[1]} via-20% to-${colors[2]} to-90%`}></div>
+            <div
+              className={`from-10% via-20% to-90% h-5 w-2/3 bg-gradient-to-r from-${colors[3]} via-${colors[4]} to-${colors[5]}`}
+            ></div>
           </div>
         </AccordionContent>
       </AccordionItem>
