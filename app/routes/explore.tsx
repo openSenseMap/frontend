@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "@remix-run/react";
-import Map from "~/components/Map";
+import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 
@@ -17,23 +17,14 @@ import type {
   MapboxEvent,
 } from "react-map-gl";
 
-import { MapProvider } from "react-map-gl";
-import { Layer, Source } from "react-map-gl";
-import { useState, useRef, useCallback } from "react";
+import { MapProvider, Marker } from "react-map-gl";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useHotkeys } from "@mantine/hooks";
-import type { FeatureCollection, GeoJsonProperties, Point } from "geojson";
-import {
-  clusterCountLayer,
-  clusterLayer,
-  deviceStatusFilter,
-  unclusteredPointLayer,
-} from "~/components/Map/layers";
-import type { Device } from "@prisma/client";
-import mapboxgl from "mapbox-gl";
-import createDonutChart from "~/components/Map/cluster";
+import type { Point } from "geojson";
 import OverlaySearch from "~/components/search/overlay-search";
-import { Toaster } from "~/components/ui//toaster";
+import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
+import useSupercluster from "use-supercluster";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -77,47 +68,6 @@ export default function Explore() {
     ],
   ]);
 
-  const data = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
-
-  // objects for caching and keeping track of HTML marker objects (for performance)
-  const markers = {};
-  let markersOnScreen = {};
-
-  function updateMarkers() {
-    const newMarkers = {};
-    const features = mapRef.current?.getMap().querySourceFeatures("devices");
-
-    if (!features) return;
-
-    // for every cluster on the screen, create an HTML marker for it (if we didn't yet),
-    // and add it to the map if it's not there already
-    for (const feature of features) {
-      const coords = feature.geometry.coordinates;
-      const props: GeoJsonProperties = feature.properties;
-      if (!props) return;
-
-      if (!props.cluster) continue;
-      const id = props.cluster_id;
-
-      let marker: any = markers[id];
-      if (!marker) {
-        const el = createDonutChart(props);
-        marker = markers[id] = new mapboxgl.Marker({
-          element: el,
-        }).setLngLat(coords);
-      }
-      newMarkers[id] = marker;
-
-      if (!markersOnScreen[id]) marker.addTo(mapRef.current?.getMap());
-    }
-    // for every marker we've added previously, remove those that are no longer visible
-    for (const id in markersOnScreen) {
-      if (!newMarkers[id]) markersOnScreen[id].remove();
-    }
-    markersOnScreen = newMarkers;
-  }
-
   const mapRef = useRef<MapRef | null>(null);
   const mapRefCallback = useCallback((ref: MapRef | null) => {
     if (ref !== null) {
@@ -126,11 +76,19 @@ export default function Explore() {
       const map = ref;
 
       const loadImage = () => {
-        if (!map.hasImage("cat")) {
+        if (!map.hasImage("device")) {
           //NOTE ref for adding local image instead
-          map.loadImage("/custom_marker.png", (error, image) => {
+          map.loadImage("/box.png", (error, image) => {
             if (error || image === undefined) throw error;
-            map.addImage("cat", image);
+            map.addImage("box", image, { sdf: true });
+          });
+        }
+
+        if (!map.hasImage("mobile")) {
+          //NOTE ref for adding local image instead
+          map.loadImage("/mobile.png", (error, image) => {
+            if (error || image === undefined) throw error;
+            map.addImage("mobile", image, { sdf: true });
           });
         }
       };
@@ -139,12 +97,44 @@ export default function Explore() {
     }
   }, []);
 
+  const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+
+  // get map bounds
+  const [viewState, setViewState] = useState({
+    longitude: 52,
+    latitude: 7,
+    zoom: 2,
+  });
+
+  // get clusters
+  const points = useMemo(() => {
+    return data.devices.features.map((device) => ({
+      type: "Feature",
+      properties: {
+        cluster: false,
+        ...device.properties,
+      },
+      geometry: device.geometry,
+    }));
+  }, []);
+
+  const bounds = mapRef.current
+    ? mapRef.current.getMap().getBounds().toArray().flat()
+    : undefined;
+  const { clusters, supercluster } = useSupercluster({
+    points,
+    bounds,
+    zoom: viewState.zoom,
+    options: { radius: 50, maxZoom: 14 },
+  });
+
   const onMapClick = (e: MapLayerMouseEvent) => {
-    console.log("map click", e.features);
+    console.log("map click", e);
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
 
-      if (feature.layer.id === "osem-data") {
+      if (feature.layer.id === "cluster") {
         const source = mapRef.current?.getSource("devices") as GeoJSONSource;
         source.getClusterExpansionZoom(
           feature.properties?.cluster_id,
@@ -176,7 +166,7 @@ export default function Explore() {
     if (!mapRef.current?.getMap().isSourceLoaded("devices")) return;
 
     // Update markers if source is available and create donut chart clusters
-    updateMarkers();
+    // updateMarkers();
   };
 
   // Not sure if one of these events are better suited for drawing the clusters
@@ -196,34 +186,68 @@ export default function Explore() {
         <Header devices={data.devices} />
         <Map
           ref={mapRefCallback}
-          initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-          interactiveLayerIds={["unclustered-point"]}
+          {...viewState}
+          onMove={(evt) => setViewState(evt.viewState)}
+          interactiveLayerIds={["cluster", "unclustered-point"]}
           onClick={onMapClick}
           onData={onData}
           onSourceData={onSourceData}
           onLoad={onLoad}
           onRender={onRender}
         >
-          <Source
-            id="devices"
-            type="geojson"
-            data={data.devices as FeatureCollection<Point, Device>}
-            cluster={true}
-            clusterMaxZoom={14}
-            clusterRadius={50}
-            clusterProperties={
-              // keep separate counts for each status category in a cluster
-              {
-                active: ["+", ["case", deviceStatusFilter.active, 1, 0]],
-                inactive: ["+", ["case", deviceStatusFilter.inactive, 1, 0]],
-                old: ["+", ["case", deviceStatusFilter.old, 1, 0]],
-              }
+          {clusters.map((cluster) => {
+            // every cluster point has coordinates
+            const [longitude, latitude] = cluster.geometry.coordinates;
+            // the point may be either a cluster or a crime point
+            const { cluster: isCluster, point_count: pointCount } =
+              cluster.properties;
+
+            // we have a cluster to render
+            if (isCluster) {
+              return (
+                <Marker
+                  key={`cluster-${cluster.id}`}
+                  latitude={latitude}
+                  longitude={longitude}
+                >
+                  <div
+                    className="flex items-center justify-center rounded-[50%] bg-blue-500 p-3 text-white"
+                    style={{
+                      width: `50px`,
+                      height: `50px`,
+                    }}
+                    onClick={() => {
+                      const expansionZoom = Math.min(
+                        supercluster.getClusterExpansionZoom(cluster.id),
+                        20
+                      );
+
+                      mapRef.current?.getMap().flyTo({
+                        center: [longitude, latitude],
+                        animate: true,
+                        speed: 1.6,
+                        zoom: expansionZoom,
+                        essential: true,
+                      });
+                    }}
+                  >
+                    {pointCount}
+                  </div>
+                </Marker>
+              );
             }
-          >
-            {/* <Layer {...clusterLayer} /> */}
-            {/* <Layer {...clusterCountLayer} /> */}
-            <Layer {...unclusteredPointLayer} />
-          </Source>
+
+            // we have a single point (crime) to render
+            return (
+              <Marker
+                key={`device-${cluster.properties.id}`}
+                latitude={latitude}
+                longitude={longitude}
+              >
+                <div>{cluster.properties.name}</div>
+              </Marker>
+            );
+          })}
         </Map>
         <Toaster />
         {showSearch ? (
