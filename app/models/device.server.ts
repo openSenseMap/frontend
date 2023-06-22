@@ -65,6 +65,34 @@ export async function getDevices() {
   return geojson;
 }
 
+export async function getDevicesWithSensors() {
+
+  const devices = await prisma.device.findMany({
+    select: {
+      id: true,
+      name: true,
+      latitude: true,
+      longitude: true,
+      exposure: true,
+      createdAt: true,
+      sensors: true
+    },
+   
+  });
+  const geojson: GeoJSON.FeatureCollection<Point, any> = {
+    type: "FeatureCollection",
+    features: [],
+  };
+
+  for (const device of devices) {
+    const coordinates = [device.longitude, device.latitude];
+    const feature = point(coordinates, device);
+    geojson.features.push(feature);
+  }
+
+  return geojson;
+}
+
 export async function getMeasurements(
   deviceId: any,
   sensorId: any,

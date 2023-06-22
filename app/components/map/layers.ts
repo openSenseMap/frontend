@@ -34,3 +34,28 @@ export const unclusteredPointLayer: LayerProps = {
     "circle-stroke-color": "#fff",
   },
 };
+
+export const tempLayer: LayerProps = {
+  'id': 'base-layer',
+  'type': 'circle',
+  'source': 'boxes',
+  'paint': {
+    'circle-opacity': 0.7,
+    'circle-radius': {
+      'base': 2.75,
+      'stops': [[1,5], [22, 200]]
+    },
+    'circle-color': [
+      'interpolate',
+      ['linear'],
+      [ "get", "value", ["object", ["get", "lastMeasurement", ["object", ["get", "sensor"]]]]],
+      -5, '#9900cc',
+      0, '#0000ff',
+      10, '#0099ff',
+      20, '#ffff00',
+      30, '#ff0000'
+    ],
+    'circle-stroke-width': 1,
+    'circle-stroke-color': 'black'
+  }
+}
