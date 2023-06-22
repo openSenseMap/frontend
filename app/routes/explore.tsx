@@ -26,6 +26,21 @@ import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import useSupercluster from "use-supercluster";
 
+const options = {
+  radius: 50,
+  maxZoom: 14,
+  map: (props) => ({ active: 0, inactive: 0, old: 0, status: props.status }),
+  reduce: (accumulated, props) => {
+    if (props.status === "ACTIVE") {
+      accumulated.active += 1;
+    } else if (props.status === "INACTIVE") {
+      accumulated.inactive += 1;
+    } else if (props.status === "OLD") {
+      accumulated.old += 1;
+    }
+  },
+};
+
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
   const user = await getUser(request);
@@ -69,33 +84,33 @@ export default function Explore() {
   ]);
 
   const mapRef = useRef<MapRef | null>(null);
-  const mapRefCallback = useCallback((ref: MapRef | null) => {
-    if (ref !== null) {
-      //Set the actual ref we use elsewhere
-      mapRef.current = ref;
-      const map = ref;
+  // const mapRefCallback = useCallback((ref: MapRef | null) => {
+  //   if (ref !== null) {
+  //     //Set the actual ref we use elsewhere
+  //     mapRef.current = ref;
+  //     const map = ref;
 
-      const loadImage = () => {
-        if (!map.hasImage("device")) {
-          //NOTE ref for adding local image instead
-          map.loadImage("/box.png", (error, image) => {
-            if (error || image === undefined) throw error;
-            map.addImage("box", image, { sdf: true });
-          });
-        }
+  //     const loadImage = () => {
+  //       if (!map.hasImage("device")) {
+  //         //NOTE ref for adding local image instead
+  //         map.loadImage("/box.png", (error, image) => {
+  //           if (error || image === undefined) throw error;
+  //           map.addImage("box", image, { sdf: true });
+  //         });
+  //       }
 
-        if (!map.hasImage("mobile")) {
-          //NOTE ref for adding local image instead
-          map.loadImage("/mobile.png", (error, image) => {
-            if (error || image === undefined) throw error;
-            map.addImage("mobile", image, { sdf: true });
-          });
-        }
-      };
+  //       if (!map.hasImage("mobile")) {
+  //         //NOTE ref for adding local image instead
+  //         map.loadImage("/mobile.png", (error, image) => {
+  //           if (error || image === undefined) throw error;
+  //           map.addImage("mobile", image, { sdf: true });
+  //         });
+  //       }
+  //     };
 
-      loadImage();
-    }
-  }, []);
+  //     loadImage();
+  //   }
+  // }, []);
 
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
@@ -122,12 +137,14 @@ export default function Explore() {
   const bounds = mapRef.current
     ? mapRef.current.getMap().getBounds().toArray().flat()
     : undefined;
+
   const { clusters, supercluster } = useSupercluster({
     points,
     bounds,
     zoom: viewState.zoom,
-    options: { radius: 50, maxZoom: 14 },
+    options,
   });
+  console.log(clusters);
 
   const onMapClick = (e: MapLayerMouseEvent) => {
     console.log("map click", e);
@@ -185,7 +202,7 @@ export default function Explore() {
       <MapProvider>
         <Header devices={data.devices} />
         <Map
-          ref={mapRefCallback}
+          ref={mapRef}
           {...viewState}
           onMove={(evt) => setViewState(evt.viewState)}
           interactiveLayerIds={["cluster", "unclustered-point"]}
