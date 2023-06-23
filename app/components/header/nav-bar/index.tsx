@@ -23,7 +23,7 @@ type Value = ValuePiece;
 
 export default function NavBar(props: NavBarProps) {
   let { t } = useTranslation("navbar");
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   // console.log("🚀 ~ file: index.tsx:24 ~ NavBar ~ searchParams:", searchParams.has("filterType"))
 
   const [timeState, setTimeState] = useState<string | undefined>(undefined);
@@ -61,8 +61,11 @@ export default function NavBar(props: NavBarProps) {
       } else {
         return;
       }
+    } else {
+      searchParams.append("filterType", "live")
+      setTimeState("live");
     }
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   /**
    * Focus the search input
