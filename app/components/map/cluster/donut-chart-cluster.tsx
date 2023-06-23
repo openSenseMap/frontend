@@ -18,7 +18,11 @@ export default function DonutChartCluster({
   clusterOnClick,
 }: DonutChartClusterType) {
   const { categories, point_count: pointCount } = cluster.properties;
-  const { ACTIVE: active, INACTIVE: inactive, OLD: old } = categories;
+  const {
+    ACTIVE: active = 0,
+    INACTIVE: inactive = 0,
+    OLD: old = 0,
+  } = categories;
   const counts: number[] = [active, inactive, old];
   const offsets: number[] = [];
   let total = 0;
@@ -43,7 +47,7 @@ export default function DonutChartCluster({
       : pointCount >= 10
       ? 18
       : 18;
-  const r0 = Math.round(r * 0.75);
+  const r0 = Math.round(r * 0.7);
   const w = r * 2;
 
   return (
