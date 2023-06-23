@@ -18,7 +18,7 @@ import type {
 } from "react-map-gl";
 
 import { MapProvider, Marker } from "react-map-gl";
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import type { Point } from "geojson";
 import OverlaySearch from "~/components/search/overlay-search";
@@ -29,7 +29,12 @@ import useSupercluster from "use-supercluster";
 const options = {
   radius: 50,
   maxZoom: 14,
-  map: (props) => ({ active: 0, inactive: 0, old: 0, status: props.status }),
+  map: (props) => ({
+    active: 0,
+    inactive: 0,
+    old: 0,
+    status: props.status,
+  }),
   reduce: (accumulated, props) => {
     if (props.status === "ACTIVE") {
       accumulated.active += 1;
@@ -132,7 +137,7 @@ export default function Explore() {
       },
       geometry: device.geometry,
     }));
-  }, []);
+  }, [data.devices.features]);
 
   const bounds = mapRef.current
     ? mapRef.current.getMap().getBounds().toArray().flat()
@@ -144,7 +149,68 @@ export default function Explore() {
     zoom: viewState.zoom,
     options,
   });
-  console.log(clusters);
+  // console.log(clusters);
+
+  const clusterMarker = useMemo(() => {
+    return clusters.map((cluster) => {
+      // every cluster point has coordinates
+      const [longitude, latitude] = cluster.geometry.coordinates;
+      // the point may be either a cluster or a crime point
+      const { cluster: isCluster, point_count: pointCount } =
+        cluster.properties;
+
+      // we have a cluster to render
+      if (isCluster) {
+        return (
+          <Marker
+            key={`cluster-${cluster.id}`}
+            latitude={latitude}
+            longitude={longitude}
+          >
+            <div
+              className="flex items-center justify-center rounded-[50%] bg-blue-500 p-3 text-white"
+              style={{
+                width: `50px`,
+                height: `50px`,
+              }}
+              onClick={() => {
+                const expansionZoom = Math.min(
+                  supercluster.getClusterExpansionZoom(cluster.id),
+                  20
+                );
+
+                mapRef.current?.getMap().flyTo({
+                  center: [longitude, latitude],
+                  animate: true,
+                  speed: 1.6,
+                  zoom: expansionZoom,
+                  essential: true,
+                });
+              }}
+            >
+              {pointCount}
+            </div>
+          </Marker>
+        );
+      }
+
+      // we have a single device to render
+      return (
+        <Marker
+          key={`device-${cluster.properties.id}`}
+          latitude={latitude}
+          longitude={longitude}
+        >
+          <div
+            style={{ position: "absolute", left: 0 - 10, top: 0 - 10 }}
+            className="flex w-fit cursor-pointer items-center rounded-full bg-white pl-1 pr-2 text-sm shadow hover:z-10 hover:shadow-lg"
+          >
+            {cluster.properties.name}
+          </div>
+        </Marker>
+      );
+    });
+  }, [clusters]);
 
   const onMapClick = (e: MapLayerMouseEvent) => {
     console.log("map click", e);
@@ -212,59 +278,7 @@ export default function Explore() {
           onLoad={onLoad}
           onRender={onRender}
         >
-          {clusters.map((cluster) => {
-            // every cluster point has coordinates
-            const [longitude, latitude] = cluster.geometry.coordinates;
-            // the point may be either a cluster or a crime point
-            const { cluster: isCluster, point_count: pointCount } =
-              cluster.properties;
-
-            // we have a cluster to render
-            if (isCluster) {
-              return (
-                <Marker
-                  key={`cluster-${cluster.id}`}
-                  latitude={latitude}
-                  longitude={longitude}
-                >
-                  <div
-                    className="flex items-center justify-center rounded-[50%] bg-blue-500 p-3 text-white"
-                    style={{
-                      width: `50px`,
-                      height: `50px`,
-                    }}
-                    onClick={() => {
-                      const expansionZoom = Math.min(
-                        supercluster.getClusterExpansionZoom(cluster.id),
-                        20
-                      );
-
-                      mapRef.current?.getMap().flyTo({
-                        center: [longitude, latitude],
-                        animate: true,
-                        speed: 1.6,
-                        zoom: expansionZoom,
-                        essential: true,
-                      });
-                    }}
-                  >
-                    {pointCount}
-                  </div>
-                </Marker>
-              );
-            }
-
-            // we have a single point (crime) to render
-            return (
-              <Marker
-                key={`device-${cluster.properties.id}`}
-                latitude={latitude}
-                longitude={longitude}
-              >
-                <div>{cluster.properties.name}</div>
-              </Marker>
-            );
-          })}
+          {clusterMarker}
         </Map>
         <Toaster />
         {showSearch ? (
