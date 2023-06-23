@@ -19,6 +19,7 @@ import { safeRedirect, validateEmail } from "~/utils";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import i18next from "app/i18next.server";
+import invariant from "tiny-invariant";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -67,15 +68,17 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  invariant(typeof username === "string", "username must be a string");
+
   //* get current locale
   const locale = await i18next.getLocale(request);
   const language = locale === "de" ? "de_DE" : "en_US";
 
   //* temp -> dummy name
-  const name = "Max Mustermann";
+  // const name = "Max Mustermann";
 
   const user = await createUser(
-    name,
+    username,
     email,
     language,
     password,
