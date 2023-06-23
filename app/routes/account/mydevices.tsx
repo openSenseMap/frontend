@@ -40,7 +40,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 //***********************************
-export default function Dashboard() {
+export default function MyDevices() {
   //* to load user data
   const devicesData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -249,7 +249,7 @@ export default function Dashboard() {
                           Show
                         </a>
                         <a
-                          href="https://sensebox.de/de/go-home"
+                          href={`mydevices/${deviceData.id}/edit`}
                           className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
                         >
                           Edit

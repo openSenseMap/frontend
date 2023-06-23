@@ -157,7 +157,7 @@ export default function Menu() {
                 </DropdownMenuItem>
               </Link>
 
-              <Link to="/account/dashboard">
+              <Link to="/account/mydevices">
                 <DropdownMenuItem>
                   <CpuChipIcon className="mr-2 h-5 w-5" />
                   <span>{t("my_devices_label")}</span>
