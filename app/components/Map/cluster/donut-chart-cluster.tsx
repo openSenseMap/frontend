@@ -4,7 +4,11 @@ type DonutChartClusterType = {
 };
 
 // colors to use for the categories
-const colors = ["#4EAF47", "#666", "#666"];
+const colors = [
+  { color: "#4EAF47", opacity: 1 },
+  { color: "#666", opacity: 0.8 },
+  { color: "#666", opacity: 0.8 },
+];
 
 export default function DonutChartCluster({
   cluster,
@@ -23,19 +27,19 @@ export default function DonutChartCluster({
     pointCount >= 1000
       ? 14
       : pointCount >= 100
-      ? 10
+      ? 12
       : pointCount >= 10
-      ? 5
-      : 14;
+      ? 10
+      : 10;
   const r =
     pointCount >= 1000
       ? 36
       : pointCount >= 100
       ? 20
       : pointCount >= 10
-      ? 10
+      ? 18
       : 18;
-  const r0 = Math.round(r * 0.6);
+  const r0 = Math.round(r * 0.75);
   const w = r * 2;
 
   return (
@@ -74,8 +78,8 @@ export default function DonutChartCluster({
               } ${r + r0 * y1} A ${r0} ${r0} 0 ${largeArc} 0 ${r + r0 * x0} ${
                 r + r0 * y0
               }`}
-              fill={colors[i]}
-              fillOpacity={0.5}
+              fill={colors[i].color}
+              fillOpacity={colors[i].opacity}
             />
           );
         })}
