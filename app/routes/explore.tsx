@@ -35,7 +35,6 @@ export async function loader({ request }: LoaderArgs) {
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;
-  console.log(message);
 
   const user = await getUser(request);
 

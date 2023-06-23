@@ -84,8 +84,9 @@ export const meta: MetaFunction = () => {
 export default function RegisterDialog() {
   const { t } = useTranslation("register");
   const [searchParams] = useSearchParams();
-  // @ts-ignore
-  const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore");
+  const redirectTo =
+    // @ts-ignore
+    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
