@@ -16,9 +16,9 @@ export type ClusterPropertiesType = GeoJsonProperties &
   };
 
 // code for creating an SVG donut chart from feature properties
-const createDonutChart = (props: ClusterPropertiesType) => {
+const createDonutChart = (props: any) => {
   const offsets = [];
-  const counts = [props.active, props?.inactive, props.old];
+  const counts = [props.active, props.inactive, props.old];
   let total = 0;
   for (const count of counts) {
     offsets.push(total);
@@ -51,6 +51,7 @@ ${total.toLocaleString()}
 
   const el = document.createElement("div");
   el.innerHTML = html;
+
   return el.firstChild;
 };
 
