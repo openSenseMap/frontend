@@ -17,24 +17,29 @@ import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import useSupercluster from "use-supercluster";
 import DonutChartCluster from "~/components/map/cluster/donut-chart-cluster";
+import type { BBox } from "geojson";
 
+// supercluster options
 const options = {
   radius: 50,
   maxZoom: 14,
-  map: (props) => ({
-    active: 0,
-    inactive: 0,
-    old: 0,
-    status: props.status,
-  }),
+  map: (props) => ({ categories: { [props.status]: 1 } }),
   reduce: (accumulated, props) => {
-    if (props.status === "ACTIVE") {
-      accumulated.active += 1;
-    } else if (props.status === "INACTIVE") {
-      accumulated.inactive += 1;
-    } else if (props.status === "OLD") {
-      accumulated.old += 1;
+    const categories = {};
+    // clone the categories object from the accumulator
+    for (const key in accumulated.categories) {
+      categories[key] = accumulated.categories[key];
     }
+    // add props' category data to the clone
+    for (const key in props.categories) {
+      if (key in accumulated.categories) {
+        categories[key] = accumulated.categories[key] + props.categories[key];
+      } else {
+        categories[key] = props.categories[key];
+      }
+    }
+    // assign the clone to the accumulator
+    accumulated.categories = categories;
   },
 };
 
@@ -107,7 +112,7 @@ export default function Explore() {
   }, [data.devices.features]);
 
   const bounds = mapRef.current
-    ? mapRef.current.getMap().getBounds().toArray().flat()
+    ? (mapRef.current.getMap().getBounds().toArray().flat() as BBox)
     : undefined;
 
   const { clusters, supercluster } = useSupercluster({
@@ -116,7 +121,6 @@ export default function Explore() {
     zoom: viewState.zoom,
     options,
   });
-  // console.log(clusters);
 
   const clusterOnClick = (cluster) => {
     const [longitude, latitude] = cluster.geometry.coordinates;

@@ -6,15 +6,17 @@ type DonutChartClusterType = {
 // colors to use for the categories
 const colors = [
   { color: "#4EAF47", opacity: 1 },
-  { color: "#666", opacity: 0.8 },
-  { color: "#666", opacity: 0.8 },
+  { color: "#575757", opacity: 0.65 },
+  { color: "#575757", opacity: 0.65 },
+  { color: "#38AADD", opacity: 1 },
 ];
 
 export default function DonutChartCluster({
   cluster,
   clusterOnClick,
 }: DonutChartClusterType) {
-  const { active, inactive, old, point_count: pointCount } = cluster.properties;
+  const { categories, point_count: pointCount } = cluster.properties;
+  const { ACTIVE: active, INACTIVE: inactive, OLD: old } = categories;
   const counts: number[] = [active, inactive, old];
   const offsets: number[] = [];
   let total = 0;
