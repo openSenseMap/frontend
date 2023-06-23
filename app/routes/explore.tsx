@@ -10,22 +10,35 @@ import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 
 import { MapProvider, Marker } from "react-map-gl";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import useSupercluster from "use-supercluster";
 import DonutChartCluster from "~/components/map/cluster/donut-chart-cluster";
-import type { BBox } from "geojson";
+import type { BBox, GeoJsonProperties } from "geojson";
+import type Supercluster from "supercluster";
+import type { PointFeature } from "supercluster";
+import type { Device } from "@prisma/client";
+
+export type DeviceClusterProperties =
+  | Supercluster.PointFeature<any>
+  | Supercluster.PointFeature<
+      Supercluster.ClusterProperties & {
+        categories: {
+          [x: number]: number;
+        };
+      }
+    >;
 
 // supercluster options
 const options = {
   radius: 50,
   maxZoom: 14,
-  map: (props) => ({ categories: { [props.status]: 1 } }),
-  reduce: (accumulated, props) => {
-    const categories = {};
+  map: (props: any) => ({ categories: { [props.status]: 1 } }),
+  reduce: (accumulated: any, props: any) => {
+    const categories: any = {};
     // clone the categories object from the accumulator
     for (const key in accumulated.categories) {
       categories[key] = accumulated.categories[key];
@@ -100,7 +113,7 @@ export default function Explore() {
   ]);
 
   // get clusters
-  const points = useMemo(() => {
+  const points: PointFeature<GeoJsonProperties & Device>[] = useMemo(() => {
     return data.devices.features.map((device) => ({
       type: "Feature",
       properties: {
@@ -122,21 +135,28 @@ export default function Explore() {
     options,
   });
 
-  const clusterOnClick = (cluster) => {
-    const [longitude, latitude] = cluster.geometry.coordinates;
-    const expansionZoom = Math.min(
-      supercluster.getClusterExpansionZoom(cluster.id),
-      20
-    );
+  const clusterOnClick = useCallback(
+    (cluster: DeviceClusterProperties) => {
+      // supercluster from hook can be null or undefined
+      if (!supercluster) return;
 
-    mapRef.current?.getMap().flyTo({
-      center: [longitude, latitude],
-      animate: true,
-      speed: 1.6,
-      zoom: expansionZoom,
-      essential: true,
-    });
-  };
+      const [longitude, latitude] = cluster.geometry.coordinates;
+
+      const expansionZoom = Math.min(
+        supercluster.getClusterExpansionZoom(cluster.id as number),
+        20
+      );
+
+      mapRef.current?.getMap().flyTo({
+        center: [longitude, latitude],
+        animate: true,
+        speed: 1.6,
+        zoom: expansionZoom,
+        essential: true,
+      });
+    },
+    [supercluster]
+  );
 
   const clusterMarker = useMemo(() => {
     return clusters.map((cluster) => {
@@ -164,20 +184,21 @@ export default function Explore() {
       // we have a single device to render
       return (
         <Marker
-          key={`device-${cluster.properties.id}`}
+          key={`device-${(cluster.properties as Device).id}`}
           latitude={latitude}
           longitude={longitude}
         >
           <div
             style={{ position: "absolute", left: 0 - 10, top: 0 - 10 }}
             className="flex w-fit cursor-pointer items-center rounded-full bg-white pl-1 pr-2 text-sm shadow hover:z-10 hover:shadow-lg"
+            onClick={() => navigate(`${(cluster.properties as Device).id}`)}
           >
-            {cluster.properties.name}
+            {(cluster.properties as Device).name}
           </div>
         </Marker>
       );
     });
-  }, [clusters]);
+  }, [clusterOnClick, clusters, navigate]);
 
   return (
     <div className="h-full w-full">

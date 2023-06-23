@@ -1,6 +1,8 @@
+import type { DeviceClusterProperties } from "~/routes/explore";
+
 type DonutChartClusterType = {
   cluster: any;
-  clusterOnClick: (cluster: any) => void;
+  clusterOnClick: (cluster: DeviceClusterProperties) => void;
 };
 
 // colors to use for the categories
