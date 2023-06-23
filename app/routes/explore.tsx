@@ -29,7 +29,7 @@ import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
 import Legend from "~/components/map/legend";
-import type { LegendValue } from "~/components/map/legend";
+import type { LegendValue, GradientColors } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 import { getProfileByUserId } from "~/models/profile.server";
 
@@ -40,7 +40,7 @@ export async function loader({ request }: LoaderArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile });
+    return json({ devices, user, profile, phenomena });
   }
   return json({ devices, user, phenomena, profile: null });
 }
@@ -65,8 +65,7 @@ export default function Explore() {
     return values;
   };
 
-  //TODO: Range für array festlegen
-  const legendColors = (values: string[]) => {
+  const gradientColors = (values: GradientColors) => {
     return values;
   };
   /**
@@ -129,20 +128,27 @@ export default function Explore() {
         <Legend
           title={legendTitle}
           values={legendValues([
-            { value: 30, color: "red-500", position: "left-[5%]" },
-            { value: 20, color: "yellow-500", position: "left-[20%]" },
-            { value: 10, color: "blue-100", position: "left-[50%]" },
-            { value: 0, color: "blue-700", position: "right-[25%]" },
-            { value: -5, color: "violet-500", position: "right-[10%]" },
+            { value: 30, color: "fill-red-500", position: "left-[5%]" },
+            { value: 20, color: "fill-yellow-500", position: "left-[20%]" },
+            { value: 10, color: "fill-blue-100", position: "left-[50%]" },
+            { value: 0, color: "fill-blue-700", position: "right-[25%]" },
+            { value: -5, color: "fill-violet-500", position: "right-[10%]" },
           ])}
-          colors={legendColors([
-            "red-500",
-            "orange-500",
-            "yellow-500",
-            "green-100",
-            "blue-700",
-            "violet-500",
-          ])} // MUST BE LENGTH 6 AS OF NOW
+          firstGradient={gradientColors({
+            from: "from-red-500",
+            via: "via-orange-500",
+            to: "to-yellow-500",
+          })}
+          secondGradient={gradientColors({
+            from: "from-green-100",
+            via: "via-blue-700",
+            to: "to-violet-500",
+          })}
+          // thirdGradient={gradientColors({
+          //   from: "from-red-500",
+          //   via: "via-orange-500",
+          //   to: "to-yellow-500",
+          // })}
         />
         <Map
           ref={mapRef}

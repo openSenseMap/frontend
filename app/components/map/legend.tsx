@@ -12,13 +12,27 @@ export type LegendValue = {
   position: string;
 };
 
+export type GradientColors = {
+  from: string;
+  via?: string;
+  to: string;
+};
+
 interface LegendProps {
   title: string;
   values: LegendValue[];
-  colors: string[];
+  firstGradient: GradientColors;
+  secondGradient: GradientColors;
+  thirdGradient?: GradientColors;
 }
 
-export default function Legend({ title, values, colors }: LegendProps) {
+export default function Legend({
+  title,
+  values,
+  firstGradient,
+  secondGradient,
+  thirdGradient,
+}: LegendProps) {
   const [isOpen, setIsOpen] = useState(true);
   if (title === "all" || title === "") {
     return null;
@@ -30,10 +44,12 @@ export default function Legend({ title, values, colors }: LegendProps) {
       collapsible
       defaultValue="item-1"
       onValueChange={() => setIsOpen(!isOpen)}
-      className="absolute left-0 bottom-[15%] z-10 w-1/5 rounded-lg bg-white p-4 shadow"
+      className="absolute bottom-[15%] left-0 z-10 w-1/5 rounded-lg bg-white p-4 shadow"
     >
       <AccordionItem value="item-1">
-        <AccordionTrigger>{isOpen ? title : "Legende"}</AccordionTrigger>
+        <AccordionTrigger className="font-bold capitalize">
+          {isOpen ? title : "Legende"}
+        </AccordionTrigger>
         <AccordionContent>
           <div className="mx-5">
             <div className="relative h-[3.625rem]">
@@ -45,7 +61,7 @@ export default function Legend({ title, values, colors }: LegendProps) {
                   >
                     <svg
                       viewBox="0 0 32 34"
-                      className={`w-8 flex-none fill-${v.color} drop-shadow`}
+                      className={`w-8 flex-none ${v.color} drop-shadow`}
                     >
                       <path d="M1 4a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v19.6a4 4 0 0 1-2.118 3.53L16 34 3.118 27.13A4 4 0 0 1 1 23.6V4Z" />
                       <path
@@ -156,10 +172,19 @@ export default function Legend({ title, values, colors }: LegendProps) {
           </div>
           <div className="flex flex-wrap">
             {/* prettier-ignore */}
-            <div className={`w-1/3 h-5 bg-gradient-to-r from-${colors[0]} from-10% via-${colors[1]} via-20% to-${colors[2]} to-90%`}></div>
+            <div className={`w-1/3 h-5 bg-gradient-to-r ${firstGradient.from} from-10% ${firstGradient?.via} via-20% ${firstGradient.to} to-90%`}></div>
             <div
-              className={`from-10% via-20% to-90% h-5 w-2/3 bg-gradient-to-r from-${colors[3]} via-${colors[4]} to-${colors[5]}`}
+              className={`h-5 ${
+                thirdGradient ? "w-1/3" : "w-2/3"
+              } bg-gradient-to-r from-10% via-20% to-90% ${
+                secondGradient.from
+              } ${secondGradient?.via} ${secondGradient.to}`}
             ></div>
+            {thirdGradient && (
+              <div
+                className={`h-5 w-1/3 bg-gradient-to-r ${thirdGradient.from} from-10% ${thirdGradient?.via} via-20% ${thirdGradient.to} to-90%`}
+              ></div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>
