@@ -32,6 +32,24 @@ export function getDevice({ id }: Pick<Device, "id">) {
   });
 }
 
+export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
+  return prisma.device.findUnique({
+    select: {
+      id: true,
+      name: true,
+      exposure: true,
+      updatedAt: true,
+      latitude: true,
+      longitude: true,
+    },
+    where: { id },
+  });
+}
+
+export function deleteDevice({ id }: Pick<Device, "id">){
+  return prisma.device.delete({ where: { id } });
+}
+
 export function getUserDevices(userId: Device["userId"]) {
   return prisma.device.findMany({
     select: {
