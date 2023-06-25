@@ -33,7 +33,7 @@ interface TimeFilterProps {
 
   setIsHovered: (hovered: boolean) => void;
 
-  timeState: string;
+  timeState: string | undefined;
   setTimeState: (value: string) => void;
 
   onChange: (timerange: any) => void;
