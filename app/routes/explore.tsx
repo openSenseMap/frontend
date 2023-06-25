@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { Outlet, useNavigate, useSearchParams } from "@remix-run/react";
-=======
-import { Outlet, useLocation, useNavigate } from "@remix-run/react";
->>>>>>> feat/choose-sensors
 import Map from "~/components/map";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
@@ -192,29 +188,29 @@ export default function Explore() {
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        { selectedPheno && (
+        {selectedPheno && (
           <Legend
-          title={selectedPheno}
-          values={legendValues([
-            { value: 30, color: "fill-red-500", position: "left-[5%]" },
-            { value: 20, color: "fill-yellow-500", position: "left-[20%]" },
-            { value: 10, color: "fill-blue-100", position: "left-[50%]" },
-            { value: 0, color: "fill-blue-700", position: "right-[25%]" },
-            { value: -5, color: "fill-violet-500", position: "right-[10%]" },
-          ])}
-          firstGradient={gradientColors({
-            from: "from-red-500",
-            via: "via-orange-500",
-            to: "to-yellow-500",
-          })}
-          secondGradient={gradientColors({
-            from: "from-green-100",
-            via: "via-blue-700",
-            to: "to-violet-500",
-          })}
+            title={selectedPheno}
+            values={legendValues([
+              { value: 30, color: "fill-red-500", position: "left-[5%]" },
+              { value: 20, color: "fill-yellow-500", position: "left-[20%]" },
+              { value: 10, color: "fill-blue-100", position: "left-[50%]" },
+              { value: 0, color: "fill-blue-700", position: "right-[25%]" },
+              { value: -5, color: "fill-violet-500", position: "right-[10%]" },
+            ])}
+            firstGradient={gradientColors({
+              from: "from-red-500",
+              via: "via-orange-500",
+              to: "to-yellow-500",
+            })}
+            secondGradient={gradientColors({
+              from: "from-green-100",
+              via: "via-blue-700",
+              to: "to-violet-500",
+            })}
           />
         )}
-        
+
         <Map
           ref={mapRef}
           initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
