@@ -32,6 +32,26 @@ export async function getUserId(
   return userId;
 }
 
+export async function getUserEmail(request: Request) {
+  const userId = await getUserId(request);
+  if (userId === undefined) return null;
+
+  const user = await getUserById(userId);
+  if (user) return user.email;
+
+  throw await logout({request: request, redirectTo: "/explore"});
+}
+
+export async function getUserName(request: Request) {
+  const userId = await getUserId(request);
+  if (userId === undefined) return null;
+
+  const user = await getUserById(userId);
+  if (user) return user.name;
+
+  throw await logout({request: request, redirectTo: "/explore"});
+}
+
 export async function getUser(request: Request) {
   const userId = await getUserId(request);
   if (userId === undefined) return null;
@@ -76,7 +96,6 @@ export async function createUserSession({
 }) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
-  session.flash("global_message", "You successfully logged in.")
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -96,11 +115,9 @@ export async function logout({
   redirectTo: string;
 }) {
   const session = await getUserSession(request);
-  session.unset(USER_SESSION_KEY);
-  session.flash("global_message", "You successfully logged out.")
   return redirect(redirectTo, {
     headers: {
-      "Set-Cookie": await sessionStorage.commitSession(session),
+      "Set-Cookie": await sessionStorage.destroySession(session),
     },
   });
 }
