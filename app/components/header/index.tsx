@@ -1,5 +1,5 @@
 import Home from "./home";
-import NavBar from "./nav-bar";
+import NavBar from "./nav-bar/nav-bar";
 import Menu from "./menu";
 import { useLoaderData } from "@remix-run/react";
 import Notification from "./notification";

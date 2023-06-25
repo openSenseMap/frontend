@@ -1,17 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import Search from "~/components/search";
-import {
-  SunIcon,
-  CalendarDaysIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
-import { TimeFilter } from "~/components/header/nav-bar/time-filter";
+import { SunIcon, CalendarDaysIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { TimeFilter } from "~/components/header/navBar/time-filter/time-filter";
 import type { DateRange } from "react-day-picker";
 import getUserLocale from "get-user-locale";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import type { Device } from "@prisma/client";
-import { useSearchParams } from "@remix-run/react";
 
 interface NavBarProps {
   devices: Device[];
@@ -19,53 +14,22 @@ interface NavBarProps {
 
 type ValuePiece = Date | string | null;
 
-type Value = ValuePiece;
+type Value = ValuePiece 
+
 
 export default function NavBar(props: NavBarProps) {
   let { t } = useTranslation("navbar");
-  const [searchParams, setSearchParams] = useSearchParams();
-  // console.log("🚀 ~ file: index.tsx:24 ~ NavBar ~ searchParams:", searchParams.has("filterType"))
 
-  const [timeState, setTimeState] = useState<string | undefined>(undefined);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [timeState, setTimeState] = React.useState("live");
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
+  const [showSearch, setShowSearch] = React.useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const [value, onChange] = useState<Value>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [singleDate, setSingleDate] = useState<Date | undefined>(undefined);
+  const [value, onChange] = React.useState<Value>(null);
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
+  const [singleDate, setSingleDate] = React.useState<Date | undefined>(undefined)
   const userLocaleString = getUserLocale();
-
-  /**
-   * Set the time state based on the search params
-   */
-  useEffect(() => {
-    if (searchParams.has("filterType")) {
-      var filterType = searchParams.get("filterType");
-      if (filterType === "live") {
-        setTimeState("live");
-      } else if (filterType === "pointintime" && searchParams.has("date")) {
-        setTimeState("pointintime");
-        setSingleDate(new Date(searchParams.get("date") as string));
-      } else if (
-        filterType === "timeperiod" &&
-        searchParams.has("from") &&
-        searchParams.has("to")
-      ) {
-        setTimeState("timeperiod");
-        setDateRange({
-          from: new Date(searchParams.get("from") as string),
-          to: new Date(searchParams.get("to") as string),
-        });
-      } else {
-        return;
-      }
-    } else {
-      searchParams.append("filterType", "live")
-      setTimeState("live");
-    }
-  }, [searchParams, setSearchParams]);
 
   /**
    * Focus the search input
@@ -129,7 +93,7 @@ export default function NavBar(props: NavBarProps) {
               {t("temperature_label")}
             </div>
           </div>
-          <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
+          <div className="flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full ring-slate-900/10 bg-white pl-2 pr-3 shadow-lg ring-1">
             <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
             <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">
