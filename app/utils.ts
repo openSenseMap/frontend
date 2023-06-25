@@ -69,3 +69,34 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
+
+//* validate user name in join page
+export function validateName(name: string) {
+  if (name.length === 0) {
+    return { isValid: false, errorMsg: "Name is required" };
+  } else if (name.length < 4) {
+    return { isValid: false, errorMsg: "Please use at least 4 characters." };
+  } else if (
+    name &&
+    !/^[a-zA-Z0-9][a-zA-Z0-9\s._-]+[a-zA-Z0-9-_.]$/.test(name.toString())
+  ) {
+    return { isValid: false, errorMsg: "Name is invalid" };
+  }
+
+  return { isValid: true };
+}
+
+//* validate passwords type (changePassword page)
+export function validatePassType(passwords: any) {
+  const index = passwords.findIndex(
+    (password: any) =>
+      typeof password !== "string" || password.length === 0
+  );
+  return { isValid: index == -1 ? true : false, index: index };
+}
+
+//* validate passwords length (changePassword page)
+export function validatePassLength(passwords: any) {
+  const index = passwords.findIndex((password: any) => password.length < 8);
+  return { isValid: index == -1 ? true : false, index: index };
+}

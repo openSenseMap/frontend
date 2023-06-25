@@ -1,34 +1,46 @@
 import React, { useEffect, useRef } from "react";
 import Search from "~/components/search";
-import { SunIcon, CalendarDaysIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { TimeFilter } from "~/components/header/navBar/time-filter/time-filter";
+import {
+  SunIcon,
+  CalendarDaysIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
+import { TimeFilter } from "~/components/header/navBar/time-filter";
 import type { DateRange } from "react-day-picker";
 import getUserLocale from "get-user-locale";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import type { Device } from "@prisma/client";
+import { SensorFilter } from "../navBar/sensor-filter";
 
 interface NavBarProps {
   devices: Device[];
+  phenomena: any[];
 }
 
 type ValuePiece = Date | string | null;
 
-type Value = ValuePiece 
-
+type Value = ValuePiece;
 
 export default function NavBar(props: NavBarProps) {
   let { t } = useTranslation("navbar");
 
   const [timeState, setTimeState] = React.useState("live");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isSensorDialogOpen, setIsSensorDialogOpen] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [value, onChange] = React.useState<Value>(null);
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
-  const [singleDate, setSingleDate] = React.useState<Date | undefined>(undefined)
+  const [sensorvalue, onSensorChange] = React.useState(null);
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(
+    undefined
+  );
+  const [singleDate, setSingleDate] = React.useState<Date | undefined>(
+    undefined
+  );
+  const [sensor, setSensor] = React.useState<string | undefined>("all");
   const userLocaleString = getUserLocale();
 
   /**
@@ -89,11 +101,9 @@ export default function NavBar(props: NavBarProps) {
         >
           <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-orange-500">
             <SunIcon className="h-4 w-4 text-white" />
-            <div className="text-center text-white">
-              {t("temperature_label")}
-            </div>
+            <div className="text-center text-white">{t("all_stations")}</div>
           </div>
-          <div className="flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full ring-slate-900/10 bg-white pl-2 pr-3 shadow-lg ring-1">
+          <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
             <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
             <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">
@@ -163,7 +173,17 @@ export default function NavBar(props: NavBarProps) {
             </span>
           </button>
           <hr className="solid border-t-2 px-2"></hr>
-          <div className="flex w-full justify-end p-2">
+          <div className="flex w-full justify-between p-2">
+            <SensorFilter
+              isDialogOpen={isSensorDialogOpen}
+              setIsDialogOpen={setIsSensorDialogOpen}
+              sensor={sensor}
+              setSensor={setSensor}
+              setIsHovered={setIsHovered}
+              onChange={onSensorChange}
+              value={sensorvalue}
+              phenomena={props.phenomena}
+            />
             <TimeFilter
               dateRange={dateRange}
               setDateRange={setDateRange}

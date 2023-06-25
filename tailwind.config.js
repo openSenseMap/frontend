@@ -57,7 +57,10 @@ module.exports = {
       violet: {
         500: "var(--color-violet-500)",
       },
-      headerBorder: "var(--color-headerBorder)"
+      yellow: {
+        500: "var(--color-yellow-500)",
+      },
+      headerBorder: "var(--color-headerBorder)",
     },
     extend: {
       colors: {
@@ -105,32 +108,33 @@ module.exports = {
       fontFamily: {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
+        helvetica: ["Helvetica","Arial","sans-serif"],
       },
       keyframes: {
-        'sidebarOpen': {
-          'from': { transform: "translateX(100%)" },
-          'to': { transform: "translateX(O)" },
+        sidebarOpen: {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(O)" },
         },
-        'sidebarClose': {
-          'from': { transform: "translateX(0)" },
-          'to': { transform: "translateX(100%)" },
+        sidebarClose: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(100%)" },
         },
-        'contentShow': {
-          'from': { opacity: 0, transform: 'translate(-50%, 0%) scale(0.5)' },
-          'to': { opacity: 1, transform: 'translate(-50%, 0%) scale(1)' },
+        contentShow: {
+          from: { opacity: 0, transform: "translate(-50%, 0%) scale(0.5)" },
+          to: { opacity: 1, transform: "translate(-50%, 0%) scale(1)" },
         },
-        'contentClose': {
-          'from': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
-          'to': { opacity: 0, transform: 'translate(-50%, -48%) scale(0.5)' },
+        contentClose: {
+          from: { opacity: 1, transform: "translate(-50%, -50%) scale(1)" },
+          to: { opacity: 0, transform: "translate(-50%, -48%) scale(0.5)" },
         },
-        'fade-in-up': {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(10px)'
+        "fade-in-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
           },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)'
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
           },
         },
         // shadcn accordion animation
@@ -144,11 +148,11 @@ module.exports = {
         },
       },
       animation: {
-        'fade-in-up': 'fade-in-up 1s ease-out',
-        'sidebarOpen': 'sidebarOpen 300ms ease-out',
-        'sidebarClose': 'sidebarClose 300ms ease-out',
-        'contentShow': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
-        'contentClose': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        "fade-in-up": "fade-in-up 1s ease-out",
+        sidebarOpen: "sidebarOpen 300ms ease-out",
+        sidebarClose: "sidebarClose 300ms ease-out",
+        contentShow: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        contentClose: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
         // shadcn accordion animation
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
