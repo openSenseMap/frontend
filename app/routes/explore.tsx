@@ -16,7 +16,7 @@ import type {
 
 import { MapProvider } from "react-map-gl";
 import { Layer, Source } from "react-map-gl";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import type { FeatureCollection, Point } from "geojson";
 import {
@@ -27,18 +27,26 @@ import {
 import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
-import { getUser } from "~/session.server";
-import { getProfileByUserId } from "~/models/profile.server";
+import { getUser, getUserSession, sessionStorage } from "~/session.server";
+import { useToast } from "~/components/ui/use-toast";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
+
+  const session = await getUserSession(request);
+  const message = session.get("global_message") || null;
+
   const user = await getUser(request);
 
-  if (user) {
-    const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile });
-  }
-  return json({ devices, user, profile: null });
+  return json(
+    { devices, user, message },
+    {
+      headers: {
+        // only necessary with cookieSessionStorage
+        "Set-Cookie": await sessionStorage.commitSession(session),
+      },
+    }
+  );
 }
 
 export const links: LinksFunction = () => {
@@ -53,6 +61,8 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const { toast } = useToast();
 
   /**
    * Focus the search input when the search overlay is displayed
@@ -106,6 +116,14 @@ export default function Explore() {
       }
     }
   };
+
+  useEffect(() => {
+    if (data.message !== null) {
+      toast({
+        description: data.message,
+      });
+    }
+  }, [data.message, toast]);
 
   return (
     <div className="h-full w-full">

@@ -1,6 +1,3 @@
-# ignore VS Code json files
-.vscode
-
 .DS_Store
 node_modules
 

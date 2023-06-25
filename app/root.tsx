@@ -95,7 +95,7 @@ function App() {
         <Meta />
         <Links />
       </head>
-      <body className="flex h-full flex-col">
+      <body className="h-full">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

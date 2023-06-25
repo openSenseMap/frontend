@@ -32,22 +32,6 @@ export function getDevice({ id }: Pick<Device, "id">) {
   });
 }
 
-export function getUserDevices(userId: Device["userId"]) {
-  return prisma.device.findMany({
-    select: {
-      id: true,
-      name: true,
-      latitude: true,
-      longitude: true,
-      exposure: true,
-      model: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-    where: { userId },
-  });
-}
-
 export async function getDevices() {
   // const opts = {
   //   open: '{"type":"FeatureCollection","features":[',

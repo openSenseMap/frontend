@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { RefObject } from "react";
 import SearchList from "./search-list";
 import { useTranslation, Trans } from "react-i18next";
+import getUserLocale from "get-user-locale";
 
 interface SearchProps {
   setShowSearch: (data: boolean) => void;
@@ -12,6 +13,8 @@ interface SearchProps {
 export default function Search(props: SearchProps) {
   let { t } = useTranslation("search");
 
+  const userLocaleString = getUserLocale()?.toString() || "en";
+  
   const [searchString, setSearchString] = useState<string>("");
   const [searchResultsLocation, setSearchResultsLocation] = useState<any[]>([]);
   const [searchResultsDevice, setSearchResultsDevice] = useState<any[]>([]);
@@ -27,6 +30,7 @@ export default function Search(props: SearchProps) {
     url.search = new URLSearchParams({
       access_token: `${ENV.MAPBOX_ACCESS_TOKEN}`,
       limit: "4",
+      language: userLocaleString,
     }).toString();
 
     var requestOptions: RequestInit = {

@@ -1,4 +1,4 @@
-import { Exposure, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
@@ -25,37 +25,29 @@ const preparePasswordHash = function preparePasswordHash(
 };
 
 async function seed() {
-  //* initial user data
   const email = "opensensemap@opensenselab.org";
-  const hashedPassword = await bcrypt.hash(
-    preparePasswordHash("osemrocks"),
-    13
-  ); // make salt_factor configurable oSeM API uses 13 by default
-  const dummyUser = {
-    id: "cleqyv5pi00003uxdszv4mdnk", //* to connect it to imported data
-    name: "YouQam",
-    email: email,
-    role: "user",
-    language: "en_US",
-    boxes: [],
-    emailIsConfirmed: true,
-    password: {
-      create: {
-        hash: hashedPassword,
-      },
-    },
-  };
 
-  //* cleanup the existing database (if any)
+  // cleanup the existing database
   await prisma.sensor.deleteMany({}).catch(() => {});
   await prisma.device.deleteMany({}).catch(() => {});
   await prisma.user.delete({ where: { email } }).catch(() => {
     // no worries if it doesn't exist yet
   });
 
-  //* create intial user
+  const hashedPassword = await bcrypt.hash(
+    preparePasswordHash("osemrocks"),
+    13
+  ); // make salt_factor configurable oSeM API uses 13 by default
+
   const user = await prisma.user.create({
-    data: dummyUser,
+    data: {
+      email,
+      password: {
+        create: {
+          hash: hashedPassword,
+        },
+      },
+    },
   });
 
   // Import devices and connect it to user
