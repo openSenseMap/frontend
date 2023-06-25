@@ -8,6 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Form } from "@remix-run/react";
+// import * as z from "zod";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { CheckIcon } from "@heroicons/react/24/outline";
@@ -16,6 +17,16 @@ import SelectDevice from "./select-device";
 import General from "./general";
 import SelectSensors from "./select-sensors";
 import Advanced from "./advanced";
+
+// const formSchema = z.object({
+//   // select device
+//   deviceType: z.string(),
+
+//   // general
+//   deviceName: z.string().min(3).max(50),
+//   deviceExposure: z.string(),
+//   deviceGroupId: z.string().min(3).max(500),
+// });
 
 interface AddDeviceDialogProps {
   isAddDeviceDialogOpen: boolean;
@@ -36,7 +47,6 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
   const [mqttEnabled, setMqttEnabled] = useState<boolean>(false);
   const [ttnEnabled, setTtnEnabled] = useState<boolean>(false);
 
-
   function resetForm() {
     setTabValue("device");
     setDeviceType(undefined);
@@ -55,7 +65,14 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
               In the following form you can add a senseBox to your account.
             </DialogDescription>
           </DialogHeader>
-          <Form method="post">
+          <Form
+            onSubmit={() => {
+              resetForm();
+              props.setIsAddDeviceDialogOpen(false);
+            }}
+            action="/explore/add-device"
+            method="post"
+          >
             <Tabs
               value={tabValue}
               onValueChange={setTabValue}
@@ -78,7 +95,11 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
                 <TabsTrigger value="summary">Summary</TabsTrigger>
               </TabsList>
               <TabsContent value="device" className="focus-visible:ring-0">
-                <SelectDevice deviceType={deviceType} setDeviceType={setDeviceType} setTabValue={setTabValue} />
+                <SelectDevice
+                  deviceType={deviceType}
+                  setDeviceType={setDeviceType}
+                  setTabValue={setTabValue}
+                />
               </TabsContent>
               <TabsContent value="general">
                 <General setTabValue={setTabValue} />
@@ -87,7 +108,13 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
                 <SelectSensors setTabValue={setTabValue} />
               </TabsContent>
               <TabsContent value="advanced">
-                <Advanced setTabValue={setTabValue} mqttEnabled={mqttEnabled} setMqttEnabled={setMqttEnabled} ttnEnabled={ttnEnabled} setTtnEnabled={setTtnEnabled} />
+                <Advanced
+                  setTabValue={setTabValue}
+                  mqttEnabled={mqttEnabled}
+                  setMqttEnabled={setMqttEnabled}
+                  ttnEnabled={ttnEnabled}
+                  setTtnEnabled={setTtnEnabled}
+                />
               </TabsContent>
               <TabsContent value="summary">
                 <div>Summary</div>
@@ -95,12 +122,18 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
                   <Button type="button" onClick={() => setTabValue("advanced")}>
                     Back
                   </Button>
+                  <label htmlFor="type1">type1</label>
+                  <input type="radio" name="type" id="type1" value="type1" />
+                  <label htmlFor="type2">type2</label>
+                  <input type="radio" name="type" id="type2" value="type2" />
+                  <label htmlFor="type3">type3</label>
+                  <input type="radio" name="type" id="type3" value="type3" />
                   <Button
                     type="submit"
-                    onClick={() => {
-                      resetForm();
-                      props.setIsAddDeviceDialogOpen(false);
-                    }}
+                    // onClick={() => {
+                    //   resetForm();
+                    //   props.setIsAddDeviceDialogOpen(false);
+                    // }}
                   >
                     Create device
                   </Button>
