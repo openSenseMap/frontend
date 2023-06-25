@@ -17,17 +17,17 @@ import {
 
 const dummyBoxes = [
   {
-    name: "senseBox am Aasee",
+    name: "Box at IFGI",
     id: "1",
     image: "/sensebox_outdoor.jpg",
   },
   {
-    name: "Box am IFGI",
+    name: "senseBox at Aasee",
     id: "2",
     image: "https://picsum.photos/200/300",
   },
   {
-    name: "Box im Schlossgarten",
+    name: "Box at Schlossgarten",
     id: "3",
     image: "https://picsum.photos/200/300",
   },
@@ -37,10 +37,11 @@ export default function ProfileBoxSelection() {
   //   const [selectedBox, setSelectedBox] = useState(dummyBoxes[0]);
   return (
     <div>
+      {/* this is all jsut dummy data - the real data will be fetched from the API as soon as the route is implemented */}
       <Card>
         <CardHeader>
           <CardTitle>{dummyBoxes[0].name}</CardTitle>
-          <CardDescription>Letzte Aktivität: vor 13min</CardDescription>
+          <CardDescription>Last activity: 13min ago</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center">
@@ -54,7 +55,7 @@ export default function ProfileBoxSelection() {
         <CardFooter className="flex items-center justify-center">
           <Select disabled={true}>
             <SelectTrigger className="">
-              <SelectValue placeholder="Box am IFGI" />
+              <SelectValue placeholder="Box at IFGI" />
             </SelectTrigger>
             <SelectContent position="popper" sideOffset={-250}>
               <SelectItem value="light">Light</SelectItem>
