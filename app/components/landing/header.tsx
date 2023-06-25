@@ -2,7 +2,7 @@ import { Form, Link } from "@remix-run/react";
 import { Theme, useTheme } from "~/utils/theme-provider";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import invariant from "tiny-invariant";
-import { header } from "~/lib/directus";
+import type { header } from "~/lib/directus";
 import { useState } from "react";
 
 const links = [
@@ -239,7 +239,7 @@ export default function Header(data: HeaderProps) {
                   </a>
 
                   <a
-                    href="#"
+                    href="/routeToNewBox"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                     tabIndex={-1}
