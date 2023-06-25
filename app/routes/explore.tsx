@@ -23,7 +23,7 @@ import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
-  tempLayer,
+  phenomenonLayers,
 } from "~/components/map/layers";
 import type { Device, Sensor } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
@@ -105,22 +105,11 @@ export default function Explore() {
         });
         return false;
       });
-      console.log("FILTERED", sensorsFiltered);
       setFilteredData({
         type: "FeatureCollection",
         features: sensorsFiltered,
       });
     }
-    // if (searchParams.has("phenomenon")) {
-    //   console.log(searchParams.get("phenomenon"));
-    //   const fetchData = async () => {
-    //     const data = await getSensors();
-    //     return data;
-    //   };
-    //   const result = fetchData()
-    //     // make sure to catch any error
-    //     .catch(console.error);
-    //   console.log(result);
   }, [searchParams]);
 
   /**
@@ -205,7 +194,7 @@ export default function Explore() {
               data={filteredData as FeatureCollection<Point, Device>}
               cluster={false}
             >
-              <Layer {...tempLayer} />
+              <Layer {...phenomenonLayers[selectedPheno]} />
             </Source>
           )}
         </Map>
