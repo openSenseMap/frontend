@@ -81,7 +81,9 @@ const BUILD_DIR = path.join(process.cwd(), "build");
 
 cron.schedule("*/10 * * * *", function () {
   console.log("running a task every 10 minutes");
-  // addLiveData();
+  if (MODE === "production") {
+    addLiveData();
+  }
 });
 
 app.all(

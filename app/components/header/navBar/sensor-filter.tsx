@@ -49,7 +49,7 @@ export function SensorFilter(props: SensorFilterProps) {
             onClick={() => props.setIsDialogOpen(true)}
           >
             <CloudSunRain className="mr-2 h-5 w-5" />
-            <span>Sensoren</span>
+            <span>{t("phenomenons")}</span>
           </Button>
         </DialogTrigger>
         <DialogContent
@@ -66,15 +66,15 @@ export function SensorFilter(props: SensorFilterProps) {
                   }
                   onClick={() => props.setSensor("all")}
                 >
-                  <span>Alle Messtationen</span>
+                  <span>{t("all_stations")}</span>
                 </button>
               </li>
               {props.phenomena.map((p, i) => {
                 return (
-                  <li key={p.id}>
+                  <li className="py-1" key={p.id}>
                     <button
                       className={
-                        "flex gap-2 hover:text-green-100 " +
+                        "flex items-center gap-2 hover:text-green-100 " +
                         (props.sensor === p.slug ? "text-green-300" : "")
                       }
                       onClick={() => props.setSensor(p.slug)}

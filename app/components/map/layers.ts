@@ -61,7 +61,7 @@ export const phenomenonLayers: ObjectLiteral = {
           "value",
           ["object", ["get", "lastMeasurement", ["object", ["get", "sensor"]]]],
         ],
-        -5,
+        -10,
         "#9900cc",
         0,
         "#0000ff",

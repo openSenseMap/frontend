@@ -1,6 +1,3 @@
--- DropIndex
-DROP INDEX "Measurement_time_idx";
-
 -- AlterTable
 ALTER TABLE "Device" ADD COLUMN     "sensorWikiModel" TEXT;
 

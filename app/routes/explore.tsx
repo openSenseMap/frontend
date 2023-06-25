@@ -57,16 +57,19 @@ export const links: LinksFunction = () => {
 };
 
 // THIS IS FOR TESTING, CHANGE TO LIVE DATE minus 10 minutes FOR PRODUCTION LATER
-const currentDate = new Date("2023-06-21T14:13:11.024Z");
+let currentDate = new Date("2023-06-21T14:13:11.024Z");
+if (process.env.NODE_ENV === "production") {
+  currentDate = new Date(Date.now() - 1000 * 600);
+}
 
 export default function Explore() {
   const [showSearch, setShowSearch] = useState<boolean>(false);
-  const [selectedPheno, setSelectedPheno] = useState<string | undefined>(
+  const [selectedPheno, setSelectedPheno] = useState<any | undefined>(
     undefined
   );
 
   const searchRef = useRef<HTMLInputElement>(null);
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showClusters, setShowClusters] = useState(true);
   // const legendTitle = pathQuery[0] === "?phenomenon" ? pathQuery[1] : "";
 
@@ -83,44 +86,53 @@ export default function Explore() {
     if (searchParams.has("phenomenon")) {
       let sensorsFiltered: any = [];
       let currentParam = searchParams.get("phenomenon");
-      setSelectedPheno(searchParams.get("phenomenon")?.toString());
-      data.devices.features.forEach((device: any) => {
-        device.properties.sensors.forEach((sensor: Sensor) => {
-          if (
-            sensor.sensorWikiPhenomenon == currentParam &&
-            sensor.lastMeasurement
-          ) {
-            const lastMeasurementDate = new Date(
+
+      //check if pheno exists in sensor-wiki data
+      let pheno = data.phenomena.filter(
+        (pheno: any) => pheno.slug == currentParam?.toString()
+      );
+      if (pheno[0]) {
+        setSelectedPheno(pheno[0]);
+        data.devices.features.forEach((device: any) => {
+          device.properties.sensors.forEach((sensor: Sensor) => {
+            if (
+              sensor.sensorWikiPhenomenon == currentParam &&
+              sensor.lastMeasurement
+            ) {
+              const lastMeasurementDate = new Date(
+                //@ts-ignore
+                sensor.lastMeasurement.createdAt
+              );
+              //take only measurements in the last 10mins
               //@ts-ignore
-              sensor.lastMeasurement.createdAt
-            );
-            //take only measurements in the last 10mins
-            //@ts-ignore
-            if (currentDate < lastMeasurementDate) {
-              sensorsFiltered.push({
-                ...device,
-                properties: {
-                  ...device.properties,
-                  sensor: {
-                    ...sensor,
-                    lastMeasurement: {
-                      //@ts-ignore
-                      value: parseFloat(sensor.lastMeasurement.value),
-                      //@ts-ignore
-                      createdAt: sensor.lastMeasurement.createdAt,
+              if (currentDate < lastMeasurementDate) {
+                sensorsFiltered.push({
+                  ...device,
+                  properties: {
+                    ...device.properties,
+                    sensor: {
+                      ...sensor,
+                      lastMeasurement: {
+                        //@ts-ignore
+                        value: parseFloat(sensor.lastMeasurement.value),
+                        //@ts-ignore
+                        createdAt: sensor.lastMeasurement.createdAt,
+                      },
                     },
                   },
-                },
-              });
+                });
+              }
             }
-          }
+          });
+          return false;
         });
-        return false;
-      });
-      setFilteredData({
-        type: "FeatureCollection",
-        features: sensorsFiltered,
-      });
+        setFilteredData({
+          type: "FeatureCollection",
+          features: sensorsFiltered,
+        });
+      }
+    } else {
+      setSelectedPheno(undefined);
     }
   }, [searchParams]);
 
@@ -180,7 +192,17 @@ export default function Explore() {
         );
       } else if (feature.layer.id === "unclustered-point") {
         navigate(`/explore/${feature.properties?.id}`);
+      } else if (feature.layer.id === "base-layer") {
+        navigate(`/explore/${feature.properties?.id}`);
       }
+    }
+  };
+
+  const handleMouseMove = (e: mapboxgl.MapLayerMouseEvent) => {
+    if (e.features && e.features.length > 0) {
+      mapRef!.current!.getCanvas().style.cursor = "pointer";
+    } else {
+      mapRef!.current!.getCanvas().style.cursor = "";
     }
   };
 
@@ -190,13 +212,13 @@ export default function Explore() {
         <Header devices={data.devices} />
         {selectedPheno && (
           <Legend
-            title={selectedPheno}
+            title={selectedPheno.label.item[0].text}
             values={legendValues([
-              { value: 30, color: "fill-red-500", position: "left-[5%]" },
-              { value: 20, color: "fill-yellow-500", position: "left-[20%]" },
-              { value: 10, color: "fill-blue-100", position: "left-[50%]" },
+              { value: 30, color: "fill-red-500", position: "right-[100%]" },
+              { value: 20, color: "fill-yellow-500", position: "right-[75%]" },
+              { value: 10, color: "fill-blue-100", position: "right-[50%]" },
               { value: 0, color: "fill-blue-700", position: "right-[25%]" },
-              { value: -5, color: "fill-violet-500", position: "right-[10%]" },
+              { value: -10, color: "fill-violet-500", position: "right-[0%]" },
             ])}
             firstGradient={gradientColors({
               from: "from-red-500",
@@ -204,7 +226,7 @@ export default function Explore() {
               to: "to-yellow-500",
             })}
             secondGradient={gradientColors({
-              from: "from-green-100",
+              from: "from-blue-100",
               via: "via-blue-700",
               to: "to-violet-500",
             })}
@@ -214,8 +236,11 @@ export default function Explore() {
         <Map
           ref={mapRef}
           initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-          interactiveLayerIds={["osem-data", "unclustered-point"]}
+          interactiveLayerIds={
+            selectedPheno ? ["base-layer"] : ["osem-data", "unclustered-point"]
+          }
           onClick={onMapClick}
+          onMouseMove={handleMouseMove}
         >
           {!selectedPheno && (
             <Source
@@ -236,7 +261,7 @@ export default function Explore() {
               data={filteredData as FeatureCollection<Point, Device>}
               cluster={false}
             >
-              <Layer {...phenomenonLayers[selectedPheno]} />
+              <Layer {...phenomenonLayers[selectedPheno.slug]} />
             </Source>
           )}
         </Map>
