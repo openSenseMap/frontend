@@ -7,6 +7,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {
     href: string;
     title: string;
+    icon?: any;
   }[];
 }
 
@@ -31,7 +32,10 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
               : "hover:bg-transparent hover:underline"
           }
         >
-          {item.title}
+          <div className="flex gap-2">
+            {item.icon && item.icon}
+            {item.title}
+          </div>
         </NavLink>
       ))}
     </nav>

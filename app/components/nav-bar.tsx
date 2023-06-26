@@ -1,22 +1,35 @@
 import { Link, useLocation } from "@remix-run/react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { Mailbox, Plus } from "lucide-react";
+import { Cog, Mailbox, Plus, User } from "lucide-react";
+import { SidebarNav } from "./sidebar-nav";
+
+const sidebarNavItems = [
+  {
+    title: "Your profile",
+    href: "/profile/me",
+    icon: <User size={24} />,
+  },
+  {
+    title: "Settings",
+    href: "/settings",
+    icon: <Cog size={24} />,
+  },
+];
 
 export function NavBar() {
   const location = useLocation();
+
+  // TODO: use fetcher to get autheticated user
+
   return (
     <div className="border-b">
       <div className="flex h-16 items-center justify-between">
@@ -40,46 +53,33 @@ export function NavBar() {
             <SheetTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-                  <AvatarFallback>MP</AvatarFallback>
+                  <AvatarImage src="/avatars/01.png" alt="maxm" />
+                  <AvatarFallback>MM</AvatarFallback>
                 </Avatar>
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
               <SheetHeader>
-                <SheetTitle>Edit profile</SheetTitle>
                 <SheetDescription>
-                  Make changes to your profile here. Click save when you're
-                  done.
+                  <div className="flex gap-4">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="/avatars/01.png" alt="maxm" />
+                      <AvatarFallback>MM</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">maxm</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        max@mustermann.de
+                      </p>
+                    </div>
+                  </div>
                 </SheetDescription>
               </SheetHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    value="Pedro Duarte"
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
-                    Username
-                  </Label>
-                  <Input
-                    id="username"
-                    value="@peduarte"
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <SheetFooter>
                 <SheetClose asChild>
-                  <Button type="submit">Save changes</Button>
+                  <SidebarNav items={sidebarNavItems} />
                 </SheetClose>
-              </SheetFooter>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
