@@ -18,6 +18,8 @@ import { safeRedirect, validateEmail } from "~/utils";
 
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import i18next from "app/i18next.server";
+import invariant from "tiny-invariant";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -27,6 +29,7 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
+  const username = formData.get("username");
   const email = formData.get("email");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/explore");
@@ -65,7 +68,23 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const user = await createUser(email, password);
+  invariant(typeof username === "string", "username must be a string");
+
+  //* get current locale
+  const locale = await i18next.getLocale(request);
+  const language = locale === "de" ? "de_DE" : "en_US";
+
+  //* temp -> dummy name
+  // const name = "Max Mustermann";
+
+  const user = await createUser(
+    username,
+    email,
+    language,
+    password,
+    username?.toString()
+  );
+  // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
     request,
@@ -84,8 +103,9 @@ export const meta: MetaFunction = () => {
 export default function RegisterDialog() {
   const { t } = useTranslation("register");
   const [searchParams] = useSearchParams();
-  // @ts-ignore
-  const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore");
+  const redirectTo =
+    // @ts-ignore
+    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
@@ -130,6 +150,24 @@ export default function RegisterDialog() {
         </Link>
         <div className="mx-auto w-full max-w-md px-8">
           <Form method="post" className="space-y-6" noValidate>
+            <div>
+              <Label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700"
+              >
+                {"Username (not required)"}
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoFocus={true}
+                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                  placeholder="Username"
+                />
+              </div>
+            </div>
             <div>
               <Label
                 htmlFor="email"

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Variants } from "framer-motion";
-import { UseCase } from "~/lib/directus";
+import type { Variants } from "framer-motion";
+import type { UseCase } from "~/lib/directus";
 import UseCaseCard from "./use-cases-card";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 

@@ -1,5 +1,3 @@
-import { Link } from "@remix-run/react";
-
 export default function Footer() {
   return (
     <footer className="w-full bg-white px-4 text-gray-300 dark:bg-black dark:text-gray-100 sm:p-6 lg:text-lg">

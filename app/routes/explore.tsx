@@ -56,12 +56,17 @@ const options = {
     accumulated.categories = categories;
   },
 };
+import { getProfileByUserId } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
   const user = await getUser(request);
 
-  return json({ devices, user });
+  if (user) {
+    const profile = await getProfileByUserId(user.id);
+    return json({ devices, user, profile });
+  }
+  return json({ devices, user, profile: null });
 }
 
 export const links: LinksFunction = () => {
