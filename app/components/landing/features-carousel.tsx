@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Variants } from "framer-motion";
-import { Feature } from "~/lib/directus";
+import type { Variants } from "framer-motion";
+import type { Feature } from "~/lib/directus";
 import FeatureCard from "./features-card";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 

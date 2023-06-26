@@ -1,4 +1,4 @@
-import { Feature } from "~/lib/directus";
+import type { Feature } from "~/lib/directus";
 
 export default function FeatureCard(item: Feature) {
   return (

@@ -3,7 +3,7 @@ import NavBar from "./nav-bar/nav-bar";
 import Menu from "./menu";
 import { useLoaderData } from "@remix-run/react";
 import Notification from "./notification";
-import { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore/$deviceId";
 
 interface HeaderProps {
   devices: any;
