@@ -293,3 +293,40 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
 };
+
+export const defaultLayer = {
+  id: "base-layer",
+  type: "circle",
+  source: "boxes",
+  paint: {
+    "circle-opacity": 0.7,
+    "circle-radius": {
+      base: 1.75,
+      stops: [
+        [1, 4],
+        [22, 200],
+      ],
+    },
+    "circle-color": [
+      "interpolate",
+      ["linear"],
+      [
+        "get",
+        "value",
+        ["object", ["get", "lastMeasurement", ["object", ["get", "sensor"]]]],
+      ],
+      0,
+      "#9900cc",
+      25,
+      "#0000ff",
+      50,
+      "#0099ff",
+      75,
+      "#ffff00",
+      100,
+      "#ff0000",
+    ],
+    "circle-stroke-width": 1,
+    "circle-stroke-color": "black",
+  },
+};

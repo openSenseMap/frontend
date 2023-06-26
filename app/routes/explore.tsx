@@ -24,6 +24,7 @@ import {
   clusterLayer,
   unclusteredPointLayer,
   phenomenonLayers,
+  defaultLayer,
 } from "~/components/map/layers";
 import type { Device, Sensor } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
@@ -56,7 +57,7 @@ export const links: LinksFunction = () => {
   ];
 };
 
-// THIS IS FOR TESTING, CHANGE TO LIVE DATE minus 10 minutes FOR PRODUCTION LATER
+// THIS IS FOR TESTING, if you load the data in full_boxes.json, than this date will work
 let currentDate = new Date("2023-06-21T14:13:11.024Z");
 if (process.env.NODE_ENV === "production") {
   currentDate = new Date(Date.now() - 1000 * 600);
@@ -193,7 +194,9 @@ export default function Explore() {
       } else if (feature.layer.id === "unclustered-point") {
         navigate(`/explore/${feature.properties?.id}`);
       } else if (feature.layer.id === "base-layer") {
-        navigate(`/explore/${feature.properties?.id}`);
+        navigate(
+          `/explore/${feature.properties?.id}?${searchParams.toString()}`
+        );
       }
     }
   };
@@ -204,6 +207,11 @@ export default function Explore() {
     } else {
       mapRef!.current!.getCanvas().style.cursor = "";
     }
+  };
+
+  const buildLayerFromPheno = (selectedPheno: any) => {
+    //TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
+    return defaultLayer;
   };
 
   return (
@@ -261,7 +269,10 @@ export default function Explore() {
               data={filteredData as FeatureCollection<Point, Device>}
               cluster={false}
             >
-              <Layer {...phenomenonLayers[selectedPheno.slug]} />
+              <Layer
+                {...(phenomenonLayers[selectedPheno.slug] ??
+                  buildLayerFromPheno(selectedPheno))}
+              />
             </Source>
           )}
         </Map>
