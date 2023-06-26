@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link, useLocation } from "@remix-run/react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -16,6 +16,7 @@ import {
 import { Mailbox, Plus } from "lucide-react";
 
 export function NavBar() {
+  const location = useLocation();
   return (
     <div className="border-b">
       <div className="flex h-16 items-center justify-between">
@@ -24,7 +25,8 @@ export function NavBar() {
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
           </Link>
           <span className="dark:text-green-200 hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
-            Settings
+            {location.pathname.slice(1).charAt(0).toUpperCase() +
+              location.pathname.slice(2)}
           </span>
         </div>
         <div className="flex items-center gap-2">

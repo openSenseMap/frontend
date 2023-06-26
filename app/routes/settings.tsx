@@ -28,7 +28,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({});
 }
 
-export default function SettingsPage() {
+export default function SettingsLayoutPage() {
   return (
     <>
       <div className="hidden space-y-6 px-10 pb-16 md:block">
@@ -42,7 +42,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Button>
-              <Link to="/explore/profile/me">Go to your personal profile</Link>
+              <Link to="/profile/me">Go to your personal profile</Link>
             </Button>
           </div>
           <Separator className="my-6" />
