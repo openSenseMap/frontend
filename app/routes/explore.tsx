@@ -22,6 +22,7 @@ import type Supercluster from "supercluster";
 import type { PointFeature } from "supercluster";
 import { Exposure, type Device } from "@prisma/client";
 import { Box, Rocket } from "lucide-react";
+import { getProfileByUserId } from "~/models/profile.server";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -56,7 +57,6 @@ const options = {
     accumulated.categories = categories;
   },
 };
-import { getProfileByUserId } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
