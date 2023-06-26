@@ -1,3 +1,4 @@
+import { Form } from "@remix-run/react";
 import { Separator } from "~/components/ui/separator";
 
 export default function NotificationsPage() {
@@ -10,7 +11,7 @@ export default function NotificationsPage() {
         </p>
       </div>
       <Separator />
-      {/* <NotificationsForm /> */}
+      <Form></Form>
     </div>
   );
 }

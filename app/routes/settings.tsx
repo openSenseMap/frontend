@@ -6,6 +6,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
 import { Button } from "~/components/ui/button";
+import { NavBar } from "~/components/nav-bar";
 
 const sidebarNavItems = [
   {
@@ -30,8 +31,9 @@ export async function loader({ request }: LoaderArgs) {
 export default function SettingsPage() {
   return (
     <>
-      <div className="hidden space-y-6 p-10 pb-16 md:block">
-        <div className="space-y-4">
+      <div className="hidden space-y-6 px-10 pb-16 md:block">
+        <NavBar></NavBar>
+        <div className="mx-auto max-w-screen-2xl space-y-4">
           <div className="flex justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
@@ -48,7 +50,7 @@ export default function SettingsPage() {
             <aside className="lg:w-1/5">
               <SidebarNav items={sidebarNavItems} />
             </aside>
-            <div className="flex-1 lg:max-w-2xl">
+            <div className="flex-1 pt-4 lg:max-w-2xl">
               <Outlet />
             </div>
           </div>
