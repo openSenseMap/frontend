@@ -20,7 +20,8 @@ import DonutChartCluster from "~/components/map/cluster/donut-chart-cluster";
 import type { BBox, GeoJsonProperties } from "geojson";
 import type Supercluster from "supercluster";
 import type { PointFeature } from "supercluster";
-import type { Device } from "@prisma/client";
+import { Exposure, type Device } from "@prisma/client";
+import { Box, Rocket } from "lucide-react";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -190,10 +191,16 @@ export default function Explore() {
         >
           <div
             style={{ position: "absolute", left: 0 - 10, top: 0 - 10 }}
-            className="flex w-fit cursor-pointer items-center rounded-full bg-white pl-1 pr-2 text-sm shadow hover:z-10 hover:shadow-lg"
+            className="flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg"
             onClick={() => navigate(`${(cluster.properties as Device).id}`)}
           >
-            {(cluster.properties as Device).name}
+            <span className="rounded-full">
+              {(cluster.properties as Device).exposure === Exposure.MOBILE ? (
+                <Rocket className="h-4 w-4" />
+              ) : (
+                <Box className="h-4 w-4" />
+              )}
+            </span>
           </div>
         </Marker>
       );
