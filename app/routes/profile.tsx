@@ -8,7 +8,7 @@ export default function ProfileLayoutPage() {
         <NavBar></NavBar>
         <div className="mx-auto max-w-screen-2xl space-y-4">
           <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-            <div className="flex-1 pt-4 lg:max-w-2xl">
+            <div className="w-full pt-4">
               <Outlet />
             </div>
           </div>

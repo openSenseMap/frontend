@@ -9,7 +9,7 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { Cog, Mailbox, Plus, User } from "lucide-react";
+import { Mailbox, Plus, Settings, User } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 
 const sidebarNavItems = [
@@ -21,7 +21,7 @@ const sidebarNavItems = [
   {
     title: "Settings",
     href: "/settings",
-    icon: <Cog size={24} />,
+    icon: <Settings size={24} />,
   },
 ];
 
