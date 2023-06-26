@@ -105,9 +105,9 @@ jobs:
 
       - name: 🐳 Docker compose
         # the sleep is just there to give time for postgres to get started
-        run: docker-compose up -d && sleep 3
+        run: docker-compose up -d && sleep 10
         env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/opensensemap"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
       - name: 🛠 Setup Database
         uses: nick-fields/retry@v2.8.3
