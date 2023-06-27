@@ -26,9 +26,6 @@ interface SensorFilterProps {
 
   setIsHovered: (hovered: boolean) => void;
 
-  onChange: (timerange: any) => void;
-  value: any;
-
   phenomena: any[];
 }
 

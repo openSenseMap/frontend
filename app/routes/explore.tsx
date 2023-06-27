@@ -30,7 +30,7 @@ import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
 import Legend from "~/components/map/legend";
-import type { LegendValue, GradientColors } from "~/components/map/legend";
+import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 import { getProfileByUserId } from "~/models/profile.server";
 
@@ -136,13 +136,41 @@ export default function Explore() {
     }
   }, [searchParams]);
 
-  const legendValues = (values: LegendValue[]) => {
-    return values;
+  function calculateLabelPositions(length: number): string[] {
+    const positions: string[] = [];
+    for (let i = length - 1; i >= 0; i--) {
+      const position =
+        i === length - 1
+          ? "right-[95%]"
+          : `right-[${((i / (length - 1)) * 100).toFixed(0)}%]`;
+      positions.push(position);
+    }
+    return positions;
+  }
+
+  const legendLabels = () => {
+    const values =
+      //@ts-ignore
+      phenomenonLayers[selectedPheno.slug].paint["circle-color"].slice(3);
+    const numbers = values.filter(
+      (v: number | string) => typeof v === "number"
+    );
+    const colors = values.filter((v: number | string) => typeof v === "string");
+    const positions = calculateLabelPositions(numbers.length);
+
+    const legend: LegendValue[] = [];
+    const length = numbers.length;
+    for (let i = 0; i < length; i++) {
+      const legendObj: LegendValue = {
+        value: numbers[i],
+        color: colors[i],
+        position: positions[i],
+      };
+      legend.push(legendObj);
+    }
+    return legend;
   };
 
-  const gradientColors = (values: GradientColors) => {
-    return values;
-  };
   /**
    * Focus the search input when the search overlay is displayed
    */
@@ -210,26 +238,10 @@ export default function Explore() {
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        {selectedPheno && (
+        {selectedPheno && selectedPheno != "all" && (
           <Legend
             title={selectedPheno.label.item[0].text}
-            values={legendValues([
-              { value: 30, color: "fill-red-500", position: "right-[100%]" },
-              { value: 20, color: "fill-yellow-500", position: "right-[75%]" },
-              { value: 10, color: "fill-blue-100", position: "right-[50%]" },
-              { value: 0, color: "fill-blue-700", position: "right-[25%]" },
-              { value: -10, color: "fill-violet-500", position: "right-[0%]" },
-            ])}
-            firstGradient={gradientColors({
-              from: "from-red-500",
-              via: "via-orange-500",
-              to: "to-yellow-500",
-            })}
-            secondGradient={gradientColors({
-              from: "from-blue-100",
-              via: "via-blue-700",
-              to: "to-violet-500",
-            })}
+            values={legendLabels()}
           />
         )}
 
