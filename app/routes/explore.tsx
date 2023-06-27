@@ -140,9 +140,7 @@ export default function Explore() {
     const positions: string[] = [];
     for (let i = length - 1; i >= 0; i--) {
       const position =
-        i === length - 1
-          ? "right-[95%]"
-          : `right-[${((i / (length - 1)) * 100).toFixed(0)}%]`;
+        i === length - 1 ? "95%" : `${((i / (length - 1)) * 100).toFixed(0)}%`;
       positions.push(position);
     }
     return positions;
