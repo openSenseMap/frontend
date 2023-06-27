@@ -98,7 +98,6 @@ export default function () {
   // Get the data from the loader function using the useLoaderData hook
   const { allBadges, userBackpack, user, profile } =
     useLoaderData<typeof loader>();
-  console.log(user);
 
   const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
     // Determine if badgeA and badgeB are owned by the user and not revoked
