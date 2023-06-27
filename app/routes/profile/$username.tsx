@@ -183,7 +183,16 @@ export default function () {
       <div className="col-span-2">
         <div className="grid grid-cols-2 gap-8">
           {user?.devices.map((device) => (
-            <DeviceCard key={device.id} device={device} />
+            <DeviceCard
+              key={device.id}
+              // https://github.com/prisma/prisma/discussions/14371
+              // Some kind of weird Date thing going on
+              device={{
+                ...device,
+                createdAt: new Date(device.createdAt),
+                updatedAt: new Date(device.updatedAt),
+              }}
+            />
           ))}
         </div>
       </div>

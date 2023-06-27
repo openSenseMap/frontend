@@ -33,7 +33,6 @@ export function NavBar() {
   // User is optional
   // If no user render Login button
   const user = useOptionalUser();
-  console.log("NavBar: ", user);
 
   return (
     <div className="border-b">

@@ -27,7 +27,7 @@ export default function DeviceCard({ device }: DeviceCardProps) {
             <Circle className="mr-1 h-3 w-3" fill="green" />
             {device.model}
           </div>
-          {/* <div>Updated {new Date(device.updatedAt).toLocaleString()}</div> */}
+          <div>Updated {device.updatedAt.toString()}</div>
         </div>
       </CardContent>
     </Card>
