@@ -19,6 +19,13 @@ export async function getUserByName(name: User["name"]) {
   return prisma.user.findUnique({ where: { name } });
 }
 
+export async function getUserWithDevicesByName(name: User["name"]) {
+  return prisma.user.findUnique({
+    where: { name },
+    include: { devices: true },
+  });
+}
+
 export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }
