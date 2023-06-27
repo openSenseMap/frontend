@@ -20,23 +20,19 @@ import { getInitials } from "~/utils/misc";
 
 export async function loader({ params, request }: LoaderArgs) {
   const requestingUserId = await getUserId(request);
-  console.log("Requesting user: ", requestingUserId);
 
   // Get username or userid from URL params
   const username = params.username;
-  console.log("Called username: ", username);
 
   if (username) {
     // 1. Check if user exists
     const user = await getUserWithDevicesByName(username);
-    console.log("Found user: ", user);
     if (!user) {
       throw new Response("not found", { status: 404 });
     }
 
     // 2. Get profile and if it is private or not me -> throw an error
     const profile = await getProfileByUserId(user.id);
-    console.log("Users profile: ", profile);
     if (!profile?.public && user?.id !== requestingUserId) {
       throw new Response("not found", { status: 404 });
     }

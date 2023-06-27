@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@remix-run/react";
+import { Form, Link, useLocation } from "@remix-run/react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
@@ -9,14 +9,16 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { Mailbox, Plus, Settings, User } from "lucide-react";
+import { LogOut, Mailbox, Plus, Settings, UserIcon } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
+import { useOptionalUser } from "~/utils";
+import { getInitials } from "~/utils/misc";
 
 const sidebarNavItems = [
   {
     title: "Your profile",
     href: "/profile/me",
-    icon: <User size={24} />,
+    icon: <UserIcon size={24} />,
   },
   {
     title: "Settings",
@@ -28,7 +30,10 @@ const sidebarNavItems = [
 export function NavBar() {
   const location = useLocation();
 
-  // TODO: use fetcher to get autheticated user
+  // User is optional
+  // If no user render Login button
+  const user = useOptionalUser();
+  console.log("NavBar: ", user);
 
   return (
     <div className="border-b">
@@ -43,45 +48,73 @@ export function NavBar() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon">
-            <Plus className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <Mailbox className="h-4 w-4" />
-          </Button>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/avatars/01.png" alt="maxm" />
-                  <AvatarFallback>MM</AvatarFallback>
-                </Avatar>
+          {user ? (
+            <>
+              <Button variant="outline" size="icon">
+                <Plus className="h-4 w-4" />
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <SheetHeader>
-                <SheetDescription>
-                  <div className="flex gap-4">
+              <Button variant="outline" size="icon" disabled>
+                <Mailbox className="h-4 w-4" />
+              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/avatars/01.png" alt="maxm" />
-                      <AvatarFallback>MM</AvatarFallback>
+                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">maxm</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        max@mustermann.de
-                      </p>
-                    </div>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetDescription>
+                      <div className="flex gap-4">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src="/avatars/01.png" alt="maxm" />
+                          <AvatarFallback>
+                            {getInitials(user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {user.name}
+                          </p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="grid gap-4 py-4">
+                    <SheetClose asChild>
+                      <>
+                        <SidebarNav items={sidebarNavItems} />
+                        <Form action="/logout" method="post">
+                          <button
+                            type="submit"
+                            className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <LogOut className="mr-2 h-5 w-5" />
+                            <span className="text-red-500">Sign out</span>
+                          </button>
+                        </Form>
+                      </>
+                    </SheetClose>
                   </div>
-                </SheetDescription>
-              </SheetHeader>
-              <div className="grid gap-4 py-4">
-                <SheetClose asChild>
-                  <SidebarNav items={sidebarNavItems} />
-                </SheetClose>
-              </div>
-            </SheetContent>
-          </Sheet>
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="outline">Login</Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>
