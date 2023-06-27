@@ -52,6 +52,10 @@ export async function loader({ params, request }: LoaderArgs) {
         }
       );
 
+      if (user.id !== requestingUserId) {
+        user.devices = user.devices.filter((device) => device.public === true);
+      }
+
       if (!backpackData) {
         return json({
           success: false,
