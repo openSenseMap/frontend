@@ -12,13 +12,13 @@ generator client {
 
 //* updated user model
 model User {
-  id    String @id @default(cuid())
-  name String @unique
-  email String @unique
-  role String @default("user")
-  language String @default("en_US")
-  boxes String[]
-  emailIsConfirmed Boolean @default(false)
+  id               String   @id @default(cuid())
+  name             String   @unique
+  email            String   @unique
+  role             String   @default("user")
+  language         String   @default("en_US")
+  boxes            String[]
+  emailIsConfirmed Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,11 +72,15 @@ enum Model {
 }
 
 model Device {
-  id       String   @id @default(uuid())
-  name     String
-  exposure Exposure
-  useAuth  Boolean?
-  model String?
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  exposure    Exposure
+  useAuth     Boolean?
+  model       String?
+
+  // Flag to show device on profile
+  public      Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
