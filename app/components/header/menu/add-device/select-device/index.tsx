@@ -3,31 +3,31 @@ import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { InfoIcon } from "lucide-react";
+import { useField, useControlField } from "remix-validated-form";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
 interface SelectDeviceProps {
-  deviceType: string | undefined;
-  setDeviceType: (value: string | undefined) => void;
   setTabValue: (value: string) => void;
 }
 
 export default function SelectDevice(props: SelectDeviceProps) {
-  return (
-    <div>
+  const deviceTypeField = useField("deviceType");
+  const [deviceType, setDeviceType] = useControlField<string | undefined>(
+    "deviceType"
+    );
+    
+    return (
+      <div>
       <p className="text-lg font-semibold">Select your device</p>
       <p>Which hardware do you use?</p>
+      {deviceTypeField.error && (
+        <span className="text-red-500">{deviceTypeField.error}</span>
+      )}
       <div className="grid grid-cols-4 gap-4">
-        <input
-          type="radio"
-          id="deviceType"
-          name="deviceType"
-          value="senseBox:edu"
-          checked={props.deviceType === "senseBox:edu"}
-          readOnly
-          className="hidden"
-        />
+
         <Card
-          data-checked={props.deviceType === "senseBox:edu"}
-          onClick={() => props.setDeviceType("senseBox:edu")}
+          data-checked={deviceType === "senseBox:edu"}
+          onClick={() => setDeviceType("senseBox:edu")}
           className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
         >
           <CardContent className="flex justify-center pt-2">
@@ -44,18 +44,9 @@ export default function SelectDevice(props: SelectDeviceProps) {
           </CardFooter>
         </Card>
 
-        <input
-          type="radio"
-          id="deviceType"
-          name="deviceType"
-          value="senseBox:edu"
-          checked={props.deviceType === "senseBox:home"}
-          readOnly
-          className="hidden"
-        />
         <Card
-          data-checked={props.deviceType === "senseBox:home"}
-          onClick={() => props.setDeviceType("senseBox:home")}
+          data-checked={deviceType === "senseBox:home"}
+          onClick={() => setDeviceType("senseBox:home")}
           className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
         >
           <CardContent className="flex justify-center pt-2">
@@ -72,18 +63,9 @@ export default function SelectDevice(props: SelectDeviceProps) {
           </CardFooter>
         </Card>
 
-        <input
-          type="radio"
-          id="deviceType"
-          name="deviceType"
-          value="luftdaten.info"
-          checked={props.deviceType === "luftdaten.info"}
-          readOnly
-          className="hidden"
-        />
         <Card
-          data-checked={props.deviceType === "luftdaten.info"}
-          onClick={() => props.setDeviceType("luftdaten.info")}
+          data-checked={deviceType === "luftdaten.info"}
+          onClick={() => setDeviceType("luftdaten.info")}
           className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
         >
           <CardContent className="flex justify-center pt-2">
@@ -100,18 +82,9 @@ export default function SelectDevice(props: SelectDeviceProps) {
           </CardFooter>
         </Card>
 
-        <input
-          type="radio"
-          id="deviceType"
-          name="deviceType"
-          value="own:device"
-          checked={props.deviceType === "own:device"}
-          readOnly
-          className="hidden"
-        />
         <Card
-          data-checked={props.deviceType === "own:device"}
-          onClick={() => props.setDeviceType("own:device")}
+          data-checked={deviceType === "own:device"}
+          onClick={() => setDeviceType("own:device")}
           className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
         >
           <CardContent className="flex justify-center pt-2">
@@ -136,6 +109,31 @@ export default function SelectDevice(props: SelectDeviceProps) {
                     Reset
                   </Button>
                 </div> */}
+
+      <RadioGroup
+        {...deviceTypeField.getInputProps({ id: "deviceType" })}
+        id="deviceType"
+        name="deviceType"
+        value={deviceType}
+        onValueChange={(value) => {
+          setDeviceType(value);
+          deviceTypeField.validate();
+        }}
+        className="hidden"
+      >
+        <div>
+          <RadioGroupItem value="senseBox:edu" />
+        </div>
+        <div>
+          <RadioGroupItem value="senseBox:home" />
+        </div>
+        <div>
+          <RadioGroupItem value="luftdaten.info" />
+        </div>
+        <div>
+          <RadioGroupItem value="own:device" />
+        </div>
+      </RadioGroup>
       <div className="flex justify-end p-2">
         <Button type="button" onClick={() => props.setTabValue("general")}>
           Next
