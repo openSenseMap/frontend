@@ -1,4 +1,4 @@
-import { Link, Outlet } from "@remix-run/react";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import { SidebarNav } from "~/components/sidebar-nav";
 import { Separator } from "~/components/ui/separator";
 
