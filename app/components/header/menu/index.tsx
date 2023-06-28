@@ -145,7 +145,7 @@ export default function Menu() {
               )}
               {data.profile && (
                 <DropdownMenuItem>
-                  <ProfileVisibilitySwitch />
+                  <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem>

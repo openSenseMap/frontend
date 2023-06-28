@@ -1,5 +1,5 @@
 export function getUserImgSrc(imageId?: string | null) {
-  return imageId ?? `/resources/file/${imageId}`;
+  return `/resources/file/${imageId}`;
 }
 
 export function getErrorMessage(error: unknown) {
