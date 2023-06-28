@@ -15,16 +15,24 @@ export async function getUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { email } });
 }
 
-export async function getUserByName(name: User["name"]) {
-  return prisma.user.findUnique({ where: { name } });
-}
+// export async function getUserWithDevicesByName(name: User["name"]) {
+//   return prisma.user.findUnique({
+//     where: { name },
+//     include: { devices: true },
+//   });
+// }
 
-export async function getUserWithDevicesByName(name: User["name"]) {
-  return prisma.user.findUnique({
-    where: { name },
-    include: { devices: true },
-  });
-}
+// export async function getUserWithDevicesByNameOrId(
+//   name: User["name"],
+//   id: User["id"]
+// ) {
+//   return prisma.user.findUnique({
+//     where: {
+//       OR: [],
+//     },
+//     include: { devices: true },
+//   });
+// }
 
 export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
@@ -74,8 +82,7 @@ export async function createUser(
   name: User["name"],
   email: User["email"],
   language: User["language"],
-  password: string,
-  username?: string
+  password: string
 ) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
@@ -93,9 +100,7 @@ export async function createUser(
     },
   });
 
-  if (name) {
-    await createProfile(user.id, name);
-  }
+  await createProfile(user.id, name);
 
   return user;
 }
@@ -107,6 +112,7 @@ export async function verifyLogin(
   const userWithPassword = await prisma.user.findUnique({
     where: { email },
     include: {
+      profile: true,
       password: true,
     },
   });

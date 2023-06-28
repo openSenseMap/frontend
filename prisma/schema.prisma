@@ -35,7 +35,7 @@ model Image {
 //* updated user model
 model User {
   id               String   @id @default(cuid())
-  name             String   @unique
+  name             String   // This is your name e.g. Max Mustermann
   email            String   @unique
   role             String   @default("user")
   language         String   @default("en_US")
@@ -55,7 +55,7 @@ model User {
 model Profile {
   id String @id @default(cuid())
 
-  name   String  @unique
+  username   String  @unique
   public Boolean
 
   image   Image?  @relation(fields: [imageId], references: [fileId])

@@ -53,7 +53,7 @@ export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
   const user = await prisma.profile.findUnique({
     where: { userId: userId },
-    select: { imageId: true, name: true },
+    select: { imageId: true, username: true },
   });
   if (!user) {
     console.log("User not found");

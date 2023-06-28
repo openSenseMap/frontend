@@ -6,8 +6,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
-import { getUserWithDevicesByName } from "~/models/user.server";
-import { getProfileByUserId } from "~/models/profile.server";
+import { getProfileByUsername } from "~/models/profile.server";
 import { GeneralErrorBoundary } from "~/components/error-boundary";
 import type { MyBadge } from "~/models/badge.server";
 import {
@@ -26,19 +25,19 @@ export async function loader({ params, request }: LoaderArgs) {
 
   if (username) {
     // 1. Check if user exists
-    const user = await getUserWithDevicesByName(username);
-    if (!user) {
+    const profile = await getProfileByUsername(username);
+    if (!profile) {
       throw new Response("not found", { status: 404 });
     }
 
     // 2. Get profile and if it is private or not me -> throw an error
-    const profile = await getProfileByUserId(user.id);
-    if (!profile?.public && user?.id !== requestingUserId) {
+    // const profile = await getProfileByUserId(user.id);
+    if (!profile.public && profile.user.id !== requestingUserId) {
       throw new Response("not found", { status: 404 });
     }
 
     // 3. If profile is public or logged in user -> return data for profile
-    const profileMail = user?.email;
+    const profileMail = profile.user.email;
     // Get the access token using the getMyBadgesAccessToken function
     const authToken = await getMyBadgesAccessToken().then((authData) => {
       return authData.access_token;
@@ -52,8 +51,10 @@ export async function loader({ params, request }: LoaderArgs) {
         }
       );
 
-      if (user.id !== requestingUserId) {
-        user.devices = user.devices.filter((device) => device.public === true);
+      if (profile.user.id !== requestingUserId) {
+        profile.user.devices = profile.user.devices.filter(
+          (device) => device.public === true
+        );
       }
 
       if (!backpackData) {
@@ -61,7 +62,7 @@ export async function loader({ params, request }: LoaderArgs) {
           success: false,
           userBackpack: [],
           allBadges: [],
-          user: user,
+          user: profile.user,
           profile: profile,
           requestingUserId: requestingUserId,
         });
@@ -76,7 +77,7 @@ export async function loader({ params, request }: LoaderArgs) {
         success: true,
         userBackpack: backpackData,
         allBadges: allBadges,
-        user: user,
+        user: profile.user,
         profile: profile,
         requestingUserId: requestingUserId,
       });
@@ -127,14 +128,14 @@ export default function () {
           <Avatar className="h-64 w-64">
             <AvatarImage
               src={getUserImgSrc(profile?.imageId)}
-              alt={profile?.name}
+              alt={profile?.username}
             />
             <AvatarFallback>{getInitials(user?.name || "")}</AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-semibold tracking-tight">
             {user?.name}
           </h1>
-          <p className="text-sm text-muted-foreground">{profile?.name}</p>
+          <p className="text-sm text-muted-foreground">{profile?.username}</p>
         </div>
         <Separator className="my-6" />
         <div className="flex flex-col space-y-2">

@@ -5,6 +5,19 @@ export async function getProfileByUserId(id: Profile["id"]) {
   return prisma.profile.findUnique({ where: { userId: id } });
 }
 
+export async function getProfileByUsername(username: Profile["username"]) {
+  return prisma.profile.findUnique({
+    where: { username },
+    include: {
+      user: {
+        include: {
+          devices: true,
+        },
+      },
+    },
+  });
+}
+
 export default function changeProfileVisibility(
   id: Profile["id"],
   visibility: Profile["public"]
@@ -15,10 +28,13 @@ export default function changeProfileVisibility(
   });
 }
 
-export async function createProfile(userId: User["id"], name: Profile["name"]) {
+export async function createProfile(
+  userId: User["id"],
+  username: Profile["username"]
+) {
   return prisma.profile.create({
     data: {
-      name,
+      username,
       public: true,
       userId,
     },

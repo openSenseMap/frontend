@@ -22,7 +22,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
 const profileFormSchema = z.object({
-  name: nameSchema.optional(),
+  username: nameSchema.optional(),
   visibility: z.preprocess((value) => value === "true", z.boolean().optional()),
 });
 
@@ -32,7 +32,7 @@ export async function loader({ request }: DataFunctionArgs) {
     where: { userId: userId },
     select: {
       id: true,
-      name: true,
+      username: true,
       public: true,
       imageId: true,
     },
@@ -49,25 +49,27 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const submission = await parse(formData, {
     async: true,
-    schema: profileFormSchema.superRefine(async ({ name, visibility }, ctx) => {
-      // if (newPassword && !currentPassword) {
-      //   ctx.addIssue({
-      //     path: ["newPassword"],
-      //     code: "custom",
-      //     message: "Must provide current password to change password.",
-      //   });
-      // }
-      // if (currentPassword && newPassword) {
-      //   const user = await verifyLogin(username, currentPassword);
-      //   if (!user) {
-      //     ctx.addIssue({
-      //       path: ["currentPassword"],
-      //       code: "custom",
-      //       message: "Incorrect password.",
-      //     });
-      //   }
-      // }
-    }),
+    schema: profileFormSchema.superRefine(
+      async ({ username, visibility }, ctx) => {
+        // if (newPassword && !currentPassword) {
+        //   ctx.addIssue({
+        //     path: ["newPassword"],
+        //     code: "custom",
+        //     message: "Must provide current password to change password.",
+        //   });
+        // }
+        // if (currentPassword && newPassword) {
+        //   const user = await verifyLogin(username, currentPassword);
+        //   if (!user) {
+        //     ctx.addIssue({
+        //       path: ["currentPassword"],
+        //       code: "custom",
+        //       message: "Incorrect password.",
+        //     });
+        //   }
+        // }
+      }
+    ),
     acceptMultipleErrors: () => true,
   });
   if (submission.intent !== "submit") {
@@ -82,14 +84,13 @@ export async function action({ request }: ActionArgs) {
       { status: 400 }
     );
   }
-  const { name, visibility } = submission.value;
-  console.log("submission ", name, visibility);
+  const { username, visibility } = submission.value;
 
   await prisma.profile.update({
-    select: { userId: true, name: true },
+    select: { userId: true, username: true },
     where: { userId: userId },
     data: {
-      name,
+      username,
       public: visibility,
     },
   });
@@ -99,7 +100,6 @@ export async function action({ request }: ActionArgs) {
 
 export default function EditUserProfilePage() {
   const data = useLoaderData<typeof loader>();
-  console.log(data);
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const formAction = useFormAction();
@@ -119,7 +119,7 @@ export default function EditUserProfilePage() {
       return parse(formData, { schema: profileFormSchema });
     },
     defaultValue: {
-      name: data.profile.name,
+      username: data.profile.username,
       visibility: data.profile.public ? "true" : "false",
     },
     shouldRevalidate: "onBlur",
@@ -137,9 +137,9 @@ export default function EditUserProfilePage() {
       <div className="mt-16 flex gap-12">
         <Form method="post" className="w-1/2" {...form.props}>
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor={fields.name.id}>Username</Label>
-            <Input type="text" {...conform.input(fields.name)} />
-            <div>{fields.name.error}</div>
+            <Label htmlFor={fields.username.id}>Username</Label>
+            <Input type="text" {...conform.input(fields.username)} />
+            <div>{fields.username.error}</div>
           </div>
           <div>
             <h3 className="mb-4 text-lg font-medium">Visibility</h3>
@@ -166,7 +166,7 @@ export default function EditUserProfilePage() {
           <div className="relative h-52 w-52">
             <img
               src={getUserImgSrc(data.profile.imageId)}
-              alt={data.profile.name}
+              alt={data.profile.username}
               className="h-full w-full rounded-full object-cover"
             />
             <Link

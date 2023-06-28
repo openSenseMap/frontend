@@ -1,5 +1,4 @@
 import { Form, Link, useLocation } from "@remix-run/react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
   Sheet,
@@ -12,7 +11,7 @@ import {
 import { LogOut, Mailbox, Plus, Settings, UserIcon } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
-import { getInitials, getUserImgSrc } from "~/utils/misc";
+import { UserAvatar } from "~/routes/resources/user-avatar";
 
 const sidebarNavItems = [
   {
@@ -64,28 +63,14 @@ export function NavBar() {
                     variant="ghost"
                     className="relative h-8 w-8 rounded-full"
                   >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={getUserImgSrc(user.name)}
-                        alt={user.name}
-                      />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right">
                   <SheetHeader>
                     <SheetDescription>
                       <div className="flex gap-4">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={getUserImgSrc(user.name)}
-                            alt={user.name}
-                          />
-                          <AvatarFallback>
-                            {getInitials(user.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar />
                         <div className="flex flex-col space-y-1">
                           <p className="text-sm font-medium leading-none">
                             {user.name}
