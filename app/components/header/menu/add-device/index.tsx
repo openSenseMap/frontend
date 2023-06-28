@@ -6,11 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "~/components/ui/use-toast";
 
-// import { Form } from "@remix-run/react";
 import * as z from "zod";
 import { zfd } from "zod-form-data";
-import { useActionData } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { withZod } from "@remix-validated-form/with-zod";
 import { ValidatedForm, useFormContext } from "remix-validated-form";
 import { useState } from "react";
@@ -22,8 +22,7 @@ import General from "./general";
 import SelectSensors from "./select-sensors";
 import Advanced from "./advanced";
 import { hasObjPropMatchWithPrefixKey } from "~/lib/helpers";
-import { useNavigation } from "@remix-run/react";
-import { toast } from "~/components/ui/use-toast";
+
 
 // validator for the form
 export const validator = withZod(
