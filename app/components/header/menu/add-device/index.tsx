@@ -6,23 +6,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { toast } from "~/components/ui/use-toast";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
 import * as z from "zod";
 import { zfd } from "zod-form-data";
-import { useActionData, useNavigation } from "@remix-run/react";
 import { withZod } from "@remix-validated-form/with-zod";
 import { ValidatedForm, useFormContext } from "remix-validated-form";
+
+import { useActionData, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
 import SelectDevice from "./select-device";
 import General from "./general";
 import SelectSensors from "./select-sensors";
 import Advanced from "./advanced";
 import { hasObjPropMatchWithPrefixKey } from "~/lib/helpers";
-
 
 // validator for the form
 export const validator = withZod(
@@ -178,6 +178,11 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
                 decodeOptions: "",
                 connectionOptions: "",
               },
+              ttn: {
+                enabled: false,
+                app_id: "",
+                dev_id: "",
+              },
             }}
             onSubmit={(e) => {
               toast({
@@ -194,7 +199,7 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
               className="w-full"
               activationMode="manual"
             >
-              <TabsList className="justify-start">
+              <TabsList className="w-full justify-start">
                 <TabsTrigger
                   value="device"
                   data-error={hasObjPropMatchWithPrefixKey(
@@ -280,10 +285,7 @@ export default function AddDeviceDialog(props: AddDeviceDialogProps) {
                   <Button type="button" onClick={() => setTabValue("advanced")}>
                     Back
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
+                  <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Creating device..." : "Submit"}
                   </Button>
                 </div>

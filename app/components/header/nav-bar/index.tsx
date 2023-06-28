@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "@remix-run/react";
+
 import Search from "~/components/search";
 import {
   SunIcon,
@@ -7,11 +9,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { TimeFilter } from "~/components/header/nav-bar/time-filter";
 import type { DateRange } from "react-day-picker";
-import getUserLocale from "get-user-locale";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import getUserLocale from "get-user-locale";
 import type { Device } from "@prisma/client";
-import { useSearchParams } from "@remix-run/react";
 
 interface NavBarProps {
   devices: Device[];
@@ -24,7 +25,6 @@ type Value = ValuePiece;
 export default function NavBar(props: NavBarProps) {
   let { t } = useTranslation("navbar");
   const [searchParams, setSearchParams] = useSearchParams();
-  // console.log("🚀 ~ file: index.tsx:24 ~ NavBar ~ searchParams:", searchParams.has("filterType"))
 
   const [timeState, setTimeState] = useState<string | undefined>(undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -107,12 +107,6 @@ export default function NavBar(props: NavBarProps) {
       document.removeEventListener("keydown", closeSearch);
     };
   });
-
-  // useEffect(() => {
-  //   console.log("dateRange", dateRange);
-  //   console.log("time", value);
-  //   console.log("singleDate", singleDate);
-  // }, [dateRange, value, singleDate]);
 
   return (
     <div className="pointer-events-auto h-10 w-1/2">

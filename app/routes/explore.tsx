@@ -41,7 +41,15 @@ export async function loader({ request }: LoaderArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile });
+    return json(
+      { devices, user, profile, message },
+      {
+        headers: {
+          // only necessary with cookieSessionStorage
+          "Set-Cookie": await sessionStorage.commitSession(session),
+        },
+      }
+    );
   }
   return json(
     { devices, user, profile: null, message },

@@ -25,8 +25,6 @@ export default function SearchListItem(props: SearchListItemProps) {
     // @ts-ignore
     (searchParams.size > 0 ? "?" + searchParams.toString() : "");
 
-  // console.log(props.index)
-
   return (
     <div
       className="z-50 mx-2 my-1 flex h-8 items-center rounded-lg data-[active=false]:bg-white data-[active=true]:bg-green-100"

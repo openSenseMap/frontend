@@ -40,7 +40,6 @@ export default function Search(props: SearchProps) {
 
     fetch(url, requestOptions)
       .then((response) => response.json())
-      // .then(data => {console.log(data)})
       .then((data) => {
         if (data.features.length === 0) {
           setSearchResultsLocation([]);
