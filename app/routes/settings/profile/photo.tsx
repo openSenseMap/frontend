@@ -1,6 +1,5 @@
 import { conform, useForm } from "@conform-to/react";
 import { getFieldsetConstraint, parse } from "@conform-to/zod";
-import type { LoaderArgs } from "@remix-run/node";
 import {
   type DataFunctionArgs,
   json,

@@ -50,7 +50,7 @@ export default function SettingsLayoutPage() {
             <aside className="lg:w-1/5">
               <SidebarNav items={sidebarNavItems} />
             </aside>
-            <div className="flex-1 pt-4 lg:max-w-2xl">
+            <div className="flex-1 pt-4">
               <Outlet />
             </div>
           </div>

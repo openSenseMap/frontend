@@ -3,96 +3,126 @@ import {
   Link,
   Outlet,
   useActionData,
+  useFormAction,
   useLoaderData,
+  useNavigation,
 } from "@remix-run/react";
-import type { DataFunctionArgs, LoaderArgs } from "@remix-run/node";
-import { json, type ActionArgs } from "@remix-run/node";
+import type { DataFunctionArgs } from "@remix-run/node";
+import { json, type ActionArgs, redirect } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
-import { parse, useForm } from "@conform-to/react";
+import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
 import { prisma } from "~/db.server";
 import { getUserImgSrc } from "~/utils/misc";
+import { z } from "zod";
+import { nameSchema } from "~/utils/user-validation";
+import { getFieldsetConstraint, parse } from "@conform-to/zod";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+
+const profileFormSchema = z.object({
+  name: nameSchema.optional(),
+  visibility: z.preprocess((value) => value === "true", z.boolean().optional()),
+});
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const user = await prisma.profile.findUnique({
+  const profile = await prisma.profile.findUnique({
     where: { userId: userId },
     select: {
       id: true,
       name: true,
+      public: true,
       imageId: true,
     },
   });
-  if (!user) {
+  if (!profile) {
     // throw await authenticator.logout(request, { redirectTo: "/" });
     throw new Error();
   }
-  return json({ user });
+  return json({ profile });
 }
 
 export async function action({ request }: ActionArgs) {
+  const userId = await requireUserId(request);
   const formData = await request.formData();
+  const submission = await parse(formData, {
+    async: true,
+    schema: profileFormSchema.superRefine(async ({ name, visibility }, ctx) => {
+      // if (newPassword && !currentPassword) {
+      //   ctx.addIssue({
+      //     path: ["newPassword"],
+      //     code: "custom",
+      //     message: "Must provide current password to change password.",
+      //   });
+      // }
+      // if (currentPassword && newPassword) {
+      //   const user = await verifyLogin(username, currentPassword);
+      //   if (!user) {
+      //     ctx.addIssue({
+      //       path: ["currentPassword"],
+      //       code: "custom",
+      //       message: "Incorrect password.",
+      //     });
+      //   }
+      // }
+    }),
+    acceptMultipleErrors: () => true,
+  });
+  if (submission.intent !== "submit") {
+    return json({ status: "idle", submission } as const);
+  }
+  if (!submission.value) {
+    return json(
+      {
+        status: "error",
+        submission,
+      } as const,
+      { status: 400 }
+    );
+  }
+  const { name, visibility } = submission.value;
+  console.log("submission ", name, visibility);
 
-  // Replace `Object.fromEntries()` with the parse function
-
-  const submission = parse(formData, {
-    // You can also pass a schema instead of a custom resolve function
-    // if you are validating using yup or zod
-    resolve({ email, password }) {
-      const error: Record<string, string> = {};
-
-      if (!email) {
-        error.email = "Email is required";
-      } else if (!email.includes("@")) {
-        error.email = "Email is invalid";
-      }
-
-      if (!password) {
-        error.password = "Password is required";
-      }
-
-      if (error.email || error.password) {
-        return { error };
-      }
-
-      // Resolve it with a value only if no error
-      return {
-        value: { email, password },
-      };
+  await prisma.profile.update({
+    select: { userId: true, name: true },
+    where: { userId: userId },
+    data: {
+      name,
+      public: visibility,
     },
   });
 
-  // Send the submission data back to client
-  // 1) if the intent is not `submit`, or
-  // 2) if there is any error
-  if (submission.intent !== "submit" || !submission.value) {
-    return json({
-      ...submission,
-      // The payload will be used as the default value
-      // if the document is reloaded on form submit
-      payload: {
-        email: submission.payload.email,
-      },
-    });
-  }
-
-  return json({});
+  return redirect(`/settings/profile`);
 }
 
-export default function ProfilePage() {
+export default function EditUserProfilePage() {
   const data = useLoaderData<typeof loader>();
-  const lastSubmission = useActionData<typeof action>();
+  console.log(data);
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const formAction = useFormAction();
+
+  const isSubmitting =
+    navigation.state === "submitting" &&
+    navigation.formAction === formAction &&
+    navigation.formMethod === "post";
 
   // The `useForm` hook will return everything you need to setup a form
   // including the error and config of each field
-  const [form, { email, password }] = useForm({
-    // The last submission will be used to report the error and
-    // served as the default value and initial error of the form
-    // for progressive enhancement
-    lastSubmission,
-
-    // Validate the field once the `blur` event is dispatched from the input
-    shouldValidate: "onBlur",
+  const [form, fields] = useForm({
+    id: "edit-profile",
+    constraint: getFieldsetConstraint(profileFormSchema),
+    lastSubmission: actionData?.submission,
+    onValidate({ formData }) {
+      return parse(formData, { schema: profileFormSchema });
+    },
+    defaultValue: {
+      name: data.profile.name,
+      visibility: data.profile.public ? "true" : "false",
+    },
+    shouldRevalidate: "onBlur",
   });
 
   return (
@@ -104,12 +134,39 @@ export default function ProfilePage() {
         </p>
       </div>
       <Separator />
-      <div className="mt-16 flex flex-col gap-12">
-        <div className="flex justify-center">
+      <div className="mt-16 flex gap-12">
+        <Form method="post" className="w-1/2" {...form.props}>
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor={fields.name.id}>Username</Label>
+            <Input type="text" {...conform.input(fields.name)} />
+            <div>{fields.name.error}</div>
+          </div>
+          <div>
+            <h3 className="mb-4 text-lg font-medium">Visibility</h3>
+            <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <div className="flex items-center space-y-0.5">
+                <Input
+                  className="flex h-6 w-6 items-center justify-center rounded border"
+                  {...conform.input(fields.visibility, {
+                    type: "checkbox",
+                    value: "true",
+                  })}
+                />
+                <Label htmlFor={fields.visibility.id} className="ml-4">
+                  Public
+                </Label>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 flex">
+            <Button type="submit">Save changes</Button>
+          </div>
+        </Form>
+        <div className="flex w-1/2 justify-center">
           <div className="relative h-52 w-52">
             <img
-              src={getUserImgSrc(data.user.imageId)}
-              alt={data.user.name}
+              src={getUserImgSrc(data.profile.imageId)}
+              alt={data.profile.name}
               className="h-full w-full rounded-full object-cover"
             />
             <Link
@@ -124,21 +181,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      <Form method="post" {...form.props}>
-        {/* <div>
-          <label>Email</label>
-          <input type="email" name="email" />
-          <div>{email.error}</div>
-        </div>
-
-        <div>
-          <label>Password</label>
-          <input type="password" name="password" />
-          <div>{password.error}</div>
-        </div>
-
-        <button>Login</button> */}
-      </Form>
       <Outlet />
     </div>
   );

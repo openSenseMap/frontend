@@ -16,7 +16,7 @@ import {
   getUserBackpack,
 } from "~/models/badge.server";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import { getInitials } from "~/utils/misc";
+import { getInitials, getUserImgSrc } from "~/utils/misc";
 
 export async function loader({ params, request }: LoaderArgs) {
   const requestingUserId = await getUserId(request);
@@ -125,7 +125,10 @@ export default function () {
       <div className="">
         <div className="flex flex-col space-y-2">
           <Avatar className="h-64 w-64">
-            <AvatarImage src="/avatars/01.png" alt="maxm" />
+            <AvatarImage
+              src={getUserImgSrc(profile?.imageId)}
+              alt={profile?.name}
+            />
             <AvatarFallback>{getInitials(user?.name || "")}</AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-semibold tracking-tight">
