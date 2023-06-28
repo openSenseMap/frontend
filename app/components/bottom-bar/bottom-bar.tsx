@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   XCircleIcon,
-  MinusCircleIcon,
+  // MinusCircleIcon,
   ChevronDoubleUpIcon,
 } from "@heroicons/react/24/solid";
 import {
@@ -17,6 +17,7 @@ import { clsx } from "clsx";
 import type { Prisma, Sensor } from "@prisma/client";
 import type { DeviceWithSensors } from "types";
 import Spinner from "../spinner";
+import { Card, CardContent } from "../ui/card";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -41,21 +42,6 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
   // get list of selected sensor ids from URL search params
   const sensorIds = searchParams.getAll("sensor");
 
-  // helper function to filter an array of sensors by their ids
-  // function filterSensorsById(
-  //   idArray: string[],
-  //   objectArray: Sensor[]
-  // ): Sensor[] {
-  //   const filteredArray: Sensor[] = [];
-
-  //   for (const obj of objectArray) {
-  //     if (idArray.includes(obj.id)) {
-  //       filteredArray.push(obj);
-  //     }
-  //   }
-  //   return filteredArray;
-  // }
-
   // helper function to format a date as a string
   const formattedDate = (date: Date) => {
     return new Date(date).toLocaleString("de-DE", {
@@ -75,7 +61,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
           className={"bg-white " + (isOpen ? "animate-fade-in-up" : "hidden")}
         >
           <div className="flex">
-            <div className="text-l dark:bg-green-200 basis-1/4 bg-green-100 pt-6 pb-6 text-center font-bold lg:text-3xl">
+            <div className="text-l dark:bg-green-200 basis-1/4 bg-green-100 pb-6 pt-6 text-center font-bold lg:text-3xl">
               <p>{data.device.name}</p>
             </div>
             <div className="grid basis-3/4 content-center bg-green-100 pr-2 text-right text-sm text-white">
@@ -86,14 +72,14 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                 </p>
               </div>
             </div>
-            <div className="flex items-center bg-green-100 pr-2">
+            {/* <div className="flex items-center bg-green-100 pr-2">
               <MinusCircleIcon
                 onClick={() => {
                   setIsOpen(!isOpen);
                 }}
                 className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8"
               />
-            </div>
+            </div> */}
             <div className="flex items-center bg-green-100 pr-2">
               <Link prefetch="intent" to="/explore">
                 <XCircleIcon className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />
@@ -120,7 +106,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                   "-ms-overflow-style:none scrollable box-border w-full overflow-x-auto overflow-y-hidden"
                 }
               >
-                <div className="flex justify-center whitespace-nowrap text-center">
+                <div className="flex justify-center space-x-4 whitespace-nowrap text-center px-12">
                   {data.device.sensors.map((sensor: Sensor) => {
                     // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                     const lastMeasurement =
@@ -128,6 +114,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                     const value = lastMeasurement.value as string;
                     return (
                       <div
+                      className="flex-1"
                         key={sensor.id}
                         onClick={() => {
                           if (
@@ -160,61 +147,68 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                             value={sensor.id}
                             defaultChecked={sensorIds.includes(sensor.id)}
                           />
-                          <div
-                            className={
-                              "whitespace-nowrap" +
-                              (sensorIds.includes(sensor.id)
-                                ? " text-green-100"
-                                : "")
-                            }
-                          >
-                            <div
-                              className={
-                                "w-220 min-w-150 relative flex flex-grow-0 flex-col items-center justify-center border-l border-r border-gray-300 py-2 px-6 hover:cursor-pointer hover:bg-gray-100"
-                              }
-                            >
-                              <div>
-                                <div className="flex h-8 items-center justify-center">
-                                  <div className="text-4xl">
-                                    {sensor.lastMeasurement ? (
-                                      <>
-                                        <b>{value.split(".")[0]}</b>
-                                        <span className="pl-[0.1rem] text-[0.35rem]">
-                                          <span>
-                                            {value.split(".")[1] || "00"}
-                                          </span>
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <b className="text-xs opacity-80">n/a</b>
-                                    )}
-                                  </div>
-                                  {sensor.unit && sensor.lastMeasurement && (
-                                    <div className="relative left-[-10px] self-start text-sm font-bold">
-                                      {sensor.unit}
+                          <Card className="my-4 py-4 transition-colors duration-300 ease-in-out hover:cursor-pointer hover:bg-slate-100">
+                            <CardContent className="p-0">
+                              <div
+                                className={
+                                  "whitespace-nowrap" +
+                                  (sensorIds.includes(sensor.id)
+                                    ? " text-green-100"
+                                    : "")
+                                }
+                              >
+                                <div
+                                  className={
+                                    "w-220 min-w-150 relative flex flex-grow-0 flex-col items-center justify-center px-6 py-2"
+                                  }
+                                >
+                                  <div>
+                                    <div className="flex h-8 items-center justify-center">
+                                      <div className="text-4xl">
+                                        {sensor.lastMeasurement ? (
+                                          <>
+                                            <b>{value.split(".")[0]}</b>
+                                            <span className="pl-[0.1rem] text-[0.35rem]">
+                                              <span>
+                                                {value.split(".")[1] || "00"}
+                                              </span>
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <b className="text-xs opacity-80">
+                                            n/a
+                                          </b>
+                                        )}
+                                      </div>
+                                      {sensor.unit &&
+                                        sensor.lastMeasurement && (
+                                          <div className="relative left-[-10px] self-start text-sm font-bold">
+                                            {sensor.unit}
+                                          </div>
+                                        )}
                                     </div>
-                                  )}
-                                </div>
-                                <div className="text-center">
-                                  {sensor.title}
+                                    <div className="text-center">
+                                      {sensor.title}
+                                    </div>
+                                  </div>
+                                  {/* {sensorIds.length >= 2 &&
+                                  !sensorIds.includes(sensor.id) ? null : (
+                                    <div className="absolute bottom-[5px] right-[5px] flex items-center justify-center p-1 text-2xl">
+                                      {sensorIds.includes(sensor.id) ? (
+                                        <div className="h-3 w-3 cursor-pointer rounded leading-3">
+                                          -
+                                        </div>
+                                      ) : (
+                                        <div className="h-3 w-3 cursor-pointer rounded leading-3">
+                                          +
+                                        </div>
+                                      )}
+                                    </div>
+                                  )} */}
                                 </div>
                               </div>
-                              {sensorIds.length >= 2 &&
-                              !sensorIds.includes(sensor.id) ? null : (
-                                <div className="absolute bottom-[5px] right-[5px] flex items-center justify-center p-1 text-2xl">
-                                  {sensorIds.includes(sensor.id) ? (
-                                    <div className="h-3 w-3 cursor-pointer rounded leading-3">
-                                      -
-                                    </div>
-                                  ) : (
-                                    <div className="h-3 w-3 cursor-pointer rounded leading-3">
-                                      +
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                            </CardContent>
+                          </Card>
                         </label>
                       </div>
                     );
@@ -240,7 +234,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
           open={toastOpen}
           onOpenChange={setToastOpen}
           className={clsx(
-            "fixed inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full md:max-w-sm",
+            "fixed inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full md:max-w-sm",
             "bg-white dark:bg-gray-800",
             "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
             "radix-state-closed:animate-toast-hide",

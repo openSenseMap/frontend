@@ -10,9 +10,15 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "views"]
 }
 
+//* updated user model
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id               String   @id @default(cuid())
+  name             String   @unique
+  email            String   @unique
+  role             String   @default("user")
+  language         String   @default("en_US")
+  boxes            String[]
+  emailIsConfirmed Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -21,6 +27,18 @@ model User {
   notes     Note[]
   devices   Device[]
   campaigns Campaign[]
+
+  profile Profile?
+}
+
+model Profile {
+  id String @id @default(cuid())
+
+  name   String  @unique
+  public Boolean
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
 }
 
 model Password {
@@ -30,6 +48,7 @@ model Password {
   userId String @unique
 }
 
+//* Temp. (should be deleted at some point)
 model Note {
   id    String @id @default(cuid())
   title String
@@ -58,6 +77,7 @@ model Device {
   name     String
   exposure Exposure
   useAuth  Boolean?
+  model    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

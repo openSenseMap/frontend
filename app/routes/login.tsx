@@ -8,9 +8,10 @@ import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
+  //* check session if a user is already logged in
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
-  return json({});
+  if (userId) return redirect("/");     //* redirect to home page
+  return json({});      //* remain in login page
 }
 
 export async function action({ request }: ActionArgs) {
@@ -20,6 +21,7 @@ export async function action({ request }: ActionArgs) {
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
   const remember = formData.get("remember");
 
+  //* validate email
   if (!validateEmail(email)) {
     return json(
       { errors: { email: "Email is invalid", password: null } },
@@ -27,6 +29,7 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  //* validate password
   if (typeof password !== "string" || password.length === 0) {
     return json(
       { errors: { password: "Password is required", email: null } },
@@ -36,7 +39,7 @@ export async function action({ request }: ActionArgs) {
 
   if (password.length < 8) {
     return json(
-      { errors: { password: "Password is too short", email: null } },
+      { errors: { password: "Please use at least 8 characters.", email: null } },
       { status: 400 }
     );
   }
@@ -66,7 +69,8 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/notes";
+  //* Redirect to main page after login
+  const redirectTo = searchParams.get("redirectTo") || "/";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
@@ -80,7 +84,7 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex min-h-full h-screen flex-col justify-center items-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
@@ -104,7 +108,7 @@ export default function LoginPage() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.email && (
-                <div className="text-red-700 pt-1" id="email-error">
+                <div className="text-[#FF0000] pt-1" id="email-error">
                   {actionData.errors.email}
                 </div>
               )}
@@ -130,7 +134,7 @@ export default function LoginPage() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.password && (
-                <div className="text-red-700 pt-1" id="password-error">
+                <div className="text-[#FF0000] pt-1" id="password-error">
                   {actionData.errors.password}
                 </div>
               )}
@@ -144,6 +148,7 @@ export default function LoginPage() {
           >
             Log in
           </button>
+          
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input

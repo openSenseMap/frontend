@@ -1,4 +1,4 @@
-import { UseCase } from "~/lib/directus";
+import type { UseCase } from "~/lib/directus";
 
 export default function UseCaseCard(item: UseCase) {
   return (
