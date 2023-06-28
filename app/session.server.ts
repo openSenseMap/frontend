@@ -32,6 +32,26 @@ export async function getUserId(
   return userId;
 }
 
+export async function getUserEmail(request: Request) {
+  const userId = await getUserId(request);
+  if (userId === undefined) return null;
+
+  const user = await getUserById(userId);
+  if (user) return user.email;
+
+  throw await logout({request: request, redirectTo: "/explore"});
+}
+
+export async function getUserName(request: Request) {
+  const userId = await getUserId(request);
+  if (userId === undefined) return null;
+
+  const user = await getUserById(userId);
+  if (user) return user.name;
+
+  throw await logout({request: request, redirectTo: "/explore"});
+}
+
 export async function getUser(request: Request) {
   const userId = await getUserId(request);
   if (userId === undefined) return null;

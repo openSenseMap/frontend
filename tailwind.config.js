@@ -25,6 +25,7 @@ module.exports = {
       white: "var(--color-white)",
       black: "var(--color-black)",
       gray: {
+        50: "var(--color-gray-50)",
         100: "var(--color-gray-100)",
         200: "var(--color-gray-200)",
         300: "var(--color-gray-300)",
@@ -36,7 +37,16 @@ module.exports = {
         900: "var(--color-gray-900)",
       },
       slate: {
+        50: "var(--color-slate-50)",
+        100: "var(--color-slate-100)",
+        200: "var(--color-slate-200)",
+        300: "var(--color-slate-300)",
+        400: "var(--color-slate-400)",
         500: "var(--color-slate-500)",
+        600: "var(--color-slate-600)",
+        700: "var(--color-slate-700)",
+        800: "var(--color-slate-800)",
+        900: "var(--color-slate-900)",
       },
       green: {
         100: "var(--color-green-100)",
@@ -109,6 +119,7 @@ module.exports = {
       fontFamily: {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
+        helvetica: ["Helvetica", "Arial", "sans-serif"],
       },
       keyframes: {
         sidebarOpen: {

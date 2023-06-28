@@ -29,6 +29,7 @@ import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser, getUserSession, sessionStorage } from "~/session.server";
 import { useToast } from "~/components/ui/use-toast";
+import { getProfileByUserId } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -38,8 +39,12 @@ export async function loader({ request }: LoaderArgs) {
 
   const user = await getUser(request);
 
+  if (user) {
+    const profile = await getProfileByUserId(user.id);
+    return json({ devices, user, profile });
+  }
   return json(
-    { devices, user, message },
+    { devices, user, profile: null, message },
     {
       headers: {
         // only necessary with cookieSessionStorage

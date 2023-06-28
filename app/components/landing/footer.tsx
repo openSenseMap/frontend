@@ -1,19 +1,33 @@
-import { Link } from "@remix-run/react";
-
 export default function Footer() {
   return (
-    <footer className="w-full p-4 text-gray-300 dark:text-gray-100 sm:p-6 lg:text-lg bg-white dark:bg-black">
+    <footer className="w-full bg-white px-4 text-gray-300 dark:bg-black dark:text-gray-100 sm:p-6 lg:text-lg">
       <hr className="my-6 border-gray-300 dark:border-gray-100 sm:mx-auto lg:my-8" />
-      <div className="sm:flex sm:items-center sm:justify-between">
-        <div className="mt-4 flex w-full items-center space-x-6 sm:mt-0 sm:justify-center">
-          <div className="flex w-1/2 justify-around">
-            <Link target="_blank" rel="noreferrer" to={"mailto:info@opensenselab.org"}>Kontakt</Link>
-            <Link target="_blank" rel="noreferrer" to={"/impressum"}>Impressum</Link>
-            <Link target="_blank" rel="noreferrer" to={"https://pad.opensenselab.org"}>Hedgedoc</Link>
-            <Link target="_blank" rel="noreferrer" to={"https://chat.opensenselab.org"}>Mattermost</Link>
-          </div>
-          <div className="flex w-1/2 justify-end">
-            <a href="https://www.instagram.com/opensenselab/" target="_blank" rel="noopener noreferrer" className="px-8 hover:text-green-100 dark:hover:text-green-200">
+      <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
+          © 2023{" "}
+          <a href="https://flowbite.com/" className="hover:underline">
+            openSenseLab
+          </a>
+          . All Rights Reserved.
+        </span>
+        <ul className="mt-3 flex flex-wrap items-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
+          <li>
+            <a
+              href="/imprint"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+            >
+              Impressum
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.instagram.com/opensenselab/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+            >
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -28,7 +42,14 @@ export default function Footer() {
               </svg>
               <span className="sr-only">Instagram page</span>
             </a>
-            <a href="https://twitter.com/openSenseLab" target="_blank" rel="noopener noreferrer" className="px-8 hover:text-green-100 dark:hover:text-green-200">
+          </li>
+          <li>
+            <a
+              href="https://twitter.com/openSenseLab"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+            >
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -39,7 +60,14 @@ export default function Footer() {
               </svg>
               <span className="sr-only">Twitter page</span>
             </a>
-            <a href="https://github.com/opensenselab" target="_blank" rel="noopener noreferrer" className="px-8 hover:text-green-100 dark:hover:text-green-200">
+          </li>
+          <li>
+            <a
+              href="https://github.com/opensenselab"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+            >
               <svg
                 className="h-10 w-10"
                 fill="currentColor"
@@ -54,8 +82,8 @@ export default function Footer() {
               </svg>
               <span className="sr-only">GitHub account</span>
             </a>
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
     </footer>
   );
