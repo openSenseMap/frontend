@@ -16,7 +16,7 @@ import { ChevronDown } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
 import { FeatureContext } from "../create";
-import type { Exposure } from "@prisma/client";
+import { Exposure } from "@prisma/client";
 import { Priority } from "@prisma/client";
 import * as turf from "@turf/helpers";
 import center from "@turf/center";
@@ -27,6 +27,15 @@ import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
 // import { reverseGeocode } from "~/components/Map/GeocoderControl";
 import { reverseGeocode } from "~/components/Map/geocoder-control";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // type Checked = DropdownMenuCheckboxItemProps["checked"];
 
@@ -198,6 +207,10 @@ export default function CreateCampaign() {
   };
 
   useEffect(() => {
+    console.log(titleRef.current);
+  }, [titleRef]);
+
+  useEffect(() => {
     if (!actionData || !actionData.error) {
       return;
     }
@@ -272,6 +285,7 @@ export default function CreateCampaign() {
   );
   const [priority, setPriority] = useState("MEDIUM");
   const [exposure, setExposure] = useState("UNKNOWN");
+  const [openDropdown, setDropdownOpen] = useState(false);
   const mouseData: any[][] = [];
   // useEffect(() => {
   //   if (container) {
@@ -363,17 +377,41 @@ export default function CreateCampaign() {
             </div>
           </div>
           <div>
+            <label
+              htmlFor="priority"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Priorität
+            </label>
             <div className="mt-1">
               <input
+                id="priority"
                 name="priority"
                 ref={priorityRef}
                 type="hidden"
                 value={priority}
               />
-              <DropdownMenu>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Priorities</SelectLabel>
+                    {Object.keys(Priority).map((key: string) => {
+                      return (
+                        <SelectItem key={key} value={key}>
+                          {key}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="w-full" variant="outline">
-                    Priorität
+                    {priority || "Priorität"}
                     <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -391,7 +429,7 @@ export default function CreateCampaign() {
                     })}
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
             </div>
           </div>
           <div>
@@ -511,10 +549,24 @@ export default function CreateCampaign() {
               name="phenomena"
               value={JSON.stringify(phenomenaState)}
             />
-            <DropdownMenu>
+            <DropdownMenu
+              open={openDropdown}
+              onOpenChange={setDropdownOpen}
+              modal={false}
+            >
               <DropdownMenuTrigger asChild>
-                <Button className="w-full" variant="outline">
-                  Phänomene <span className="text-red-500">&nbsp;*</span>
+                <Button className="w-full truncate" variant="outline">
+                  {Object.keys(phenomenaState)
+                    .filter((key) => phenomenaState[key])
+                    .join(", ")}
+                  {Object.keys(phenomenaState).filter(
+                    (key) => phenomenaState[key]
+                  ).length > 0 ? (
+                    <></>
+                  ) : (
+                    " Phänomene (Mehrfachauswahl möglich)"
+                  )}
+                  <span className="text-red-500">&nbsp;*</span>
                   <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                 </Button>
               </DropdownMenuTrigger>
@@ -524,12 +576,13 @@ export default function CreateCampaign() {
                     <DropdownMenuCheckboxItem
                       key={p}
                       checked={phenomenaState[p]}
-                      onCheckedChange={() =>
+                      onCheckedChange={() => {
                         setPhenomenaState({
                           ...phenomenaState,
                           [p]: !phenomenaState[p],
-                        })
-                      }
+                        });
+                      }}
+                      onSelect={(event) => event.preventDefault()}
                     >
                       {p}
                     </DropdownMenuCheckboxItem>
@@ -538,14 +591,39 @@ export default function CreateCampaign() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="mt-1">
-            <input
-              name="exposure"
-              ref={exposureRef}
-              type="hidden"
-              value={exposure}
-            />
-            <DropdownMenu>
+          <div>
+            <label
+              htmlFor="exposure"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Einsatzgebiet
+            </label>
+            <div className="mt-1">
+              <input
+                id="exposure"
+                name="exposure"
+                ref={exposureRef}
+                type="hidden"
+                value={exposure}
+              />
+              <Select value={exposure} onValueChange={setExposure}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an exposure" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Exposures</SelectLabel>
+                    {Object.keys(Exposure).map((key: string) => {
+                      return (
+                        <SelectItem key={key} value={key}>
+                          {key}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
                   Einsatz <span className="text-red-500">&nbsp;*</span>
@@ -568,7 +646,8 @@ export default function CreateCampaign() {
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
+            </div>
           </div>
           <label
             className="after:text-red-500 after:content-['_*']"
