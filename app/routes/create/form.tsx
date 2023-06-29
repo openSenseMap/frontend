@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RefObject, useContext, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, InfoIcon } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
 import { FeatureContext } from "../create";
@@ -21,11 +21,9 @@ import { Priority } from "@prisma/client";
 import * as turf from "@turf/helpers";
 import center from "@turf/center";
 import { campaignSchema } from "~/lib/validations/campaign";
-import * as z from "zod";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
-// import { reverseGeocode } from "~/components/Map/GeocoderControl";
 import { reverseGeocode } from "~/components/Map/geocoder-control";
 import {
   Select,
@@ -36,8 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// type Checked = DropdownMenuCheckboxItemProps["checked"];
+import { InfoCard } from "~/utils/info-card";
 
 interface PhenomenaState {
   [phenomena: string]: boolean;
@@ -309,11 +306,10 @@ export default function CreateCampaign() {
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
-            >
-              Titel
+            <label htmlFor="title">
+              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                Titel
+              </span>
             </label>
             <div className="mt-1">
               <input
@@ -346,11 +342,15 @@ export default function CreateCampaign() {
           />
 
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
-            >
-              Beschreibung
+            <label htmlFor="description" className="flex justify-between">
+              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                Beschreibung
+              </span>
+              {InfoCard({
+                content: (
+                  <p>Geben Sie hier eine Beschreibung für Ihre Kampagne</p>
+                ),
+              })}
             </label>
             <div className="mt-1">
               <textarea
@@ -373,11 +373,13 @@ export default function CreateCampaign() {
             </div>
           </div>
           <div>
-            <label
-              htmlFor="priority"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Priorität
+            <label htmlFor="priority" className="flex justify-between">
+              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                Priority
+              </span>
+              {InfoCard({
+                content: <p>Sezten Sie eine Priorität für Ihre Kampagne</p>,
+              })}
             </label>
             <div className="mt-1">
               <input
@@ -431,9 +433,19 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="requiredParticipants"
-              className="block text-sm font-medium text-gray-700"
+              className="flex justify-between"
             >
-              Gewünschte Teilnehmerzahl
+              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                Gewünschte Teilnehmerzahl
+              </span>
+              {InfoCard({
+                content: (
+                  <p>
+                    Wie viele Teilnehmer wünschen Sie sich im Idealfall führ
+                    Ihre Kampagne
+                  </p>
+                ),
+              })}
             </label>
             <div className="mt-1">
               <input
@@ -458,11 +470,15 @@ export default function CreateCampaign() {
             </div>
           </div>
           <div>
-            <label
-              htmlFor="requiredSensors"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Gewünschte Anzahl Sensoren
+            <label htmlFor="requiredSensors" className="flex justify-between">
+              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                Gewünschte Anzahl Sensoren
+              </span>
+              {InfoCard({
+                content: (
+                  <p>Wie viele Sensoren benötigen Sie für die Kampagne</p>
+                ),
+              })}
             </label>
             <div className="mt-1">
               <input
@@ -562,7 +578,7 @@ export default function CreateCampaign() {
                   ).length > 0 ? (
                     <></>
                   ) : (
-                    " Phänomene (Mehrfachauswahl möglich)"
+                    <span>Phänomene</span>
                   )}
                   <span className="text-red-500">&nbsp;*</span>
                   <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
@@ -647,22 +663,32 @@ export default function CreateCampaign() {
             </DropdownMenu> */}
             </div>
           </div>
-          <label
-            className="after:text-red-500 after:content-['_*']"
-            htmlFor="hardware_available"
-          >
-            Hardware verfügbar
+          <label htmlFor="hardware_available" className="flex justify-between">
+            <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+              Hardware verfügbar
+            </span>
+            {InfoCard({
+              content: (
+                <p>
+                  Haben Sie die benötigte Hardware zur Verfügung oder sollten
+                  die Teilnehmer eigene Hardware stellen
+                </p>
+              ),
+            })}
           </label>
-          <Switch
-            id="hardware_available"
-            ref={hardwareAvailableRef}
-            name="hardware_available"
-          />
+          <div className="flex w-fit justify-between gap-2">
+            <span>Nein</span>
+            <Switch
+              id="hardware_available"
+              ref={hardwareAvailableRef}
+              name="hardware_available"
+            />
+            <span>Ja</span>
+          </div>
 
           {/* <input type="hidden" name="redirectTo" value={redirectTo} /> */}
           <button
             type="submit"
-            // disabled={true}
             className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
           >
             Create Campaign
