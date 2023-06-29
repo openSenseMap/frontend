@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PlusIcon } from "lucide-react";
 
 const links = [
   {
@@ -71,8 +72,14 @@ export default function CampaignsPage() {
             </Button>
           </Link> */}
           <div className="ml-auto mt-2 mr-2">
-            <Button size="lg" className="bg-green-300 text-lg">
-              <Link to={"../create/area"}>Erstellen</Link>
+            <Button size="lg" className=" bg-green-300 text-lg">
+              <Link
+                to={"../create/area"}
+                className="align-center flex items-center"
+              >
+                <PlusIcon className="mr-2 h-4 w-4" />
+                <span>Erstellen</span>
+              </Link>
             </Button>
           </div>
         </div>
