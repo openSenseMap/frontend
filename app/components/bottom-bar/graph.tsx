@@ -15,6 +15,9 @@ import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
 import type { LastMeasurementProps } from "./bottom-bar";
 import type { loader } from "~/routes/explore/$deviceId";
+import { useRef } from "react";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { saveAs } from "file-saver";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -30,6 +33,8 @@ ChartJS.register(
 export default function Graph() {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
+
+  const chartRef = useRef(null);
 
   // Formatting the data for the Line component
   const lineData = {
@@ -127,10 +132,27 @@ export default function Graph() {
   };
 
   return (
-    <div className="text-gray-100 shadow-inner">
+    <div className="flex flex-col text-gray-100 shadow-inner">
+      <div className="flex items-center justify-center py-2">
+        <button
+          onClick={() => {
+            if (chartRef.current) {
+              if (chartRef.current === null) return;
+              // why is chartRef.current always never???
+              const imageString = chartRef.current.canvas.toDataURL(
+                "image/png",
+                1.0
+              );
+              saveAs(imageString, "chart.png");
+            }
+          }}
+        >
+          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
+        </button>
+      </div>
       {loaderData.selectedSensors.length > 0 ? (
-        <div className="flex h-full w-full justify-center px-10">
-          <Line data={lineData} options={options}></Line>
+        <div className="flex h-full w-full justify-center bg-white px-10">
+          <Line data={lineData} options={options} ref={chartRef}></Line>
         </div>
       ) : null}
     </div>
