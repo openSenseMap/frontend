@@ -52,7 +52,6 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const area = formData.get("feature") as any;
   const feature = area ? JSON.parse(area) : null;
-  console.log(feature);
   const turf_points = feature
     ? turf.points(feature[0]?.geometry?.coordinates[0])
     : null;
@@ -81,7 +80,10 @@ export async function action({ request }: ActionArgs) {
     const lng = centerpoint.geometry.coordinates[1];
 
     const country_code = await reverseGeocode(lng, lat);
-    country = country_code as string;
+    console.log(country_code);
+    if (country_code) {
+      country = country_code as string;
+    }
   }
 
   const title = formData.get("title");
@@ -106,11 +108,10 @@ export async function action({ request }: ActionArgs) {
   const exposure = formData.get("exposure") as ExposureType;
   const hardware_available =
     formData.get("hardware_available") === "on" ? true : false;
-  let requiredParticipants: FormDataEntryValue | null | number = formData.get(
-    "requiredParticipants"
-  );
-  let requiredSensors: FormDataEntryValue | null | number =
-    formData.get("requiredSensors");
+  let requiredParticipants: FormDataEntryValue | number =
+    formData.get("requiredParticipants") || 1;
+  let requiredSensors: FormDataEntryValue | number =
+    formData.get("requiredSensors") || 1;
   if (typeof requiredParticipants === "string") {
     requiredParticipants = parseInt(requiredParticipants);
   }
@@ -125,8 +126,8 @@ export async function action({ request }: ActionArgs) {
     priority,
     country,
     participantCount: 0,
-    requiredParticipants: requiredParticipants || null,
-    requiredSensors: requiredSensors || null,
+    requiredParticipants: requiredParticipants,
+    requiredSensors: requiredSensors,
     createdAt,
     updatedAt,
     startDate,
@@ -143,13 +144,12 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const newCampaign = campaignSchema.parse(campaignData);
-    console.log(newCampaign);
     const campaign = await createCampaign({
       ...newCampaign,
       feature: newCampaign.feature ?? {},
       endDate: newCampaign.endDate ?? null,
       centerpoint: newCampaign.centerpoint ?? {},
-      country: [newCampaign.country],
+      country: newCampaign.country ?? null,
       ownerId,
     });
 
@@ -205,10 +205,6 @@ export default function CreateCampaign() {
       });
     }
   };
-
-  useEffect(() => {
-    console.log(titleRef.current);
-  }, [titleRef]);
 
   useEffect(() => {
     if (!actionData || !actionData.error) {
@@ -445,6 +441,7 @@ export default function CreateCampaign() {
                 ref={requiredParticipantsRef}
                 name="requiredParticipants"
                 type="number"
+                min={1}
                 autoComplete="new-requiredParticipants"
                 aria-invalid={
                   actionData?.error?.issues[0].message ? true : undefined
@@ -471,6 +468,7 @@ export default function CreateCampaign() {
               <input
                 id="requiredSensors"
                 ref={requiredSensorsRef}
+                min={1}
                 name="requiredSensors"
                 type="number"
                 autoComplete="new-requiredSensors"

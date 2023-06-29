@@ -130,7 +130,7 @@ model Campaign {
   ownerId              String
   description          String
   priority             Priority
-  country              String[]
+  country              String?
   participantCount     Int
   requiredParticipants Int?
   requiredSensors      Int?

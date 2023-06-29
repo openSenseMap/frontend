@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Campaign" ALTER COLUMN "country" SET NOT NULL,
+ALTER COLUMN "country" SET DATA TYPE TEXT;
