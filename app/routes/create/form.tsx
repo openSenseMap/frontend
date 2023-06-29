@@ -10,7 +10,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useContext, useEffect, useState } from "react";
+import { RefObject, useContext, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
@@ -71,10 +71,9 @@ export async function action({ request }: ActionArgs) {
     //@ts-ignore
     const lng = centerpoint.geometry.coordinates[1];
 
-    const place = await reverseGeocode(lng, lat);
-    country = place as string;
+    const country_code = await reverseGeocode(lng, lat);
+    country = country_code as string;
   }
-  console.log(country);
 
   const title = formData.get("title");
   const description = formData.get("description");
@@ -135,6 +134,7 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const newCampaign = campaignSchema.parse(campaignData);
+    console.log(newCampaign);
     const campaign = await createCampaign({
       ...newCampaign,
       feature: newCampaign.feature ?? {},
@@ -172,9 +172,90 @@ export default function CreateCampaign() {
   const navigate = useNavigate();
   const phenomena = useLoaderData<typeof loader>();
   const { features } = useContext(FeatureContext);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const priorityRef = useRef<HTMLInputElement>(null);
+  const requiredParticipantsRef = useRef<HTMLInputElement>(null);
+  const requiredSensorsRef = useRef<HTMLInputElement>(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
+  const phenomenaRef = useRef<HTMLInputElement>(null);
+  const exposureRef = useRef<HTMLInputElement>(null);
+  const hardwareAvailableRef = useRef<HTMLButtonElement>(null);
+
+  const scrollToRef = (
+    ref:
+      | RefObject<HTMLInputElement>
+      | RefObject<HTMLTextAreaElement>
+      | RefObject<HTMLButtonElement>
+  ) => {
+    if (ref.current) {
+      window.scrollTo({
+        top: ref.current.offsetTop,
+        behavior: "smooth",
+      });
+    }
+  };
 
   useEffect(() => {
-    console.log(actionData);
+    if (!actionData || !actionData.error) {
+      return;
+    }
+
+    const { issues } = actionData.error;
+
+    if (!Array.isArray(issues) || issues.length === 0) {
+      return;
+    }
+
+    const errorField = issues[0].path[0];
+
+    switch (errorField) {
+      case "title": {
+        scrollToRef(titleRef);
+        break;
+      }
+      case "description": {
+        scrollToRef(descriptionRef);
+        break;
+      }
+      case "priority": {
+        scrollToRef(priorityRef);
+        break;
+      }
+      case "requiredParticipants": {
+        scrollToRef(requiredParticipantsRef);
+        break;
+      }
+      case "requiredSensors": {
+        scrollToRef(requiredSensorsRef);
+        break;
+      }
+      case "startDate": {
+        scrollToRef(startDateRef);
+        break;
+      }
+      case "endDate": {
+        scrollToRef(endDateRef);
+        break;
+      }
+      case "phenomena": {
+        scrollToRef(phenomenaRef);
+        break;
+      }
+      case "exposure": {
+        scrollToRef(exposureRef);
+        break;
+      }
+      case "hardware_available": {
+        scrollToRef(hardwareAvailableRef);
+        break;
+      }
+      default: {
+        //statements;
+        break;
+      }
+    }
   }, [actionData]);
 
   useEffect(() => {
@@ -226,7 +307,7 @@ export default function CreateCampaign() {
             </label>
             <div className="mt-1">
               <input
-                // ref={titleRef}
+                ref={titleRef}
                 id="title"
                 required
                 autoFocus={true}
@@ -264,7 +345,7 @@ export default function CreateCampaign() {
             <div className="mt-1">
               <textarea
                 id="description"
-                // ref={descriptionRef}
+                ref={descriptionRef}
                 name="description"
                 // type="description"
                 autoComplete="new-description"
@@ -283,7 +364,12 @@ export default function CreateCampaign() {
           </div>
           <div>
             <div className="mt-1">
-              <input name="priority" type="hidden" value={priority} />
+              <input
+                name="priority"
+                ref={priorityRef}
+                type="hidden"
+                value={priority}
+              />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="w-full" variant="outline">
@@ -318,7 +404,7 @@ export default function CreateCampaign() {
             <div className="mt-1">
               <input
                 id="requiredParticipants"
-                // ref={requiredParticipantsRef}
+                ref={requiredParticipantsRef}
                 name="requiredParticipants"
                 type="number"
                 autoComplete="new-requiredParticipants"
@@ -346,7 +432,7 @@ export default function CreateCampaign() {
             <div className="mt-1">
               <input
                 id="requiredSensors"
-                // ref={requiredSensorsRef}
+                ref={requiredSensorsRef}
                 name="requiredSensors"
                 type="number"
                 autoComplete="new-requiredSensors"
@@ -363,31 +449,6 @@ export default function CreateCampaign() {
               )}
             </div>
           </div>
-          {/* <div>
-            <label
-              htmlFor="country"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Land
-            </label>
-            <div className="mt-1">
-              <input
-                id="country"
-                // ref={countryRef}
-                name="country"
-                type="country"
-                autoComplete="new-country"
-                // aria-invalid={actionData?.errors?.country ? true : undefined}
-                aria-describedby="country-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {/* {actionData?.errors?.country && (
-                <div className="text-red-700 pt-1" id="country-error">
-                  {actionData.errors.country}
-                </div>
-              )} */}
-          {/* </div>
-          </div> */}
           <div>
             <label
               htmlFor="startDate"
@@ -398,7 +459,7 @@ export default function CreateCampaign() {
             <div className="mt-1">
               <input
                 id="startDate"
-                // ref={startDateRef}
+                ref={startDateRef}
                 name="startDate"
                 type="date"
                 autoComplete="new-startDate"
@@ -425,7 +486,7 @@ export default function CreateCampaign() {
             <div className="mt-1">
               <input
                 id="endDate"
-                // ref={endDateRef}
+                ref={endDateRef}
                 name="endDate"
                 type="date"
                 autoComplete="new-endDate"
@@ -444,6 +505,12 @@ export default function CreateCampaign() {
             </div>
           </div>
           <div>
+            <input
+              type="hidden"
+              ref={phenomenaRef}
+              name="phenomena"
+              value={JSON.stringify(phenomenaState)}
+            />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
@@ -472,7 +539,12 @@ export default function CreateCampaign() {
             </DropdownMenu>
           </div>
           <div className="mt-1">
-            <input name="exposure" type="hidden" value={exposure} />
+            <input
+              name="exposure"
+              ref={exposureRef}
+              type="hidden"
+              value={exposure}
+            />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-full" variant="outline">
@@ -504,16 +576,16 @@ export default function CreateCampaign() {
           >
             Hardware verfügbar
           </label>
-          <Switch id="hardware_available" name="hardware_available" />
-          <input
-            type="hidden"
-            name="phenomena"
-            value={JSON.stringify(phenomenaState)}
+          <Switch
+            id="hardware_available"
+            ref={hardwareAvailableRef}
+            name="hardware_available"
           />
 
           {/* <input type="hidden" name="redirectTo" value={redirectTo} /> */}
           <button
             type="submit"
+            // disabled={true}
             className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
           >
             Create Campaign

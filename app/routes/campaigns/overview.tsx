@@ -59,7 +59,6 @@ type PointProperties = {
 };
 
 export async function loader({ params }: LoaderArgs) {
-  // request to API with deviceID
   const campaigns = await getCampaigns();
   // const data = await campaigns.json();
   // if (data.code === "UnprocessableEntity") {
@@ -108,18 +107,6 @@ export default function Campaigns() {
   // console.log(convertedData);
 
   const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
-
-  // function saveMouseDataToFile() {
-  //   const fileContents = `const mouseData = ${JSON.stringify(mouseData)};`;
-
-  //   fs.writeFile("mouseData.js", fileContents, "utf8", (err) => {
-  //     if (err) {
-  //       console.error("Error writing mouse data to file:", err);
-  //     } else {
-  //       console.log("Mouse data saved to file successfully.");
-  //     }
-  //   });
-  // }
 
   useEffect(() => {
     if (typeof window != "undefined") {
