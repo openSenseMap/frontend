@@ -1,4 +1,5 @@
-import { LoaderArgs, redirect } from "@remix-run/node"; // or cloudflare/deno
+import type { LoaderArgs} from "@remix-run/node";
+import { redirect } from "@remix-run/node"; // or cloudflare/deno
 import { getUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {

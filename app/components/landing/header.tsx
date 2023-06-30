@@ -65,9 +65,9 @@ export default function Header(data: HeaderProps) {
   };
 
   return (
-    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 md:py-8 dark:border-gray-300 dark:bg-black sm:px-6 lg:px-8">
+    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 dark:border-gray-300 dark:bg-black sm:px-6 md:py-8 lg:px-8">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
-          {/* Osem Logo*/}
+        {/* Osem Logo*/}
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           {/* Osem Logo*/}
           <Link to="/" className="flex items-center md:pr-10">
@@ -101,8 +101,8 @@ export default function Header(data: HeaderProps) {
         </div>
 
         <div className="flex items-center justify-center md:order-2">
-            {/* Dark Mood */}
-          <div className="items-center justify-center pr-8 flex">
+          {/* Dark Mood */}
+          <div className="flex items-center justify-center pr-8">
             <button onClick={toggleTheme}>
               {theme === "light" ? (
                 <MoonIcon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
@@ -115,9 +115,13 @@ export default function Header(data: HeaderProps) {
           {/* Donation */}
           <button
             type="button"
-            className="dark:border-green-200 dark:bg-green-200 hidden rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black dark:text-gray-400 md:block"
+            className="dark:border-green-200 dark:bg-green-200 hidden rounded-lg border-b-4 border-l-2 border-r-4 border-t-2 border-green-100 p-2 text-center text-lg font-thin text-black dark:text-gray-400 md:block"
           >
-            <Link to="/explore" rel="intent">
+            <Link
+              to="https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Donate
             </Link>
           </button>
@@ -127,7 +131,7 @@ export default function Header(data: HeaderProps) {
             onClick={() => setOpenMenu(!openMenu)}
             data-collapse-toggle="navbar-cta"
             type="button"
-            className="px-6 inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
+            className="inline-flex items-center rounded-lg p-2 px-6 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
             aria-controls="navbar-cta"
             aria-expanded="false"
           >
@@ -148,7 +152,7 @@ export default function Header(data: HeaderProps) {
           </button>
           {openMenu && (
             <div
-              className="absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black ring-opacity-5"
+              className="absolute right-2 top-full mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black ring-opacity-5"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="options-menu"
@@ -157,7 +161,7 @@ export default function Header(data: HeaderProps) {
                 <Link
                   key={index}
                   to={item.link}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:text-green-100 dark:hover:text-green-200"
+                  className="dark:hover:text-green-200 block px-4 py-2 text-sm text-gray-700 hover:text-green-100"
                   role="menuitem"
                 >
                   {item.name}
