@@ -48,6 +48,7 @@ import {
   PopoverArrow,
   PopoverAnchor,
 } from "@/components/ui/popover";
+import h337, { Heatmap } from "heatmap.js";
 
 export const links: LinksFunction = () => {
   return [
@@ -71,6 +72,79 @@ export default function Explore() {
   const { features, setFeatures } = useContext(FeatureContext);
   const mapRef: any = useRef();
   const mouseData: any[][] = [];
+
+  // const [container, setContainer] = useState<HTMLElement | undefined>(
+  //   undefined
+  // );
+  // const [containerWrapper, setContainerWrapper] = useState<
+  //   HTMLElement | undefined
+  // >(undefined);
+
+  // const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
+
+  // useEffect(() => {
+  //   if (typeof window != "undefined") {
+  //     const container = document.getElementById("view")!;
+  //     setContainer(container);
+  //     const wrapper = document.getElementById("view-wrapper")!;
+  //     setContainerWrapper(wrapper);
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (typeof window != "undefined") {
+  //     var legendCanvas = document.createElement("canvas");
+  //     legendCanvas.width = 100;
+  //     legendCanvas.height = 10;
+  //     var min = document.querySelector("#min");
+  //     var max = document.querySelector("#max");
+  //     var gradientImg = document.querySelector("#gradient");
+  //     var legendCtx = legendCanvas.getContext("2d");
+  //     var gradientCfg = {};
+
+  //     function updateLegend(data: any) {
+  //       // the onExtremaChange callback gives us min, max, and the gradientConfig
+  //       // so we can update the legend
+  //       min.innerHTML = data.min;
+  //       max.innerHTML = data.max;
+  //       // regenerate gradient image
+  //       if (data.gradient != gradientCfg) {
+  //         gradientCfg = data.gradient;
+  //         var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
+  //         for (var key in gradientCfg) {
+  //           gradient.addColorStop(key, gradientCfg[key]);
+  //         }
+  //         legendCtx.fillStyle = gradient;
+  //         legendCtx.fillRect(0, 0, 100, 10);
+  //         gradientImg.src = legendCanvas.toDataURL();
+  //       }
+  //     }
+
+  //     if (container) {
+  //       heatMap.current = h337.create({
+  //         container: container,
+  //         onExtremaChange: function (data) {
+  //           updateLegend(data);
+  //         },
+  //         radius: 25,
+  //         maxOpacity: 0.5,
+  //         minOpacity: 0.25,
+  //         blur: 0.75,
+  //       });
+  //     }
+  //     if (containerWrapper) {
+  //       containerWrapper.onclick = function (ev: any) {
+  //         if (heatMap.current) {
+  //           heatMap.current.addData({
+  //             x: ev.layerX,
+  //             y: ev.layerY,
+  //             value: 1,
+  //           });
+  //         }
+  //       };
+  //     }
+  //   }
+  // }, [container, containerWrapper]);
 
   // const draw = new MapboxDraw({
 
@@ -169,12 +243,19 @@ export default function Explore() {
 
   return (
     <div
+      // id="view-wrapper"
       className="grid h-full w-full grid-cols-3 gap-4" //TODO: change grid layout
       onClick={(e: any) => {
         mouseData.push([e.clientX, e.clientY, 30]);
         localStorage.setItem("area", JSON.stringify(mouseData));
       }}
     >
+      {/* <div id="heatmapLegend" className="lef-0 absolute bottom-0 bg-white p-4">
+        <h2>Legend</h2>
+        <span className="float-left" id="min"></span>
+        <span className="float-right" id="max"></span>
+        <img className="w-full" id="gradient" src="" alt="legend-gradient" />
+      </div> */}
       <div className="flex w-2/3 flex-col gap-3">
         <h1 className="ml-2 text-lg font-bold">Interessensgebiet definieren</h1>
         <Card>
@@ -218,72 +299,77 @@ export default function Explore() {
           </CardContent>
         </Card>
       </div>
-      <div className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3">
-        <Link to={"/create/form"}>
-          <Button
-            className="absolute right-4 top-4 z-50 ml-auto"
-            disabled={Object.keys(features).length === 0}
-          >
-            Weiter
-          </Button>
-        </Link>
-        <MapProvider>
-          <Map
-            ref={(ref) => (mapRef.current = ref && ref.getMap())}
-            initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-            style={{
-              width: "60%",
-              height: "100%",
-              position: "fixed",
-              top: 0,
-              right: 0,
-            }}
-            // onLoad={onLoad}
-          >
-            <GeocoderControl
-              language="de"
-              onResult={(e) => console.log(e)}
-              position="top-left"
-            />
-            {/* <Popover defaultOpen>
+      <div
+        id="view-wrapper"
+        className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3"
+      >
+        <div className="h-full w-full" id="view">
+          <Link to={"/create/form"}>
+            <Button
+              className="absolute right-4 top-4 z-50 ml-auto"
+              disabled={Object.keys(features).length === 0}
+            >
+              Weiter
+            </Button>
+          </Link>
+          <MapProvider>
+            <Map
+              ref={(ref) => (mapRef.current = ref && ref.getMap())}
+              initialViewState={{ latitude: 7, longitude: 52, zoom: 1 }}
+              style={{
+                width: "60%",
+                height: "100%",
+                position: "fixed",
+                top: 0,
+                right: 0,
+              }}
+              // onLoad={onLoad}
+            >
+              <GeocoderControl
+                language="de"
+                onResult={(e) => console.log(e)}
+                position="top-left"
+              />
+              {/* <Popover defaultOpen>
               <PopoverTrigger> */}
-            <DrawControl
-              position="top-left"
-              // defaultMode="drag_circle"
-              displayControlsDefault={false}
-              controls={{ polygon: true, point: true, trash: true }}
-              // modes={{
-              //   ...modes,
-              //   // radius_mode: RadiusMode,
-              //   draw_circle: CircleMode,
-              //   drag_circle: DragCircleMode,
-              // }}
-              onCreate={onUpdate}
-              onUpdate={onUpdate}
-              onDelete={onDelete}
-            />
-            {/* </PopoverTrigger>
+              <DrawControl
+                position="top-left"
+                // defaultMode="drag_circle"
+                displayControlsDefault={false}
+                controls={{ polygon: true, point: true, trash: true }}
+                // modes={{
+                //   ...modes,
+                //   // radius_mode: RadiusMode,
+                //   draw_circle: CircleMode,
+                //   drag_circle: DragCircleMode,
+                // }}
+                onCreate={onUpdate}
+                onUpdate={onUpdate}
+                onDelete={onDelete}
+              />
+              {/* </PopoverTrigger>
               <PopoverContent side="right" sideOffset={35}>
                 Nutze die Symbole um unterschiedliche Flächen auf der Karte zu
                 zeichnen
                 <PopoverArrow />
               </PopoverContent>
             </Popover> */}
-            {/* <CustomControl /> */}
-            {/* <Button className="absolute top-1/2 left-4 z-50">Weiter</Button> */}
-            {geojsonUploadData && (
-              <Source type="geojson" data={geojsonUploadData}>
-                <Layer
-                  type="fill"
-                  paint={{
-                    "fill-color": "#ff0000",
-                    "fill-opacity": 0.5,
-                  }}
-                />
-              </Source>
-            )}
-          </Map>
-        </MapProvider>
+              {/* <CustomControl /> */}
+              {/* <Button className="absolute top-1/2 left-4 z-50">Weiter</Button> */}
+              {geojsonUploadData && (
+                <Source type="geojson" data={geojsonUploadData}>
+                  <Layer
+                    type="fill"
+                    paint={{
+                      "fill-color": "#ff0000",
+                      "fill-opacity": 0.5,
+                    }}
+                  />
+                </Source>
+              )}
+            </Map>
+          </MapProvider>
+        </div>
       </div>
     </div>
   );

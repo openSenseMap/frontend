@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { InfoCard } from "~/utils/info-card";
+// import h337, { Heatmap } from "heatmap.js";
 
 interface PhenomenaState {
   [phenomena: string]: boolean;
@@ -189,6 +190,79 @@ export default function CreateCampaign() {
   const exposureRef = useRef<HTMLInputElement>(null);
   const hardwareAvailableRef = useRef<HTMLButtonElement>(null);
 
+  // const [container, setContainer] = useState<HTMLElement | undefined>(
+  //   undefined
+  // );
+  // const [containerWrapper, setContainerWrapper] = useState<
+  //   HTMLElement | undefined
+  // >(undefined);
+
+  // const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
+
+  // useEffect(() => {
+  //   if (typeof window != "undefined") {
+  //     const container = document.getElementById("view")!;
+  //     setContainer(container);
+  //     const wrapper = document.getElementById("view-wrapper")!;
+  //     setContainerWrapper(wrapper);
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (typeof window != "undefined") {
+  //     var legendCanvas = document.createElement("canvas");
+  //     legendCanvas.width = 100;
+  //     legendCanvas.height = 10;
+  //     var min = document.querySelector("#min");
+  //     var max = document.querySelector("#max");
+  //     var gradientImg = document.querySelector("#gradient");
+  //     var legendCtx = legendCanvas.getContext("2d");
+  //     var gradientCfg = {};
+
+  //     function updateLegend(data: any) {
+  //       // the onExtremaChange callback gives us min, max, and the gradientConfig
+  //       // so we can update the legend
+  //       min.innerHTML = data.min;
+  //       max.innerHTML = data.max;
+  //       // regenerate gradient image
+  //       if (data.gradient != gradientCfg) {
+  //         gradientCfg = data.gradient;
+  //         var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
+  //         for (var key in gradientCfg) {
+  //           gradient.addColorStop(key, gradientCfg[key]);
+  //         }
+  //         legendCtx.fillStyle = gradient;
+  //         legendCtx.fillRect(0, 0, 100, 10);
+  //         gradientImg.src = legendCanvas.toDataURL();
+  //       }
+  //     }
+
+  //     if (container) {
+  //       heatMap.current = h337.create({
+  //         container: container,
+  //         onExtremaChange: function (data) {
+  //           updateLegend(data);
+  //         },
+  //         radius: 15,
+  //         maxOpacity: 0.5,
+  //         minOpacity: 0.25,
+  //         blur: 0.75,
+  //       });
+  //     }
+  //     if (containerWrapper) {
+  //       containerWrapper.onclick = function (ev: any) {
+  //         if (heatMap.current) {
+  //           heatMap.current.addData({
+  //             x: ev.layerX,
+  //             y: ev.layerY,
+  //             value: 1,
+  //           });
+  //         }
+  //       };
+  //     }
+  //   }
+  // }, [container, containerWrapper]);
+
   const scrollToRef = (
     ref:
       | RefObject<HTMLInputElement>
@@ -297,13 +371,20 @@ export default function CreateCampaign() {
   // }, [container, convertedData]);
   return (
     <div
+      id="view-wrapper"
       className="flex min-h-full flex-col justify-center"
       onClick={(e: any) => {
         mouseData.push([e.clientX, e.clientY, 30]);
         localStorage.setItem("form", JSON.stringify(mouseData));
       }}
     >
-      <div className="mx-auto w-full max-w-md px-8">
+      {/* <div id="heatmapLegend" className="absolute top-10 right-0 bg-white p-4">
+        <h2>Legend</h2>
+        <span className="float-left" id="min"></span>
+        <span className="float-right" id="max"></span>
+        <img className="w-full" id="gradient" src="" alt="legend-gradient" />
+      </div> */}
+      <div id="view" className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
             <label htmlFor="title">
@@ -453,7 +534,6 @@ export default function CreateCampaign() {
                 ref={requiredParticipantsRef}
                 name="requiredParticipants"
                 type="number"
-                min={1}
                 autoComplete="new-requiredParticipants"
                 aria-invalid={
                   actionData?.error?.issues[0].message ? true : undefined
@@ -484,7 +564,6 @@ export default function CreateCampaign() {
               <input
                 id="requiredSensors"
                 ref={requiredSensorsRef}
-                min={1}
                 name="requiredSensors"
                 type="number"
                 autoComplete="new-requiredSensors"

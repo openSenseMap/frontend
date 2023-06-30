@@ -46,7 +46,7 @@ import Supercluster, { AnyProps, PointFeature } from "supercluster";
 import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
-import h337, { Heatmap } from "heatmap.js";
+// import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
 type PointProperties = {
@@ -91,12 +91,12 @@ export default function Campaigns() {
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
   const [zoom, setZoom] = useState(1);
-  const [container, setContainer] = useState<HTMLElement | undefined>(
-    undefined
-  );
-  const [containerWrapper, setContainerWrapper] = useState<
-    HTMLElement | undefined
-  >(undefined);
+  // const [container, setContainer] = useState<HTMLElement | undefined>(
+  //   undefined
+  // );
+  // const [containerWrapper, setContainerWrapper] = useState<
+  //   HTMLElement | undefined
+  // >(undefined);
   const mouseData: any[][] = [];
 
   // const convertedData = testData.map(([x, y, value]) => ({
@@ -106,36 +106,69 @@ export default function Campaigns() {
   // })) as readonly h337.DataPoint<"value", "x", "y">[];
   // console.log(convertedData);
 
-  const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
-
-  useEffect(() => {
-    if (typeof window != "undefined") {
-      const container = document.getElementById("view")!;
-      setContainer(container);
-      const wrapper = document.getElementById("view-wrapper")!;
-      setContainerWrapper(wrapper);
-    }
-  }, []);
+  // const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
 
   // useEffect(() => {
-  //   if (container) {
-  //     heatMap.current = h337.create({
-  //       container: container,
-  //       maxOpacity: 0.6,
-  //       radius: 50,
-  //       blur: 0.9,
-  //     });
+  //   if (typeof window != "undefined") {
+  //     const container = document.getElementById("view")!;
+  //     setContainer(container);
+  //     const wrapper = document.getElementById("view-wrapper")!;
+  //     setContainerWrapper(wrapper);
   //   }
-  //   if (containerWrapper) {
-  //     containerWrapper.onclick = function (ev: any) {
-  //       if (heatMap.current) {
-  //         heatMap.current.addData({
-  //           x: ev.layerX,
-  //           y: ev.layerY,
-  //           value: 1,
-  //         });
+  // }, []);
+
+  // useEffect(() => {
+  //   if (typeof window != "undefined") {
+  //     var legendCanvas = document.createElement("canvas");
+  //     legendCanvas.width = 100;
+  //     legendCanvas.height = 10;
+  //     var min = document.querySelector("#min");
+  //     var max = document.querySelector("#max");
+  //     var gradientImg = document.querySelector("#gradient");
+  //     var legendCtx = legendCanvas.getContext("2d");
+  //     var gradientCfg = {};
+
+  //     function updateLegend(data: any) {
+  //       // the onExtremaChange callback gives us min, max, and the gradientConfig
+  //       // so we can update the legend
+  //       min.innerHTML = data.min;
+  //       max.innerHTML = data.max;
+  //       // regenerate gradient image
+  //       if (data.gradient != gradientCfg) {
+  //         gradientCfg = data.gradient;
+  //         var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
+  //         for (var key in gradientCfg) {
+  //           gradient.addColorStop(key, gradientCfg[key]);
+  //         }
+  //         legendCtx.fillStyle = gradient;
+  //         legendCtx.fillRect(0, 0, 100, 10);
+  //         gradientImg.src = legendCanvas.toDataURL();
   //       }
-  //     };
+  //     }
+
+  //     if (container) {
+  //       heatMap.current = h337.create({
+  //         container: container,
+  //         onExtremaChange: function (data) {
+  //           updateLegend(data);
+  //         },
+  //         radius: 25,
+  //         maxOpacity: 0.5,
+  //         minOpacity: 0.25,
+  //         blur: 0.75,
+  //       });
+  //     }
+  //     if (containerWrapper) {
+  //       containerWrapper.onclick = function (ev: any) {
+  //         if (heatMap.current) {
+  //           heatMap.current.addData({
+  //             x: ev.layerX,
+  //             y: ev.layerY,
+  //             value: 1,
+  //           });
+  //         }
+  //       };
+  //     }
   //   }
   // }, [container, containerWrapper]);
 
@@ -468,6 +501,15 @@ export default function Campaigns() {
           Erstellen
         </Button>
       </Link> */}
+        {/* <div
+          id="heatmapLegend"
+          className="absolute top-10 right-0 bg-white p-4"
+        >
+          <h2>Legende</h2>
+          <span className="float-left" id="min"></span>
+          <span className="float-right" id="max"></span>
+          <img className="w-full" id="gradient" src="" alt="legend-gradient" />
+        </div> */}
         <input
           className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
           type="text"
@@ -570,7 +612,7 @@ export default function Campaigns() {
               })}
             >
               {displayedCampaigns.map((item: any) => (
-                <Card key={item.id} className="md:min-w-[260px]">
+                <Card key={item.id} className="w-[250px]">
                   <Link to={`../${item.id}`}>
                     <CardHeader>
                       <CardTitle>
@@ -652,9 +694,9 @@ export default function Campaigns() {
                 <MapProvider>
                   <Map
                     initialViewState={{
-                      latitude: 0,
-                      longitude: 0,
-                      zoom: 1,
+                      latitude: 51,
+                      longitude: 7,
+                      zoom: 3,
                     }}
                     interactiveLayerIds={["marker-layer"]}
                     // preserveDrawingBuffer
