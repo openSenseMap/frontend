@@ -1,7 +1,8 @@
-import { ActionArgs, LoaderArgs, json, redirect } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
-import { getDevices, getUserDevices } from "~/models/device.server";
+import { getUserDevices } from "~/models/device.server";
 import { getUserId } from "~/session.server";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
@@ -76,7 +77,7 @@ export default function Dashboard() {
                 documentation.
               </p>
               <p className="flex gap-2">
-                <a className="btn btn-primary hover:border-[#204d74] hover:bg-[#286090] hover:text-[#fff]">
+                <a href="/newBox" className="btn btn-primary hover:border-[#204d74] hover:bg-[#286090] hover:text-[#fff]">
                   New senseBox
                 </a>
                 <a
