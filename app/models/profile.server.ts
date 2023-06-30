@@ -1,4 +1,4 @@
-import { Profile, User } from "@prisma/client";
+import type { Profile, User } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 export async function getProfileByUserId(id: Profile["id"]) {
