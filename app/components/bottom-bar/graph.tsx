@@ -16,8 +16,19 @@ import { de } from "date-fns/locale";
 import type { LastMeasurementProps } from "./bottom-bar";
 import type { loader } from "~/routes/explore/$deviceId";
 import { useRef } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { saveAs } from "file-saver";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { Button } from "../ui/button";
+import { ShareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import ShareLink from "./share-link";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -34,7 +45,7 @@ export default function Graph() {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
 
-  const chartRef = useRef(null);
+  const chartRef = useRef<ChartJS<"line">>(null);
 
   // Formatting the data for the Line component
   const lineData = {
@@ -131,10 +142,42 @@ export default function Graph() {
     },
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const lineChartBackground = {
+    id: "lineChartBackground",
+    beforeDatasetDraw(chart: ChartJS<"line">) {
+      const {
+        ctx,
+        chartArea: { top, left, width, height },
+      } = chart;
+
+      ctx.save();
+      ctx.fillStyle = "white";
+      ctx.fillRect(left, top, width, height);
+    },
+  };
+
   return (
     <div className="flex flex-col text-gray-100 shadow-inner">
-      <div className="flex items-center justify-center py-2">
-        <button
+      <div className="flex items-center justify-end gap-2 px-10 pt-2">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+              <ShareIcon className="mr-2 h-5 w-5" />
+              Share
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Share this link</AlertDialogTitle>
+              <ShareLink />
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Close</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <Button
           onClick={() => {
             if (chartRef.current) {
               if (chartRef.current === null) return;
@@ -146,13 +189,21 @@ export default function Graph() {
               saveAs(imageString, "chart.png");
             }
           }}
+          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
         >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-        </button>
+          <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
+          Download
+        </Button>
       </div>
       {loaderData.selectedSensors.length > 0 ? (
         <div className="flex h-full w-full justify-center bg-white px-10">
-          <Line data={lineData} options={options} ref={chartRef}></Line>
+          <Line
+            data={lineData}
+            options={options}
+            ref={chartRef}
+            // activate this to set the chart backgroundColor but then the reference lines dissapear
+            // plugins={[lineChartBackground]}
+          ></Line>
         </div>
       ) : null}
     </div>
