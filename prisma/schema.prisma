@@ -125,6 +125,7 @@ model Measurement {
 model Campaign {
   id                   String    @id @default(uuid())
   title                String
+  slug                 String    @unique
   feature              Json
   owner                User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId              String

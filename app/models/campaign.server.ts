@@ -1,5 +1,5 @@
 import type { Campaign, User, Prisma } from "@prisma/client";
-
+import { generateSlug } from "~/lib/slug";
 import { prisma } from "~/db.server";
 
 export function getCampaign({ id }: Pick<Campaign, "id">) {
@@ -26,7 +26,7 @@ export async function getFilteredCampaigns(title: string) {
   });
 }
 
-export function createCampaign({
+export async function createCampaign({
   title,
   feature,
   ownerId,
@@ -46,6 +46,7 @@ export function createCampaign({
 }: Pick<
   Campaign,
   | "title"
+  | "slug"
   | "feature"
   | "description"
   | "priority"
@@ -63,9 +64,11 @@ export function createCampaign({
 > & {
   ownerId: User["id"];
 }) {
+  const slug = await generateSlug(title);
   return prisma.campaign.create({
     data: {
       title,
+      slug,
       feature: feature === null ? {} : feature,
       description,
       priority,
