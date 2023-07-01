@@ -112,6 +112,20 @@ export default function ShareLink() {
             <path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z"></path>
           </svg>
         </div>
+        {/* LINKEDIN ICON */}
+        <div
+          className="border-sky-200 hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#0077b5] shadow-xl hover:bg-[#0077b5] hover:fill-white"
+          onClick={() => linkedInPopup("")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+          >
+            <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z" />
+          </svg>
+        </div>
       </div>
       {/* <!--BOX LINK--> */}
       <div className="mt-4 flex items-center justify-between gap-2 py-2">
