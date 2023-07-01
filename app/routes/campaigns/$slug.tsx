@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
@@ -22,6 +22,7 @@ import { Feature } from "geojson";
 import { ClockIcon } from "lucide-react";
 import clsx from "clsx";
 import { valid } from "geojson-validation";
+import ShareLink from "~/components/bottom-bar/share-link";
 
 export async function action({ request }: ActionArgs) {
   // const ownerId = await requireUserId(request);
@@ -31,6 +32,13 @@ export async function action({ request }: ActionArgs) {
   const hardware = formData.get("hardware");
   return null;
 }
+
+export const meta: MetaFunction<typeof loader> = ({ params }) => ({
+  charset: "utf-8",
+  title: "openSenseMap",
+  description: `Trage zu dieser Kampagne bei: ${params.slug}`,
+  viewport: "width=device-width,initial-scale=1",
+});
 
 export async function loader({ params }: LoaderArgs) {
   // request to API with deviceID
@@ -107,6 +115,19 @@ export default function CampaignId() {
           <p className="ml-4 mb-4">{data.description}</p>
           {/* <Form> */}
           <Button onClick={downloadGeojSON}>GeoJSON herunterladen</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="float-right mr-4">Teilen</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Teilen</DialogTitle>
+                <DialogDescription>
+                  <ShareLink />
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
           <Dialog>
             <DialogTrigger asChild>
               <Button disabled className="float-right mr-4">
