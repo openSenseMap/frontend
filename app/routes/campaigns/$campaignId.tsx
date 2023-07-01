@@ -21,6 +21,7 @@ import { campaignSchema } from "~/lib/validations/campaign";
 import { Feature } from "geojson";
 import { ClockIcon } from "lucide-react";
 import clsx from "clsx";
+import { valid } from "geojson-validation";
 
 export async function action({ request }: ActionArgs) {
   // const ownerId = await requireUserId(request);
@@ -61,6 +62,25 @@ export default function CampaignId() {
   //   });
   // }, []);
 
+  function downloadGeojSON() {
+    //@ts-ignore
+    const geojson = JSON.parse(JSON.stringify(data.feature[0]));
+    console.log(geojson);
+    console.log(valid(geojson));
+    if (valid(geojson)) {
+      const geojsonString = JSON.stringify(geojson);
+      const blob = new Blob([geojsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "geojson_data.json";
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+  }
+
   return (
     <div className="h-full w-full">
       <div className="grid grid-cols-2">
@@ -86,6 +106,7 @@ export default function CampaignId() {
           </h2>
           <p className="ml-4 mb-4">{data.description}</p>
           {/* <Form> */}
+          <Button onClick={downloadGeojSON}>GeoJSON herunterladen</Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button disabled className="float-right mr-4">
