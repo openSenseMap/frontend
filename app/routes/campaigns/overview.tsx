@@ -613,7 +613,7 @@ export default function Campaigns() {
             >
               {displayedCampaigns.map((item: any) => (
                 <Card key={item.id} className="w-[250px]">
-                  <Link to={`../${item.id}`}>
+                  <Link to={`../${item.slug}`}>
                     <CardHeader>
                       <CardTitle>
                         <div className="flex">

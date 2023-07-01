@@ -35,7 +35,7 @@ export async function action({ request }: ActionArgs) {
 export async function loader({ params }: LoaderArgs) {
   // request to API with deviceID
 
-  const campaign = await getCampaign({ id: params.campaignId ?? "" });
+  const campaign = await getCampaign({ slug: params.slug ?? "" });
   if (!campaign) {
     throw new Response("Campaign not found", { status: 502 });
   }

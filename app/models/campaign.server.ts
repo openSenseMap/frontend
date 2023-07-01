@@ -2,9 +2,9 @@ import type { Campaign, User, Prisma } from "@prisma/client";
 import { generateSlug } from "~/lib/slug";
 import { prisma } from "~/db.server";
 
-export function getCampaign({ id }: Pick<Campaign, "id">) {
+export function getCampaign({ slug }: Pick<Campaign, "slug">) {
   return prisma.campaign.findFirst({
-    where: { id },
+    where: { slug },
   });
 }
 
