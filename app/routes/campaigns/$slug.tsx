@@ -1,4 +1,9 @@
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type {
+  ActionArgs,
+  LinksFunction,
+  LoaderArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
@@ -26,6 +31,16 @@ import ShareLink from "~/components/bottom-bar/share-link";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
 import { createComment } from "~/models/comment.server";
+import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: "stylesheet",
+      href: maplibregl,
+    },
+  ];
+};
 
 export async function action(args: ActionArgs) {
   const formData = await args.request.clone().formData();
@@ -261,13 +276,15 @@ export default function CampaignId() {
                 latitude: data.centerpoint.geometry.coordinates[1],
                 //@ts-ignore
                 longitude: data.centerpoint.geometry.coordinates[0],
-                zoom: 8,
+                zoom: 4,
               }}
               style={{
-                height: "70vh",
-                width: "60vw",
+                height: "60vh",
+                width: "40vw",
                 position: "fixed",
+                bottom: "10px",
                 // marginTop: "2rem",
+                right: "10px",
               }}
             >
               <Source
