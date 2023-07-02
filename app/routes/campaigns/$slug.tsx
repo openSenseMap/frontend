@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getCampaign } from "~/models/campaign.server";
-import { getUserId } from "~/session.server";
+import { getUserId, requireUserId } from "~/session.server";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "~/components/ui/use-toast";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Map } from "~/components/Map";
 import { LayerProps, MapProvider, Source, Layer } from "react-map-gl";
 import { campaignSchema } from "~/lib/validations/campaign";
@@ -23,15 +23,56 @@ import { ClockIcon } from "lucide-react";
 import clsx from "clsx";
 import { valid } from "geojson-validation";
 import ShareLink from "~/components/bottom-bar/share-link";
+import { ClientOnly } from "remix-utils";
+import { MarkdownEditor } from "~/markdown.client";
+import { createComment } from "~/models/comment.server";
 
-export async function action({ request }: ActionArgs) {
-  // const ownerId = await requireUserId(request);
-  const formData = await request.formData();
-  console.log(formData);
-  const email = formData.get("email");
-  const hardware = formData.get("hardware");
-  return null;
+export async function action(args: ActionArgs) {
+  const formData = await args.request.clone().formData();
+  const _action = formData.get("_action");
+  if (_action === "PUBLISH") {
+    return publishAction(args);
+  }
+  // if (_action === "UPDATE") {
+  //   return updateAction(args);
+  // }
+  throw new Error("Unknown action");
 }
+
+async function publishAction({ request, params }: ActionArgs) {
+  const ownerId = await requireUserId(request);
+  const formData = await request.formData();
+  const content = formData.get("comment");
+  if (typeof content !== "string" || content.length === 0) {
+    return json(
+      { errors: { content: "content is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const campaignSlug = params.slug;
+  if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
+    return json(
+      { errors: { campaignSlug: "campaignSlug is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const comment = await createComment({ content, campaignSlug, ownerId });
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
+// export async function action({ request }: ActionArgs) {
+//   // const ownerId = await requireUserId(request);
+//   const formData = await request.formData();
+//   console.log(formData);
+//   const email = formData.get("email");
+//   const hardware = formData.get("hardware");
+//   return null;
+// }
 
 export const meta: MetaFunction<typeof loader> = ({ params }) => ({
   charset: "utf-8",
@@ -62,6 +103,8 @@ const layer: LayerProps = {
 
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
+  const [comment, setComment] = useState<string | undefined>("");
+  const textAreaRef = useRef();
   const { toast } = useToast();
   const participate = () => {};
   // useEffect(() => {
@@ -114,6 +157,36 @@ export default function CampaignId() {
           </h2>
           <p className="ml-4 mb-4">{data.description}</p>
           {/* <Form> */}
+          <ClientOnly>
+            {() => (
+              <div className="container overflow-auto">
+                <MarkdownEditor
+                  textAreaRef={textAreaRef}
+                  comment={comment}
+                  setComment={setComment}
+                />
+                <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                  <span className="text-gray text-xs leading-4">
+                    Bild hinzufügen
+                  </span>
+                  <span className="text-gray text-xs leading-4">
+                    Markdown unterstützt
+                  </span>
+                </div>
+                <Form method="post">
+                  <textarea
+                    className="hidden"
+                    value={comment}
+                    name="comment"
+                    id="comment"
+                  ></textarea>
+                  <Button name="_action" value="PUBLISH" type="submit">
+                    Veröffentlichen
+                  </Button>
+                </Form>
+              </div>
+            )}
+          </ClientOnly>
           <Button onClick={downloadGeojSON}>GeoJSON herunterladen</Button>
           <Dialog>
             <DialogTrigger asChild>

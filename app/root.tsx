@@ -19,6 +19,7 @@ import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
 import { Toaster } from "./components/ui/toaster";
+import mdEditorStyles from "@uiw/react-md-editor/dist/mdeditor.min.css";
 
 export const links: LinksFunction = () => {
   return [
@@ -53,6 +54,7 @@ export const links: LinksFunction = () => {
     { rel: "icon", href: "/favicon.ico" },
     { rel: "stylesheet", href: tailwindStylesheetUrl },
     { rel: "stylesheet", href: appStylesheetUrl },
+    { rel: "stylesheet", href: mdEditorStyles },
   ];
 };
 

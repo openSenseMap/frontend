@@ -27,6 +27,7 @@ model User {
   notes     Note[]
   devices   Device[]
   campaigns Campaign[]
+  comments  Comment[]
 
   profile Profile?
 }
@@ -146,7 +147,19 @@ model Campaign {
   location_points      Json?
   hardware_available   Boolean
   grouptag             String[]
+  comments             Comment[]
   // boxIds String[]
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  content      String
+  campaign     Campaign @relation(fields: [campaignSlug], references: [slug], onDelete: Cascade)
+  campaignSlug String
+  createdAt    DateTime
+  updatedAt    DateTime
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId      String
 }
 
 enum Priority {
