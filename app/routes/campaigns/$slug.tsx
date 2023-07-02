@@ -32,6 +32,7 @@ import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
 import { createComment } from "~/models/comment.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
+import { Switch } from "~/components/ui/switch";
 
 export const links: LinksFunction = () => {
   return [
@@ -119,6 +120,7 @@ const layer: LayerProps = {
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
   const [comment, setComment] = useState<string | undefined>("");
+  const [showMap, setShowMap] = useState(false);
   const textAreaRef = useRef();
   const { toast } = useToast();
   const participate = () => {};
@@ -149,7 +151,15 @@ export default function CampaignId() {
 
   return (
     <div className="h-full w-full">
-      <div className="grid grid-cols-2">
+      <div className="float-right">
+        <span>Karte anzeigen</span>
+        <Switch
+          id="showMapSwitch"
+          checked={showMap}
+          onCheckedChange={() => setShowMap(!showMap)}
+        />
+      </div>
+      <div className={`${showMap ? "grid grid-cols-2" : ""}`}>
         <div>
           <span
             className={clsx(
@@ -164,6 +174,7 @@ export default function CampaignId() {
           >
             <ClockIcon className="h-4 w-4" /> {data.priority}
           </span>
+
           <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
             <b>{data.title}</b>
           </h1>
@@ -269,35 +280,37 @@ export default function CampaignId() {
           </Dialog>
         </div>
         <div>
-          <MapProvider>
-            <Map
-              initialViewState={{
-                //@ts-ignore
-                latitude: data.centerpoint.geometry.coordinates[1],
-                //@ts-ignore
-                longitude: data.centerpoint.geometry.coordinates[0],
-                zoom: 4,
-              }}
-              style={{
-                height: "60vh",
-                width: "40vw",
-                position: "fixed",
-                bottom: "10px",
-                // marginTop: "2rem",
-                right: "10px",
-              }}
-            >
-              <Source
-                id="polygon"
-                type="geojson"
-                // data={{ type: "FeatureCollection", features: clusters }}
-                //@ts-ignore
-                data={data.feature[0] as any}
+          {showMap && (
+            <MapProvider>
+              <Map
+                initialViewState={{
+                  //@ts-ignore
+                  latitude: data.centerpoint.geometry.coordinates[1],
+                  //@ts-ignore
+                  longitude: data.centerpoint.geometry.coordinates[0],
+                  zoom: 4,
+                }}
+                style={{
+                  height: "60vh",
+                  width: "40vw",
+                  position: "fixed",
+                  bottom: "10px",
+                  // marginTop: "2rem",
+                  right: "10px",
+                }}
               >
-                <Layer {...layer} />
-              </Source>
-            </Map>
-          </MapProvider>
+                <Source
+                  id="polygon"
+                  type="geojson"
+                  // data={{ type: "FeatureCollection", features: clusters }}
+                  //@ts-ignore
+                  data={data.feature[0] as any}
+                >
+                  <Layer {...layer} />
+                </Source>
+              </Map>
+            </MapProvider>
+          )}
         </div>
         {/* </Form> */}
       </div>
