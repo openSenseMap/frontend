@@ -9279,6 +9279,11 @@ markdown-table@^3.0.0:
   resolved "https://registry.yarnpkg.com/markdown-table/-/markdown-table-3.0.3.tgz#e6331d30e493127e031dd385488b5bd326e4a6bd"
   integrity sha512-Z1NL3Tb1M9wH4XESsCDEksWoKTdlUafKc4pt0GRwjUyXaCFZ+dc3g2erqB6zm3szA2IUSi7VnPI+o/9jnxh9hw==
 
+markdown-to-jsx@^7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/markdown-to-jsx/-/markdown-to-jsx-7.2.1.tgz#87061fd3176ad926ef3d99493e5c57f6335e0c51"
+  integrity sha512-9HrdzBAo0+sFz9ZYAGT5fB8ilzTW+q6lPocRxrIesMO+aB40V9MgFfbfMXxlGjf22OpRy+IXlvVaQenicdpgbg==
+
 mdast-util-definitions@^5.0.0:
   version "5.1.2"
   resolved "https://registry.npmjs.org/mdast-util-definitions/-/mdast-util-definitions-5.1.2.tgz"

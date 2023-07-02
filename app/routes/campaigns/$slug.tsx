@@ -35,6 +35,7 @@ import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Markdown from "markdown-to-jsx";
 
 export const links: LinksFunction = () => {
   return [
@@ -251,7 +252,10 @@ export default function CampaignId() {
           <TabsContent value="calendar"></TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
-            <p>{data.comments.map((c) => c.content)}</p>
+            {data.comments.map((c, i) => {
+              return <Markdown key={i}>{c.content}</Markdown>;
+            })}
+            {/* <p>{data.comments.map((c) => c.content)}</p> */}
             {/* <Form> */}
             <ClientOnly>
               {() => (
