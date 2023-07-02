@@ -178,10 +178,11 @@ export default function CampaignId() {
           <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
             <b>{data.title}</b>
           </h1>
-          <h2 className=" ml-4 mb-4 font-bold">
-            <b>Beschreibung</b>
-          </h2>
+          <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
           <p className="ml-4 mb-4">{data.description}</p>
+          <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
+
+          <p>{data.comments.map((c) => c.content)}</p>
           {/* <Form> */}
           <ClientOnly>
             {() => (
