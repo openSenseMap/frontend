@@ -33,6 +33,7 @@ import { MarkdownEditor } from "~/markdown.client";
 import { createComment } from "~/models/comment.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
+import { downloadGeojSON } from "~/lib/download-geojson";
 
 export const links: LinksFunction = () => {
   return [
@@ -130,25 +131,6 @@ export default function CampaignId() {
   //   });
   // }, []);
 
-  function downloadGeojSON() {
-    //@ts-ignore
-    const geojson = JSON.parse(JSON.stringify(data.feature[0]));
-    console.log(geojson);
-    console.log(valid(geojson));
-    if (valid(geojson)) {
-      const geojsonString = JSON.stringify(geojson);
-      const blob = new Blob([geojsonString], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "geojson_data.json";
-      link.click();
-
-      URL.revokeObjectURL(url);
-    }
-  }
-
   return (
     <div className="h-full w-full">
       <div className="float-right">
@@ -174,14 +156,12 @@ export default function CampaignId() {
           >
             <ClockIcon className="h-4 w-4" /> {data.priority}
           </span>
-
           <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
             <b>{data.title}</b>
           </h1>
           <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
           <p className="ml-4 mb-4">{data.description}</p>
           <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
-
           <p>{data.comments.map((c) => c.content)}</p>
           {/* <Form> */}
           <ClientOnly>
@@ -214,7 +194,10 @@ export default function CampaignId() {
               </div>
             )}
           </ClientOnly>
-          <Button onClick={downloadGeojSON}>GeoJSON herunterladen</Button>
+          {/* @ts-ignore */}
+          <Button onClick={() => downloadGeojSON(data.feature[0])}>
+            GeoJSON herunterladen
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button className="float-right mr-4">Teilen</Button>
