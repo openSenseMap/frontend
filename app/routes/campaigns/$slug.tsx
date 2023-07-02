@@ -34,6 +34,7 @@ import { createComment } from "~/models/comment.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const links: LinksFunction = () => {
   return [
@@ -121,7 +122,10 @@ const layer: LayerProps = {
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
   const [comment, setComment] = useState<string | undefined>("");
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] = useState(true);
+  const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
+    "overview"
+  );
   const textAreaRef = useRef();
   const { toast } = useToast();
   const participate = () => {};
@@ -133,7 +137,73 @@ export default function CampaignId() {
 
   return (
     <div className="h-full w-full">
-      <div className="float-right">
+      <div className="float-right flex gap-2">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Teilnehmen</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Teilnehmen</DialogTitle>
+              <DialogDescription>
+                <p className="font-bold">
+                  Indem Sie auf Teilnehmen klicken stimmen Sie zu, dass Sie der
+                  Kampagnenleiter unter der von Ihnen angegebenen Email- Adresse
+                  kontaktieren darf!
+                </p>
+                <p className="mt-2">
+                  Bitte gib ausserdem an, ob du bereits über die benötigte
+                  Hardware verfügst.
+                </p>
+              </DialogDescription>
+            </DialogHeader>
+            <Form method="post">
+              <div className="flex flex-col gap-4 py-4">
+                <div className="flex flex-row flex-wrap justify-between">
+                  <label htmlFor="email" className="text-right">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    className="autofocus w-2/3 border border-gray-400"
+                  />
+                </div>
+                <div className="flex">
+                  <label htmlFor="hardware" className="text-right">
+                    Hardware vorhanden
+                  </label>
+                  <input
+                    id="hardware"
+                    name="hardware"
+                    type="checkbox"
+                    className="ml-auto"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">Teilnehmen</Button>
+              </DialogFooter>
+            </Form>
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Teilen</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Teilen</DialogTitle>
+              <DialogDescription>
+                <ShareLink />
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+        {/* @ts-ignore */}
+        <Button onClick={() => downloadGeojSON(data.feature[0])}>
+          GeoJSON herunterladen
+        </Button>
         <span>Karte anzeigen</span>
         <Switch
           id="showMapSwitch"
@@ -141,9 +211,82 @@ export default function CampaignId() {
           onCheckedChange={() => setShowMap(!showMap)}
         />
       </div>
-      <div className={`${showMap ? "grid grid-cols-2" : ""}`}>
+      <div className="flex items-center">
+        <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
+          <b>{data.title}</b>
+        </h1>
+        <span
+          className={clsx(
+            " ml-4 flex h-6 w-fit items-center rounded px-2 py-1 text-sm text-white",
+            {
+              "bg-red-500": data.priority.toLowerCase() === "urgent",
+              "bg-yellow-500": data.priority.toLowerCase() === "high",
+              "bg-blue-500": data.priority.toLowerCase() === "medium",
+              "bg-green-500": data.priority.toLowerCase() === "low",
+            }
+          )}
+        >
+          <ClockIcon className="h-4 w-4" /> {data.priority}
+        </span>
+      </div>
+      <div className={`${showMap ? "grid grid-cols-2" : "w-full"}`}>
+        <Tabs defaultValue={tabView} className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">
+              {/* <Clock className="h-5 w-5 pr-1" />
+                {t("live_label")} */}
+              <Button>Übersicht</Button>
+            </TabsTrigger>
+            <TabsTrigger value="calendar">
+              <Button>Kalender</Button>
+            </TabsTrigger>
+            <TabsTrigger value="comments">
+              <Button>Fragen und Kommentare</Button>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview">
+            <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
+            <p className="ml-4 mb-4">{data.description}</p>
+          </TabsContent>
+          <TabsContent value="calendar"></TabsContent>
+          <TabsContent value="comments">
+            <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
+            <p>{data.comments.map((c) => c.content)}</p>
+            {/* <Form> */}
+            <ClientOnly>
+              {() => (
+                <div className="container overflow-auto">
+                  <MarkdownEditor
+                    textAreaRef={textAreaRef}
+                    comment={comment}
+                    setComment={setComment}
+                  />
+                  <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                    <span className="text-gray text-xs leading-4">
+                      Bild hinzufügen
+                    </span>
+                    <span className="text-gray text-xs leading-4">
+                      Markdown unterstützt
+                    </span>
+                  </div>
+                  <Form method="post">
+                    <textarea
+                      className="hidden"
+                      value={comment}
+                      name="comment"
+                      id="comment"
+                    ></textarea>
+                    <Button name="_action" value="PUBLISH" type="submit">
+                      Veröffentlichen
+                    </Button>
+                  </Form>
+                </div>
+              )}
+            </ClientOnly>
+          </TabsContent>
+        </Tabs>
         <div>
-          <span
+          {/* <span
             className={clsx(
               " float-right mr-4 flex w-fit rounded px-2 py-1 text-sm text-white",
               {
@@ -158,12 +301,9 @@ export default function CampaignId() {
           </span>
           <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
             <b>{data.title}</b>
-          </h1>
-          <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
-          <p className="ml-4 mb-4">{data.description}</p>
-          <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
+          </h1> */}
+          {/* <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
           <p>{data.comments.map((c) => c.content)}</p>
-          {/* <Form> */}
           <ClientOnly>
             {() => (
               <div className="container overflow-auto">
@@ -193,75 +333,7 @@ export default function CampaignId() {
                 </Form>
               </div>
             )}
-          </ClientOnly>
-          {/* @ts-ignore */}
-          <Button onClick={() => downloadGeojSON(data.feature[0])}>
-            GeoJSON herunterladen
-          </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="float-right mr-4">Teilen</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Teilen</DialogTitle>
-                <DialogDescription>
-                  <ShareLink />
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button disabled className="float-right mr-4">
-                Teilnehmen
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Teilnehmen</DialogTitle>
-                <DialogDescription>
-                  <p className="font-bold">
-                    Indem Sie auf Teilnehmen klicken stimmen Sie zu, dass Sie
-                    der Kampagnenleiter unter der von Ihnen angegebenen Email-
-                    Adresse kontaktieren darf!
-                  </p>
-                  <p className="mt-2">
-                    Bitte gib ausserdem an, ob du bereits über die benötigte
-                    Hardware verfügst.
-                  </p>
-                </DialogDescription>
-              </DialogHeader>
-              <Form method="post">
-                <div className="flex flex-col gap-4 py-4">
-                  <div className="flex flex-row flex-wrap justify-between">
-                    <label htmlFor="email" className="text-right">
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      name="email"
-                      className="autofocus w-2/3 border border-gray-400"
-                    />
-                  </div>
-                  <div className="flex">
-                    <label htmlFor="hardware" className="text-right">
-                      Hardware vorhanden
-                    </label>
-                    <input
-                      id="hardware"
-                      name="hardware"
-                      type="checkbox"
-                      className="ml-auto"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Teilnehmen</Button>
-                </DialogFooter>
-              </Form>
-            </DialogContent>
-          </Dialog>
+          </ClientOnly> */}
         </div>
         <div>
           {showMap && (
