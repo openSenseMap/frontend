@@ -30,7 +30,7 @@ import { valid } from "geojson-validation";
 import ShareLink from "~/components/bottom-bar/share-link";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
-import { createComment } from "~/models/comment.server";
+import { createComment, deleteComment } from "~/models/comment.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
@@ -51,6 +51,9 @@ export async function action(args: ActionArgs) {
   const _action = formData.get("_action");
   if (_action === "PUBLISH") {
     return publishAction(args);
+  }
+  if (_action === "DELETE") {
+    return deleteCommentAction(args);
   }
   // if (_action === "UPDATE") {
   //   return updateAction(args);
@@ -84,6 +87,24 @@ async function publishAction({ request, params }: ActionArgs) {
   }
 }
 
+async function deleteCommentAction({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const commentId = formData.get("deleteComment");
+  if (typeof commentId !== "string" || commentId.length === 0) {
+    return json(
+      { errors: { commentId: "commentId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const commentToDelete = await deleteComment({ id: commentId });
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
 // export async function action({ request }: ActionArgs) {
 //   // const ownerId = await requireUserId(request);
 //   const formData = await request.formData();
@@ -100,14 +121,14 @@ export const meta: MetaFunction<typeof loader> = ({ params }) => ({
   viewport: "width=device-width,initial-scale=1",
 });
 
-export async function loader({ params }: LoaderArgs) {
-  // request to API with deviceID
+export async function loader({ request, params }: LoaderArgs) {
+  const userId = await requireUserId(request);
 
   const campaign = await getCampaign({ slug: params.slug ?? "" });
   if (!campaign) {
     throw new Response("Campaign not found", { status: 502 });
   }
-  return json(campaign);
+  return json({ campaign, userId });
 }
 
 const layer: LayerProps = {
@@ -122,6 +143,8 @@ const layer: LayerProps = {
 
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
+  const campaign = data.campaign;
+  const userId = data.userId;
   const [comment, setComment] = useState<string | undefined>("");
   const [showMap, setShowMap] = useState(true);
   const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
@@ -214,20 +237,20 @@ export default function CampaignId() {
       </div>
       <div className="flex items-center">
         <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
-          <b>{data.title}</b>
+          <b>{campaign.title}</b>
         </h1>
         <span
           className={clsx(
             " ml-4 flex h-6 w-fit items-center rounded px-2 py-1 text-sm text-white",
             {
-              "bg-red-500": data.priority.toLowerCase() === "urgent",
-              "bg-yellow-500": data.priority.toLowerCase() === "high",
-              "bg-blue-500": data.priority.toLowerCase() === "medium",
-              "bg-green-500": data.priority.toLowerCase() === "low",
+              "bg-red-500": campaign.priority.toLowerCase() === "urgent",
+              "bg-yellow-500": campaign.priority.toLowerCase() === "high",
+              "bg-blue-500": campaign.priority.toLowerCase() === "medium",
+              "bg-green-500": campaign.priority.toLowerCase() === "low",
             }
           )}
         >
-          <ClockIcon className="h-4 w-4" /> {data.priority}
+          <ClockIcon className="h-4 w-4" /> {campaign.priority}
         </span>
       </div>
       <div className={`${showMap ? "grid grid-cols-2" : "w-full"}`}>
@@ -247,15 +270,31 @@ export default function CampaignId() {
           </TabsList>
           <TabsContent value="overview">
             <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
-            <p className="ml-4 mb-4">{data.description}</p>
+            <p className="ml-4 mb-4">{campaign.description}</p>
           </TabsContent>
           <TabsContent value="calendar"></TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
-            {data.comments.map((c, i) => {
-              return <Markdown key={i}>{c.content}</Markdown>;
+            {campaign.comments.map((c, i) => {
+              return (
+                <div key={i}>
+                  {userId === campaign.ownerId && (
+                    <Form method="post">
+                      <input
+                        className="hidden"
+                        id="deleteComment"
+                        name="deleteComment"
+                        value={c.id}
+                      />
+                      <Button name="_action" value="DELETE" type="submit">
+                        Delete
+                      </Button>
+                    </Form>
+                  )}
+                  <Markdown>{c.content}</Markdown>;
+                </div>
+              );
             })}
-            {/* <p>{data.comments.map((c) => c.content)}</p> */}
             {/* <Form> */}
             <ClientOnly>
               {() => (
@@ -345,9 +384,9 @@ export default function CampaignId() {
               <Map
                 initialViewState={{
                   //@ts-ignore
-                  latitude: data.centerpoint.geometry.coordinates[1],
+                  latitude: campaign.centerpoint.geometry.coordinates[1],
                   //@ts-ignore
-                  longitude: data.centerpoint.geometry.coordinates[0],
+                  longitude: campaign.centerpoint.geometry.coordinates[0],
                   zoom: 4,
                 }}
                 style={{
@@ -364,7 +403,7 @@ export default function CampaignId() {
                   type="geojson"
                   // data={{ type: "FeatureCollection", features: clusters }}
                   //@ts-ignore
-                  data={data.feature[0] as any}
+                  data={campaign.feature[0] as any}
                 >
                   <Layer {...layer} />
                 </Source>
