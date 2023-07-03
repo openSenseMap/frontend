@@ -132,7 +132,7 @@ export default function Explore() {
 
   const bounds = mapRef.current
     ? (mapRef.current.getMap().getBounds().toArray().flat() as BBox)
-    : undefined;
+    : ([-92, -72, 193, 76] as BBox);
 
   const { clusters, supercluster } = useSupercluster({
     points,
