@@ -30,7 +30,11 @@ import { valid } from "geojson-validation";
 import ShareLink from "~/components/bottom-bar/share-link";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
-import { createComment, deleteComment } from "~/models/comment.server";
+import {
+  createComment,
+  deleteComment,
+  updateComment,
+} from "~/models/comment.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
@@ -55,10 +59,38 @@ export async function action(args: ActionArgs) {
   if (_action === "DELETE") {
     return deleteCommentAction(args);
   }
+  if (_action === "EDIT") {
+    return updateAction(args);
+  }
   // if (_action === "UPDATE") {
   //   return updateAction(args);
   // }
   throw new Error("Unknown action");
+}
+
+async function updateAction({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const content = formData.get("editComment");
+  if (typeof content !== "string" || content.length === 0) {
+    return json(
+      { errors: { content: "content is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const commentId = formData.get("commentId");
+  if (typeof commentId !== "string" || commentId.length === 0) {
+    return json(
+      { errors: { commentId: "commentId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const comment = await updateComment(commentId, content);
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
 }
 
 async function publishAction({ request, params }: ActionArgs) {
@@ -146,6 +178,9 @@ export default function CampaignId() {
   const campaign = data.campaign;
   const userId = data.userId;
   const [comment, setComment] = useState<string | undefined>("");
+  const [editComment, setEditComment] = useState<string | undefined>("");
+  const [editCommentId, setEditCommentId] = useState<string | undefined>("");
+
   const [showMap, setShowMap] = useState(true);
   const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
     "overview"
@@ -224,7 +259,6 @@ export default function CampaignId() {
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        {/* @ts-ignore */}
         <Button onClick={() => downloadGeojSON(campaign.feature[0])}>
           GeoJSON herunterladen
         </Button>
@@ -275,117 +309,119 @@ export default function CampaignId() {
           <TabsContent value="calendar"></TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
-            {campaign.comments.map((c, i) => {
+            {campaign.comments.map((c: any, i: number) => {
               return (
                 <div key={i}>
                   {userId === campaign.ownerId && (
-                    <Form method="post">
-                      <input
-                        className="hidden"
-                        id="deleteComment"
-                        name="deleteComment"
-                        value={c.id}
-                      />
-                      <Button name="_action" value="DELETE" type="submit">
-                        Delete
+                    <>
+                      <Form method="post">
+                        <input
+                          className="hidden"
+                          id="deleteComment"
+                          name="deleteComment"
+                          value={c.id}
+                        />
+                        <Button name="_action" value="DELETE" type="submit">
+                          Delete
+                        </Button>
+                      </Form>
+                      <Button
+                        onClick={() => {
+                          setEditCommentId(c.id);
+                          setEditComment(c.content);
+                        }}
+                      >
+                        Edit
                       </Button>
-                    </Form>
+                      {editCommentId === c.id && (
+                        <ClientOnly>
+                          {() => (
+                            <div className="container overflow-auto">
+                              <MarkdownEditor
+                                textAreaRef={textAreaRef}
+                                comment={editComment}
+                                setComment={setEditComment}
+                              />
+                              <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                                <span className="text-gray text-xs leading-4">
+                                  Bild hinzufügen
+                                </span>
+                                <span className="text-gray text-xs leading-4">
+                                  Markdown unterstützt
+                                </span>
+                              </div>
+                              <Form method="post">
+                                <input
+                                  className="hidden"
+                                  value={c.id}
+                                  name="commentId"
+                                  id="commentId"
+                                />
+                                <textarea
+                                  className="hidden"
+                                  value={editComment}
+                                  name="editComment"
+                                  id="editComment"
+                                ></textarea>
+                                <Button
+                                  name="_action"
+                                  value="EDIT"
+                                  type="submit"
+                                >
+                                  Veröffentlichen
+                                </Button>
+                              </Form>
+                            </div>
+                          )}
+                        </ClientOnly>
+                      )}
+                    </>
                   )}
                   <Markdown>{c.content}</Markdown>;
                 </div>
               );
             })}
-            {/* <Form> */}
-            <ClientOnly>
-              {() => (
-                <div className="container overflow-auto">
-                  <MarkdownEditor
-                    textAreaRef={textAreaRef}
-                    comment={comment}
-                    setComment={setComment}
-                  />
-                  <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                    <span className="text-gray text-xs leading-4">
-                      Bild hinzufügen
-                    </span>
-                    <span className="text-gray text-xs leading-4">
-                      Markdown unterstützt
-                    </span>
+            {!editComment && (
+              <ClientOnly>
+                {() => (
+                  <div className="container overflow-auto">
+                    <MarkdownEditor
+                      textAreaRef={textAreaRef}
+                      comment={comment}
+                      setComment={setComment}
+                    />
+                    <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                      <span className="text-gray text-xs leading-4">
+                        Bild hinzufügen
+                      </span>
+                      <span className="text-gray text-xs leading-4">
+                        Markdown unterstützt
+                      </span>
+                    </div>
+                    <Form method="post">
+                      <textarea
+                        className="hidden"
+                        value={comment}
+                        name="comment"
+                        id="comment"
+                      ></textarea>
+                      <Button name="_action" value="PUBLISH" type="submit">
+                        Veröffentlichen
+                      </Button>
+                    </Form>
                   </div>
-                  <Form method="post">
-                    <textarea
-                      className="hidden"
-                      value={comment}
-                      name="comment"
-                      id="comment"
-                    ></textarea>
-                    <Button name="_action" value="PUBLISH" type="submit">
-                      Veröffentlichen
-                    </Button>
-                  </Form>
-                </div>
-              )}
-            </ClientOnly>
+                )}
+              </ClientOnly>
+            )}
           </TabsContent>
         </Tabs>
-        <div>
-          {/* <span
-            className={clsx(
-              " float-right mr-4 flex w-fit rounded px-2 py-1 text-sm text-white",
-              {
-                "bg-red-500": data.priority.toLowerCase() === "urgent",
-                "bg-yellow-500": data.priority.toLowerCase() === "high",
-                "bg-blue-500": data.priority.toLowerCase() === "medium",
-                "bg-green-500": data.priority.toLowerCase() === "low",
-              }
-            )}
-          >
-            <ClockIcon className="h-4 w-4" /> {data.priority}
-          </span>
-          <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
-            <b>{data.title}</b>
-          </h1> */}
-          {/* <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
-          <p>{data.comments.map((c) => c.content)}</p>
-          <ClientOnly>
-            {() => (
-              <div className="container overflow-auto">
-                <MarkdownEditor
-                  textAreaRef={textAreaRef}
-                  comment={comment}
-                  setComment={setComment}
-                />
-                <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                  <span className="text-gray text-xs leading-4">
-                    Bild hinzufügen
-                  </span>
-                  <span className="text-gray text-xs leading-4">
-                    Markdown unterstützt
-                  </span>
-                </div>
-                <Form method="post">
-                  <textarea
-                    className="hidden"
-                    value={comment}
-                    name="comment"
-                    id="comment"
-                  ></textarea>
-                  <Button name="_action" value="PUBLISH" type="submit">
-                    Veröffentlichen
-                  </Button>
-                </Form>
-              </div>
-            )}
-          </ClientOnly> */}
-        </div>
+        <div></div>
         <div>
           {showMap && (
             <MapProvider>
               <Map
                 initialViewState={{
-                  //@ts-ignore
                   latitude: campaign.centerpoint.geometry.coordinates[1],
-                  //@ts-ignore
                   longitude: campaign.centerpoint.geometry.coordinates[0],
                   zoom: 4,
                 }}

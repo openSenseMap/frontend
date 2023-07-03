@@ -1,4 +1,4 @@
-import type { User, Comment } from "@prisma/client";
+import type { User, Comment, Prisma } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 export function createComment({
@@ -30,5 +30,17 @@ export function createComment({
 export function deleteComment({ id }: Pick<Comment, "id">) {
   return prisma.comment.deleteMany({
     where: { id },
+  });
+}
+
+export async function updateComment(commentId: string, content: string) {
+  return prisma.comment.update({
+    where: {
+      id: commentId,
+    },
+    data: {
+      content: content,
+      updatedAt: new Date(),
+    },
   });
 }
