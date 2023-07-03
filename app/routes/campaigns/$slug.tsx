@@ -225,7 +225,7 @@ export default function CampaignId() {
           </DialogContent>
         </Dialog>
         {/* @ts-ignore */}
-        <Button onClick={() => downloadGeojSON(data.feature[0])}>
+        <Button onClick={() => downloadGeojSON(campaign.feature[0])}>
           GeoJSON herunterladen
         </Button>
         <span>Karte anzeigen</span>
