@@ -1,13 +1,46 @@
 import { LinkIcon, DocumentDuplicateIcon } from "@heroicons/react/24/solid";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { createPopup } from "~/lib/create-popup";
+import {
+  getTwitterLink,
+  getFacebookLink,
+  getLinkedInLink,
+  getInstagramLink,
+  getWhatsAppLink,
+  getTelegramLink,
+} from "~/lib/share-functions";
 
 export default function ShareLink() {
+  const twitterPopup = (message: string) =>
+    createPopup(
+      "twitter",
+      getTwitterLink(message, window.location.href, ["OpenSenseMap"])
+    );
+
+  const facebookPopup = (message: string) =>
+    createPopup("facebook", getFacebookLink(message, window.location.href));
+
+  const linkedInPopup = (message: string) =>
+    createPopup("linkedin", getLinkedInLink(window.location.href));
+
+  const whatsappPopup = (message: string) =>
+    createPopup("whatsapp", getWhatsAppLink(message, window.location.href));
+
+  const instagramPopup = (caption: string) =>
+    createPopup("instagram", getInstagramLink(caption, window.location.href));
+
+  const telegramPopup = (text: string) =>
+    createPopup("telegram", getTelegramLink(text, window.location.href));
+
   return (
     <div className="my-4">
       <div className="my-4 flex justify-around">
         {/* <!--FACEBOOK ICON--> */}
-        <div className="border-blue-200 hover:shadow-blue-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#1877f2] shadow-xl hover:bg-[#1877f2] hover:fill-white">
+        <div
+          className="hover:shadow-blue-500/50 border-blue-200 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#1877f2] shadow-xl hover:bg-[#1877f2] hover:fill-white"
+          onClick={() => facebookPopup("Trage zu dieser Kampagne bei")}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -18,7 +51,10 @@ export default function ShareLink() {
           </svg>
         </div>
         {/* <!--TWITTER ICON--> */}
-        <div className="border-blue-200 hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#1d9bf0] shadow-xl hover:bg-[#1d9bf0] hover:fill-white">
+        <div
+          className="hover:shadow-sky-500/50 border-blue-200 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#1d9bf0] shadow-xl hover:bg-[#1d9bf0] hover:fill-white"
+          onClick={() => twitterPopup("Trage zu diese Kampagne bei")}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -29,7 +65,10 @@ export default function ShareLink() {
           </svg>
         </div>
         {/* <!--INSTAGRAM ICON--> */}
-        <div className="border-pink-200 hover:shadow-pink-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#bc2a8d] shadow-xl hover:bg-[#bc2a8d] hover:fill-white">
+        <div
+          className="border-pink-200 hover:shadow-pink-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#bc2a8d] shadow-xl hover:bg-[#bc2a8d] hover:fill-white"
+          onClick={() => instagramPopup("")}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -42,7 +81,10 @@ export default function ShareLink() {
           </svg>
         </div>
         {/* <!--WHATSAPP ICON--> */}
-        <div className="border-green-200 hover:shadow-green-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#25D366] shadow-xl hover:bg-[#25D366] hover:fill-white">
+        <div
+          className="border-green-200 hover:shadow-green-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#25D366] shadow-xl hover:bg-[#25D366] hover:fill-white"
+          onClick={() => whatsappPopup("")}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -57,7 +99,10 @@ export default function ShareLink() {
           </svg>
         </div>
         {/* <!--TELEGRAM ICON--> */}
-        <div className="border-sky-200 hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#229ED9] shadow-xl hover:bg-[#229ED9] hover:fill-white">
+        <div
+          className="border-sky-200 hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#229ED9] shadow-xl hover:bg-[#229ED9] hover:fill-white"
+          onClick={() => telegramPopup("")}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -65,6 +110,20 @@ export default function ShareLink() {
             viewBox="0 0 24 24"
           >
             <path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z"></path>
+          </svg>
+        </div>
+        {/* LINKEDIN ICON */}
+        <div
+          className="border-sky-200 hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#0077b5] shadow-xl hover:bg-[#0077b5] hover:fill-white"
+          onClick={() => linkedInPopup("")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+          >
+            <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z" />
           </svg>
         </div>
       </div>
