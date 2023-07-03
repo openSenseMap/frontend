@@ -28,6 +28,7 @@ model User {
   devices   Device[]
   campaigns Campaign[]
   comments  Comment[]
+  events    CampaignEvent[]
 
   profile Profile?
 }
@@ -124,11 +125,11 @@ model Measurement {
 }
 
 model Campaign {
-  id                   String    @id @default(uuid())
+  id                   String          @id @default(uuid())
   title                String
-  slug                 String    @unique
+  slug                 String          @unique
   feature              Json
-  owner                User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  owner                User            @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId              String
   description          String
   priority             Priority
@@ -142,7 +143,7 @@ model Campaign {
   endDate              DateTime?
   phenomena            String[]
   centerpoint          Json?
-  events               String[]
+  events               CampaignEvent[]
   exposure             Exposure
   location_points      Json?
   hardware_available   Boolean
@@ -159,6 +160,20 @@ model Comment {
   createdAt    DateTime
   updatedAt    DateTime
   owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId      String
+}
+
+model CampaignEvent {
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  campaign     Campaign  @relation(fields: [campaignSlug], references: [slug], onDelete: Cascade)
+  campaignSlug String
+  createdAt    DateTime
+  updatedAt    DateTime
+  startDate    DateTime
+  endDate      DateTime?
+  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId      String
 }
 

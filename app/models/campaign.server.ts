@@ -5,7 +5,7 @@ import { prisma } from "~/db.server";
 export function getCampaign({ slug }: Pick<Campaign, "slug">) {
   return prisma.campaign.findFirst({
     where: { slug },
-    include: { comments: true },
+    include: { comments: true, events: true },
   });
 }
 

@@ -40,6 +40,7 @@ import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Markdown from "markdown-to-jsx";
+import { createEvent } from "~/models/campaignevents.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -61,6 +62,9 @@ export async function action(args: ActionArgs) {
   }
   if (_action === "EDIT") {
     return updateAction(args);
+  }
+  if (_action === "CREATE_EVENT") {
+    return createCampaignEvent(args);
   }
   // if (_action === "UPDATE") {
   //   return updateAction(args);
@@ -112,6 +116,49 @@ async function publishAction({ request, params }: ActionArgs) {
   }
   try {
     const comment = await createComment({ content, campaignSlug, ownerId });
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
+async function createCampaignEvent({ request, params }: ActionArgs) {
+  const ownerId = await requireUserId(request);
+  const formData = await request.formData();
+  const title = formData.get("title");
+  const description = formData.get("description");
+  const startDate = new Date();
+  const endDate = new Date();
+
+  if (typeof title !== "string" || title.length === 0) {
+    return json(
+      { errors: { title: "title is required", body: null } },
+      { status: 400 }
+    );
+  }
+  if (typeof description !== "string" || description.length === 0) {
+    return json(
+      { errors: { description: "description is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const campaignSlug = params.slug;
+  if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
+    return json(
+      { errors: { campaignSlug: "campaignSlug is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const event = await createEvent({
+      title,
+      description,
+      startDate,
+      endDate,
+      campaignSlug,
+      ownerId,
+    });
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
@@ -259,6 +306,7 @@ export default function CampaignId() {
             </DialogHeader>
           </DialogContent>
         </Dialog>
+        {/* @ts-ignore */}
         <Button onClick={() => downloadGeojSON(campaign.feature[0])}>
           GeoJSON herunterladen
         </Button>
@@ -306,7 +354,26 @@ export default function CampaignId() {
             <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
             <p className="ml-4 mb-4">{campaign.description}</p>
           </TabsContent>
-          <TabsContent value="calendar"></TabsContent>
+          <TabsContent value="calendar">
+            {campaign.events.length === 0 ? (
+              <div>
+                {" "}
+                <p>
+                  Noch keine Events für diese Kampagne. Erstelle ein Event:{" "}
+                </p>
+                <Form className="flex flex-col" method="post">
+                  <input id="title" name="title" type="text" />
+                  <textarea id="description" name="description"></textarea>
+                  <input id="startDate" name="startDate" type="date" />
+                  <input id="endDate" name="endDate" type="date" />
+
+                  <Button name="_action" value="CREATE_EVENT" type="submit">
+                    CREATE
+                  </Button>
+                </Form>
+              </div>
+            ) : null}
+          </TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
             {campaign.comments.map((c: any, i: number) => {
@@ -421,7 +488,9 @@ export default function CampaignId() {
             <MapProvider>
               <Map
                 initialViewState={{
+                  // @ts-ignore
                   latitude: campaign.centerpoint.geometry.coordinates[1],
+                  // @ts-ignore
                   longitude: campaign.centerpoint.geometry.coordinates[0],
                   zoom: 4,
                 }}
