@@ -68,7 +68,7 @@ export default function MyDevices() {
           <div className=" mb-5 block h-full rounded border-[1px] border-[#ddd] p-1">
             <div className="p-2">
               <p className="mt-5 mb-3 text-2xl">
-                You have <b>{devicesData.length}</b> registered senseBoxes!
+                You have <b>{devicesData?.length}</b> registered senseBoxes!
               </p>
 
               <p className="mb-[10px]">
@@ -215,7 +215,7 @@ export default function MyDevices() {
                   </tr>
                 </thead>
                 <tbody>
-                  {devicesData.map((deviceData) => (
+                  {devicesData?.map((deviceData) => (
                     <tr key={deviceData.id}>
                       <td className="border-b border-gray-200 bg-white  py-3 pl-5 text-sm">
                         <div className="flex items-center">

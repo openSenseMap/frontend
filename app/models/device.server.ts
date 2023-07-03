@@ -46,7 +46,17 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
   });
 }
 
-export function deleteDevice({ id }: Pick<Device, "id">){
+export function updateDeviceInfo({ id, name, exposure }: Pick<Device, "id" | "name" | "exposure">) {
+  return prisma.device.update({
+    where: { id },
+    data: {
+      name: name,
+      exposure: exposure,
+    },
+  });
+}
+
+export function deleteDevice({ id }: Pick<Device, "id">) {
   return prisma.device.delete({ where: { id } });
 }
 

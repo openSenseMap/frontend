@@ -143,7 +143,6 @@ export default function Settings() {
   const [passwordDelVal, setPasswordVal] = useState(""); //* to enable delete account button
   //* Toast notification when user is deleted
   const [toastOpen, setToastOpen] = useState(false);
-  //* Toast notification when user is deleted
   const [lang, setLang] = useState(userData?.language);
   const [name, setName] = useState(userData?.name);
   //* To focus when an error occured
@@ -160,6 +159,7 @@ export default function Settings() {
     //* when passwordUpdate is correct
     if (actionData && !actionData?.errors?.passwordUpdate && actionData?.intent === "update") {
       setToastOpen(true);
+      window.scrollTo(0, 0);
     }
   }, [actionData]);
 
@@ -174,7 +174,7 @@ export default function Settings() {
               <ToastPrimitive.Provider>
                 <ToastPrimitive.Root
                   open={toastOpen}
-                  duration={4000}
+                  duration={3000}
                   onOpenChange={setToastOpen}
                   className={clsx(
                     " inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
@@ -192,7 +192,7 @@ export default function Settings() {
                   <div className="flex">
                     <div className="flex w-0 flex-1 items-center p-4">
                       <div className="radix w-full">
-                        <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-gray-900 dark:text-gray-100">
+                        <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-[#31708f] dark:text-gray-100">
                           {/* Account successfully deleted. */}
                           Profile succesfully updated.
                           <ToastPrimitive.Close aria-label="Close">
