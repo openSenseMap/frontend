@@ -1,8 +1,11 @@
 import { LinkIcon, DocumentDuplicateIcon } from "@heroicons/react/24/solid";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ShareLink() {
+  const { toast } = useToast();
+
   return (
     <div className="my-4">
       <div className="my-4 flex justify-around">
@@ -80,6 +83,10 @@ export default function ShareLink() {
         <Button
           onClick={() => {
             navigator.clipboard.writeText(window.location.href);
+            toast({
+              title: "Copied to clipboard",
+              description: "Go ahead and share your link! 🎉",
+            });
           }}
           className="inline-flex h-9 transform items-center justify-center rounded-md bg-primary px-2 py-2 text-sm font-medium text-primary-foreground shadow transition-transform active:scale-75"
         >
