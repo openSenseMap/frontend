@@ -39,7 +39,7 @@ export default function EditBox() {
   // Get deviceId from route path
   const { boxId } = useParams();
   return (
-    <div className="mx-8 mt-14">
+    <div className="mx-8 mt-14 mr-20">
       {/*Toast notification */}
       <div className={toastOpen ? "mb-12" : ""}>
         <ToastPrimitive.Provider>
@@ -86,8 +86,8 @@ export default function EditBox() {
           <ToastPrimitive.Viewport />
         </ToastPrimitive.Provider>
       </div>
-      <div className="grid grid-flow-col gap-10 font-helvetica tracking-wide max-md:grid-rows-2  lg:grid-rows-1">
-        <nav className="col-span-3 md:col-span-3">
+      <div className="grid grid-cols-5 gap-10 font-helvetica tracking-wide max-md:grid-cols-2  lg:grid-rows-1">
+        <nav className="col-span-5 md:col-span-1">
           <ul>
             <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
               <ArrowSmallLeftIcon className=" mr-2 inline h-5 w-5" />
@@ -141,7 +141,7 @@ export default function EditBox() {
           </ul>
         </nav>
 
-        <main className="col-span-9 md:col-span-9">
+        <main className="col-span-5 md:col-span-4">
           <Outlet context={[toastOpen, setToastOpen]} />
         </main>
       </div>
