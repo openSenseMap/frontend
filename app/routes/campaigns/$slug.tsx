@@ -40,7 +40,11 @@ import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Markdown from "markdown-to-jsx";
-import { createEvent, deleteEvent } from "~/models/campaign-events.server";
+import {
+  createEvent,
+  deleteEvent,
+  updateEvent,
+} from "~/models/campaign-events.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -68,6 +72,9 @@ export async function action(args: ActionArgs) {
   }
   if (_action === "DELETE_EVENT") {
     return deleteCampaignEvent(args);
+  }
+  if (_action === "UPDATE_EVENT") {
+    return updateCampaignEvent(args);
   }
   // if (_action === "UPDATE") {
   //   return updateAction(args);
@@ -198,6 +205,47 @@ async function deleteCampaignEvent({ request }: ActionArgs) {
   }
   try {
     const eventToDelete = await deleteEvent({ id: eventId });
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
+async function updateCampaignEvent({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const eventId = formData.get("eventId");
+  if (typeof eventId !== "string" || eventId.length === 0) {
+    return json(
+      { errors: { eventId: "eventId is required", body: null } },
+      { status: 400 }
+    );
+  }
+
+  const title = formData.get("title");
+  if (typeof title !== "string" || title.length === 0) {
+    return json(
+      { errors: { title: "title is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const description = formData.get("description");
+  if (typeof description !== "string" || description.length === 0) {
+    return json(
+      { errors: { description: "description is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const startDate = new Date();
+  const endDate = new Date();
+  try {
+    const event = await updateEvent(
+      eventId,
+      title,
+      description,
+      startDate,
+      endDate
+    );
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
@@ -414,7 +462,23 @@ export default function CampaignId() {
                         DELETE
                       </Button>
                     </Form>
-                    <Button>Edit</Button>
+                    <Form method="post">
+                      <input
+                        className="hidden"
+                        id="eventId"
+                        name="eventId"
+                        type="text"
+                        value={e.id}
+                      />
+                      <input id="title" name="title" type="text" />
+                      <textarea id="description" name="description"></textarea>
+                      <input id="startDate" name="startDate" type="date" />
+                      <input id="endDate" name="endDate" type="date" />
+
+                      <Button name="_action" value="UPDATE_EVENT" type="submit">
+                        EDIT
+                      </Button>
+                    </Form>
                   </div>
                 )}
               </div>
