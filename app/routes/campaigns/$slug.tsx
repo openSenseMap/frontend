@@ -204,12 +204,14 @@ export default function CampaignId() {
         <Button onClick={() => downloadGeojSON(campaign.feature[0])}>
           GeoJSON herunterladen
         </Button>
-        <span>Karte anzeigen</span>
-        <Switch
-          id="showMapSwitch"
-          checked={showMap}
-          onCheckedChange={() => setShowMap(!showMap)}
-        />
+        <div>
+          <span>Karte anzeigen</span>
+          <Switch
+            id="showMapSwitch"
+            checked={showMap}
+            onCheckedChange={() => setShowMap(!showMap)}
+          />
+        </div>
       </div>
       <div className="flex items-center">
         <h1 className="mt-6 mb-2 text-lg font-bold capitalize">

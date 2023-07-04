@@ -35,6 +35,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { InfoCard } from "~/utils/info-card";
+import { ClientOnly } from "remix-utils";
+import { MarkdownEditor } from "~/markdown.client";
 // import h337, { Heatmap } from "heatmap.js";
 
 interface PhenomenaState {
@@ -179,8 +181,10 @@ export default function CreateCampaign() {
   const navigate = useNavigate();
   const phenomena = useLoaderData<typeof loader>();
   const { features } = useContext(FeatureContext);
+  const textAreaRef = useRef();
+  const [description, setDescription] = useState<string | undefined>("");
   const titleRef = useRef<HTMLInputElement>(null);
-  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
   const priorityRef = useRef<HTMLInputElement>(null);
   const requiredParticipantsRef = useRef<HTMLInputElement>(null);
   const requiredSensorsRef = useRef<HTMLInputElement>(null);
@@ -268,6 +272,7 @@ export default function CreateCampaign() {
       | RefObject<HTMLInputElement>
       | RefObject<HTMLTextAreaElement>
       | RefObject<HTMLButtonElement>
+      | RefObject<HTMLDivElement>
   ) => {
     if (ref.current) {
       window.scrollTo({
@@ -433,8 +438,33 @@ export default function CreateCampaign() {
                 ),
               })}
             </label>
-            <div className="mt-1">
+            <div className="mt-1" ref={descriptionRef}>
               <textarea
+                className="hidden"
+                value={description}
+                name="description"
+                id="description"
+              ></textarea>
+              <ClientOnly>
+                {() => (
+                  <>
+                    <MarkdownEditor
+                      textAreaRef={textAreaRef}
+                      comment={description}
+                      setComment={setDescription}
+                    />
+                    <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                      <span className="text-gray text-xs leading-4">
+                        Bild hinzufügen
+                      </span>
+                      <span className="text-gray text-xs leading-4">
+                        Markdown unterstützt
+                      </span>
+                    </div>
+                  </>
+                )}
+              </ClientOnly>
+              {/* <textarea
                 id="description"
                 ref={descriptionRef}
                 name="description"
@@ -445,7 +475,7 @@ export default function CreateCampaign() {
                 }
                 aria-describedby="description-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
+              /> */}
               {actionData?.error?.issues[0].path[0] === "description" && (
                 <div className="pt-1 text-red-500" id="description-error">
                   {actionData.error.issues[0].message}
