@@ -13,7 +13,6 @@ import { MapProvider, Marker } from "react-map-gl";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import OverlaySearch from "~/components/search/overlay-search";
-import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import useSupercluster from "use-supercluster";
 import DonutChartCluster from "~/components/map/cluster/donut-chart-cluster";
@@ -223,7 +222,6 @@ export default function Explore() {
         >
           {clusterMarker}
         </Map>
-        <Toaster />
         {showSearch ? (
           <OverlaySearch
             devices={data.devices}

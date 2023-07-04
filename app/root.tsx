@@ -18,6 +18,7 @@ import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
+import { Toaster } from "./components/ui/toaster";
 
 export const links: LinksFunction = () => {
   return [
@@ -97,6 +98,7 @@ function App() {
       </head>
       <body className="flex h-full flex-col">
         <Outlet />
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
         <script
