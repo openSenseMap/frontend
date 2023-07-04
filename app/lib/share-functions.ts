@@ -23,6 +23,7 @@ export function getWhatsAppLink(text: string, url: string) {
 }
 
 export function getInstagramLink(caption: string, url: string) {
+  // wrong link, instagram does not support sharing via web?
   return `https://www.instagram.com/share?url=${encode(url)}&caption=${encode(
     caption
   )}`;

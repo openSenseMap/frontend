@@ -3,7 +3,7 @@ import Map from "~/components/map";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 
-import type { LoaderArgs, LinksFunction } from "@remix-run/node";
+import type { LoaderArgs, LinksFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getDevices } from "~/models/device.server";
@@ -29,6 +29,13 @@ import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
 import { getProfileByUserId } from "~/models/profile.server";
+
+export const meta: MetaFunction = () => ({
+  charset: "utf-8",
+  description:
+    "Guck mal was ich interessantes auf der openSenseMap gefunden habe!",
+  viewport: "width=device-width,initial-scale=1",
+});
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
