@@ -111,6 +111,7 @@
     "react-mapbox-gl": "^5.1.1",
     "react-mapbox-gl-draw": "^2.0.4",
     "react-spring": "^9.7.1",
+    "rehype-sanitize": "^5.0.1",
     "remix-i18next": "^5.1.1",
     "remix-typedjson": "^0.1.7",
     "remix-utils": "^6.5.0",

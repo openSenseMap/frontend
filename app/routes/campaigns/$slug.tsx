@@ -248,7 +248,7 @@ export default function CampaignId() {
           </TabsList>
           <TabsContent value="overview">
             <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
-            <p className="ml-4 mb-4">{campaign.description}</p>
+            <Markdown>{campaign.description}</Markdown>
           </TabsContent>
           <TabsContent value="calendar">
             {campaign.events.length === 0 && (
