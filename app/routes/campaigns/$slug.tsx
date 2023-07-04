@@ -40,7 +40,7 @@ import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Markdown from "markdown-to-jsx";
-import { createEvent } from "~/models/campaignevents.server";
+import { createEvent, deleteEvent } from "~/models/campaign-events.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -65,6 +65,9 @@ export async function action(args: ActionArgs) {
   }
   if (_action === "CREATE_EVENT") {
     return createCampaignEvent(args);
+  }
+  if (_action === "DELETE_EVENT") {
+    return deleteCampaignEvent(args);
   }
   // if (_action === "UPDATE") {
   //   return updateAction(args);
@@ -177,6 +180,24 @@ async function deleteCommentAction({ request }: ActionArgs) {
   }
   try {
     const commentToDelete = await deleteComment({ id: commentId });
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
+async function deleteCampaignEvent({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const eventId = formData.get("eventId");
+  if (typeof eventId !== "string" || eventId.length === 0) {
+    return json(
+      { errors: { eventId: "eventId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const eventToDelete = await deleteEvent({ id: eventId });
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
@@ -355,7 +376,7 @@ export default function CampaignId() {
             <p className="ml-4 mb-4">{campaign.description}</p>
           </TabsContent>
           <TabsContent value="calendar">
-            {campaign.events.length === 0 ? (
+            {campaign.events.length === 0 && (
               <div>
                 {" "}
                 <p>
@@ -372,7 +393,32 @@ export default function CampaignId() {
                   </Button>
                 </Form>
               </div>
-            ) : null}
+            )}
+            {campaign.events.map((e, i) => (
+              <div key={i}>
+                <p>{e.title}</p>
+                <p>{e.description}</p>
+                <p>{e.startDate}</p>
+                <p>{e.endDate}</p>
+                {userId === e.ownerId && (
+                  <div className="flex">
+                    <Form method="post">
+                      <input
+                        className="hidden"
+                        id="eventId"
+                        name="eventId"
+                        type="text"
+                        value={e.id}
+                      />
+                      <Button name="_action" value="DELETE_EVENT" type="submit">
+                        DELETE
+                      </Button>
+                    </Form>
+                    <Button>Edit</Button>
+                  </div>
+                )}
+              </div>
+            ))}
           </TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
