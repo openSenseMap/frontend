@@ -30,21 +30,20 @@ import { valid } from "geojson-validation";
 import ShareLink from "~/components/bottom-bar/share-link";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
-import {
-  createComment,
-  deleteComment,
-  updateComment,
-} from "~/models/comment.server";
+
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Markdown from "markdown-to-jsx";
 import {
-  createEvent,
-  deleteEvent,
-  updateEvent,
-} from "~/models/campaign-events.server";
+  publishCommentAction,
+  createCampaignEvent,
+  deleteCampaignEvent,
+  deleteCommentAction,
+  updateCampaignEvent,
+  updateCommentAction,
+} from "~/lib/actions";
 
 export const links: LinksFunction = () => {
   return [
@@ -58,198 +57,24 @@ export const links: LinksFunction = () => {
 export async function action(args: ActionArgs) {
   const formData = await args.request.clone().formData();
   const _action = formData.get("_action");
-  if (_action === "PUBLISH") {
-    return publishAction(args);
-  }
-  if (_action === "DELETE") {
-    return deleteCommentAction(args);
-  }
-  if (_action === "EDIT") {
-    return updateAction(args);
-  }
-  if (_action === "CREATE_EVENT") {
-    return createCampaignEvent(args);
-  }
-  if (_action === "DELETE_EVENT") {
-    return deleteCampaignEvent(args);
-  }
-  if (_action === "UPDATE_EVENT") {
-    return updateCampaignEvent(args);
-  }
-  // if (_action === "UPDATE") {
-  //   return updateAction(args);
-  // }
-  throw new Error("Unknown action");
-}
 
-async function updateAction({ request }: ActionArgs) {
-  const formData = await request.formData();
-  const content = formData.get("editComment");
-  if (typeof content !== "string" || content.length === 0) {
-    return json(
-      { errors: { content: "content is required", body: null } },
-      { status: 400 }
-    );
-  }
-  const commentId = formData.get("commentId");
-  if (typeof commentId !== "string" || commentId.length === 0) {
-    return json(
-      { errors: { commentId: "commentId is required", body: null } },
-      { status: 400 }
-    );
-  }
-  try {
-    const comment = await updateComment(commentId, content);
-    return json({ ok: true });
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
-  }
-}
-
-async function publishAction({ request, params }: ActionArgs) {
-  const ownerId = await requireUserId(request);
-  const formData = await request.formData();
-  const content = formData.get("comment");
-  if (typeof content !== "string" || content.length === 0) {
-    return json(
-      { errors: { content: "content is required", body: null } },
-      { status: 400 }
-    );
-  }
-  const campaignSlug = params.slug;
-  if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
-    return json(
-      { errors: { campaignSlug: "campaignSlug is required", body: null } },
-      { status: 400 }
-    );
-  }
-  try {
-    const comment = await createComment({ content, campaignSlug, ownerId });
-    return json({ ok: true });
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
-  }
-}
-
-async function createCampaignEvent({ request, params }: ActionArgs) {
-  const ownerId = await requireUserId(request);
-  const formData = await request.formData();
-  const title = formData.get("title");
-  const description = formData.get("description");
-  const startDate = new Date();
-  const endDate = new Date();
-
-  if (typeof title !== "string" || title.length === 0) {
-    return json(
-      { errors: { title: "title is required", body: null } },
-      { status: 400 }
-    );
-  }
-  if (typeof description !== "string" || description.length === 0) {
-    return json(
-      { errors: { description: "description is required", body: null } },
-      { status: 400 }
-    );
-  }
-  const campaignSlug = params.slug;
-  if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
-    return json(
-      { errors: { campaignSlug: "campaignSlug is required", body: null } },
-      { status: 400 }
-    );
-  }
-  try {
-    const event = await createEvent({
-      title,
-      description,
-      startDate,
-      endDate,
-      campaignSlug,
-      ownerId,
-    });
-    return json({ ok: true });
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
-  }
-}
-
-async function deleteCommentAction({ request }: ActionArgs) {
-  const formData = await request.formData();
-  const commentId = formData.get("deleteComment");
-  if (typeof commentId !== "string" || commentId.length === 0) {
-    return json(
-      { errors: { commentId: "commentId is required", body: null } },
-      { status: 400 }
-    );
-  }
-  try {
-    const commentToDelete = await deleteComment({ id: commentId });
-    return json({ ok: true });
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
-  }
-}
-
-async function deleteCampaignEvent({ request }: ActionArgs) {
-  const formData = await request.formData();
-  const eventId = formData.get("eventId");
-  if (typeof eventId !== "string" || eventId.length === 0) {
-    return json(
-      { errors: { eventId: "eventId is required", body: null } },
-      { status: 400 }
-    );
-  }
-  try {
-    const eventToDelete = await deleteEvent({ id: eventId });
-    return json({ ok: true });
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
-  }
-}
-
-async function updateCampaignEvent({ request }: ActionArgs) {
-  const formData = await request.formData();
-  const eventId = formData.get("eventId");
-  if (typeof eventId !== "string" || eventId.length === 0) {
-    return json(
-      { errors: { eventId: "eventId is required", body: null } },
-      { status: 400 }
-    );
-  }
-
-  const title = formData.get("title");
-  if (typeof title !== "string" || title.length === 0) {
-    return json(
-      { errors: { title: "title is required", body: null } },
-      { status: 400 }
-    );
-  }
-  const description = formData.get("description");
-  if (typeof description !== "string" || description.length === 0) {
-    return json(
-      { errors: { description: "description is required", body: null } },
-      { status: 400 }
-    );
-  }
-  const startDate = new Date();
-  const endDate = new Date();
-  try {
-    const event = await updateEvent(
-      eventId,
-      title,
-      description,
-      startDate,
-      endDate
-    );
-    return json({ ok: true });
-  } catch (error) {
-    console.error(`form not submitted ${error}`);
-    return json({ error });
+  switch (_action) {
+    case "PUBLISH":
+      return publishCommentAction(args);
+    case "DELETE":
+      return deleteCommentAction(args);
+    case "EDIT":
+      return updateCommentAction(args);
+    case "CREATE_EVENT":
+      return createCampaignEvent(args);
+    case "DELETE_EVENT":
+      return deleteCampaignEvent(args);
+    case "UPDATE_EVENT":
+      return updateCampaignEvent(args);
+    default:
+      // Handle the case when _action doesn't match any of the above cases
+      // For example, you can throw an error or return a default action
+      throw new Error(`Unknown action: ${_action}`);
   }
 }
 
@@ -433,8 +258,12 @@ export default function CampaignId() {
                 <Form className="flex flex-col" method="post">
                   <input id="title" name="title" type="text" />
                   <textarea id="description" name="description"></textarea>
-                  <input id="startDate" name="startDate" type="date" />
-                  <input id="endDate" name="endDate" type="date" />
+                  <input
+                    id="startDate"
+                    name="startDate"
+                    type="datetime-local"
+                  />
+                  <input id="endDate" name="endDate" type="datetime-local" />
 
                   <Button name="_action" value="CREATE_EVENT" type="submit">
                     CREATE
