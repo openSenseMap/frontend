@@ -19,6 +19,7 @@ import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
 import { Toaster } from "./components/ui/toaster";
+import { i18nCookie } from "./cookies";
 
 export const links: LinksFunction = () => {
   return [
@@ -63,11 +64,18 @@ export const meta: MetaFunction = () => ({
 });
 
 export async function loader({ request }: LoaderArgs) {
-  return json({
-    user: await getUser(request),
-    locale: await i18next.getLocale(request),
-    ENV: getEnv(),
-  });
+  const locale = await i18next.getLocale(request);
+  const user = await getUser(request);
+  return json(
+    {
+      user: user,
+      locale: locale,
+      ENV: getEnv(),
+    },
+    {
+      headers: { "Set-Cookie": await i18nCookie.serialize(locale) },
+    }
+  );
 }
 
 export let handle = {

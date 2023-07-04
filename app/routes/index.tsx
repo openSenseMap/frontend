@@ -50,11 +50,10 @@ export const loader = async ({ request }: LoaderArgs) => {
 };
 
 export default function Index() {
-  const { useCases, features, partners, header } = useLoaderData<{
+  const { useCases, features, partners } = useLoaderData<{
     useCases: UseCase[];
     features: Feature[];
     partners: Partner[];
-    header: { userId: string; userName: string; locale: string };
   }>();
 
   const { t } = useTranslation("landing");
@@ -62,7 +61,7 @@ export default function Index() {
   return (
     <div className="min-h-full bg-white dark:bg-black">
       <header>
-        <Header data={header} />
+        <Header />
       </header>
       <main>
         <div className="overflow-hidden pt-8 sm:py-20">
