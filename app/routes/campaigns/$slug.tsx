@@ -121,12 +121,16 @@ export default function CampaignId() {
   const [comment, setComment] = useState<string | undefined>("");
   const [editComment, setEditComment] = useState<string | undefined>("");
   const [editCommentId, setEditCommentId] = useState<string | undefined>("");
+  const [eventDescription, setEventDescription] = useState<string | undefined>(
+    ""
+  );
 
   const [showMap, setShowMap] = useState(true);
   const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
     "overview"
   );
   const textAreaRef = useRef();
+  const eventTextAreaRef = useRef();
   const { toast } = useToast();
   const participate = () => {};
   // useEffect(() => {
@@ -137,10 +141,10 @@ export default function CampaignId() {
 
   return (
     <div className="h-full w-full">
-      <div className="float-right flex gap-2">
+      <div className="float-right flex gap-3">
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Teilnehmen</Button>
+            <Button variant="outline">Teilnehmen</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -189,7 +193,7 @@ export default function CampaignId() {
         </Dialog>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Teilen</Button>
+            <Button variant="outline">Teilen</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -200,8 +204,11 @@ export default function CampaignId() {
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        {/* @ts-ignore */}
-        <Button onClick={() => downloadGeojSON(campaign.feature[0])}>
+        <Button
+          variant="outline"
+          // @ts-ignore
+          onClick={() => downloadGeojSON(campaign.feature[0])}
+        >
           GeoJSON herunterladen
         </Button>
         <div>
@@ -237,13 +244,13 @@ export default function CampaignId() {
             <TabsTrigger value="overview">
               {/* <Clock className="h-5 w-5 pr-1" />
                 {t("live_label")} */}
-              <Button>Übersicht</Button>
+              <Button variant="outline">Übersicht</Button>
             </TabsTrigger>
             <TabsTrigger value="calendar">
-              <Button>Kalender</Button>
+              <Button variant="outline">Kalender</Button>
             </TabsTrigger>
             <TabsTrigger value="comments">
-              <Button>Fragen und Kommentare</Button>
+              <Button variant="outline">Fragen und Kommentare</Button>
             </TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
@@ -252,24 +259,101 @@ export default function CampaignId() {
           </TabsContent>
           <TabsContent value="calendar">
             {campaign.events.length === 0 && (
-              <div>
+              <div className="mx-auto w-full max-w-md px-8">
                 {" "}
                 <p>
                   Noch keine Events für diese Kampagne. Erstelle ein Event:{" "}
                 </p>
-                <Form className="flex flex-col" method="post">
-                  <input id="title" name="title" type="text" />
-                  <textarea id="description" name="description"></textarea>
-                  <input
-                    id="startDate"
-                    name="startDate"
-                    type="datetime-local"
-                  />
-                  <input id="endDate" name="endDate" type="datetime-local" />
-
-                  <Button name="_action" value="CREATE_EVENT" type="submit">
-                    CREATE
-                  </Button>
+                <Form className="space-y-6" method="post">
+                  <div>
+                    <label htmlFor="title">
+                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                        Titel
+                      </span>
+                    </label>
+                    <div className="mt-1 w-full">
+                      <input
+                        className="w-full"
+                        id="title"
+                        name="title"
+                        type="text"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="description">
+                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                        Beschreibung
+                      </span>
+                    </label>
+                    <div className="mt-1">
+                      <textarea
+                        className="hidden"
+                        value={eventDescription}
+                        id="description"
+                        name="description"
+                      ></textarea>
+                      <ClientOnly>
+                        {() => (
+                          <>
+                            <MarkdownEditor
+                              textAreaRef={eventTextAreaRef}
+                              comment={eventDescription}
+                              setComment={setEventDescription}
+                            />
+                            <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                              <span className="text-gray text-xs leading-4">
+                                Bild hinzufügen
+                              </span>
+                              <span className="text-gray text-xs leading-4">
+                                Markdown unterstützt
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </ClientOnly>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="startDate">
+                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                        Beginn
+                      </span>
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        className="w-full"
+                        id="startDate"
+                        name="startDate"
+                        type="datetime-local"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="startDate">
+                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                        Abschluss
+                      </span>
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        className="w-full"
+                        id="endDate"
+                        name="endDate"
+                        type="datetime-local"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      name="_action"
+                      value="CREATE_EVENT"
+                      className="hover:bg-blue-600 focus:bg-blue-400  rounded bg-blue-500 py-2 px-4 text-white"
+                    >
+                      CREATE
+                    </button>
+                  </div>
                 </Form>
               </div>
             )}
