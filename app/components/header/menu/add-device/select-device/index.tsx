@@ -14,17 +14,16 @@ export default function SelectDevice(props: SelectDeviceProps) {
   const deviceTypeField = useField("deviceType");
   const [deviceType, setDeviceType] = useControlField<string | undefined>(
     "deviceType"
-    );
-    
-    return (
-      <div>
+  );
+
+  return (
+    <div>
       <p className="text-lg font-semibold">Select your device</p>
       <p>Which hardware do you use?</p>
       {deviceTypeField.error && (
         <span className="text-red-500">{deviceTypeField.error}</span>
       )}
       <div className="grid grid-cols-4 gap-4">
-
         <Card
           data-checked={deviceType === "senseBox:edu"}
           onClick={() => setDeviceType("senseBox:edu")}

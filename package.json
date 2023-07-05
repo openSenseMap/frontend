@@ -95,6 +95,7 @@
     "remix-typedjson": "^0.1.7",
     "remix-validated-form": "^5.0.2",
     "shadcn-ui": "^0.2.2",
+    "spin-delay": "^1.2.0",
     "stream-array": "^1.1.2",
     "stringify-stream": "^1.0.5",
     "tailwind-merge": "^1.13.2",
