@@ -18,12 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "~/components/ui/use-toast";
 import { useEffect, useRef, useState } from "react";
 import { Map } from "~/components/Map";
@@ -58,6 +53,7 @@ import {
   updateCommentAction,
 } from "~/lib/actions";
 import { TrashIcon, EditIcon } from "lucide-react";
+import { useNavigate } from "@remix-run/react";
 
 export const links: LinksFunction = () => {
   return [
@@ -130,8 +126,10 @@ const layer: LayerProps = {
 
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
   const campaign = data.campaign;
   const userId = data.userId;
+  const [commentEditMode, setCommentEditMode] = useState(false);
   const [eventEditMode, setEventEditMode] = useState(false);
   const [editEventTitle, setEditEventTitle] = useState<string | undefined>("");
   const [editEventDescription, setEditEventDescription] = useState<
@@ -263,19 +261,22 @@ export default function CampaignId() {
       </div>
       <div className={`${showMap ? "grid grid-cols-2" : "w-full"}`}>
         <Tabs defaultValue={tabView} className="w-full">
-          <TabsList>
-            <TabsTrigger value="overview">
-              {/* <Clock className="h-5 w-5 pr-1" />
+          <div className="flex items-center justify-center">
+            <TabsList>
+              <TabsTrigger value="overview">
+                {/* <Clock className="h-5 w-5 pr-1" />
                 {t("live_label")} */}
-              <Button variant="outline">Übersicht</Button>
-            </TabsTrigger>
-            <TabsTrigger value="calendar">
-              <Button variant="outline">Kalender</Button>
-            </TabsTrigger>
-            <TabsTrigger value="comments">
-              <Button variant="outline">Fragen und Kommentare</Button>
-            </TabsTrigger>
-          </TabsList>
+                <Button variant="outline">Übersicht</Button>
+              </TabsTrigger>
+              <TabsTrigger value="calendar">
+                <Button variant="outline">Kalender</Button>
+              </TabsTrigger>
+              <TabsTrigger value="comments">
+                <Button variant="outline">Fragen und Kommentare</Button>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
             <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
             <Markdown>{campaign.description}</Markdown>
@@ -381,29 +382,94 @@ export default function CampaignId() {
               </div>
             )}
             {campaign.events.map((e, i) => (
-              <Card key={i} className="w-fit min-w-[300px]">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div>
-                      {eventEditMode ? (
-                        <input
-                          className="mr-4"
-                          type="text"
-                          onChange={(e) => setEditEventTitle(e.target.value)}
-                          placeholder="Enter new title"
-                        />
-                      ) : (
-                        <p className="mr-4">{e.title}</p>
+              <div
+                key={i}
+                className="flex flex-col items-center justify-center"
+              >
+                <Card className="w-fit min-w-[300px]">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div>
+                        {eventEditMode ? (
+                          <input
+                            className="mr-4"
+                            type="text"
+                            onChange={(e) => setEditEventTitle(e.target.value)}
+                            placeholder="Enter new title"
+                          />
+                        ) : (
+                          <p className="mr-4">{e.title}</p>
+                        )}
+                      </div>
+                      {userId === e.ownerId && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => setEventEditMode(true)}
+                          >
+                            <EditIcon className="h-4 w-4" />
+                          </Button>
+                          <Form method="post">
+                            <input
+                              className="hidden"
+                              id="eventId"
+                              name="eventId"
+                              type="text"
+                              value={e.id}
+                            />
+                            <Button
+                              variant="outline"
+                              name="_action"
+                              value="DELETE_EVENT"
+                              type="submit"
+                            >
+                              <TrashIcon className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </Form>
+                        </div>
                       )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setEventEditMode(true)}
-                      >
-                        <EditIcon className="h-4 w-4" />
-                      </Button>
-                      <Form method="post">
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col">
+                    <span className="font-bold">Beschreibung: </span>
+                    {eventEditMode ? (
+                      <ClientOnly>
+                        {() => (
+                          <>
+                            <MarkdownEditor
+                              textAreaRef={eventTextAreaRef}
+                              comment={editEventDescription}
+                              setComment={setEditEventDescription}
+                            />
+                            <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
+                              <span className="text-gray text-xs leading-4">
+                                Bild hinzufügen
+                              </span>
+                              <span className="text-gray text-xs leading-4">
+                                Markdown unterstützt
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </ClientOnly>
+                    ) : (
+                      <Markdown>{e.description}</Markdown>
+                    )}
+                    <span className="font-bold">Beginn: </span>
+                    {eventEditMode ? (
+                      <input
+                        type="datetime-locale"
+                        onChange={() => setEditEventStartDate}
+                      />
+                    ) : (
+                      <p>{e.startDate}</p>
+                    )}
+                    <span className="font-bold">Abschluss: </span>
+                    <p>{e.endDate}</p>
+                  </CardContent>
+                  {userId === e.ownerId && eventEditMode && (
+                    <CardFooter>
+                      <Form method="post" className="space-y-2">
                         <input
                           className="hidden"
                           id="eventId"
@@ -411,135 +477,103 @@ export default function CampaignId() {
                           type="text"
                           value={e.id}
                         />
+                        <input
+                          className="hidden"
+                          id="title"
+                          name="title"
+                          type="text"
+                          value={editEventTitle}
+                        />
+                        <textarea
+                          className="hidden"
+                          id="description"
+                          name="description"
+                          value={editEventDescription}
+                        ></textarea>
+                        <input
+                          className="hidden"
+                          id="startDate"
+                          name="startDate"
+                          type="date"
+                          // value={editEventStartDate}
+                        />
+                        <input
+                          // value={editEventEndDate}
+                          className="hidden"
+                          id="endDate"
+                          name="endDate"
+                          type="date"
+                        />
+
                         <Button
-                          variant="outline"
+                          className="float-right"
                           name="_action"
-                          value="DELETE_EVENT"
+                          value="UPDATE_EVENT"
                           type="submit"
+                          onClick={() => setEventEditMode(false)}
                         >
-                          <TrashIcon className="h-4 w-4 text-red-500" />
+                          ÜBERNEMEN
                         </Button>
                       </Form>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col">
-                  <span className="font-bold">Beschreibung: </span>
-                  {eventEditMode ? (
-                    <ClientOnly>
-                      {() => (
-                        <>
-                          <MarkdownEditor
-                            textAreaRef={eventTextAreaRef}
-                            comment={editEventDescription}
-                            setComment={setEditEventDescription}
-                          />
-                          <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                            <span className="text-gray text-xs leading-4">
-                              Bild hinzufügen
-                            </span>
-                            <span className="text-gray text-xs leading-4">
-                              Markdown unterstützt
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </ClientOnly>
-                  ) : (
-                    <Markdown>{e.description}</Markdown>
+                    </CardFooter>
                   )}
-                  <span className="font-bold">Beginn: </span>
-                  {eventEditMode ? (
-                    <input
-                      type="datetime-locale"
-                      onChange={() => setEditEventStartDate}
-                    />
-                  ) : (
-                    <p>{e.startDate}</p>
-                  )}
-                  <span className="font-bold">Abschluss: </span>
-                  <p>{e.endDate}</p>
-                </CardContent>
-                {/* {userId === e.ownerId && ( */}
-                <CardFooter>
-                  <Form method="post" className="space-y-2">
-                    <input
-                      className="hidden"
-                      id="eventId"
-                      name="eventId"
-                      type="text"
-                      value={e.id}
-                    />
-                    <input
-                      className="hidden"
-                      id="title"
-                      name="title"
-                      type="text"
-                      value={editEventTitle}
-                    />
-                    <textarea
-                      className="hidden"
-                      id="description"
-                      name="description"
-                      value={editEventDescription}
-                    ></textarea>
-                    <input
-                      className="hidden"
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      // value={editEventStartDate}
-                    />
-                    <input
-                      // value={editEventEndDate}
-                      className="hidden"
-                      id="endDate"
-                      name="endDate"
-                      type="date"
-                    />
-
-                    <Button
-                      className="float-right"
-                      name="_action"
-                      value="UPDATE_EVENT"
-                      type="submit"
-                      onClick={() => setEventEditMode(false)}
-                    >
-                      ÜBERNEMEN
-                    </Button>
-                  </Form>
-                </CardFooter>
-                {/* )} */}
-              </Card>
+                </Card>
+              </div>
             ))}
           </TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
             {campaign.comments.map((c: any, i: number) => {
               return (
-                <div key={i}>
-                  {userId === campaign.ownerId && (
-                    <>
-                      <Form method="post">
-                        <input
-                          className="hidden"
-                          id="deleteComment"
-                          name="deleteComment"
-                          value={c.id}
-                        />
-                        <Button name="_action" value="DELETE" type="submit">
-                          Delete
-                        </Button>
-                      </Form>
-                      <Button
-                        onClick={() => {
-                          setEditCommentId(c.id);
-                          setEditComment(c.content);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      {editCommentId === c.id && (
+                <div
+                  key={i}
+                  className="flex flex-col items-center justify-center"
+                >
+                  <Card className="w-fit min-w-[300px]">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-end">
+                        {userId === c.ownerId && (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setCommentEditMode(true);
+                                setEditCommentId(c.id);
+                                setEditComment(c.content);
+                              }}
+                            >
+                              <EditIcon className="h-4 w-4" />
+                            </Button>
+                            <Form method="post">
+                              <input
+                                className="hidden"
+                                id="deleteComment"
+                                name="deleteComment"
+                                type="text"
+                                value={c.id}
+                              />
+                              <Button
+                                variant="outline"
+                                name="_action"
+                                value="DELETE"
+                                type="submit"
+                              >
+                                <TrashIcon className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </Form>
+                          </div>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col">
+                      <div className="flex items-center gap-2 pb-4">
+                        <Avatar>
+                          <AvatarImage src="" alt="avatar" />
+                          <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        {c.owner.name}
+                      </div>
+                      {commentEditMode ? (
                         <ClientOnly>
                           {() => (
                             <div className="container overflow-auto">
@@ -573,6 +607,7 @@ export default function CampaignId() {
                                   name="_action"
                                   value="EDIT"
                                   type="submit"
+                                  className="float-right"
                                 >
                                   Veröffentlichen
                                 </Button>
@@ -580,10 +615,11 @@ export default function CampaignId() {
                             </div>
                           )}
                         </ClientOnly>
+                      ) : (
+                        <Markdown>{c.content}</Markdown>
                       )}
-                    </>
-                  )}
-                  <Markdown>{c.content}</Markdown>;
+                    </CardContent>
+                  </Card>
                 </div>
               );
             })}
@@ -611,7 +647,16 @@ export default function CampaignId() {
                         name="comment"
                         id="comment"
                       ></textarea>
-                      <Button name="_action" value="PUBLISH" type="submit">
+                      <Button
+                        className="float-right"
+                        onClick={() => {
+                          setCommentEditMode(false);
+                          navigate(".", { replace: true });
+                        }}
+                        name="_action"
+                        value="PUBLISH"
+                        type="submit"
+                      >
                         Veröffentlichen
                       </Button>
                     </Form>
@@ -620,8 +665,8 @@ export default function CampaignId() {
               </ClientOnly>
             )}
           </TabsContent>
+          {/* </div> */}
         </Tabs>
-        <div></div>
         <div>
           {showMap && (
             <MapProvider>
