@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "~/components/ui/use-toast";
 import { useEffect, useRef, useState } from "react";
 import { Map } from "~/components/Map";
@@ -31,14 +30,7 @@ import { valid } from "geojson-validation";
 import ShareLink from "~/components/bottom-bar/share-link";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
@@ -52,10 +44,11 @@ import {
   updateCampaignEvent,
   updateCommentAction,
 } from "~/lib/actions";
-import { TrashIcon, EditIcon } from "lucide-react";
 import { useNavigate } from "@remix-run/react";
 import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
 import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
+import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-input";
+import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-cards";
 
 export const links: LinksFunction = () => {
   return [
@@ -307,146 +300,23 @@ export default function CampaignId() {
           </TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
-            {campaign.comments.map((c: any, i: number) => {
-              return (
-                <div
-                  key={i}
-                  className="flex flex-col items-center justify-center"
-                >
-                  <Card className="w-fit min-w-[300px]">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-end">
-                        {userId === c.ownerId && (
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setCommentEditMode(true);
-                                setEditCommentId(c.id);
-                                setEditComment(c.content);
-                              }}
-                            >
-                              <EditIcon className="h-4 w-4" />
-                            </Button>
-                            <Form method="post">
-                              <input
-                                className="hidden"
-                                id="deleteComment"
-                                name="deleteComment"
-                                type="text"
-                                value={c.id}
-                              />
-                              <Button
-                                variant="outline"
-                                name="_action"
-                                value="DELETE"
-                                type="submit"
-                              >
-                                <TrashIcon className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </Form>
-                          </div>
-                        )}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex flex-col">
-                      <div className="flex items-center gap-2 pb-4">
-                        <Avatar>
-                          <AvatarImage src="" alt="avatar" />
-                          <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
-                        {c.owner.name}
-                      </div>
-                      {commentEditMode ? (
-                        <ClientOnly>
-                          {() => (
-                            <div className="container overflow-auto">
-                              <MarkdownEditor
-                                textAreaRef={textAreaRef}
-                                comment={editComment}
-                                setComment={setEditComment}
-                              />
-                              <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                                <span className="text-gray text-xs leading-4">
-                                  Bild hinzufügen
-                                </span>
-                                <span className="text-gray text-xs leading-4">
-                                  Markdown unterstützt
-                                </span>
-                              </div>
-                              <Form method="post">
-                                <input
-                                  className="hidden"
-                                  value={c.id}
-                                  name="commentId"
-                                  id="commentId"
-                                />
-                                <textarea
-                                  className="hidden"
-                                  value={editComment}
-                                  name="editComment"
-                                  id="editComment"
-                                ></textarea>
-                                <Button
-                                  name="_action"
-                                  value="EDIT"
-                                  type="submit"
-                                  className="float-right"
-                                >
-                                  Veröffentlichen
-                                </Button>
-                              </Form>
-                            </div>
-                          )}
-                        </ClientOnly>
-                      ) : (
-                        <Markdown>{c.content}</Markdown>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              );
-            })}
+            <CommentCards
+              commentEditMode={commentEditMode}
+              comments={campaign.comments}
+              editComment={editComment || ""}
+              setCommentEditMode={setCommentEditMode}
+              setEditComment={setEditComment}
+              setEditCommentId={setEditCommentId}
+              textAreaRef={textAreaRef}
+              userId={userId}
+            />
             {!editComment && (
-              <ClientOnly>
-                {() => (
-                  <div className="container overflow-auto">
-                    <MarkdownEditor
-                      textAreaRef={textAreaRef}
-                      comment={comment}
-                      setComment={setComment}
-                    />
-                    <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                      <span className="text-gray text-xs leading-4">
-                        Bild hinzufügen
-                      </span>
-                      <span className="text-gray text-xs leading-4">
-                        Markdown unterstützt
-                      </span>
-                    </div>
-                    <Form method="post">
-                      <textarea
-                        className="hidden"
-                        value={comment}
-                        name="comment"
-                        id="comment"
-                      ></textarea>
-                      <Button
-                        className="float-right"
-                        onClick={() => {
-                          setCommentEditMode(false);
-                          navigate(".", { replace: true });
-                        }}
-                        name="_action"
-                        value="PUBLISH"
-                        type="submit"
-                      >
-                        Veröffentlichen
-                      </Button>
-                    </Form>
-                  </div>
-                )}
-              </ClientOnly>
+              <CommentInput
+                comment={comment}
+                setCommentEditMode={setCommentEditMode}
+                setComment={setComment}
+                textAreaRef={textAreaRef}
+              />
             )}
           </TabsContent>
           {/* </div> */}
