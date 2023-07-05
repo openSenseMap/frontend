@@ -8,7 +8,7 @@ import { json } from "@remix-run/node";
 import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getCampaign } from "~/models/campaign.server";
-import { getUserId, requireUserId } from "~/session.server";
+import { requireUserId } from "~/session.server";
 import {
   Dialog,
   DialogContent,
@@ -19,17 +19,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "~/components/ui/use-toast";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Map } from "~/components/Map";
-import { LayerProps, MapProvider, Source, Layer } from "react-map-gl";
-import { campaignSchema } from "~/lib/validations/campaign";
-import { Feature } from "geojson";
+import type { LayerProps } from "react-map-gl";
+import { MapProvider, Source, Layer } from "react-map-gl";
 import { ClockIcon } from "lucide-react";
 import clsx from "clsx";
-import { valid } from "geojson-validation";
 import ShareLink from "~/components/bottom-bar/share-link";
-import { ClientOnly } from "remix-utils";
-import { MarkdownEditor } from "~/markdown.client";
 
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
@@ -44,7 +40,6 @@ import {
   updateCampaignEvent,
   updateCommentAction,
 } from "~/lib/actions";
-import { useNavigate } from "@remix-run/react";
 import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
 import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
 import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-input";
@@ -121,7 +116,6 @@ const layer: LayerProps = {
 
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
   const campaign = data.campaign;
   const userId = data.userId;
   const [commentEditMode, setCommentEditMode] = useState(false);
