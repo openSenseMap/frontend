@@ -54,6 +54,8 @@ import {
 } from "~/lib/actions";
 import { TrashIcon, EditIcon } from "lucide-react";
 import { useNavigate } from "@remix-run/react";
+import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
+import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
 
 export const links: LinksFunction = () => {
   return [
@@ -282,244 +284,26 @@ export default function CampaignId() {
             <Markdown>{campaign.description}</Markdown>
           </TabsContent>
           <TabsContent value="calendar">
-            {campaign.events.length === 0 && (
-              <div className="mx-auto w-full max-w-md px-8">
-                {" "}
-                <p>
-                  Noch keine Events für diese Kampagne. Erstelle ein Event:{" "}
-                </p>
-                <Form className="space-y-6" method="post">
-                  <div>
-                    <label htmlFor="title">
-                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                        Titel
-                      </span>
-                    </label>
-                    <div className="mt-1 w-full">
-                      <input
-                        className="w-full"
-                        id="title"
-                        name="title"
-                        type="text"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="description">
-                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                        Beschreibung
-                      </span>
-                    </label>
-                    <div className="mt-1">
-                      <textarea
-                        className="hidden"
-                        value={eventDescription}
-                        id="description"
-                        name="description"
-                      ></textarea>
-                      <ClientOnly>
-                        {() => (
-                          <>
-                            <MarkdownEditor
-                              textAreaRef={eventTextAreaRef}
-                              comment={eventDescription}
-                              setComment={setEventDescription}
-                            />
-                            <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                              <span className="text-gray text-xs leading-4">
-                                Bild hinzufügen
-                              </span>
-                              <span className="text-gray text-xs leading-4">
-                                Markdown unterstützt
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </ClientOnly>
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="startDate">
-                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                        Beginn
-                      </span>
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        className="w-full"
-                        id="startDate"
-                        name="startDate"
-                        type="datetime-local"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="startDate">
-                      <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                        Abschluss
-                      </span>
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        className="w-full"
-                        id="endDate"
-                        name="endDate"
-                        type="datetime-local"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <button
-                      type="submit"
-                      name="_action"
-                      value="CREATE_EVENT"
-                      className="hover:bg-blue-600 focus:bg-blue-400  rounded bg-blue-500 py-2 px-4 text-white"
-                    >
-                      CREATE
-                    </button>
-                  </div>
-                </Form>
-              </div>
+            {campaign.events.length === 0 ? (
+              <EventForm
+                eventDescription={eventDescription || ""}
+                setEventDescription={setEventDescription}
+                eventTextAreaRef={eventTextAreaRef}
+              />
+            ) : (
+              <EventCards
+                events={campaign.events}
+                editEventDescription={editEventDescription || ""}
+                editEventTitle={editEventTitle || ""}
+                eventEditMode={eventEditMode}
+                eventTextAreaRef={eventTextAreaRef}
+                setEditEventDescription={setEditEventDescription}
+                setEditEventStartDate={setEditEventStartDate}
+                setEditEventTitle={setEditEventTitle}
+                setEventEditMode={setEventEditMode}
+                userId={userId}
+              />
             )}
-            {campaign.events.map((e, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center justify-center"
-              >
-                <Card className="w-fit min-w-[300px]">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div>
-                        {eventEditMode ? (
-                          <input
-                            className="mr-4"
-                            type="text"
-                            onChange={(e) => setEditEventTitle(e.target.value)}
-                            placeholder="Enter new title"
-                          />
-                        ) : (
-                          <p className="mr-4">{e.title}</p>
-                        )}
-                      </div>
-                      {userId === e.ownerId && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setEventEditMode(true)}
-                          >
-                            <EditIcon className="h-4 w-4" />
-                          </Button>
-                          <Form method="post">
-                            <input
-                              className="hidden"
-                              id="eventId"
-                              name="eventId"
-                              type="text"
-                              value={e.id}
-                            />
-                            <Button
-                              variant="outline"
-                              name="_action"
-                              value="DELETE_EVENT"
-                              type="submit"
-                            >
-                              <TrashIcon className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </Form>
-                        </div>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-col">
-                    <span className="font-bold">Beschreibung: </span>
-                    {eventEditMode ? (
-                      <ClientOnly>
-                        {() => (
-                          <>
-                            <MarkdownEditor
-                              textAreaRef={eventTextAreaRef}
-                              comment={editEventDescription}
-                              setComment={setEditEventDescription}
-                            />
-                            <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
-                              <span className="text-gray text-xs leading-4">
-                                Bild hinzufügen
-                              </span>
-                              <span className="text-gray text-xs leading-4">
-                                Markdown unterstützt
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </ClientOnly>
-                    ) : (
-                      <Markdown>{e.description}</Markdown>
-                    )}
-                    <span className="font-bold">Beginn: </span>
-                    {eventEditMode ? (
-                      <input
-                        type="datetime-locale"
-                        onChange={() => setEditEventStartDate}
-                      />
-                    ) : (
-                      <p>{e.startDate}</p>
-                    )}
-                    <span className="font-bold">Abschluss: </span>
-                    <p>{e.endDate}</p>
-                  </CardContent>
-                  {userId === e.ownerId && eventEditMode && (
-                    <CardFooter>
-                      <Form method="post" className="space-y-2">
-                        <input
-                          className="hidden"
-                          id="eventId"
-                          name="eventId"
-                          type="text"
-                          value={e.id}
-                        />
-                        <input
-                          className="hidden"
-                          id="title"
-                          name="title"
-                          type="text"
-                          value={editEventTitle}
-                        />
-                        <textarea
-                          className="hidden"
-                          id="description"
-                          name="description"
-                          value={editEventDescription}
-                        ></textarea>
-                        <input
-                          className="hidden"
-                          id="startDate"
-                          name="startDate"
-                          type="date"
-                          // value={editEventStartDate}
-                        />
-                        <input
-                          // value={editEventEndDate}
-                          className="hidden"
-                          id="endDate"
-                          name="endDate"
-                          type="date"
-                        />
-
-                        <Button
-                          className="float-right"
-                          name="_action"
-                          value="UPDATE_EVENT"
-                          type="submit"
-                          onClick={() => setEventEditMode(false)}
-                        >
-                          ÜBERNEMEN
-                        </Button>
-                      </Form>
-                    </CardFooter>
-                  )}
-                </Card>
-              </div>
-            ))}
           </TabsContent>
           <TabsContent value="comments">
             <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
