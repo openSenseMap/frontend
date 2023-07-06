@@ -129,6 +129,7 @@ export default function EditBoxGeneral() {
   const passwordDelRef = React.useRef<HTMLInputElement>(null);
   const [name, setName] = useState(deviceData?.name);
   const [exposure, setExposure] = useState(deviceData?.exposure);
+  //* to view toast on edit page
   const [toastOpen, setToastOpen] = useOutletContext();
 
   React.useEffect(() => {

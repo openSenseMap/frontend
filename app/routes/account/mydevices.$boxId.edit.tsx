@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Link, Outlet, useParams } from "@remix-run/react";
+import { Link, Outlet, useLocation, useParams } from "@remix-run/react";
 import { useState } from "react";
 import { getUserId } from "~/session.server";
 import {
@@ -18,7 +18,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.box;
+  const deviceID = params.boxId;
 
   return json({ DevieID: deviceID });
 }
@@ -30,14 +30,18 @@ export async function action({ request }: ActionArgs) {
 
 //**********************************
 export default function EditBox() {
+  //* to keep selected view highlited after reloading
+  const pathName = useLocation().pathname
+  const currentPage = pathName.substring(pathName.lastIndexOf('/')+1);
   //* default view (General)
-  const [currentView, setCurrentView] = useState("general");
+  const [currentView, setCurrentView] = useState(currentPage);
 
   //* Toast notification when device info is updated
   const [toastOpen, setToastOpen] = useState(false);
 
   // Get deviceId from route path
   const { boxId } = useParams();
+  
   return (
     <div className="mx-8 mt-14 mr-20">
       {/*Toast notification */}
@@ -86,8 +90,8 @@ export default function EditBox() {
           <ToastPrimitive.Viewport />
         </ToastPrimitive.Provider>
       </div>
-      <div className="grid grid-cols-5 gap-10 font-helvetica tracking-wide max-md:grid-cols-2  lg:grid-rows-1">
-        <nav className="col-span-5 md:col-span-1">
+      <div className="grid grid-cols-8 gap-10 font-helvetica tracking-wide max-md:grid-cols-2 lg:grid-rows-1 text-[15px]">
+        <nav className="col-span-2 md:col-span-2">
           <ul>
             <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
               <ArrowSmallLeftIcon className=" mr-2 inline h-5 w-5" />
@@ -141,7 +145,7 @@ export default function EditBox() {
           </ul>
         </nav>
 
-        <main className="col-span-5 md:col-span-4">
+        <main className="col-span-6 md:col-span-6">
           <Outlet context={[toastOpen, setToastOpen]} />
         </main>
       </div>

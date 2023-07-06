@@ -17,7 +17,6 @@ import type { Point } from "geojson";
 //   }
 // };
 
-//#region - device functions
 export function getDevice({ id }: Pick<Device, "id">) {
   return prisma.device.findFirst({
     select: {
@@ -113,20 +112,6 @@ export async function getDevices() {
 
   return geojson;
 }
-//#endregion - device functions
-
-//#region - sensors functions
-export function getSensors(deviceId: Sensor["id"]) {
-  console.log("🚀 ~ file: device.server.ts:120 ~ getSensors ~ id:", deviceId)
-  return prisma.sensor.findMany({  select: {
-    id: true,
-    title: true,
-    unit: true,
-    sensorType: true,
-  },where: { deviceId } });
-}
-
-//#endregion - sensors functions
 
 export async function getMeasurements(
   deviceId: any,

@@ -19,8 +19,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.box;
-  console.log("🚀 ~ **: mydevices.box.edit.general.tsx:21 ~ loader ~ deviceID:", deviceID)
+  const deviceID = params.boxId;
+  // console.log("🚀 ~ **: mydevices.box.edit.general.tsx:21 ~ loader ~ deviceID:", deviceID)
   // invariant(deviceID, "deviceID not found")
   // if(deviceID)
   // const deviceData = getDevice(deviceID);

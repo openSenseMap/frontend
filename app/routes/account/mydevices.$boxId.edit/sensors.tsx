@@ -1,12 +1,23 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useOutletContext,
+} from "@remix-run/react";
 import React, { useState } from "react";
 import { getUserId } from "~/session.server";
-import { ClipboardCopy, Edit, Save, Undo2 } from "lucide-react";
-import { getSensors } from "~/models/device.server";
+import { ClipboardCopy, Edit, Plus, Save, Undo2 } from "lucide-react";
+import {
+  addNewSensor,
+  deleteSensor,
+  getSensors,
+  updateSensor,
+} from "~/models/sensor.server";
 import { typedjson } from "remix-typedjson";
 import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import invariant from "tiny-invariant";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -24,39 +35,76 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionArgs) {
+export async function action({ request, params }: ActionArgs) {
   //* ToDo: upadte it to include button clicks inside form
   const formData = await request.formData();
   const { updatedSensorsData } = Object.fromEntries(formData);
 
   if (typeof updatedSensorsData !== "string") {
-    return json("deviceID not found");
+    return json({ isUpdated: false });
   }
   const updatedSensorsDataJson = JSON.parse(updatedSensorsData);
-  /* console.log(
-    "🚀 ~ file: sensors.tsx:41 ~ action ~ formData:",
-    JSON.parse(updatedSensorsData)
-  ); */
 
   for (const sensor of updatedSensorsDataJson) {
-    if (sensor?.edited === true) {
-      console.log("🚀🚀🚀 ~ file: sensors.tsx:43 ~ action ~ edited:");
-    } else if (sensor?.new === true) {
-      console.log("🚀🚀🚀 ~ file: sensors.tsx:43 ~ action ~ new:");
+    if (sensor?.new === true && sensor?.edited === true) {
+      const deviceID = params.boxId;
+      invariant(deviceID, `deviceID not found!`);
+
+      await addNewSensor({
+        title: sensor.title,
+        unit: sensor.unit,
+        sensorType: sensor.sensorType,
+        deviceId: deviceID,
+      });
+    } else if (sensor?.edited === true) {
+      await updateSensor({
+        id: sensor.id,
+        title: sensor.title,
+        unit: sensor.unit,
+        sensorType: sensor.sensorType,
+      });
     } else if (sensor?.deleted === true) {
-      console.log("🚀🚀🚀 ~ file: sensors.tsx:43 ~ action ~ deleted:");
+      await deleteSensor(sensor.id);
     }
   }
 
-  return "";
+  return json({ isUpdated: true });
 }
 
 //**********************************
 export default function EditBoxSensors() {
   const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+
   const [sensorsData, setSensorsData] = useState(data);
+
   /* temp impl. until figuring out how to updating state of nested objects  */
   const [tepmState, setTepmState] = useState(false);
+  //* to view toast on edit page
+  const [toastOpen, setToastOpen] = useOutletContext();
+
+  React.useEffect(() => {
+    //* if sensors data were updated successfully
+    if (actionData && actionData?.isUpdated) {
+      //* show notification of successs update
+      setToastOpen(true);
+      // window.location.reload();
+      //* reset sensor data elements
+      for (let index = 0; index < sensorsData.length; index++) {
+        const sensor = sensorsData[index];
+        if (sensor.new == true && sensor.notValidInput == true) {
+            sensorsData.splice(index, 1);
+          }
+         else if (sensor.deleted) {
+          sensorsData.splice(index, 1);
+        } else if (sensor.new == true && sensor.notValidInput == true) {
+          sensorsData.splice(index, 1);
+        } else if (sensor.editing == true) {
+          delete sensor.editing;
+        }
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="grid grid-rows-1">
@@ -74,13 +122,30 @@ export default function EditBoxSensors() {
                 </div>
                 <div>
                   <button
-                    // type="submit"
+                    name="intent"
+                    value="add"
+                    type="button"
+                    onClick={() => {
+                      setSensorsData([
+                        ...sensorsData,
+                        {
+                          title: undefined,
+                          unit: undefined,
+                          sensorType: undefined,
+                          editing: true,
+                          new: true,
+                          notValidInput: true,
+                        },
+                      ]);
+                    }}
+                    className=" mr-2 h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
+                  >
+                    <Plus className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
+                  </button>
+
+                  <button
                     name="intent"
                     value="save"
-                    /* disabled={
-                      name === deviceData?.name &&
-                      exposure === deviceData?.exposure
-                    } */
                     className=" h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
                   >
                     <Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
@@ -156,11 +221,12 @@ export default function EditBoxSensors() {
                                 htmlFor="phenomenom"
                                 className="mb-1 inline-block font-[700]"
                               >
-                                Phenomenom:
+                                Phenomenon:
                               </label>
                               <input
                                 type="text"
                                 defaultValue={sensor?.title}
+                                placeholder="Phenomenon"
                                 className="form-control"
                                 onChange={(e) => {
                                   sensor.title = e.target.value;
@@ -177,6 +243,7 @@ export default function EditBoxSensors() {
                               <input
                                 type="text"
                                 defaultValue={sensor?.unit}
+                                placeholder="Unit"
                                 className="form-control"
                                 onChange={(e) => {
                                   sensor.sensorType = e.target.value;
@@ -193,6 +260,7 @@ export default function EditBoxSensors() {
                               <input
                                 type="text"
                                 defaultValue={sensor?.sensorType}
+                                placeholder="Type"
                                 className="form-control"
                                 onChange={(e) => {
                                   sensor.unit = e.target.value;
@@ -312,15 +380,20 @@ export default function EditBoxSensors() {
                               type="button"
                               onClick={() => {
                                 setTepmState(!tepmState);
-                                sensor.editing = false;
-                                //* restore data
-                                sensor.title = data[index].title;
-                                sensor.unit = data[index].unit;
-                                sensor.sensorType = data[index].sensorType;
+                                if (sensor?.new) {
+                                  sensorsData.splice(index, 1);
+                                } else {
+                                  sensor.editing = false;
+                                  //* restore data
+                                  sensor.title = data[index].title;
+                                  sensor.unit = data[index].unit;
+                                  sensor.sensorType = data[index].sensorType;
+                                }
                               }}
                               className="mb-1 mt-2 block rounded-[3px] 
-                                border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
-                                text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+                                border-[#ac2925] bg-[#d9534f] px-[5px] py-[3px] pt-1
+                                text-[14px] leading-[1.6] text-[#fff] 
+                                hover:border-[#ac2925] hover:bg-[#c9302c]"
                             >
                               <XMarkIcon className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />
                               Cancel
