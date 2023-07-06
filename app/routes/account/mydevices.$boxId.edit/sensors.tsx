@@ -1,20 +1,12 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Form,
-  useLoaderData,
-} from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import { getUserId } from "~/session.server";
-import {
-  ClipboardCopy,
-  Edit,
-  Save,
-
-} from "lucide-react";
+import { ClipboardCopy, Edit, Save, Undo2 } from "lucide-react";
 import { getSensors } from "~/models/device.server";
 import { typedjson } from "remix-typedjson";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -26,23 +18,45 @@ export async function loader({ request, params }: LoaderArgs) {
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
   }
-  const sensorsData = await getSensors(deviceID);
+  const rawSensorsData = await getSensors(deviceID);
 
-  return typedjson(sensorsData);
+  return typedjson(rawSensorsData);
 }
 
 //*****************************************************
 export async function action({ request }: ActionArgs) {
-  /* ToDo: upadte it to include button clicks inside form */
-  return ("");
+  //* ToDo: upadte it to include button clicks inside form
+  const formData = await request.formData();
+  const { updatedSensorsData } = Object.fromEntries(formData);
+
+  if (typeof updatedSensorsData !== "string") {
+    return json("deviceID not found");
+  }
+  const updatedSensorsDataJson = JSON.parse(updatedSensorsData);
+  /* console.log(
+    "🚀 ~ file: sensors.tsx:41 ~ action ~ formData:",
+    JSON.parse(updatedSensorsData)
+  ); */
+
+  for (const sensor of updatedSensorsDataJson) {
+    if (sensor?.edited === true) {
+      console.log("🚀🚀🚀 ~ file: sensors.tsx:43 ~ action ~ edited:");
+    } else if (sensor?.new === true) {
+      console.log("🚀🚀🚀 ~ file: sensors.tsx:43 ~ action ~ new:");
+    } else if (sensor?.deleted === true) {
+      console.log("🚀🚀🚀 ~ file: sensors.tsx:43 ~ action ~ deleted:");
+    }
+  }
+
+  return "";
 }
 
 //**********************************
 export default function EditBoxSensors() {
-  const sensorsData = useLoaderData<typeof loader>();
-  /* buttons states */
-  const [editBtn, setEditBtn] = useState(false);
-  const [deleteBtn, setdeleteBtn] = useState(false);
+  const data = useLoaderData<typeof loader>();
+  const [sensorsData, setSensorsData] = useState(data);
+  /* temp impl. until figuring out how to updating state of nested objects  */
+  const [tepmState, setTepmState] = useState(false);
 
   return (
     <div className="grid grid-rows-1">
@@ -60,7 +74,7 @@ export default function EditBoxSensors() {
                 </div>
                 <div>
                   <button
-                    type="submit"
+                    // type="submit"
                     name="intent"
                     value="save"
                     /* disabled={
@@ -87,7 +101,7 @@ export default function EditBoxSensors() {
             </div>
 
             <ul className="mt-0 rounded-[3px] border-[1px] border-solid border-[#d1d5da] pt-0">
-              {sensorsData?.map((sensor: any) => {
+              {sensorsData?.map((sensor: any, index: number) => {
                 return (
                   <li
                     key={sensor.id}
@@ -98,19 +112,19 @@ export default function EditBoxSensors() {
 
                       <div className="col-span-9 border-r-[1px] border-solid border-[#e1e4e8] sm:col-span-8">
                         {/* shown by default */}
-                        {!editBtn && (
-                          <span className=" table-cell align-middle leading-[1.6]">
+                        {!sensor?.editing && (
+                          <span className=" table-cell align-middle leading-[1.75]">
                             <strong className=" block">
                               Phenomenon:
-                              <span className="text-[#626161]">
+                              <span className="px-1 text-[#626161]">
                                 {sensor?.title}
                               </span>
                             </strong>
-                            <strong>ID:</strong>
+                            <strong>ID: </strong>
                             <code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
                               {sensor?.id}
-                              {/* ToDo: why not remain in same page */}
                               <button
+                                type="button"
                                 onClick={() => {
                                   navigator.clipboard.writeText(sensor?.id);
                                 }}
@@ -120,13 +134,13 @@ export default function EditBoxSensors() {
                             </code>
                             <strong className=" block">
                               Unit:
-                              <span className="text-[#626161]">
+                              <span className="px-1 text-[#626161]">
                                 {sensor?.unit}
                               </span>
                             </strong>
                             <strong className=" block">
                               Type:
-                              <span className="text-[#626161]">
+                              <span className="px-1 text-[#626161]">
                                 {sensor?.sensorType}
                               </span>
                             </strong>
@@ -134,8 +148,9 @@ export default function EditBoxSensors() {
                         )}
 
                         {/* shown when edit button clicked */}
-                        {editBtn && (
+                        {sensor?.editing && (
                           <div className="mb-4 pr-4">
+                            {/* <form> */}
                             <div className="mb-4">
                               <label
                                 htmlFor="phenomenom"
@@ -147,6 +162,9 @@ export default function EditBoxSensors() {
                                 type="text"
                                 defaultValue={sensor?.title}
                                 className="form-control"
+                                onChange={(e) => {
+                                  sensor.title = e.target.value;
+                                }}
                               />
                             </div>
                             <div className="mb-4">
@@ -160,6 +178,9 @@ export default function EditBoxSensors() {
                                 type="text"
                                 defaultValue={sensor?.unit}
                                 className="form-control"
+                                onChange={(e) => {
+                                  sensor.sensorType = e.target.value;
+                                }}
                               />
                             </div>
                             <div className="mb-4">
@@ -173,8 +194,12 @@ export default function EditBoxSensors() {
                                 type="text"
                                 defaultValue={sensor?.sensorType}
                                 className="form-control"
+                                onChange={(e) => {
+                                  sensor.unit = e.target.value;
+                                }}
                               />
                             </div>
+                            {/* </form> */}
                           </div>
                         )}
                       </div>
@@ -183,37 +208,138 @@ export default function EditBoxSensors() {
                       <div className="col-span-3 ml-4 sm:col-span-4">
                         {/* buttons shown by default */}
                         <span className="table-cell align-middle leading-[1.6]">
-                          {/* {true && ( */}
-                          <span className="bg-[#d9534f] p-[3px] leading-[1.6] text-[#fff]">
-                            This sensor will be deleted.
-                          </span>
-                          {/* )} */}
+                          {/* warning text - delete */}
+                          {sensor?.deleting && (
+                            <span className="bg-[#d9534f] p-[3px] leading-[1.6] text-[#fff]">
+                              This sensor will be deleted.
+                            </span>
+                          )}
 
-                          <button
-                          onClick={() => {
-                            setEditBtn(!editBtn);
-                            return false;
-                          }}
-                            className="mb-1 mt-2 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
-                          text-[14px] leading-[1.6] text-[#fff]"
-                          >
-                            <Edit className=" mr-1 inline-block h-[15px] w-[15px] align-sub" />
-                            Edit
-                          </button>
-                          <button
-                            className="mb-1 mt-2 block rounded-[3px] border-[#d43f3a;] bg-[#d9534f] px-[5px] py-[3px] pt-1
-                          text-[14px] leading-[1.6] text-[#fff]"
-                          >
-                            <TrashIcon className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
-                            Delete
-                          </button>
+                          {/* undo button */}
+                          {sensor?.deleting && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTepmState(!tepmState);
+                                sensor.deleting = false;
+                              }}
+                              className="mb-1 mt-2 block rounded-[3px] 
+                              border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff]
+                              hover:border-[#204d74] hover:bg-[#286090]"
+                            >
+                              <Undo2 className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
+                              Undo
+                            </button>
+                          )}
+
+                          {!sensor?.editing && !sensor?.deleting && (
+                            <span>
+                              {/* edit button */}
+                              {/* ToDo: why onClick not updating the state unless dummy unrelated state is updated */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setTepmState(!tepmState);
+                                  sensor.editing = true;
+                                  // console.log("🚀 ~ file: sensors.tsx:248 ~ {sensorsData?.map ~ sensorsData:", sensorsData);
+                                }}
+                                className="mb-1 mt-2 block rounded-[3px] 
+                                border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
+                                text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+                              >
+                                <Edit className="mr-1 inline-block h-[17px] w-[15px] align-sub" />
+                                Edit
+                              </button>
+
+                              {/* delete button */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setTepmState(!tepmState);
+                                  sensor.deleting = true;
+                                  sensor.deleted = true;
+                                  return false;
+                                }}
+                                className="mb-1 mt-2 block rounded-[3px]
+                                border-[#d43f3a] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff]
+                                hover:border-[#ac2925] hover:bg-[#c9302c]"
+                              >
+                                <TrashIcon className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
+                                Delete
+                              </button>
+                            </span>
+                          )}
                         </span>
+
+                        {sensor?.editing && (
+                          <span className="table-cell h-[222px] align-middle leading-[1.6]">
+                            {/* invalid input text */}
+                            {sensor?.notValidInput && (
+                              <span className="bg-[#d9534f] p-[3px] leading-[1.6] text-[#fff]">
+                                Please fill out all required fields.
+                              </span>
+                            )}
+
+                            {/* save button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTepmState(!tepmState);
+                                if (
+                                  sensor.title &&
+                                  sensor.unit &&
+                                  sensor.sensorType
+                                ) {
+                                  console.log("all valid");
+                                  sensor.notValidInput = false;
+                                  sensor.editing = false;
+                                  sensor.edited = true;
+                                } else {
+                                  console.log("not all are valid");
+                                  sensor.notValidInput = true;
+                                }
+                              }}
+                              className="mb-1 mt-2 block rounded-[3px] 
+                                border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
+                                text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+                            >
+                              <Save className="mr-1 inline-block h-[17px] w-[15px] align-sub" />
+                              Save
+                            </button>
+
+                            {/* cancel button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTepmState(!tepmState);
+                                sensor.editing = false;
+                                //* restore data
+                                sensor.title = data[index].title;
+                                sensor.unit = data[index].unit;
+                                sensor.sensorType = data[index].sensorType;
+                              }}
+                              className="mb-1 mt-2 block rounded-[3px] 
+                                border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
+                                text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+                            >
+                              <XMarkIcon className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />
+                              Cancel
+                            </button>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </li>
                 );
               })}
             </ul>
+
+            {/* As there's no way to send data wiht form on submit to action (see: https://github.com/remix-run/react-router/discussions/10264) */}
+            <input
+              name="updatedSensorsData"
+              type="hidden"
+              value={JSON.stringify(sensorsData)}
+            />
           </Form>
         </div>
       </div>
