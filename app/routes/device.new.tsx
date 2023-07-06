@@ -27,7 +27,24 @@ export const loader = async ({ request }: LoaderArgs) => {
   const page = Number(url.searchParams.get("page") ?? "1");
   const session = await getUserSession(request);
 
-  if (page === 3) {
+  if (page === 1) {
+    const data =
+      {
+        ...session.get(`form-data-page-1`),
+      } ?? {};
+
+    var getAllDevicesUrl: URL = new URL(
+      process.env.SENSORWIKI_API_URL + "devices/all"
+    );
+
+    const response = await fetch(getAllDevicesUrl.toString());
+    const devices = await response.json();
+    // const sensorsSorted = sensors.sort((a: Sensor, b: Sensor) => {
+    //   return a.slug.localeCompare(b.slug);
+    // });
+
+    return json({ page, data, devices });
+  } else if (page === 3) {
     const data =
       {
         ...session.get(`form-data-page-1`),
@@ -36,11 +53,14 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     const type = data.type;
 
-    var sensorWikiUrl: URL = new URL(
-      ENV.SENSORWIKI_API_URL + (type !== "own_device" ? `devices/device/${type}/sensors` : `sensors/all`)
+    var getSensorsOfDeviceUrl: URL = new URL(
+      process.env.SENSORWIKI_API_URL +
+        (type !== "own_device"
+          ? `devices/device/${type}/sensors`
+          : `sensors/all`)
     );
 
-    const response = await fetch(sensorWikiUrl.toString());
+    const response = await fetch(getSensorsOfDeviceUrl.toString());
     const sensors = await response.json();
     const sensorsSorted = sensors.sort((a: Sensor, b: Sensor) => {
       return a.slug.localeCompare(b.slug);
@@ -103,7 +123,7 @@ export const action = async ({ request }: LoaderArgs) => {
   }
 };
 
-export default function AddDevice() {
+export default function NewDevice() {
   const navigation = useNavigation();
   const showSpinner = useSpinDelay(navigation.state !== "idle", {
     delay: 200,
@@ -114,7 +134,7 @@ export default function AddDevice() {
   const page = Number(loaderData.page);
   const data = loaderData.data;
 
-  console.log(loaderData.sensors);
+  console.log(loaderData);
 
   const [deviceType, setDeviceType] = useState(data.type);
 
@@ -174,64 +194,32 @@ export default function AddDevice() {
               </div>
 
               <div className="grid grid-cols-4 gap-4">
-                <Card
-                  data-checked={deviceType === "sensebox_edu"}
-                  onClick={() => setDeviceType("sensebox_edu")}
-                  className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
-                >
-                  <CardContent className="flex justify-center pt-2">
-                    <AspectRatio ratio={3 / 4}>
-                      {/* <img
+                {loaderData.devices.map((device: any) => {
+                  return (
+                    <Card
+                      key={device.id}
+                      data-checked={deviceType === device.slug}
+                      onClick={() => setDeviceType(device.slug)}
+                      className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+                    >
+                      <CardContent className="flex justify-center pt-2">
+                        <AspectRatio ratio={3 / 4}>
+                          {/* <img
                         src="/images/"
                         alt="senseBox:edu"
                         className="rounded-md object-cover"
                       /> */}
-                    </AspectRatio>
-                  </CardContent>
-                  <CardFooter className="flex justify-center">
-                    <CardTitle>senseBox:edu</CardTitle>
-                  </CardFooter>
-                </Card>
+                        </AspectRatio>
+                      </CardContent>
+                      <CardFooter className="flex justify-center">
+                        <CardTitle>{device.slug}</CardTitle>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
 
                 <Card
-                  data-checked={deviceType === "sensebox_home"}
-                  onClick={() => setDeviceType("sensebox_home")}
-                  className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
-                >
-                  <CardContent className="flex justify-center pt-2">
-                    <AspectRatio ratio={3 / 4}>
-                      {/* <img
-                        src="/images/"
-                        alt="senseBox:home"
-                        className="rounded-md object-cover"
-                      /> */}
-                    </AspectRatio>
-                  </CardContent>
-                  <CardFooter className="flex justify-center">
-                    <CardTitle>senseBox:home</CardTitle>
-                  </CardFooter>
-                </Card>
-
-                <Card
-                  data-checked={deviceType === "airdatainfo_device"}
-                  onClick={() => setDeviceType("airdatainfo_device")}
-                  className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
-                >
-                  <CardContent className="flex justify-center pt-2">
-                    <AspectRatio ratio={3 / 4}>
-                      {/* <img
-                        src="/images/"
-                        alt="Luftdaten.info"
-                        className="rounded-md object-cover"
-                      /> */}
-                    </AspectRatio>
-                  </CardContent>
-                  <CardFooter className="flex justify-center">
-                    <CardTitle>LuftdatenInfo Device</CardTitle>
-                  </CardFooter>
-                </Card>
-
-                <Card
+                  key={4}
                   data-checked={deviceType === "own_device"}
                   onClick={() => setDeviceType("own_device")}
                   className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
@@ -246,105 +234,37 @@ export default function AddDevice() {
                     </AspectRatio>
                   </CardContent>
                   <CardFooter className="flex justify-center">
-                    <CardTitle>Own Device</CardTitle>
+                    <CardTitle>own_device</CardTitle>
                   </CardFooter>
                 </Card>
               </div>
-              {/* <div className="flex justify-end p-2">
-                  <Button
-                    type="button"
-                    onClick={() => setDeviceType(undefined)}
-                  >
-                    Reset
-                  </Button>
-                </div> */}
-
-              {/* <RadioGroup
-                id="deviceType"
-                name="deviceType"
-                value={data.deviceType}
-                // onValueChange={(value) => {
-                //   setDeviceType(value);
-                //   deviceTypeField.validate();
-                // }}
-                // className="hidden"
-              >
-                <div>
-                  <RadioGroupItem value="senseBox:edu" />
-                </div>
-                <div>
-                  <RadioGroupItem value="senseBox:home" />
-                </div>
-                <div>
-                  <RadioGroupItem value="luftdaten.info" />
-                </div>
-                <div>
-                  <RadioGroupItem value="own:device" />
-                </div>
-              </RadioGroup> */}
 
               <div className="mt-4 space-y-4" hidden>
-                <div className="flex items-center">
-                  <input
-                    id="type-sensebox_edu"
-                    name="type"
-                    value="sensebox_edu"
-                    defaultChecked={deviceType === "sensebox_edu"}
-                    checked={deviceType === "sensebox_edu"}
-                    onChange={() => setDeviceType("sensebox_edu")}
-                    type="radio"
-                    required
-                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
-                  />
-                  <label
-                    htmlFor="type-sensebox_edu"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    senseBox:edu
-                  </label>
-                </div>
+                {loaderData.devices.map((device: any) => {
+                  return (
+                    <div key={device.id} className="flex items-center">
+                      <input
+                        id={`type-${device.slug}`}
+                        name="type"
+                        value={device.slug}
+                        defaultChecked={deviceType === device.slug}
+                        checked={deviceType === device.slug}
+                        onChange={() => setDeviceType(device.slug)}
+                        type="radio"
+                        required
+                        className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
+                      />
+                      <label
+                        htmlFor={`type-${device.slug}`}
+                        className="ml-3 block text-sm font-medium text-gray-700"
+                      >
+                        {device.slug}
+                      </label>
+                    </div>
+                  );
+                })}
 
-                <div className="flex items-center">
-                  <input
-                    id="type-sensebox_home"
-                    name="type"
-                    value="sensebox_home"
-                    defaultChecked={deviceType === "sensebox_home"}
-                    checked={deviceType === "sensebox_home"}
-                    onChange={() => setDeviceType("sensebox_home")}
-                    type="radio"
-                    required
-                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
-                  />
-                  <label
-                    htmlFor="type-sensebox_home"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    senseBox:home
-                  </label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    id="type-airdatainfo_device"
-                    name="type"
-                    value="airdatainfo_device"
-                    defaultChecked={deviceType === "airdatainfo_device"}
-                    checked={deviceType === "airdatainfo_device"}
-                    onChange={() => setDeviceType("airdatainfo_device")}
-                    type="radio"
-                    required
-                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
-                  />
-                  <label
-                    htmlFor="type-airdatainfo_device"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    LuftdatenInfo Device
-                  </label>
-                </div>
-
-                <div className="flex items-center">
+                <div key={4} className="flex items-center">
                   <input
                     id="type-own_device"
                     name="type"
@@ -360,7 +280,7 @@ export default function AddDevice() {
                     htmlFor="type-own_device"
                     className="ml-3 block text-sm font-medium text-gray-700"
                   >
-                    Own Device
+                    own_device
                   </label>
                 </div>
               </div>
