@@ -92,6 +92,12 @@ enum Exposure {
   UNKNOWN
 }
 
+enum Status {
+  ACTIVE
+  INACTIVE
+  OLD
+}
+
 enum Model {
   HOME_V2_LORA
 }
@@ -106,6 +112,8 @@ model Device {
 
   // Flag to show device on profile
   public      Boolean  @default(false)
+
+  status   Status   @default(INACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
