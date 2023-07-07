@@ -35,7 +35,7 @@ export async function createProfile(
   return prisma.profile.create({
     data: {
       username,
-      public: true,
+      public: false,
       userId,
     },
   });
