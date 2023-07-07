@@ -145,16 +145,17 @@ export default function Menu() {
               )}
               {data.profile && (
                 <DropdownMenuItem>
+                  <UserIcon className="mr-2 h-5 w-5" />
                   <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem>
                 <Cog6ToothIcon className="mr-2 h-5 w-5" />
-                <span>{t("settings_label")}</span>
+                <Link to="/settings/account">{t("settings_label")}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CpuChipIcon className="mr-2 h-5 w-5" />
-                <span>{t("my_devices_label")}</span>
+                <Link to="/profile/me">{t("my_devices_label")}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <PlusCircleIcon className="mr-2 h-5 w-5" />
