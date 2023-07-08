@@ -3,11 +3,19 @@ import { ClientOnly } from "remix-utils";
 import { Button } from "~/components/ui/button";
 import { MarkdownEditor } from "~/markdown.client";
 import { useNavigate } from "@remix-run/react";
+// import Tribute from "tributejs";
+// import tributeStyles from "tributejs/tribute.css";
+// import type { LinksFunction } from "@remix-run/node";
+// import { useEffect } from "react";
+
+// export const links: LinksFunction = () => {
+//   return [{ rel: "stylesheet", href: tributeStyles }];
+// };
 
 type CommentInputProps = {
   textAreaRef: any;
   comment: string | undefined;
-  setComment: (comment: string | undefined) => void;
+  setComment: any;
   setCommentEditMode: (editMode: boolean) => void;
 };
 
@@ -18,6 +26,21 @@ export default function CommentInput({
   setCommentEditMode,
 }: CommentInputProps) {
   const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   if (textAreaRef.current) {
+  //     var tribute = new Tribute({
+  //       trigger: "@",
+  //       values: [
+  //         { key: "Phil Heartman", value: "pheartman" },
+  //         { key: "Gordon Ramsey", value: "gramsey" },
+  //       ],
+  //       itemClass: "bg-blue-700 text-black",
+  //     });
+  //     tribute.attach(textAreaRef.current.textarea);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [textAreaRef.current]);
 
   return (
     <ClientOnly>
@@ -38,6 +61,7 @@ export default function CommentInput({
             <textarea
               className="hidden"
               value={comment}
+              onChange={setComment}
               name="comment"
               id="comment"
             ></textarea>

@@ -12,6 +12,7 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">) {
         },
       },
       events: true,
+      participants: true,
     },
   });
 }

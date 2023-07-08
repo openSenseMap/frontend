@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "~/components/ui/use-toast";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Map } from "~/components/Map";
 import type { LayerProps } from "react-map-gl";
 import { MapProvider, Source, Layer } from "react-map-gl";
@@ -45,12 +45,18 @@ import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
 import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
 import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-input";
 import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-cards";
+import Tribute from "tributejs";
+import tributeStyles from "tributejs/tribute.css";
 
 export const links: LinksFunction = () => {
   return [
     {
       rel: "stylesheet",
       href: maplibregl,
+    },
+    {
+      rel: "stylesheet",
+      href: tributeStyles,
     },
   ];
 };
@@ -120,6 +126,9 @@ const layer: LayerProps = {
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
   const campaign = data.campaign;
+  const participants = campaign.participants.map(function (participant) {
+    return { key: participant.name, value: participant.name };
+  });
   const userId = data.userId;
   const [commentEditMode, setCommentEditMode] = useState(false);
   const [eventEditMode, setEventEditMode] = useState(false);
@@ -142,10 +151,22 @@ export default function CampaignId() {
   const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
     "overview"
   );
-  const textAreaRef = useRef();
+  const textAreaRef = useRef(null);
   const eventTextAreaRef = useRef();
   const { toast } = useToast();
-  const participate = () => {};
+
+  useEffect(() => {
+    if (textAreaRef.current) {
+      var tribute = new Tribute({
+        trigger: "@",
+        values: participants,
+        itemClass: "bg-blue-700 text-black",
+      });
+      //@ts-ignore
+      tribute.attach(textAreaRef.current.textarea);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textAreaRef.current]);
   // useEffect(() => {
   //   toast({
   //     title: "HELLO",
@@ -314,14 +335,14 @@ export default function CampaignId() {
               textAreaRef={textAreaRef}
               userId={userId}
             />
-            {/* {!editComment && (
+            {!editComment && (
               <CommentInput
                 comment={comment}
                 setCommentEditMode={setCommentEditMode}
                 setComment={setComment}
                 textAreaRef={textAreaRef}
               />
-            )} */}
+            )}
           </TabsContent>
           {/* </div> */}
         </Tabs>
