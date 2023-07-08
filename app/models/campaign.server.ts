@@ -80,7 +80,7 @@ export async function createCampaign({
       feature: feature === null ? {} : feature,
       description,
       priority,
-      participantCount: 0,
+      // participantCount: 0,
       country,
       requiredSensors,
       requiredParticipants,
@@ -101,13 +101,30 @@ export async function createCampaign({
   });
 }
 
+// export async function updateCampaign(
+//   id: string,
+//   options: Prisma.CampaignUpdateInput
+// ) {
+//   return prisma.campaign.update({
+//     where: { id },
+//     data: options,
+//   });
+// }
+
 export async function updateCampaign(
-  id: string,
-  options: Prisma.CampaignUpdateInput
+  campaignId: string,
+  participantId: string
 ) {
   return prisma.campaign.update({
-    where: { id },
-    data: options,
+    where: {
+      id: campaignId,
+    },
+    data: {
+      participants: {
+        connect: { id: participantId },
+      },
+      updatedAt: new Date(),
+    },
   });
 }
 

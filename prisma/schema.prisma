@@ -23,12 +23,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password  Password?
-  notes     Note[]
-  devices   Device[]
-  campaigns Campaign[]
-  comments  Comment[]
-  events    CampaignEvent[]
+  password               Password?
+  notes                  Note[]
+  devices                Device[]
+  ownedCampaigns         Campaign[]      @relation("OwnedCampaigns")
+  participatingCampaigns Campaign[]      @relation("CampaignParticipant")
+  comments               Comment[]
+  events                 CampaignEvent[]
 
   profile Profile?
 }
@@ -129,12 +130,12 @@ model Campaign {
   title                String
   slug                 String          @unique
   feature              Json
-  owner                User            @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  owner                User            @relation("OwnedCampaigns", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId              String
   description          String
   priority             Priority
   country              String?
-  participantCount     Int
+  participants         User[]          @relation("CampaignParticipant")
   requiredParticipants Int?
   requiredSensors      Int?
   createdAt            DateTime

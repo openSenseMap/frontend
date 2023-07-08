@@ -26,7 +26,7 @@ import { MapProvider, Source, Layer } from "react-map-gl";
 import { ClockIcon } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
-
+import { updateCampaign } from "~/models/campaign.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
@@ -39,6 +39,7 @@ import {
   deleteCommentAction,
   updateCampaignEvent,
   updateCommentAction,
+  participate,
 } from "~/lib/actions";
 import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
 import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
@@ -71,6 +72,8 @@ export async function action(args: ActionArgs) {
       return deleteCampaignEvent(args);
     case "UPDATE_EVENT":
       return updateCampaignEvent(args);
+    case "PARTICIPATE":
+      return participate(args);
     default:
       // Handle the case when _action doesn't match any of the above cases
       // For example, you can throw an error or return a default action
@@ -172,6 +175,12 @@ export default function CampaignId() {
               </DialogDescription>
             </DialogHeader>
             <Form method="post">
+              <input
+                className="hidden"
+                value={campaign.id}
+                name="campaignId"
+                id="campaignId"
+              />
               <div className="flex flex-col gap-4 py-4">
                 <div className="flex flex-row flex-wrap justify-between">
                   <label htmlFor="email" className="text-right">
@@ -196,7 +205,9 @@ export default function CampaignId() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Teilnehmen</Button>
+                <Button name="_action" value="PARTICIPATE" type="submit">
+                  Teilnehmen
+                </Button>
               </DialogFooter>
             </Form>
           </DialogContent>

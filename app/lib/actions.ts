@@ -10,6 +10,34 @@ import {
   updateEvent,
 } from "~/models/campaign-events.server";
 import { requireUserId } from "~/session.server";
+import { updateCampaign } from "~/models/campaign.server";
+
+export async function participate({ request }: ActionArgs) {
+  const ownerId = await requireUserId(request);
+  const formData = await request.formData();
+  const campaignId = formData.get("campaignId");
+  if (typeof campaignId !== "string" || campaignId.length === 0) {
+    return json(
+      { errors: { campaignId: "campaignId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  // const email = formData.get("email");
+  // const hardware = formData.get("hardware");
+  // if (typeof email !== "string" || email.length === 0) {
+  //   return json(
+  //     { errors: { email: "email is required", body: null } },
+  //     { status: 400 }
+  //   );
+  // }
+  try {
+    const updated = await updateCampaign(campaignId, ownerId);
+    return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
 
 export async function updateCommentAction({ request }: ActionArgs) {
   const formData = await request.formData();
