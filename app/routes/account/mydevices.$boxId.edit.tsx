@@ -129,17 +129,17 @@ export default function EditBox() {
               </li>
             </Link>
 
-            <Link to="extensions">
+            <Link to="location">
               <li
                 className={
-                  currentView === "extensions"
+                  currentView === "location"
                     ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
                     : "rounded p-3 text-[#676767] hover:bg-[#eee]"
                 }
-                onClick={() => setCurrentView("extensions")}
+                onClick={() => setCurrentView("location")}
               >
                 <TableCellsIcon className=" mr-2 inline h-5 w-5" />
-                Extensions
+                Location
               </li>
             </Link>
           </ul>

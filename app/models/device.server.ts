@@ -60,6 +60,16 @@ export function updateDeviceInfo({
   });
 }
 
+export function updateDeviceLocation({ id, latitude, longitude }: Pick<Device, "id" |"latitude" | "longitude">){
+  return prisma.device.update({
+    where: { id },
+    data: {
+      latitude: latitude,
+      longitude: longitude,
+    },
+  });
+}
+
 export function deleteDevice({ id }: Pick<Device, "id">) {
   return prisma.device.delete({ where: { id } });
 }

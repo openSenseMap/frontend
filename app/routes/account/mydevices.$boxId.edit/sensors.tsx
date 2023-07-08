@@ -121,6 +121,7 @@ export default function EditBoxSensors() {
                   <h1 className=" text-4xl">Sensor</h1>
                 </div>
                 <div>
+                  {/* Add button */}
                   <button
                     name="intent"
                     value="add"
@@ -142,7 +143,7 @@ export default function EditBoxSensors() {
                   >
                     <Plus className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
                   </button>
-
+                  {/* Save button */}
                   <button
                     name="intent"
                     value="save"
