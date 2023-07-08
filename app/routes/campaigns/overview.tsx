@@ -589,6 +589,7 @@ export default function Campaigns() {
             </div>
           )}
         </div>
+        <hr className="w-full bg-gray-700" />
         {data.length === 0 ? (
           <div>
             Zurzeit gibt es noch keine Kampagnen. Klicke{" "}
@@ -706,12 +707,12 @@ export default function Campaigns() {
                     onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
                     ref={mapRef}
                     style={{
-                      height: "60vh",
+                      height: "calc(100vh - 190px)",
                       width: "40vw",
-                      position: "fixed",
+                      position: "sticky",
                       bottom: "10px",
                       // marginTop: "2rem",
-                      right: "10px",
+                      top: 0,
                     }}
                   >
                     {clusters.map((cluster) => {
