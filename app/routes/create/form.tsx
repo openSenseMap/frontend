@@ -24,6 +24,7 @@ import { campaignSchema } from "~/lib/validations/campaign";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "~/components/ui/use-toast";
 import { useNavigate } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
 import { reverseGeocode } from "~/components/Map/geocoder-control";
 import {
   Select,
@@ -194,6 +195,8 @@ export default function CreateCampaign() {
   const phenomenaRef = useRef<HTMLInputElement>(null);
   const exposureRef = useRef<HTMLInputElement>(null);
   const hardwareAvailableRef = useRef<HTMLButtonElement>(null);
+
+  const { t } = useTranslation("campaign-form");
 
   // const [container, setContainer] = useState<HTMLElement | undefined>(
   //   undefined
@@ -395,7 +398,7 @@ export default function CreateCampaign() {
           <div>
             <label htmlFor="title">
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                Titel
+                {t("title")}
               </span>
             </label>
             <div className="mt-1">
@@ -431,7 +434,7 @@ export default function CreateCampaign() {
           <div>
             <label htmlFor="description" className="flex justify-between">
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                Beschreibung
+                {t("description")}
               </span>
               {InfoCard({
                 content: (
@@ -487,7 +490,7 @@ export default function CreateCampaign() {
           <div>
             <label htmlFor="priority" className="flex justify-between">
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                Priority
+                {t("priority")}
               </span>
               {InfoCard({
                 content: <p>Sezten Sie eine Priorität für Ihre Kampagne</p>,
@@ -548,7 +551,7 @@ export default function CreateCampaign() {
               className="flex justify-between"
             >
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                Gewünschte Teilnehmerzahl
+                {t("participants")}
               </span>
               {InfoCard({
                 content: (
@@ -580,10 +583,10 @@ export default function CreateCampaign() {
               )}
             </div>
           </div>
-          <div>
+          <div className="hidden">
             <label htmlFor="requiredSensors" className="flex justify-between">
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                Gewünschte Anzahl Sensoren
+                {t("sensors")}
               </span>
               {InfoCard({
                 content: (
@@ -597,6 +600,7 @@ export default function CreateCampaign() {
                 ref={requiredSensorsRef}
                 name="requiredSensors"
                 type="number"
+                value={1}
                 autoComplete="new-requiredSensors"
                 aria-invalid={
                   actionData?.error?.issues[0].message ? true : undefined
@@ -616,7 +620,7 @@ export default function CreateCampaign() {
               htmlFor="startDate"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
-              Beginn
+              {t("startDate")}
             </label>
             <div className="mt-1">
               <input
@@ -643,7 +647,7 @@ export default function CreateCampaign() {
               htmlFor="endDate"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
-              Abschluss
+              {t("endDate")}
             </label>
             <div className="mt-1">
               <input
@@ -720,7 +724,7 @@ export default function CreateCampaign() {
               htmlFor="exposure"
               className="block text-sm font-medium text-gray-700"
             >
-              Einsatzgebiet
+              {t("exposure")}
             </label>
             <div className="mt-1">
               <input
@@ -775,7 +779,7 @@ export default function CreateCampaign() {
           </div>
           <label htmlFor="hardware_available" className="flex justify-between">
             <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-              Hardware verfügbar
+              {t("hardware_available")}
             </span>
             {InfoCard({
               content: (
@@ -787,13 +791,13 @@ export default function CreateCampaign() {
             })}
           </label>
           <div className="flex w-fit justify-between gap-2">
-            <span>Nein</span>
+            <span>No</span>
             <Switch
               id="hardware_available"
               ref={hardwareAvailableRef}
               name="hardware_available"
             />
-            <span>Ja</span>
+            <span>Yes</span>
           </div>
 
           {/* <input type="hidden" name="redirectTo" value={redirectTo} /> */}

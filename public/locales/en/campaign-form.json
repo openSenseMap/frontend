@@ -1,0 +1,12 @@
+{
+  "title": "Title",
+  "description": "Description",
+  "priority": "Priority",
+  "participants": "Required number of participants",
+  "sensors": "Required number of sensors",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "phenomena": "Phenomena",
+  "exposure": "Exposure",
+  "hardware_available": "Hardware available"
+}

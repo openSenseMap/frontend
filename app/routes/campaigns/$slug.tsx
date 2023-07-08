@@ -231,7 +231,7 @@ export default function CampaignId() {
         </div>
       </div>
       <div className="flex items-center">
-        <h1 className="mt-6 mb-2 text-lg font-bold capitalize">
+        <h1 className="mb-2 mt-6 text-lg font-bold capitalize">
           <b>{campaign.title}</b>
         </h1>
         <span
@@ -267,7 +267,7 @@ export default function CampaignId() {
           </div>
           {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
-            <h2 className=" ml-4 mb-4 font-bold">Beschreibung</h2>
+            <h2 className=" mb-4 ml-4 font-bold">Beschreibung</h2>
             <Markdown>{campaign.description}</Markdown>
           </TabsContent>
           <TabsContent value="calendar">
@@ -293,7 +293,6 @@ export default function CampaignId() {
             )}
           </TabsContent>
           <TabsContent value="comments">
-            <h2 className=" ml-4 mb-4 font-bold">Fragen und Kommentare</h2>
             <CommentCards
               commentEditMode={commentEditMode}
               comments={campaign.comments}
@@ -304,14 +303,14 @@ export default function CampaignId() {
               textAreaRef={textAreaRef}
               userId={userId}
             />
-            {!editComment && (
+            {/* {!editComment && (
               <CommentInput
                 comment={comment}
                 setCommentEditMode={setCommentEditMode}
                 setComment={setComment}
                 textAreaRef={textAreaRef}
               />
-            )}
+            )} */}
           </TabsContent>
           {/* </div> */}
         </Tabs>
