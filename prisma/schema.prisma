@@ -71,6 +71,12 @@ enum Exposure {
   UNKNOWN
 }
 
+enum Status {
+  ACTIVE
+  INACTIVE
+  OLD
+}
+
 enum Model {
   HOME_V2_LORA
 }
@@ -79,8 +85,10 @@ model Device {
   id       String   @id @default(uuid())
   name     String
   exposure Exposure
-  useAuth  Boolean?
-  model    String?
+  status   Status   @default(INACTIVE)
+
+  useAuth Boolean?
+  model   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
