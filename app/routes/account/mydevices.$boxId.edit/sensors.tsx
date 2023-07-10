@@ -80,13 +80,13 @@ export default function EditBoxSensors() {
 
   /* temp impl. until figuring out how to updating state of nested objects  */
   const [tepmState, setTepmState] = useState(false);
-  //* to view toast on edit page
+  //* to view toast on edit-page
   const [toastOpen, setToastOpen] = useOutletContext();
 
   React.useEffect(() => {
     //* if sensors data were updated successfully
     if (actionData && actionData?.isUpdated) {
-      //* show notification of successs update
+      //* show notification when data is successfully updated
       setToastOpen(true);
       // window.location.reload();
       //* reset sensor data elements

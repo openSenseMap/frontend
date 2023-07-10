@@ -1,13 +1,9 @@
 import type { ActionArgs, LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-} from "@remix-run/react";
-import { useCallback, useState } from "react";
+import { Form, useActionData, useLoaderData, useOutletContext } from "@remix-run/react";
+import React, { useCallback, useState } from "react";
 import { getUserId } from "~/session.server";
-import {  Save } from "lucide-react";
+import { Save } from "lucide-react";
 
 import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
@@ -15,8 +11,13 @@ import {
   getDeviceWithoutSensors,
   updateDeviceLocation,
 } from "~/models/device.server";
-import { Map, MapProvider, Marker, MarkerDragEvent, NavigationControl } from "react-map-gl";
-// import Map from "~/components/map";
+import {
+  Map,
+  MapProvider,
+  Marker,
+  MarkerDragEvent,
+  NavigationControl,
+} from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 
 //*****************************************************
@@ -56,28 +57,42 @@ export async function action({ request, params }: ActionArgs) {
   const id = params.boxId;
   invariant(id, `deviceID not found!`);
 
-  await updateDeviceLocation({id: id, latitude: Number(latitude), longitude: Number(longitude)});
+  await updateDeviceLocation({
+    id: id,
+    latitude: Number(latitude),
+    longitude: Number(longitude),
+  });
 
-  return json("");
+  return json({ isUpdated: true });
 }
 
 //**********************************
 export default function EditLocation() {
   const data = useLoaderData<typeof loader>();
-  console.log("🚀 ~ file: location.tsx:66 ~ EditLocation ~ data:", data);
   const actionData = useActionData<typeof action>();
-
+  //* map marker
   const [marker, setMarker] = useState({
     latitude: data.latitude,
     longitude: data.longitude,
   });
-
+  //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
     setMarker({
       longitude: event.lngLat.lng,
       latitude: event.lngLat.lat,
     });
   }, []);
+  //* to view toast on edit-page
+  const [toastOpen, setToastOpen] = useOutletContext();
+  
+
+  React.useEffect(() => {
+    //* if sensors data were updated successfully
+    if (actionData && actionData?.isUpdated) {
+      //* show notification when data is successfully updated
+      setToastOpen(true);
+    }
+  }, [actionData]);
 
   return (
     <div className="grid grid-rows-1">
@@ -99,7 +114,7 @@ export default function EditLocation() {
                     name="intent"
                     value="save"
                     disabled={!marker.latitude || !marker.longitude}
-                    className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6] disabled:bg-[#e9e9ed] disabled:cursor-not-allowed"
+                    className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6] disabled:cursor-not-allowed disabled:bg-[#e9e9ed]"
                   >
                     <Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
                   </button>
@@ -165,8 +180,12 @@ export default function EditLocation() {
                         })
                       }
                       aria-describedby="name-error"
-                      className={"w-full rounded border border-gray-200 px-2 py-1 text-base" +
-                      (!marker.latitude?" focus:shadow-[#FF0000] focus:shadow focus:border-[#FF0000] shadow-[#FF0000] border-[#FF0000] ":"")}
+                      className={
+                        "w-full rounded border border-gray-200 px-2 py-1 text-base" +
+                        (!marker.latitude
+                          ? " border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000] "
+                          : "")
+                      }
                     />
                   </div>
                 </div>
@@ -194,8 +213,12 @@ export default function EditLocation() {
                         })
                       }
                       aria-describedby="name-error"
-                      className={"w-full rounded border border-gray-200 px-2 py-1 text-base" +
-                      (!marker.longitude?" focus:shadow-[#FF0000] focus:shadow focus:border-[#FF0000] shadow-[#FF0000] border-[#FF0000] ":"")}
+                      className={
+                        "w-full rounded border border-gray-200 px-2 py-1 text-base" +
+                        (!marker.longitude
+                          ? " border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000] "
+                          : "")
+                      }
                     />
                   </div>
                 </div>
