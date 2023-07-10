@@ -8,21 +8,22 @@ import {
 import type { MultiLineString, Point } from "geojson";
 import { useEffect, useState } from "react";
 import { Layer, Source, useMap } from "react-map-gl";
-import chroma from "chroma-js";
 import bbox from "@turf/bbox";
-
-const LOW_COLOR = "#375F73";
-const HIGH_COLOR = "#B5F584";
+import { HIGH_COLOR, LOW_COLOR, createPalette } from "./color-palette";
 
 const FIT_PADDING = 50;
 const BOTTOM_BAR_HEIGHT = 400;
 
 export default function MobileBoxLayer({
   sensor,
-  color,
+  minColor = LOW_COLOR,
+  maxColor = HIGH_COLOR,
 }: {
   sensor: Sensor;
-  color?:
+  minColor?:
+    | mapboxgl.CirclePaint["circle-color"]
+    | mapboxgl.LinePaint["line-color"];
+  maxColor?:
     | mapboxgl.CirclePaint["circle-color"]
     | mapboxgl.LinePaint["line-color"];
 }) {
@@ -40,10 +41,12 @@ export default function MobileBoxLayer({
     // create color palette from min and max values
     const minValue = Math.min(...sensorData.map((d) => Number(d.value)));
     const maxValue = Math.max(...sensorData.map((d) => Number(d.value)));
-
-    const palette = chroma
-      .scale([LOW_COLOR, HIGH_COLOR])
-      .domain([minValue, maxValue]);
+    const palette = createPalette(
+      minValue,
+      maxValue,
+      minColor as string,
+      maxColor as string
+    );
 
     // generate points from the sensor data
     // apply color from palette
@@ -64,7 +67,7 @@ export default function MobileBoxLayer({
     setSourceData(
       featureCollection<Point | MultiLineString>([...points, lines])
     );
-  }, [sensor.data]);
+  }, [maxColor, minColor, sensor.data]);
 
   // fit the map to the bounds of the data
   useEffect(() => {
@@ -100,7 +103,7 @@ export default function MobileBoxLayer({
         type="line"
         filter={["==", "$type", "LineString"]}
         paint={{
-          "line-color": color || "#333",
+          "line-color": "#333",
           "line-width": 2,
           "line-opacity": 0.7,
         }}

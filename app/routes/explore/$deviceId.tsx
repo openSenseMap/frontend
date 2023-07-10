@@ -4,7 +4,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import BottomBar from "~/components/bottom-bar/bottom-bar";
-import MobileBoxLayer from "~/components/map/mobile-box-layer";
+import MobileBoxView from "~/components/map/mobile/mobile-box-view";
 import { getDevice, getMeasurements } from "~/models/device.server";
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -36,7 +36,7 @@ export async function loader({ params, request }: LoaderArgs) {
       const sensorData = await getMeasurements(
         params.deviceId,
         sensor.id,
-        new Date(new Date().getTime() - 31556952000), // last year
+        new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
         new Date()
       );
       return {
@@ -65,12 +65,11 @@ export default function DeviceId() {
 
   return (
     <>
-      <BottomBar device={data.device} selectedSensors={data.selectedSensors} />
       {/* If the box is mobile, iterate over selected sensors and show trajectory */}
-      {data.device.exposure === Exposure.MOBILE &&
-        data.selectedSensors.map((e: Sensor) => (
-          <MobileBoxLayer sensor={e} key={e.id} />
-        ))}
+      {data.device.exposure === Exposure.MOBILE && (
+        <MobileBoxView sensors={data.selectedSensors} />
+      )}
+      <BottomBar device={data.device} selectedSensors={data.selectedSensors} />
     </>
   );
 }
