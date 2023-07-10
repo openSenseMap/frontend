@@ -11,7 +11,6 @@ import type { MapRef } from "react-map-gl";
 
 import { MapProvider, Marker } from "react-map-gl";
 import { useState, useRef, useMemo, useCallback } from "react";
-import { useHotkeys } from "@mantine/hooks";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
@@ -83,7 +82,6 @@ export default function Explore() {
   const data = useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
 
   // get map bounds
   const [viewState, setViewState] = useState({
@@ -93,30 +91,6 @@ export default function Explore() {
   });
 
   const navigate = useNavigate();
-
-  const [showSearch, setShowSearch] = useState<boolean>(false);
-
-  /**
-   * Focus the search input when the search overlay is displayed
-   */
-  const focusSearchInput = () => {
-    searchRef.current?.focus();
-  };
-
-  /**
-   * Display the search overlay when the ctrl + k key combination is pressed
-   */
-  useHotkeys([
-    [
-      "ctrl+K",
-      () => {
-        setShowSearch(!showSearch);
-        setTimeout(() => {
-          focusSearchInput();
-        }, 100);
-      },
-    ],
-  ]);
 
   // get clusters
   const points: PointFeature<GeoJsonProperties & Device>[] = useMemo(() => {
@@ -224,13 +198,6 @@ export default function Explore() {
           {clusterMarker}
         </Map>
         <Toaster />
-        {showSearch ? (
-          <OverlaySearch
-            devices={data.devices}
-            searchRef={searchRef}
-            setShowSearch={setShowSearch}
-          />
-        ) : null}
         <main className="absolute bottom-0 z-10 w-full">
           <Outlet />
         </main>

@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
-import type { RefObject } from "react";
 import SearchList from "./search-list";
 import { useTranslation, Trans } from "react-i18next";
 
 interface SearchProps {
-  setShowSearch: (data: boolean) => void;
-  searchRef: RefObject<HTMLInputElement>;
+  searchString: string;
   devices: any;
 }
 
 export default function Search(props: SearchProps) {
   let { t } = useTranslation("search");
 
-  const [searchString, setSearchString] = useState<string>("");
   const [searchResultsLocation, setSearchResultsLocation] = useState<any[]>([]);
   const [searchResultsDevice, setSearchResultsDevice] = useState<any[]>([]);
 
@@ -89,116 +86,39 @@ export default function Search(props: SearchProps) {
   }
 
   /**
-   * onchange handler for the search bar. It sets the search string to the value of the search bar.
-   *
-   * @param event
-   */
-  const onChangeHandler = (event: any) => {
-    event.preventDefault();
-    setSearchString(event.target.value);
-  };
-
-  /**
    * useEffect hook that is called when the search string changes. It calls the getLocations and getDevices functions to get the search results for locations and devices.
    */
   useEffect(() => {
-    if (searchString.length >= 2) {
-      getLocations(searchString);
-      getDevices(searchString);
+    console.log(props.searchString);
+    if (props.searchString.length >= 2) {
+      getLocations(props.searchString);
+      getDevices(props.searchString);
     }
-    if (searchString.length < 2) {
+    if (props.searchString.length < 2) {
       setSearchResultsLocation([]);
       setSearchResultsDevice([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchString]);
+  }, [props.searchString]);
 
-  // useEffect(() => {
-  //   // setSearchResultsDeviceIndex(searchResultsDevice.length === 0 ? 0 : )
-  // })
-
-  /**
-   * on click handler for the reset button. It resets the search string and hides the search bar.
-   */
-  const handleResetClick = () => {
-    if (searchString !== "") {
-      setSearchString("");
-    } else {
-      props.setShowSearch(false);
-    }
-  };
-
-  return (
-    <div>
-      <div className="flex">
-        <input
-          ref={props.searchRef}
-          type="search"
-          className="w-full rounded-full border-none focus:ring-0"
-          placeholder={t("placeholder").toString()}
-          onChange={onChangeHandler}
-          value={searchString}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-              event.preventDefault();
-            }
-            if (event.key === "Escape") {
-              props.setShowSearch(false);
-            }
-            if (event.key === "k" && event.ctrlKey) {
-              event.preventDefault();
-              props.setShowSearch(false);
-            }
-          }}
-        />
-        <button
-          className="top-[10px] right-[10px] mr-1 inline-flex items-center justify-center p-2"
-          onClick={() => handleResetClick()}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="mx-auto h-6 w-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-      <hr className="solid border-t-2 px-2"></hr>
-      <div className="my-2 flex justify-around">
-        <div className="text-center text-sm text-gray-500">
-          <p>
-            <Trans
-              t={t}
-              i18nKey={"hint_open_close"}
-              components={[<kbd key="open_close"></kbd>]}
-            />
-          </p>
-        </div>
-        <div className="text-center text-sm text-gray-500">
-          <p>
-            <Trans
-              t={t}
-              i18nKey={"hint_select_result"}
-              components={[<kbd key="select_result"></kbd>]}
-            />
-          </p>
-        </div>
-      </div>
-      {searchResultsLocation.length > 0 || searchResultsDevice.length > 0 ? (
+  if (searchResultsLocation.length > 0 || searchResultsDevice.length > 0)
+    return (
+      <div className="mt-2">
         <SearchList
           searchResultsLocation={searchResultsLocation}
           searchResultsDevice={searchResultsDevice}
-          setShowSearch={props.setShowSearch}
         />
-      ) : null}
-    </div>
-  );
+        <div className="flex">
+          <div className="text-center text-sm text-gray-500">
+            <p>
+              <Trans
+                t={t}
+                i18nKey={"hint_select_result"}
+                components={[<kbd key="select_result"></kbd>]}
+              />
+            </p>
+          </div>
+        </div>
+      </div>
+    );
 }

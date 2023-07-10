@@ -1,0 +1,91 @@
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import type { Device } from "@prisma/client";
+import { useState, useEffect, useRef } from "react";
+import { useMap } from "react-map-gl";
+import NavbarHandler from "./nav-bar-handler";
+import { AnimatePresence, motion } from "framer-motion";
+
+interface NavBarProps {
+  devices: Device[];
+}
+
+export default function NavBar(props: NavBarProps) {
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [searchString, setSearchString] = useState("");
+
+  const { osem: mapRef } = useMap();
+
+  useEffect(() => {
+    if (mapRef) {
+      mapRef.on("click", () => {
+        setOpen(false);
+      });
+    }
+  }, [mapRef]);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
+        inputRef.current?.focus();
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setSearchString("");
+        setOpen(false);
+        inputRef.current?.blur();
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  return (
+    <div className="pointer-events-auto relative w-full md:w-1/2">
+      <div className="absolute left-0 top-0 w-full rounded-2xl border border-gray-100 bg-white px-4 py-2 shadow-xl">
+        <div className="flex w-full items-center gap-4 px-2">
+          <MagnifyingGlassIcon className="aspect-square h-6" />
+          <input
+            ref={inputRef}
+            placeholder="Suche, Filter & Einstellungen"
+            onFocus={() => setOpen(true)}
+            onChange={(e) => setSearchString(e.target.value)}
+            className="h-fit w-full flex-1 border-none focus:border-none focus:outline-none focus:ring-0"
+            value={searchString}
+          />
+          {!open && (
+            <span className="hidden flex-none text-xs font-semibold text-gray-400 md:block">
+              <kbd>ctrl</kbd> + <kbd>K</kbd>
+            </span>
+          )}
+          {open && (
+            <XMarkIcon
+              onClick={() => {
+                setSearchString("");
+                setOpen(false);
+                inputRef.current?.blur();
+              }}
+              className="h-6"
+            />
+          )}
+        </div>
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, translateY: -10 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              exit={{ opacity: 0, translateY: -10 }}
+            >
+              <NavbarHandler
+                devices={props.devices}
+                searchString={searchString}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
