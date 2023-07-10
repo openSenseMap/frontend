@@ -1,10 +1,11 @@
 // Importing dependencies
-import type { Sensor } from "@prisma/client";
+import type { Measurement, Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import BottomBar from "~/components/bottom-bar/bottom-bar";
 import { getDevice, getMeasurements } from "~/models/device.server";
+import { getMeasurement } from "~/models/measurement.server";
 
 export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
@@ -12,6 +13,7 @@ export async function loader({ params, request }: LoaderArgs) {
 
   if (params.deviceId) {
     const device = await getDevice({ id: params.deviceId });
+    const [aggregation] = url.searchParams.getAll("aggregation");
 
     // Find all sensors from the device response that have the same id as one of the sensor array value
     const sensorIds = url.searchParams.getAll("sensor");
@@ -29,9 +31,14 @@ export async function loader({ params, request }: LoaderArgs) {
             new Date(new Date().getTime() - 24 * 60 * 60 * 1000), //24 hours ago
             new Date()
           );
+          const measurements = await getMeasurement(
+            sensor.id,
+            aggregation || "15min"
+          );
           const sensorToAdd = {
             ...sensor,
             data: sensorData,
+            aggregation: measurements,
           };
           selectedSensors.push(sensorToAdd);
         })

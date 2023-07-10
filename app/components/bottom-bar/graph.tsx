@@ -75,7 +75,7 @@ export default function Graph() {
         : [
             {
               label: loaderData.selectedSensors[0].title,
-              data: loaderData.selectedSensors[0].data,
+              data: loaderData.selectedSensors[0].aggregation,
               pointRadius: 0,
               borderColor: "blue",
               backgroundColor: "blue",
@@ -91,14 +91,14 @@ export default function Graph() {
       intersect: false,
     },
     parsing: {
-      xAxisKey: "createdAt",
+      xAxisKey: "time",
       yAxisKey: "value",
     },
     scales: {
       x: {
         type: "time",
         time: {
-          unit: "hour",
+          unit: "day",
         },
         adapters: {
           date: {

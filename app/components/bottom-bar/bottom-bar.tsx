@@ -30,6 +30,7 @@ export interface DeviceAndSelectedSensors {
 }
 
 export default function BottomBar(data: DeviceAndSelectedSensors) {
+  console.log("BottomBar: ", data);
   const navigation = useNavigation();
   // state variables
   const [isOpen, setIsOpen] = useState<Boolean>(true);
@@ -106,7 +107,40 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                   "-ms-overflow-style:none scrollable box-border w-full overflow-x-auto overflow-y-hidden"
                 }
               >
-                <div className="flex justify-center space-x-4 whitespace-nowrap text-center px-12">
+                <div>
+                  <fieldset>
+                    <div>
+                      <input
+                        type="radio"
+                        id="raw"
+                        name="aggregation"
+                        value="raw"
+                      />
+                      <label htmlFor="raw">raw</label>
+                    </div>
+                    <div>
+                      <input
+                        type="radio"
+                        id="15min"
+                        name="aggregation"
+                        value="15min"
+                      />
+                      <label htmlFor="15min">15 minutes</label>
+                    </div>
+
+                    <div>
+                      <input
+                        type="radio"
+                        id="1d"
+                        name="aggregation"
+                        value="1d"
+                        checked
+                      />
+                      <label htmlFor="1d">1 day</label>
+                    </div>
+                  </fieldset>
+                </div>
+                <div className="flex justify-center space-x-4 whitespace-nowrap px-12 text-center">
                   {data.device.sensors.map((sensor: Sensor) => {
                     // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                     const lastMeasurement =
@@ -114,7 +148,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                     const value = lastMeasurement.value as string;
                     return (
                       <div
-                      className="flex-1"
+                        className="flex-1"
                         key={sensor.id}
                         onClick={() => {
                           if (
