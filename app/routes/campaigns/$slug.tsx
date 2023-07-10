@@ -41,12 +41,14 @@ import {
   updateCommentAction,
   participate,
 } from "~/lib/actions";
+import OverviewTable from "~/components/campaigns/campaignId/overview-tab/overview-table";
 import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
 import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
 import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-input";
 import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-cards";
 import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
+import { Campaign } from "@prisma/client";
 
 export const links: LinksFunction = () => {
   return [
@@ -175,118 +177,121 @@ export default function CampaignId() {
 
   return (
     <div className="h-full w-full">
-      <div className="float-right flex gap-3">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">Teilnehmen</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Teilnehmen</DialogTitle>
-              <DialogDescription>
-                <p className="font-bold">
-                  Indem Sie auf Teilnehmen klicken stimmen Sie zu, dass Sie der
-                  Kampagnenleiter unter der von Ihnen angegebenen Email- Adresse
-                  kontaktieren darf!
-                </p>
-                <p className="mt-2">
-                  Bitte gib ausserdem an, ob du bereits über die benötigte
-                  Hardware verfügst.
-                </p>
-              </DialogDescription>
-            </DialogHeader>
-            <Form method="post">
-              <input
-                className="hidden"
-                value={campaign.id}
-                name="campaignId"
-                id="campaignId"
-              />
-              <div className="flex flex-col gap-4 py-4">
-                <div className="flex flex-row flex-wrap justify-between">
-                  <label htmlFor="email" className="text-right">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    className="autofocus w-2/3 border border-gray-400"
-                  />
+      <hr className="my-2 w-full bg-gray-700" />
+      <div className="flex w-full justify-between">
+        <div className="flex items-center">
+          <h1 className="text-lg font-bold capitalize">
+            <b>{campaign.title}</b>
+          </h1>
+          <span
+            className={clsx(
+              " ml-4 flex h-6 w-fit items-center rounded px-2 py-1 text-sm text-white",
+              {
+                "bg-red-500": campaign.priority.toLowerCase() === "urgent",
+                "bg-yellow-500": campaign.priority.toLowerCase() === "high",
+                "bg-blue-500": campaign.priority.toLowerCase() === "medium",
+                "bg-green-500": campaign.priority.toLowerCase() === "low",
+              }
+            )}
+          >
+            <ClockIcon className="h-4 w-4" /> {campaign.priority}
+          </span>
+        </div>
+        <div className="flex gap-3">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Teilnehmen</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Teilnehmen</DialogTitle>
+                <DialogDescription>
+                  <p className="font-bold">
+                    Indem Sie auf Teilnehmen klicken stimmen Sie zu, dass Sie
+                    der Kampagnenleiter unter der von Ihnen angegebenen Email-
+                    Adresse kontaktieren darf!
+                  </p>
+                  <p className="mt-2">
+                    Bitte gib ausserdem an, ob du bereits über die benötigte
+                    Hardware verfügst.
+                  </p>
+                </DialogDescription>
+              </DialogHeader>
+              <Form method="post">
+                <input
+                  className="hidden"
+                  value={campaign.id}
+                  name="campaignId"
+                  id="campaignId"
+                />
+                <div className="flex flex-col gap-4 py-4">
+                  <div className="flex flex-row flex-wrap justify-between">
+                    <label htmlFor="email" className="text-right">
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      className="autofocus w-2/3 border border-gray-400"
+                    />
+                  </div>
+                  <div className="flex">
+                    <label htmlFor="hardware" className="text-right">
+                      Hardware vorhanden
+                    </label>
+                    <input
+                      id="hardware"
+                      name="hardware"
+                      type="checkbox"
+                      className="ml-auto"
+                    />
+                  </div>
                 </div>
-                <div className="flex">
-                  <label htmlFor="hardware" className="text-right">
-                    Hardware vorhanden
-                  </label>
-                  <input
-                    id="hardware"
-                    name="hardware"
-                    type="checkbox"
-                    className="ml-auto"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button name="_action" value="PARTICIPATE" type="submit">
-                  Teilnehmen
-                </Button>
-              </DialogFooter>
-            </Form>
-          </DialogContent>
-        </Dialog>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">Teilen</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Teilen</DialogTitle>
-              <DialogDescription>
-                <ShareLink />
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
-        <Button
-          variant="outline"
-          // @ts-ignore
-          onClick={() => downloadGeojSON(campaign.feature[0])}
-        >
-          GeoJSON herunterladen
-        </Button>
-        <div>
-          <span>Karte anzeigen</span>
-          <Switch
-            id="showMapSwitch"
-            checked={showMap}
-            onCheckedChange={() => setShowMap(!showMap)}
-          />
+                <DialogFooter>
+                  <Button name="_action" value="PARTICIPATE" type="submit">
+                    Teilnehmen
+                  </Button>
+                </DialogFooter>
+              </Form>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Teilen</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Teilen</DialogTitle>
+                <DialogDescription>
+                  <ShareLink />
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+          <Button
+            variant="outline"
+            // @ts-ignore
+            onClick={() => downloadGeojSON(campaign.feature[0])}
+          >
+            GeoJSON herunterladen
+          </Button>
+          <div>
+            <span>Karte anzeigen</span>
+            <Switch
+              id="showMapSwitch"
+              checked={showMap}
+              onCheckedChange={() => setShowMap(!showMap)}
+            />
+          </div>
         </div>
       </div>
-      <div className="flex items-center">
-        <h1 className="mb-2 mt-6 text-lg font-bold capitalize">
-          <b>{campaign.title}</b>
-        </h1>
-        <span
-          className={clsx(
-            " ml-4 flex h-6 w-fit items-center rounded px-2 py-1 text-sm text-white",
-            {
-              "bg-red-500": campaign.priority.toLowerCase() === "urgent",
-              "bg-yellow-500": campaign.priority.toLowerCase() === "high",
-              "bg-blue-500": campaign.priority.toLowerCase() === "medium",
-              "bg-green-500": campaign.priority.toLowerCase() === "low",
-            }
-          )}
-        >
-          <ClockIcon className="h-4 w-4" /> {campaign.priority}
-        </span>
-      </div>
+      <hr className="my-2 w-full bg-gray-700" />
+
       <div className={`${showMap ? "grid grid-cols-2" : "w-full"}`}>
         <Tabs defaultValue={tabView} className="w-full">
           <div className="flex items-center justify-center">
-            <TabsList>
+            <TabsList className="w-full justify-between p-2">
               <TabsTrigger value="overview">
-                {/* <Clock className="h-5 w-5 pr-1" />
-                {t("live_label")} */}
                 <Button variant="outline">Übersicht</Button>
               </TabsTrigger>
               <TabsTrigger value="calendar">
@@ -299,8 +304,7 @@ export default function CampaignId() {
           </div>
           {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
-            <h2 className=" mb-4 ml-4 font-bold">Beschreibung</h2>
-            <Markdown>{campaign.description}</Markdown>
+            <OverviewTable campaign={campaign as any} />
           </TabsContent>
           <TabsContent value="calendar">
             {campaign.events.length === 0 ? (
@@ -360,10 +364,9 @@ export default function CampaignId() {
                 style={{
                   height: "60vh",
                   width: "40vw",
-                  position: "fixed",
-                  bottom: "10px",
-                  // marginTop: "2rem",
-                  right: "10px",
+                  position: "sticky",
+                  top: 0,
+                  marginLeft: "auto",
                 }}
               >
                 <Source
