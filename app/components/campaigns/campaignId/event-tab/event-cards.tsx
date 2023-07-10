@@ -6,6 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { EditIcon, TrashIcon } from "lucide-react";
 import { Form } from "@remix-run/react";
@@ -42,7 +51,7 @@ export default function EventCards({
     <div>
       {events.map((e: any, i: number) => (
         <div key={i} className="flex flex-col items-center justify-center">
-          <Card className="w-fit min-w-[300px]">
+          <Card className="w-2/3 min-w-[300px]">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div>
@@ -65,23 +74,38 @@ export default function EventCards({
                     >
                       <EditIcon className="h-4 w-4" />
                     </Button>
-                    <Form method="post">
-                      <input
-                        className="hidden"
-                        id="eventId"
-                        name="eventId"
-                        type="text"
-                        value={e.id}
-                      />
-                      <Button
-                        variant="outline"
-                        name="_action"
-                        value="DELETE_EVENT"
-                        type="submit"
-                      >
-                        <TrashIcon className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </Form>
+                    <Dialog>
+                      <DialogTrigger>
+                        <Button variant="outline">
+                          <TrashIcon className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            Sind Sie sicher dass Sie dieses Event löschen
+                            möchten?
+                          </DialogTitle>
+                        </DialogHeader>
+                        <Form method="post">
+                          <input
+                            className="hidden"
+                            id="eventId"
+                            name="eventId"
+                            type="text"
+                            value={e.id}
+                          />
+                          <Button
+                            variant="outline"
+                            name="_action"
+                            value="DELETE_EVENT"
+                            type="submit"
+                          >
+                            Löschen
+                          </Button>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </CardTitle>
