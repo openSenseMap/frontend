@@ -1,11 +1,10 @@
-import { Outlet, useNavigate } from "@remix-run/react";
+import { Outlet, useNavigate, useLoaderData } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 
