@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import type { Device } from "@prisma/client";
 import { SensorFilter } from "../navBar/sensor-filter";
+import { useSearchParams } from "@remix-run/react";
 
 interface NavBarProps {
   devices: Device[];
@@ -42,7 +43,7 @@ export default function NavBar(props: NavBarProps) {
   );
   const [sensor, setSensor] = React.useState<string | undefined>("all");
   const userLocaleString = getUserLocale();
-
+  const [searchParams] = useSearchParams();
   /**
    * Focus the search input
    */
@@ -101,7 +102,9 @@ export default function NavBar(props: NavBarProps) {
         >
           <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-orange-500">
             <SunIcon className="h-4 w-4 text-white" />
-            <div className="text-center text-white">{t("all_stations")}</div>
+            <div className="text-center text-white">
+              {searchParams.get("phenomenon") || t("all_stations")}
+            </div>
           </div>
           <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
             <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
@@ -164,7 +167,7 @@ export default function NavBar(props: NavBarProps) {
         >
           <button
             onClick={() => displaySearch()}
-            className="ring-slate-900/10 hover:ring-slate-300 mx-auto mb-2 flex h-7 w-1/2 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1 hover:bg-gray-200"
+            className="ring-slate-900/10 mx-auto mb-2 flex h-7 w-1/2 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1 hover:bg-gray-200 hover:ring-slate-300"
           >
             <MagnifyingGlassIcon className="h-6 w-6 text-blue-500" />
             <span className="text-center text-blue-500">Suche</span>
@@ -180,8 +183,6 @@ export default function NavBar(props: NavBarProps) {
               sensor={sensor}
               setSensor={setSensor}
               setIsHovered={setIsHovered}
-              onChange={onSensorChange}
-              value={sensorvalue}
               phenomena={props.phenomena}
             />
             <TimeFilter

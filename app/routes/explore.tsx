@@ -1,45 +1,37 @@
-import { Outlet, useNavigate, useSearchParams } from "@remix-run/react";
+import {
+  Outlet,
+  useNavigate,
+  useSearchParams,
+  useLoaderData,
+} from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
-
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { getDevices, getDevicesWithSensors } from "~/models/device.server";
-import type {
-  GeoJSONSource,
-  LngLatLike,
-  MapLayerMouseEvent,
-  MapRef,
-} from "react-map-gl";
-
-import { MapProvider, Marker } from "react-map-gl";
-import { Layer, Source } from "react-map-gl";
+import { getDevicesWithSensors } from "~/models/device.server";
+import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
+import { MapProvider, Marker, Layer, Source } from "react-map-gl";
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useHotkeys } from "@mantine/hooks";
-import type { FeatureCollection, Point } from "geojson";
-import {
-  clusterCountLayer,
-  clusterLayer,
-  unclusteredPointLayer,
-  phenomenonLayers,
-  defaultLayer,
-} from "~/components/map/layers";
-import type { Device, Sensor } from "@prisma/client";
+import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import Legend from "~/components/map/legend";
-import type { LegendValue, GradientColors } from "~/components/map/legend";
+import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
-
 import useSupercluster from "use-supercluster";
 import DonutChartCluster from "~/components/map/cluster/donut-chart-cluster";
-import type { BBox, GeoJsonProperties } from "geojson";
+import type {
+  BBox,
+  GeoJsonProperties,
+  FeatureCollection,
+  Point,
+} from "geojson";
 import type Supercluster from "supercluster";
 import type { PointFeature } from "supercluster";
-import { Exposure, type Device } from "@prisma/client";
+import { Exposure, type Device, type Sensor } from "@prisma/client";
 import { Box, Rocket } from "lucide-react";
 import { getProfileByUserId } from "~/models/profile.server";
 
@@ -78,7 +70,6 @@ const options = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  // const devices = await getDevices();
   const devices = await getDevicesWithSensors();
   const user = await getUser(request);
   const phenomena = await getPhenomena();
@@ -99,7 +90,7 @@ export const links: LinksFunction = () => {
   ];
 };
 
-// THIS IS FOR TESTING, if you load the data in full_boxes.json, than this date will work
+// The 21-06-2023 works with the seed Data, for Production take now minus 10 minutes
 let currentDate = new Date("2023-06-21T14:13:11.024Z");
 if (process.env.NODE_ENV === "production") {
   currentDate = new Date(Date.now() - 1000 * 600);
@@ -118,17 +109,12 @@ export default function Explore() {
     latitude: 7,
     zoom: 2,
   });
-
   const navigate = useNavigate();
-
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const [selectedPheno, setSelectedPheno] = useState<any | undefined>(
     undefined
   );
-
   const [searchParams, setSearchParams] = useSearchParams();
-  const [showClusters, setShowClusters] = useState(true);
-
   const [filteredData, setFilteredData] = useState<
     GeoJSON.FeatureCollection<Point, any>
   >({
@@ -192,12 +178,37 @@ export default function Explore() {
     }
   }, [searchParams]);
 
-  const legendValues = (values: LegendValue[]) => {
-    return values;
-  };
+  function calculateLabelPositions(length: number): string[] {
+    const positions: string[] = [];
+    for (let i = length - 1; i >= 0; i--) {
+      const position =
+        i === length - 1 ? "95%" : `${((i / (length - 1)) * 100).toFixed(0)}%`;
+      positions.push(position);
+    }
+    return positions;
+  }
 
-  const gradientColors = (values: GradientColors) => {
-    return values;
+  const legendLabels = () => {
+    const values =
+      //@ts-ignore
+      phenomenonLayers[selectedPheno.slug].paint["circle-color"].slice(3);
+    const numbers = values.filter(
+      (v: number | string) => typeof v === "number"
+    );
+    const colors = values.filter((v: number | string) => typeof v === "string");
+    const positions = calculateLabelPositions(numbers.length);
+
+    const legend: LegendValue[] = [];
+    const length = numbers.length;
+    for (let i = 0; i < length; i++) {
+      const legendObj: LegendValue = {
+        value: numbers[i],
+        color: colors[i],
+        position: positions[i],
+      };
+      legend.push(legendObj);
+    }
+    return legend;
   };
   /**
    * Focus the search input when the search overlay is displayed
@@ -271,29 +282,19 @@ export default function Explore() {
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
 
-      if (feature.layer.id === "osem-data") {
-        const source = mapRef.current?.getSource("osem-data") as GeoJSONSource;
-        source.getClusterExpansionZoom(
-          feature.properties?.cluster_id,
-          (err, zoom) => {
-            if (err) {
-              return;
-            }
-
-            mapRef.current?.easeTo({
-              center: (feature.geometry as Point).coordinates as LngLatLike,
-              zoom,
-              duration: 500,
-            });
-          }
-        );
-      } else if (feature.layer.id === "unclustered-point") {
-        navigate(`/explore/${feature.properties?.id}`);
-      } else if (feature.layer.id === "base-layer") {
+      if (feature.layer.id === "phenomenon-layer") {
         navigate(
           `/explore/${feature.properties?.id}?${searchParams.toString()}`
         );
       }
+    }
+  };
+
+  const handleMouseMove = (e: mapboxgl.MapLayerMouseEvent) => {
+    if (e.features && e.features.length > 0) {
+      mapRef!.current!.getCanvas().style.cursor = "pointer";
+    } else {
+      mapRef!.current!.getCanvas().style.cursor = "";
     }
   };
 
@@ -345,14 +346,6 @@ export default function Explore() {
     });
   }, [clusterOnClick, clusters, navigate]);
 
-  const handleMouseMove = (e: mapboxgl.MapLayerMouseEvent) => {
-    if (e.features && e.features.length > 0) {
-      mapRef!.current!.getCanvas().style.cursor = "pointer";
-    } else {
-      mapRef!.current!.getCanvas().style.cursor = "";
-    }
-  };
-
   const buildLayerFromPheno = (selectedPheno: any) => {
     //TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
     return defaultLayer;
@@ -365,37 +358,19 @@ export default function Explore() {
         {selectedPheno && (
           <Legend
             title={selectedPheno.label.item[0].text}
-            values={legendValues([
-              { value: 30, color: "fill-red-500", position: "right-[100%]" },
-              { value: 20, color: "fill-yellow-500", position: "right-[75%]" },
-              { value: 10, color: "fill-blue-100", position: "right-[50%]" },
-              { value: 0, color: "fill-blue-700", position: "right-[25%]" },
-              { value: -10, color: "fill-violet-500", position: "right-[0%]" },
-            ])}
-            firstGradient={gradientColors({
-              from: "from-red-500",
-              via: "via-orange-500",
-              to: "to-yellow-500",
-            })}
-            secondGradient={gradientColors({
-              from: "from-blue-100",
-              via: "via-blue-700",
-              to: "to-violet-500",
-            })}
+            values={legendLabels()}
           />
         )}
         <Map
           ref={mapRef}
           {...viewState}
           onMove={(evt) => setViewState(evt.viewState)}
-          interactiveLayerIds={
-            selectedPheno ? ["base-layer"] : ["osem-data", "unclustered-point"]
-          }
+          interactiveLayerIds={selectedPheno ? ["phenomenon-layer"] : []}
+          onClick={onMapClick}
+          onMouseMove={handleMouseMove}
         >
-          
-          {!selectedPheno && (
-            {clusterMarker}
-          )}
+          {/* if a Phenomonen is selected show the Layers with live data, otherwise the clusters */}
+          {!selectedPheno && clusterMarker}
           {selectedPheno && (
             <Source
               id="osem-data"

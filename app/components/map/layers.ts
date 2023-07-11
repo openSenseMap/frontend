@@ -3,7 +3,7 @@ import type { LayerProps } from "react-map-gl";
 // colors to use for the categories
 const colors = ["#4EAF47", "#666", "#666", "#666"];
 
-// filters for classifying devices into three categories based on status
+// filters for classifying devices into three categories phenomenond on status
 export const deviceStatusFilter = {
   active: ["==", ["get", "status"], "ACTIVE"],
   inactive: ["==", ["get", "status"], "INACTIVE"],
@@ -146,7 +146,7 @@ interface ObjectLiteral {
 
 export const phenomenonLayers: ObjectLiteral = {
   temperature: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -182,7 +182,7 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
   relative_humidity: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -218,7 +218,7 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
   barometric_pressure: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -254,7 +254,7 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
   ambient_light: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -290,7 +290,7 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
   ultraviolet_a_light: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -326,7 +326,7 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
   pm10_concentration: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -362,7 +362,7 @@ export const phenomenonLayers: ObjectLiteral = {
     },
   },
   pm25: {
-    id: "base-layer",
+    id: "phenomenon-layer",
     type: "circle",
     source: "boxes",
     paint: {
@@ -400,7 +400,7 @@ export const phenomenonLayers: ObjectLiteral = {
 };
 
 export const defaultLayer = {
-  id: "base-layer",
+  id: "phenomenon-layer",
   type: "circle",
   source: "boxes",
   paint: {

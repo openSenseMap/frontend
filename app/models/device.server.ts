@@ -84,7 +84,6 @@ export async function getDevices() {
 }
 
 export async function getDevicesWithSensors() {
-
   const devices = await prisma.device.findMany({
     select: {
       id: true,
@@ -93,9 +92,9 @@ export async function getDevicesWithSensors() {
       longitude: true,
       exposure: true,
       createdAt: true,
-      sensors: true
+      sensors: true,
+      status: true,
     },
-   
   });
   const geojson: GeoJSON.FeatureCollection<Point, any> = {
     type: "FeatureCollection",

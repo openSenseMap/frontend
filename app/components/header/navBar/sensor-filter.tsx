@@ -3,7 +3,7 @@ import { de, enGB } from "date-fns/locale";
 import { CloudSunRain, SunIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
 // import { LoaderArgs, json } from "@remix-run/node";
@@ -25,10 +25,6 @@ interface SensorFilterProps {
   setIsDialogOpen: (open: boolean) => void;
 
   setIsHovered: (hovered: boolean) => void;
-
-  onChange: (timerange: any) => void;
-  value: any;
-
   phenomena: any[];
 }
 

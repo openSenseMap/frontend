@@ -86,7 +86,9 @@ async function seed() {
   }
   process.stdout.write("\n");
 
-  const sensors = await csvtojson().fromFile("prisma/sensors_matched_sensors_pheno_units.csv");
+  const sensors = await csvtojson().fromFile(
+    "prisma/sensors_matched_sensors_pheno_units.csv"
+  );
 
   let j = 0;
   for await (const sensor of sensors) {
@@ -109,6 +111,38 @@ async function seed() {
     });
     printProgress(`ℹ️  Imported ${j} of ${sensors.length} sensors.`);
   }
+
+  const jsonData = require("./boxes_full.json");
+  async function updateSensor(id: string, lastMeasurement: any) {
+    const sensor = await prisma.sensor.findFirst({
+      where: {
+        id: id,
+      },
+    });
+    if (sensor) {
+      await prisma.sensor.update({
+        where: {
+          id: id,
+        },
+        data: {
+          lastMeasurement: lastMeasurement as Prisma.JsonObject,
+        },
+      });
+    }
+  }
+  let k = 0;
+  await jsonData.forEach((item: any) => {
+    k++;
+    item.sensors.forEach((sensor: any) => {
+      // console.log(sensor)
+      if (sensor.lastMeasurement && sensor._id) {
+        updateSensor(sensor._id, sensor.lastMeasurement);
+      }
+    });
+    printProgress(
+      `ℹ️  Imported ${k} of ${jsonData.length} devices with lastMeasurements.`
+    );
+  });
   process.stdout.write("\n");
 
   console.log(`Database has been seeded. 🌱`);
