@@ -68,7 +68,6 @@ export const loader = async ({ request }: LoaderArgs) => {
     let groupedSensors: any = {};
     for (let sensor of sensors) {
       for (let sensorElement of sensor.elements) {
-        console.log(sensorElement);
         if (groupedSensors[sensorElement.phenomenonId]) {
           groupedSensors[sensorElement.phenomenonId].push({
             ...sensorElement,
