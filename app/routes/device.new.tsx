@@ -540,7 +540,7 @@ export default function NewDevice() {
                                   )}
                                   onClick={() => toggleSelectedSensor(sensor)}
                                   key={sensor.id}
-                                  className="relative hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
+                                  className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
                                 >
                                   <CardContent className="flex justify-center pt-2">
                                     <AspectRatio ratio={3 / 4}>
