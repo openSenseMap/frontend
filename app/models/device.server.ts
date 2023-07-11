@@ -100,6 +100,9 @@ export async function getMeasurements(
       "&to-date=" +
       endDate.toISOString() //new Date().toISOString()
   );
-  const jsonData = await response.json();
-  return jsonData;
+  return (await response.json()) as {
+    value: String;
+    location?: number[];
+    createdAt: Date;
+  }[];
 }
