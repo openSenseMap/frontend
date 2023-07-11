@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { CheckCircleIcon, InfoIcon } from "lucide-react";
 import { useState } from "react";
 import { getPhenomena } from "~/models/phenomena.server";
 
@@ -153,6 +153,22 @@ export default function NewDevice() {
   const data = loaderData.data;
 
   const [deviceType, setDeviceType] = useState(data.type);
+  const [selectedSensors, setSelectedSensors] = useState([]);
+
+  function toggleSelectedSensor(sensorItem: any) {
+    const foundSensor = selectedSensors.find(
+      (sensor: any) => sensorItem == sensor
+    );
+    if (foundSensor) {
+      setSelectedSensors(
+        selectedSensors.filter((item: any) => item !== foundSensor)
+      );
+    } else {
+      setSelectedSensors([].concat(selectedSensors, sensorItem));
+    }
+
+    console.log(selectedSensors);
+  }
 
   return (
     <div className="container">
@@ -519,22 +535,27 @@ export default function NewDevice() {
                             {value.map((sensor: any) => {
                               return (
                                 <Card
-                                  // data-checked={}
-                                  // onClick={}
+                                  data-checked={selectedSensors.includes(
+                                    sensor
+                                  )}
+                                  onClick={() => toggleSelectedSensor(sensor)}
                                   key={sensor.id}
-                                  className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+                                  className="relative hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
                                 >
                                   <CardContent className="flex justify-center pt-2">
                                     <AspectRatio ratio={3 / 4}>
                                       {/* <img
-                          src="/images/"
-                          alt="senseBox:edu"
-                          className="rounded-md object-cover"
-                        /> */}
+                                        src="/images/"
+                                        alt="senseBox:edu"
+                                        className="rounded-md object-cover"
+                                      /> */}
                                     </AspectRatio>
                                   </CardContent>
                                   <CardFooter className="flex justify-center">
                                     <CardTitle>{sensor.sensor.slug}</CardTitle>
+                                    {selectedSensors.includes(sensor) && (
+                                      <CheckCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
+                                    )}
                                   </CardFooter>
                                 </Card>
                               );
