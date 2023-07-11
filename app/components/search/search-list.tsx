@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { useMap } from "react-map-gl";
 import { useNavigate, useSearchParams } from "@remix-run/react";
 
@@ -11,6 +11,7 @@ import {
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
 import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
+import { NavbarContext } from "../header/nav-bar";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -20,6 +21,7 @@ interface SearchListProps {
 export default function SearchList(props: SearchListProps) {
   const { osem } = useMap();
   const navigate = useNavigate();
+  const { setOpen } = useContext(NavbarContext);
 
   const { cursor, setCursor, enterPress, controlPress } = useKeyboardNav(
     0,
@@ -64,9 +66,12 @@ export default function SearchList(props: SearchListProps) {
     console.log(navigateTo);
   }, [selected, searchParams, navigateTo]);
 
-  const setShowSearchCallback = useCallback((state: boolean) => {
-    // TODO: implement close search
-  }, []);
+  const setShowSearchCallback = useCallback(
+    (state: boolean) => {
+      setOpen(state);
+    },
+    [setOpen]
+  );
 
   useEffect(() => {
     if (length !== 0 && enterPress) {

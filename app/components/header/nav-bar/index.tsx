@@ -1,6 +1,6 @@
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { Device } from "@prisma/client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, createContext } from "react";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,6 +8,11 @@ import { AnimatePresence, motion } from "framer-motion";
 interface NavBarProps {
   devices: Device[];
 }
+
+export const NavbarContext = createContext({
+  open: false,
+  setOpen: (_open: boolean) => {},
+});
 
 export default function NavBar(props: NavBarProps) {
   const [open, setOpen] = useState(false);
@@ -71,20 +76,22 @@ export default function NavBar(props: NavBarProps) {
             />
           )}
         </div>
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, translateY: -10 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              exit={{ opacity: 0, translateY: -10 }}
-            >
-              <NavbarHandler
-                devices={props.devices}
-                searchString={searchString}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <NavbarContext.Provider value={{ open, setOpen }}>
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ opacity: 0, translateY: -10 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                exit={{ opacity: 0, translateY: -10 }}
+              >
+                <NavbarHandler
+                  devices={props.devices}
+                  searchString={searchString}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </NavbarContext.Provider>
       </div>
     </div>
   );
