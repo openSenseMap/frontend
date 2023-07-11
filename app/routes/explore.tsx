@@ -11,7 +11,6 @@ import type { MapRef } from "react-map-gl";
 
 import { MapProvider, Marker } from "react-map-gl";
 import { useState, useRef, useMemo, useCallback } from "react";
-import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import useSupercluster from "use-supercluster";
