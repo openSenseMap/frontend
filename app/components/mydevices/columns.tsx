@@ -16,13 +16,14 @@ export const columns: ColumnDef<SenseBox>[] = [
     accessorKey: "name",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="pl-0"
+          >
+            Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
       );
     },
   },
@@ -33,6 +34,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="pl-0"
         >
           Exposure
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -47,6 +49,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="pl-0"
         >
           Model
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -80,13 +83,13 @@ export const columns: ColumnDef<SenseBox>[] = [
   },
   {
     id: "actions",
-    header: () => <div className="">Action</div>,
+    header: () => <div className="text-center">Action</div>,
     cell: ({ row }) => {
       const senseBox = row.original;
 
       return (
         // <div className="text-right font-medium">
-        <div className="">
+        <div className=" text-right">
           <a
             href={`/explore/${senseBox.id}`}
             className="btn btn-default rounded-br-none rounded-tr-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
