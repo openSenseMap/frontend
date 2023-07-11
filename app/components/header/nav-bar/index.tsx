@@ -49,8 +49,8 @@ export default function NavBar(props: NavBarProps) {
 
   return (
     <div className="pointer-events-auto relative w-full md:w-1/2">
-      <div className="absolute left-0 top-0 w-full rounded-2xl border border-gray-100 bg-white px-4 py-2 shadow-xl">
-        <div className="flex w-full items-center gap-4 px-2">
+      <div className="absolute left-0 top-0 w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4">
+        <div className="flex w-full items-center gap-2 px-2 md:gap-4">
           <MagnifyingGlassIcon className="aspect-square h-6" />
           <input
             ref={inputRef}

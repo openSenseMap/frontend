@@ -19,7 +19,7 @@ interface SearchListItemProps
 }
 
 const searchListItemStyle = cva(
-  "relative my-1 flex h-8 items-center rounded-lg data-[active=true]:bg-green-100 data-[active=true]:text-white",
+  "relative my-1 flex gap-2 h-8 px-2 items-center rounded-lg data-[active=true]:bg-green-100 data-[active=true]:text-white",
   {
     variants: {
       active: {
@@ -42,12 +42,16 @@ export default function SearchListItem({
   return (
     <div className={searchListItemStyle({ active })} {...props}>
       {controlPress && (
-        <div className="w-6 pl-2">
+        <div className="w-6">
           <kbd>{index + 1}</kbd>
         </div>
       )}
-      <Icon className="h-8 w-8 pl-2" />
-      <span className="inline-block pl-2 align-middle">{name}</span>
+      <div className="h-8 w-8 p-1">
+        <Icon className="h-full" />
+      </div>
+      <span className="inline-block overflow-hidden overflow-ellipsis whitespace-nowrap align-middle">
+        {name}
+      </span>
     </div>
   );
 }
