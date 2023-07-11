@@ -222,13 +222,13 @@ export default function Explore() {
         >
           {clusterMarker}
           <Toaster />
-          {showSearch && (
+          {showSearch ? (
             <OverlaySearch
               devices={data.devices}
               searchRef={searchRef}
               setShowSearch={setShowSearch}
             />
-          )}
+          ) : null}
           <main className="absolute bottom-0 z-10 w-full">
             <Outlet />
           </main>

@@ -66,9 +66,9 @@ export default function DeviceId() {
   return (
     <>
       {/* If the box is mobile, iterate over selected sensors and show trajectory */}
-      {data.device.exposure === Exposure.MOBILE && (
+      {data.device.exposure === Exposure.MOBILE ? (
         <MobileBoxView sensors={data.selectedSensors} />
-      )}
+      ) : null}
       <BottomBar device={data.device} selectedSensors={data.selectedSensors} />
     </>
   );
