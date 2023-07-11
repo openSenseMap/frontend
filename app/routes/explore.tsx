@@ -16,8 +16,6 @@ import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import OverlaySearch from "~/components/search/overlay-search";
-import { Toaster } from "~/components/ui/toaster";
-import { getUser } from "~/session.server";
 import Legend from "~/components/map/legend";
 import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
@@ -33,6 +31,9 @@ import type Supercluster from "supercluster";
 import type { PointFeature } from "supercluster";
 import { Exposure, type Device, type Sensor } from "@prisma/client";
 import { Box, Rocket } from "lucide-react";
+import { Toaster } from "~/components/ui//toaster";
+import { getUser, getUserSession, sessionStorage } from "~/session.server";
+import { useToast } from "~/components/ui/use-toast";
 import { getProfileByUserId } from "~/models/profile.server";
 
 export type DeviceClusterProperties =
@@ -71,14 +72,34 @@ const options = {
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevicesWithSensors();
+
+  const session = await getUserSession(request);
+  const message = session.get("global_message") || null;
+
   const user = await getUser(request);
   const phenomena = await getPhenomena();
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile, phenomena });
+    return json(
+      { devices, user, profile, message, phenomena },
+      {
+        headers: {
+          // only necessary with cookieSessionStorage
+          "Set-Cookie": await sessionStorage.commitSession(session),
+        },
+      }
+    );
   }
-  return json({ devices, user, phenomena, profile: null });
+  return json(
+    { devices, user, profile: null, message, phenomena },
+    {
+      headers: {
+        // only necessary with cookieSessionStorage
+        "Set-Cookie": await sessionStorage.commitSession(session),
+      },
+    }
+  );
 }
 
 export const links: LinksFunction = () => {
@@ -210,6 +231,8 @@ export default function Explore() {
     }
     return legend;
   };
+  const { toast } = useToast();
+
   /**
    * Focus the search input when the search overlay is displayed
    */
@@ -350,6 +373,13 @@ export default function Explore() {
     //TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
     return defaultLayer;
   };
+  useEffect(() => {
+    if (data.message !== null) {
+      toast({
+        description: data.message,
+      });
+    }
+  }, [data.message, toast]);
 
   return (
     <div className="h-full w-full">

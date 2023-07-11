@@ -96,6 +96,7 @@ export async function createUserSession({
 }) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
+  session.flash("global_message", "You successfully logged in.")
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -115,9 +116,11 @@ export async function logout({
   redirectTo: string;
 }) {
   const session = await getUserSession(request);
+  session.unset(USER_SESSION_KEY);
+  session.flash("global_message", "You successfully logged out.")
   return redirect(redirectTo, {
     headers: {
-      "Set-Cookie": await sessionStorage.destroySession(session),
+      "Set-Cookie": await sessionStorage.commitSession(session),
     },
   });
 }

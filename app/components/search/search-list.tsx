@@ -85,7 +85,6 @@ export default function SearchList(props: SearchListProps) {
       // @ts-ignore
       setNavigateTo("/explore" + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
     }
-    console.log(navigateTo);
   }, [selected, searchParams, navigateTo]);
 
   const setShowSearchCallback = useCallback((state: boolean) => {

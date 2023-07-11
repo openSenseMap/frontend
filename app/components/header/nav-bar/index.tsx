@@ -1,18 +1,19 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "@remix-run/react";
+
 import Search from "~/components/search";
 import {
   SunIcon,
   CalendarDaysIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { TimeFilter } from "~/components/header/navBar/time-filter";
+import { TimeFilter } from "~/components/header/nav-bar/time-filter";
 import type { DateRange } from "react-day-picker";
-import getUserLocale from "get-user-locale";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import getUserLocale from "get-user-locale";
 import type { Device } from "@prisma/client";
-import { SensorFilter } from "../navBar/sensor-filter";
-import { useSearchParams } from "@remix-run/react";
+import { SensorFilter } from "../nav-bar/sensor-filter";
 
 interface NavBarProps {
   devices: Device[];
@@ -25,25 +26,51 @@ type Value = ValuePiece;
 
 export default function NavBar(props: NavBarProps) {
   let { t } = useTranslation("navbar");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [timeState, setTimeState] = React.useState("live");
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [isSensorDialogOpen, setIsSensorDialogOpen] = React.useState(false);
-  const [isHovered, setIsHovered] = React.useState(false);
-  const [showSearch, setShowSearch] = React.useState(false);
+  const [timeState, setTimeState] = useState<string | undefined>(undefined);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const [value, onChange] = React.useState<Value>(null);
-  const [sensorvalue, onSensorChange] = React.useState(null);
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(
-    undefined
-  );
-  const [singleDate, setSingleDate] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [sensor, setSensor] = React.useState<string | undefined>("all");
+  const [value, onChange] = useState<Value>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [singleDate, setSingleDate] = useState<Date | undefined>(undefined);
   const userLocaleString = getUserLocale();
-  const [searchParams] = useSearchParams();
+  const [isSensorDialogOpen, setIsSensorDialogOpen] = useState(false);
+  const [sensor, setSensor] = useState<string | undefined>("all");
+
+  /**
+   * Set the time state based on the search params
+   */
+  useEffect(() => {
+    if (searchParams.has("filterType")) {
+      var filterType = searchParams.get("filterType");
+      if (filterType === "live") {
+        setTimeState("live");
+      } else if (filterType === "pointintime" && searchParams.has("date")) {
+        setTimeState("pointintime");
+        setSingleDate(new Date(searchParams.get("date") as string));
+      } else if (
+        filterType === "timeperiod" &&
+        searchParams.has("from") &&
+        searchParams.has("to")
+      ) {
+        setTimeState("timeperiod");
+        setDateRange({
+          from: new Date(searchParams.get("from") as string),
+          to: new Date(searchParams.get("to") as string),
+        });
+      } else {
+        return;
+      }
+    } else {
+      searchParams.append("filterType", "live")
+      setTimeState("live");
+    }
+  }, [searchParams, setSearchParams]);
+
   /**
    * Focus the search input
    */
@@ -84,12 +111,6 @@ export default function NavBar(props: NavBarProps) {
       document.removeEventListener("keydown", closeSearch);
     };
   });
-
-  // useEffect(() => {
-  //   console.log("dateRange", dateRange);
-  //   console.log("time", value);
-  //   console.log("singleDate", singleDate);
-  // }, [dateRange, value, singleDate]);
 
   return (
     <div className="pointer-events-auto h-10 w-1/2">

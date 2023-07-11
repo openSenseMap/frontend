@@ -33,7 +33,7 @@ interface TimeFilterProps {
 
   setIsHovered: (hovered: boolean) => void;
 
-  timeState: string;
+  timeState: string | undefined;
   setTimeState: (value: string) => void;
 
   onChange: (timerange: any) => void;
@@ -109,7 +109,7 @@ export function TimeFilter(props: TimeFilterProps) {
           onCloseAutoFocus={() => props.setIsHovered(false)}
         >
           <Tabs defaultValue={props.timeState} className="w-full">
-            <TabsList>
+            <TabsList className="w-full">
               <TabsTrigger value="live">
                 <Clock className="h-5 w-5 pr-1" />
                 {t("live_label")}
