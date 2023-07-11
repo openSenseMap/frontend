@@ -158,45 +158,66 @@ export default function Graph() {
   };
 
   return (
-    <div className="flex flex-col text-gray-100 shadow-inner">
-      <div className="flex items-center justify-end gap-2 px-10 pt-2">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-              <ShareIcon className="mr-2 h-5 w-5" />
-              Share
+    <div className="shadow-zinc-800/5 ring-zinc-900/5 dark:bg-zinc-800/30 dark:ring-white/10 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 backdrop-blur-sm dark:text-zinc-200 sm:bottom-6 sm:left-auto sm:right-6 sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-2/3">
+      <div className="flex w-full items-center justify-between p-2">
+        <div className="flex-1 flex items-center text-xl text-zinc-600 dark:text-zinc-100">
+          <div className="flex items-center justify-end gap-2 px-10">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                  <ShareIcon className="mr-2 h-5 w-5" />
+                  Share
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Share this link</AlertDialogTitle>
+                  <ShareLink />
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Close</AlertDialogCancel>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button
+              onClick={() => {
+                if (chartRef.current) {
+                  if (chartRef.current === null) return;
+                  // why is chartRef.current always never???
+                  const imageString = chartRef.current.canvas.toDataURL(
+                    "image/png",
+                    1.0
+                  );
+                  saveAs(imageString, "chart.png");
+                }
+              }}
+              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            >
+              <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
+              Download
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Share this link</AlertDialogTitle>
-              <ShareLink />
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Close</AlertDialogCancel>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <Button
-          onClick={() => {
-            if (chartRef.current) {
-              if (chartRef.current === null) return;
-              // why is chartRef.current always never???
-              const imageString = chartRef.current.canvas.toDataURL(
-                "image/png",
-                1.0
-              );
-              saveAs(imageString, "chart.png");
-            }
-          }}
-          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
-          Download
-        </Button>
+          </div>
+        </div>
+        <a href="/explore">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+            aria-hidden="true"
+            className="h-6 w-6 text-zinc-500 transition hover:text-zinc-700 dark:text-zinc-400 hover:dark:text-zinc-100"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </a>
       </div>
       {loaderData.selectedSensors.length > 0 ? (
-        <div className="flex h-full w-full justify-center bg-white px-10">
+        <div className="flex h-full w-full justify-center bg-white">
           <Line
             data={lineData}
             options={options}
