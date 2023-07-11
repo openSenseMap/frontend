@@ -9,6 +9,7 @@ import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
+import { getPhenomena } from "~/models/phenomena.server";
 
 type Sensor = {
   id: number;
@@ -62,11 +63,29 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     const response = await fetch(getSensorsOfDeviceUrl.toString());
     const sensors = await response.json();
-    const sensorsSorted = sensors.sort((a: Sensor, b: Sensor) => {
-      return a.slug.localeCompare(b.slug);
-    });
+    const phenomena = await getPhenomena();
 
-    return json({ page, data, sensors: sensorsSorted });
+    let groupedSensors: any = {};
+    for (let sensor of sensors) {
+      for (let sensorElement of sensor.elements) {
+        console.log(sensorElement);
+        if (groupedSensors[sensorElement.phenomenonId]) {
+          groupedSensors[sensorElement.phenomenonId].push({
+            ...sensorElement,
+            sensor: sensor,
+          });
+        } else {
+          groupedSensors[sensorElement.phenomenonId] = [
+            { ...sensorElement, sensor: sensor },
+          ];
+        }
+      }
+    }
+    // const sensorsSorted = sensors.sort((a: Sensor, b: Sensor) => {
+    //   return a.slug.localeCompare(b.slug);
+    // });
+
+    return json({ page, data, groupedSensors: groupedSensors, phenomena });
   } else if (page < 4) {
     const data = session.get(`form-data-page-${page}`) ?? {};
     return json({ page, data });
@@ -87,7 +106,7 @@ export const action = async ({ request }: LoaderArgs) => {
   // use qs.parse to support multi-value values (by email checkbox list)
   const { page, action, ...data } = qs.parse(text);
 
-  console.log({ page, action, data });
+  // console.log({ page, action, data });
 
   if (action === "next" || action === "previous") {
     const session = await getUserSession(request);
@@ -133,8 +152,6 @@ export default function NewDevice() {
   const loaderData = useLoaderData();
   const page = Number(loaderData.page);
   const data = loaderData.data;
-
-  console.log(loaderData);
 
   const [deviceType, setDeviceType] = useState(data.type);
 
@@ -486,33 +503,50 @@ export default function NewDevice() {
                   Select the sensors you want to use.
                 </p>
               </div>
-              <div className="space-y-6 divide-y divide-gray-200 sm:space-y-5">
-                <div className="grid grid-cols-8 gap-4">
-                  {loaderData.sensors.map((sensor: Sensor) => {
+              <div>
+                {Object.entries(loaderData.groupedSensors).map(
+                  ([key, value]) => {
                     return (
-                      <Card
-                        // data-checked={}
-                        // onClick={}
-                        key={sensor.id}
-                        className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
-                      >
-                        <CardContent className="flex justify-center pt-2">
-                          <AspectRatio ratio={3 / 4}>
-                            {/* <img
-                        src="/images/"
-                        alt="senseBox:edu"
-                        className="rounded-md object-cover"
-                      /> */}
-                          </AspectRatio>
-                        </CardContent>
-                        <CardFooter className="flex justify-center">
-                          <CardTitle>{sensor.slug}</CardTitle>
-                        </CardFooter>
-                      </Card>
+                      <div key={key}>
+                        <h1 className="pb-4 pt-2 text-xl">
+                          {
+                            loaderData.phenomena.find(
+                              (pheno: any) => pheno.id == key
+                            ).slug
+                          }
+                        </h1>
+                        <div className="space-y-6 divide-y divide-gray-200 sm:space-y-5">
+                          <div className="grid grid-cols-8 gap-4">
+                            {value.map((sensor: any) => {
+                              return (
+                                <Card
+                                  // data-checked={}
+                                  // onClick={}
+                                  key={sensor.id}
+                                  className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+                                >
+                                  <CardContent className="flex justify-center pt-2">
+                                    <AspectRatio ratio={3 / 4}>
+                                      {/* <img
+                          src="/images/"
+                          alt="senseBox:edu"
+                          className="rounded-md object-cover"
+                        /> */}
+                                    </AspectRatio>
+                                  </CardContent>
+                                  <CardFooter className="flex justify-center">
+                                    <CardTitle>{sensor.sensor.slug}</CardTitle>
+                                  </CardFooter>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                          <pre>{JSON.stringify(loaderData.json, null, 2)}</pre>
+                        </div>
+                      </div>
                     );
-                  })}
-                </div>
-                <pre>{JSON.stringify(loaderData.json, null, 2)}</pre>
+                  }
+                )}
               </div>
             </div>
           )}
