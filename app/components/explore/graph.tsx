@@ -13,7 +13,7 @@ import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
-import type { LastMeasurementProps } from "./bottom-bar";
+import type { LastMeasurementProps } from "./device-details";
 import type { loader } from "~/routes/explore/$deviceId";
 import { useRef } from "react";
 import { saveAs } from "file-saver";
@@ -28,7 +28,7 @@ import {
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
 import { ShareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
-import ShareLink from "./share-link";
+import ShareLink from "../ui/share-link";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(

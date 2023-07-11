@@ -34,7 +34,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
-import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
+import ProfileVisibilitySwitch from "~/components/ui/profile-visibility-switch";
 
 export function useFirstRender() {
   const firstRender = useRef(true);

@@ -9,7 +9,7 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { useState } from "react";
-import ProfileBoxSelection from "~/components/bottom-bar/profile-box-selection";
+import ProfileBoxSelection from "~/components/explore/profile-box-selection";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import {

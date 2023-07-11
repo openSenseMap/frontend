@@ -1,6 +1,6 @@
 import {  Link, useLoaderData, useMatches } from "@remix-run/react";
 import { useState } from "react";
-import { Switch } from "./ui/switch";
+import { Switch } from "./switch";
 import type { loader } from "~/routes/explore";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";

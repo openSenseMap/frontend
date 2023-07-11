@@ -53,13 +53,13 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
 
   return (
     <>
-      <div className="shadow-zinc-800/5 ring-zinc-900/5 dark:bg-zinc-800/30 dark:ring-white/10 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 backdrop-blur-sm dark:text-zinc-200 sm:bottom-6 sm:left-6 sm:right-auto sm:top-24 sm:max-h-[calc(100vh-8rem)] sm:w-1/4">
+      <div className="shadow-zinc-800/[.05] ring-zinc-900/[.5] dark:bg-zinc-800/[.3] dark:ring-white/10 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 backdrop-blur-sm dark:text-zinc-200 sm:bottom-6 sm:left-6 sm:right-auto sm:top-24 sm:max-h-[calc(100vh-8rem)] sm:w-1/4">
         {navigation.state === "loading" && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
             <Spinner />
           </div>
         )}
-        <div className="flex w-full items-center gap-3 p-2">
+        <div className="flex w-full items-center">
           <div className="flex-1 text-xl text-zinc-600 dark:text-zinc-100">
             devicename
           </div>

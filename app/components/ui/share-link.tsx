@@ -1,6 +1,6 @@
 import { LinkIcon, DocumentDuplicateIcon } from "@heroicons/react/24/solid";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "./button";
+import { Input } from "./input";
 
 export default function ShareLink() {
   return (
