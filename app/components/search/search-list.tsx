@@ -54,13 +54,13 @@ export default function SearchList(props: SearchListProps) {
       // @ts-ignore
       setNavigateTo(
         `/explore/${selected.deviceId}` +
-          (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+          (searchParams.values.length > 0 ? "?" + searchParams.toString() : "")
       );
     } else if (selected.type === "location") {
       // @ts-ignore
       setNavigateTo(
         "/explore" +
-          (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+          (searchParams.values.length > 0 ? "?" + searchParams.toString() : "")
       );
     }
     console.log(navigateTo);

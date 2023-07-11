@@ -121,4 +121,6 @@ export default function Search(props: SearchProps) {
         </div>
       </div>
     );
+
+  return null;
 }
