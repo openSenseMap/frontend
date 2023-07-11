@@ -132,7 +132,5 @@ export default function ClusterLayer({
     });
   }, [clusterOnClick, clusters]);
 
-  console.log("cluster layer rendered", clusterMarker);
-
   return clusterMarker;
 }
