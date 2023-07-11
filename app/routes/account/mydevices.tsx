@@ -7,6 +7,9 @@ import { getUserId } from "~/session.server";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
 
+import { DataTable } from "~/components/mydevices/data-table";
+import { columns } from "~/components/mydevices/columns";
+
 export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
@@ -14,6 +17,7 @@ export async function loader({ request }: LoaderArgs) {
 
   //* get all devices data
   const allDevices = await getUserDevices(userId);
+  console.log("🚀 ~ file: mydevices.tsx:17 ~ loader ~ allDevices:", allDevices);
 
   return json(allDevices);
 }
@@ -67,7 +71,7 @@ export default function MyDevices() {
         <div className=" col-span-6 mb-7">
           <div className=" mb-5 block h-full rounded border-[1px] border-[#ddd] p-1">
             <div className="p-2">
-              <p className="mt-5 mb-3 text-2xl">
+              <p className="mb-3 mt-5 text-2xl">
                 You have <b>{devicesData?.length}</b> registered senseBoxes!
               </p>
 
@@ -105,7 +109,7 @@ export default function MyDevices() {
         <div className=" col-span-6 mb-7">
           <div className=" mb-5 block h-full rounded border-[1px] border-[#ddd] p-1">
             <div className="p-2">
-              <p className="mt-5 mb-3 text-2xl">
+              <p className="mb-3 mt-5 text-2xl">
                 Du möchtest ein Gerät von einem anderen Benutzer übernehmen?
               </p>
               {/* Form */}
@@ -123,7 +127,7 @@ export default function MyDevices() {
                       type="text"
                       ref={tokenRef}
                       maxLength={12}
-                      className="form-control rounded-tr-[0px] rounded-br-[0px] placeholder:text-[#999] placeholder:opacity-100"
+                      className="form-control rounded-br-[0px] rounded-tr-[0px] placeholder:text-[#999] placeholder:opacity-100"
                       value={tokendVal}
                       onChange={(e) => setTokenVal(e.target.value)}
                       placeholder="Token"
@@ -133,7 +137,7 @@ export default function MyDevices() {
                         type="submit"
                         name="intent"
                         value="claimToken"
-                        className="btn btn-primary rounded-tl-[0px] rounded-bl-[0px] disabled:opacity-[.65]"
+                        className="btn btn-primary rounded-bl-[0px] rounded-tl-[0px] disabled:opacity-[.65]"
                         disabled={!tokendVal}
                       >
                         Claim device
@@ -150,7 +154,7 @@ export default function MyDevices() {
                     duration={10000}
                     onOpenChange={setToastOpen}
                     className={clsx(
-                      "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full",
+                      "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
                       " mt-8 bg-[#f2dede] pr-3 text-[#a94442]  dark:bg-gray-800",
                       "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
                       "radix-state-closed:animate-toast-hide",
@@ -188,94 +192,12 @@ export default function MyDevices() {
         <div className="py-8">
           <div>
             <h2 className="text-2xl font-semibold leading-tight">
-              List of senseBoxes
+              List of my senseBoxes
             </h2>
           </div>
-
-          <div className="-mx-4 overflow-x-auto px-4 py-4 sm:-mx-8 sm:px-8">
-            <div className="inline-block min-w-full overflow-hidden rounded-lg shadow">
-              <table className="min-w-full leading-normal">
-                <thead>
-                  <tr className="">
-                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2] py-3 pl-5 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
-                      Name
-                    </th>
-                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2]  py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
-                      Exposure
-                    </th>
-                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2]  py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
-                      Model
-                    </th>
-                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2]  py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
-                      senseBox ID
-                    </th>
-                    <th className="border-b-2 border-gray-200 bg-[#b3e0f2] px-5 py-3 text-left text-sm font-semibold uppercase tracking-wider text-gray-600">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {devicesData?.map((deviceData) => (
-                    <tr key={deviceData.id}>
-                      <td className="border-b border-gray-200 bg-white  py-3 pl-5 text-sm">
-                        <div className="flex items-center">
-                          <div className="">
-                            <p className="whitespace-no-wrap text-gray-900">
-                              {deviceData.name}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="border-b border-gray-200 bg-white  py-5 text-sm">
-                        <p className="whitespace-no-wrap text-gray-900">
-                          {deviceData.exposure}
-                        </p>
-                      </td>
-                      <td className="border-b border-gray-200 bg-white  py-5 text-sm">
-                        <p className="whitespace-no-wrap text-gray-900">
-                          {deviceData.model}
-                        </p>
-                      </td>
-                      <td className="border-b border-gray-200 bg-white  py-5 text-sm">
-                        <p className="whitespace-no-wrap text-gray-900">
-                          {deviceData.id}
-                        </p>
-                      </td>
-                      <td className="border-b border-gray-200 bg-white px-5 py-3 text-sm">
-                        <a
-                          href={`/explore/${deviceData.id}`}
-                          className="btn btn-default rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
-                        >
-                          Show
-                        </a>
-                        <a
-                          href={`mydevices/${deviceData.id}/edit`}
-                          className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
-                        >
-                          Edit
-                        </a>
-                        <a
-                          href="https://sensebox.de/de/go-home"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-default rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
-                        >
-                          Data upload
-                        </a>
-                        <a
-                          href="https://sensebox.de/de/go-home"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-default rounded-bl-none rounded-tl-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
-                        >
-                          support
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {/* new impl. of dt */}
+          <div className="mx-auto py-3">
+            <DataTable columns={columns} data={devicesData} />
           </div>
         </div>
       </div>
