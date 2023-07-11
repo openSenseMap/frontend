@@ -86,8 +86,8 @@ export async function createUser(
     },
   });
 
-  if (username) {
-    await createProfile(user.id, username);
+  if (name) {
+    await createProfile(user.id, name);
   }
 
   return user;

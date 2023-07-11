@@ -9,6 +9,9 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { useState } from "react";
+import ProfileBoxSelection from "~/components/bottom-bar/profile-box-selection";
+import { Card, CardContent, CardFooter } from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
 import {
   getAllBadges,
   getMyBadgesAccessToken,
@@ -127,15 +130,24 @@ export default function Profile() {
       <div className="flex w-full justify-between bg-green-100">
         <div className="text-l basis-1/4 pb-6 pt-6 text-center font-bold text-white lg:text-3xl">
           {/* display username */}
-          {data.profile && <p>{data.profile.name}</p>}
-        </div>
-        <div className="flex w-full justify-center items-center bg-green-100">
-          {data.requestingUserId === data.profile?.userId && (
-            <p className="pb-6 pt-6 text-center text-sm font-bold text-white">
-              This is your profile. It is{" "}
-              {data.profile?.public ? "public." : "private."} To change this you
-              can access the switch in the top right corner.
-            </p>
+          {data.profile && (
+            <div className="flex items-center justify-center space-x-4">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-600">
+                <svg
+                  className="absolute -left-1 h-12 w-12 text-gray-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+              <p>{data.profile.name}</p>
+            </div>
           )}
         </div>
         <div className="flex">
@@ -161,41 +173,64 @@ export default function Profile() {
           </p>
         </div>
       ) : (
-        <div className="flex justify-evenly bg-white">
-          {sortedBadges.map((badge: MyBadge, index: number) => {
-            return (
-              <div
-                key={index}
-                className="pointer x-auto my-5 flex flex-col items-center"
-              >
-                <Link
-                  to={badge.badgeclassOpenBadgeId}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img
-                    src={badge.image}
-                    alt={badge.name}
-                    title={badge.name}
-                    className={
-                      "h-10 w-10 lg:h-20 lg:w-20" +
-                      // check if the badge is owned by the user
-                      // if so, remove the grayscale filter
-                      // if not, add the grayscale filter
-                      (data.userBackpack.some((obj: MyBadge) => {
-                        return (
-                          obj.badgeclass === badge.entityId && !obj.revoked
-                        );
-                      })
-                        ? ""
-                        : " grayscale")
-                    }
-                  />
-                </Link>
-                <p>{badge.name}</p>
+        <div className="p-4">
+          <div className="flex items-center">
+            <div className="w-1/4 py-1 text-center">
+              <p className="underlin text-xl font-bold underline">Boxes</p>
+            </div>
+            <div className="grow py-1 text-center">
+              <p className="text-xl font-bold underline">Badges</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="w-1/4 px-2 py-1 text-center">
+              <ProfileBoxSelection />
+            </div>
+            {/* why is this not working??? */}
+            <Separator orientation="vertical" />
+            <div className="grow px-2 py-1 text-center">
+              <div className="grid grid-cols-4 gap-4 bg-white">
+                {sortedBadges.map((badge: MyBadge, index: number) => {
+                  return (
+                    <div key={index} className="col-span-1">
+                      <Link
+                        to={badge.openBadgeId}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100">
+                          <CardContent className="flex items-center justify-center p-0">
+                            <img
+                              src={badge.image}
+                              alt={badge.name}
+                              title={badge.name}
+                              className={
+                                "h-10 w-10 lg:h-20 lg:w-20" +
+                                // check if the badge is owned by the user
+                                // if so, remove the grayscale filter
+                                // if not, add the grayscale filter
+                                (data.userBackpack.some((obj: MyBadge) => {
+                                  return (
+                                    obj.badgeclass === badge.entityId &&
+                                    !obj.revoked
+                                  );
+                                })
+                                  ? ""
+                                  : " grayscale")
+                              }
+                            />
+                          </CardContent>
+                          <CardFooter className="flex items-center justify-center p-0">
+                            <p>{badge.name}</p>
+                          </CardFooter>
+                        </Card>
+                      </Link>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          </div>
         </div>
       )}
     </div>

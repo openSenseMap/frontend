@@ -127,7 +127,7 @@ export default function Menu() {
             ) : (
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  Max Mustermann
+                  {data.user.name}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {data.user.email}

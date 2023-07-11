@@ -29,6 +29,7 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const { intent, ...values } = Object.fromEntries(formData);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { name, email, password, language, ...rest } = values;
 
   const errors = {

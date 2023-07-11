@@ -23,6 +23,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
       id: true,
       name: true,
       exposure: true,
+      status: true,
       updatedAt: true,
       sensors: true,
       latitude: true,
@@ -62,6 +63,7 @@ export async function getDevices() {
       latitude: true,
       longitude: true,
       exposure: true,
+      status: true,
       createdAt: true,
     },
   });
