@@ -1,26 +1,18 @@
-import { Outlet, useLoaderData, useNavigate } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
-
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
-
-import { MapProvider, Marker } from "react-map-gl";
-import { useState, useRef, useMemo, useCallback } from "react";
+import { MapProvider } from "react-map-gl";
+import { useState, useRef } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
-import useSupercluster from "use-supercluster";
-import DonutChartCluster from "~/components/map/layers/cluster/donut-chart-cluster";
-import type { BBox, GeoJsonProperties } from "geojson";
 import type Supercluster from "supercluster";
-import type { PointFeature } from "supercluster";
-import { Exposure, type Device } from "@prisma/client";
-import { Box, Rocket } from "lucide-react";
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 
