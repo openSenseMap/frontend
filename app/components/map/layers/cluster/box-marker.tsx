@@ -11,11 +11,18 @@ interface BoxMarkerProps extends MarkerProps {
   device: Device;
 }
 
-const statusColors = {
-  ACTIVE: "bg-green-100",
-  INACTIVE: "bg-gray-100",
-  OLD: "bg-gray-100 opacity-50",
-};
+const getStatusColor = (device: Device) => {
+  if (device.status === "ACTIVE") {
+    if(device.exposure === Exposure.MOBILE) {
+      return "bg-blue-100";
+    }
+    return "bg-green-100";
+  } else if (device.status === "INACTIVE") {
+    return "bg-gray-100";
+  } else {
+    return "bg-gray-100 opacity-50";
+  }
+}
 
 export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
   const navigate = useNavigate();
@@ -28,7 +35,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
       <AnimatePresence mode="popLayout">
         <motion.div
           className={cn(
-            "absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg",
+            "group absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg",
             isFullZoom ? "-left-4 -top-4" : "-left-[10px] -top-[10px]"
           )}
           onClick={() => navigate(`${device.id}`)}
@@ -36,7 +43,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           <span
             className={cn(
               "relative rounded-full transition-colors",
-              isFullZoom && `${statusColors[device.status]} p-1`
+              isFullZoom && `${getStatusColor(device)} p-1`
             )}
           >
             {device.exposure === Exposure.MOBILE ? (
@@ -48,7 +55,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
               <div
                 className={cn(
                   "absolute left-0 top-0 h-full w-full animate-ping rounded-full opacity-50",
-                  statusColors[device.status]
+                  getStatusColor(device)
                 )}
               />
             ) : null}
@@ -56,7 +63,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           {isFullZoom ? (
             <motion.span
               layoutId={device.id}
-              className="max-w-[100px] overflow-hidden overflow-ellipsis whitespace-nowrap px-1"
+              className="max-w-[100px] overflow-hidden overflow-ellipsis group-hover:max-w-fit group-hover:overflow-auto whitespace-nowrap px-1"
               initial={{ opacity: 0, translateX: -20 }}
               animate={{ opacity: 1, translateX: 0 }}
               exit={{ opacity: 0, translateX: -20 }}

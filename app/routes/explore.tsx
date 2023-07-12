@@ -3,7 +3,6 @@ import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
@@ -15,6 +14,7 @@ import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
+import { typedjson } from "remix-typedjson";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -32,9 +32,9 @@ export async function loader({ request }: LoaderArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile });
+    return typedjson({ devices, user, profile });
   }
-  return json({ devices, user, profile: null });
+  return typedjson({ devices, user, profile: null });
 }
 
 export const links: LinksFunction = () => {
@@ -82,8 +82,7 @@ export default function Explore() {
       <MapProvider>
         <Header devices={data.devices} />
         <Map ref={mapRef}>
-          {/* @ts-ignore */}
-          <ClusterLayer data={data} />
+          <ClusterLayer devices={data.devices} />
           <Toaster />
           {showSearch ? (
             <OverlaySearch

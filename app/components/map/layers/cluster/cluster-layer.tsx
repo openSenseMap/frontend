@@ -41,13 +41,9 @@ const options = {
 };
 
 export default function ClusterLayer({
-  data,
+  devices,
 }: {
-  data: {
-    devices: FeatureCollection<Point, any>;
-    user: null;
-    profile: null;
-  };
+  devices: FeatureCollection<Point, any>;
 }) {
   const { osem: mapRef } = useMap();
 
@@ -59,7 +55,7 @@ export default function ClusterLayer({
 
   // get clusters
   const points: PointFeature<GeoJsonProperties & Device>[] = useMemo(() => {
-    return data.devices.features.map((device) => ({
+    return devices.features.map((device) => ({
       type: "Feature",
       properties: {
         cluster: false,
@@ -67,7 +63,7 @@ export default function ClusterLayer({
       },
       geometry: device.geometry,
     }));
-  }, [data.devices.features]);
+  }, [devices.features]);
 
   // get bounds and zoom level from the map
   // debounce the change handler to prevent too many updates
@@ -152,5 +148,5 @@ export default function ClusterLayer({
     });
   }, [clusterOnClick, clusters]);
 
-  return clusterMarker;
+  return <>{clusterMarker}</>;
 }
