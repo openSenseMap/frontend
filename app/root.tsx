@@ -13,13 +13,18 @@ import { getEnv } from "./env.server";
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import appStylesheetUrl from "./styles/app.css";
-import { ThemeProvider, useTheme } from "./utils/theme-provider";
+import {
+  NonFlashOfWrongThemeEls,
+  ThemeProvider,
+  useTheme,
+} from "./utils/theme-provider";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
+import { getThemeSession } from "./utils/theme.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -66,11 +71,13 @@ export const meta: MetaFunction = () => ({
 export async function loader({ request }: LoaderArgs) {
   const locale = await i18next.getLocale(request);
   const user = await getUser(request);
+  const themeSession = await getThemeSession(request);
   return json(
     {
       user: user,
       locale: locale,
       ENV: getEnv(),
+      theme: themeSession.getTheme(),
     },
     {
       headers: { "Set-Cookie": await i18nCookie.serialize(locale) },
@@ -87,7 +94,7 @@ export let handle = {
 };
 
 function App() {
-  const { locale, ENV } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
 
   let { i18n } = useTranslation();
@@ -96,13 +103,14 @@ function App() {
   // detected by the loader, this way, when we do something to change the
   // language, this locale will change and i18next will load the correct
   // translation files
-  useChangeLanguage(locale);
+  useChangeLanguage(data.locale);
 
   return (
-    <html lang={locale} dir={i18n.dir()} className={clsx(theme)}>
+    <html lang={data.locale} dir={i18n.dir()} className={clsx(theme)}>
       <head>
         <Meta />
         <Links />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body className="flex h-full flex-col">
         <Outlet />
@@ -111,7 +119,7 @@ function App() {
         <Scripts />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(ENV)}`,
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
           }}
         />
         <LiveReload />
@@ -121,8 +129,10 @@ function App() {
 }
 
 export default function AppWithProviders() {
+  const data = useLoaderData<typeof loader>();
+
   return (
-    <ThemeProvider>
+    <ThemeProvider specifiedTheme={data.theme}>
       <App />
     </ThemeProvider>
   );
