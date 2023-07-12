@@ -61,13 +61,6 @@ export default function Explore() {
   const mapRef = useRef<MapRef | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // get map bounds
-  const [viewState, setViewState] = useState({
-    longitude: 52,
-    latitude: 7,
-    zoom: 2,
-  });
-
   const [showSearch, setShowSearch] = useState<boolean>(false);
 
   /**
@@ -96,11 +89,7 @@ export default function Explore() {
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        <Map
-          ref={mapRef}
-          {...viewState}
-          onMove={(evt) => setViewState(evt.viewState)}
-        >
+        <Map ref={mapRef}>
           {/* @ts-ignore */}
           <ClusterLayer data={data} />
           <Toaster />
