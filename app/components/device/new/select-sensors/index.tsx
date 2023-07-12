@@ -1,16 +1,29 @@
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
 
 interface SelectSensorsProps {
   data: any;
 }
 
 export default function SelectSensors({ data }: SelectSensorsProps) {
+  const [selectedSensors, setSelectedSensors] = useState([]);
+
+  function toggleSelectedSensor(sensorItem: any) {
+    const foundSensor = selectedSensors.find(
+      (sensor: any) => sensorItem == sensor
+    );
+    if (foundSensor) {
+      setSelectedSensors(
+        selectedSensors.filter((item: any) => item !== foundSensor)
+      );
+    } else {
+      setSelectedSensors([].concat(selectedSensors, sensorItem));
+    }
+
+  }
+
   return (
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
       <div>
@@ -33,22 +46,25 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                   {value.map((sensor: any) => {
                     return (
                       <Card
-                        // data-checked={}
-                        // onClick={}
+                        data-checked={selectedSensors.includes(sensor)}
+                        onClick={() => toggleSelectedSensor(sensor)}
                         key={sensor.id}
-                        className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+                        className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
                       >
                         <CardContent className="flex justify-center pt-2">
                           <AspectRatio ratio={3 / 4}>
                             {/* <img
-                          src="/images/"
-                          alt="senseBox:edu"
-                          className="rounded-md object-cover"
-                        /> */}
+                                        src="/images/"
+                                        alt="senseBox:edu"
+                                        className="rounded-md object-cover"
+                                      /> */}
                           </AspectRatio>
                         </CardContent>
                         <CardFooter className="flex justify-center">
                           <CardTitle>{sensor.sensor.slug}</CardTitle>
+                          {selectedSensors.includes(sensor) && (
+                            <CheckCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
+                          )}
                         </CardFooter>
                       </Card>
                     );

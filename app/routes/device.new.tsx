@@ -142,8 +142,6 @@ export default function NewDevice() {
   const page = Number(loaderData.page);
   const data = loaderData.data;
 
-  
-
   return (
     <div className="container">
       <Form method="post">
