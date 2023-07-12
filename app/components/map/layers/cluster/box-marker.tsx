@@ -35,7 +35,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
       <AnimatePresence mode="popLayout">
         <motion.div
           className={cn(
-            "absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg",
+            "group absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg",
             isFullZoom ? "-left-4 -top-4" : "-left-[10px] -top-[10px]"
           )}
           onClick={() => navigate(`${device.id}`)}
@@ -63,7 +63,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           {isFullZoom ? (
             <motion.span
               layoutId={device.id}
-              className="max-w-[100px] overflow-hidden overflow-ellipsis whitespace-nowrap px-1"
+              className="max-w-[100px] overflow-hidden overflow-ellipsis group-hover:max-w-fit group-hover:overflow-auto whitespace-nowrap px-1"
               initial={{ opacity: 0, translateX: -20 }}
               animate={{ opacity: 1, translateX: 0 }}
               exit={{ opacity: 0, translateX: -20 }}
