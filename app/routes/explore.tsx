@@ -1,25 +1,17 @@
-import { Outlet, useLoaderData, useNavigate } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
-
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
-
-import { MapProvider, Marker } from "react-map-gl";
-import { useState, useRef, useMemo, useCallback } from "react";
+import { MapProvider } from "react-map-gl";
+import { useState, useRef } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import OverlaySearch from "~/components/search/overlay-search";
 import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
-import useSupercluster from "use-supercluster";
-import DonutChartCluster from "~/components/map/layers/cluster/donut-chart-cluster";
-import type { BBox, GeoJsonProperties } from "geojson";
 import type Supercluster from "supercluster";
-import type { PointFeature } from "supercluster";
-import { Exposure, type Device } from "@prisma/client";
-import { Box, Rocket } from "lucide-react";
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
@@ -61,13 +53,6 @@ export default function Explore() {
   const mapRef = useRef<MapRef | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // get map bounds
-  const [viewState, setViewState] = useState({
-    longitude: 52,
-    latitude: 7,
-    zoom: 2,
-  });
-
   const [showSearch, setShowSearch] = useState<boolean>(false);
 
   /**
@@ -96,11 +81,7 @@ export default function Explore() {
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        <Map
-          ref={mapRef}
-          {...viewState}
-          onMove={(evt) => setViewState(evt.viewState)}
-        >
+        <Map ref={mapRef}>
           <ClusterLayer devices={data.devices} />
           <Toaster />
           {showSearch ? (

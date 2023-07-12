@@ -1,20 +1,20 @@
 import type { Device } from "@prisma/client";
-import { Exposure } from "@prisma/client";
 import type {
   GeoJsonProperties,
   BBox,
   FeatureCollection,
   Point,
 } from "geojson";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { Marker, useMap } from "react-map-gl";
 import type { PointFeature } from "supercluster";
 import useSupercluster from "use-supercluster";
 import type { DeviceClusterProperties } from "~/routes/explore";
-import { useNavigate } from "@remix-run/react";
 import DonutChartCluster from "./donut-chart-cluster";
-import { Box, Rocket } from "lucide-react";
 import BoxMarker from "./box-marker";
+import debounce from "lodash.debounce";
+
+const DEBOUNCE_VALUE = 50;
 
 // supercluster options
 const options = {
@@ -47,6 +47,12 @@ export default function ClusterLayer({
 }) {
   const { osem: mapRef } = useMap();
 
+  // the viewport bounds and zoom level
+  const [bounds, setBounds] = useState(
+    mapRef?.getMap().getBounds().toArray().flat() as BBox
+  );
+  const [zoom, setZoom] = useState(mapRef?.getZoom() || 0);
+
   // get clusters
   const points: PointFeature<GeoJsonProperties & Device>[] = useMemo(() => {
     return devices.features.map((device) => ({
@@ -59,14 +65,28 @@ export default function ClusterLayer({
     }));
   }, [devices.features]);
 
-  const bounds = mapRef
-    ? (mapRef.getMap().getBounds().toArray().flat() as BBox)
-    : ([-92, -72, 193, 76] as BBox);
+  // get bounds and zoom level from the map
+  // debounce the change handler to prevent too many updates
+  const debouncedChangeHandler = debounce(() => {
+    if (!mapRef) return;
+    setBounds(mapRef.getMap().getBounds().toArray().flat() as BBox);
+    setZoom(mapRef.getZoom());
+  }, DEBOUNCE_VALUE);
+
+  // register the debounced change handler to map events
+  useEffect(() => {
+    if (!mapRef) return;
+
+    mapRef?.getMap().on("load", debouncedChangeHandler);
+    mapRef?.getMap().on("zoom", debouncedChangeHandler);
+    mapRef?.getMap().on("move", debouncedChangeHandler);
+    mapRef?.getMap().on("resize", debouncedChangeHandler);
+  }, [debouncedChangeHandler, mapRef]);
 
   const { clusters, supercluster } = useSupercluster({
     points,
     bounds,
-    zoom: mapRef?.getZoom() ?? 10,
+    zoom,
     options,
   });
 
