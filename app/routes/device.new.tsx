@@ -25,7 +25,7 @@ export const loader = async ({ request }: LoaderArgs) => {
       } ?? {};
 
     var getAllDevicesUrl: URL = new URL(
-      process.env.SENSORWIKI_API_URL + "devices/all"
+      process.env.SENSORWIKI_API_URL + "devices"
     );
 
     const response = await fetch(getAllDevicesUrl.toString());
@@ -47,8 +47,8 @@ export const loader = async ({ request }: LoaderArgs) => {
     var getSensorsOfDeviceUrl: URL = new URL(
       process.env.SENSORWIKI_API_URL +
         (type !== "own_device"
-          ? `devices/device/${type}/sensors`
-          : `sensors/all`)
+          ? `devices/${type}/sensors`
+          : `sensors`)
     );
 
     const response = await fetch(getSensorsOfDeviceUrl.toString());
