@@ -4,7 +4,6 @@ import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 
@@ -23,6 +22,7 @@ import { Exposure, type Device } from "@prisma/client";
 import { Box, Rocket } from "lucide-react";
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
+import { typedjson } from "remix-typedjson";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -40,9 +40,9 @@ export async function loader({ request }: LoaderArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile });
+    return typedjson({ devices, user, profile });
   }
-  return json({ devices, user, profile: null });
+  return typedjson({ devices, user, profile: null });
 }
 
 export const links: LinksFunction = () => {
@@ -101,8 +101,7 @@ export default function Explore() {
           {...viewState}
           onMove={(evt) => setViewState(evt.viewState)}
         >
-          {/* @ts-ignore */}
-          <ClusterLayer data={data} />
+          <ClusterLayer devices={data.devices} />
           <Toaster />
           {showSearch ? (
             <OverlaySearch
