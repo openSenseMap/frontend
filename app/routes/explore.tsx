@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData, useNavigate } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
@@ -194,11 +194,18 @@ export default function Explore() {
           onMove={(evt) => setViewState(evt.viewState)}
         >
           {clusterMarker}
+          <Toaster />
+          {showSearch ? (
+            <OverlaySearch
+              devices={data.devices}
+              searchRef={searchRef}
+              setShowSearch={setShowSearch}
+            />
+          ) : null}
+          <main className="absolute bottom-0 z-10 w-full">
+            <Outlet />
+          </main>
         </Map>
-        <Toaster />
-        <main className="absolute bottom-0 z-10 w-full">
-          <Outlet />
-        </main>
       </MapProvider>
     </div>
   );
