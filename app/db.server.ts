@@ -28,10 +28,9 @@ function getClient() {
 
   const isLocalHost = databaseUrl.hostname === "localhost";
 
-  const PRIMARY_REGION = isLocalHost ? null : process.env.PRIMARY_REGION;
-  const FLY_REGION = isLocalHost ? null : process.env.FLY_REGION;
+  const PRIMARY_REGION = isLocalHost ? null : false;
 
-  const isReadReplicaRegion = !PRIMARY_REGION || PRIMARY_REGION === FLY_REGION;
+  const isReadReplicaRegion = !PRIMARY_REGION;
 
   if (!isLocalHost) {
     databaseUrl.host = `${databaseUrl.host}`;
