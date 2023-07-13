@@ -58,7 +58,7 @@ export const links: LinksFunction = () => {
 
 export default function Explore() {
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
-  const [drawPopoverOpen, setDrawPopoverOpen] = useState(true);
+  const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
   const mapRef: any = useRef();
   const mouseData: any[][] = [];
@@ -244,7 +244,9 @@ export default function Explore() {
             <CardDescription>Gebiet auf der Karte zeichnen</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button>Zeichnen</Button>
+            <Button onClick={() => setDrawPopoverOpen(!drawPopoverOpen)}>
+              Zeichnen
+            </Button>
           </CardContent>
         </Card>
         <Card>
