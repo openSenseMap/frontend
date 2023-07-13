@@ -1,9 +1,9 @@
 import Map from "~/components/Map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import DrawControl from "~/components/Map/draw-control";
-import { Layer, MapRef, Source } from "react-map-gl";
+import { Layer, Source } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import { useCallback, useContext, useState, useEffect, useRef } from "react";
+import { useCallback, useContext, useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -19,11 +19,7 @@ import { Link } from "@remix-run/react";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import type { LinksFunction } from "@remix-run/server-runtime";
-// import RadiusMode from "~/components/Map/RadiusMode";
-// import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
 import circleToPolygon from "circle-to-polygon";
-// import CustomControl from "~/components/Map/CustomControl";
-// import RadiusMode from "~/components/Map/RadiusMode";
 import {
   Dialog,
   DialogClose,
@@ -36,15 +32,8 @@ import {
 } from "@/components/ui/dialog";
 import { valid } from "geojson-validation";
 import {
-  CircleMode,
-  DragCircleMode,
-  DirectMode,
-  SimpleSelectMode,
-} from "maplibre-gl-draw-circle";
-import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
   PopoverArrow,
   PopoverAnchor,
 } from "@/components/ui/popover";
@@ -146,16 +135,6 @@ export default function Explore() {
   //     }
   //   }
   // }, [container, containerWrapper]);
-
-  // const draw = new MapboxDraw({
-
-  //   modes: {
-  //     ...modes,
-  //     draw_circle: CircleMode,
-  //     // draw_rectangle:
-  //   },
-  // });
-  // const onLoad = () => mapRef.current?.addControl(draw);
 
   // useEffect(() => {
   //   if (container) {
@@ -358,8 +337,6 @@ export default function Explore() {
                   <PopoverArrow />
                 </PopoverContent>
               </Popover>
-              {/* <CustomControl /> */}
-              {/* <Button className="absolute top-1/2 left-4 z-50">Weiter</Button> */}
               {geojsonUploadData && (
                 <Source type="geojson" data={geojsonUploadData}>
                   <Layer

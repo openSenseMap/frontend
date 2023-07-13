@@ -1,15 +1,5 @@
-import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import { Link, NavLink, Outlet } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { PlusIcon } from "lucide-react";
 
 const links = [
@@ -70,14 +60,6 @@ export default function CampaignsPage() {
               );
             })}
           </ul>
-          {/* <Link
-            to={"../explore/draw_campaign_area/modal"}
-            className="ml-auto mt-2 mr-2"
-          >
-            <Button size="lg" className="bg-green-300 text-lg ">
-              Erstellen
-            </Button>
-          </Link> */}
           <div className="ml-auto mr-2 mt-2">
             <Button size="lg" className=" bg-green-300 text-lg">
               <Link
