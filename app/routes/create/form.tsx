@@ -38,6 +38,7 @@ import {
 import { InfoCard } from "~/utils/info-card";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
+import { getPhenomena } from "~/models/phenomena.server";
 
 // import h337, { Heatmap } from "heatmap.js";
 
@@ -164,14 +165,11 @@ export async function action({ request }: ActionArgs) {
 
 export async function loader({ params }: LoaderArgs) {
   // request to fetch all phenomena
-  const response = await fetch(
-    "https://api.sensors.wiki/phenomena/all?language=de"
-  );
-  const data = await response.json();
-  if (data.code === "UnprocessableEntity") {
+  const response = await getPhenomena();
+  if (response.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
   }
-  const phenomena = data.map(
+  const phenomena = response.map(
     (d: { label: { item: { text: any }[] } }) => d.label.item[0].text
   );
   return phenomena;
@@ -183,6 +181,7 @@ export default function CreateCampaign() {
   const navigate = useNavigate();
   const phenomena = useLoaderData<typeof loader>();
   const { features } = useContext(FeatureContext);
+  console.log(features);
   const textAreaRef = useRef();
   const [description, setDescription] = useState<string | undefined>("");
   const titleRef = useRef<HTMLInputElement>(null);
