@@ -1,0 +1,12 @@
+{
+  "draw area on the map": "Gebiet auf der Karte zeichnen",
+  "draw": "Zeichnen",
+  "import geojson": "GeoJSON importieren",
+  "import": "Importieren",
+  "define area of interest": "Interessensgebiet definieren",
+  "upload geojson file": "GeoJSON Datei hochladen",
+  "upload a valid geojson file here": "Laden Sie hier eine valide GeoJSON Datei hoch",
+  "select": "Auswählen",
+  "next": "Weiter",
+  "use these symbols to draw different geometries on the map": "Nutze die Symbole um unterschiedliche Flächen auf der Karte zu zeichnen"
+}

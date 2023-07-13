@@ -38,6 +38,7 @@ import {
   PopoverAnchor,
 } from "@/components/ui/popover";
 import h337, { Heatmap } from "heatmap.js";
+import { useTranslation } from "react-i18next";
 
 export const links: LinksFunction = () => {
   return [
@@ -56,7 +57,8 @@ export const links: LinksFunction = () => {
   ];
 };
 
-export default function Explore() {
+export default function CampaignArea() {
+  const { t } = useTranslation("campaign-area");
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
@@ -237,33 +239,35 @@ export default function Explore() {
         <img className="w-full" id="gradient" src="" alt="legend-gradient" />
       </div> */}
       <div className="flex w-2/3 flex-col gap-3">
-        <h1 className="ml-2 text-lg font-bold">Interessensgebiet definieren</h1>
+        <h1 className="ml-2 text-lg font-bold">
+          {t("define area of interest")}
+        </h1>
         <Card>
           <CardHeader>
             <CardTitle>Option 1: </CardTitle>
-            <CardDescription>Gebiet auf der Karte zeichnen</CardDescription>
+            <CardDescription>{t("draw area on the map")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => setDrawPopoverOpen(!drawPopoverOpen)}>
-              Zeichnen
+              {t("draw")}
             </Button>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Option 2: </CardTitle>
-            <CardDescription>GeoJSON importieren</CardDescription>
+            <CardDescription>{t("import geojson")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Dialog>
               <DialogTrigger asChild>
-                <Button>Importieren</Button>
+                <Button>{t("import")}</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>GeoJSON Datei hochladen</DialogTitle>
+                  <DialogTitle>{t("upload geojson file")}</DialogTitle>
                   <DialogDescription>
-                    Hier können Sie eine valide <b>.geojson</b> Datei hochladen
+                    {t("upload a valid geojson file here")}
                   </DialogDescription>
                 </DialogHeader>
                 <input
@@ -273,7 +277,7 @@ export default function Explore() {
                 />
                 <DialogFooter>
                   <DialogClose>
-                    <Button>Auswählen</Button>
+                    <Button>{t("select")}</Button>
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>
@@ -291,7 +295,7 @@ export default function Explore() {
               className="absolute right-4 top-4 z-50 ml-auto"
               disabled={Object.keys(features).length === 0}
             >
-              Weiter
+              {t("next")}
             </Button>
           </Link>
           <MapProvider>
@@ -334,8 +338,9 @@ export default function Explore() {
                   onDelete={onDelete}
                 />
                 <PopoverContent side="right">
-                  Nutze die Symbole um unterschiedliche Flächen auf der Karte zu
-                  zeichnen
+                  {t(
+                    "use these symbols to draw different geometries on the map"
+                  )}
                   <PopoverArrow />
                 </PopoverContent>
               </Popover>

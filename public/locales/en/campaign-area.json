@@ -1,0 +1,12 @@
+{
+  "draw area on the map": "Draw area on the map",
+  "draw": "Draw",
+  "import geojson": "Import GeoJSON",
+  "import": "Import",
+  "define area of interest": "Define area of interest",
+  "upload geojson file": "Upload GeoJSON file",
+  "upload a valid geojson file here": "Upload a valid GeoJSON file here",
+  "select": "Select",
+  "next": "Next",
+  "use these symbols to draw different geometries on the map": "Use these symbols to draw different geometries on the map"
+}
