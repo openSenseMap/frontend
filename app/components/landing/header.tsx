@@ -1,15 +1,8 @@
-import { Form, Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import { Theme, useTheme } from "~/utils/theme-provider";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import LanguageSelector from "./language-selector";
+import ThemeSelector from "./theme-selector";
 
 const links = [
   {
@@ -36,19 +29,9 @@ const links = [
 
 export default function Header() {
   const { header } = useLoaderData<{
-    header: { userId: string; userName: string; locale: string };
+    header: { userId: string; userName: string; };
   }>();
-  const [theme, setTheme] = useTheme();
   const [openMenu, setOpenMenu] = useState(false);
-  const [locale] = useState(header.locale || "en");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) =>
-      prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
-    );
-  };
 
   //* User Id and Name
   const userId = header.userId;
@@ -106,62 +89,9 @@ export default function Header() {
         <div>
           <div className="flex items-center justify-center md:order-2">
             {/* Theme */}
-            <div className="flex items-center justify-center pr-8">
-              <button onClick={toggleTheme}>
-                {theme === "light" ? (
-                  <MoonIcon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
-                ) : (
-                  <SunIcon className="h-6 w-6 text-gray-400 lg:h-8 lg:w-8" />
-                )}
-              </button>
-            </div>
-
-            <div>
-              <Select
-                onValueChange={(value) => {
-                  setSearchParams({ lng: value });
-                  // i18next.changeLanguage(value);
-                }}
-                defaultValue={locale}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      locale === "de" ? (
-                        <img
-                          alt="usa flag"
-                          src="/landing/germany-flag-round-circle-icon.png"
-                          className="h-8 w-8"
-                        ></img>
-                      ) : (
-                        <img
-                          alt="usa flag"
-                          src="/landing/usa-flag-round-circle-icon.png"
-                          className="h-8 w-8"
-                        ></img>
-                      )
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en" className="cursor-pointer">
-                    <img
-                      alt="usa flag"
-                      src="/landing/usa-flag-round-circle-icon.png"
-                      className="h-8 w-8"
-                    ></img>
-                  </SelectItem>
-                  <SelectItem value="de" className="cursor-pointer">
-                    <img
-                      alt="germany flag"
-                      src="/landing/germany-flag-round-circle-icon.png"
-                      className="h-8 w-8"
-                    ></img>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
+            <ThemeSelector />
+            {/* Language */}
+            <LanguageSelector />
             {/* Collapsible navigation bar */}
             <button
               onClick={() => setOpenMenu(!openMenu)}

@@ -45,7 +45,8 @@ export const loader = async ({ request }: LoaderArgs) => {
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
     partners: partnersResponse.data,
-    header: { userId: userId, userName: userName, locale: locale },
+    header: { userId: userId, userName: userName },
+    locale: locale,
   });
 };
 
