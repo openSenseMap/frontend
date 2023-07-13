@@ -19,7 +19,7 @@ import {
   LockClosedIcon,
   CurrencyEuroIcon,
   UserGroupIcon,
-  UserIcon,
+  User,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -105,7 +105,7 @@ export default function Menu() {
             {data.user === null ? (
               <Bars3Icon className="mx-auto h-6 w-6" />
             ) : (
-              <UserIcon className="mx-auto h-6 w-6" />
+              <User className="mx-auto h-6 w-6" />
             )}
           </button>
         </div>
@@ -145,7 +145,7 @@ export default function Menu() {
               )}
               {data.profile && (
                 <DropdownMenuItem>
-                  <UserIcon className="mr-2 h-5 w-5" />
+                  <User className="mr-2 h-5 w-5" />
                   <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
