@@ -8,7 +8,7 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { LogOut, Mailbox, Plus, Settings, UserIcon } from "lucide-react";
+import { LogOut, Mailbox, Plus, Settings, User } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
 import { UserAvatar } from "~/routes/resources/user-avatar";
@@ -17,7 +17,7 @@ const sidebarNavItems = [
   {
     title: "Your profile",
     href: "/profile/me",
-    icon: <UserIcon size={24} />,
+    icon: <User size={24} />,
   },
   {
     title: "Settings",
