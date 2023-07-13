@@ -77,13 +77,7 @@ export async function action({ request }: ActionArgs) {
   //* temp -> dummy name
   // const name = "Max Mustermann";
 
-  const user = await createUser(
-    username,
-    email,
-    language,
-    password,
-    username?.toString()
-  );
+  const user = await createUser(username, email, language, password);
   // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
