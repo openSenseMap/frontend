@@ -1,6 +1,5 @@
-// import i18next from "app/i18next.server";
-
 import i18next from "i18next";
+import type { Unit } from "~/models/unit.server";
 
 export type SensorWikiTranslation = {
   item: SensorWikiLabel[];
@@ -9,6 +8,26 @@ export type SensorWikiTranslation = {
 export type SensorWikiLabel = {
   languageCode: string;
   text: string;
+};
+
+export type SensorWikiSensor = {
+  id: number;
+  slug: string;
+  label: SensorWikiTranslation;
+  description: SensorWikiTranslation;
+  manufacturer: string;
+  lifePeriod: number;
+  price: number;
+  image: string;
+  datasheet: string;
+};
+
+export type SensorWikiSensorElement = {
+  id: number;
+  accuracy: number;
+  accuracyUnit: Unit;
+  sensorId: number;
+  phenomenonId: number;
 };
 
 export function sensorWikiLabel(label: SensorWikiLabel[]) {
