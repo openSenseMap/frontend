@@ -47,7 +47,7 @@ export default function LanguageSelector() {
         }}
         defaultValue={locale}
       >
-        <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+        <SelectTrigger className="rounded-full focus:ring-0 focus:ring-offset-0">
           <SelectValue
             placeholder={
               locale === "de" ? (
@@ -66,7 +66,7 @@ export default function LanguageSelector() {
             }
           />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="min-w-0">
           <SelectItem value="en" className="cursor-pointer">
             <img
               alt="usa flag"
