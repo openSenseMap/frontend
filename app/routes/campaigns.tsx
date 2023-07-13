@@ -1,27 +1,29 @@
 import { Link, NavLink, Outlet } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "lucide-react";
-
-const links = [
-  {
-    name: "Overview",
-    link: "./overview",
-  },
-  {
-    name: "Tutorial",
-    link: "./tutorial",
-  },
-  {
-    name: "Info",
-    link: "./info",
-  },
-  {
-    name: "Support",
-    link: "./support",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function CampaignsPage() {
+  const { t } = useTranslation("campaigns");
+
+  const links = [
+    {
+      name: t("overview"),
+      link: "./overview",
+    },
+    {
+      name: "Tutorial",
+      link: "./tutorial",
+    },
+    {
+      name: "Info",
+      link: "./info",
+    },
+    {
+      name: "Support",
+      link: "./support",
+    },
+  ];
   return (
     <div className="flex h-full min-h-screen flex-col">
       <main>
@@ -38,7 +40,7 @@ export default function CampaignsPage() {
               <span className="dark:text-green-200 self-center whitespace-nowrap text-xl font-semibold text-green-100">
                 openSenseMap
               </span>
-              <span>Kampagnen Manager</span>
+              <span>{t("campaigns")} Manager</span>
             </div>
           </div>
 
@@ -66,8 +68,8 @@ export default function CampaignsPage() {
                 to={"../create/area"}
                 className="align-center flex items-center"
               >
-                <PlusIcon className="mr-2 h-4 w-4" />
-                <span>Erstellen</span>
+                <span>{t("create")}</span>
+                <PlusIcon className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
