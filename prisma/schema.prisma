@@ -10,7 +10,7 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "views"]
 }
 
-model File {
+model BlobFile {
   id   String @id @unique @default(cuid())
   blob Bytes
 
@@ -20,7 +20,7 @@ model File {
 }
 
 model Image {
-  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  file   BlobFile   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   fileId String @unique
 
   contentType String
