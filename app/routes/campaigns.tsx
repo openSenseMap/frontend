@@ -36,15 +36,22 @@ export default function CampaignsPage() {
     <div className="flex h-full min-h-screen flex-col">
       <main>
         <div className="hidden w-full items-center text-gray-400 dark:text-gray-300 md:order-1 md:flex">
-          <Link to="/" className="m-2 flex items-center pr-10">
-            <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
+          <div className="m-2 flex items-center pr-10">
+            <Link to="/">
+              <img
+                src="/logo.png"
+                className="mr-3 h-6 sm:h-9"
+                alt="osem Logo"
+              />
+            </Link>
             <div className="flex flex-col">
               <span className="dark:text-green-200 self-center whitespace-nowrap text-xl font-semibold text-green-100">
                 openSenseMap
               </span>
               <span>Kampagnen Manager</span>
             </div>
-          </Link>
+          </div>
+
           <ul className="mt-4 flex flex-row p-4 md:space-x-8 md:text-lg">
             {links.map((item, index) => {
               return (
@@ -71,7 +78,7 @@ export default function CampaignsPage() {
               Erstellen
             </Button>
           </Link> */}
-          <div className="ml-auto mt-2 mr-2">
+          <div className="ml-auto mr-2 mt-2">
             <Button size="lg" className=" bg-green-300 text-lg">
               <Link
                 to={"../create/area"}
