@@ -52,6 +52,7 @@ import Supercluster, { AnyProps, PointFeature } from "supercluster";
 import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -83,6 +84,7 @@ export const links: LinksFunction = () => {
 
 export default function Campaigns() {
   const data = useLoaderData<typeof loader>();
+  const { t } = useTranslation("overview");
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
@@ -532,7 +534,7 @@ export default function Campaigns() {
                 size={"lg"}
               >
                 <AlertCircleIcon className="h-4 w-4 text-red-500" />
-                Dringlichkeit{" "}
+                {t("urgency")}{" "}
                 <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </Button>
             </DropdownMenuTrigger>
@@ -542,13 +544,19 @@ export default function Campaigns() {
                 onValueChange={setUrgency}
               >
                 <DropdownMenuRadioItem value="urgent">
-                  Urgent
+                  {t("urgent")}
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="high">
+                  {" "}
+                  {t("high")}
+                </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="medium">
-                  Medium
+                  {t("medium")}
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="low">
+                  {" "}
+                  {t("low")}
+                </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -561,17 +569,18 @@ export default function Campaigns() {
                 size={"lg"}
               >
                 <ArrowDownAZIcon className="h-4 w-4" />
-                Sortieren nach{" "}
+                {t("sort by")}
+
                 <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
               <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
                 <DropdownMenuRadioItem value="dringlichkeit">
-                  Dringlichkeit
+                  {t("urgency")}
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="erstelldatum">
-                  Erstelldatum
+                  {t("creation date")}
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
@@ -582,11 +591,12 @@ export default function Campaigns() {
             size={"lg"}
             onClick={resetFilters}
           >
-            Filter zurücksetzen
+            {t("reset filters")}
+
             <FilterXIcon className="h-4 w-4" />
           </Button>
           <div className="flex flex-col items-center justify-center">
-            <span>Karte anzeigen</span>
+            <span> {t("show map")}</span>
             <Switch
               id="showMapSwitch"
               disabled={data.length === 0}
@@ -615,15 +625,13 @@ export default function Campaigns() {
         <hr className="w-full bg-gray-700" />
         {data.length === 0 ? (
           <div className="flex w-full flex-col items-center justify-center gap-2">
-            <span className="mt-6 text-red-500">
-              Zurzeit gibt es noch keine Kampagnen.{" "}
-            </span>{" "}
+            <span className="mt-6 text-red-500">{t("no campaigns yet")}. </span>{" "}
             <div>
-              Klicke{" "}
+              {t("click")}{" "}
               <Link className="text-blue-500 underline" to="../../create/area">
-                hier
+                {t("here")}
               </Link>{" "}
-              um die erste Kampagne zu erstellen
+              {t("to create a campaign")}
             </div>
           </div>
         ) : (
@@ -701,7 +709,7 @@ export default function Campaigns() {
                         // onMouseEnter={}
                       />
                       <span>
-                        {item.requiredParticipants} Mitwirkende insgesamt
+                        {item.requiredParticipants} {t("total participants")}
                       </span>
                     </CardContent>
                   </Link>
@@ -709,7 +717,7 @@ export default function Campaigns() {
                     <Accordion className="w-full" type="single" collapsible>
                       <AccordionItem value="item-1">
                         <AccordionTrigger className="text-blue-600 hover:text-blue-800">
-                          Learn More
+                          {t("learn more")}
                         </AccordionTrigger>
                         <AccordionContent>{item.description}</AccordionContent>
                       </AccordionItem>
