@@ -5,13 +5,15 @@ import { useState } from "react";
 import { getUserId } from "~/session.server";
 import {
   ArrowSmallLeftIcon,
+  DocumentTextIcon,
   TableCellsIcon,
+  WifiIcon,
 } from "@heroicons/react/24/outline";
 
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { Lock } from "lucide-react";
+import { Lock, MapPin } from "lucide-react";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -139,7 +141,7 @@ export default function EditBox() {
                 }
                 onClick={() => setCurrentView("location")}
               >
-                <TableCellsIcon className=" mr-2 inline h-5 w-5" />
+                <MapPin className=" mr-2 inline h-5 w-5 align-sub" />
                 Location
               </li>
             </Link>
@@ -155,6 +157,34 @@ export default function EditBox() {
               >
                 <Lock className=" mr-2 inline h-5 w-5 align-sub" />
                 Security
+              </li>
+            </Link>
+
+            <Link to="script">
+              <li
+                className={
+                  currentView === "script"
+                    ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
+                    : "rounded p-3 text-[#676767] hover:bg-[#eee]"
+                }
+                onClick={() => setCurrentView("script")}
+              >
+                <DocumentTextIcon className=" mr-2 inline h-5 w-5 align-sub" />
+                Script
+              </li>
+            </Link>
+
+            <Link to="mqtt">
+              <li
+                className={
+                  currentView === "mqtt"
+                    ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
+                    : "rounded p-3 text-[#676767] hover:bg-[#eee]"
+                }
+                onClick={() => setCurrentView("mqtt")}
+              >
+                <WifiIcon className=" mr-2 inline h-5 w-5 align-sub" />
+                MQTT
               </li>
             </Link>
           </ul>

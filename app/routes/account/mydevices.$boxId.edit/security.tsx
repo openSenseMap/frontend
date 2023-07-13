@@ -27,7 +27,7 @@ export default function EditBoxSecurity() {
   return (
     <div className="grid grid-rows-1">
       <div className="flex min-h-full items-center justify-center">
-        <div className="font-helvetica mx-auto w-full text-[14px]">
+        <div className="mx-auto w-full font-helvetica text-[14px]">
           {/* Form */}
           <Form method="post" noValidate>
             {/* Heading */}
@@ -61,10 +61,10 @@ export default function EditBoxSecurity() {
             </div>
 
             <div className="my-6 flex items-center space-x-2">
-              <Checkbox id="terms" name="terms" className="accent-[#5cb85c]" />
+              <Checkbox id="enableAuth"/>
               <label
-                htmlFor="terms"
-                className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                htmlFor="enableAuth"
+                className="cursor-pointer text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Enable authentication
               </label>
@@ -78,14 +78,14 @@ export default function EditBoxSecurity() {
               <div className="mt-1 flex">
                 <span>
                   <button
-                    className="btn btn-default rounded-br-none rounded-tr-none w-12"
-                    onClick={()=> setTokenvisibility(!tokenVisibility)}
+                    className="btn btn-default w-12 rounded-br-none rounded-tr-none"
+                    onClick={() => setTokenvisibility(!tokenVisibility)}
                     type="button"
                   >
                     {tokenVisibility ? (
                       /* closed eye */
                       <svg
-                        className="h-5 w-5.5 text-gray-700"
+                        className="w-5.5 h-5 text-gray-700"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 512"
@@ -98,7 +98,7 @@ export default function EditBoxSecurity() {
                     ) : (
                       /* open eye */
                       <svg
-                        className="h-5 w-5.5 text-gray-700"
+                        className="w-5.5 h-5 text-gray-700"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 576 512"
@@ -116,8 +116,7 @@ export default function EditBoxSecurity() {
                   id="accessToken"
                   defaultValue="dummy token"
                   className="form-control rounded-bl-none rounded-tl-none border-l-[0px]"
-                  type={tokenVisibility?"text":"password"}
-                  
+                  type={tokenVisibility ? "text" : "password"}
                   disabled
                 />
               </div>
@@ -144,7 +143,6 @@ export default function EditBoxSecurity() {
                   href="https://en.docs.sensebox.de/opensensemap/opensensemap-security/"
                   className="cursor-pointer text-[#4eaf47]"
                 >
-                  {" "}
                   https://en.docs.sensebox.de/opensensemap/opensensemap-security/
                 </a>
               </p>

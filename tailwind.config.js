@@ -106,6 +106,7 @@ module.exports = {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
         helvetica: ["Helvetica","Arial","sans-serif"],
+        monospace: ["Courier New", "Courier", "monospace"],
       },
       keyframes: {
         'sidebarOpen': {
