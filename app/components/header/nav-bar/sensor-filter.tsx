@@ -68,7 +68,7 @@ export function SensorFilter(props: SensorFilterProps, request: Request) {
                       onClick={() => props.setSensor(p.slug)}
                     >
                       <SunIcon className="h-4 w-4" />
-                      <span>{sensorWikiLabel(p.label)}</span>
+                      <span>{sensorWikiLabel(p.label.item)}</span>
                     </button>
                   </li>
                 );

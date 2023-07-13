@@ -41,6 +41,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
               <h1 className="pb-4 pt-2 text-xl">
                 {sensorWikiLabel(
                   data.phenomena.find((pheno: any) => pheno.id == key).label
+                    .item
                 )}
               </h1>
               <div className="space-y-6 divide-y divide-gray-200 sm:space-y-5">

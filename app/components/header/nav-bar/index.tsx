@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import getUserLocale from "get-user-locale";
 import type { Device } from "@prisma/client";
 import { SensorFilter } from "../nav-bar/sensor-filter";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface NavBarProps {
   devices: Device[];
@@ -66,7 +67,7 @@ export default function NavBar(props: NavBarProps) {
         return;
       }
     } else {
-      searchParams.append("filterType", "live")
+      searchParams.append("filterType", "live");
       setTimeState("live");
     }
   }, [searchParams, setSearchParams]);
@@ -124,7 +125,11 @@ export default function NavBar(props: NavBarProps) {
           <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-orange-500">
             <SunIcon className="h-4 w-4 text-white" />
             <div className="text-center text-white">
-              {searchParams.get("phenomenon") || t("all_stations")}
+              {sensorWikiLabel(
+                props.phenomena.filter(
+                  (pheno) => pheno.slug === searchParams.get("phenomenon")
+                )[0]?.label.item
+              ) || t("all_stations")}
             </div>
           </div>
           <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
