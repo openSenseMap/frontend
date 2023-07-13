@@ -2,6 +2,7 @@ import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SelectSensorsProps {
   data: any;
@@ -21,7 +22,6 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
     } else {
       setSelectedSensors([].concat(selectedSensors, sensorItem));
     }
-
   }
 
   return (
@@ -39,7 +39,9 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
           return (
             <div key={key}>
               <h1 className="pb-4 pt-2 text-xl">
-                {data.phenomena.find((pheno: any) => pheno.id == key).slug}
+                {sensorWikiLabel(
+                  data.phenomena.find((pheno: any) => pheno.id == key).label
+                )}
               </h1>
               <div className="space-y-6 divide-y divide-gray-200 sm:space-y-5">
                 <div className="grid grid-cols-8 gap-4">
