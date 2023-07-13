@@ -11,6 +11,7 @@ import {
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
+import { Lock } from "lucide-react";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -140,6 +141,20 @@ export default function EditBox() {
               >
                 <TableCellsIcon className=" mr-2 inline h-5 w-5" />
                 Location
+              </li>
+            </Link>
+
+            <Link to="security">
+              <li
+                className={
+                  currentView === "security"
+                    ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
+                    : "rounded p-3 text-[#676767] hover:bg-[#eee]"
+                }
+                onClick={() => setCurrentView("security")}
+              >
+                <Lock className=" mr-2 inline h-5 w-5 align-sub" />
+                Security
               </li>
             </Link>
           </ul>
