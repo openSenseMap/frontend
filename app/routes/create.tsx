@@ -1,16 +1,6 @@
 import { NavLink, Outlet } from "@remix-run/react";
 import { createContext, useState } from "react";
-
-const links = [
-  {
-    name: "Schritt 1",
-    link: "/create/area",
-  },
-  {
-    name: "Schritt 2",
-    link: "/create/form",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 interface FeaturesContextType {
   features: any;
@@ -23,6 +13,17 @@ export const FeatureContext = createContext<FeaturesContextType>({
 });
 
 export default function CreateCampaignPage() {
+  const { t } = useTranslation("create-campaign");
+  const links = [
+    {
+      name: t("step") + " 1",
+      link: "/create/area",
+    },
+    {
+      name: t("step") + " 2",
+      link: "/create/form",
+    },
+  ];
   const [features, setFeatures] = useState({});
   return (
     <div className="h-full w-full">
