@@ -591,12 +591,17 @@ export default function Campaigns() {
         </div>
         <hr className="w-full bg-gray-700" />
         {data.length === 0 ? (
-          <div>
-            Zurzeit gibt es noch keine Kampagnen. Klicke{" "}
-            <Link className="underlined text-blue-500" to={"../../create/area"}>
-              hier{" "}
-            </Link>
-            um die erste Kampagne zu erstellen
+          <div className="flex w-full flex-col items-center justify-center gap-2">
+            <span className="mt-6 text-red-500">
+              Zurzeit gibt es noch keine Kampagnen.{" "}
+            </span>{" "}
+            <div>
+              Klicke{" "}
+              <Link className="text-blue-500 underline" to="../../create/area">
+                hier
+              </Link>{" "}
+              um die erste Kampagne zu erstellen
+            </div>
           </div>
         ) : (
           <div className="flex">
