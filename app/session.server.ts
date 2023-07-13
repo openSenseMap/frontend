@@ -39,7 +39,7 @@ export async function getUserEmail(request: Request) {
   const user = await getUserById(userId);
   if (user) return user.email;
 
-  throw await logout({request: request, redirectTo: "/explore"});
+  throw await logout({ request: request, redirectTo: "/explore" });
 }
 
 export async function getUserName(request: Request) {
@@ -49,7 +49,7 @@ export async function getUserName(request: Request) {
   const user = await getUserById(userId);
   if (user) return user.name;
 
-  throw await logout({request: request, redirectTo: "/explore"});
+  throw await logout({ request: request, redirectTo: "/explore" });
 }
 
 export async function getUser(request: Request) {
@@ -59,7 +59,7 @@ export async function getUser(request: Request) {
   const user = await getUserById(userId);
   if (user) return user;
 
-  throw await logout({request: request, redirectTo: "/explore"});
+  throw await logout({ request: request, redirectTo: "/explore" });
 }
 
 export async function requireUserId(
@@ -80,7 +80,7 @@ export async function requireUser(request: Request) {
   const user = await getUserById(userId);
   if (user) return user;
 
-  throw await logout({request: request, redirectTo: "/explore"});
+  throw await logout({ request: request, redirectTo: "/explore" });
 }
 
 export async function createUserSession({
