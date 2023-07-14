@@ -13,6 +13,7 @@ import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
+import { Toaster } from "~/components/ui/toaster";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
