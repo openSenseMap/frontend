@@ -26,7 +26,7 @@ export default function NavBar(props: NavBarProps) {
 
   useEffect(() => {
     if (mapRef) {
-      mapRef.on("click", close);
+      mapRef.on("click", () => setOpen(false));
     }
   }, [mapRef]);
 
@@ -45,6 +45,16 @@ export default function NavBar(props: NavBarProps) {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  // focus input when opening
+  useEffect(() => {
+    if (open) {
+      inputRef.current?.focus();
+    } else {
+      inputRef.current?.blur();
+      setSearchString("");
+    }
+  }, [open]);
 
   return (
     <div className="pointer-events-auto relative w-full md:w-1/2">
