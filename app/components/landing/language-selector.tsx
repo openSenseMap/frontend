@@ -9,6 +9,8 @@ import {
 import { useState } from "react";
 import i18next from "i18next";
 import type { loader } from "~/root";
+import GerFlag from "./ger-flag";
+import UsaFlag from "./usa-flag";
 
 /**
  * This component allows users to select their preferred language.
@@ -31,6 +33,7 @@ export default function LanguageSelector() {
    * and submits a form to the server to save the user's selected language.
    */
   const handleValueChange = (value: string) => {
+    setLocale(value);
     i18next.changeLanguage(value);
     fetcher.submit(
       { language: value },
@@ -39,50 +42,20 @@ export default function LanguageSelector() {
   };
 
   return (
-    <div>
-      <Select
-        onValueChange={(value) => {
-          setLocale(value);
-          handleValueChange(value);
-        }}
-        defaultValue={locale}
-      >
-        <SelectTrigger className="rounded-full focus:ring-0 focus:ring-offset-0">
-          <SelectValue
-            placeholder={
-              locale === "de" ? (
-                <img
-                  alt="usa flag"
-                  src="/landing/germany-flag-round-circle-icon.png"
-                  className="h-8 w-8"
-                ></img>
-              ) : (
-                <img
-                  alt="usa flag"
-                  src="/landing/usa-flag-round-circle-icon.png"
-                  className="h-8 w-8"
-                ></img>
-              )
-            }
-          />
-        </SelectTrigger>
-        <SelectContent className="min-w-0">
-          <SelectItem value="en" className="cursor-pointer">
-            <img
-              alt="usa flag"
-              src="/landing/usa-flag-round-circle-icon.png"
-              className="h-8 w-8"
-            ></img>
-          </SelectItem>
-          <SelectItem value="de" className="cursor-pointer">
-            <img
-              alt="germany flag"
-              src="/landing/germany-flag-round-circle-icon.png"
-              className="h-8 w-8"
-            ></img>
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <Select onValueChange={handleValueChange} defaultValue={locale}>
+      <SelectTrigger className="rounded-full focus:ring-0 focus:ring-offset-0">
+        <SelectValue
+          placeholder={locale === "de" ? <GerFlag /> : <UsaFlag />}
+        />
+      </SelectTrigger>
+      <SelectContent className="min-w-0">
+        <SelectItem value="en" className="cursor-pointer">
+          <UsaFlag />
+        </SelectItem>
+        <SelectItem value="de" className="cursor-pointer">
+          <GerFlag />
+        </SelectItem>
+      </SelectContent>
+    </Select>
   );
 }
