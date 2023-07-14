@@ -7,6 +7,7 @@ import { Form } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
+import { Phenomenon } from "~/models/phenomena.server";
 
 interface SensorFilterProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
@@ -17,7 +18,7 @@ interface SensorFilterProps {
   setIsDialogOpen: (open: boolean) => void;
 
   setIsHovered: (hovered: boolean) => void;
-  phenomena: any[];
+  phenomena: Phenomenon[];
 }
 
 export function SensorFilter(props: SensorFilterProps, request: Request) {
