@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, createContext } from "react";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface NavBarProps {
   devices: Device[];
@@ -20,6 +21,8 @@ export default function NavBar(props: NavBarProps) {
   const [searchString, setSearchString] = useState("");
 
   const { osem: mapRef } = useMap();
+
+  const { t } = useTranslation("search");
 
   useEffect(() => {
     if (mapRef) {
@@ -50,7 +53,7 @@ export default function NavBar(props: NavBarProps) {
           <MagnifyingGlassIcon className="aspect-square h-6" />
           <input
             ref={inputRef}
-            placeholder="Suche, Filter & Einstellungen"
+            placeholder={t("placeholder") || undefined}
             onFocus={() => setOpen(true)}
             onChange={(e) => setSearchString(e.target.value)}
             className="h-fit w-full flex-1 border-none focus:border-none focus:outline-none focus:ring-0"
