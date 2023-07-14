@@ -45,26 +45,18 @@ export default function SearchList(props: SearchListProps) {
       (searchParams.size > 0 ? "?" + searchParams.toString() : "")
   );
 
-  useEffect(() => {
-    setSelected(searchResultsAll[cursor]);
-  }, [cursor, searchResultsAll]);
-
-  useEffect(() => {
-    if (selected.type === "device") {
-      // @ts-ignore
-      setNavigateTo(
-        `/explore/${selected.deviceId}` +
-          (searchParams.values.length > 0 ? "?" + searchParams.toString() : "")
+  const handleNavigate = useCallback(
+    (result: any) => {
+      return (
+        (result.type === "device"
+          ? `/explore/${result.deviceId}`
+          : "/explore") +
+        // @ts-ignore
+        (searchParams.size > 0 ? "?" + searchParams.toString() : "")
       );
-    } else if (selected.type === "location") {
-      // @ts-ignore
-      setNavigateTo(
-        "/explore" +
-          (searchParams.values.length > 0 ? "?" + searchParams.toString() : "")
-      );
-    }
-    console.log(navigateTo);
-  }, [selected, searchParams, navigateTo]);
+    },
+    [searchParams]
+  );
 
   const setShowSearchCallback = useCallback(
     (state: boolean) => {
@@ -72,6 +64,43 @@ export default function SearchList(props: SearchListProps) {
     },
     [setOpen]
   );
+
+  const handleDigitPress = useCallback(
+    (event: any) => {
+      if (
+        typeof Number(event.key) === "number" &&
+        Number(event.key) <= length &&
+        controlPress
+      ) {
+        event.preventDefault();
+        setCursor(Number(event.key) - 1);
+        goTo(osem, searchResultsAll[Number(event.key) - 1]);
+        setTimeout(() => {
+          setShowSearchCallback(false);
+          navigate(handleNavigate(searchResultsAll[Number(event.key) - 1]));
+        }, 500);
+      }
+    },
+    [
+      controlPress,
+      length,
+      navigate,
+      osem,
+      searchResultsAll,
+      setCursor,
+      setShowSearchCallback,
+      handleNavigate,
+    ]
+  );
+
+  useEffect(() => {
+    setSelected(searchResultsAll[cursor]);
+  }, [cursor, searchResultsAll]);
+
+  useEffect(() => {
+    const navigate = handleNavigate(selected);
+    setNavigateTo(navigate);
+  }, [selected, handleNavigate]);
 
   useEffect(() => {
     if (length !== 0 && enterPress) {
@@ -88,22 +117,6 @@ export default function SearchList(props: SearchListProps) {
     navigateTo,
     length,
   ]);
-
-  const handleDigitPress = (event: any) => {
-    if (
-      typeof Number(event.key) === "number" &&
-      Number(event.key) <= length &&
-      controlPress
-    ) {
-      event.preventDefault();
-      setCursor(Number(event.key) - 1);
-      goTo(osem, selected);
-      setTimeout(() => {
-        setShowSearchCallback(false);
-        navigate(navigateTo);
-      }, 500);
-    }
-  };
 
   useEffect(() => {
     // attach the event listener
