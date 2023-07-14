@@ -1,28 +1,31 @@
 import { motion } from "framer-motion";
 import AnimatedCounter from "../ui/animated-counter";
+import { useTranslation } from "react-i18next";
 
 const stats = [
   {
     id: 1,
-    name: "Devices",
+    name: "devices",
     value: 11,
     unit: "K",
   },
   {
     id: 2,
-    name: "Measurements (total)",
+    name: "measurements_total",
     value: 1148,
     unit: "Mio.",
   },
   {
     id: 3,
-    name: "Measurements per minute",
+    name: "measurements_per_minute",
     value: 9,
     unit: "K",
   },
 ];
 
 export default function Stats() {
+  const { t } = useTranslation("stats");
+
   return (
     <div className="mx-auto px-4 py-16 sm:max-w-xl md:max-w-full md:px-24 lg:max-w-screen-xl lg:px-8 lg:py-24">
       <div className="row-gap-8 grid gap-10 lg:grid-cols-3">
@@ -47,7 +50,7 @@ export default function Stats() {
                     {stat.unit}
                   </h6>
                 </div>
-                <p className="font-bold">{stat.name}</p>
+                <p className="font-bold">{t(stat.name)}</p>
               </div>
             </motion.div>
           </div>
