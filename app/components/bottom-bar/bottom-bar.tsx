@@ -1,10 +1,5 @@
 import { useState } from "react";
 import {
-  XCircleIcon,
-  // MinusCircleIcon,
-  ChevronDoubleUpIcon,
-} from "@heroicons/react/24/solid";
-import {
   Form,
   Link,
   useNavigation,
@@ -18,6 +13,7 @@ import type { Prisma, Sensor } from "@prisma/client";
 import type { DeviceWithSensors } from "types";
 import Spinner from "../spinner";
 import { Card, CardContent } from "../ui/card";
+import { ChevronsUp, XCircle } from "lucide-react";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -82,7 +78,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
             </div> */}
             <div className="flex items-center bg-green-100 pr-2">
               <Link prefetch="intent" to="/explore">
-                <XCircleIcon className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />
+                <XCircle className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />
               </Link>
             </div>
           </div>
@@ -106,7 +102,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                   "-ms-overflow-style:none scrollable box-border w-full overflow-x-auto overflow-y-hidden"
                 }
               >
-                <div className="flex justify-center space-x-4 whitespace-nowrap text-center px-12">
+                <div className="flex justify-center space-x-4 whitespace-nowrap px-12 text-center">
                   {data.device.sensors.map((sensor: Sensor) => {
                     // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                     const lastMeasurement =
@@ -114,7 +110,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                     const value = lastMeasurement.value as string;
                     return (
                       <div
-                      className="flex-1"
+                        className="flex-1"
                         key={sensor.id}
                         onClick={() => {
                           if (
@@ -228,7 +224,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
             (!isOpen ? "visible" : "hidden")
           }
         >
-          <ChevronDoubleUpIcon className="h-6 w-6 text-green-900" />
+          <ChevronsUp className="h-6 w-6 text-green-900" />
         </div>
         <ToastPrimitive.Root
           open={toastOpen}

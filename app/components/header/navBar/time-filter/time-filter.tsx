@@ -4,8 +4,12 @@ import * as React from "react";
 // import { useSearchParams, useSubmit } from "@remix-run/react";
 import { format } from "date-fns";
 import { de, enGB } from "date-fns/locale";
-import { CalendarIcon } from "@heroicons/react/24/outline";
-import { Clock, CalendarSearch, CalendarClock } from "lucide-react";
+import {
+  Clock,
+  CalendarSearch,
+  CalendarClock,
+  CalendarIcon,
+} from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";

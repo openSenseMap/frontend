@@ -27,8 +27,8 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
-import { ShareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import ShareLink from "./share-link";
+import { Download, Share } from "lucide-react";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -163,7 +163,7 @@ export default function Graph() {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-              <ShareIcon className="mr-2 h-5 w-5" />
+              <Share className="mr-2 h-5 w-5" />
               Share
             </Button>
           </AlertDialogTrigger>
@@ -191,7 +191,7 @@ export default function Graph() {
           }}
           className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
         >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
+          <Download className="mr-2 h-5 w-5"></Download>
           Download
         </Button>
       </div>

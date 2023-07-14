@@ -1,4 +1,4 @@
-import { LinkIcon, DocumentDuplicateIcon } from "@heroicons/react/24/solid";
+import { Files, Link2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
@@ -70,7 +70,7 @@ export default function ShareLink() {
       </div>
       {/* <!--BOX LINK--> */}
       <div className="mt-4 flex items-center justify-between gap-2 py-2">
-        <LinkIcon className="mr-2 h-5 w-5" />
+        <Link2 className="mr-2 h-5 w-5" />
         <Input
           className="w-full bg-transparent outline-none"
           type="text"
@@ -83,7 +83,7 @@ export default function ShareLink() {
           }}
           className="inline-flex h-9 transform items-center justify-center rounded-md bg-primary px-2 py-2 text-sm font-medium text-primary-foreground shadow transition-transform active:scale-75"
         >
-          <DocumentDuplicateIcon className="mr-2 h-5 w-5" />
+          <Files className="mr-2 h-5 w-5" />
           Copy
         </Button>
       </div>

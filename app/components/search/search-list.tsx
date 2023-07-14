@@ -2,14 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useMap } from "react-map-gl";
 import { useNavigate, useSearchParams } from "@remix-run/react";
 
-import {
-  CpuChipIcon,
-  GlobeEuropeAfricaIcon,
-  MapPinIcon,
-} from "@heroicons/react/24/outline";
-
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
+import { Cpu, Globe2, Pin } from "lucide-react";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -80,10 +75,18 @@ export default function SearchList(props: SearchListProps) {
   useEffect(() => {
     if (selected.type === "device") {
       // @ts-ignore
-      setNavigateTo(`/explore/${selected.deviceId}` + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
+      setNavigateTo(
+        `/explore/${selected.deviceId}` +
+          // @ts-ignore
+          (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+      );
     } else if (selected.type === "location") {
       // @ts-ignore
-      setNavigateTo("/explore" + (searchParams.size > 0 ? "?" + searchParams.toString() : ""));
+      setNavigateTo(
+        "/explore" +
+          // @ts-ignore
+          (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+      );
     }
     console.log(navigateTo);
   }, [selected, searchParams, navigateTo]);
@@ -128,8 +131,10 @@ export default function SearchList(props: SearchListProps) {
       event.preventDefault();
       setCursor(Number(event.key) - 1);
       goTo(osem, selected);
-      setTimeout(() => {setShowSearchCallback(false); navigate(navigateTo);}, 500);
-      
+      setTimeout(() => {
+        setShowSearchCallback(false);
+        navigate(navigateTo);
+      }, 500);
     }
   };
 
@@ -157,7 +162,7 @@ export default function SearchList(props: SearchListProps) {
             active={searchResultsDeviceIndex === cursor}
             type="device"
             item={device}
-            icon={CpuChipIcon}
+            icon={Cpu}
             setShowSearch={props.setShowSearch}
             setCursor={setCursor}
             controlPress={controlPress}
@@ -176,11 +181,7 @@ export default function SearchList(props: SearchListProps) {
             active={searchResultsLocationIndex === cursor}
             type="location"
             item={location}
-            icon={
-              location.place_type.includes("country")
-                ? GlobeEuropeAfricaIcon
-                : MapPinIcon
-            }
+            icon={location.place_type.includes("country") ? Globe2 : Pin}
             setShowSearch={props.setShowSearch}
             setCursor={setCursor}
             controlPress={controlPress}

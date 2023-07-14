@@ -1,9 +1,9 @@
 import { Form, Link } from "@remix-run/react";
 import { Theme, useTheme } from "~/utils/theme-provider";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import invariant from "tiny-invariant";
 import type { header } from "~/lib/directus";
 import { useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
 const links = [
   {
@@ -101,9 +101,9 @@ export default function Header(data: HeaderProps) {
           <div className="flex items-center justify-center pr-8">
             <button onClick={toggleTheme}>
               {theme === "light" ? (
-                <MoonIcon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
+                <Moon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
               ) : (
-                <SunIcon className="h-6 w-6 text-gray-400 lg:h-8 lg:w-8" />
+                <Sun className="h-6 w-6 text-gray-400 lg:h-8 lg:w-8" />
               )}
             </button>
           </div>
