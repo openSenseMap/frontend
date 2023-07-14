@@ -91,11 +91,11 @@ export const unclusteredPointLayer: LayerProps = {
   paint: {
     "icon-opacity": [
       "case",
-      deviceStatusFilter.active,
+      ["==", ["get", "status"], "ACTIVE"],
       1,
-      deviceStatusFilter.inactive,
+      ["==", ["get", "status"], "INACTIVE"],
       0.7,
-      deviceStatusFilter.old,
+      ["==", ["get", "status"], "OLD"],
       0.5,
       0.5,
     ],

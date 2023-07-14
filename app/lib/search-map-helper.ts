@@ -1,4 +1,5 @@
-import type { LngLatBounds, LngLatLike, MapRef } from "react-map-gl";
+import type { LngLatBoundsLike } from "mapbox-gl";
+import type { LngLatLike, MapRef } from "react-map-gl";
 
 /**
  * The function that is called when the user clicks on a location without bbox property in the search results. It flies the map to the location and closes the search results.
@@ -22,7 +23,7 @@ export const goToLocation = (map: MapRef | undefined, center: LngLatLike) => {
  */
 export const goToLocationBBox = (
   map: MapRef | undefined,
-  bbox: LngLatBounds
+  bbox: LngLatBoundsLike
 ) => {
   map?.fitBounds(bbox, {
     animate: true,

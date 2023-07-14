@@ -1,6 +1,5 @@
 // import type { LngLatBounds, LngLatLike } from "react-map-gl";
-import { useNavigate } from "@remix-run/react";
-import { useSearchParams } from "@remix-run/react";
+import { useNavigate, useSearchParams } from "@remix-run/react";
 import { useMap } from "react-map-gl";
 
 import { goTo } from "~/lib/search-map-helper";
@@ -8,7 +7,7 @@ import { goTo } from "~/lib/search-map-helper";
 interface SearchListItemProps {
   index: number;
   active: boolean;
-  type: String;
+  type: string;
   item: any;
   icon: any;
   setShowSearch: (data: boolean) => void;
@@ -22,7 +21,6 @@ export default function SearchListItem(props: SearchListItemProps) {
   const [searchParams] = useSearchParams();
   const navigateTo =
     (props.type === "device" ? `/explore/${props.item.deviceId}` : "/explore") +
-    // @ts-ignore
     (searchParams.size > 0 ? "?" + searchParams.toString() : "");
 
   // console.log(props.index)

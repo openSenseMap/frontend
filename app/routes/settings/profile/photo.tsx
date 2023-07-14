@@ -7,12 +7,7 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
+import { Form, useActionData, useNavigate } from "@remix-run/react";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +20,6 @@ import { requireUserId } from "~/session.server";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";
-import { getUserImgSrc } from "~/utils/misc";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
@@ -53,7 +47,7 @@ export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
   const user = await prisma.profile.findUnique({
     where: { userId: userId },
-    select: { imageId: true, username: true },
+    select: { username: true },
   });
   if (!user) {
     console.log("User not found");
@@ -64,7 +58,7 @@ export async function loader({ request }: DataFunctionArgs) {
 }
 
 export async function action({ request }: DataFunctionArgs) {
-  const userId = await requireUserId(request);
+  // const userId = await requireUserId(request);
   const formData = await unstable_parseMultipartFormData(
     request,
     unstable_createMemoryUploadHandler({ maxPartSize: MAX_SIZE })
@@ -85,48 +79,48 @@ export async function action({ request }: DataFunctionArgs) {
     );
   }
 
-  const { photoFile } = submission.value;
+  // const { photoFile } = submission.value;
 
-  const newPrismaPhoto = {
-    contentType: photoFile.type,
-    file: {
-      create: {
-        blob: Buffer.from(await photoFile.arrayBuffer()),
-      },
-    },
-  };
+  // const newPrismaPhoto = {
+  //   contentType: photoFile.type,
+  //   file: {
+  //     create: {
+  //       blob: Buffer.from(await photoFile.arrayBuffer()),
+  //     },
+  //   },
+  // };
 
-  const previousUserPhoto = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: { imageId: true },
-  });
+  // const previousUserPhoto = await prisma.profile.findUnique({
+  //   where: { userId: userId },
+  //   select: { imageId: true },
+  // });
 
-  await prisma.profile.update({
-    select: { id: true },
-    where: { userId: userId },
-    data: {
-      image: {
-        upsert: {
-          update: newPrismaPhoto,
-          create: newPrismaPhoto,
-        },
-      },
-    },
-  });
+  // await prisma.profile.update({
+  //   select: { id: true },
+  //   where: { userId: userId },
+  //   data: {
+  //     image: {
+  //       upsert: {
+  //         update: newPrismaPhoto,
+  //         create: newPrismaPhoto,
+  //       },
+  //     },
+  //   },
+  // });
 
-  if (previousUserPhoto?.imageId) {
-    void prisma.image
-      .delete({
-        where: { fileId: previousUserPhoto.imageId },
-      })
-      .catch(() => {}); // ignore the error, maybe it never existed?
-  }
+  // if (previousUserPhoto?.imageId) {
+  //   void prisma.image
+  //     .delete({
+  //       where: { fileId: previousUserPhoto.imageId },
+  //     })
+  //     .catch(() => {}); // ignore the error, maybe it never existed?
+  // }
 
   return redirect("/settings/profile");
 }
 
 export default function PhotoChooserModal() {
-  const data = useLoaderData<typeof loader>();
+  // const data = useLoaderData<typeof loader>();
   const [newImageSrc, setNewImageSrc] = useState<string | null>(null);
   const navigate = useNavigate();
   const actionData = useActionData<typeof action>();
@@ -158,7 +152,7 @@ export default function PhotoChooserModal() {
           {...form.props}
         >
           <img
-            src={newImageSrc ?? getUserImgSrc(data.user.imageId)}
+            // src={newImageSrc ?? getUserImgSrc(data.user.imageId)}
             className="h-64 w-64 rounded-full"
             alt={"test"}
           />

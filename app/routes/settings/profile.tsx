@@ -3,17 +3,14 @@ import {
   Link,
   Outlet,
   useActionData,
-  useFormAction,
-  useLoaderData,
-  useNavigation,
+  // useLoaderData,
 } from "@remix-run/react";
-import type { DataFunctionArgs } from "@remix-run/node";
-import { json, type ActionArgs, redirect } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import type { DataFunctionArgs, ActionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
 import { prisma } from "~/db.server";
-import { getUserImgSrc } from "~/utils/misc";
 import { z } from "zod";
 import { nameSchema } from "~/utils/user-validation";
 import { getFieldsetConstraint, parse } from "@conform-to/zod";
@@ -27,16 +24,17 @@ const profileFormSchema = z.object({
 });
 
 export async function loader({ request }: DataFunctionArgs) {
-  const userId = await requireUserId(request);
-  const profile = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: {
-      id: true,
-      username: true,
-      public: true,
-      imageId: true,
-    },
-  });
+  // const userId = await requireUserId(request);
+  const profile = {};
+  // const profile = await prisma.profile.findUnique({
+  //   where: { userId: userId },
+  //   select: {
+  //     id: true,
+  //     username: true,
+  //     public: true,
+  //     imageId: true,
+  //   },
+  // });
   if (!profile) {
     // throw await authenticator.logout(request, { redirectTo: "/" });
     throw new Error();
@@ -99,15 +97,15 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function EditUserProfilePage() {
-  const data = useLoaderData<typeof loader>();
+  // const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-  const formAction = useFormAction();
+  // const navigation = useNavigation();
+  // const formAction = useFormAction();
 
-  const isSubmitting =
-    navigation.state === "submitting" &&
-    navigation.formAction === formAction &&
-    navigation.formMethod === "post";
+  // const isSubmitting =
+  //   navigation.state === "submitting" &&
+  //   navigation.formAction === formAction &&
+  //   navigation.formMethod === "post";
 
   // The `useForm` hook will return everything you need to setup a form
   // including the error and config of each field
@@ -119,8 +117,8 @@ export default function EditUserProfilePage() {
       return parse(formData, { schema: profileFormSchema });
     },
     defaultValue: {
-      username: data.profile.username,
-      visibility: data.profile.public ? "true" : "false",
+      username: "",
+      visibility: "false",
     },
     shouldRevalidate: "onBlur",
   });
@@ -165,8 +163,8 @@ export default function EditUserProfilePage() {
         <div className="flex w-1/2 justify-center">
           <div className="relative h-52 w-52">
             <img
-              src={getUserImgSrc(data.profile.imageId)}
-              alt={data.profile.username}
+              src="img/user.png"
+              alt=""
               className="h-full w-full rounded-full object-cover"
             />
             <Link

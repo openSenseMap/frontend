@@ -1,7 +1,6 @@
-import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
+import { Form, Link, useNavigation, useSearchParams, useLoaderData } from "@remix-run/react";
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
-import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
 import {
   Bars3Icon,
@@ -34,7 +33,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
-import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -49,14 +47,13 @@ export function useFirstRender() {
 export default function Menu() {
   const [searchParams] = useSearchParams();
   const redirectTo =
-    // @ts-ignore
     searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const data = useLoaderData<typeof loader>();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const navigation = useNavigation();
   const isLoggingOut = Boolean(navigation.state === "submitting");
-  const [timeToToast, setTimeToToast] = useState<Boolean>(false);
+  const [timeToToast, setTimeToToast] = useState<boolean>(false);
 
   const { t } = useTranslation("menu");
 
