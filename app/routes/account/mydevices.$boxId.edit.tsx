@@ -5,6 +5,7 @@ import { useState } from "react";
 import { getUserId } from "~/session.server";
 import {
   ArrowSmallLeftIcon,
+  CloudArrowUpIcon,
   DocumentTextIcon,
   TableCellsIcon,
   WifiIcon,
@@ -13,7 +14,7 @@ import {
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { Lock, MapPin } from "lucide-react";
+import { ArrowRightLeft, Lock, MapPin } from "lucide-react";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -34,8 +35,8 @@ export async function action({ request }: ActionArgs) {
 //**********************************
 export default function EditBox() {
   //* to keep selected view highlited after reloading
-  const pathName = useLocation().pathname
-  const currentPage = pathName.substring(pathName.lastIndexOf('/')+1);
+  const pathName = useLocation().pathname;
+  const currentPage = pathName.substring(pathName.lastIndexOf("/") + 1);
   //* default view (General)
   const [currentView, setCurrentView] = useState(currentPage);
 
@@ -44,9 +45,9 @@ export default function EditBox() {
 
   // Get deviceId from route path
   const { boxId } = useParams();
-  
+
   return (
-    <div className="mx-8 mt-14 mr-20">
+    <div className="mx-8 mr-20 mt-14">
       {/*Toast notification */}
       <div className={toastOpen ? "mb-12" : ""}>
         <ToastPrimitive.Provider>
@@ -93,7 +94,7 @@ export default function EditBox() {
           <ToastPrimitive.Viewport />
         </ToastPrimitive.Provider>
       </div>
-      <div className="grid grid-cols-8 gap-10 font-helvetica tracking-wide max-md:grid-cols-2 lg:grid-rows-1 text-[15px]">
+      <div className="grid grid-cols-8 gap-10 font-helvetica text-[15px] tracking-wide max-md:grid-cols-2 lg:grid-rows-1">
         <nav className="col-span-2 md:col-span-2">
           <ul>
             <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
@@ -174,6 +175,7 @@ export default function EditBox() {
               </li>
             </Link>
 
+            {/* MQTT */}
             <Link to="mqtt">
               <li
                 className={
@@ -185,6 +187,36 @@ export default function EditBox() {
               >
                 <WifiIcon className=" mr-2 inline h-5 w-5 align-sub" />
                 MQTT
+              </li>
+            </Link>
+
+            {/* TheThingsNetwork */}
+            <Link to="ttn">
+              <li
+                className={
+                  currentView === "ttn"
+                    ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
+                    : "rounded p-3 text-[#676767] hover:bg-[#eee]"
+                }
+                onClick={() => setCurrentView("ttn")}
+              >
+                <CloudArrowUpIcon className=" mr-2 inline h-5 w-5 align-sub" />
+                TheThingsNetwork
+              </li>
+            </Link>
+
+            {/* Transfer */}
+            <Link to="transfer">
+              <li
+                className={
+                  currentView === "transfer"
+                    ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
+                    : "rounded p-3 text-[#676767] hover:bg-[#eee]"
+                }
+                onClick={() => setCurrentView("transfer")}
+              >
+                <ArrowRightLeft className=" mr-2 inline h-5 w-5 align-sub" />
+                Transfer
               </li>
             </Link>
           </ul>

@@ -57,16 +57,15 @@ export default function EditBoxMQTT() {
 
             <div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
               <p>
-                openSenseMap offers a{" "}
+                openSenseMap offers a{" "} 
                 <a
                   href="http://mqtt.org/"
                   className="cursor-pointer text-[#4eaf47]"
                 >
-                  {" "}
-                  MQTT{" "}
+                   MQTT{" "}
                 </a>{" "}
                 client for connecting to public brokers. Documentation for the
-                parameters is provided
+                parameters is provided{" "}
                 <a
                   href="https://docs.opensensemap.org/#api-Boxes-postNewBox"
                   className="cursor-pointer text-[#4eaf47]"
@@ -186,7 +185,6 @@ export default function EditBoxMQTT() {
               <div className="mt-1">
                 <input
                   id="mqqtConn"
-                  autoFocus={true}
                   name="mqqtConn"
                   type="text"
                   className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
