@@ -3,7 +3,7 @@ import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import DrawControl from "~/components/Map/draw-control";
 import { Layer, Source } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import { useCallback, useContext, useState, useRef } from "react";
+import { useCallback, useContext, useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -39,6 +39,14 @@ import {
 } from "@/components/ui/popover";
 import h337, { Heatmap } from "heatmap.js";
 import { useTranslation } from "react-i18next";
+import { useToast } from "~/components/ui/use-toast";
+import {
+  ZoomInIcon,
+  ChevronRightIcon,
+  ArrowRightCircleIcon,
+  ArrowRightIcon,
+} from "lucide-react";
+import zoomToExtent from "~/lib/zoom-to-extent";
 
 export const links: LinksFunction = () => {
   return [
@@ -59,6 +67,7 @@ export const links: LinksFunction = () => {
 
 export default function CampaignArea() {
   const { t } = useTranslation("campaign-area");
+  const { toast } = useToast();
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
@@ -168,6 +177,9 @@ export default function CampaignArea() {
           } else if (geojson.type === "Feature") {
             setFeatures([geojson]);
           }
+          toast({
+            title: "Erfolgreich importiert",
+          });
         } else {
           console.error("Invalid GeoJSON file");
           // Display an error message to the user or handle the error appropriately
@@ -290,14 +302,23 @@ export default function CampaignArea() {
         className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3"
       >
         <div className="h-full w-full" id="view">
-          <Link to={"/create/form"}>
+          <div className="absolute right-4 top-4 z-50 ml-auto">
             <Button
-              className="absolute right-4 top-4 z-50 ml-auto"
               disabled={Object.keys(features).length === 0}
+              onClick={() => zoomToExtent(mapRef.current, features[0])}
             >
-              {t("next")}
+              {t("Zoom to area")} <ZoomInIcon className="mx-2 h-4 w-4" />
             </Button>
-          </Link>
+            <Link to={"/create/form"} className="ml-2">
+              <Button
+                // className="absolute right-4 top-4 z-50 ml-auto"
+                disabled={Object.keys(features).length === 0}
+              >
+                {t("next")}
+                <ArrowRightIcon className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
           <MapProvider>
             <Map
               ref={(ref) => (mapRef.current = ref && ref.getMap())}
