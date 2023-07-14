@@ -7,7 +7,6 @@ import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
 import { useRef } from "react";
-import { Toaster } from "~/components/ui/toaster";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
