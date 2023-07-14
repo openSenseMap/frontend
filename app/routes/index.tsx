@@ -14,51 +14,53 @@ import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 import { getUserId, getUserName } from "~/session.server";
 
-// export const loader = async ({ request }: LoaderArgs) => {
-//   let locale = await i18next.getLocale(request);
-//   const directus = await getDirectusClient();
+export const loader = async ({ request }: LoaderArgs) => {
+  let locale = await i18next.getLocale(request);
+  const directus = await getDirectusClient();
 
-//   const useCasesResponse = await directus.items("use_cases").readByQuery({
-//     fields: ["*"],
-//     filter: {
-//       language: locale,
-//     },
-//   });
+  const useCasesResponse = await directus.items("use_cases").readByQuery({
+    fields: ["*"],
+    filter: {
+      language: locale,
+    },
+  });
 
-//   const featuresResponse = await directus.items("features").readByQuery({
-//     fields: ["*"],
-//     filter: {
-//       language: locale,
-//     },
-//   });
+  const featuresResponse = await directus.items("features").readByQuery({
+    fields: ["*"],
+    filter: {
+      language: locale,
+    },
+  });
 
-//   const partnersResponse = await directus.items("partners").readByQuery({
-//     fields: ["*"],
-//   });
+  const partnersResponse = await directus.items("partners").readByQuery({
+    fields: ["*"],
+  });
 
-//   //* Get user Id from session
-//   const userId = await getUserId(request);
-//   const userName = await getUserName(request);
+  //* Get user Id from session
+  const userId = await getUserId(request);
+  const userName = await getUserName(request);
 
-//   return json({
-//     useCases: useCasesResponse.data,
-//     features: featuresResponse.data,
-//     partners: partnersResponse.data,
-//     header: { userId: userId, userName: userName },
-//   });
-// };
+  return json({
+    useCases: useCasesResponse.data,
+    features: featuresResponse.data,
+    partners: partnersResponse.data,
+    header: { userId: userId, userName: userName },
+  });
+};
 
 export default function Index() {
-  // const { useCases, features, partners, header } = useLoaderData<{
-  //   useCases: UseCase[];
-  //   features: Feature[];
-  //   partners: Partner[];
-  //   header: { userId: string; userName: string };
-  // }>();
+  const { useCases, features, partners, header } = useLoaderData<{
+    useCases: UseCase[];
+    features: Feature[];
+    partners: Partner[];
+    header: { userId: string; userName: string };
+  }>();
 
   return (
     <div className="min-h-full bg-white dark:bg-black">
-      <header>{/* <Header data={header} /> */}</header>
+      <header>
+        <Header data={header} />
+      </header>
       <main>
         <div className="overflow-hidden pt-8 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -159,7 +161,7 @@ export default function Index() {
       </main>
       <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* <Features data={features} /> */}
+          <Features data={features} />
         </div>
       </section>
       <section className="py-20 sm:py-20">
@@ -169,12 +171,12 @@ export default function Index() {
       </section>
       <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* <UseCases data={useCases} /> */}
+          <UseCases data={useCases} />
         </div>
       </section>
       <section className="pt-20 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* <Partners data={partners} /> */}
+          <Partners data={partners} />
         </div>
       </section>
       <footer className="">
