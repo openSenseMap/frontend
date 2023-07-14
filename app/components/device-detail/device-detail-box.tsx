@@ -17,6 +17,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import type { loader } from "~/routes/explore/$deviceId";
+import { Badge } from "../ui/badge";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -58,12 +59,21 @@ export default function BottomBar() {
     <>
       <div className="shadow-zinc-800/5 ring-zinc-900/5 dark:bg-zinc-800/30 dark:ring-white/10 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 backdrop-blur-sm dark:text-zinc-200 sm:bottom-[10px] sm:left-[10px] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-8rem)] sm:w-1/4">
         {navigation.state === "loading" && (
-          <div className="absolute z-50 inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-100 bg-opacity-50">
             <Spinner />
           </div>
         )}
         <div className="flex w-full items-center gap-3 p-2">
-          <div className="flex-1 text-xl text-zinc-600 dark:text-zinc-100">
+          <div className="flex flex-1 items-center justify-evenly gap-2 text-xl text-zinc-600 dark:text-zinc-100">
+            <Badge
+              className={
+                "p-0 " + data.device.status === "ACTIVE"
+                  ? "bg-green-100"
+                  : "bg-red-500"
+              }
+            >
+              <p className="invisible">i</p>
+            </Badge>
             {data.device.name}
           </div>
           <a href="/explore">
