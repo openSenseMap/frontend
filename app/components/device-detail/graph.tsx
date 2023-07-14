@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -13,7 +13,7 @@ import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
-import type { LastMeasurementProps } from "./bottom-bar";
+import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore/$deviceId";
 import { useRef } from "react";
 import { saveAs } from "file-saver";
@@ -26,9 +26,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { Button } from "../ui/button";
 import { ShareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import ShareLink from "./share-link";
+import Spinner from "../spinner";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -44,6 +44,7 @@ ChartJS.register(
 export default function Graph() {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
 
   const chartRef = useRef<ChartJS<"line">>(null);
 
@@ -157,15 +158,34 @@ export default function Graph() {
     },
   };
 
+  function handleDownloadClick() {
+    if (chartRef.current) {
+      if (chartRef.current === null) return;
+      // why is chartRef.current always never???
+      const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
+      saveAs(imageString, "chart.png");
+    }
+  }
+
   return (
-    <div className="flex flex-col text-gray-100 shadow-inner">
-      <div className="flex items-center justify-end gap-2 px-10 pt-2">
+    <div className="shadow-zinc-800/5 ring-zinc-900/5 dark:bg-zinc-800/30 dark:ring-white/10 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 backdrop-blur-sm dark:text-zinc-200 sm:bottom-[10px] sm:left-auto sm:right-[10px] sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-2/3">
+      {navigation.state === "loading" && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
+          <Spinner />
+        </div>
+      )}
+      <div className="flex w-full items-center justify-end gap-2 px-2 pt-2">
+        <button
+          onClick={handleDownloadClick}
+          className="inline-flex items-center justify-center"
+        >
+          <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
+        </button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+            <button className="inline-flex items-center justify-center">
               <ShareIcon className="mr-2 h-5 w-5" />
-              Share
-            </Button>
+            </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -177,26 +197,26 @@ export default function Graph() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Button
-          onClick={() => {
-            if (chartRef.current) {
-              if (chartRef.current === null) return;
-              // why is chartRef.current always never???
-              const imageString = chartRef.current.canvas.toDataURL(
-                "image/png",
-                1.0
-              );
-              saveAs(imageString, "chart.png");
-            }
-          }}
-          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
-          Download
-        </Button>
+        <a href="/explore">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+            aria-hidden="true"
+            className="h-6 w-6 text-zinc-500 transition hover:text-zinc-700 dark:text-zinc-400 hover:dark:text-zinc-100"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </a>
       </div>
       {loaderData.selectedSensors.length > 0 ? (
-        <div className="flex h-full w-full justify-center bg-white px-10">
+        <div className="flex h-full w-full justify-center bg-white">
           <Line
             data={lineData}
             options={options}
