@@ -3,7 +3,7 @@ import type { Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
-import BottomBar from "~/components/explore/device-details";
+import DeviceDetails from "~/components/explore/device-details";
 import { getDevice, getMeasurements } from "~/models/device.server";
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -57,7 +57,7 @@ export default function DeviceId() {
 
   // Rendering the BottomBar component with the device data
   return data?.device && data.selectedSensors ? (
-    <BottomBar device={data.device} selectedSensors={data.selectedSensors} />
+    <DeviceDetails device={data.device} selectedSensors={data.selectedSensors} />
   ) : null;
 }
 

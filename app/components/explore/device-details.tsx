@@ -26,7 +26,7 @@ export interface DeviceAndSelectedSensors {
   selectedSensors: Sensor[];
 }
 
-export default function BottomBar(data: DeviceAndSelectedSensors) {
+export default function DeviceDetails(data: DeviceAndSelectedSensors) {
   const navigation = useNavigation();
   // state variables
   // const [isOpen, setIsOpen] = useState<Boolean>(true);
