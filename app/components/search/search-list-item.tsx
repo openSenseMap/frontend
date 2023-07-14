@@ -1,6 +1,5 @@
 // import type { LngLatBounds, LngLatLike } from "react-map-gl";
-import { useNavigate } from "@remix-run/react";
-import { useSearchParams } from "@remix-run/react";
+import { useNavigate, useSearchParams } from "@remix-run/react";
 import { useMap } from "react-map-gl";
 
 import { goTo } from "~/lib/search-map-helper";

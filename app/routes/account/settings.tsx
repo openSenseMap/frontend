@@ -3,9 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import invariant from "tiny-invariant";
-import { updateUserlocale, verifyLogin } from "~/models/user.server";
-import { deleteUserByEmail } from "~/models/user.server";
-import { getUserByEmail } from "~/models/user.server";
+import { updateUserlocale, verifyLogin , deleteUserByEmail , getUserByEmail } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";

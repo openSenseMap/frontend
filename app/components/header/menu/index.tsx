@@ -1,7 +1,6 @@
-import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
+import { Form, Link, useNavigation, useSearchParams, useLoaderData } from "@remix-run/react";
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
-import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
 import {
   Bars3Icon,
