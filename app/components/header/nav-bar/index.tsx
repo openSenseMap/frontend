@@ -23,24 +23,20 @@ export default function NavBar(props: NavBarProps) {
 
   useEffect(() => {
     if (mapRef) {
-      mapRef.on("click", () => {
-        setOpen(false);
-      });
+      mapRef.on("click", close);
     }
   }, [mapRef]);
 
+  // register keyboard shortcuts
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
-        inputRef.current?.focus();
+        setOpen((prevState) => !prevState);
       }
       if (e.key === "Escape") {
         e.preventDefault();
-        setSearchString("");
         setOpen(false);
-        inputRef.current?.blur();
       }
     };
     document.addEventListener("keydown", down);
