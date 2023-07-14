@@ -1,4 +1,8 @@
-import type { LinksFunction, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type {
+  LinksFunction,
+  LoaderArgs,
+  V2_MetaFunction,
+} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -62,12 +66,6 @@ export const links: LinksFunction = () => {
   ];
 };
 
-export const meta: MetaFunction = () => ({
-  charset: "utf-8",
-  title: "openSenseMap",
-  viewport: "width=device-width,initial-scale=1",
-});
-
 export async function loader({ request }: LoaderArgs) {
   const locale = await i18next.getLocale(request);
   const user = await getUser(request);
@@ -85,7 +83,7 @@ export async function loader({ request }: LoaderArgs) {
   );
 }
 
-export let handle = {
+export const handle = {
   // In the handle export, we can add a i18n key with namespaces our route
   // will need to load. This key can be a single string or an array of strings.
   // TIP: In most cases, you should set this to your defaultNS from your i18n config
@@ -97,7 +95,7 @@ function App() {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
 
-  let { i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   // This hook will change the i18n instance language to the current locale
   // detected by the loader, this way, when we do something to change the
@@ -108,6 +106,8 @@ function App() {
   return (
     <html lang={data.locale} dir={i18n.dir()} className={clsx(theme)}>
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
         <Meta />
         <Links />
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />

@@ -7,5 +7,6 @@ module.exports = {
   serverDependenciesToBundle: ["chartjs-adapter-date-fns", "maplibre-gl"],
   future: {
     v2_errorBoundary: true,
+    v2_meta: true
   },
 };
