@@ -34,7 +34,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
-import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -49,7 +48,6 @@ export function useFirstRender() {
 export default function Menu() {
   const [searchParams] = useSearchParams();
   const redirectTo =
-    // @ts-ignore
     searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const data = useLoaderData<typeof loader>();
   const [open, setOpen] = useState(false);

@@ -22,7 +22,6 @@ export default function SearchListItem(props: SearchListItemProps) {
   const [searchParams] = useSearchParams();
   const navigateTo =
     (props.type === "device" ? `/explore/${props.item.deviceId}` : "/explore") +
-    // @ts-ignore
     (searchParams.size > 0 ? "?" + searchParams.toString() : "");
 
   // console.log(props.index)
