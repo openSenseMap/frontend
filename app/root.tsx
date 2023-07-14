@@ -1,8 +1,5 @@
-import type {
-  LinksFunction,
-  LoaderArgs,
-  V2_MetaFunction,
-} from "@remix-run/node";
+import { cssBundleHref } from "@remix-run/css-bundle";
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -15,8 +12,8 @@ import {
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
 import { getUser } from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css";
-import appStylesheetUrl from "./styles/app.css";
+import tailwindStylesheetUrl from "~/tailwind.css";
+import appStylesheetUrl from "~/app.css";
 import {
   NonFlashOfWrongThemeEls,
   ThemeProvider,
@@ -62,7 +59,9 @@ export const links: LinksFunction = () => {
     },
     { rel: "icon", href: "/favicon.ico" },
     { rel: "stylesheet", href: tailwindStylesheetUrl },
+    ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
     { rel: "stylesheet", href: appStylesheetUrl },
+    ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   ];
 };
 

@@ -1,4 +1,10 @@
-import { PassThrough } from "stream";
+/**
+ * By default, Remix will handle generating the HTTP Response for you.
+ * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` ✨
+ * For more information, see https://remix.run/docs/en/main/file-conventions/entry.server
+ */
+
+import { PassThrough } from "node:stream";
 import type { EntryContext } from "@remix-run/node";
 import { Response } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
@@ -12,7 +18,7 @@ import I18NexFsBackend from "i18next-fs-backend";
 import i18nextOptions from "./i18next-options"; // our i18n configuration file
 import { resolve } from "node:path";
 
-const ABORT_DELAY = 5000;
+const ABORT_DELAY = 5_000;
 
 global.ENV = getEnv();
 
@@ -28,12 +34,12 @@ export default async function handleRequest(
 
   // First, we create a new instance of i18next so every request will have a
   // completely unique instance and not share any state
-  let instance = createInstance();
+  const instance = createInstance();
 
   // Then we could detect locale from the request
-  let lng = await i18next.getLocale(request);
+  const lng = await i18next.getLocale(request);
   // And here we detect what namespaces the routes about to render want to use
-  let ns = i18next.getRouteNamespaces(remixContext);
+  const ns = i18next.getRouteNamespaces(remixContext);
 
   // First, we create a new instance of i18next so every request will have a
   // completely unique instance and not share any state.
