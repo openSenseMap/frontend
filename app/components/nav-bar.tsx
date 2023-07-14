@@ -8,7 +8,7 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { LogOut, Mailbox, Plus, Settings, User } from "lucide-react";
+// import { LogOut, Mailbox, Plus, Settings, User } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
 import { UserAvatar } from "~/routes/resources/user-avatar";
@@ -17,12 +17,12 @@ const sidebarNavItems = [
   {
     title: "Your profile",
     href: "/profile/me",
-    icon: <User size={24} />,
+    // icon: <User size={24} />,
   },
   {
     title: "Settings",
     href: "/settings",
-    icon: <Settings size={24} />,
+    // icon: <Settings size={24} />,
   },
 ];
 
@@ -52,10 +52,10 @@ export function NavBar() {
           {user ? (
             <>
               <Button variant="outline" size="icon">
-                <Plus className="h-4 w-4" />
+                {/* <Plus className="h-4 w-4" /> */}
               </Button>
               <Button variant="outline" size="icon" disabled>
-                <Mailbox className="h-4 w-4" />
+                {/* <Mailbox className="h-4 w-4" /> */}
               </Button>
               <Sheet>
                 <SheetTrigger asChild>
@@ -91,7 +91,7 @@ export function NavBar() {
                             type="submit"
                             className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
                           >
-                            <LogOut className="mr-2 h-5 w-5" />
+                            {/* <LogOut className="mr-2 h-5 w-5" /> */}
                             <span className="text-red-500">Sign out</span>
                           </button>
                         </Form>

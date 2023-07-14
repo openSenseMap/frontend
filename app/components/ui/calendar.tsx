@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import * as React from "react";
+// import { ChevronLeft, ChevronRight } from "lucide-react"
+import { DayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({
   className,
@@ -16,7 +16,6 @@ function Calendar({
   // disabled={ after: new Date() },
   ...props
 }: CalendarProps) {
-
   return (
     <DayPicker
       // disabled={disabled}
@@ -24,9 +23,10 @@ function Calendar({
       captionLayout="dropdown-buttons"
       fromYear={2014}
       toYear={2023}
-      className={cn("p-3","w-[300px]", "flex", "justify-center", className)}
+      className={cn("p-3", "w-[300px]", "flex", "justify-center", className)}
       classNames={{
-        dropdown: "rounded-lg w-fit h-7 py-0 px-[12px] border border-input hover:bg-accent bg-transparent hover:opacity-100 focus:ring-0",
+        dropdown:
+          "rounded-lg w-fit h-7 py-0 px-[12px] border border-input hover:bg-accent bg-transparent hover:opacity-100 focus:ring-0",
         caption_dropdowns: "flex space-x-1 items-center",
         // dropdown_month: "w-fit h-7 overflow-visible rounded-md border border-input",
         // dropdown_year: "w-fit h-7 overflow-visible rounded-md border border-input ",
@@ -62,14 +62,16 @@ function Calendar({
         vhidden: "hidden",
         ...classNames,
       }}
-      components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-      }}
+      components={
+        {
+          // IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+          // IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+        }
+      }
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
 
-export { Calendar }
+export { Calendar };

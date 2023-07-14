@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import { X } from "lucide-react";
+// import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export async function loader({ request }: LoaderArgs) {
@@ -77,8 +77,9 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  // @ts-ignore
-  const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore")
+  const redirectTo =
+    // @ts-ignore
+    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
@@ -118,7 +119,7 @@ export default function LoginPage() {
           }}
         >
           <button className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <X className="h-4 w-4" />
+            {/* <X className="h-4 w-4" /> */}
             <span className="sr-only">Close</span>
           </button>
         </Link>

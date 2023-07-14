@@ -13,7 +13,7 @@ import type { Prisma, Sensor } from "@prisma/client";
 import type { DeviceWithSensors } from "types";
 import Spinner from "../spinner";
 import { Card, CardContent } from "../ui/card";
-import { ChevronsUp, XCircle } from "lucide-react";
+// import { ChevronsUp, XCircle } from "lucide-react";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -78,7 +78,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
             </div> */}
             <div className="flex items-center bg-green-100 pr-2">
               <Link prefetch="intent" to="/explore">
-                <XCircle className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" />
+                {/* <XCircle className="h-6 w-6 cursor-pointer text-white lg:h-8 lg:w-8" /> */}
               </Link>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
             (!isOpen ? "visible" : "hidden")
           }
         >
-          <ChevronsUp className="h-6 w-6 text-green-900" />
+          {/* <ChevronsUp className="h-6 w-6 text-green-900" /> */}
         </div>
         <ToastPrimitive.Root
           open={toastOpen}

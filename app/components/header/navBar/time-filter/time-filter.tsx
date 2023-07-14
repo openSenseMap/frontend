@@ -4,12 +4,12 @@ import * as React from "react";
 // import { useSearchParams, useSubmit } from "@remix-run/react";
 import { format } from "date-fns";
 import { de, enGB } from "date-fns/locale";
-import {
-  Clock,
-  CalendarSearch,
-  CalendarClock,
-  CalendarIcon,
-} from "lucide-react";
+// import {
+//   Clock,
+//   CalendarSearch,
+//   CalendarClock,
+//   CalendarIcon,
+// } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -68,7 +68,7 @@ export function TimeFilter(props: TimeFilterProps) {
             )}
             onClick={() => props.setIsDialogOpen(true)}
           >
-            <CalendarIcon className="mr-2 h-5 w-5" />
+            {/* <CalendarIcon className="mr-2 h-5 w-5" /> */}
             {props.timeState === "live" ? (
               <span>Live</span>
             ) : props.timeState === "pointintime" ? (
@@ -115,15 +115,15 @@ export function TimeFilter(props: TimeFilterProps) {
           <Tabs defaultValue={props.timeState} className="w-full">
             <TabsList>
               <TabsTrigger value="live">
-                <Clock className="h-5 w-5 pr-1" />
+                {/* <Clock className="h-5 w-5 pr-1" /> */}
                 {t("live_label")}
               </TabsTrigger>
               <TabsTrigger value="pointintime">
-                <CalendarSearch className="h-5 w-5 pr-1" />
+                {/* <CalendarSearch className="h-5 w-5 pr-1" /> */}
                 {t("pointintime_label")}
               </TabsTrigger>
               <TabsTrigger value="timeperiod">
-                <CalendarClock className="h-5 w-5 pr-1" />
+                {/* <CalendarClock className="h-5 w-5 pr-1" /> */}
                 {t("timeperiod_label")}
               </TabsTrigger>
             </TabsList>

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "@remix-run/react";
 
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
-import { Cpu, Globe2, Pin } from "lucide-react";
+// import { Cpu, Globe2, Pin } from "lucide-react";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -162,7 +162,7 @@ export default function SearchList(props: SearchListProps) {
             active={searchResultsDeviceIndex === cursor}
             type="device"
             item={device}
-            icon={Cpu}
+            // icon={}
             setShowSearch={props.setShowSearch}
             setCursor={setCursor}
             controlPress={controlPress}
@@ -181,7 +181,7 @@ export default function SearchList(props: SearchListProps) {
             active={searchResultsLocationIndex === cursor}
             type="location"
             item={location}
-            icon={location.place_type.includes("country") ? Globe2 : Pin}
+            // icon={location.place_type.includes("country") ? Globe2 : Pin}
             setShowSearch={props.setShowSearch}
             setCursor={setCursor}
             controlPress={controlPress}

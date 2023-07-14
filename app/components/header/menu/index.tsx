@@ -2,24 +2,24 @@ import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
 import { useToast } from "@/components/ui/use-toast";
 import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
-import {
-  Cpu,
-  Euro,
-  ExternalLink,
-  Fingerprint,
-  Globe,
-  HelpCircle,
-  Lock,
-  LogIn,
-  LogOut,
-  Mail,
-  MenuIcon,
-  PlusCircle,
-  Puzzle,
-  Settings,
-  User,
-  Users,
-} from "lucide-react";
+// import {
+//   Cpu,
+//   Euro,
+//   ExternalLink,
+//   Fingerprint,
+//   Globe,
+//   HelpCircle,
+//   Lock,
+//   LogIn,
+//   LogOut,
+//   Mail,
+//   MenuIcon,
+//   PlusCircle,
+//   Puzzle,
+//   Settings,
+//   User,
+//   Users,
+// } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,11 +99,11 @@ export default function Menu() {
             type="button"
             className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
           >
-            {data.user === null ? (
+            {/* {data.user === null ? (
               <MenuIcon className="mx-auto h-6 w-6" />
             ) : (
               <User className="mx-auto h-6 w-6" />
-            )}
+            )} */}
           </button>
         </div>
       </DropdownMenuTrigger>
@@ -142,20 +142,20 @@ export default function Menu() {
               )}
               {data.profile && (
                 <DropdownMenuItem>
-                  <User className="mr-2 h-5 w-5" />
+                  {/* <User className="mr-2 h-5 w-5" /> */}
                   <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem>
-                <Settings className="mr-2 h-5 w-5" />
+                {/* <Settings className="mr-2 h-5 w-5" /> */}
                 <Link to="/settings/account">{t("settings_label")}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Cpu className="mr-2 h-5 w-5" />
+                {/* <Cpu className="mr-2 h-5 w-5" /> */}
                 <Link to="/profile/me">{t("my_devices_label")}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <PlusCircle className="mr-2 h-5 w-5" />
+                {/* <PlusCircle className="mr-2 h-5 w-5" /> */}
                 <span>{t("add_device_label")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -164,46 +164,46 @@ export default function Menu() {
           <DropdownMenuGroup>
             <Link to="https://docs.sensebox.de/" target="_blank">
               <DropdownMenuItem>
-                <Puzzle className="mr-2 h-5 w-5" />
+                {/* <Puzzle className="mr-2 h-5 w-5" /> */}
                 <span>{t("tutorials_label")}</span>
-                <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+                {/* <ExternalLink className="ml-auto h-4 w-4 text-gray-300" /> */}
               </DropdownMenuItem>
             </Link>
             <Link to="https://docs.opensensemap.org/" target="_blank">
               <DropdownMenuItem>
-                <Globe className="mr-2 h-5 w-5" />
+                {/* <Globe className="mr-2 h-5 w-5" /> */}
                 <span>{t("api_docs_label")}</span>
-                <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+                {/* <ExternalLink className="ml-auto h-4 w-4 text-gray-300" /> */}
               </DropdownMenuItem>
             </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <HelpCircle className="mr-2 h-5 w-5" />
+              {/* <HelpCircle className="mr-2 h-5 w-5" /> */}
               <span>{t("faq_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Mail className="mr-2 h-5 w-5" />
+              {/* <Mail className="mr-2 h-5 w-5" /> */}
               <span>{t("contact_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Fingerprint className="mr-2 h-5 w-5" />
+              {/* <Fingerprint className="mr-2 h-5 w-5" /> */}
               <span>{t("imprint_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Lock className="mr-2 h-5 w-5" />
+              {/* <Lock className="mr-2 h-5 w-5" /> */}
               <span>{t("data_protection_label")}</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <Euro className="mr-2 h-5 w-5" />
+              {/* <Euro className="mr-2 h-5 w-5" /> */}
               <span>{t("donate_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Users className="mr-2 h-5 w-5" />
+              {/* <Users className="mr-2 h-5 w-5" /> */}
               <span>{t("promotion_label")}</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -218,7 +218,7 @@ export default function Menu() {
                 onClick={() => setOpen(false)}
               >
                 <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
-                  <LogIn className="mr-2 h-5 w-5" />
+                  {/* <LogIn className="mr-2 h-5 w-5" /> */}
                   <span className="text-green-100">{t("login_label")}</span>
                 </button>
               </Link>
@@ -239,7 +239,7 @@ export default function Menu() {
                   className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
                   disabled={isLoggingOut}
                 >
-                  <LogOut className="mr-2 h-5 w-5" />
+                  {/* <LogOut className="mr-2 h-5 w-5" /> */}
                   <span className="text-red-500">{t("logout_label")}</span>
                 </button>
               </Form>

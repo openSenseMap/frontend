@@ -17,7 +17,7 @@ import {
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { getInitials, getUserImgSrc } from "~/utils/misc";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Info, Plus } from "lucide-react";
+// import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
 
@@ -200,7 +200,7 @@ export default function () {
             <div className="flex justify-between">
               <div className="flex flex-col">
                 <div className="flex">
-                  <Info className="h-4 w-4" />
+                  {/* <Info className="h-4 w-4" /> */}
                   <AlertTitle className="ml-4">
                     You have no device registered
                   </AlertTitle>
@@ -210,14 +210,14 @@ export default function () {
                 </AlertDescription>
               </div>
               <Button variant="outline" size="icon">
-                <Plus className="h-4 w-4" />
+                {/* <Plus className="h-4 w-4" /> */}
               </Button>
             </div>
           </Alert>
         ) : null}
         {(userOptional?.id === user?.id || user?.devices?.length) === 0 ? (
           <Alert>
-            <Info className="h-4 w-4" />
+            {/* <Info className="h-4 w-4" /> */}
             <AlertTitle className="ml-6">
               This user has no public devices.
             </AlertTitle>

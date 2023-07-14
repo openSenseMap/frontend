@@ -10,7 +10,7 @@ interface SearchListItemProps {
   active: boolean;
   type: String;
   item: any;
-  icon: any;
+  icon?: any;
   setShowSearch: (data: boolean) => void;
   setCursor: (data: number) => void;
   controlPress: boolean;
@@ -45,7 +45,7 @@ export default function SearchListItem(props: SearchListItemProps) {
           <kbd>{props.index + 1}</kbd>
         </div>
       ) : null}
-      <props.icon className="h-8 w-8 pl-2" />
+      {/* <props.icon className="h-8 w-8 pl-2" /> */}
       <span className="inline-block pl-2 align-middle">
         {props.type === "device"
           ? props.item.display_name

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import type { Variants } from "framer-motion";
 import type { Feature } from "~/lib/directus";
 import FeatureCard from "./features-card";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+// import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type FeaturesProps = {
   data: Feature[];
@@ -119,7 +119,7 @@ export default function FeaturesCarousel({ data }: FeaturesProps) {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-2 py-2 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white md:px-3 md:py-3"
           >
-            <ArrowLeft className="z-20 h-2 w-2 hover:text-white md:h-6 md:w-6" />
+            {/* <ArrowLeft className="z-20 h-2 w-2 hover:text-white md:h-6 md:w-6" /> */}
             <span className="duration-400 ease absolute left-0 top-1/2 block h-0 w-full bg-green-300 opacity-100 transition-all group-hover:top-0 group-hover:h-full"></span>
             <span className="ease absolute left-1/2 flex h-10 w-10 -translate-x-1/2 transform items-center justify-start duration-300 group-hover:translate-x-4"></span>
           </motion.div>
@@ -178,7 +178,7 @@ export default function FeaturesCarousel({ data }: FeaturesProps) {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             className="group relative inline-flex items-center overflow-hidden rounded-full border-2 border-green-300 px-2 py-2 text-lg font-medium text-green-300 hover:bg-gray-50 hover:text-white md:px-3 md:py-3"
           >
-            <ArrowRight className="z-20 h-2 w-2 hover:text-white md:h-6 md:w-6" />
+            {/* <ArrowRight className="z-20 h-2 w-2 hover:text-white md:h-6 md:w-6" /> */}
             <span className="duration-400 ease absolute left-0 top-1/2 block h-0 w-full bg-green-300 opacity-100 transition-all group-hover:top-0 group-hover:h-full"></span>
             <span className="ease absolute left-1/2 flex h-10 w-10 -translate-x-1/2 transform items-center justify-start duration-300 group-hover:translate-x-4"></span>
           </motion.div>

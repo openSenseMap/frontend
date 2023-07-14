@@ -1,4 +1,4 @@
-import { Circle } from "lucide-react";
+// import { Circle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -24,7 +24,7 @@ export default function DeviceCard({ device }: DeviceCardProps) {
       <CardContent>
         <div className="flex space-x-4 text-sm text-muted-foreground">
           <div className="flex items-center">
-            <Circle className="mr-1 h-3 w-3" fill="green" />
+            {/* <Circle className="mr-1 h-3 w-3" fill="green" /> */}
             {device.model}
           </div>
           <div>Updated {device.updatedAt.toString()}</div>

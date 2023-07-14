@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Switch } from "./ui/switch";
 import type { loader } from "~/routes/explore";
 import { useTranslation } from "react-i18next";
-import { User } from "lucide-react";
+// import { User } from "lucide-react";
 
 export default function ProfileVisibilitySwitch() {
   const { t } = useTranslation("menu");
@@ -69,7 +69,7 @@ export default function ProfileVisibilitySwitch() {
             "relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
           }
         >
-          <User className="mr-2 h-5 w-5" />
+          {/* <User className="mr-2 h-5 w-5" /> */}
           <span>{t("profile_label")}</span>
         </div>
       </Link>

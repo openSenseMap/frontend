@@ -2,7 +2,7 @@ import type { Device } from "@prisma/client";
 import { Exposure } from "@prisma/client";
 import { useNavigate } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Box, Rocket } from "lucide-react";
+// import { Box, Rocket } from "lucide-react";
 import type { MarkerProps } from "react-map-gl";
 import { Marker, useMap } from "react-map-gl";
 import { cn } from "~/lib/utils";
@@ -13,7 +13,7 @@ interface BoxMarkerProps extends MarkerProps {
 
 const getStatusColor = (device: Device) => {
   if (device.status === "ACTIVE") {
-    if(device.exposure === Exposure.MOBILE) {
+    if (device.exposure === Exposure.MOBILE) {
       return "bg-blue-100";
     }
     return "bg-green-100";
@@ -22,7 +22,7 @@ const getStatusColor = (device: Device) => {
   } else {
     return "bg-gray-100 opacity-50";
   }
-}
+};
 
 export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
   const navigate = useNavigate();
@@ -46,11 +46,11 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
               isFullZoom && `${getStatusColor(device)} p-1`
             )}
           >
-            {device.exposure === Exposure.MOBILE ? (
+            {/* {device.exposure === Exposure.MOBILE ? (
               <Rocket className="h-4 w-4" />
             ) : (
               <Box className="h-4 w-4" />
-            )}
+            )} */}
             {isFullZoom && device.status === "ACTIVE" ? (
               <div
                 className={cn(
@@ -63,7 +63,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           {isFullZoom ? (
             <motion.span
               layoutId={device.id}
-              className="max-w-[100px] overflow-hidden overflow-ellipsis group-hover:max-w-fit group-hover:overflow-auto whitespace-nowrap px-1"
+              className="max-w-[100px] overflow-hidden overflow-ellipsis whitespace-nowrap px-1 group-hover:max-w-fit group-hover:overflow-auto"
               initial={{ opacity: 0, translateX: -20 }}
               animate={{ opacity: 1, translateX: 0 }}
               exit={{ opacity: 0, translateX: -20 }}
