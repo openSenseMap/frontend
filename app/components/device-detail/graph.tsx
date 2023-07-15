@@ -26,9 +26,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { ShareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import ShareLink from "./share-link";
 import Spinner from "../spinner";
+import { Download, Share2, X } from "lucide-react";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -168,24 +168,22 @@ export default function Graph() {
   }
 
   return (
-    <div className="shadow-zinc-800/5 ring-zinc-900/5 dark:bg-zinc-800/30 dark:ring-white/10 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 backdrop-blur-sm dark:text-zinc-200 sm:bottom-[10px] sm:left-auto sm:right-[10px] sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-2/3">
+    <div className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[10px] sm:left-auto sm:right-[10px] sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-2/3">
       {navigation.state === "loading" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
+        <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
           <Spinner />
         </div>
       )}
-      <div className="flex w-full items-center justify-end gap-2 px-2 pt-2">
+      <div className="flex w-full items-center justify-end gap-4 px-2 pt-2">
         <button
           onClick={handleDownloadClick}
           className="inline-flex items-center justify-center"
         >
-          <ArrowDownTrayIcon className="mr-2 h-5 w-5"></ArrowDownTrayIcon>
+          <Download />
         </button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button className="inline-flex items-center justify-center">
-              <ShareIcon className="mr-2 h-5 w-5" />
-            </button>
+            <Share2 />
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -198,22 +196,9 @@ export default function Graph() {
           </AlertDialogContent>
         </AlertDialog>
         <a href="/explore">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            aria-hidden="true"
-            className="h-6 w-6 text-zinc-500 transition hover:text-zinc-700 dark:text-zinc-400 hover:dark:text-zinc-100"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
+          <X />
         </a>
+        di
       </div>
       {loaderData.selectedSensors.length > 0 ? (
         <div className="flex h-full w-full justify-center bg-white">
