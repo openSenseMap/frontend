@@ -301,47 +301,57 @@ export default function CampaignArea() {
         <img className="w-full" id="gradient" src="" alt="legend-gradient" />
       </div> */}
       <div className="flex w-2/3 flex-col gap-3">
-        <h1 className="ml-2 text-lg font-bold">
-          {t("define area of interest")}
-        </h1>
-        <Card>
-          <CardHeader>
-            <CardTitle>Option 1: </CardTitle>
-            <CardDescription>{t("draw area on the map")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => setDrawPopoverOpen(!drawPopoverOpen)}>
-              {t("draw")}
-            </Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Option 2: </CardTitle>
-            <CardDescription>{t("import geojson")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>{t("import")}</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>{t("upload geojson file")}</DialogTitle>
-                  <DialogDescription>
-                    {t("upload a valid geojson file here")}
-                  </DialogDescription>
-                </DialogHeader>
-                <input type="file" accept=".geojson" ref={fileInputRef} />
-                <DialogFooter>
-                  <DialogClose>
-                    <Button onClick={handleFileUpload}>{t("select")}</Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
+        <div className="m-2 flex flex-col gap-1">
+          <h1 className="text-lg font-bold">{t("define area of interest")}</h1>
+          <span>
+            Bestimme zunächst das Gebiet, in dem deine Kampagne stattfinden
+            soll.
+          </span>
+          <span>Wähle hierfür eine der folgenden Optionen:</span>
+        </div>
+        <div className="m-4 flex gap-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="whitespace-nowrap">Option 1: </CardTitle>
+              <CardDescription>{t("draw area on the map")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                className="float-right m-2"
+                onClick={() => setDrawPopoverOpen(!drawPopoverOpen)}
+              >
+                {t("draw")}
+              </Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="whitespace-nowrap">Option 2: </CardTitle>
+              <CardDescription>{t("import geojson")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="float-right m-2">{t("import")}</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>{t("upload geojson file")}</DialogTitle>
+                    <DialogDescription>
+                      {t("upload a valid geojson file here")}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <input type="file" accept=".geojson" ref={fileInputRef} />
+                  <DialogFooter>
+                    <DialogClose>
+                      <Button onClick={handleFileUpload}>{t("select")}</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       <div
         id="view-wrapper"
