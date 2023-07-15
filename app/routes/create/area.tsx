@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 import zoomToExtent from "~/lib/zoom-to-extent";
 import normalize from "@mapbox/geojson-normalize";
+import bbox from "@turf/bbox";
 
 export const links: LinksFunction = () => {
   return [
@@ -214,6 +215,11 @@ export default function CampaignArea() {
             toast({
               title: "Erfolgreich importiert",
             });
+            const bounds = bbox(normalized_geojson);
+            mapRef.current.fitBounds(bounds, {
+              padding: 50,
+              duration: 1000,
+            });
           } else {
             console.error("Invalid GeoJSON file");
             // Display an error message to the user or handle the error appropriately
@@ -336,12 +342,12 @@ export default function CampaignArea() {
       >
         <div className="h-full w-full" id="view">
           <div className="absolute right-4 top-4 z-50 ml-auto">
-            <Button
+            {/* <Button
               disabled={Object.keys(features).length === 0}
               onClick={() => zoomToExtent(mapRef.current, features[0])}
             >
               {t("Zoom to area")} <ZoomInIcon className="mx-2 h-4 w-4" />
-            </Button>
+            </Button> */}
             <Link to={"/create/form"} className="ml-2">
               <Button
                 // className="absolute right-4 top-4 z-50 ml-auto"
