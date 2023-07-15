@@ -239,6 +239,7 @@ export default function CampaignArea() {
   };
 
   const onUpdate = useCallback((e: any) => {
+    setGeojsonUploadData(null);
     if (e.features[0].properties.radius) {
       const coordinates = [
         e.features[0].geometry.coordinates[0],
@@ -416,7 +417,7 @@ export default function CampaignArea() {
                   <Layer
                     type="fill"
                     paint={{
-                      "fill-color": "#ff0000",
+                      "fill-color": "#555555",
                       "fill-opacity": 0.5,
                     }}
                   />
