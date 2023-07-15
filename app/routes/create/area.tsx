@@ -1,7 +1,13 @@
 import Map from "~/components/Map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import DrawControl from "~/components/Map/draw-control";
-import { Layer, Source } from "react-map-gl";
+import {
+  Layer,
+  MapLayerMouseEvent,
+  Popup,
+  PopupProps,
+  Source,
+} from "react-map-gl";
 import { MapProvider } from "react-map-gl";
 import { useCallback, useContext, useState, useRef, useEffect } from "react";
 import {
@@ -45,6 +51,7 @@ import {
   ChevronRightIcon,
   ArrowRightCircleIcon,
   ArrowRightIcon,
+  TrashIcon,
 } from "lucide-react";
 import zoomToExtent from "~/lib/zoom-to-extent";
 
@@ -68,6 +75,7 @@ export const links: LinksFunction = () => {
 export default function CampaignArea() {
   const { t } = useTranslation("campaign-area");
   const { toast } = useToast();
+  const [popup, setPopup] = useState<PopupProps | false>();
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
@@ -162,6 +170,31 @@ export default function CampaignArea() {
   //     });
   //   }
   // }, [container, convertedData]);
+
+  const handleMapClick = useCallback((e: MapLayerMouseEvent) => {
+    const { lngLat } = e;
+    setPopup({
+      latitude: lngLat.lat,
+      longitude: lngLat.lng,
+      className: "p-4",
+      children: (
+        <div className="my-2">
+          <Button
+            onClick={() => {
+              setGeojsonUploadData(null);
+              setFeatures({});
+              setPopup(false);
+            }}
+            variant={"outline"}
+            size={"sm"}
+            className="float-right"
+          >
+            <TrashIcon className="h-4 w-4 text-red-500" /> Delete
+          </Button>
+        </div>
+      ),
+    });
+  }, []);
 
   const handleFileUpload = (event: any) => {
     const file = event.target.files[0];
@@ -331,6 +364,7 @@ export default function CampaignArea() {
                 right: 0,
               }}
               // onLoad={onLoad}
+              onClick={handleMapClick}
             >
               <GeocoderControl
                 language="de"
@@ -375,6 +409,13 @@ export default function CampaignArea() {
                     }}
                   />
                 </Source>
+              )}
+              {popup && (
+                <Popup
+                  {...popup}
+                  anchor="bottom"
+                  onClose={() => setPopup(false)}
+                />
               )}
             </Map>
           </MapProvider>
