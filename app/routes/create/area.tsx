@@ -269,23 +269,18 @@ export default function CampaignArea() {
         className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3"
       >
         <div className="h-full w-full" id="view">
-          <div className="absolute right-4 top-4 z-50 ml-auto">
-            {/* <Button
+          <Link
+            to={"/create/form"}
+            className="absolute right-4 top-4 z-50 ml-auto"
+          >
+            <Button
+              // className="absolute right-4 top-4 z-50 ml-auto"
               disabled={Object.keys(features).length === 0}
-              onClick={() => zoomToExtent(mapRef.current, features[0])}
             >
-              {t("Zoom to area")} <ZoomInIcon className="mx-2 h-4 w-4" />
-            </Button> */}
-            <Link to={"/create/form"} className="ml-2">
-              <Button
-                // className="absolute right-4 top-4 z-50 ml-auto"
-                disabled={Object.keys(features).length === 0}
-              >
-                {t("next")}
-                <ArrowRightIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
+              {t("next")}
+              <ArrowRightIcon className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
           <DefineAreaMap
             setFeatures={setFeatures}
             drawPopoverOpen={drawPopoverOpen}
