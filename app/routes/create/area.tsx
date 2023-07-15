@@ -220,9 +220,13 @@ export default function CampaignArea() {
               padding: 50,
               duration: 1000,
             });
+            setPopup(false);
           } else {
-            console.error("Invalid GeoJSON file");
-            // Display an error message to the user or handle the error appropriately
+            toast({
+              title: "Importieren fehlgeschlagen!",
+              description:
+                "Laden Sie nur Dateien hoch, die valides GeoJSON enthalten",
+            });
           }
         }
       };
