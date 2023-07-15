@@ -174,30 +174,35 @@ export default function CampaignArea() {
   //   }
   // }, [container, convertedData]);
 
-  const handleMapClick = useCallback((e: MapLayerMouseEvent) => {
-    const { lngLat } = e;
-    setPopup({
-      latitude: lngLat.lat,
-      longitude: lngLat.lng,
-      className: "p-4",
-      children: (
-        <div className="my-2">
-          <Button
-            onClick={() => {
-              setGeojsonUploadData(null);
-              setFeatures({});
-              setPopup(false);
-            }}
-            variant={"outline"}
-            size={"sm"}
-            className="float-right"
-          >
-            <TrashIcon className="h-4 w-4 text-red-500" /> Delete
-          </Button>
-        </div>
-      ),
-    });
-  }, []);
+  const handleMapClick = useCallback(
+    (e: MapLayerMouseEvent) => {
+      if (geojsonUploadData != null) {
+        const { lngLat } = e;
+        setPopup({
+          latitude: lngLat.lat,
+          longitude: lngLat.lng,
+          className: "p-4",
+          children: (
+            <div className="my-2">
+              <Button
+                onClick={() => {
+                  setGeojsonUploadData(null);
+                  setFeatures({});
+                  setPopup(false);
+                }}
+                variant={"outline"}
+                size={"sm"}
+                className="float-right"
+              >
+                <TrashIcon className="h-4 w-4 text-red-500" /> Delete
+              </Button>
+            </div>
+          ),
+        });
+      }
+    },
+    [geojsonUploadData, setFeatures]
+  );
 
   const handleFileUpload = (event: any) => {
     if (fileInputRef.current != null) {
