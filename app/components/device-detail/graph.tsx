@@ -29,6 +29,7 @@ import {
 import ShareLink from "./share-link";
 import Spinner from "../spinner";
 import { Download, Share2, X } from "lucide-react";
+import DatePickerGraph from "./date-picker-graph";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -174,31 +175,33 @@ export default function Graph() {
           <Spinner />
         </div>
       )}
-      <div className="flex w-full items-center justify-end gap-4 px-2 pt-2">
-        <button
-          onClick={handleDownloadClick}
-          className="inline-flex items-center justify-center"
-        >
-          <Download />
-        </button>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Share2 />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Share this link</AlertDialogTitle>
-              <ShareLink />
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Close</AlertDialogCancel>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <a href="/explore">
-          <X />
-        </a>
-        di
+      <div className="flex items-center justify-between px-2 pt-2">
+        <DatePickerGraph />
+        <div className="flex items-center justify-end gap-4">
+          <button
+            onClick={handleDownloadClick}
+            className="inline-flex items-center justify-center"
+          >
+            <Download />
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Share2 />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Share this link</AlertDialogTitle>
+                <ShareLink />
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <a href="/explore">
+            <X />
+          </a>
+        </div>
       </div>
       {loaderData.selectedSensors.length > 0 ? (
         <div className="flex h-full w-full justify-center bg-white">
