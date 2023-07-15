@@ -30,6 +30,7 @@ import ShareLink from "./share-link";
 import Spinner from "../spinner";
 import { Download, LineChart, Minus, Share2, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
+import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 
 // Registering Chart.js components that will be used in the graph
@@ -48,7 +49,10 @@ export default function Graph(isParentOpen: boolean) {
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const [open, setOpen] = useState(true);
+  const [offsetPositionX, setOffsetPositionX] = useState(0);
+  const [offsetPositionY, setOffsetPositionY] = useState(0);
 
+  const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
 
   // Formatting the data for the Line component
@@ -170,17 +174,34 @@ export default function Graph(isParentOpen: boolean) {
     }
   }
 
+  function handleDrag(e: any, data: DraggableData) {
+    setOffsetPositionX(data.x);
+    setOffsetPositionY(data.y);
+  }
+
   return (
     <>
       {open && (
-        <Draggable>
-          <div className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-[calc(100vw-(25vw+30px))]">
+        <Draggable
+          nodeRef={nodeRef}
+          bounds="#osem"
+          handle="#graphTop"
+          defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
+          onDrag={handleDrag}
+        >
+          <div
+            ref={nodeRef}
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-[calc(100vw-(25vw+30px))]"
+          >
             {navigation.state === "loading" && (
               <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
                 <Spinner />
               </div>
             )}
-            <div className="flex items-center justify-between px-2 pt-2">
+            <div
+              className="flex cursor-move items-center justify-between px-2 pt-2"
+              id="graphTop"
+            >
               <DatePickerGraph />
               <div className="flex items-center justify-end gap-4">
                 <button
