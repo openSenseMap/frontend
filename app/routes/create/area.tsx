@@ -81,6 +81,7 @@ export default function CampaignArea() {
   const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
   const mapRef: any = useRef();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const mouseData: any[][] = [];
 
   // const [container, setContainer] = useState<HTMLElement | undefined>(
@@ -198,26 +199,31 @@ export default function CampaignArea() {
   }, []);
 
   const handleFileUpload = (event: any) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e?.target?.result;
-      if (content && typeof content === "string") {
-        const geojson = JSON.parse(content);
-        if (valid(geojson)) {
-          const normalized_geojson = normalize(geojson);
-          setGeojsonUploadData(normalized_geojson);
-          setFeatures(normalized_geojson);
-          toast({
-            title: "Erfolgreich importiert",
-          });
-        } else {
-          console.error("Invalid GeoJSON file");
-          // Display an error message to the user or handle the error appropriately
+    if (fileInputRef.current != null) {
+      const file = fileInputRef.current.files?.[0];
+      // const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e?.target?.result;
+        if (content && typeof content === "string") {
+          const geojson = JSON.parse(content);
+          if (valid(geojson)) {
+            const normalized_geojson = normalize(geojson);
+            setGeojsonUploadData(normalized_geojson);
+            setFeatures(normalized_geojson);
+            toast({
+              title: "Erfolgreich importiert",
+            });
+          } else {
+            console.error("Invalid GeoJSON file");
+            // Display an error message to the user or handle the error appropriately
+          }
         }
+      };
+      if (file) {
+        reader.readAsText(file);
       }
-    };
-    reader.readAsText(file);
+    }
   };
 
   const onUpdate = useCallback((e: any) => {
@@ -313,14 +319,10 @@ export default function CampaignArea() {
                     {t("upload a valid geojson file here")}
                   </DialogDescription>
                 </DialogHeader>
-                <input
-                  type="file"
-                  accept=".geojson"
-                  onChange={handleFileUpload}
-                />
+                <input type="file" accept=".geojson" ref={fileInputRef} />
                 <DialogFooter>
                   <DialogClose>
-                    <Button>{t("select")}</Button>
+                    <Button onClick={handleFileUpload}>{t("select")}</Button>
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>
