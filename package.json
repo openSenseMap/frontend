@@ -43,6 +43,7 @@
     "@heroicons/react": "^2.0.15",
     "@hookform/resolvers": "^3.1.1",
     "@mantine/hooks": "^6.0.8",
+    "@mapbox/geojson-normalize": "^0.0.1",
     "@mapbox/mapbox-gl-draw": "^1.4.1",
     "@maplibre/maplibre-gl-geocoder": "^1.5.0",
     "@novu/notification-center": "^0.15.0",

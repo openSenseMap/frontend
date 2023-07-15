@@ -54,6 +54,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import zoomToExtent from "~/lib/zoom-to-extent";
+import normalize from "@mapbox/geojson-normalize";
 
 export const links: LinksFunction = () => {
   return [
@@ -204,12 +205,9 @@ export default function CampaignArea() {
       if (content && typeof content === "string") {
         const geojson = JSON.parse(content);
         if (valid(geojson)) {
-          setGeojsonUploadData(geojson);
-          if (geojson.type === "FeatureCollection") {
-            setFeatures(geojson.features);
-          } else if (geojson.type === "Feature") {
-            setFeatures([geojson]);
-          }
+          const normalized_geojson = normalize(geojson);
+          setGeojsonUploadData(normalized_geojson);
+          setFeatures(normalized_geojson);
           toast({
             title: "Erfolgreich importiert",
           });
