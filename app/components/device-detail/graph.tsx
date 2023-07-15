@@ -28,8 +28,9 @@ import {
 } from "../ui/alert-dialog";
 import ShareLink from "./share-link";
 import Spinner from "../spinner";
-import { ChevronRight, Download, Minus, Share2, X } from "lucide-react";
+import { Download, LineChart, Minus, Share2, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
+import Draggable from "react-draggable";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -171,60 +172,66 @@ export default function Graph(isParentOpen: boolean) {
 
   return (
     <>
-      {(open && isParentOpen) && (
-        <div className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-[calc(100vw-(25vw+30px))]">
-          {navigation.state === "loading" && (
-            <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-              <Spinner />
+      {open && (
+        <Draggable>
+          <div className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-[calc(100vw-(25vw+30px))]">
+            {navigation.state === "loading" && (
+              <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+                <Spinner />
+              </div>
+            )}
+            <div className="flex items-center justify-between px-2 pt-2">
+              <DatePickerGraph />
+              <div className="flex items-center justify-end gap-4">
+                <button
+                  onClick={handleDownloadClick}
+                  className="inline-flex items-center justify-center"
+                >
+                  <Download />
+                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Share2 />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Share this link</AlertDialogTitle>
+                      <ShareLink />
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Close</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Minus
+                  className="cursor-pointer"
+                  onClick={() => setOpen(false)}
+                />
+                <X />
+              </div>
             </div>
-          )}
-          <div className="flex items-center justify-between px-2 pt-2">
-            <DatePickerGraph />
-            <div className="flex items-center justify-end gap-4">
-              <button
-                onClick={handleDownloadClick}
-                className="inline-flex items-center justify-center"
-              >
-                <Download />
-              </button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Share2 />
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Share this link</AlertDialogTitle>
-                    <ShareLink />
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Close</AlertDialogCancel>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Minus
-                className="cursor-pointer"
-                onClick={() => setOpen(false)}
-              />
-              <X />
+            <div className="flex h-full w-full justify-center bg-white">
+              <Line
+                data={lineData}
+                options={options}
+                ref={chartRef}
+                // activate this to set the chart backgroundColor but then the reference lines dissapear
+                // plugins={[lineChartBackground]}
+              ></Line>
             </div>
           </div>
-          <div className="flex h-full w-full justify-center bg-white">
-            <Line
-              data={lineData}
-              options={options}
-              ref={chartRef}
-              // activate this to set the chart backgroundColor but then the reference lines dissapear
-              // plugins={[lineChartBackground]}
-            ></Line>
-          </div>
-        </div>
+        </Draggable>
       )}
-      {(!open && isParentOpen) && (
+      {!open && (
         <div
           onClick={() => setOpen(true)}
-          className="absolute cursor-pointer bottom-28 left-4 right-4 top-6 z-40 flex rounded-xl bg-white px-4 py-4 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
+          className={
+            isParentOpen
+              ? "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
+              : "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(24px+32px+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
+          }
         >
-          <ChevronRight />
+          <LineChart />
         </div>
       )}
     </>
