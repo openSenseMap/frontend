@@ -213,7 +213,10 @@ export default function CampaignArea() {
             setGeojsonUploadData(normalized_geojson);
             setFeatures(normalized_geojson);
             toast({
-              title: "Erfolgreich importiert",
+              title: `${t("imported sucessfully")}`,
+              description: `${normalized_geojson.features.length} ${t(
+                "features added"
+              )}`,
             });
             const bounds = bbox(normalized_geojson);
             mapRef.current.fitBounds(bounds, {
@@ -223,9 +226,8 @@ export default function CampaignArea() {
             setPopup(false);
           } else {
             toast({
-              title: "Importieren fehlgeschlagen!",
-              description:
-                "Laden Sie nur Dateien hoch, die valides GeoJSON enthalten",
+              title: `${t("import failed")}`,
+              description: `${t("upload a file that contains valid geojson")}`,
             });
           }
         }
