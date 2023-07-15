@@ -1,6 +1,4 @@
-import Map from "~/components/Map";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import DrawControl from "~/components/Map/draw-control";
 import {
   Layer,
   MapLayerMouseEvent,
@@ -8,7 +6,6 @@ import {
   PopupProps,
   Source,
 } from "react-map-gl";
-import { MapProvider } from "react-map-gl";
 import { useCallback, useContext, useState, useRef, useEffect } from "react";
 import {
   Card,
@@ -19,13 +16,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { FeatureContext } from "../create";
-import GeocoderControl from "~/components/Map/geocoder-control";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import { Link } from "@remix-run/react";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import type { LinksFunction } from "@remix-run/server-runtime";
-import circleToPolygon from "circle-to-polygon";
 import {
   Dialog,
   DialogClose,
@@ -37,25 +32,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { valid } from "geojson-validation";
-import {
-  Popover,
-  PopoverContent,
-  PopoverArrow,
-  PopoverAnchor,
-} from "@/components/ui/popover";
 import h337, { Heatmap } from "heatmap.js";
 import { useTranslation } from "react-i18next";
 import { useToast } from "~/components/ui/use-toast";
-import {
-  ZoomInIcon,
-  ChevronRightIcon,
-  ArrowRightCircleIcon,
-  ArrowRightIcon,
-  TrashIcon,
-} from "lucide-react";
-import zoomToExtent from "~/lib/zoom-to-extent";
+import { ArrowRightIcon } from "lucide-react";
 import normalize from "@mapbox/geojson-normalize";
 import bbox from "@turf/bbox";
+import DefineAreaMap from "~/components/campaigns/area/map";
 
 export const links: LinksFunction = () => {
   return [
@@ -174,36 +157,6 @@ export default function CampaignArea() {
   //   }
   // }, [container, convertedData]);
 
-  const handleMapClick = useCallback(
-    (e: MapLayerMouseEvent) => {
-      if (geojsonUploadData != null) {
-        const { lngLat } = e;
-        setPopup({
-          latitude: lngLat.lat,
-          longitude: lngLat.lng,
-          className: "p-4",
-          children: (
-            <div className="my-2">
-              <Button
-                onClick={() => {
-                  setGeojsonUploadData(null);
-                  setFeatures({});
-                  setPopup(false);
-                }}
-                variant={"outline"}
-                size={"sm"}
-                className="float-right"
-              >
-                <TrashIcon className="h-4 w-4 text-red-500" /> Delete
-              </Button>
-            </div>
-          ),
-        });
-      }
-    },
-    [geojsonUploadData, setFeatures]
-  );
-
   const handleFileUpload = (event: any) => {
     if (fileInputRef.current != null) {
       const file = fileInputRef.current.files?.[0];
@@ -242,53 +195,6 @@ export default function CampaignArea() {
       }
     }
   };
-
-  const onUpdate = useCallback((e: any) => {
-    setGeojsonUploadData(null);
-    if (e.features[0].properties.radius) {
-      const coordinates = [
-        e.features[0].geometry.coordinates[0],
-        e.features[0].geometry.coordinates[1],
-      ]; //[lon, lat]
-      const radius = parseInt(e.features[0].properties.radius); // in meters
-      const options = { numberOfEdges: 32 }; //optional, defaults to { numberOfEdges: 32 }
-
-      const polygon = circleToPolygon(coordinates, radius, options);
-      const updatedFeatures = {
-        type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: polygon.coordinates[0].map((c) => {
-            return [c[0], c[1]];
-          }),
-        },
-        properties: {
-          radius: radius,
-          centerpoint: e.features[0].geometry.coordinates,
-        },
-      };
-      console.log(updatedFeatures);
-      setFeatures(updatedFeatures);
-    } else {
-      setFeatures((currFeatures: any) => {
-        const updatedFeatures = e.features.map((f: any) => {
-          return { ...f };
-        });
-        console.log(updatedFeatures);
-        return updatedFeatures;
-      });
-    }
-  }, []);
-
-  const onDelete = useCallback((e: any) => {
-    setFeatures((currFeatures: any) => {
-      const newFeatures = { ...currFeatures };
-      for (const f of e.features) {
-        delete newFeatures[f.id];
-      }
-      return newFeatures;
-    });
-  }, []);
 
   return (
     <div
@@ -380,73 +286,14 @@ export default function CampaignArea() {
               </Button>
             </Link>
           </div>
-          <MapProvider>
-            <Map
-              ref={(ref) => (mapRef.current = ref && ref.getMap())}
-              initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
-              style={{
-                width: "70%",
-                height: "100%",
-                position: "fixed",
-                top: 0,
-                right: 0,
-              }}
-              // onLoad={onLoad}
-              onClick={handleMapClick}
-            >
-              <GeocoderControl
-                language="de"
-                onResult={(e) => console.log(e)}
-                position="top-left"
-              />
-              <Popover
-                open={drawPopoverOpen}
-                onOpenChange={setDrawPopoverOpen}
-                defaultOpen
-              >
-                <PopoverAnchor className="absolute left-10 top-[200px]" />
-                <DrawControl
-                  position="top-left"
-                  // defaultMode="drag_circle"
-                  displayControlsDefault={false}
-                  controls={{ polygon: true, point: true, trash: true }}
-                  // modes={{
-                  //   ...modes,
-                  //   // radius_mode: RadiusMode,
-                  //   draw_circle: CircleMode,
-                  //   drag_circle: DragCircleMode,
-                  // }}
-                  onCreate={onUpdate}
-                  onUpdate={onUpdate}
-                  onDelete={onDelete}
-                />
-                <PopoverContent side="right">
-                  {t(
-                    "use these symbols to draw different geometries on the map"
-                  )}
-                  <PopoverArrow />
-                </PopoverContent>
-              </Popover>
-              {geojsonUploadData && (
-                <Source type="geojson" data={geojsonUploadData}>
-                  <Layer
-                    type="fill"
-                    paint={{
-                      "fill-color": "#555555",
-                      "fill-opacity": 0.5,
-                    }}
-                  />
-                </Source>
-              )}
-              {popup && (
-                <Popup
-                  {...popup}
-                  anchor="bottom"
-                  onClose={() => setPopup(false)}
-                />
-              )}
-            </Map>
-          </MapProvider>
+          <DefineAreaMap
+            setFeatures={setFeatures}
+            drawPopoverOpen={drawPopoverOpen}
+            setDrawPopoverOpen={setDrawPopoverOpen}
+            geojsonUploadData={geojsonUploadData}
+            setGeojsonUploadData={setGeojsonUploadData}
+            mapRef={mapRef}
+          />
         </div>
       </div>
     </div>
