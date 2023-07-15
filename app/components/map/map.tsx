@@ -33,7 +33,7 @@ const Map = forwardRef<MapRef, MapProps>(
         {...props}
       >
         {children}
-        <NavigationControl position="bottom-left" showCompass={false} />
+        <NavigationControl position="bottom-right" showCompass={false} />
       </ReactMap>
     );
   }

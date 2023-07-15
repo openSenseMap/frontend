@@ -3,7 +3,7 @@ import { Exposure, type Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
-import BottomBar from "~/components/device-detail/device-detail-box";
+import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice, getMeasurements } from "~/models/device.server";
 
@@ -69,7 +69,7 @@ export default function DeviceId() {
       {data.device.exposure === Exposure.MOBILE ? (
         <MobileBoxView sensors={data.selectedSensors} />
       ) : null}
-      <BottomBar />
+      <DeviceDetailBox />
     </>
   );
 }
