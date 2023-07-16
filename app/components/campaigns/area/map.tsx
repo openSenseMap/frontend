@@ -18,6 +18,8 @@ import type { LinksFunction } from "@remix-run/server-runtime";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import normalize from "@mapbox/geojson-normalize";
+import flatten from "geojson-flatten";
 
 export const links: LinksFunction = () => {
   return [
@@ -64,40 +66,41 @@ export default function DefineAreaMap({
   const onUpdate = useCallback(
     (e: any) => {
       setGeojsonUploadData(null);
-      if (e.features[0].properties.radius) {
-        const coordinates = [
-          e.features[0].geometry.coordinates[0],
-          e.features[0].geometry.coordinates[1],
-        ]; //[lon, lat]
-        const radius = parseInt(e.features[0].properties.radius); // in meters
-        const options = { numberOfEdges: 32 }; //optional, defaults to { numberOfEdges: 32 }
+      // if (e.features[0].properties.radius) {
+      //   const coordinates = [
+      //     e.features[0].geometry.coordinates[0],
+      //     e.features[0].geometry.coordinates[1],
+      //   ]; //[lon, lat]
+      //   const radius = parseInt(e.features[0].properties.radius); // in meters
+      //   const options = { numberOfEdges: 32 }; //optional, defaults to { numberOfEdges: 32 }
 
-        const polygon = circleToPolygon(coordinates, radius, options);
-        const updatedFeatures = {
-          type: "Feature",
-          geometry: {
-            type: "Polygon",
-            coordinates: polygon.coordinates[0].map((c) => {
-              return [c[0], c[1]];
-            }),
-          },
-          properties: {
-            radius: radius,
-            centerpoint: e.features[0].geometry.coordinates,
-          },
-        };
-        console.log(updatedFeatures);
-        setFeatures(updatedFeatures);
-      } else {
-        setFeatures((currFeatures: any) => {
-          const updatedFeatures = e.features.map((f: any) => {
-            return { ...f };
-          });
-          console.log(updatedFeatures);
-          return updatedFeatures;
+      //   const polygon = circleToPolygon(coordinates, radius, options);
+      //   const updatedFeatures = {
+      //     type: "Feature",
+      //     geometry: {
+      //       type: "Polygon",
+      //       coordinates: polygon.coordinates[0].map((c) => {
+      //         return [c[0], c[1]];
+      //       }),
+      //     },
+      //     properties: {
+      //       radius: radius,
+      //       centerpoint: e.features[0].geometry.coordinates,
+      //     },
+      //   };
+      //   console.log(updatedFeatures);
+      //   setFeatures(updatedFeatures);
+      // } else {
+      setFeatures((currFeatures: any) => {
+        const updatedFeatures = e.features.map((f: any) => {
+          return { ...f };
         });
-      }
+        const normalizedFeatures = normalize(updatedFeatures[0]);
+        const flattenedFeatures = flatten(normalizedFeatures);
+        return flattenedFeatures;
+      });
     },
+    // },
     [setFeatures, setGeojsonUploadData]
   );
 

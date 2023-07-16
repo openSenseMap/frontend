@@ -37,6 +37,7 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "~/components/ui/use-toast";
 import { ArrowRightIcon } from "lucide-react";
 import normalize from "@mapbox/geojson-normalize";
+import flatten from "geojson-flatten";
 import bbox from "@turf/bbox";
 import DefineAreaMap from "~/components/campaigns/area/map";
 
@@ -168,15 +169,16 @@ export default function CampaignArea() {
           const geojson = JSON.parse(content);
           if (valid(geojson)) {
             const normalized_geojson = normalize(geojson);
-            setGeojsonUploadData(normalized_geojson);
-            setFeatures(normalized_geojson);
+            const flattened = flatten(normalized_geojson);
+            setGeojsonUploadData(flattened);
+            setFeatures(flattened);
             toast({
               title: `${t("imported sucessfully")}`,
-              description: `${normalized_geojson.features.length} ${t(
+              description: `${flattened.features.length} ${t(
                 "features added"
               )}`,
             });
-            const bounds = bbox(normalized_geojson);
+            const bounds = bbox(flattened);
             mapRef.current.fitBounds(bounds, {
               padding: 50,
               duration: 1000,

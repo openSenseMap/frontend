@@ -55,8 +55,9 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const area = formData.get("feature") as any;
   const feature = area ? JSON.parse(area) : null;
+
   const turf_points = feature
-    ? turf.points(feature[0]?.geometry?.coordinates[0])
+    ? turf.points(feature.features[0]?.geometry?.coordinates[0])
     : null;
   const centerpoint = turf_points ? center(turf_points) : {};
 
@@ -802,7 +803,7 @@ export default function CreateCampaign() {
           {/* <input type="hidden" name="redirectTo" value={redirectTo} /> */}
           <button
             type="submit"
-            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
+            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
           >
             Create Campaign
           </button>

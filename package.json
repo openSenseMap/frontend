@@ -91,6 +91,7 @@
     "express-prometheus-middleware": "^1.2.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^10.12.4",
+    "geojson-flatten": "^1.1.1",
     "geojson-validation": "^1.0.2",
     "get-user-locale": "^2.2.1",
     "heatmap.js": "^2.0.5",
