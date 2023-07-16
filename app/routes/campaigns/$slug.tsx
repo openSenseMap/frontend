@@ -48,7 +48,6 @@ import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-
 import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-cards";
 import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
-import { Campaign } from "@prisma/client";
 
 export const links: LinksFunction = () => {
   return [
@@ -153,27 +152,33 @@ export default function CampaignId() {
   const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
     "overview"
   );
-  const textAreaRef = useRef(null);
+  const textAreaRef = useRef();
+  const isBundle = useRef(false);
   const eventTextAreaRef = useRef();
   const { toast } = useToast();
 
+  const tribute = new Tribute({
+    trigger: "@",
+    values: participants,
+    itemClass: "bg-blue-700 text-black",
+  });
+
   useEffect(() => {
-    if (textAreaRef.current) {
-      var tribute = new Tribute({
-        trigger: "@",
-        values: participants,
-        itemClass: "bg-blue-700 text-black",
-      });
+    if (
+      textAreaRef.current &&
+      !isBundle.current &&
+      Array.isArray(participants)
+    ) {
+      isBundle.current = true;
       //@ts-ignore
       tribute.attach(textAreaRef.current.textarea);
+      //@ts-ignore
+      textAreaRef.current.textarea.addEventListener("tribute-replaced", (e) => {
+        setComment(e.target.value);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textAreaRef.current]);
-  // useEffect(() => {
-  //   toast({
-  //     title: "HELLO",
-  //   });
-  // }, []);
 
   return (
     <div className="h-full w-full">
