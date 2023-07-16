@@ -244,7 +244,7 @@ export default function DeviceDetailBox() {
           <ChevronUp />
         </div>
       )}
-      {sensorIds.length > 0 ? Graph(open) : null}
+      {sensorIds.length > 0 ? <Graph/> : null}
     </>
   );
 }

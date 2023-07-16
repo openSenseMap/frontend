@@ -44,7 +44,7 @@ ChartJS.register(
   //Legend
 );
 
-export default function Graph(isParentOpen: boolean) {
+export default function Graph() {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
@@ -212,7 +212,7 @@ export default function Graph(isParentOpen: boolean) {
                 </button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Share2 />
+                    <Share2 className="cursor-pointer" />
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -228,7 +228,7 @@ export default function Graph(isParentOpen: boolean) {
                   className="cursor-pointer"
                   onClick={() => setOpen(false)}
                 />
-                <X />
+                <X className="cursor-pointer" />
               </div>
             </div>
             <div className="flex h-full w-full justify-center bg-white">
@@ -247,9 +247,7 @@ export default function Graph(isParentOpen: boolean) {
         <div
           onClick={() => setOpen(true)}
           className={
-            isParentOpen
-              ? "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
-              : "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(24px+32px+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
+            "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
           }
         >
           <LineChart />
