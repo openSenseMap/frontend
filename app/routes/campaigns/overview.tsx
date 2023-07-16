@@ -53,6 +53,7 @@ import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import PointLayer from "~/components/campaigns/overview/point-layer";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -383,8 +384,10 @@ export default function Campaigns() {
     points,
     bounds: mapBounds,
     zoom: zoom,
-    options: { radius: 75, maxZoom: 20 },
+    options: { radius: 50, maxZoom: 14 },
   });
+
+  console.log(clusters);
 
   // const supercluster = useMemo(() => {
   //   return new Supercluster({
@@ -743,15 +746,14 @@ export default function Campaigns() {
                     onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
                     ref={mapRef}
                     style={{
-                      height: "calc(100vh - 190px)",
+                      height: "60vh",
                       width: "40vw",
                       position: "sticky",
-                      bottom: "10px",
-                      // marginTop: "2rem",
                       top: 0,
+                      marginLeft: "auto",
                     }}
                   >
-                    {clusters.map((cluster) => {
+                    {/* {clusters.map((cluster) => {
                       // every cluster point has coordinates
                       const [longitude, latitude] =
                         cluster.geometry.coordinates;
@@ -816,54 +818,15 @@ export default function Campaigns() {
                           </Marker>
                         </>
                       );
-                    })}
-                    {/* <Source
-                    id="clusters"
-                    type="geojson"
-                    data={{ type: "FeatureCollection", features: clusters }}
-                  >
-                    {/* @ts-ignore */}
-                    {/* <Layer {...clusterLayer} />
-                    <Layer {...clusterCountLayer} />
-                  </Source>
-                  <Source
-                    type="geojson"
-                    data={markerGeoJSOn as FeatureCollection}
-                  > */}
-                    {/* TODO: Replace circles with markers */}
-                    {/* <Layer
-                      id="marker-layer"
-                      type="circle"
-                      paint={{
-                        "circle-color": "#FF0000",
-                        "circle-radius": 5,
-                      }}
-                    /> */}
-                    {/* @ts-ignore */}
-                    {/* <Layer {...unclusteredPointLayer} />
-                    <Layer
-                      type="symbol"
-                      layout={{
-                        // "icon-image": "harbor-15",
-                        // "icon-allow-overlap": true,
-                        "text-field": ["get", "title"],
-                        "text-font": [
-                          "Open Sans Bold",
-                          "Arial Unicode MS Bold",
-                        ],
-                        "text-size": 11,
-                        "text-transform": "uppercase",
-                        "text-letter-spacing": 0.05,
-                        "text-offset": [0, 1.5],
-                      }}
-                    />
-                  </Source> */}
+                    })} */}
+                    {centerpoints.length > 0 && (
+                      <PointLayer centerpoints={centerpoints} />
+                    )}
                   </Map>
                 </MapProvider>
               </div>
             )}
           </div>
-          // </div>
         )}
       </div>
     </div>
