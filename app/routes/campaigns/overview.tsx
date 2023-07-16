@@ -638,7 +638,7 @@ export default function Campaigns() {
             </div>
           </div>
         ) : (
-          <div className="flex">
+          <div className="flex w-full justify-between">
             {/* <div
             className={clsx("p-4", {
               "w-full": !showMap,
@@ -646,10 +646,9 @@ export default function Campaigns() {
             })}
           > */}
             <div
-              className={clsx("grid", {
-                "grid-cols-3 gap-4": !showMap,
-                "grid-cols-2 gap-3": showMap,
-              })}
+              className={`${
+                showMap ? "grid grid-cols-2" : "flex w-full gap-4"
+              }`}
             >
               {displayedCampaigns.map((item: any) => (
                 <Card key={item.id} className="w-[250px]">
@@ -729,8 +728,8 @@ export default function Campaigns() {
                 </Card>
               ))}
             </div>
-            {showMap && (
-              <div className="ml-auto w-1/3">
+            <div>
+              {showMap && (
                 <MapProvider>
                   <Map
                     initialViewState={{
@@ -824,8 +823,8 @@ export default function Campaigns() {
                     )}
                   </Map>
                 </MapProvider>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>
