@@ -275,7 +275,7 @@ export default function CampaignId() {
           >
             GeoJSON herunterladen
           </Button>
-          <div>
+          <div className="flex flex-col items-center justify-center">
             <span>Karte anzeigen</span>
             <Switch
               id="showMapSwitch"
