@@ -38,6 +38,7 @@ import {
   deleteCampaignEvent,
   deleteCommentAction,
   updateCampaignEvent,
+  deleteCampaignAction,
   updateCommentAction,
   participate,
 } from "~/lib/actions";
@@ -81,6 +82,9 @@ export async function action(args: ActionArgs) {
       return updateCampaignEvent(args);
     case "PARTICIPATE":
       return participate(args);
+    case "DELETE_CAMPAIGN":
+      return deleteCampaignAction(args);
+
     default:
       // Handle the case when _action doesn't match any of the above cases
       // For example, you can throw an error or return a default action
@@ -315,7 +319,7 @@ export default function CampaignId() {
           </div>
           {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
-            <OverviewTable campaign={campaign as any} />
+            <OverviewTable campaign={campaign as any} userId={userId} />
           </TabsContent>
           <TabsContent value="calendar">
             {campaign.events.length === 0 ? (

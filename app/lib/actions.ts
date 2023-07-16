@@ -10,7 +10,8 @@ import {
   updateEvent,
 } from "~/models/campaign-events.server";
 import { requireUserId } from "~/session.server";
-import { updateCampaign } from "~/models/campaign.server";
+import { updateCampaign, deleteCampaign } from "~/models/campaign.server";
+import { redirect } from "@remix-run/server-runtime";
 
 export async function participate({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
@@ -33,6 +34,26 @@ export async function participate({ request }: ActionArgs) {
   try {
     const updated = await updateCampaign(campaignId, ownerId);
     return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
+export async function deleteCampaignAction({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const ownerId = await requireUserId(request);
+  const campaignId = formData.get("campaignId");
+  if (typeof campaignId !== "string" || campaignId.length === 0) {
+    return json(
+      { errors: { campaignId: "campaignId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const deleted = await deleteCampaign({ id: campaignId, ownerId });
+    return redirect("../overview");
+    // return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });
