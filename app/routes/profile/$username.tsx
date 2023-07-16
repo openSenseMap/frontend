@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
+import { getOwnCampaigns } from "~/models/campaign.server";
 
 export async function loader({ params, request }: LoaderArgs) {
   const requestingUserId = await getUserId(request);
@@ -69,12 +70,15 @@ export async function loader({ params, request }: LoaderArgs) {
           user: profile.user,
           profile: profile,
           requestingUserId: requestingUserId,
+          campaigns: [],
         });
       }
 
       const allBadges = await getAllBadges(authToken).then((allBadges) => {
         return allBadges.result;
       });
+
+      const campaigns = await getOwnCampaigns(profile.user.id);
 
       // Return the fetched data as JSON
       return json({
@@ -84,6 +88,7 @@ export async function loader({ params, request }: LoaderArgs) {
         user: profile.user,
         profile: profile,
         requestingUserId: requestingUserId,
+        campaigns: campaigns,
       });
     }
   }
@@ -96,12 +101,13 @@ export async function loader({ params, request }: LoaderArgs) {
     user: null,
     profile: null,
     requestingUserId: requestingUserId,
+    campaigns: [],
   });
 }
 
 export default function () {
   // Get the data from the loader function using the useLoaderData hook
-  const { allBadges, userBackpack, user, profile } =
+  const { allBadges, userBackpack, user, profile, campaigns } =
     useLoaderData<typeof loader>();
 
   // User is optional
@@ -191,7 +197,21 @@ export default function () {
         <Separator className="my-6" />
         <div className="flex flex-col space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">Campaigns</h1>
-          <div></div>
+          <div className="grid grid-cols-4 gap-4 bg-white">
+            {campaigns.map((campaign: any, index: number) => {
+              return (
+                <div key={index} className="col-span-1">
+                  <Link to={`../../campaigns/${campaign.slug}`}>
+                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100">
+                      <CardContent className="flex items-center justify-center p-0">
+                        {campaign.title}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
       <div className="col-span-2 space-y-4">
