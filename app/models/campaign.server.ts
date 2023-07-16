@@ -112,6 +112,30 @@ export async function createCampaign({
 //   });
 // }
 
+export async function update(
+  campaignId: string,
+  title: string,
+  description: string,
+  priority: any,
+  phenomena: any[],
+  exposure: any,
+  hardware_available: boolean
+) {
+  return prisma.campaign.update({
+    where: {
+      id: campaignId,
+    },
+    data: {
+      title,
+      description,
+      priority,
+      phenomena,
+      exposure,
+      hardware_available,
+    },
+  });
+}
+
 export async function updateCampaign(
   campaignId: string,
   participantId: string

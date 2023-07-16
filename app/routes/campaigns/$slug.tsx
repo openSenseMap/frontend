@@ -41,6 +41,7 @@ import {
   deleteCampaignAction,
   updateCommentAction,
   participate,
+  updateCampaignAction,
 } from "~/lib/actions";
 import OverviewTable from "~/components/campaigns/campaignId/overview-tab/overview-table";
 import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
@@ -49,6 +50,7 @@ import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-
 import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-cards";
 import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
+import { getPhenomena } from "~/models/phenomena.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -82,6 +84,8 @@ export async function action(args: ActionArgs) {
       return updateCampaignEvent(args);
     case "PARTICIPATE":
       return participate(args);
+    case "UPDATE_CAMPAIGN":
+      return updateCampaignAction(args);
     case "DELETE_CAMPAIGN":
       return deleteCampaignAction(args);
 
@@ -115,7 +119,14 @@ export async function loader({ request, params }: LoaderArgs) {
   if (!campaign) {
     throw new Response("Campaign not found", { status: 502 });
   }
-  return json({ campaign, userId });
+  const response = await getPhenomena();
+  if (response.code === "UnprocessableEntity") {
+    throw new Response("Phenomena not found", { status: 502 });
+  }
+  const phenomena = response.map(
+    (d: { label: { item: { text: any }[] } }) => d.label.item[0].text
+  );
+  return json({ campaign, userId, phenomena });
 }
 
 const layer: LayerProps = {
@@ -319,7 +330,11 @@ export default function CampaignId() {
           </div>
           {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
-            <OverviewTable campaign={campaign as any} userId={userId} />
+            <OverviewTable
+              campaign={campaign as any}
+              userId={userId}
+              phenomena={data.phenomena}
+            />
           </TabsContent>
           <TabsContent value="calendar">
             {campaign.events.length === 0 ? (
