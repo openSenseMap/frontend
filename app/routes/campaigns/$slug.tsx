@@ -23,7 +23,7 @@ import { useEffect, useRef, useState } from "react";
 import { Map } from "~/components/Map";
 import type { LayerProps } from "react-map-gl";
 import { MapProvider, Source, Layer } from "react-map-gl";
-import { ClockIcon } from "lucide-react";
+import { ClockIcon, UsersIcon, Share2Icon, DownloadIcon } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
 import { updateCampaign } from "~/models/campaign.server";
@@ -200,7 +200,9 @@ export default function CampaignId() {
         <div className="flex gap-3">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">Teilnehmen</Button>
+              <Button className="flex w-fit gap-2 " variant="outline">
+                Teilnehmen <UsersIcon className="h-4 w-4" />{" "}
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -257,7 +259,9 @@ export default function CampaignId() {
           </Dialog>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">Teilen</Button>
+              <Button className="flex w-fit gap-2 " variant="outline">
+                Teilen <Share2Icon className="h-4 w-4" />{" "}
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -270,10 +274,12 @@ export default function CampaignId() {
           </Dialog>
           <Button
             variant="outline"
+            className="flex w-fit gap-2 "
             // @ts-ignore
             onClick={() => downloadGeojSON(campaign.feature)}
           >
             GeoJSON herunterladen
+            <DownloadIcon className="h-4 w-4" />
           </Button>
           <div className="flex flex-col items-center justify-center">
             <span>Karte anzeigen</span>

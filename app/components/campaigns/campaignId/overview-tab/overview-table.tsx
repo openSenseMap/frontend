@@ -17,7 +17,6 @@ type OverviewTableProps = {
 export default function OverviewTable({ campaign }: OverviewTableProps) {
   return (
     <Table>
-      <TableCaption>Campaign Overview</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Attribut</TableHead>
