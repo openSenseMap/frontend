@@ -12,6 +12,7 @@ import General from "~/components/device/new/general";
 import SelectDevice from "~/components/device/new/select-device";
 import SelectSensors from "~/components/device/new/select-sensors";
 import Advanced from "~/components/device/new/advanced";
+import Summary from "~/components/device/new/summary";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -46,9 +47,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     var getSensorsOfDeviceUrl: URL = new URL(
       process.env.SENSORWIKI_API_URL +
-        (type !== "own_device"
-          ? `devices/${type}/sensors`
-          : `sensors`)
+        (type !== "own_device" ? `devices/${type}/sensors` : `sensors`)
     );
 
     const response = await fetch(getSensorsOfDeviceUrl.toString());
@@ -196,19 +195,11 @@ export default function NewDevice() {
           </div>
         </div>
         <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
-          {page === 1 && (
-            <SelectDevice data={loaderData} />
-          )}
-          {page === 2 && (
-            <General data={data} />
-          )}
-          {page === 3 && (
-            <SelectSensors data={loaderData} />
-          )}
-          {page === 4 && (
-            <Advanced data={data} />
-          )}
-          {page === 5 && <pre>{JSON.stringify(data, null, 2)}</pre>}
+          {page === 1 && <SelectDevice data={loaderData} />}
+          {page === 2 && <General data={data} />}
+          {page === 3 && <SelectSensors data={loaderData} />}
+          {page === 4 && <Advanced data={data} />}
+          {page === 5 && <Summary data={data}></Summary>}
         </div>
         <div className="flex justify-end">
           {page > 1 && (
