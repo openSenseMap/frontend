@@ -271,7 +271,7 @@ export default function CampaignId() {
           <Button
             variant="outline"
             // @ts-ignore
-            onClick={() => downloadGeojSON(campaign.feature[0])}
+            onClick={() => downloadGeojSON(campaign.feature)}
           >
             GeoJSON herunterladen
           </Button>
