@@ -374,7 +374,7 @@ export default function CampaignId() {
                   type="geojson"
                   // data={{ type: "FeatureCollection", features: clusters }}
                   //@ts-ignore
-                  data={campaign.feature[0] as any}
+                  data={campaign.feature as any}
                 >
                   <Layer {...layer} />
                 </Source>
