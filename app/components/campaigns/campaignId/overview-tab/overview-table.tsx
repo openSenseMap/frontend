@@ -16,6 +16,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogClose,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -60,6 +61,12 @@ export default function OverviewTable({
                 <DialogTitle>
                   Sind Sie sicher dass Sie diese Kampagne löschen möchten?
                 </DialogTitle>
+                <DialogDescription>
+                  Diese Aktion kann nicht rückgängig gemacht werden. Alle
+                  Teilnehmer werden informiert, dass diese Kampagne gelöscht
+                  wird. Sie können hier eine Nachricht für die Teilnehmer
+                  hinterlassen.
+                </DialogDescription>
               </DialogHeader>
               <Form method="post">
                 <input
@@ -69,15 +76,20 @@ export default function OverviewTable({
                   type="text"
                   value={campaign.id}
                 />
-                <Button
-                  variant="outline"
-                  name="_action"
-                  value="DELETE_CAMPAIGN"
-                  type="submit"
-                  className="float-right bg-red-500 text-white"
-                >
-                  Löschen <TrashIcon className="ml-2 h-4 w-4 text-white" />
-                </Button>
+                <div className="flex justify-between">
+                  <DialogClose>
+                    <Button variant="outline">Abbrechen</Button>
+                  </DialogClose>
+                  <Button
+                    variant="outline"
+                    name="_action"
+                    value="DELETE_CAMPAIGN"
+                    type="submit"
+                    className="float-right bg-red-500 text-white"
+                  >
+                    Löschen <TrashIcon className="ml-2 h-4 w-4 text-white" />
+                  </Button>
+                </div>
               </Form>
             </DialogContent>
           </Dialog>
