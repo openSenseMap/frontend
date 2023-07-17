@@ -217,7 +217,7 @@ export default function CampaignId() {
             <ClockIcon className="h-4 w-4" /> {campaign.priority}
           </span>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">
@@ -313,17 +313,33 @@ export default function CampaignId() {
       </div>
       <hr className="my-2 w-full bg-gray-700" />
 
-      <div className={`${showMap ? "grid grid-cols-2" : "w-full"}`}>
-        <Tabs defaultValue={tabView} className="w-full">
+      <div
+        className={`${
+          showMap ? "grid grid-cols-2" : "mx-auto flex w-full justify-center"
+        }`}
+      >
+        <Tabs
+          defaultValue={tabView}
+          className={`${showMap ? "w-full" : "mt-2 w-1/2"}`}
+        >
           <div className="flex items-center justify-center">
             <TabsList className="w-full justify-between p-2">
-              <TabsTrigger value="overview">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+              >
                 <Button variant="outline">Übersicht</Button>
               </TabsTrigger>
-              <TabsTrigger value="calendar">
+              <TabsTrigger
+                value="calendar"
+                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+              >
                 <Button variant="outline">Kalender</Button>
               </TabsTrigger>
-              <TabsTrigger value="comments">
+              <TabsTrigger
+                value="comments"
+                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+              >
                 <Button variant="outline">Fragen und Kommentare</Button>
               </TabsTrigger>
             </TabsList>
