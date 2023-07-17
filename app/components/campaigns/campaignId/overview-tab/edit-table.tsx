@@ -93,6 +93,12 @@ export default function EditTable({
         </TableHeader>
         <TableBody>
           <TableRow>
+            <TableCell>Titel</TableCell>
+            <TableCell>
+              <input id="title" name="title" />
+            </TableCell>
+          </TableRow>
+          <TableRow>
             <TableCell>Beschreibung</TableCell>
             <TableCell>
               <textarea
@@ -148,6 +154,18 @@ export default function EditTable({
                   </SelectGroup>
                 </SelectContent>
               </Select>
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Start Date</TableCell>
+            <TableCell>
+              <input type="date" name="startDate" id="startDate" />
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>End Date</TableCell>
+            <TableCell>
+              <input type="date" name="endDate" id="endDate" />
             </TableCell>
           </TableRow>
           <TableRow>

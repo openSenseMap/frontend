@@ -117,6 +117,8 @@ export async function update(
   title: string,
   description: string,
   priority: any,
+  startDate: Date,
+  endDate: Date,
   phenomena: any[],
   exposure: any,
   hardware_available: boolean
@@ -129,6 +131,8 @@ export async function update(
       title,
       description,
       priority,
+      startDate,
+      endDate,
       phenomena,
       exposure,
       hardware_available,

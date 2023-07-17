@@ -55,11 +55,17 @@ type ExposureType = keyof typeof Exposure;
 
 export async function updateCampaignAction({ request }: ActionArgs) {
   const formData = await request.formData();
-  const title = "asdfasfd";
   const campaignId = formData.get("campaignId");
   if (typeof campaignId !== "string" || campaignId.length === 0) {
     return json(
       { errors: { campaignId: "campaignId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const title = formData.get("title");
+  if (typeof title !== "string" || title.length === 0) {
+    return json(
+      { errors: { title: "title is required", body: null } },
       { status: 400 }
     );
   }
@@ -80,6 +86,11 @@ export async function updateCampaignAction({ request }: ActionArgs) {
   );
 
   const priority = formData.get("priority") as PriorityType;
+  const begin = formData.get("startDate");
+  const startDate =
+    begin && typeof begin === "string" ? new Date(begin) : new Date();
+  const end = formData.get("endDate");
+  const endDate = end && typeof end === "string" ? new Date(end) : new Date();
   const exposure = formData.get("exposure") as ExposureType;
   const hardware_available =
     formData.get("hardware_available") === "on" ? true : false;
@@ -89,6 +100,8 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     description,
     phenomena,
     priority,
+    startDate,
+    endDate,
     exposure,
     hardware_available
   );
@@ -98,11 +111,15 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       title,
       description,
       priority,
+      startDate,
+      endDate,
       phenomena,
       exposure,
       hardware_available
     );
-    return json({ ok: true });
+    console.log(updated);
+    return redirect(".");
+    // return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });
