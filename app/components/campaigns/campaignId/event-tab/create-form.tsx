@@ -23,11 +23,13 @@ export default function EventForm({
   eventTextAreaRef,
 }: EventFormProps) {
   return (
-    <div className="flex">
-      <p className="mx-1">Noch keine Events für diese Kampagne.</p>
+    <div className="flex w-full flex-col items-center justify-center gap-2">
+      <span className="mt-6 text-red-500">
+        Noch keine Events für diese Kampagne.{" "}
+      </span>{" "}
       <Dialog>
         <DialogTrigger>
-          <p>Erstelle hier ein Event</p>
+          <p className="text-blue-500 underline">Erstelle hier ein Event</p>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -122,7 +124,7 @@ export default function EventForm({
                   type="submit"
                   name="_action"
                   value="CREATE_EVENT"
-                  className="hover:bg-blue-600 focus:bg-blue-400  rounded bg-blue-500 py-2 px-4 text-white"
+                  className="hover:bg-blue-600 focus:bg-blue-400  rounded bg-blue-500 px-4 py-2 text-white"
                 >
                   CREATE
                 </button>
