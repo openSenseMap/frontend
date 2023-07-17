@@ -32,6 +32,7 @@ import { Download, LineChart, Minus, Share2, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
+import { getGraphColor } from "~/lib/utils";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -67,16 +68,20 @@ export default function Graph() {
               label: loaderData.selectedSensors[0].title,
               data: loaderData.selectedSensors[0].data,
               pointRadius: 0,
-              borderColor: "blue",
-              backgroundColor: "blue",
+              borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
+              backgroundColor: getGraphColor(
+                loaderData.selectedSensors[0].unit
+              ),
               yAxisID: "y",
             },
             {
               label: loaderData.selectedSensors[1].title,
               data: loaderData.selectedSensors[1].data,
               pointRadius: 0,
-              borderColor: "red",
-              backgroundColor: "red",
+              borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
+              backgroundColor: getGraphColor(
+                loaderData.selectedSensors[1].unit
+              ),
               yAxisID: "y1",
             },
           ]
@@ -85,8 +90,10 @@ export default function Graph() {
               label: loaderData.selectedSensors[0].title,
               data: loaderData.selectedSensors[0].data,
               pointRadius: 0,
-              borderColor: "blue",
-              backgroundColor: "blue",
+              borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
+              backgroundColor: getGraphColor(
+                loaderData.selectedSensors[0].unit
+              ),
               yAxisID: "y",
             },
           ],
