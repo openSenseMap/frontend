@@ -11,6 +11,7 @@ import { getCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -23,7 +24,13 @@ import { useEffect, useRef, useState } from "react";
 import { Map } from "~/components/Map";
 import type { LayerProps } from "react-map-gl";
 import { MapProvider, Source, Layer } from "react-map-gl";
-import { ClockIcon, UsersIcon, Share2Icon, DownloadIcon } from "lucide-react";
+import {
+  ClockIcon,
+  UsersIcon,
+  Share2Icon,
+  DownloadIcon,
+  TrashIcon,
+} from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
 import { updateCampaign } from "~/models/campaign.server";
@@ -309,6 +316,50 @@ export default function CampaignId() {
               onCheckedChange={() => setShowMap(!showMap)}
             />
           </div>
+          <Dialog>
+            <DialogTrigger>
+              <Button variant="destructive">
+                Delete
+                <TrashIcon className="ml-2 h-4 w-4 text-white" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  Sind Sie sicher dass Sie diese Kampagne löschen möchten?
+                </DialogTitle>
+                <DialogDescription>
+                  Diese Aktion kann nicht rückgängig gemacht werden. Alle
+                  Teilnehmer werden informiert, dass diese Kampagne gelöscht
+                  wird. Sie können hier eine Nachricht für die Teilnehmer
+                  hinterlassen.
+                </DialogDescription>
+              </DialogHeader>
+              <Form method="post">
+                <input
+                  className="hidden"
+                  id="campaignId"
+                  name="campaignId"
+                  type="text"
+                  value={campaign.id}
+                />
+                <div className="flex justify-between">
+                  <DialogClose>
+                    <Button variant="outline">Abbrechen</Button>
+                  </DialogClose>
+                  <Button
+                    variant="outline"
+                    name="_action"
+                    value="DELETE_CAMPAIGN"
+                    type="submit"
+                    className="float-right bg-red-500 text-white"
+                  >
+                    Löschen <TrashIcon className="ml-2 h-4 w-4 text-white" />
+                  </Button>
+                </div>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <hr className="my-2 w-full bg-gray-700" />
