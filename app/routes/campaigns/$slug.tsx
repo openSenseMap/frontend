@@ -58,6 +58,7 @@ import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-
 import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
 import { getPhenomena } from "~/models/phenomena.server";
+import { useTranslation } from "react-i18next";
 
 export const links: LinksFunction = () => {
   return [
@@ -148,6 +149,7 @@ const layer: LayerProps = {
 
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
+  const { t } = useTranslation("campaign-slug");
   const campaign = data.campaign;
   const participants = campaign.participants.map(function (participant) {
     return { key: participant.name, value: participant.name };
@@ -228,21 +230,22 @@ export default function CampaignId() {
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">
-                Teilnehmen <UsersIcon className="h-4 w-4" />{" "}
+                {t("contribute")} <UsersIcon className="h-4 w-4" />{" "}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Teilnehmen</DialogTitle>
+                <DialogTitle>{t("contribute")}</DialogTitle>
                 <DialogDescription>
                   <p className="font-bold">
-                    Indem Sie auf Teilnehmen klicken stimmen Sie zu, dass Sie
-                    der Kampagnenleiter unter der von Ihnen angegebenen Email-
-                    Adresse kontaktieren darf!
+                    {t(
+                      "by clicking on Contribute you agree to be reached out to by the organizer via the email you provided!"
+                    )}
                   </p>
                   <p className="mt-2">
-                    Bitte gib ausserdem an, ob du bereits über die benötigte
-                    Hardware verfügst.
+                    {t(
+                      "please state if you have the required hardware available"
+                    )}
                   </p>
                 </DialogDescription>
               </DialogHeader>
@@ -266,7 +269,7 @@ export default function CampaignId() {
                   </div>
                   <div className="flex">
                     <label htmlFor="hardware" className="text-right">
-                      Hardware vorhanden
+                      {t("hardware available")}
                     </label>
                     <input
                       id="hardware"
@@ -278,7 +281,7 @@ export default function CampaignId() {
                 </div>
                 <DialogFooter>
                   <Button name="_action" value="PARTICIPATE" type="submit">
-                    Teilnehmen
+                    {t("contribute")}
                   </Button>
                 </DialogFooter>
               </Form>
@@ -287,12 +290,12 @@ export default function CampaignId() {
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">
-                Teilen <Share2Icon className="h-4 w-4" />{" "}
+                {t("share")} <Share2Icon className="h-4 w-4" />{" "}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Teilen</DialogTitle>
+                <DialogTitle>{t("share")}</DialogTitle>
                 <DialogDescription>
                   <ShareLink />
                 </DialogDescription>
@@ -305,11 +308,11 @@ export default function CampaignId() {
             // @ts-ignore
             onClick={() => downloadGeojSON(campaign.feature)}
           >
-            GeoJSON herunterladen
+            {t("download geojson")}
             <DownloadIcon className="h-4 w-4" />
           </Button>
           <div className="flex flex-col items-center justify-center">
-            <span>Karte anzeigen</span>
+            <span>{t("show map")}</span>
             <Switch
               id="showMapSwitch"
               checked={showMap}
@@ -319,20 +322,19 @@ export default function CampaignId() {
           <Dialog>
             <DialogTrigger>
               <Button variant="destructive">
-                Delete
+                {t("delete")}
                 <TrashIcon className="ml-2 h-4 w-4 text-white" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  Sind Sie sicher dass Sie diese Kampagne löschen möchten?
+                  {t("Are you sure that you want to delete this campaign")}
                 </DialogTitle>
                 <DialogDescription>
-                  Diese Aktion kann nicht rückgängig gemacht werden. Alle
-                  Teilnehmer werden informiert, dass diese Kampagne gelöscht
-                  wird. Sie können hier eine Nachricht für die Teilnehmer
-                  hinterlassen.
+                  {t(
+                    "This action cannot be reversed. Participants will be notified that this campaign was deleted. You can leave a message for the participants in the field below."
+                  )}
                 </DialogDescription>
               </DialogHeader>
               <Form method="post">
@@ -345,7 +347,7 @@ export default function CampaignId() {
                 />
                 <div className="flex justify-between">
                   <DialogClose>
-                    <Button variant="outline">Abbrechen</Button>
+                    <Button variant="outline">{t("cancel")}</Button>
                   </DialogClose>
                   <Button
                     variant="outline"
@@ -354,7 +356,8 @@ export default function CampaignId() {
                     type="submit"
                     className="float-right bg-red-500 text-white"
                   >
-                    Löschen <TrashIcon className="ml-2 h-4 w-4 text-white" />
+                    {t("delete")}{" "}
+                    <TrashIcon className="ml-2 h-4 w-4 text-white" />
                   </Button>
                 </div>
               </Form>
@@ -379,19 +382,19 @@ export default function CampaignId() {
                 value="overview"
                 className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
               >
-                <Button variant="outline">Übersicht</Button>
+                <Button variant="outline">{t("overview")}</Button>
               </TabsTrigger>
               <TabsTrigger
                 value="calendar"
                 className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
               >
-                <Button variant="outline">Kalender</Button>
+                <Button variant="outline">{t("calender")}</Button>
               </TabsTrigger>
               <TabsTrigger
                 value="comments"
                 className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
               >
-                <Button variant="outline">Fragen und Kommentare</Button>
+                <Button variant="outline">{t("questions and comments")}</Button>
               </TabsTrigger>
             </TabsList>
           </div>

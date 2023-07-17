@@ -1,0 +1,15 @@
+{
+  "contribute": "Teilnehmen",
+  "by clicking on Contribute you agree to be reached out to by the organizer via the email you provided!": "Indem Sie auf Teilnehmen klicken stimmen Sie zu, dass Sie der Kampagnenleiter unter der von Ihnen angegebenen Email-Adresse kontaktieren darf!",
+  "please state if you have the required hardware available": " Bitte gib ausserdem an, ob du bereits über die benötigte Hardware verfügst.",
+  "hardware available": "Hardware verfügbar",
+  "download GeoJSON": "GeoJSON herunterladen",
+  "show map": "Karte anzeigen",
+  "delete": "Löschen",
+  "Are you sure that you want to delete this campaign": "Sind Sie sicher dass Sie diese Kampagne löschen möchten?",
+  "This action cannot be reversed. Participants will be notified that this campaign was deleted. You can leave a message for the participants in the field below.": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Teilnehmer werden informiert, dass diese Kampagne gelöscht wird. Sie können hier eine Nachricht für die Teilnehmer hinterlassen.",
+  "cancel": "Abbrechen",
+  "overview": "Übersicht",
+  "calender": "Kalender",
+  "questions and comments": "Fragen und Kommentare"
+}
