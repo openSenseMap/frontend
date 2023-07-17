@@ -40,6 +40,7 @@ import {
 import { useState, useRef } from "react";
 import { MarkdownEditor } from "~/markdown.client";
 import { ClientOnly } from "remix-utils";
+import { useTranslation } from "react-i18next";
 
 type EditTableProps = {
   setEditMode: any;
@@ -62,6 +63,7 @@ export default function EditTable({
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
   const [exposure, setExposure] = useState("UNKNOWN");
+  const { t } = useTranslation("edit-campaign-table");
 
   return (
     <Form method="post">
@@ -73,7 +75,7 @@ export default function EditTable({
       />
       <div className="float-right flex gap-2">
         <Button variant="outline" onClick={() => setEditMode(false)}>
-          Cancel <XIcon className="ml-2 h-4 w-4 " />
+          {t("cancel")} <XIcon className="ml-2 h-4 w-4 " />
         </Button>
         <Button
           variant="outline"
@@ -81,25 +83,25 @@ export default function EditTable({
           name="_action"
           value="UPDATE_CAMPAIGN"
         >
-          Save <SaveIcon className="ml-2 h-4 w-4 text-blue-700" />
+          {t("save")} <SaveIcon className="ml-2 h-4 w-4 text-blue-700" />
         </Button>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Attribut</TableHead>
-            <TableHead>Wert</TableHead>
+            <TableHead>{t("attribute")}</TableHead>
+            <TableHead>{t("value")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell>Titel</TableCell>
+            <TableCell>{t("title")}</TableCell>
             <TableCell>
               <input id="title" name="title" />
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Beschreibung</TableCell>
+            <TableCell>{t("description")}</TableCell>
             <TableCell>
               <textarea
                 className="hidden"
@@ -117,10 +119,10 @@ export default function EditTable({
                     />
                     <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
                       <span className="text-gray text-xs leading-4">
-                        Bild hinzufügen
+                        {t("add image")}
                       </span>
                       <span className="text-gray text-xs leading-4">
-                        Markdown unterstützt
+                        {t("markdown supported")}
                       </span>
                     </div>
                   </>
@@ -129,7 +131,7 @@ export default function EditTable({
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Priorität</TableCell>
+            <TableCell>{t("priority")}</TableCell>
             <TableCell>
               <input
                 id="priority"
@@ -157,19 +159,19 @@ export default function EditTable({
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Start Date</TableCell>
+            <TableCell>{t("start date")}</TableCell>
             <TableCell>
               <input type="date" name="startDate" id="startDate" />
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>End Date</TableCell>
+            <TableCell>{t("end date")}</TableCell>
             <TableCell>
               <input type="date" name="endDate" id="endDate" />
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Phänomene</TableCell>
+            <TableCell>{t("phenomena")}</TableCell>
             <TableCell>
               <input
                 type="hidden"
@@ -192,7 +194,7 @@ export default function EditTable({
                     ).length > 0 ? (
                       <></>
                     ) : (
-                      <span>Phänomene</span>
+                      <span>{t("phenomena")}</span>
                     )}
                     <span className="text-red-500">&nbsp;*</span>
                     <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
@@ -221,7 +223,7 @@ export default function EditTable({
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Exposure</TableCell>
+            <TableCell>{t("exposure")}</TableCell>
             <TableCell>
               <input
                 id="exposure"
@@ -250,16 +252,16 @@ export default function EditTable({
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Hardware verfügbar</TableCell>
+            <TableCell>{t("hardware available")}</TableCell>
             <TableCell>
               <div className="flex w-fit justify-between gap-2">
-                <span>No</span>
+                <span>{t("no")}</span>
                 <Switch
                   id="hardware_available"
                   // ref={hardwareAvailableRef}
                   name="hardware_available"
                 />
-                <span>Yes</span>
+                <span>{t("yes")}</span>
               </div>
             </TableCell>
           </TableRow>

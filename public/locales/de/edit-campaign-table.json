@@ -1,0 +1,18 @@
+{
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "attribute": "Attribut",
+  "value": "Wert",
+  "title": "Titel",
+  "description": "Beschreibung",
+  "priority": "Priorität",
+  "add image": "Bild hinzufügen",
+  "markdown supported": "Markdown unterstützt",
+  "start date": "Beginn",
+  "end date": "Abschluss",
+  "phenomena": "Phänomene",
+  "exposure": "Einsatzgebiet",
+  "hardware available": "Hardware verfügbar",
+  "yes": "Ja",
+  "no": "Nein"
+}

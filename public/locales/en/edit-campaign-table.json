@@ -1,0 +1,18 @@
+{
+  "cancel": "Cancel",
+  "save": "Save",
+  "attribute": "Attribute",
+  "value": "Value",
+  "title": "Title",
+  "description": "Description",
+  "priority": "Priority",
+  "add image": "Add image",
+  "markdown supported": "Markdown supported",
+  "start date": "Start Date",
+  "end date": "End Date",
+  "phenomena": "Phenomena",
+  "exposure": "Exposure",
+  "hardware available": "Hardware available",
+  "yes": "Yes",
+  "no": "No"
+}
