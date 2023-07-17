@@ -54,15 +54,18 @@ export default function EditTable({
   phenomena,
 }: EditTableProps) {
   const descriptionRef = useRef();
+  const [title, setTitle] = useState<string>(campaign.title);
   const [editDescription, setEditDescription] = useState<string | undefined>(
-    ""
+    campaign.description
   );
-  const [priority, setPriority] = useState("MEDIUM");
+  const [priority, setPriority] = useState(campaign.priority);
+  const [startDate, setStartDate] = useState(campaign.startDate);
+  const [endDate, setEndDate] = useState(campaign.endDate);
   const [openDropdown, setDropdownOpen] = useState(false);
   const [phenomenaState, setPhenomenaState] = useState(
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
-  const [exposure, setExposure] = useState("UNKNOWN");
+  const [exposure, setExposure] = useState(campaign.exposure);
   const { t } = useTranslation("edit-campaign-table");
 
   return (
@@ -97,7 +100,12 @@ export default function EditTable({
           <TableRow>
             <TableCell>{t("title")}</TableCell>
             <TableCell>
-              <input id="title" name="title" />
+              <input
+                id="title"
+                name="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </TableCell>
           </TableRow>
           <TableRow>
@@ -161,13 +169,25 @@ export default function EditTable({
           <TableRow>
             <TableCell>{t("start date")}</TableCell>
             <TableCell>
-              <input type="date" name="startDate" id="startDate" />
+              <input
+                type="date"
+                name="startDate"
+                id="startDate"
+                value={startDate}
+                onChange={setStartDate}
+              />
             </TableCell>
           </TableRow>
           <TableRow>
             <TableCell>{t("end date")}</TableCell>
             <TableCell>
-              <input type="date" name="endDate" id="endDate" />
+              <input
+                type="date"
+                name="endDate"
+                id="endDate"
+                value={endDate}
+                onChange={setEndDate}
+              />
             </TableCell>
           </TableRow>
           <TableRow>

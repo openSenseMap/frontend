@@ -70,12 +70,12 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     );
   }
   const description = formData.get("description");
-  // if (typeof description !== "string" || description.length === 0) {
-  //   return json(
-  //     { errors: { description: "description is required", body: null } },
-  //     { status: 400 }
-  //   );
-  // }
+  if (typeof description !== "string" || description.length === 0) {
+    return json(
+      { errors: { description: "description is required", body: null } },
+      { status: 400 }
+    );
+  }
   const phenomenaString = formData.get("phenomena");
   let phenomenaState: PhenomenaState = {};
   if (typeof phenomenaString === "string") {
@@ -91,6 +91,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     begin && typeof begin === "string" ? new Date(begin) : new Date();
   const end = formData.get("endDate");
   const endDate = end && typeof end === "string" ? new Date(end) : new Date();
+  const updatedAt = new Date();
   const exposure = formData.get("exposure") as ExposureType;
   const hardware_available =
     formData.get("hardware_available") === "on" ? true : false;
@@ -106,17 +107,17 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     hardware_available
   );
   try {
-    const updated = await update(
-      campaignId,
+    const updated = await update(campaignId, {
       title,
-      typeof description === "string" ? description : undefined,
+      description,
       priority,
       startDate,
       endDate,
+      updatedAt,
       phenomena,
       exposure,
-      hardware_available
-    );
+      hardware_available,
+    });
     console.log(updated);
     return redirect("../overview");
     // return json({ ok: true });
