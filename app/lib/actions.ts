@@ -70,12 +70,12 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     );
   }
   const description = formData.get("description");
-  if (typeof description !== "string" || description.length === 0) {
-    return json(
-      { errors: { description: "description is required", body: null } },
-      { status: 400 }
-    );
-  }
+  // if (typeof description !== "string" || description.length === 0) {
+  //   return json(
+  //     { errors: { description: "description is required", body: null } },
+  //     { status: 400 }
+  //   );
+  // }
   const phenomenaString = formData.get("phenomena");
   let phenomenaState: PhenomenaState = {};
   if (typeof phenomenaString === "string") {
@@ -97,7 +97,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
   console.log(
     campaignId,
     title,
-    description,
+    // description,
     phenomena,
     priority,
     startDate,
@@ -109,7 +109,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     const updated = await update(
       campaignId,
       title,
-      description,
+      typeof description === "string" ? description : undefined,
       priority,
       startDate,
       endDate,
@@ -118,7 +118,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       hardware_available
     );
     console.log(updated);
-    return redirect(".");
+    return redirect("../overview");
     // return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
