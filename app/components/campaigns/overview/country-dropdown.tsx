@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { countryListAlpha2 } from "./all-countries-object";
+import { CountryFlagIcon } from "~/components/ui/country-flag";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
-export function ComboboxDemo() {
+export function CountryDropdown() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
 
@@ -30,7 +31,7 @@ export function ComboboxDemo() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-full"
         >
           {value
             ? countries.find((country) => country === value)
@@ -38,24 +39,28 @@ export function ComboboxDemo() {
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-full p-0">
         <Command>
           <CommandInput placeholder="Search country..." />
           <CommandEmpty>No country found.</CommandEmpty>
           <CommandGroup>
             <ScrollArea className="h-24">
-              {countries.map((country: string, index: number) => (
-                <CommandItem
-                  key={index}
-                  onSelect={(currentValue) => {
-                    setValue(country);
-                    setOpen(false);
-                    console.log(value);
-                  }}
-                >
-                  {country}
-                </CommandItem>
-              ))}
+              {Object.entries(countryListAlpha2).map(
+                ([countryCode, countryName], index: number) => (
+                  <CommandItem
+                    key={index}
+                    onSelect={(currentValue) => {
+                      setValue(countryName);
+                      setOpen(false);
+                    }}
+                  >
+                    <CountryFlagIcon
+                      country={String(countryCode).toUpperCase()}
+                    />
+                    {countryName}
+                  </CommandItem>
+                )
+              )}
             </ScrollArea>
           </CommandGroup>
         </Command>

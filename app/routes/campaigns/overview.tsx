@@ -57,7 +57,7 @@ import {
   Source,
 } from "react-map-gl";
 import { Progress } from "~/components/ui/progress";
-import { CountryFlagIcon } from "~/components/ui/CountryFlag";
+import { CountryFlagIcon } from "~/components/ui/country-flag";
 import { BBox, FeatureCollection } from "geojson";
 import Supercluster, { AnyProps, PointFeature } from "supercluster";
 import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
@@ -66,7 +66,7 @@ import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 // import CountryDropdown from "~/components/campaigns/overview/country-dropdown";
-import { ComboboxDemo } from "~/components/campaigns/overview/country-dropdown";
+import { CountryDropdown } from "~/components/campaigns/overview/country-dropdown";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -428,12 +428,7 @@ export default function Campaigns() {
               <DialogHeader>
                 <DialogTitle>More Filters</DialogTitle>
               </DialogHeader>
-              {/* <CountryDropdown
-                  country={country}
-                  setCountry={setCountry}
-                  trigger={t("location")}
-                /> */}
-              <ComboboxDemo />
+              <CountryDropdown />
 
               <DialogFooter className="flex justify-between">
                 <Button>Cancel</Button>
