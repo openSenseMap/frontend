@@ -36,15 +36,25 @@ export default function CommentCards({
   editComment,
 }: CommentCardsProps) {
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center gap-4">
       {comments.map((c: any, i: number) => {
         return (
-          <div key={i} className="flex flex-col items-center justify-center">
+          <div
+            key={i}
+            // className="flex flex-col items-center justify-center gap-4"
+          >
             <Card className="w-fit min-w-[300px]">
               <CardHeader>
-                <CardTitle className="flex items-center justify-end">
+                <CardTitle className="flex flex-wrap justify-between">
+                  <div className="flex items-center gap-2 pb-4">
+                    <Avatar>
+                      <AvatarImage src="" alt="avatar" />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    {c.owner.name}
+                  </div>
                   {userId === c.ownerId && (
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         onClick={() => {
@@ -77,17 +87,10 @@ export default function CommentCards({
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col">
-                <div className="flex items-center gap-2 pb-4">
-                  <Avatar>
-                    <AvatarImage src="" alt="avatar" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  {c.owner.name}
-                </div>
                 {commentEditMode ? (
                   <ClientOnly>
                     {() => (
-                      <div className="container overflow-auto">
+                      <div className="container mt-4 overflow-auto">
                         <MarkdownEditor
                           textAreaRef={textAreaRef}
                           comment={editComment}
@@ -118,7 +121,7 @@ export default function CommentCards({
                             name="_action"
                             value="EDIT"
                             type="submit"
-                            className="float-right"
+                            className="float-right mt-2"
                           >
                             Veröffentlichen
                           </Button>

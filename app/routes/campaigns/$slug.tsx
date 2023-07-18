@@ -226,7 +226,7 @@ export default function CampaignId() {
             <ClockIcon className="h-4 w-4" /> {campaign.priority}
           </span>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">
@@ -308,7 +308,7 @@ export default function CampaignId() {
             // @ts-ignore
             onClick={() => downloadGeojSON(campaign.feature)}
           >
-            {t("download geojson")}
+            {t("download GeoJSON")}
             <DownloadIcon className="h-4 w-4" />
           </Button>
           <div className="flex flex-col items-center justify-center">
@@ -377,7 +377,7 @@ export default function CampaignId() {
           className={`${showMap ? "w-full" : "mt-2 w-1/2"}`}
         >
           <div className="flex items-center justify-center">
-            <TabsList className="w-full justify-between p-2">
+            <TabsList className="mb-4 w-full justify-between p-2">
               <TabsTrigger
                 value="overview"
                 className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"

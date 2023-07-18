@@ -45,7 +45,7 @@ export default function CommentInput({
   return (
     <ClientOnly>
       {() => (
-        <div className="container overflow-auto">
+        <div className="container mt-4 overflow-auto">
           <MarkdownEditor
             textAreaRef={textAreaRef}
             comment={comment}
@@ -66,7 +66,7 @@ export default function CommentInput({
               id="comment"
             ></textarea>
             <Button
-              className="float-right"
+              className="float-right mt-2"
               onClick={() => {
                 setCommentEditMode(false);
                 navigate(".", { replace: true });
