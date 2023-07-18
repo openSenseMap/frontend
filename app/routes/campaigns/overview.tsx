@@ -57,15 +57,6 @@ import PointLayer from "~/components/campaigns/overview/point-layer";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
-type PointProperties = {
-  title: string;
-  cluster: boolean;
-  point_count: any;
-  id: string;
-  // color: string;
-  // selected: boolean;
-};
-
 export async function loader({ params }: LoaderArgs) {
   const campaigns = await getCampaigns();
   // const data = await campaigns.json();
@@ -197,43 +188,6 @@ export default function Campaigns() {
   //   }
   // }, [container, convertedData]);
 
-  // const [clusters, setClusters] = useState<
-  //   (
-  //     | Supercluster.PointFeature<Supercluster.AnyProps>
-  //     | Supercluster.ClusterFeature<Supercluster.AnyProps>
-  //   )[]
-  // >([]);
-  // const clusterLayer = {
-  //   id: "clusters",
-  //   type: "circle" as "sky",
-  //   paint: {
-  //     "circle-color": "#51bbd6",
-  //     "circle-radius": ["step", ["get", "point_count"], 20, 100, 30, 750, 40],
-  //   },
-  // };
-
-  // const clusterCountLayer = {
-  //   id: "cluster-count",
-  //   type: "symbol",
-  //   layout: {
-  //     "text-field": "{point_count_abbreviated}",
-  //     "text-size": 12,
-  //   },
-  // };
-
-  // const unclusteredPointLayer = {
-  //   id: "unclustered-point",
-  //   type: "circle",
-  //   // source: 'points',
-  //   filter: ["!", ["has", "point_count"]],
-  //   paint: {
-  //     "circle-color": "#11b4da",
-  //     "circle-radius": 5,
-  //     "circle-stroke-width": 1,
-  //     "circle-stroke-color": "#fff",
-  //   },
-  // };
-
   useEffect(() => {
     // Access the map instance when the component mounts
     const map = mapRef?.current?.getMap();
@@ -348,152 +302,12 @@ export default function Campaigns() {
     })
     .filter((coords) => coords !== null);
 
-  // const markerGeoJSOn = {
-  //   type: "FeatureCollection",
-  //   features: centerpoints.map((point) => ({
-  //     type: "Feature",
-  //     geometry: {
-  //       type: "Point",
-  //       coordinates: point?.coordinates,
-  //     },
-  //     properties: {
-  //       title: `${point?.title}`,
-  //     },
-  //   })),
-  // };
-
-  const points: Array<PointFeature<PointProperties>> = centerpoints.map(
-    (point) => ({
-      type: "Feature",
-      properties: {
-        cluster: false,
-        point_count: 1,
-        title: point?.title,
-        id: point?.id,
-        color: "blue",
-        selected: false,
-      },
-      geometry: {
-        type: "Point",
-        coordinates: point?.coordinates,
-      },
-    })
-  );
-
-  const { clusters, supercluster } = useSupercluster({
-    points,
-    bounds: mapBounds,
-    zoom: zoom,
-    options: { radius: 50, maxZoom: 14 },
-  });
-
-  console.log(clusters);
-
-  // const supercluster = useMemo(() => {
-  //   return new Supercluster({
-  //     radius: 40, // Adjust the radius as needed for clustering
-  //     maxZoom: 16, // Adjust the maxZoom as needed for clustering
-  //   });
-  // }, []);
-
-  // supercluster.load(markerGeoJSOn.features as any);
-
-  useEffect(() => {
-    // const supercluster = new Supercluster({
-    //   radius: 40, // Adjust the radius as needed for clustering
-    //   maxZoom: 16, // Adjust the maxZoom as needed for clustering
-    // });
-    // supercluster.load(markerGeoJSOn.features as any);
-    // const zoomListener = () => {
-    // const zoom = Math.floor(viewport.zoom);
-    // if (mapBounds) {
-    //   const clusters = supercluster.getClusters(
-    //     [
-    //       mapBounds.getWest(),
-    //       mapBounds.getSouth(),
-    //       mapBounds.getEast(),
-    //       mapBounds.getNorth(),
-    //     ], // Specify the map bounds for clustering
-    //     zoom
-    //   );
-    //   // setClusters(clusters);
-    // }
-    // };
-    // zoomListener();
-    // window.addEventListener("resize", zoomListener);
-    // return () => window.removeEventListener("resize", zoomListener);
-  }, [mapBounds, supercluster, zoom]);
-
-  // const handleMarkerClick = useCallback(
-  //   (markerId: string, latitude: number, longitude: number) => {
-  //     const selectedCampaign = data.filter(
-  //       (campaign: any) => campaign.id === markerId
-  //     );
-
-  //     // const updatedMarkers = markers.map((marker) => {
-  //     //   if (marker.properties.id === markerId) {
-  //     //     return {
-  //     //       ...marker,
-  //     //       properties: {
-  //     //         ...marker.properties,
-  //     //         color: "red",
-  //     //         selected: true,
-  //     //       },
-  //     //     };
-  //     //   }
-  //     //   return marker;
-  //     // });
-
-  //     // console.log(updatedMarkers);
-
-  //     // setMarkers(updatedMarkers);
-
-  //     setSelectedMarker(markerId);
-  //     setDisplayedCampaigns(selectedCampaign as any);
-  //     setSelectedcampain(selectedCampaign[0].id);
-  //     mapRef.current?.flyTo({
-  //       center: [longitude, latitude],
-  //       duration: 2000,
-  //       zoom: 6,
-  //     });
-  //   },
-  //   [data]
-  // );
-
-  const handleClusterClick = useCallback(
-    (latitude: number, longitude: number) => {
-      mapRef.current?.flyTo({
-        center: [longitude, latitude],
-        duration: 2000,
-        zoom: zoom + 2, // maybe just hardcoaded number
-      });
-    },
-    [zoom]
-  );
-
   const handleMapLoad = useCallback(() => {
     const map = mapRef?.current?.getMap();
     if (map) {
       setMapBounds(map.getBounds().toArray().flat() as BBox);
     }
   }, []);
-
-  // const handleMapClick = useCallback(
-  //   (e: MapLayerMouseEvent) => {
-  //     const { features } = e;
-  //     if (features && features?.length != 0) {
-  //       const title = features[0]?.properties?.title;
-  //       let clickedCampaign = displayedCampaigns.filter(
-  //         (c: any) => c.title === title
-  //       );
-  //       setDisplayedCampaigns(clickedCampaign);
-  //     }
-  //   },
-  //   [displayedCampaigns]
-  // );
-
-  // const displayedCampaigns =
-  //   sortBy === "dringlichkeit" ? sortedCampaigns : filteredCampaigns;
 
   return (
     <div
@@ -700,9 +514,6 @@ export default function Campaigns() {
                           )}
                         </span>
                       </CardTitle>
-                      {/* <CardDescription className="mt-2">
-                        {item.keywords || ""}
-                      </CardDescription> */}
                     </CardHeader>
                     <CardContent className="mt-2">
                       <Progress
@@ -752,72 +563,6 @@ export default function Campaigns() {
                       marginLeft: "auto",
                     }}
                   >
-                    {/* {clusters.map((cluster) => {
-                      // every cluster point has coordinates
-                      const [longitude, latitude] =
-                        cluster.geometry.coordinates;
-                      // the point may be either a cluster or a crime point
-                      const { cluster: isCluster, point_count: pointCount } =
-                        cluster.properties;
-
-                      // const marker = markers.find((m) => m.id === cluster.id);
-
-                      // we have a cluster to render
-                      if (isCluster) {
-                        return (
-                          <Marker
-                            key={`cluster-${cluster.id}`}
-                            latitude={latitude}
-                            longitude={longitude}
-                          >
-                            <div
-                              className="flex items-center justify-center rounded-full bg-blue-500 p-4"
-                              style={{
-                                width: `${
-                                  10 + (pointCount / points.length) * 20
-                                }px`,
-                                height: `${
-                                  10 + (pointCount / points.length) * 20
-                                }px`,
-                              }}
-                              onClick={() =>
-                                handleClusterClick(latitude, longitude)
-                              }
-                            >
-                              {pointCount}
-                            </div>
-                          </Marker>
-                        );
-                      }
-
-                      return (
-                        <>
-                          <Marker
-                            // color={color}
-                            key={`${cluster.properties.id}`}
-                            latitude={latitude}
-                            longitude={longitude}
-                            onClick={() =>
-                              handleMarkerClick(
-                                cluster.properties.id,
-                                latitude,
-                                longitude
-                              )
-                            }
-                          ></Marker>
-                          <Marker
-                            key={`span-${cluster.properties.id}`}
-                            latitude={latitude}
-                            longitude={longitude}
-                            anchor="top"
-                          >
-                            <span className="font-bold">
-                              {cluster.properties.title}
-                            </span>
-                          </Marker>
-                        </>
-                      );
-                    })} */}
                     {centerpoints.length > 0 && (
                       <PointLayer
                         //@ts-ignore
