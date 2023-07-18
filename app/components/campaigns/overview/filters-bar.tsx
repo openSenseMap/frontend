@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
+import { Priority } from "@prisma/client";
 
 type FiltersBarProps = {
   phenomena: string[];
@@ -71,20 +72,13 @@ export default function FiltersBar({
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40">
           <DropdownMenuRadioGroup value={urgency} onValueChange={setUrgency}>
-            <DropdownMenuRadioItem value="urgent">
-              {t("urgent")}
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="high">
-              {" "}
-              {t("high")}
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="medium">
-              {t("medium")}
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="low">
-              {" "}
-              {t("low")}
-            </DropdownMenuRadioItem>
+            {Object.keys(Priority).map((priority: string, index: number) => {
+              return (
+                <DropdownMenuRadioItem key={index} value={priority}>
+                  {priority}
+                </DropdownMenuRadioItem>
+              );
+            })}
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
