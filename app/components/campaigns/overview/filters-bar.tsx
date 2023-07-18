@@ -60,11 +60,7 @@ export default function FiltersBar({
     <div className="my-4 flex flex-row justify-between gap-20">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            className="flex w-full max-w-[200px] "
-            variant="outline"
-            size={"lg"}
-          >
+          <Button className="flex w-fit gap-2 " variant="outline" size={"lg"}>
             <AlertCircleIcon className="h-4 w-4 text-red-500" />
             {t("urgency")}{" "}
             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
@@ -85,11 +81,7 @@ export default function FiltersBar({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            className="flex w-full max-w-[200px]"
-            variant="outline"
-            size={"lg"}
-          >
+          <Button className="flex w-fit gap-2" variant="outline" size={"lg"}>
             <ArrowDownAZIcon className="h-4 w-4" />
             {t("sort by")}
 
