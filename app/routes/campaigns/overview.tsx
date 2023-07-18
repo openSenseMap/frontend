@@ -90,7 +90,7 @@ export default function Campaigns() {
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
   // );
-  const [selectedCampaign, setSelectedcampain] = useState("");
+  const [selectedCampaign, setSelectedCampaign] = useState("");
   const [selectedMarker, setSelectedMarker] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -266,7 +266,7 @@ export default function Campaigns() {
       return campaign;
     });
     setDisplayedCampaigns(allCampaigns as any);
-    setSelectedcampain("");
+    setSelectedCampaign("");
     if (mapRef.current) {
       mapRef.current.flyTo({
         center: [0, 0],
@@ -424,41 +424,41 @@ export default function Campaigns() {
     // return () => window.removeEventListener("resize", zoomListener);
   }, [mapBounds, supercluster, zoom]);
 
-  const handleMarkerClick = useCallback(
-    (markerId: string, latitude: number, longitude: number) => {
-      const selectedCampaign = data.filter(
-        (campaign: any) => campaign.id === markerId
-      );
+  // const handleMarkerClick = useCallback(
+  //   (markerId: string, latitude: number, longitude: number) => {
+  //     const selectedCampaign = data.filter(
+  //       (campaign: any) => campaign.id === markerId
+  //     );
 
-      // const updatedMarkers = markers.map((marker) => {
-      //   if (marker.properties.id === markerId) {
-      //     return {
-      //       ...marker,
-      //       properties: {
-      //         ...marker.properties,
-      //         color: "red",
-      //         selected: true,
-      //       },
-      //     };
-      //   }
-      //   return marker;
-      // });
+  //     // const updatedMarkers = markers.map((marker) => {
+  //     //   if (marker.properties.id === markerId) {
+  //     //     return {
+  //     //       ...marker,
+  //     //       properties: {
+  //     //         ...marker.properties,
+  //     //         color: "red",
+  //     //         selected: true,
+  //     //       },
+  //     //     };
+  //     //   }
+  //     //   return marker;
+  //     // });
 
-      // console.log(updatedMarkers);
+  //     // console.log(updatedMarkers);
 
-      // setMarkers(updatedMarkers);
+  //     // setMarkers(updatedMarkers);
 
-      setSelectedMarker(markerId);
-      setDisplayedCampaigns(selectedCampaign as any);
-      setSelectedcampain(selectedCampaign[0].id);
-      mapRef.current?.flyTo({
-        center: [longitude, latitude],
-        duration: 2000,
-        zoom: 6,
-      });
-    },
-    [data]
-  );
+  //     setSelectedMarker(markerId);
+  //     setDisplayedCampaigns(selectedCampaign as any);
+  //     setSelectedcampain(selectedCampaign[0].id);
+  //     mapRef.current?.flyTo({
+  //       center: [longitude, latitude],
+  //       duration: 2000,
+  //       zoom: 6,
+  //     });
+  //   },
+  //   [data]
+  // );
 
   const handleClusterClick = useCallback(
     (latitude: number, longitude: number) => {
@@ -612,7 +612,7 @@ export default function Campaigns() {
               <input type="text" value={selectedCampaign.split("-")[0]} />
               <XMarkIcon
                 onClick={() => {
-                  setSelectedcampain("");
+                  setSelectedCampaign("");
                   resetFilters();
                   mapRef.current?.flyTo({
                     center: [0, 0],
@@ -819,7 +819,14 @@ export default function Campaigns() {
                       );
                     })} */}
                     {centerpoints.length > 0 && (
-                      <PointLayer centerpoints={centerpoints} />
+                      <PointLayer
+                        //@ts-ignore
+                        centerpoints={centerpoints}
+                        setDisplayedCampaigns={setDisplayedCampaigns}
+                        setSelectedCampaign={setSelectedCampaign}
+                        setSelectedMarker={setSelectedMarker}
+                        data={data}
+                      />
                     )}
                   </Map>
                 </MapProvider>

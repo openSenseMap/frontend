@@ -1,9 +1,4 @@
-import type {
-  GeoJsonProperties,
-  BBox,
-  FeatureCollection,
-  Point,
-} from "geojson";
+import type { BBox } from "geojson";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { Marker, useMap } from "react-map-gl";
 import type { PointFeature } from "supercluster";
@@ -24,30 +19,20 @@ const DEBOUNCE_VALUE = 50;
 const options = {
   radius: 50,
   maxZoom: 14,
-  //   map: (props: any) => ({ categories: { [props.status]: 1 } }),
-  //   reduce: (accumulated: any, props: any) => {
-  //     const categories: any = {};
-  //     // clone the categories object from the accumulator
-  //     for (const key in accumulated.categories) {
-  //       categories[key] = accumulated.categories[key];
-  //     }
-  //     // add props' category data to the clone
-  //     for (const key in props.categories) {
-  //       if (key in accumulated.categories) {
-  //         categories[key] = accumulated.categories[key] + props.categories[key];
-  //       } else {
-  //         categories[key] = props.categories[key];
-  //       }
-  //     }
-  //     // assign the clone to the accumulator
-  //     accumulated.categories = categories;
-  //   },
 };
 
 export default function PointLayer({
   centerpoints,
+  setDisplayedCampaigns,
+  setSelectedCampaign,
+  setSelectedMarker,
+  data,
 }: {
   centerpoints: PointFeature<PointProperties>[];
+  setDisplayedCampaigns: any;
+  setSelectedCampaign: any;
+  setSelectedMarker: any;
+  data: any;
 }) {
   const { osem: mapRef } = useMap();
   const [bounds, setBounds] = useState(
@@ -55,7 +40,7 @@ export default function PointLayer({
   );
   const [zoom, setZoom] = useState(mapRef?.getZoom() || 0);
 
-  const points: Array<PointFeature<PointProperties>> = useMemo(() => {
+  const points: PointFeature<PointProperties>[] = useMemo(() => {
     return centerpoints.map((point: any) => ({
       type: "Feature",
       properties: {
@@ -97,14 +82,50 @@ export default function PointLayer({
   });
 
   const handleClusterClick = useCallback(
-    (latitude: number, longitude: number) => {
-      mapRef?.flyTo({
+    (cluster: any) => {
+      // supercluster from hook can be null or undefined
+      if (!supercluster) return;
+
+      const [longitude, latitude] = cluster.geometry.coordinates;
+
+      const expansionZoom = Math.min(
+        supercluster.getClusterExpansionZoom(cluster.id as number),
+        20
+      );
+
+      mapRef?.getMap().flyTo({
         center: [longitude, latitude],
-        duration: 2000,
-        zoom: zoom + 2, // maybe just hardcoaded number
+        animate: true,
+        speed: 1.6,
+        zoom: expansionZoom,
+        essential: true,
       });
     },
-    [zoom]
+    [mapRef, supercluster]
+  );
+
+  const handleMarkerClick = useCallback(
+    (markerId: string, latitude: number, longitude: number) => {
+      const selectedCampaign = data.filter(
+        (campaign: any) => campaign.id === markerId
+      );
+
+      setSelectedMarker(markerId);
+      setDisplayedCampaigns(selectedCampaign as any);
+      setSelectedCampaign(selectedCampaign[0].id);
+      mapRef?.flyTo({
+        center: [longitude, latitude],
+        duration: 1000,
+        zoom: 6,
+      });
+    },
+    [
+      data,
+      mapRef,
+      setDisplayedCampaigns,
+      setSelectedCampaign,
+      setSelectedMarker,
+    ]
   );
 
   const clusterMarker = useMemo(() => {
@@ -129,7 +150,7 @@ export default function PointLayer({
                 width: `${10 + (pointCount / points.length) * 20}px`,
                 height: `${10 + (pointCount / points.length) * 20}px`,
               }}
-              onClick={() => handleClusterClick(latitude, longitude)}
+              onClick={() => handleClusterClick(cluster)}
             >
               {pointCount}
             </div>
@@ -145,13 +166,9 @@ export default function PointLayer({
             key={`${cluster.properties.id}`}
             latitude={latitude}
             longitude={longitude}
-            // onClick={() =>
-            //   handleMarkerClick(
-            //     cluster.properties.id,
-            //     latitude,
-            //     longitude
-            //   )
-            // }
+            onClick={() =>
+              handleMarkerClick(cluster.properties.id, latitude, longitude)
+            }
           ></Marker>
           <Marker
             key={`span-${cluster.properties.id}`}
@@ -164,7 +181,7 @@ export default function PointLayer({
         </>
       );
     });
-  }, [clusters]);
+  }, [clusters, handleClusterClick, handleMarkerClick, points.length]);
 
   return <>{clusterMarker}</>;
 }
