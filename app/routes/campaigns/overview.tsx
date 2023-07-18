@@ -457,15 +457,18 @@ export default function Campaigns() {
               className={`${
                 showMap
                   ? "mx-auto mt-10 flex flex-col gap-4"
-                  : "mt-10 flex w-full gap-4"
+                  : "mt-10 flex w-full flex-wrap gap-4"
               }`}
             >
               <span className="absolute left-0 top-0 ">
                 {displayedCampaigns.length} von {data.length} Kampagnen werden
                 angezeigt
               </span>
-              {displayedCampaigns.map((item: any) => (
-                <Card key={item.id} className="w-[350px]">
+              {displayedCampaigns.map((item: any, index: number) => (
+                <Card
+                  key={item.id}
+                  className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`}
+                >
                   <Link to={`../${item.slug}`}>
                     <CardHeader>
                       <CardTitle>
