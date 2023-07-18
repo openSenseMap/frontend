@@ -12,6 +12,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -54,6 +64,7 @@ import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
+import CountryDropdown from "~/components/campaigns/overview/country-dropdown";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -82,6 +93,7 @@ export default function Campaigns() {
   //   []
   // );
   const [selectedCampaign, setSelectedCampaign] = useState("");
+  const [country, setCountry] = useState("");
   const [selectedMarker, setSelectedMarker] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -237,10 +249,11 @@ export default function Campaigns() {
         .includes(searchTerm.toLowerCase());
       const priorityMatches =
         !urgency || campaign.priority.toLowerCase() === urgency.toLowerCase();
-      return titleMatches && priorityMatches;
+      const countryMatches = campaign.country === country.toLowerCase();
+      return titleMatches && priorityMatches && countryMatches;
     });
     setDisplayedCampaigns(filteredCampaigns as any);
-  }, [data, searchTerm, urgency]);
+  }, [data, searchTerm, urgency, country]);
 
   useEffect(() => {
     let sortedCampaigns;
@@ -342,11 +355,11 @@ export default function Campaigns() {
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
         />
-        <div className="my-4 flex flex-row gap-20">
+        <div className="my-4 flex flex-row justify-between gap-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="flex w-full max-w-sm justify-between"
+                className="flex w-full max-w-[200px] "
                 variant="outline"
                 size={"lg"}
               >
@@ -381,7 +394,7 @@ export default function Campaigns() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="flex w-full max-w-sm justify-between"
+                className="flex w-full max-w-[200px]"
                 variant="outline"
                 size={"lg"}
               >
@@ -402,6 +415,29 @@ export default function Campaigns() {
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Dialog>
+            <DialogTrigger>
+              <Button variant="outline" className="flex w-fit gap-2">
+                More Filters <FilterIcon className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>More Filters</DialogTitle>
+              </DialogHeader>
+              <CountryDropdown
+                country={country}
+                setCountry={setCountry}
+                trigger={t("location")}
+              />
+
+              <DialogFooter className="flex justify-between">
+                <Button>Cancel</Button>
+                <Button>Apply</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button
             className="flex w-fit gap-2 "
             variant={"outline"}
