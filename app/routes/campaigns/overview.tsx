@@ -30,11 +30,21 @@ import {
 } from "@/components/ui/accordion";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "~/components/ui/button";
 import {
   ChevronDown,
@@ -67,16 +77,26 @@ import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 // import CountryDropdown from "~/components/campaigns/overview/country-dropdown";
 import { CountryDropdown } from "~/components/campaigns/overview/country-dropdown";
+import { Exposure } from "@prisma/client";
+import { getPhenomena } from "~/models/phenomena.server";
+import { ScrollArea } from "~/components/ui/scroll-area";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
 export async function loader({ params }: LoaderArgs) {
   const campaigns = await getCampaigns();
+  const phenos = await getPhenomena();
+  if (phenos.code === "UnprocessableEntity") {
+    throw new Response("Phenomena not found", { status: 502 });
+  }
+  const phenomena = phenos.map(
+    (d: { label: { item: { text: any }[] } }) => d.label.item[0].text
+  );
   // const data = await campaigns.json();
   // if (data.code === "UnprocessableEntity") {
   //   throw new Response("Campaigns not found", { status: 502 });
   // }
-  return json(campaigns);
+  return json({ campaigns, phenomena });
 }
 export const links: LinksFunction = () => {
   return [
@@ -90,12 +110,20 @@ export const links: LinksFunction = () => {
 export default function Campaigns() {
   const data = useLoaderData<typeof loader>();
   const { t } = useTranslation("overview");
+  const campaigns = data.campaigns;
+  const phenomena = data.phenomena;
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
   // );
+  const [phenomenaState, setPhenomenaState] = useState(
+    Object.fromEntries(phenomena.map((p: string) => [p, false]))
+  );
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [country, setCountry] = useState("");
+  const [exposure, setExposure] = useState("");
   const [selectedMarker, setSelectedMarker] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -230,7 +258,7 @@ export default function Campaigns() {
   const resetFilters = () => {
     // setUrgency("");
     // setSortBy("");
-    const allCampaigns = data.map((campaign: any) => {
+    const allCampaigns = campaigns.map((campaign: any) => {
       return campaign;
     });
     setDisplayedCampaigns(allCampaigns as any);
@@ -245,24 +273,24 @@ export default function Campaigns() {
   };
 
   useEffect(() => {
-    const filteredCampaigns = data.slice().filter((campaign: any) => {
+    const filteredCampaigns = campaigns.slice().filter((campaign: any) => {
       const titleMatches = campaign.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const priorityMatches =
         !urgency || campaign.priority.toLowerCase() === urgency.toLowerCase();
-      const countryMatches = campaign.country === country.toLowerCase();
-      return titleMatches && priorityMatches && countryMatches;
+      // const countryMatches = campaign.country === country.toLowerCase();
+      return titleMatches && priorityMatches;
     });
     setDisplayedCampaigns(filteredCampaigns as any);
-  }, [data, searchTerm, urgency, country]);
+  }, [data, searchTerm, urgency]);
 
   useEffect(() => {
     let sortedCampaigns;
 
     switch (sortBy) {
       case "erstelldatum":
-        sortedCampaigns = data
+        sortedCampaigns = campaigns
           .slice()
           .sort((campaignA: any, campaignB: any) => {
             const createdAtA = new Date(campaignA.createdAt).getTime();
@@ -279,7 +307,7 @@ export default function Campaigns() {
           LOW: 3,
         };
 
-        sortedCampaigns = data
+        sortedCampaigns = campaigns
           .slice()
           .sort((campaignA: any, campaignB: any) => {
             const priorityA =
@@ -292,13 +320,13 @@ export default function Campaigns() {
         break;
 
       default:
-        sortedCampaigns = data.slice();
+        sortedCampaigns = campaigns.slice();
     }
 
     setDisplayedCampaigns(sortedCampaigns as any);
   }, [data, sortBy]);
 
-  const centerpoints = data
+  const centerpoints = campaigns
     .map((campaign: any) => {
       if (Object.keys(campaign.centerpoint).length != 0) {
         return {
@@ -417,7 +445,7 @@ export default function Campaigns() {
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Dialog>
+          <Dialog open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
             <DialogTrigger>
               <Button variant="outline" className="flex w-fit gap-2">
                 More Filters <FilterIcon className="h-4 w-4" />
@@ -429,10 +457,106 @@ export default function Campaigns() {
                 <DialogTitle>More Filters</DialogTitle>
               </DialogHeader>
               <CountryDropdown />
+              <Select value={exposure} onValueChange={setExposure}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Exposures</SelectLabel>
+                    {Object.keys(Exposure).map((key: string) => {
+                      return (
+                        <SelectItem key={key} value={key}>
+                          {key}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <DropdownMenu
+                open={phenomenaDropdown}
+                onOpenChange={setPhenomenaDropdownOpen}
+                // modal={false}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button className="w-full truncate" variant="outline">
+                    {Object.keys(phenomenaState)
+                      .filter((key) => phenomenaState[key])
+                      .join(", ")}
+                    {Object.keys(phenomenaState).filter(
+                      (key) => phenomenaState[key]
+                    ).length > 0 ? (
+                      <></>
+                    ) : (
+                      <span>Phänomene</span>
+                    )}
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <ScrollArea>
+                    {phenomena.map((p: any) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={p}
+                          checked={phenomenaState[p]}
+                          onCheckedChange={() => {
+                            setPhenomenaState({
+                              ...phenomenaState,
+                              [p]: !phenomenaState[p],
+                            });
+                          }}
+                          onSelect={(event) => event.preventDefault()}
+                        >
+                          {p}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                  </ScrollArea>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button className="w-full" variant="outline">
+                    <span>Organizations</span>
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <p>TODO: Organizations here</p>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div className="flex justify-between">
+                <div>
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Start Date
+                  </label>
+                  <input id="startDate" name="startDate" type="date" />
+                </div>
+                <div>
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    End Date
+                  </label>
+                  <input id="endDate" name="endDate" type="date" />
+                </div>
+              </div>
 
               <DialogFooter className="flex justify-between">
                 <Button>Cancel</Button>
-                <Button>Apply</Button>
+                <Button
+                  onClick={() => {
+                    setMoreFiltersOpen(false);
+                  }}
+                >
+                  Apply
+                </Button>
               </DialogFooter>
             </DialogContent>
             {/* </DialogOverlay> */}
@@ -451,7 +575,7 @@ export default function Campaigns() {
             <span> {t("show map")}</span>
             <Switch
               id="showMapSwitch"
-              disabled={data.length === 0}
+              disabled={campaigns.length === 0}
               checked={showMap}
               onCheckedChange={() => setShowMap(!showMap)}
             />
@@ -475,7 +599,7 @@ export default function Campaigns() {
           )}
         </div>
         <hr className="w-full bg-gray-700" />
-        {data.length === 0 ? (
+        {campaigns.length === 0 ? (
           <div className="flex w-full flex-col items-center justify-center gap-2">
             <span className="mt-6 text-red-500">{t("no campaigns yet")}. </span>{" "}
             <div>
@@ -496,8 +620,8 @@ export default function Campaigns() {
               }`}
             >
               <span className="absolute left-0 top-0 ">
-                {displayedCampaigns.length} von {data.length} Kampagnen werden
-                angezeigt
+                {displayedCampaigns.length} von {campaigns.length} Kampagnen
+                werden angezeigt
               </span>
               {displayedCampaigns.map((item: any, index: number) => (
                 <Card
