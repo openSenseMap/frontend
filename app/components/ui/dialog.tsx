@@ -125,6 +125,7 @@ export {
   DialogClose,
   DialogHeader,
   DialogFooter,
+  DialogOverlay,
   DialogTitle,
   DialogDescription,
 };

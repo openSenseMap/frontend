@@ -18,6 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -64,7 +65,8 @@ import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
-import CountryDropdown from "~/components/campaigns/overview/country-dropdown";
+// import CountryDropdown from "~/components/campaigns/overview/country-dropdown";
+import { ComboboxDemo } from "~/components/campaigns/overview/country-dropdown";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -421,22 +423,24 @@ export default function Campaigns() {
                 More Filters <FilterIcon className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-
+            {/* <DialogOverlay> */}
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>More Filters</DialogTitle>
               </DialogHeader>
-              <CountryDropdown
-                country={country}
-                setCountry={setCountry}
-                trigger={t("location")}
-              />
+              {/* <CountryDropdown
+                  country={country}
+                  setCountry={setCountry}
+                  trigger={t("location")}
+                /> */}
+              <ComboboxDemo />
 
               <DialogFooter className="flex justify-between">
                 <Button>Cancel</Button>
                 <Button>Apply</Button>
               </DialogFooter>
             </DialogContent>
+            {/* </DialogOverlay> */}
           </Dialog>
           <Button
             className="flex w-fit gap-2 "
