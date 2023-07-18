@@ -158,8 +158,14 @@ export default function FiltersModal({
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between">
-          <Button>{t("cancel")}</Button>
+        <DialogFooter className="flex w-full justify-between">
+          <Button
+            onClick={() => setMoreFiltersOpen(false)}
+            variant="destructive"
+            className="mr-auto"
+          >
+            {t("cancel")}
+          </Button>
           <Button
             onClick={() => {
               setMoreFiltersOpen(false);
