@@ -127,6 +127,15 @@ export default function DefineAreaMap({
           className: "p-4",
           children: (
             <div className="my-2">
+              {geojsonUploadData.features.map((f: any, index: number) => (
+                <div key={index}>
+                  {Object.entries(f.properties).map(([key, value]) => (
+                    <div key={key}>
+                      <strong>{key}:</strong> {value as string}
+                    </div>
+                  ))}
+                </div>
+              ))}
               <Button
                 onClick={() => {
                   setGeojsonUploadData(null);
