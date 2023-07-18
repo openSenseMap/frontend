@@ -380,21 +380,27 @@ export default function CampaignId() {
             <TabsList className="w-full justify-between p-2">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+                className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
               >
-                <Button variant="outline">{t("overview")}</Button>
+                <Button className="bg-muted" variant="outline">
+                  {t("overview")}
+                </Button>
               </TabsTrigger>
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+                className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
               >
-                <Button variant="outline">{t("calender")}</Button>
+                <Button className="bg-muted" variant="outline">
+                  {t("calender")}
+                </Button>
               </TabsTrigger>
               <TabsTrigger
                 value="comments"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+                className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
               >
-                <Button variant="outline">{t("questions and comments")}</Button>
+                <Button className="bg-muted" variant="outline">
+                  {t("questions and comments")}
+                </Button>
               </TabsTrigger>
             </TabsList>
           </div>
