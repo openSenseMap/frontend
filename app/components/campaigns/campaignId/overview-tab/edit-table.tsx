@@ -41,6 +41,7 @@ import { useState, useRef } from "react";
 import { MarkdownEditor } from "~/markdown.client";
 import { ClientOnly } from "remix-utils";
 import { useTranslation } from "react-i18next";
+import { CountryDropdown } from "../../overview/country-dropdown";
 
 type EditTableProps = {
   setEditMode: any;
@@ -66,6 +67,7 @@ export default function EditTable({
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
   const [exposure, setExposure] = useState(campaign.exposure);
+  const [country, setCountry] = useState(campaign.country);
   const { t } = useTranslation("edit-campaign-table");
 
   return (
@@ -188,6 +190,18 @@ export default function EditTable({
                 value={endDate}
                 onChange={setEndDate}
               />
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>{t("location")}</TableCell>
+            <TableCell>
+              <input
+                className="hidden"
+                id="country"
+                name="country"
+                value={country}
+              />
+              <CountryDropdown setCountry={setCountry} />
             </TableCell>
           </TableRow>
           <TableRow>

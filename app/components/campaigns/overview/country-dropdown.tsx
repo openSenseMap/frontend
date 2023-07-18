@@ -18,7 +18,11 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
-export function CountryDropdown() {
+type CountryDropdownProps = {
+  setCountry?: (country: string) => void;
+};
+
+export function CountryDropdown({ setCountry }: CountryDropdownProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
 
@@ -48,9 +52,13 @@ export function CountryDropdown() {
               {Object.entries(countryListAlpha2).map(
                 ([countryCode, countryName], index: number) => (
                   <CommandItem
+                    id="country"
                     key={index}
                     onSelect={(currentValue) => {
                       setValue(countryName);
+                      if (setCountry) {
+                        setCountry(countryCode);
+                      }
                       setOpen(false);
                     }}
                   >

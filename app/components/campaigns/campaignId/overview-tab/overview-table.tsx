@@ -12,18 +12,9 @@ import { Form } from "@remix-run/react";
 import { EditIcon, SaveIcon, TrashIcon, XIcon } from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogClose,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import EditTable from "./edit-table";
+import { CountryFlagIcon } from "~/components/ui/country-flag";
 
 type OverviewTableProps = {
   campaign: Campaign;
@@ -85,6 +76,15 @@ export default function OverviewTable({
             <TableRow>
               <TableCell>Bearbeitet am</TableCell>
               <TableCell>{JSON.stringify(campaign.updatedAt)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Location</TableCell>
+              <TableCell className="flex">
+                <CountryFlagIcon
+                  country={String(campaign.country).toUpperCase()}
+                />{" "}
+                {campaign.country?.toUpperCase()}
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Phänomene</TableCell>

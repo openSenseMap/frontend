@@ -121,6 +121,7 @@ export async function update(
     | "priority"
     | "startDate"
     | "endDate"
+    | "country"
     | "updatedAt"
     | "phenomena"
     | "exposure"

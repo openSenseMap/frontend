@@ -81,6 +81,13 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     begin && typeof begin === "string" ? new Date(begin) : new Date();
   const end = formData.get("endDate");
   const endDate = end && typeof end === "string" ? new Date(end) : new Date();
+  const country = formData.get("country");
+  if (typeof country !== "string" || country.length === 0) {
+    return json(
+      { errors: { country: "country is required", body: null } },
+      { status: 400 }
+    );
+  }
   const updatedAt = new Date();
   const exposure = formData.get("exposure") as ExposureType;
   const hardware_available =
@@ -93,6 +100,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     priority,
     startDate,
     endDate,
+    country,
     exposure,
     hardware_available
   );
@@ -103,6 +111,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       priority,
       startDate,
       endDate,
+      country,
       updatedAt,
       phenomena,
       exposure,
