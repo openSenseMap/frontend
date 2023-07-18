@@ -12,17 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -30,32 +19,21 @@ import {
 } from "@/components/ui/accordion";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "~/components/ui/button";
 import {
   ChevronDown,
   FilterXIcon,
-  FilterIcon,
   AlertCircleIcon,
   ArrowDownAZIcon,
 } from "lucide-react";
 // import Header from "./header";
 import { Map } from "~/components/Map";
-import { getCampaigns, updateCampaign } from "~/models/campaign.server";
+import { getCampaigns } from "~/models/campaign.server";
 import {
   Layer,
   LngLatBounds,
@@ -68,19 +46,14 @@ import {
 } from "react-map-gl";
 import { Progress } from "~/components/ui/progress";
 import { CountryFlagIcon } from "~/components/ui/country-flag";
-import { BBox, FeatureCollection } from "geojson";
-import Supercluster, { AnyProps, PointFeature } from "supercluster";
-import useSupercluster, { UseSuperclusterArgument } from "use-supercluster";
+import { BBox } from "geojson";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
-// import CountryDropdown from "~/components/campaigns/overview/country-dropdown";
-import { CountryDropdown } from "~/components/campaigns/overview/country-dropdown";
-import { Exposure } from "@prisma/client";
 import { getPhenomena } from "~/models/phenomena.server";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import FiltersModal from "~/components/campaigns/overview/filters-modal";
+import FiltersBar from "~/components/campaigns/overview/filters-bar";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -386,254 +359,182 @@ export default function Campaigns() {
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
         />
-        <div className="my-4 flex flex-row justify-between gap-20">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="flex w-full max-w-[200px] "
-                variant="outline"
-                size={"lg"}
-              >
-                <AlertCircleIcon className="h-4 w-4 text-red-500" />
-                {t("urgency")}{" "}
-                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DropdownMenuRadioGroup
-                value={urgency}
-                onValueChange={setUrgency}
-              >
-                <DropdownMenuRadioItem value="urgent">
-                  {t("urgent")}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="high">
-                  {" "}
-                  {t("high")}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="medium">
-                  {t("medium")}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="low">
-                  {" "}
-                  {t("low")}
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="flex w-full max-w-[200px]"
-                variant="outline"
-                size={"lg"}
-              >
-                <ArrowDownAZIcon className="h-4 w-4" />
-                {t("sort by")}
-
-                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
-                <DropdownMenuRadioItem value="dringlichkeit">
-                  {t("urgency")}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="erstelldatum">
-                  {t("creation date")}
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <FiltersModal
-            exposure={exposure}
-            setExposure={setExposure}
-            phenomena={phenomena}
-            phenomenaState={phenomenaState}
-            setPhenomenaState={setPhenomenaState}
-          />
-          <Button
-            className="flex w-fit gap-2 "
-            variant={"outline"}
-            size={"lg"}
-            onClick={resetFilters}
-          >
-            {t("reset filters")}
-
-            <FilterXIcon className="h-4 w-4" />
-          </Button>
-          <div className="flex flex-col items-center justify-center">
-            <span> {t("show map")}</span>
-            <Switch
-              id="showMapSwitch"
-              disabled={campaigns.length === 0}
-              checked={showMap}
-              onCheckedChange={() => setShowMap(!showMap)}
+        <FiltersBar
+          exposure={exposure}
+          setExposure={setExposure}
+          phenomena={phenomena}
+          phenomenaState={phenomenaState}
+          resetFilters={resetFilters}
+          setPhenomenaState={setPhenomenaState}
+          setShowMap={setShowMap}
+          setSortBy={setSortBy}
+          setUrgency={setUrgency}
+          showMap={showMap}
+          sortBy={sortBy}
+          switchDisabled={campaigns.length === 0}
+          urgency={urgency}
+        />
+        {selectedCampaign && (
+          <div className="relative inline-block">
+            <input type="text" value={selectedCampaign.split("-")[0]} />
+            <XMarkIcon
+              onClick={() => {
+                setSelectedCampaign("");
+                resetFilters();
+                mapRef.current?.flyTo({
+                  center: [0, 0],
+                  duration: 1000,
+                  zoom: 1,
+                });
+              }}
+              className="absolute right-2 top-2 ml-auto h-5 w-5"
             />
-          </div>
-          {selectedCampaign && (
-            <div className="relative inline-block">
-              <input type="text" value={selectedCampaign.split("-")[0]} />
-              <XMarkIcon
-                onClick={() => {
-                  setSelectedCampaign("");
-                  resetFilters();
-                  mapRef.current?.flyTo({
-                    center: [0, 0],
-                    duration: 1000,
-                    zoom: 1,
-                  });
-                }}
-                className="absolute right-2 top-2 ml-auto h-5 w-5"
-              />
-            </div>
-          )}
-        </div>
-        <hr className="w-full bg-gray-700" />
-        {campaigns.length === 0 ? (
-          <div className="flex w-full flex-col items-center justify-center gap-2">
-            <span className="mt-6 text-red-500">{t("no campaigns yet")}. </span>{" "}
-            <div>
-              {t("click")}{" "}
-              <Link className="text-blue-500 underline" to="../../create/area">
-                {t("here")}
-              </Link>{" "}
-              {t("to create a campaign")}
-            </div>
-          </div>
-        ) : (
-          <div className="relative flex w-full justify-between">
-            <div
-              className={`${
-                showMap
-                  ? "mx-auto mt-10 flex flex-col gap-4"
-                  : "mt-10 flex w-full flex-wrap gap-4"
-              }`}
-            >
-              <span className="absolute left-0 top-0 ">
-                {displayedCampaigns.length} von {campaigns.length} Kampagnen
-                werden angezeigt
-              </span>
-              {displayedCampaigns.map((item: any, index: number) => (
-                <Card
-                  key={item.id}
-                  className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`}
-                >
-                  <Link to={`../${item.slug}`}>
-                    <CardHeader>
-                      <CardTitle>
-                        <div className="flex">
-                          <span
-                            className={clsx(
-                              "flex w-fit flex-wrap rounded px-2 py-1 text-sm text-white",
-                              {
-                                "bg-red-500":
-                                  item.priority.toLowerCase() === "urgent",
-                                "bg-yellow-500":
-                                  item.priority.toLowerCase() === "high",
-                                "bg-blue-500":
-                                  item.priority.toLowerCase() === "medium",
-                                "bg-green-500":
-                                  item.priority.toLowerCase() === "low",
-                              }
-                            )}
-                          >
-                            <ClockIcon className="h-4 w-4" /> {item.priority}
-                          </span>
-                          {item.exposure !== "UNKNOWN" && (
-                            <span
-                              className={clsx(
-                                "ml-auto w-fit rounded px-2 py-1 text-sm text-white",
-                                {
-                                  "bg-blue-200":
-                                    item.exposure.toLowerCase() === "indoor",
-                                  "bg-orange-500":
-                                    item.exposure.toLowerCase() === "mobile",
-                                  "bg-emerald-500":
-                                    item.exposure.toLowerCase() === "outdoor",
-                                }
-                              )}
-                            >
-                              {item.exposure}
-                            </span>
-                          )}
-                        </div>
-                        <span className="mt-2 flex flex-wrap">
-                          {item.title}
-                          {item.country && (
-                            <CountryFlagIcon
-                              country={String(item.country).toUpperCase()}
-                            />
-                          )}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="mt-2">
-                      <Progress
-                        max={item.requiredParticipants}
-                        value={item.participantCount}
-                        // onMouseEnter={}
-                      />
-                      <span>
-                        {item.requiredParticipants} {t("total participants")}
-                      </span>
-                    </CardContent>
-                  </Link>
-                  <CardFooter>
-                    <Accordion className="w-full" type="single" collapsible>
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger className="text-blue-600 hover:text-blue-800">
-                          {t("learn more")}
-                        </AccordionTrigger>
-                        <AccordionContent>{item.description}</AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-            <div>
-              {showMap && (
-                <MapProvider>
-                  <Map
-                    initialViewState={{
-                      latitude: 51,
-                      longitude: 7,
-                      zoom: 1,
-                    }}
-                    interactiveLayerIds={["marker-layer"]}
-                    // preserveDrawingBuffer
-                    // onMouseMove={handleMapMouseMove}
-                    // onClick={handleMapClick}
-                    onLoad={handleMapLoad}
-                    onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
-                    ref={mapRef}
-                    style={{
-                      height: "60vh",
-                      width: "40vw",
-                      position: "sticky",
-                      top: 0,
-                      marginLeft: "auto",
-                    }}
-                  >
-                    {centerpoints.length > 0 && (
-                      <PointLayer
-                        //@ts-ignore
-                        centerpoints={centerpoints}
-                        setDisplayedCampaigns={setDisplayedCampaigns}
-                        setSelectedCampaign={setSelectedCampaign}
-                        setSelectedMarker={setSelectedMarker}
-                        data={data}
-                      />
-                    )}
-                  </Map>
-                </MapProvider>
-              )}
-            </div>
           </div>
         )}
       </div>
+      <hr className="w-full bg-gray-700" />
+      {campaigns.length === 0 ? (
+        <div className="flex w-full flex-col items-center justify-center gap-2">
+          <span className="mt-6 text-red-500">{t("no campaigns yet")}. </span>{" "}
+          <div>
+            {t("click")}{" "}
+            <Link className="text-blue-500 underline" to="../../create/area">
+              {t("here")}
+            </Link>{" "}
+            {t("to create a campaign")}
+          </div>
+        </div>
+      ) : (
+        <div className="relative flex w-full justify-between">
+          <div
+            className={`${
+              showMap
+                ? "mx-auto mt-10 flex flex-col gap-4"
+                : "mt-10 flex w-full flex-wrap gap-4"
+            }`}
+          >
+            <span className="absolute left-0 top-0 ">
+              {displayedCampaigns.length} von {campaigns.length} Kampagnen
+              werden angezeigt
+            </span>
+            {displayedCampaigns.map((item: any, index: number) => (
+              <Card
+                key={item.id}
+                className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`} // 3 campaigns per row
+              >
+                <Link to={`../${item.slug}`}>
+                  <CardHeader>
+                    <CardTitle>
+                      <div className="flex">
+                        <span
+                          className={clsx(
+                            "flex w-fit flex-wrap rounded px-2 py-1 text-sm text-white",
+                            {
+                              "bg-red-500":
+                                item.priority.toLowerCase() === "urgent",
+                              "bg-yellow-500":
+                                item.priority.toLowerCase() === "high",
+                              "bg-blue-500":
+                                item.priority.toLowerCase() === "medium",
+                              "bg-green-500":
+                                item.priority.toLowerCase() === "low",
+                            }
+                          )}
+                        >
+                          <ClockIcon className="h-4 w-4" /> {item.priority}
+                        </span>
+                        {item.exposure !== "UNKNOWN" && (
+                          <span
+                            className={clsx(
+                              "ml-auto w-fit rounded px-2 py-1 text-sm text-white",
+                              {
+                                "bg-blue-200":
+                                  item.exposure.toLowerCase() === "indoor",
+                                "bg-orange-500":
+                                  item.exposure.toLowerCase() === "mobile",
+                                "bg-emerald-500":
+                                  item.exposure.toLowerCase() === "outdoor",
+                              }
+                            )}
+                          >
+                            {item.exposure}
+                          </span>
+                        )}
+                      </div>
+                      <span className="mt-2 flex flex-wrap">
+                        {item.title}
+                        {item.country && (
+                          <CountryFlagIcon
+                            country={String(item.country).toUpperCase()}
+                          />
+                        )}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="mt-2">
+                    <Progress
+                      max={item.requiredParticipants}
+                      value={item.participantCount}
+                      // onMouseEnter={}
+                    />
+                    <span>
+                      {item.requiredParticipants} {t("total participants")}
+                    </span>
+                  </CardContent>
+                </Link>
+                <CardFooter>
+                  <Accordion className="w-full" type="single" collapsible>
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="text-blue-600 hover:text-blue-800">
+                        {t("learn more")}
+                      </AccordionTrigger>
+                      <AccordionContent>{item.description}</AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          <div>
+            {showMap && (
+              <MapProvider>
+                <Map
+                  initialViewState={{
+                    latitude: 51,
+                    longitude: 7,
+                    zoom: 1,
+                  }}
+                  interactiveLayerIds={["marker-layer"]}
+                  // preserveDrawingBuffer
+                  // onMouseMove={handleMapMouseMove}
+                  // onClick={handleMapClick}
+                  onLoad={handleMapLoad}
+                  onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
+                  ref={mapRef}
+                  style={{
+                    height: "60vh",
+                    width: "40vw",
+                    position: "sticky",
+                    top: 0,
+                    marginLeft: "auto",
+                  }}
+                >
+                  {centerpoints.length > 0 && (
+                    <PointLayer
+                      //@ts-ignore
+                      centerpoints={centerpoints}
+                      setDisplayedCampaigns={setDisplayedCampaigns}
+                      setSelectedCampaign={setSelectedCampaign}
+                      setSelectedMarker={setSelectedMarker}
+                      data={data}
+                    />
+                  )}
+                </Map>
+              </MapProvider>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
