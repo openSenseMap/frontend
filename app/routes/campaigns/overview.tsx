@@ -230,8 +230,8 @@ export default function Campaigns() {
 
   // const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const resetFilters = () => {
-    // setUrgency("");
-    // setSortBy("");
+    setUrgency("");
+    setSortBy("");
     const allCampaigns = campaigns.map((campaign: any) => {
       return campaign;
     });

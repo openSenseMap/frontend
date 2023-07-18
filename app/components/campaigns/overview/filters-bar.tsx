@@ -62,7 +62,7 @@ export default function FiltersBar({
         <DropdownMenuTrigger asChild>
           <Button className="flex w-fit gap-2 " variant="outline" size={"lg"}>
             <AlertCircleIcon className="h-4 w-4 text-red-500" />
-            {t("urgency")}{" "}
+            {!urgency ? <span>{t("urgency")} </span> : <span>{urgency}</span>}
             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
           </Button>
         </DropdownMenuTrigger>
@@ -83,7 +83,7 @@ export default function FiltersBar({
         <DropdownMenuTrigger asChild>
           <Button className="flex w-fit gap-2" variant="outline" size={"lg"}>
             <ArrowDownAZIcon className="h-4 w-4" />
-            {t("sort by")}
+            {!sortBy ? <span>{t("sort by")}</span> : <span>{sortBy}</span>}
 
             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
           </Button>
