@@ -28,6 +28,7 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { Exposure } from "@prisma/client";
+import { useTranslation } from "react-i18next";
 
 type FiltersModalProps = {
   phenomena: string[];
@@ -52,18 +53,19 @@ export default function FiltersModal({
 }: FiltersModalProps) {
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
+  const { t } = useTranslation("campaign-filters-modal");
 
   return (
     <Dialog open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
       <DialogTrigger>
         <Button variant="outline" className="flex w-fit gap-2">
-          More Filters <FilterIcon className="h-4 w-4" />
+          {t("more filters")} <FilterIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       {/* <DialogOverlay> */}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>More Filters</DialogTitle>
+          <DialogTitle>{t("more filters")}</DialogTitle>
         </DialogHeader>
         <CountryDropdown />
         <Select value={exposure} onValueChange={setExposure}>
@@ -72,7 +74,7 @@ export default function FiltersModal({
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel>Exposures</SelectLabel>
+              <SelectLabel>{t("exposures")}</SelectLabel>
               {Object.keys(Exposure).map((key: string) => {
                 return (
                   <SelectItem key={key} value={key}>
@@ -97,7 +99,7 @@ export default function FiltersModal({
                 .length > 0 ? (
                 <></>
               ) : (
-                <span>Phänomene</span>
+                <span>{t("phenomena")}</span>
               )}
               <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
             </Button>
@@ -127,7 +129,7 @@ export default function FiltersModal({
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Button className="w-full" variant="outline">
-              <span>Organizations</span>
+              <span>{t("organizations")}</span>
               <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
             </Button>
           </DropdownMenuTrigger>
@@ -141,7 +143,7 @@ export default function FiltersModal({
               htmlFor="startDate"
               className="block text-sm font-medium text-gray-700"
             >
-              Start Date
+              {t("start date")}
             </label>
             <input id="startDate" name="startDate" type="date" />
           </div>
@@ -150,20 +152,20 @@ export default function FiltersModal({
               htmlFor="startDate"
               className="block text-sm font-medium text-gray-700"
             >
-              End Date
+              {t("end date")}
             </label>
             <input id="endDate" name="endDate" type="date" />
           </div>
         </div>
 
         <DialogFooter className="flex justify-between">
-          <Button>Cancel</Button>
+          <Button>{t("cancel")}</Button>
           <Button
             onClick={() => {
               setMoreFiltersOpen(false);
             }}
           >
-            Apply
+            {t("apply")}
           </Button>
         </DialogFooter>
       </DialogContent>
