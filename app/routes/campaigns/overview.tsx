@@ -638,20 +638,20 @@ export default function Campaigns() {
             </div>
           </div>
         ) : (
-          <div className="flex w-full justify-between">
-            {/* <div
-            className={clsx("p-4", {
-              "w-full": !showMap,
-              "w-1/4 lg:w-3/4": showMap,
-            })}
-          > */}
+          <div className="relative flex w-full justify-between">
             <div
               className={`${
-                showMap ? "grid grid-cols-2" : "flex w-full gap-4"
+                showMap
+                  ? "mx-auto mt-10 flex flex-col gap-4"
+                  : "mt-10 flex w-full gap-4"
               }`}
             >
+              <span className="absolute left-0 top-0 ">
+                {displayedCampaigns.length} von {data.length} Kampagnen werden
+                angezeigt
+              </span>
               {displayedCampaigns.map((item: any) => (
-                <Card key={item.id} className="w-[250px]">
+                <Card key={item.id} className="w-[350px]">
                   <Link to={`../${item.slug}`}>
                     <CardHeader>
                       <CardTitle>
@@ -735,7 +735,7 @@ export default function Campaigns() {
                     initialViewState={{
                       latitude: 51,
                       longitude: 7,
-                      zoom: 3,
+                      zoom: 1,
                     }}
                     interactiveLayerIds={["marker-layer"]}
                     // preserveDrawingBuffer
