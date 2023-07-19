@@ -59,6 +59,8 @@ import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
 import { getPhenomena } from "~/models/phenomena.server";
 import { useTranslation } from "react-i18next";
+import type { Campaign } from "@prisma/client";
+import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 
 export const links: LinksFunction = () => {
   return [
@@ -131,9 +133,7 @@ export async function loader({ request, params }: LoaderArgs) {
   if (response.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
   }
-  const phenomena = response.map(
-    (d: { label: { item: { text: any }[] } }) => d.label.item[0].text
-  );
+  const phenomena = response.map((p: { slug: string }) => p.slug);
   return json({ campaign, userId, phenomena });
 }
 
@@ -407,7 +407,7 @@ export default function CampaignId() {
           {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
             <OverviewTable
-              campaign={campaign as any}
+              campaign={campaign as unknown as Campaign}
               userId={userId}
               phenomena={data.phenomena}
             />
@@ -475,15 +475,20 @@ export default function CampaignId() {
                   marginLeft: "auto",
                 }}
               >
-                <Source
-                  id="polygon"
-                  type="geojson"
-                  // data={{ type: "FeatureCollection", features: clusters }}
-                  //@ts-ignore
-                  data={campaign.feature as any}
-                >
-                  <Layer {...layer} />
-                </Source>
+                {campaign.feature && (
+                  <Source
+                    id="polygon"
+                    type="geojson"
+                    data={
+                      campaign.feature as unknown as FeatureCollection<
+                        Geometry,
+                        GeoJsonProperties
+                      >
+                    }
+                  >
+                    <Layer {...layer} />
+                  </Source>
+                )}
               </Map>
             </MapProvider>
           )}
