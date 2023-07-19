@@ -61,6 +61,10 @@ import { getPhenomena } from "~/models/phenomena.server";
 import { useTranslation } from "react-i18next";
 import type { Campaign } from "@prisma/client";
 import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
+import {
+  ExposureBadge,
+  PriorityBadge,
+} from "~/components/campaigns/overview/campaign-badges";
 
 export const links: LinksFunction = () => {
   return [
@@ -212,19 +216,10 @@ export default function CampaignId() {
           <h1 className="text-lg font-bold capitalize">
             <b>{campaign.title}</b>
           </h1>
-          <span
-            className={clsx(
-              " ml-4 flex h-6 w-fit items-center rounded px-2 py-1 text-sm text-white",
-              {
-                "bg-red-500": campaign.priority.toLowerCase() === "urgent",
-                "bg-yellow-500": campaign.priority.toLowerCase() === "high",
-                "bg-blue-500": campaign.priority.toLowerCase() === "medium",
-                "bg-green-500": campaign.priority.toLowerCase() === "low",
-              }
-            )}
-          >
-            <ClockIcon className="h-4 w-4" /> {campaign.priority}
-          </span>
+          <div className="ml-2 flex gap-2">
+            <ExposureBadge exposure={campaign.exposure} />
+            <PriorityBadge priority={campaign.priority} />
+          </div>
         </div>
         <div className="flex gap-6">
           <Dialog>
