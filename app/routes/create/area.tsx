@@ -2,6 +2,7 @@ import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import {
   Layer,
   MapLayerMouseEvent,
+  MapRef,
   Popup,
   PopupProps,
   Source,
@@ -65,7 +66,7 @@ export default function CampaignArea() {
   const [geojsonUploadData, setGeojsonUploadData] = useState(null);
   const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
-  const mapRef: any = useRef();
+  const mapRef = useRef<MapRef | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const mouseData: any[][] = [];
 
@@ -158,7 +159,7 @@ export default function CampaignArea() {
   //   }
   // }, [container, convertedData]);
 
-  const handleFileUpload = (event: any) => {
+  const handleFileUpload = () => {
     if (fileInputRef.current != null) {
       const file = fileInputRef.current.files?.[0];
       // const file = event.target.files[0];
@@ -178,12 +179,14 @@ export default function CampaignArea() {
                 "features added"
               )}`,
             });
-            const bounds = bbox(flattened);
-            mapRef.current.fitBounds(bounds, {
-              padding: 50,
-              duration: 1000,
-            });
-            setPopup(false);
+            const [x1, y1, x2, y2] = bbox(flattened);
+            if (mapRef.current) {
+              mapRef.current.fitBounds([x1, y1, x2, y2], {
+                padding: 50,
+                duration: 1000,
+              });
+              setPopup(false);
+            }
           } else {
             toast({
               title: `${t("import failed")}`,
