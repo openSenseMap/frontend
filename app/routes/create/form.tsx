@@ -697,7 +697,7 @@ export default function CreateCampaign() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
-                {phenomena.map((p: any) => {
+                {phenomena.map((p: string) => {
                   return (
                     <DropdownMenuCheckboxItem
                       key={p}
@@ -708,7 +708,7 @@ export default function CreateCampaign() {
                           [p]: !phenomenaState[p],
                         });
                       }}
-                      onSelect={(event) => event.preventDefault()}
+                      onSelect={(event: any) => event.preventDefault()}
                     >
                       {p}
                     </DropdownMenuCheckboxItem>
