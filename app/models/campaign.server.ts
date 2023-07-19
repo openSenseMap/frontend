@@ -55,7 +55,6 @@ export async function createCampaign({
 }: Pick<
   Campaign,
   | "title"
-  | "slug"
   | "feature"
   | "description"
   | "priority"
