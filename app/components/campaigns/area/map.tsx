@@ -1,6 +1,6 @@
-import circleToPolygon from "circle-to-polygon";
 import { TrashIcon } from "lucide-react";
-import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MapLayerMouseEvent, PopupProps } from "react-map-gl";
 import { MapProvider, Source, Layer, Popup } from "react-map-gl";
@@ -20,6 +20,7 @@ import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.cs
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import normalize from "@mapbox/geojson-normalize";
 import flatten from "geojson-flatten";
+import type { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 
 export const links: LinksFunction = () => {
   return [
@@ -45,8 +46,10 @@ type MapProps = {
   setDrawPopoverOpen: Dispatch<SetStateAction<boolean>>;
   // onUpdate: (e: any) => void
   // onDelete: (e: any) => void
-  geojsonUploadData: any;
-  setGeojsonUploadData: Dispatch<SetStateAction<any>>;
+  geojsonUploadData: FeatureCollection<Geometry, GeoJsonProperties> | null;
+  setGeojsonUploadData: Dispatch<
+    SetStateAction<FeatureCollection<Geometry, GeoJsonProperties> | null>
+  >;
   // popup: PopupProps | false
   // setPopup: Dispatch<SetStateAction<false | PopupProps | undefined>>
   setFeatures: (features: any) => void;

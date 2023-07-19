@@ -1,13 +1,6 @@
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import {
-  Layer,
-  MapLayerMouseEvent,
-  MapRef,
-  Popup,
-  PopupProps,
-  Source,
-} from "react-map-gl";
-import { useCallback, useContext, useState, useRef, useEffect } from "react";
+import type { MapRef, PopupProps } from "react-map-gl";
+import { useContext, useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -41,6 +34,7 @@ import normalize from "@mapbox/geojson-normalize";
 import flatten from "geojson-flatten";
 import bbox from "@turf/bbox";
 import DefineAreaMap from "~/components/campaigns/area/map";
+import type { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 
 export const links: LinksFunction = () => {
   return [
@@ -63,7 +57,10 @@ export default function CampaignArea() {
   const { t } = useTranslation("campaign-area");
   const { toast } = useToast();
   const [popup, setPopup] = useState<PopupProps | false>();
-  const [geojsonUploadData, setGeojsonUploadData] = useState(null);
+  const [geojsonUploadData, setGeojsonUploadData] = useState<FeatureCollection<
+    Geometry,
+    GeoJsonProperties
+  > | null>(null);
   const [drawPopoverOpen, setDrawPopoverOpen] = useState(false);
   const { features, setFeatures } = useContext(FeatureContext);
   const mapRef = useRef<MapRef | null>(null);
