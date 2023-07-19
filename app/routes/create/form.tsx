@@ -170,9 +170,7 @@ export async function loader({ params }: LoaderArgs) {
   if (response.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
   }
-  const phenomena = response.map(
-    (d: { label: { item: { text: any }[] } }) => d.label.item[0].text
-  );
+  const phenomena = response.map((p: { slug: string }) => p.slug);
   return phenomena;
 }
 

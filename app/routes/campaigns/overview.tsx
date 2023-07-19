@@ -17,20 +17,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "~/components/ui/button";
-import {
-  ChevronDown,
-  FilterXIcon,
-  AlertCircleIcon,
-  ArrowDownAZIcon,
-} from "lucide-react";
 // import Header from "./header";
 import { Map } from "~/components/Map";
 import { getCampaigns } from "~/models/campaign.server";
@@ -46,13 +32,12 @@ import {
 } from "react-map-gl";
 import { Progress } from "~/components/ui/progress";
 import { CountryFlagIcon } from "~/components/ui/country-flag";
-import { BBox } from "geojson";
+import type { BBox } from "geojson";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
-import FiltersModal from "~/components/campaigns/overview/filters-modal";
 import FiltersBar from "~/components/campaigns/overview/filters-bar";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
@@ -63,9 +48,7 @@ export async function loader({ params }: LoaderArgs) {
   if (phenos.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
   }
-  const phenomena = phenos.map(
-    (d: { label: { item: { text: any }[] } }) => d.label.item[0].text
-  );
+  const phenomena = phenos.map((p: { slug: string }) => p.slug);
   // const data = await campaigns.json();
   // if (data.code === "UnprocessableEntity") {
   //   throw new Response("Campaigns not found", { status: 502 });
