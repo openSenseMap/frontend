@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "~/components/ui/badge";
 import {
   Accordion,
   AccordionContent,
@@ -39,7 +40,11 @@ import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
 import FiltersBar from "~/components/campaigns/overview/filters-bar";
-import type { Campaign, Prisma } from "@prisma/client";
+import type { Campaign, Exposure, Priority, Prisma } from "@prisma/client";
+import {
+  ExposureBadge,
+  PriorityBadge,
+} from "~/components/campaigns/overview/campaign-badges";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -412,41 +417,9 @@ export default function Campaigns() {
                 <Link to={`../${item.slug}`}>
                   <CardHeader>
                     <CardTitle>
-                      <div className="flex">
-                        <span
-                          className={clsx(
-                            "flex w-fit flex-wrap rounded px-2 py-1 text-sm text-white",
-                            {
-                              "bg-red-500":
-                                item.priority.toLowerCase() === "urgent",
-                              "bg-yellow-500":
-                                item.priority.toLowerCase() === "high",
-                              "bg-blue-500":
-                                item.priority.toLowerCase() === "medium",
-                              "bg-green-500":
-                                item.priority.toLowerCase() === "low",
-                            }
-                          )}
-                        >
-                          <ClockIcon className="h-4 w-4" /> {item.priority}
-                        </span>
-                        {item.exposure !== "UNKNOWN" && (
-                          <span
-                            className={clsx(
-                              "ml-auto w-fit rounded px-2 py-1 text-sm text-white",
-                              {
-                                "bg-blue-200":
-                                  item.exposure.toLowerCase() === "indoor",
-                                "bg-orange-500":
-                                  item.exposure.toLowerCase() === "mobile",
-                                "bg-emerald-500":
-                                  item.exposure.toLowerCase() === "outdoor",
-                              }
-                            )}
-                          >
-                            {item.exposure}
-                          </span>
-                        )}
+                      <div className="flex w-full justify-end">
+                        <PriorityBadge priority={item.priority} />
+                        <ExposureBadge exposure={item.exposure} />
                       </div>
                       <span className="mt-2 flex flex-wrap">
                         {item.title}
