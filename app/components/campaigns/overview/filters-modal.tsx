@@ -29,6 +29,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { Exposure } from "@prisma/client";
 import { useTranslation } from "react-i18next";
+import PhenomenaSelect from "../phenomena-select";
 
 type FiltersModalProps = {
   phenomena: string[];
@@ -85,6 +86,7 @@ export default function FiltersModal({
             </SelectGroup>
           </SelectContent>
         </Select>
+        <PhenomenaSelect phenomena={phenomena} />
         <DropdownMenu
           open={phenomenaDropdown}
           onOpenChange={setPhenomenaDropdownOpen}
