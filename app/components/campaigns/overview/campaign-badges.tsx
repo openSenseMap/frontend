@@ -16,7 +16,7 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
   return (
     <Badge
       className={clsx(
-        "flex w-fit flex-wrap gap-1 rounded px-2 py-1 text-sm text-white",
+        "flex h-8 w-fit flex-wrap gap-1 rounded px-2 py-1 text-sm text-white",
         {
           "bg-red-500": prio === "urgent",
           "bg-yellow-500": prio === "high",
@@ -37,11 +37,14 @@ export function ExposureBadge({ exposure }: ExposureBadgeProps) {
   }
   return (
     <Badge
-      className={clsx("ml-auto w-fit rounded px-2 py-1 text-sm text-white", {
-        "bg-blue-200": exposed === "indoor",
-        "bg-orange-500": exposed === "mobile",
-        "bg-emerald-500": exposed === "outdoor",
-      })}
+      className={clsx(
+        "h-8 w-fit rounded bg-muted px-2 py-1 text-sm text-black ",
+        {
+          // "bg-blue-200": exposed === "indoor",
+          // "bg-orange-500": exposed === "mobile",
+          // "bg-emerald-500": exposed === "outdoor",
+        }
+      )}
     >
       {exposed}
     </Badge>

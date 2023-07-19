@@ -417,9 +417,9 @@ export default function Campaigns() {
                 <Link to={`../${item.slug}`}>
                   <CardHeader>
                     <CardTitle>
-                      <div className="flex w-full justify-end">
-                        <PriorityBadge priority={item.priority} />
+                      <div className="flex w-full justify-end gap-2">
                         <ExposureBadge exposure={item.exposure} />
+                        <PriorityBadge priority={item.priority} />
                       </div>
                       <span className="mt-2 flex flex-wrap">
                         {item.title}
