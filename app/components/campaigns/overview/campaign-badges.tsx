@@ -14,18 +14,16 @@ type ExposureBadgeProps = {
 export function PriorityBadge({ priority }: PriorityBadgeProps) {
   const prio = priority.toString().toLowerCase();
   return (
-    <Badge
-      className={clsx(
-        "flex h-8 w-fit flex-wrap gap-1 rounded px-2 py-1 text-sm text-white",
-        {
-          "bg-red-500": prio === "urgent",
-          "bg-yellow-500": prio === "high",
-          "bg-blue-500": prio === "medium",
-          "bg-green-500": prio === "low",
-        }
-      )}
-    >
-      <ClockIcon className="h-4 w-4" /> {prio}
+    <Badge className="flex h-8 w-fit flex-wrap gap-1 rounded bg-muted px-2 py-1 text-sm text-black">
+      <ClockIcon
+        className={clsx("h-4 w-4", {
+          "text-red-500": prio === "urgent",
+          "text-yellow-500": prio === "high",
+          "text-blue-500": prio === "medium",
+          "text-green-500": prio === "low",
+        })}
+      />{" "}
+      {prio}
     </Badge>
   );
 }
