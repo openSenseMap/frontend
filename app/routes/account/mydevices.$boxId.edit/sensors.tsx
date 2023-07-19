@@ -8,7 +8,22 @@ import {
 } from "@remix-run/react";
 import React, { useState } from "react";
 import { getUserId } from "~/session.server";
-import { ClipboardCopy, Edit, Plus, Save, Undo2 } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ChevronsDownIcon,
+  ClipboardCopy,
+  Edit,
+  Plus,
+  Save,
+  Undo2,
+  Wifi,
+  ThermometerIcon,
+  WindIcon,
+  Droplets,
+  Tornado,
+  SunMoonIcon,
+  MicIcon,
+} from "lucide-react";
 import {
   addNewSensor,
   deleteSensor,
@@ -18,6 +33,14 @@ import {
 import { typedjson } from "remix-typedjson";
 import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import invariant from "tiny-invariant";
+import {
+  DropdownMenu,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { assignIcon, getIcon, iconsList } from "~/utils/sensoricons";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -62,6 +85,7 @@ export async function action({ request, params }: ActionArgs) {
         title: sensor.title,
         unit: sensor.unit,
         sensorType: sensor.sensorType,
+        icon: sensor.icon,
       });
     } else if (sensor?.deleted === true) {
       await deleteSensor(sensor.id);
@@ -82,6 +106,10 @@ export default function EditBoxSensors() {
   const [tepmState, setTepmState] = useState(false);
   //* to view toast on edit-page
   const [toastOpen, setToastOpen] = useOutletContext();
+  //* icons toggle
+  const [icon, setIcon] = useState(
+    <ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+  );
 
   React.useEffect(() => {
     //* if sensors data were updated successfully
@@ -93,9 +121,8 @@ export default function EditBoxSensors() {
       for (let index = 0; index < sensorsData.length; index++) {
         const sensor = sensorsData[index];
         if (sensor.new == true && sensor.notValidInput == true) {
-            sensorsData.splice(index, 1);
-          }
-         else if (sensor.deleted) {
+          sensorsData.splice(index, 1);
+        } else if (sensor.deleted) {
           sensorsData.splice(index, 1);
         } else if (sensor.new == true && sensor.notValidInput == true) {
           sensorsData.splice(index, 1);
@@ -174,9 +201,66 @@ export default function EditBoxSensors() {
                     className=" border-t-[1px] border-solid border-[#e1e4e8] p-4"
                   >
                     <div className="grid grid-cols-12">
-                      {/* left side -> sensor attributes */}
+                      {/* left side -> sensor icons list */}
+                      <div className=" col-span-2 m-auto sm:col-span-2">
+                        {sensor?.editing ? (
+                          <span className=" table-cell h-[222px] w-[30%]  text-center align-middle">
+                            <div className="relative inline-block align-middle">
+                              {/* view icon */}
+                              <button
+                                id="split-button"
+                                type="button"
+                                className="btn btn-default rounded-br-none rounded-tr-none px-[4px] py-[6px]"
+                                onClick={() => {
+                                  setTepmState(!tepmState);
+                                }}
+                              >
+                                {sensor.icon ? getIcon(sensor.icon):assignIcon(sensor.sensorType, sensor.title)}
+                              </button>
 
-                      <div className="col-span-9 border-r-[1px] border-solid border-[#e1e4e8] sm:col-span-8">
+                              {/* down arrow icon */}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    id="dropdownDefaultButton"
+                                    type="button"
+                                    // className="btn btn-default"
+                                    className="btn btn-default rounded-bl-none rounded-tl-none border-l-[0px] px-[1px] pb-[4px] pt-[5px]"
+                                    data-dropdown-toggle="dropdown"
+                                  >
+                                    <ChevronDownIcon className=" m-0 inline h-6  w-6 p-0" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className=" min-w-fit max-w-[150px]">
+                                  <DropdownMenuGroup className=" flex h-fit flex-wrap">
+                                    {iconsList?.map((icon: any) => {
+                                      const Icon = icon.name;
+                                      return (
+                                        <DropdownMenuItem
+                                          className="p-[0.2rem]"
+                                          key={icon.id}
+                                          onClick={() => {
+                                            setTepmState(!tepmState);
+                                            sensor.icon = icon.id;
+                                          }}
+                                        >
+                                          <Icon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+                                        </DropdownMenuItem>
+                                      );
+                                    })}
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </span>
+                        ) : (
+                          <span className=" table-cell h-[90px] w-[30%] text-center align-middle">
+                            {sensor.icon ? getIcon(sensor.icon):assignIcon(sensor.sensorType, sensor.title)}
+                          </span>
+                        )}
+                      </div>
+                      {/* middle -> sensor attributes */}
+                      <div className="col-span-8 border-r-[1px] border-solid border-[#e1e4e8] sm:col-span-8">
                         {/* shown by default */}
                         {!sensor?.editing && (
                           <span className=" table-cell align-middle leading-[1.75]">
@@ -216,7 +300,6 @@ export default function EditBoxSensors() {
                         {/* shown when edit button clicked */}
                         {sensor?.editing && (
                           <div className="mb-4 pr-4">
-                            {/* <form> */}
                             <div className="mb-4">
                               <label
                                 htmlFor="phenomenom"
@@ -230,7 +313,14 @@ export default function EditBoxSensors() {
                                 placeholder="Phenomenon"
                                 className="form-control"
                                 onChange={(e) => {
+                                  setTepmState(!tepmState);
                                   sensor.title = e.target.value;
+                                  if(sensor.title.length === 0){
+                                    sensor.notValidInput = true;
+
+                                  } else{
+                                    sensor.notValidInput = false;
+                                  }
                                 }}
                               />
                             </div>
@@ -247,7 +337,14 @@ export default function EditBoxSensors() {
                                 placeholder="Unit"
                                 className="form-control"
                                 onChange={(e) => {
+                                  setTepmState(!tepmState);
                                   sensor.sensorType = e.target.value;
+                                  if(sensor.sensorType.length === 0){
+                                    sensor.notValidInput = true;
+
+                                  } else{
+                                    sensor.notValidInput = false;
+                                  }
                                 }}
                               />
                             </div>
@@ -264,17 +361,23 @@ export default function EditBoxSensors() {
                                 placeholder="Type"
                                 className="form-control"
                                 onChange={(e) => {
+                                  setTepmState(!tepmState);
                                   sensor.unit = e.target.value;
+                                  if(sensor.unit.length === 0){
+                                    sensor.notValidInput = true;
+
+                                  } else{
+                                    sensor.notValidInput = false;
+                                  }
                                 }}
                               />
                             </div>
-                            {/* </form> */}
                           </div>
                         )}
                       </div>
 
                       {/* right side -> Save, delete, cancel buttons */}
-                      <div className="col-span-3 ml-4 sm:col-span-4">
+                      <div className="col-span-2 ml-4 sm:col-span-2">
                         {/* buttons shown by default */}
                         <span className="table-cell align-middle leading-[1.6]">
                           {/* warning text - delete */}
@@ -352,6 +455,10 @@ export default function EditBoxSensors() {
                             {/* save button */}
                             <button
                               type="button"
+                              disabled= {sensor?.notValidInput}
+                              className="mb-1 mt-2 block rounded-[3px] 
+                                border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
+                                text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
                               onClick={() => {
                                 setTepmState(!tepmState);
                                 if (
@@ -368,9 +475,6 @@ export default function EditBoxSensors() {
                                   sensor.notValidInput = true;
                                 }
                               }}
-                              className="mb-1 mt-2 block rounded-[3px] 
-                                border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
-                                text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
                             >
                               <Save className="mr-1 inline-block h-[17px] w-[15px] align-sub" />
                               Save

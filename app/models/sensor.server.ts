@@ -8,6 +8,7 @@ export function getSensors(deviceId: Sensor["deviceId"]) {
       title: true,
       unit: true,
       sensorType: true,
+      icon: true
     },
     where: { deviceId },
   });
@@ -34,12 +35,14 @@ export function updateSensor({
   title,
   unit,
   sensorType,
-}: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
+  icon,
+}: Pick<Sensor, "id" | "title" | "unit" | "sensorType" | "icon">) {  
   return prisma.sensor.update({
     data: {
       title: title,
       unit: unit,
       sensorType: sensorType,
+      icon: icon,
     },
     where: { id },
   });
