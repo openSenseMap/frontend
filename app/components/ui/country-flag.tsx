@@ -7,5 +7,5 @@ type Props = {
 export const CountryFlagIcon = ({ country }: Props) => {
   const Flag = Flags[country as keyof typeof Flags];
 
-  return <Flag className="mx-2 h-5 w-5" />;
+  return <Flag className="flex h-8 w-8 items-center justify-center" />;
 };
