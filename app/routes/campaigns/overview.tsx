@@ -45,6 +45,7 @@ import {
   ExposureBadge,
   PriorityBadge,
 } from "~/components/campaigns/overview/campaign-badges";
+import Markdown from "markdown-to-jsx";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -446,7 +447,9 @@ export default function Campaigns() {
                       <AccordionTrigger className="text-blue-600 hover:text-blue-800">
                         {t("learn more")}
                       </AccordionTrigger>
-                      <AccordionContent>{item.description}</AccordionContent>
+                      <AccordionContent>
+                        <Markdown>{item.description}</Markdown>
+                      </AccordionContent>
                     </AccordionItem>
                   </Accordion>
                 </CardFooter>
