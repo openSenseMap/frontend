@@ -39,6 +39,7 @@ import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
 import FiltersBar from "~/components/campaigns/overview/filters-bar";
+import type { Campaign, Prisma } from "@prisma/client";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -67,7 +68,7 @@ export const links: LinksFunction = () => {
 export default function Campaigns() {
   const data = useLoaderData<typeof loader>();
   const { t } = useTranslation("overview");
-  const campaigns = data.campaigns;
+  const campaigns = data.campaigns as unknown as Campaign[];
   const phenomena = data.phenomena;
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
@@ -86,7 +87,7 @@ export default function Campaigns() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [urgency, setUrgency] = useState("");
-  const [displayedCampaigns, setDisplayedCampaigns] = useState([]);
+  const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([]);
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
   const [zoom, setZoom] = useState(1);
@@ -215,10 +216,10 @@ export default function Campaigns() {
   const resetFilters = () => {
     setUrgency("");
     setSortBy("");
-    const allCampaigns = campaigns.map((campaign: any) => {
+    const allCampaigns = campaigns.map((campaign: Campaign) => {
       return campaign;
     });
-    setDisplayedCampaigns(allCampaigns as any);
+    setDisplayedCampaigns(allCampaigns);
     setSelectedCampaign("");
     if (mapRef.current) {
       mapRef.current.flyTo({
@@ -230,7 +231,7 @@ export default function Campaigns() {
   };
 
   useEffect(() => {
-    const filteredCampaigns = campaigns.slice().filter((campaign: any) => {
+    const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
       const titleMatches = campaign.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -239,7 +240,7 @@ export default function Campaigns() {
       // const countryMatches = campaign.country === country.toLowerCase();
       return titleMatches && priorityMatches;
     });
-    setDisplayedCampaigns(filteredCampaigns as any);
+    setDisplayedCampaigns(filteredCampaigns);
   }, [data, searchTerm, urgency]);
 
   useEffect(() => {
@@ -249,7 +250,7 @@ export default function Campaigns() {
       case "erstelldatum":
         sortedCampaigns = campaigns
           .slice()
-          .sort((campaignA: any, campaignB: any) => {
+          .sort((campaignA: Campaign, campaignB: Campaign) => {
             const createdAtA = new Date(campaignA.createdAt).getTime();
             const createdAtB = new Date(campaignB.createdAt).getTime();
             return createdAtA - createdAtB;
@@ -266,7 +267,7 @@ export default function Campaigns() {
 
         sortedCampaigns = campaigns
           .slice()
-          .sort((campaignA: any, campaignB: any) => {
+          .sort((campaignA: Campaign, campaignB: Campaign) => {
             const priorityA =
               priorityOrder[campaignA.priority as keyof typeof priorityOrder];
             const priorityB =
@@ -280,23 +281,26 @@ export default function Campaigns() {
         sortedCampaigns = campaigns.slice();
     }
 
-    setDisplayedCampaigns(sortedCampaigns as any);
+    setDisplayedCampaigns(sortedCampaigns);
   }, [data, sortBy]);
 
   const centerpoints = campaigns
-    .map((campaign: any) => {
-      if (Object.keys(campaign.centerpoint).length != 0) {
-        return {
-          coordinates: campaign.centerpoint.geometry.coordinates,
-          title: campaign.title,
-          id: campaign.id,
-        };
-      }
-      //   campaign.centerpoint &&
-      //   campaign.centerpoint.geometry &&
-      //   campaign.centerpoint.geometry.coordinates
-      // ) {
-      else {
+    .map((campaign: Campaign) => {
+      if (
+        typeof campaign.centerpoint === "object" &&
+        campaign.centerpoint !== null &&
+        "geometry" in campaign.centerpoint
+      ) {
+        const centerObject = campaign.centerpoint as Prisma.JsonObject;
+        const geometryObject = centerObject.geometry as Prisma.JsonObject;
+        if (centerObject && geometryObject) {
+          return {
+            coordinates: geometryObject.coordinates,
+            title: campaign.title,
+            id: campaign.id,
+          };
+        }
+      } else {
         return null;
       }
     })
@@ -400,7 +404,7 @@ export default function Campaigns() {
               {displayedCampaigns.length} von {campaigns.length} Kampagnen
               werden angezeigt
             </span>
-            {displayedCampaigns.map((item: any, index: number) => (
+            {displayedCampaigns.map((item: Campaign, index: number) => (
               <Card
                 key={item.id}
                 className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`} // 3 campaigns per row
@@ -456,8 +460,8 @@ export default function Campaigns() {
                   </CardHeader>
                   <CardContent className="mt-2">
                     <Progress
-                      max={item.requiredParticipants}
-                      value={item.participantCount}
+                      max={item.requiredParticipants ?? 0}
+                      value={item.participants.length}
                       // onMouseEnter={}
                     />
                     <span>
