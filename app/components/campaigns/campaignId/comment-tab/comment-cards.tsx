@@ -13,13 +13,14 @@ import { TrashIcon, EditIcon } from "lucide-react";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
 import Markdown from "markdown-to-jsx";
+import type { Comment } from "@prisma/client";
 
 type CommentCardsProps = {
-  comments: any[];
+  comments: any;
   userId: string;
-  setCommentEditMode: any;
-  setEditCommentId: any;
-  setEditComment: any;
+  setCommentEditMode: (e: boolean) => void;
+  setEditCommentId: (e: string | undefined) => void;
+  setEditComment: (e: string | undefined) => void;
   commentEditMode: boolean;
   textAreaRef: any;
   editComment: string;
@@ -37,7 +38,7 @@ export default function CommentCards({
 }: CommentCardsProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      {comments.map((c: any, i: number) => {
+      {comments.map((c: Comment, i: number) => {
         return (
           <div
             key={i}
@@ -51,6 +52,7 @@ export default function CommentCards({
                       <AvatarImage src="" alt="avatar" />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
+                    {/* @ts-ignore */}
                     {c.owner.name}
                   </div>
                   {userId === c.ownerId && (

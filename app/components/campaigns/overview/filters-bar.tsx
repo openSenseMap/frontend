@@ -37,7 +37,7 @@ type FiltersBarProps = {
   switchDisabled: boolean;
   showMap: boolean;
   setShowMap: Dispatch<SetStateAction<boolean>>;
-  resetFilters: any;
+  resetFilters: () => void;
 };
 
 export default function FiltersBar({
