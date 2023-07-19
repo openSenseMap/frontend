@@ -1,14 +1,17 @@
-import type { BBox } from "geojson";
+import type { BBox, GeoJsonProperties } from "geojson";
+import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { Marker, useMap } from "react-map-gl";
 import type { PointFeature } from "supercluster";
 import useSupercluster from "use-supercluster";
 import debounce from "lodash.debounce";
+import type { Campaign } from "@prisma/client";
+import type { DeviceClusterProperties } from "~/routes/explore";
 
 type PointProperties = {
   title: string;
   cluster: boolean;
-  point_count: any;
+  point_count: number;
   id: string;
   // color: string;
   // selected: boolean;
@@ -29,10 +32,10 @@ export default function PointLayer({
   campaigns,
 }: {
   centerpoints: PointFeature<PointProperties>[];
-  setDisplayedCampaigns: any;
-  setSelectedCampaign: any;
-  setSelectedMarker: any;
-  campaigns: any;
+  setDisplayedCampaigns: Dispatch<SetStateAction<Campaign[]>>;
+  setSelectedCampaign: Dispatch<SetStateAction<string>>;
+  setSelectedMarker: Dispatch<SetStateAction<string>>;
+  campaigns: Campaign[];
 }) {
   const { osem: mapRef } = useMap();
   const [bounds, setBounds] = useState(
@@ -40,23 +43,27 @@ export default function PointLayer({
   );
   const [zoom, setZoom] = useState(mapRef?.getZoom() || 0);
 
-  const points: PointFeature<PointProperties>[] = useMemo(() => {
-    return centerpoints.map((point: any) => ({
-      type: "Feature",
-      properties: {
-        cluster: false,
-        point_count: 1,
-        title: point?.title,
-        id: point?.id,
-        color: "blue",
-        selected: false,
-      },
-      geometry: {
-        type: "Point",
-        coordinates: point?.coordinates,
-      },
-    }));
-  }, [centerpoints]);
+  const points: PointFeature<GeoJsonProperties & PointProperties>[] =
+    useMemo(() => {
+      return centerpoints.map(
+        (point: PointFeature<GeoJsonProperties & PointProperties>) => ({
+          type: "Feature",
+          properties: {
+            cluster: false,
+            point_count: 1,
+            color: "blue",
+            selected: false,
+            title: point?.title ?? "",
+            id: point?.id ?? "",
+          },
+          geometry: {
+            type: "Point",
+            // @ts-ignore
+            coordinates: point.coordinates,
+          },
+        })
+      );
+    }, [centerpoints]);
 
   const debouncedChangeHandler = debounce(() => {
     if (!mapRef) return;
@@ -82,7 +89,7 @@ export default function PointLayer({
   });
 
   const handleClusterClick = useCallback(
-    (cluster: any) => {
+    (cluster: DeviceClusterProperties) => {
       // supercluster from hook can be null or undefined
       if (!supercluster) return;
 
@@ -107,12 +114,12 @@ export default function PointLayer({
   const handleMarkerClick = useCallback(
     (markerId: string, latitude: number, longitude: number) => {
       const selectedCampaign = campaigns.filter(
-        (campaign: any) => campaign.id === markerId
+        (campaign: Campaign) => campaign.id === markerId
       );
       console.log(selectedCampaign);
 
       setSelectedMarker(markerId);
-      setDisplayedCampaigns(selectedCampaign as any);
+      setDisplayedCampaigns(selectedCampaign);
       setSelectedCampaign(selectedCampaign[0].id);
       mapRef?.flyTo({
         center: [longitude, latitude],
