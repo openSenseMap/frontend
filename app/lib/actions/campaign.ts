@@ -8,6 +8,7 @@ import { redirect } from "@remix-run/server-runtime";
 import type { Exposure, Priority } from "@prisma/client";
 import type { ActionArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
+import { campaignUpdateSchema } from "../validations/campaign";
 
 export async function participate({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
@@ -105,18 +106,19 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     hardware_available
   );
   try {
-    const updated = await update(campaignId, {
-      title,
-      description,
-      priority,
-      startDate,
-      endDate,
-      country,
-      updatedAt,
-      phenomena,
-      exposure,
-      hardware_available,
+    const updatedCampaign = campaignUpdateSchema.parse({
+      title: title,
+      description: description,
+      priority: priority,
+      country: country,
+      phenomena: phenomena,
+      startDate: startDate,
+      endDate: endDate,
+      updatedAt: updatedAt,
+      exposure: exposure,
+      hardware_available: hardware_available,
     });
+    const updated = await update(campaignId, updatedCampaign);
     console.log(updated);
     return redirect("../overview");
     // return json({ ok: true });
