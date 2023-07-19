@@ -375,7 +375,7 @@ export default function Campaigns() {
           urgency={urgency}
         />
         {selectedCampaign && (
-          <div className="relative inline-block">
+          <div className="relative ml-auto inline-block">
             <input type="text" value={selectedCampaign.split("-")[0]} />
             <XMarkIcon
               onClick={() => {
@@ -526,7 +526,7 @@ export default function Campaigns() {
                       setDisplayedCampaigns={setDisplayedCampaigns}
                       setSelectedCampaign={setSelectedCampaign}
                       setSelectedMarker={setSelectedMarker}
-                      data={data}
+                      campaigns={campaigns}
                     />
                   )}
                 </Map>

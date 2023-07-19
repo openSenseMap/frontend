@@ -26,13 +26,13 @@ export default function PointLayer({
   setDisplayedCampaigns,
   setSelectedCampaign,
   setSelectedMarker,
-  data,
+  campaigns,
 }: {
   centerpoints: PointFeature<PointProperties>[];
   setDisplayedCampaigns: any;
   setSelectedCampaign: any;
   setSelectedMarker: any;
-  data: any;
+  campaigns: any;
 }) {
   const { osem: mapRef } = useMap();
   const [bounds, setBounds] = useState(
@@ -106,9 +106,10 @@ export default function PointLayer({
 
   const handleMarkerClick = useCallback(
     (markerId: string, latitude: number, longitude: number) => {
-      const selectedCampaign = data.filter(
+      const selectedCampaign = campaigns.filter(
         (campaign: any) => campaign.id === markerId
       );
+      console.log(selectedCampaign);
 
       setSelectedMarker(markerId);
       setDisplayedCampaigns(selectedCampaign as any);
@@ -120,7 +121,7 @@ export default function PointLayer({
       });
     },
     [
-      data,
+      campaigns,
       mapRef,
       setDisplayedCampaigns,
       setSelectedCampaign,
