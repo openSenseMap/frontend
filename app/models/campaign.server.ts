@@ -26,7 +26,7 @@ export async function getOwnCampaigns(userId: string) {
 }
 
 export async function getCampaigns() {
-  return await prisma.campaign.findMany({});
+  return await prisma.campaign.findMany({ include: { participants: true } });
 }
 
 export async function getFilteredCampaigns(title: string) {
