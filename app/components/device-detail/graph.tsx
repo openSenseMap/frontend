@@ -1,4 +1,9 @@
-import { useLoaderData, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  useMatches,
+  useNavigate,
+  useNavigation,
+} from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -57,6 +62,13 @@ export default function Graph() {
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
+
+  let matches = useMatches();
+  let navigate = useNavigate();
+  const routeChange = (newPath: string) => {
+    let path = newPath;
+    navigate(path);
+  };
 
   // Formatting the data for the Line component
   const lineData = {
@@ -238,7 +250,12 @@ export default function Graph() {
                   className="cursor-pointer"
                   onClick={() => setOpen(false)}
                 />
-                <X className="cursor-pointer" />
+                <X
+                  className="cursor-pointer"
+                  onClick={() =>
+                    routeChange("/explore/" + matches[0].params.deviceId)
+                  }
+                />
               </div>
             </div>
             <div className="flex h-full w-full justify-center bg-white">

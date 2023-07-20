@@ -2,6 +2,7 @@
 import {
   Form,
   useLoaderData,
+  useNavigate,
   useNavigation,
   useSearchParams,
   useSubmit,
@@ -42,31 +43,24 @@ export default function DeviceDetailBox() {
   const navigation = useNavigation();
   const data = useLoaderData<typeof loader>();
   const nodeRef = useRef(null);
+  // state variables
   const [open, setOpen] = useState(true);
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
-  // state variables
-  // const [isOpen, setIsOpen] = useState<Boolean>(true);
+
   const [searchParams] = useSearchParams();
-  // const [toastOpen, setToastOpen] = useState(false);
+
+  let navigate = useNavigate();
+  const routeChange = (newPath: string) => {
+    let path = newPath;
+    navigate(path);
+  };
 
   // form submission handler
   const submit = useSubmit();
 
   // get list of selected sensor ids from URL search params
   const sensorIds = searchParams.getAll("sensor");
-
-  // helper function to format a date as a string
-  // const formattedDate = (date: Date) => {
-  //   return new Date(date).toLocaleString("de-DE", {
-  //     day: "2-digit",
-  //     month: "2-digit",
-  //     year: "numeric",
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //     second: "2-digit",
-  //   });
-  // };
 
   function handleDrag(e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
@@ -111,7 +105,10 @@ export default function DeviceDetailBox() {
                   className="cursor-pointer"
                   onClick={() => setOpen(false)}
                 />
-                <X className="cursor-pointer" />
+                <X
+                  className="cursor-pointer"
+                  onClick={() => routeChange("/explore")}
+                />
               </div>
             </div>
             <div className="relative flex-1 overflow-y-auto">
