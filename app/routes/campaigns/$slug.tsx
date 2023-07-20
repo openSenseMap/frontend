@@ -360,7 +360,7 @@ export default function CampaignId() {
           </Dialog>
         </div>
       </div>
-      <hr className="my-2 w-full bg-gray-700" />
+      <hr className="my-4 w-full bg-gray-700" />
 
       <div
         className={`${
@@ -464,7 +464,7 @@ export default function CampaignId() {
                 }}
                 style={{
                   height: "60vh",
-                  width: "40vw",
+                  width: "45vw",
                   position: "sticky",
                   top: 0,
                   marginLeft: "auto",
