@@ -79,7 +79,7 @@ export default function DeviceDetailBox() {
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[10px] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-8rem)] sm:w-1/4"
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-[10px] left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[10px] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-8rem)] sm:w-1/4"
           >
             {navigation.state === "loading" && (
               <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -88,7 +88,7 @@ export default function DeviceDetailBox() {
             )}
             <div
               id="deviceDetailBoxTop"
-              className="flex w-full items-center gap-3 py-2 cursor-move"
+              className="flex w-full cursor-move items-center gap-3 py-2"
             >
               <div
                 className={
