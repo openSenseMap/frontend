@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import Notification from "~/components/header/notification";
 
 export default function CampaignsPage() {
   const { t } = useTranslation("campaigns");
@@ -62,7 +63,9 @@ export default function CampaignsPage() {
               );
             })}
           </ul>
-          <div className="ml-auto mr-2 mt-2">
+          <div className="ml-auto mr-2 mt-2 flex gap-2">
+            <Notification />
+
             <Button size="lg" className=" bg-green-300 text-lg">
               <Link
                 to={"../create/area"}
