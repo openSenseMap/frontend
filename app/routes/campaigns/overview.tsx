@@ -297,6 +297,48 @@ export default function Campaigns() {
     [filterObject.exposure]
   );
 
+  const checkTimeRangeMatches = useCallback(
+    (startDate: Date | null, endDate: Date | null) => {
+      const filterStartDate = filterObject.time_range.startDate;
+      const filterEndDate = filterObject.time_range.endDate;
+
+      // If either filter start date or end date is not defined, we consider it as a match.
+      if (!filterStartDate || !filterEndDate) {
+        return true;
+      }
+
+      // If the campaign's start date is not defined, it won't match the filter.
+      if (!startDate) {
+        return false;
+      }
+
+      // If the campaign's end date is not defined, it won't match the filter.
+      if (!endDate) {
+        return false;
+      }
+
+      // Convert the dates to timestamps for easier comparison.
+      const campaignStartTimestamp = new Date(startDate).getTime();
+      const campaignEndTimestamp = new Date(endDate).getTime();
+      const filterStartTimestamp = new Date(filterStartDate).getTime();
+      const filterEndTimestamp = new Date(filterEndDate).getTime();
+
+      // Check if the campaign's start date is within the filter range.
+      const isStartDateWithinRange =
+        campaignStartTimestamp >= filterStartTimestamp &&
+        campaignStartTimestamp <= filterEndTimestamp;
+
+      // Check if the campaign's end date is within the filter range.
+      const isEndDateWithinRange =
+        campaignEndTimestamp >= filterStartTimestamp &&
+        campaignEndTimestamp <= filterEndTimestamp;
+
+      // If both the start and end dates are within the filter range, it's a match.
+      return isStartDateWithinRange && isEndDateWithinRange;
+    },
+    [filterObject.time_range]
+  );
+
   useEffect(() => {
     console.log(filterObject);
     const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
@@ -304,8 +346,16 @@ export default function Campaigns() {
       const priorityMatches = checkPriorityMatch(campaign.priority);
       const countryMatches = checkCountryMatch(campaign.country);
       const exposureMatches = checkExposureMatch(campaign.exposure);
+      const timeRangeMatches = checkTimeRangeMatches(
+        campaign.startDate,
+        campaign.endDate
+      );
       return (
-        titleMatches && priorityMatches && countryMatches && exposureMatches
+        titleMatches &&
+        priorityMatches &&
+        countryMatches &&
+        exposureMatches &&
+        timeRangeMatches
       );
     });
     setDisplayedCampaigns(filteredCampaigns);
@@ -315,6 +365,7 @@ export default function Campaigns() {
     checkExposureMatch,
     checkPriorityMatch,
     checkTitleMatch,
+    checkTimeRangeMatches,
     filterObject,
   ]);
 

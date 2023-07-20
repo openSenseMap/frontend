@@ -15,6 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -75,6 +82,7 @@ export default function FiltersModal({
   setFilterObject,
 }: FiltersModalProps) {
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
   const [localFilterObject, setLocalFilterObject] = useState({
     country: "",
@@ -86,6 +94,8 @@ export default function FiltersModal({
     },
   });
   const { t } = useTranslation("campaign-filters-modal");
+
+  console.log(localFilterObject);
 
   return (
     <Dialog open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
@@ -126,7 +136,7 @@ export default function FiltersModal({
           </SelectContent>
         </Select>
         <PhenomenaSelect phenomena={phenomena} />
-        <DropdownMenu
+        {/* <DropdownMenu
           open={phenomenaDropdown}
           onOpenChange={setPhenomenaDropdownOpen}
           // modal={false}
@@ -146,7 +156,7 @@ export default function FiltersModal({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <ScrollArea>
+            <ScrollArea className="h-24">
               {phenomena.map((p: any) => {
                 return (
                   <DropdownMenuCheckboxItem
@@ -177,27 +187,66 @@ export default function FiltersModal({
           <DropdownMenuContent>
             <p>TODO: Organizations here</p>
           </DropdownMenuContent>
-        </DropdownMenu>
-        <div className="flex justify-between">
-          <div>
-            <label
-              htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700"
-            >
-              {t("start date")}
-            </label>
-            <input id="startDate" name="startDate" type="date" />
-          </div>
-          <div>
-            <label
-              htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700"
-            >
-              {t("end date")}
-            </label>
-            <input id="endDate" name="endDate" type="date" />
-          </div>
-        </div>
+        </DropdownMenu> */}
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          {/* <PopoverAnchor className="absolute left-10 top-[200px]" /> */}
+          <PopoverTrigger asChild>
+            <Button className="mx-auto w-fit" variant="outline">
+              Time Range
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="flex flex-col gap-2">
+              <div>
+                <label
+                  htmlFor="startDate"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {t("start date")}
+                </label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  onChange={(e) =>
+                    setLocalFilterObject({
+                      ...localFilterObject,
+                      time_range: {
+                        ...localFilterObject.time_range,
+                        startDate: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="startDate"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {t("end date")}
+                </label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  onChange={(e) =>
+                    setLocalFilterObject({
+                      ...localFilterObject,
+                      time_range: {
+                        ...localFilterObject.time_range,
+                        endDate: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <Button className="mx-auto" onClick={() => setPopoverOpen(false)}>
+                {t("apply")}
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         <DialogFooter className="flex w-full justify-between">
           <Button
@@ -213,6 +262,7 @@ export default function FiltersModal({
                 ...filterObject,
                 country: localFilterObject.country,
                 exposure: localFilterObject.exposure,
+                time_range: localFilterObject.time_range,
               });
               setMoreFiltersOpen(false);
             }}
