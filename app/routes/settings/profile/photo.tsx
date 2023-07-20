@@ -37,19 +37,13 @@ for more info see the bug (https://github.com/remix-run/web-std-io/pull/28)
 and the explanation here: https://conform.guide/file-upload
 */
 const PhotoFormSchema = z.object({
-  photoFile: z.preprocess(
-    (value) => (value === "" ? new File([], "") : value),
-    z
-      .instanceof(File)
-      .refine(
-        (file) => file.name !== "" && file.size !== 0,
-        "Image is required"
-      )
-      .refine((file) => {
-        return file.size <= MAX_SIZE;
-      }, "Image size must be less than 3MB")
-  ),
-});
+	photoFile: z
+		.instanceof(File)
+		.refine(file => file.name !== '' && file.size !== 0, 'Image is required')
+		.refine(file => {
+			return file.size <= MAX_SIZE
+		}, 'Image size must be less than 3MB'),
+})
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
@@ -144,8 +138,7 @@ export default function PhotoChooserModal() {
 
   const dismissModal = () => navigate("..", { preventScrollReset: true });
   return (
-    <ClientOnly>
-      {() => <Dialog open={true}>
+      <Dialog open={true}>
         <DialogContent
           onEscapeKeyDown={dismissModal}
           onPointerDownOutside={dismissModal}
@@ -196,8 +189,6 @@ export default function PhotoChooserModal() {
             {/* <ErrorList errors={form.errors} /> */}
           </Form>
         </DialogContent>
-      </Dialog>}
-      
-    </ClientOnly>
+      </Dialog>
   );
 }
