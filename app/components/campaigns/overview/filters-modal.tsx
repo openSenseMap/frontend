@@ -76,6 +76,15 @@ export default function FiltersModal({
 }: FiltersModalProps) {
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
+  const [localFilterObject, setLocalFilterObject] = useState({
+    country: "",
+    exposure: "",
+    phenomena: [""],
+    time_range: {
+      startDate: "",
+      endDate: "",
+    },
+  });
   const { t } = useTranslation("campaign-filters-modal");
 
   return (
@@ -91,12 +100,14 @@ export default function FiltersModal({
           <DialogTitle>{t("more filters")}</DialogTitle>
         </DialogHeader>
         <CountryDropdown
-          setCountry={(e) => setFilterObject({ ...filterObject, country: e })}
+          setCountry={(e) =>
+            setLocalFilterObject({ ...localFilterObject, country: e })
+          }
         />
         <Select
-          value={filterObject.exposure}
+          value={localFilterObject.exposure}
           onValueChange={(e) =>
-            setFilterObject({ ...filterObject, exposure: e })
+            setLocalFilterObject({ ...localFilterObject, exposure: e })
           }
         >
           <SelectTrigger className="w-full">
@@ -199,6 +210,11 @@ export default function FiltersModal({
           </Button>
           <Button
             onClick={() => {
+              setFilterObject({
+                ...filterObject,
+                country: localFilterObject.country,
+                exposure: localFilterObject.exposure,
+              });
               setMoreFiltersOpen(false);
             }}
           >
