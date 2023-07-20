@@ -12,7 +12,7 @@ import { Label } from "./label";
 type DataItem = Record<"value" | "label", string>;
 
 export function MultiSelect({
-  label = "Select an item",
+  label,
   placeholder = "Select an item",
   parentClassName,
   data,
@@ -73,7 +73,7 @@ export function MultiSelect({
         <div className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
           <div className="flex flex-wrap gap-1">
             {selected.map((item, index) => {
-              if (index > 1) return;
+              if (index > 1) return null;
               return (
                 <Badge key={item.value} variant="secondary">
                   {item.label}
@@ -104,7 +104,7 @@ export function MultiSelect({
               onBlur={() => setOpen(false)}
               onFocus={() => setOpen(true)}
               placeholder={placeholder}
-              className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+              className="ml-2 flex-1 border-none bg-transparent outline-none placeholder:text-muted-foreground"
             />
           </div>
         </div>
