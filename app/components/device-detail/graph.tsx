@@ -6,9 +6,9 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  Tooltip,
   //Legend,
 } from "chart.js";
+import { Tooltip as ChartTooltip } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
@@ -33,6 +33,8 @@ import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import { getGraphColor } from "~/lib/utils";
+import { Tooltip } from "../ui/tooltip";
+import { TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -41,7 +43,7 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
-  Tooltip
+  ChartTooltip
   //Legend
 );
 
@@ -68,6 +70,7 @@ export default function Graph() {
               label: loaderData.selectedSensors[0].title,
               data: loaderData.selectedSensors[0].data,
               pointRadius: 0,
+              // I think we have to define the color in the loader already? - at least before this initialization
               borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
               backgroundColor: getGraphColor(
                 loaderData.selectedSensors[0].unit
@@ -254,10 +257,21 @@ export default function Graph() {
         <div
           onClick={() => setOpen(true)}
           className={
-            "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:right-[50px] sm:left-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
+            "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white shadow-lg ring-1 transition-colors duration-300 ease-in-out hover:bg-green-100 sm:bottom-[30px] sm:left-auto sm:right-[50px] sm:top-auto sm:max-h-[calc(100vh-24rem)]"
           }
         >
-          <LineChart />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-2 ">
+                  <LineChart />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open line chart</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
     </>

@@ -21,6 +21,12 @@ import { ChevronUp, Minus, Thermometer, X } from "lucide-react";
 import { useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -241,9 +247,20 @@ export default function DeviceDetailBox() {
           onClick={() => {
             setOpen(true);
           }}
-          className="absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[10px] sm:right-auto sm:top-auto"
+          className="absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white shadow-lg ring-1 transition-colors duration-300 ease-in-out hover:bg-green-100 sm:bottom-[30px] sm:left-[10px] sm:right-auto sm:top-auto"
         >
-          <ChevronUp />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-4 py-2 ">
+                  <ChevronUp />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open device details</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
       {sensorIds.length > 0 ? <Graph /> : null}
