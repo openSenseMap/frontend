@@ -13,5 +13,7 @@
   "upload a valid geojson file here": "Upload a valid GeoJSON file here",
   "select": "Select",
   "next": "Next",
-  "use these symbols to draw different geometries on the map": "Use these symbols to draw different geometries on the map"
+  "use these symbols to draw different geometries on the map": "Use these symbols to draw different geometries on the map",
+  "first, determine the area where your campaign should take place. ": "First, determine the area where your campaign should take place.",
+  "choose one of the following options:": "Choose one of the following options:"
 }

@@ -217,10 +217,11 @@ export default function CampaignArea() {
         <div className="m-2 flex flex-col gap-1">
           <h1 className="text-lg font-bold">{t("define area of interest")}</h1>
           <span>
-            Bestimme zunächst das Gebiet, in dem deine Kampagne stattfinden
-            soll.
+            {t(
+              "first, determine the area where your campaign should take place."
+            )}
           </span>
-          <span>Wähle hierfür eine der folgenden Optionen:</span>
+          <span>{t("choose one of the following options:")}</span>
         </div>
         <div className="m-4 flex gap-2">
           <Card>
