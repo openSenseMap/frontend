@@ -27,6 +27,8 @@ import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";
 import { getUserImgSrc } from "~/utils/misc";
 
+import { ClientOnly } from "remix-utils";
+
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
 /*
@@ -142,57 +144,60 @@ export default function PhotoChooserModal() {
 
   const dismissModal = () => navigate("..", { preventScrollReset: true });
   return (
-    <Dialog open={true}>
-      <DialogContent
-        onEscapeKeyDown={dismissModal}
-        onPointerDownOutside={dismissModal}
-      >
-        <DialogHeader>
-          <DialogTitle>Profile photo</DialogTitle>
-        </DialogHeader>
-        <Form
-          method="post"
-          encType="multipart/form-data"
-          className="mt-8 flex flex-col items-center justify-center gap-10"
-          onReset={() => setNewImageSrc(null)}
-          {...form.props}
+    <ClientOnly>
+      {() => <Dialog open={true}>
+        <DialogContent
+          onEscapeKeyDown={dismissModal}
+          onPointerDownOutside={dismissModal}
         >
-          <img
-            src={newImageSrc ?? getUserImgSrc(data.user.imageId)}
-            className="h-64 w-64 rounded-full"
-            alt={"test"}
-          />
-          {/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
-          <input
-            {...conform.input(photoFile, { type: "file" })}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            tabIndex={newImageSrc ? -1 : 0}
-            onChange={(e) => {
-              const file = e.currentTarget.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  setNewImageSrc(event.target?.result?.toString() ?? null);
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-          {newImageSrc ? (
-            <div className="flex gap-4">
-              <Button type="submit">Save Photo</Button>
-              <Button type="reset">Reset</Button>
-            </div>
-          ) : (
-            <div className="flex gap-4">
-              <LabelButton htmlFor={photoFile.id}>✏️ Change</LabelButton>
-            </div>
-          )}
-          {/* <ErrorList errors={form.errors} /> */}
-        </Form>
-      </DialogContent>
-    </Dialog>
+          <DialogHeader>
+            <DialogTitle>Profile photo</DialogTitle>
+          </DialogHeader>
+          <Form
+            method="post"
+            encType="multipart/form-data"
+            className="mt-8 flex flex-col items-center justify-center gap-10"
+            onReset={() => setNewImageSrc(null)}
+            {...form.props}
+          >
+            <img
+              src={newImageSrc ?? getUserImgSrc(data.user.imageId)}
+              className="h-64 w-64 rounded-full"
+              alt={"test"}
+            />
+            {/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
+            <input
+              {...conform.input(photoFile, { type: "file" })}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              tabIndex={newImageSrc ? -1 : 0}
+              onChange={(e) => {
+                const file = e.currentTarget.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setNewImageSrc(event.target?.result?.toString() ?? null);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            {newImageSrc ? (
+              <div className="flex gap-4">
+                <Button type="submit">Save Photo</Button>
+                <Button type="reset">Reset</Button>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <LabelButton htmlFor={photoFile.id}>✏️ Change</LabelButton>
+              </div>
+            )}
+            {/* <ErrorList errors={form.errors} /> */}
+          </Form>
+        </DialogContent>
+      </Dialog>}
+      
+    </ClientOnly>
   );
 }

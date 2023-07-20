@@ -100,6 +100,7 @@
     "react-spring": "^9.7.1",
     "remix-i18next": "^5.1.1",
     "remix-typedjson": "^0.1.7",
+    "remix-utils": "^6.6.0",
     "stream-array": "^1.1.2",
     "stringify-stream": "^1.0.5",
     "supercluster": "^7.1.5",
