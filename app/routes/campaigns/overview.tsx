@@ -255,21 +255,41 @@ export default function Campaigns() {
     }
   };
 
+  function checkTitleMatch(title: string) {
+    return title.toLowerCase().includes(filterObject.searchTerm.toLowerCase());
+  }
+
+  function checkPriorityMatch(priority: string) {
+    return (
+      !filterObject.urgency ||
+      priority.toLowerCase() === filterObject.urgency.toLowerCase()
+    );
+  }
+
+  function checkCountryMatch(country: string | null) {
+    if (!country) {
+      return true;
+    }
+    return (
+      !filterObject.country ||
+      country.toLowerCase() === filterObject.country.toLowerCase()
+    );
+  }
+
+  function checkExposureMatch(exposure: string) {
+    return (
+      !filterObject.exposure ||
+      exposure.toLowerCase() === filterObject.exposure.toLowerCase()
+    );
+  }
+
   useEffect(() => {
     console.log(filterObject);
     const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
-      const titleMatches = campaign.title
-        .toLowerCase()
-        .includes(filterObject.searchTerm.toLowerCase());
-      const priorityMatches =
-        !filterObject.urgency ||
-        campaign.priority.toLowerCase() === filterObject.urgency.toLowerCase();
-      const countryMatches =
-        !filterObject.country ||
-        campaign.country?.toLowerCase() === filterObject.country.toLowerCase();
-      const exposureMatches =
-        !filterObject.exposure ||
-        campaign.exposure.toLowerCase() === filterObject.exposure.toLowerCase();
+      const titleMatches = checkTitleMatch(campaign.title);
+      const priorityMatches = checkPriorityMatch(campaign.priority);
+      const countryMatches = checkCountryMatch(campaign.country);
+      const exposureMatches = checkExposureMatch(campaign.exposure);
       return (
         titleMatches && priorityMatches && countryMatches && exposureMatches
       );
