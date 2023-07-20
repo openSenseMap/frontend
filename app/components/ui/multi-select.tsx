@@ -8,6 +8,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { Badge } from "./badge";
 import { Command, CommandGroup, CommandItem } from "./command";
 import { Label } from "./label";
+import { ScrollArea } from "./scroll-area";
 
 type DataItem = Record<"value" | "label", string>;
 
@@ -111,24 +112,26 @@ export function MultiSelect({
         <div className="relative mt-2">
           {open && selectables.length > 0 ? (
             <div className="absolute top-0 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
-              <CommandGroup className="h-full overflow-auto">
-                {selectables.map((framework) => {
-                  return (
-                    <CommandItem
-                      key={framework.value}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onSelect={(value) => {
-                        setInputValue("");
-                        setSelected((prev) => [...prev, framework]);
-                      }}
-                    >
-                      {framework.label}
-                    </CommandItem>
-                  );
-                })}
+              <CommandGroup>
+                <ScrollArea className="h-24">
+                  {selectables.map((framework) => {
+                    return (
+                      <CommandItem
+                        key={framework.value}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onSelect={(value) => {
+                          setInputValue("");
+                          setSelected((prev) => [...prev, framework]);
+                        }}
+                      >
+                        {framework.label}
+                      </CommandItem>
+                    );
+                  })}
+                </ScrollArea>
               </CommandGroup>
             </div>
           ) : null}
