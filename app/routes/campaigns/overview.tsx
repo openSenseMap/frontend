@@ -255,33 +255,47 @@ export default function Campaigns() {
     }
   };
 
-  function checkTitleMatch(title: string) {
-    return title.toLowerCase().includes(filterObject.searchTerm.toLowerCase());
-  }
+  const checkTitleMatch = useCallback(
+    (title: string) => {
+      return title
+        .toLowerCase()
+        .includes(filterObject.searchTerm.toLowerCase());
+    },
+    [filterObject.searchTerm]
+  );
 
-  function checkPriorityMatch(priority: string) {
-    return (
-      !filterObject.urgency ||
-      priority.toLowerCase() === filterObject.urgency.toLowerCase()
-    );
-  }
+  const checkPriorityMatch = useCallback(
+    (priority: string) => {
+      return (
+        !filterObject.urgency ||
+        priority.toLowerCase() === filterObject.urgency.toLowerCase()
+      );
+    },
+    [filterObject.urgency]
+  );
 
-  function checkCountryMatch(country: string | null) {
-    if (!country) {
-      return true;
-    }
-    return (
-      !filterObject.country ||
-      country.toLowerCase() === filterObject.country.toLowerCase()
-    );
-  }
+  const checkCountryMatch = useCallback(
+    (country: string | null) => {
+      if (!country) {
+        return true;
+      }
+      return (
+        !filterObject.country ||
+        country.toLowerCase() === filterObject.country.toLowerCase()
+      );
+    },
+    [filterObject.country]
+  );
 
-  function checkExposureMatch(exposure: string) {
-    return (
-      !filterObject.exposure ||
-      exposure.toLowerCase() === filterObject.exposure.toLowerCase()
-    );
-  }
+  const checkExposureMatch = useCallback(
+    (exposure: string) => {
+      return (
+        !filterObject.exposure ||
+        exposure.toLowerCase() === filterObject.exposure.toLowerCase()
+      );
+    },
+    [filterObject.exposure]
+  );
 
   useEffect(() => {
     console.log(filterObject);
@@ -295,7 +309,14 @@ export default function Campaigns() {
       );
     });
     setDisplayedCampaigns(filteredCampaigns);
-  }, [campaigns, filterObject]);
+  }, [
+    campaigns,
+    checkCountryMatch,
+    checkExposureMatch,
+    checkPriorityMatch,
+    checkTitleMatch,
+    filterObject,
+  ]);
 
   useEffect(() => {
     let sortedCampaigns;
