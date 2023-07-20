@@ -6,44 +6,44 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getGraphColor(phenomena: string) {
-  switch (phenomena) {
-    case "Barometric pressure":
+  switch (phenomena.toLowerCase()) {
+    case "barometric pressure":
       return "#0000FF"; // Blue
-    case "Relative humidity":
+    case "relative humidity":
       return "#008000"; // Green
-    case "Temperature":
+    case "hPa":
       return "#FF0000"; // Red
-    case "CO2":
+    case "co2":
       return "#FFA500"; // Orange
-    case "Soil moisture":
+    case "soil moisture":
       return "#A52A2A"; // Brown
-    case "Ambient Light":
+    case "ambient light":
       return "#FFFF00"; // Yellow
-    case "Ultraviolet A light":
+    case "ultraviolet a light":
       return "#800080"; // Purple
-    case "Humidity":
+    case "humidity":
       return "#008080"; // Teal
-    case "PM2.5":
+    case "pm2.5":
       return "#808080"; // Gray
-    case "PM10 concentration":
+    case "pm10 concentration":
       return "#FFC0CB"; // Pink
-    case "Air temperature":
+    case "air temperature":
       return "#00FFFF"; // Cyan
-    case "Precipitation":
+    case "precipitation":
       return "#ADD8E6"; // Light Blue
-    case "Volatile organic compound (VOC)":
+    case "volatile organic compound (voc)":
       return "#FF00FF"; // Magenta
-    case "Voltage":
+    case "voltage":
       return "#FFD700"; // Gold
-    case "Sound level":
+    case "sound level":
       return "#00FF00"; // Lime
-    case "Water level":
+    case "water level":
       return "#000080"; // Navy
-    case "Water temperature":
+    case "water temperature":
       return "#4B0082"; // Indigo
-    case "Wind direction":
+    case "wind direction":
       return "#808000"; // Olive
-    case "Wind speed":
+    case "wind speed":
       return "#800000"; // Maroon
     default:
       return "#000000"; // Default color if phenomena is not found (Black)
