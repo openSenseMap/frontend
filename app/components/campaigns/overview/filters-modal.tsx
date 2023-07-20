@@ -191,7 +191,7 @@ export default function FiltersModal({
         <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
             <Button className="mx-auto w-fit" variant="outline">
-              Time Range
+              {t("time range")}
             </Button>
           </PopoverTrigger>
           <PopoverContent>
