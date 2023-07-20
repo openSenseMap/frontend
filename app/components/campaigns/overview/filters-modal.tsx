@@ -189,7 +189,6 @@ export default function FiltersModal({
           </DropdownMenuContent>
         </DropdownMenu> */}
         <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-          {/* <PopoverAnchor className="absolute left-10 top-[200px]" /> */}
           <PopoverTrigger asChild>
             <Button className="mx-auto w-fit" variant="outline">
               Time Range
@@ -197,7 +196,7 @@ export default function FiltersModal({
           </PopoverTrigger>
           <PopoverContent>
             <div className="flex flex-col gap-2">
-              <div>
+              <div className="mx-auto">
                 <label
                   htmlFor="startDate"
                   className="block text-sm font-medium text-gray-700"
@@ -219,9 +218,9 @@ export default function FiltersModal({
                   }
                 />
               </div>
-              <div>
+              <div className="mx-auto">
                 <label
-                  htmlFor="startDate"
+                  htmlFor="endDate"
                   className="block text-sm font-medium text-gray-700"
                 >
                   {t("to")}
@@ -245,6 +244,7 @@ export default function FiltersModal({
                 {t("apply")}
               </Button>
             </div>
+            <PopoverArrow />
           </PopoverContent>
         </Popover>
 
