@@ -254,7 +254,7 @@ export default function Graph() {
         <div
           onClick={() => setOpen(true)}
           className={
-            "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
+            "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white px-4 py-2 shadow-lg ring-1 sm:bottom-[30px] sm:right-[50px] sm:left-auto sm:top-auto sm:max-h-[calc(100vh-24rem)]"
           }
         >
           <LineChart />
