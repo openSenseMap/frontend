@@ -105,13 +105,12 @@ export default function FiltersModal({
           }
         />
         <Select
-          value={localFilterObject.exposure}
           onValueChange={(e) =>
             setLocalFilterObject({ ...localFilterObject, exposure: e })
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue placeholder="Select exposure" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
