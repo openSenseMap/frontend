@@ -17,6 +17,7 @@ import {
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 import { Priority } from "@prisma/client";
+import clsx from "clsx";
 
 type FiltersBarProps = {
   phenomena: string[];
@@ -84,7 +85,16 @@ export default function FiltersBar({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className="flex w-fit gap-2 " variant="outline" size={"lg"}>
-            <AlertCircleIcon className="h-4 w-4 text-red-500" />
+            <AlertCircleIcon
+              className={clsx("h-4 w-4", {
+                "text-red-500": filterObject.urgency.toLowerCase() === "urgent",
+                "text-yellow-500":
+                  filterObject.urgency.toLowerCase() === "high",
+                "text-blue-500":
+                  filterObject.urgency.toLowerCase() === "medium",
+                "text-green-500": filterObject.urgency.toLowerCase() === "low",
+              })}
+            />
             {!filterObject.urgency ? (
               <span>{t("urgency")} </span>
             ) : (
