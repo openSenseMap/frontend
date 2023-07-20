@@ -91,14 +91,14 @@ export default function Campaigns() {
   const [showMap, setShowMap] = useState(false);
   // const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [urgency, setUrgency] = useState("");
+  const [priority, setpriority] = useState("");
   const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([]);
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
   const [zoom, setZoom] = useState(1);
   const [filterObject, setFilterObject] = useState({
     searchTerm: "",
-    urgency: "",
+    priority: "",
     country: "",
     exposure: "",
     phenomena: [""],
@@ -232,7 +232,7 @@ export default function Campaigns() {
   const resetFilters = () => {
     setFilterObject({
       searchTerm: "",
-      urgency: "",
+      priority: "",
       country: "",
       exposure: "",
       phenomena: [""],
@@ -267,11 +267,11 @@ export default function Campaigns() {
   const checkPriorityMatch = useCallback(
     (priority: string) => {
       return (
-        !filterObject.urgency ||
-        priority.toLowerCase() === filterObject.urgency.toLowerCase()
+        !filterObject.priority ||
+        priority.toLowerCase() === filterObject.priority.toLowerCase()
       );
     },
-    [filterObject.urgency]
+    [filterObject.priority]
   );
 
   const checkCountryMatch = useCallback(
@@ -424,8 +424,6 @@ export default function Campaigns() {
           }
         />
         <FiltersBar
-          exposure={exposure}
-          setExposure={setExposure}
           phenomena={phenomena}
           phenomenaState={phenomenaState}
           resetFilters={resetFilters}

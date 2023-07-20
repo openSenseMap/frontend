@@ -43,7 +43,7 @@ type FiltersModalProps = {
   >;
   filterObject: {
     searchTerm: string;
-    urgency: string;
+    priority: string;
     country: string;
     exposure: string;
     phenomena: string[];
@@ -55,7 +55,7 @@ type FiltersModalProps = {
   setFilterObject: Dispatch<
     SetStateAction<{
       searchTerm: string;
-      urgency: string;
+      priority: string;
       country: string;
       exposure: string;
       phenomena: string[];

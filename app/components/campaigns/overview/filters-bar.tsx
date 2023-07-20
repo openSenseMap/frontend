@@ -29,12 +29,9 @@ type FiltersBarProps = {
       [k: string]: any;
     }>
   >;
-  exposure: string;
-  setExposure: Dispatch<SetStateAction<string>>;
-  // setUrgency: Dispatch<SetStateAction<string>>;
   filterObject: {
     searchTerm: string;
-    urgency: string;
+    priority: string;
     country: string;
     exposure: string;
     phenomena: string[];
@@ -46,7 +43,7 @@ type FiltersBarProps = {
   setFilterObject: Dispatch<
     SetStateAction<{
       searchTerm: string;
-      urgency: string;
+      priority: string;
       country: string;
       exposure: string;
       phenomena: string[];
@@ -68,8 +65,6 @@ export default function FiltersBar({
   phenomena,
   phenomenaState,
   setPhenomenaState,
-  exposure,
-  setExposure,
   filterObject,
   setFilterObject,
   sortBy,
@@ -87,27 +82,28 @@ export default function FiltersBar({
           <Button className="flex w-fit gap-2 " variant="outline" size={"lg"}>
             <AlertCircleIcon
               className={clsx("h-4 w-4", {
-                "text-red-500": filterObject.urgency.toLowerCase() === "urgent",
+                "text-red-500":
+                  filterObject.priority.toLowerCase() === "urgent",
                 "text-yellow-500":
-                  filterObject.urgency.toLowerCase() === "high",
+                  filterObject.priority.toLowerCase() === "high",
                 "text-blue-500":
-                  filterObject.urgency.toLowerCase() === "medium",
-                "text-green-500": filterObject.urgency.toLowerCase() === "low",
+                  filterObject.priority.toLowerCase() === "medium",
+                "text-green-500": filterObject.priority.toLowerCase() === "low",
               })}
             />
-            {!filterObject.urgency ? (
-              <span>{t("urgency")} </span>
+            {!filterObject.priority ? (
+              <span>{t("priority")} </span>
             ) : (
-              <span>{filterObject.urgency}</span>
+              <span>{filterObject.priority}</span>
             )}
             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40">
           <DropdownMenuRadioGroup
-            value={filterObject.urgency}
+            value={filterObject.priority}
             onValueChange={(e) =>
-              setFilterObject({ ...filterObject, urgency: e })
+              setFilterObject({ ...filterObject, priority: e })
             }
           >
             {Object.keys(Priority).map((priority: string, index: number) => {
@@ -133,7 +129,7 @@ export default function FiltersBar({
         <DropdownMenuContent className="w-40">
           <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
             <DropdownMenuRadioItem value="dringlichkeit">
-              {t("urgency")}
+              {t("priority")}
             </DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="erstelldatum">
               {t("creation date")}
@@ -142,8 +138,6 @@ export default function FiltersBar({
         </DropdownMenuContent>
       </DropdownMenu>
       <FiltersModal
-        exposure={exposure}
-        setExposure={setExposure}
         filterObject={filterObject}
         setFilterObject={setFilterObject}
         phenomena={phenomena}
