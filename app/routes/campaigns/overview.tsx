@@ -317,7 +317,6 @@ export default function Campaigns() {
         return false;
       }
 
-      // Convert the dates to timestamps for easier comparison.
       const campaignStartTimestamp = new Date(startDate).getTime();
       const campaignEndTimestamp = new Date(endDate).getTime();
       const filterStartTimestamp = new Date(filterStartDate).getTime();

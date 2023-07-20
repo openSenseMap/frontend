@@ -202,7 +202,7 @@ export default function FiltersModal({
                   htmlFor="startDate"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("start date")}
+                  {t("from")}
                 </label>
                 <input
                   id="startDate"
@@ -224,7 +224,7 @@ export default function FiltersModal({
                   htmlFor="startDate"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("end date")}
+                  {t("to")}
                 </label>
                 <input
                   id="endDate"
