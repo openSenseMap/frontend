@@ -86,17 +86,27 @@ export default function Campaigns() {
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState("");
-  const [country, setCountry] = useState("");
   const [exposure, setExposure] = useState("");
   const [selectedMarker, setSelectedMarker] = useState("");
   const [showMap, setShowMap] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [urgency, setUrgency] = useState("");
   const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([]);
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
   const [zoom, setZoom] = useState(1);
+  const [filterObject, setFilterObject] = useState({
+    searchTerm: "",
+    urgency: "",
+    country: "",
+    exposure: "",
+    phenomena: [""],
+    time_range: {
+      startDate: "",
+      endDate: "",
+    },
+  });
   // const [container, setContainer] = useState<HTMLElement | undefined>(
   //   undefined
   // );
@@ -220,8 +230,17 @@ export default function Campaigns() {
 
   // const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const resetFilters = () => {
-    setUrgency("");
-    setSortBy("");
+    setFilterObject({
+      searchTerm: "",
+      urgency: "",
+      country: "",
+      exposure: "",
+      phenomena: [""],
+      time_range: {
+        startDate: "",
+        endDate: "",
+      },
+    });
     const allCampaigns = campaigns.map((campaign: Campaign) => {
       return campaign;
     });
@@ -237,17 +256,26 @@ export default function Campaigns() {
   };
 
   useEffect(() => {
+    console.log(filterObject);
     const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
       const titleMatches = campaign.title
         .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+        .includes(filterObject.searchTerm.toLowerCase());
       const priorityMatches =
-        !urgency || campaign.priority.toLowerCase() === urgency.toLowerCase();
-      // const countryMatches = campaign.country === country.toLowerCase();
-      return titleMatches && priorityMatches;
+        !filterObject.urgency ||
+        campaign.priority.toLowerCase() === filterObject.urgency.toLowerCase();
+      const countryMatches =
+        !filterObject.country ||
+        campaign.country?.toLowerCase() === filterObject.country.toLowerCase();
+      const exposureMatches =
+        !filterObject.exposure ||
+        campaign.exposure.toLowerCase() === filterObject.exposure.toLowerCase();
+      return (
+        titleMatches && priorityMatches && countryMatches && exposureMatches
+      );
     });
     setDisplayedCampaigns(filteredCampaigns);
-  }, [data, searchTerm, urgency]);
+  }, [campaigns, filterObject]);
 
   useEffect(() => {
     let sortedCampaigns;
@@ -349,8 +377,10 @@ export default function Campaigns() {
           className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
           type="text"
           placeholder="Search campaigns"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
+          value={filterObject.searchTerm}
+          onChange={(event) =>
+            setFilterObject({ ...filterObject, searchTerm: event.target.value })
+          }
         />
         <FiltersBar
           exposure={exposure}
@@ -361,11 +391,11 @@ export default function Campaigns() {
           setPhenomenaState={setPhenomenaState}
           setShowMap={setShowMap}
           setSortBy={setSortBy}
-          setUrgency={setUrgency}
+          filterObject={filterObject}
+          setFilterObject={setFilterObject}
           showMap={showMap}
           sortBy={sortBy}
           switchDisabled={campaigns.length === 0}
-          urgency={urgency}
         />
         {selectedCampaign && (
           <div className="relative ml-auto inline-block">

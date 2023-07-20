@@ -30,8 +30,31 @@ type FiltersBarProps = {
   >;
   exposure: string;
   setExposure: Dispatch<SetStateAction<string>>;
-  urgency: string;
-  setUrgency: Dispatch<SetStateAction<string>>;
+  // setUrgency: Dispatch<SetStateAction<string>>;
+  filterObject: {
+    searchTerm: string;
+    urgency: string;
+    country: string;
+    exposure: string;
+    phenomena: string[];
+    time_range: {
+      startDate: string;
+      endDate: string;
+    };
+  };
+  setFilterObject: Dispatch<
+    SetStateAction<{
+      searchTerm: string;
+      urgency: string;
+      country: string;
+      exposure: string;
+      phenomena: string[];
+      time_range: {
+        startDate: string;
+        endDate: string;
+      };
+    }>
+  >;
   sortBy: string;
   setSortBy: Dispatch<SetStateAction<string>>;
   switchDisabled: boolean;
@@ -46,8 +69,8 @@ export default function FiltersBar({
   setPhenomenaState,
   exposure,
   setExposure,
-  urgency,
-  setUrgency,
+  filterObject,
+  setFilterObject,
   sortBy,
   setSortBy,
   switchDisabled,
@@ -62,12 +85,21 @@ export default function FiltersBar({
         <DropdownMenuTrigger asChild>
           <Button className="flex w-fit gap-2 " variant="outline" size={"lg"}>
             <AlertCircleIcon className="h-4 w-4 text-red-500" />
-            {!urgency ? <span>{t("urgency")} </span> : <span>{urgency}</span>}
+            {!filterObject.urgency ? (
+              <span>{t("urgency")} </span>
+            ) : (
+              <span>{filterObject.urgency}</span>
+            )}
             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40">
-          <DropdownMenuRadioGroup value={urgency} onValueChange={setUrgency}>
+          <DropdownMenuRadioGroup
+            value={filterObject.urgency}
+            onValueChange={(e) =>
+              setFilterObject({ ...filterObject, urgency: e })
+            }
+          >
             {Object.keys(Priority).map((priority: string, index: number) => {
               return (
                 <DropdownMenuRadioItem key={index} value={priority}>
@@ -102,6 +134,8 @@ export default function FiltersBar({
       <FiltersModal
         exposure={exposure}
         setExposure={setExposure}
+        filterObject={filterObject}
+        setFilterObject={setFilterObject}
         phenomena={phenomena}
         phenomenaState={phenomenaState}
         setPhenomenaState={setPhenomenaState}

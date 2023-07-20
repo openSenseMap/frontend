@@ -41,16 +41,38 @@ type FiltersModalProps = {
       [k: string]: any;
     }>
   >;
-  exposure: string;
-  setExposure: Dispatch<SetStateAction<string>>;
+  filterObject: {
+    searchTerm: string;
+    urgency: string;
+    country: string;
+    exposure: string;
+    phenomena: string[];
+    time_range: {
+      startDate: string;
+      endDate: string;
+    };
+  };
+  setFilterObject: Dispatch<
+    SetStateAction<{
+      searchTerm: string;
+      urgency: string;
+      country: string;
+      exposure: string;
+      phenomena: string[];
+      time_range: {
+        startDate: string;
+        endDate: string;
+      };
+    }>
+  >;
 };
 
 export default function FiltersModal({
   phenomena,
   phenomenaState,
   setPhenomenaState,
-  exposure,
-  setExposure,
+  filterObject,
+  setFilterObject,
 }: FiltersModalProps) {
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
@@ -68,8 +90,15 @@ export default function FiltersModal({
         <DialogHeader>
           <DialogTitle>{t("more filters")}</DialogTitle>
         </DialogHeader>
-        <CountryDropdown />
-        <Select value={exposure} onValueChange={setExposure}>
+        <CountryDropdown
+          setCountry={(e) => setFilterObject({ ...filterObject, country: e })}
+        />
+        <Select
+          value={filterObject.exposure}
+          onValueChange={(e) =>
+            setFilterObject({ ...filterObject, exposure: e })
+          }
+        >
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
