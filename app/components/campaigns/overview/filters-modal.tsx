@@ -135,7 +135,11 @@ export default function FiltersModal({
             </SelectGroup>
           </SelectContent>
         </Select>
-        <PhenomenaSelect phenomena={phenomena} />
+        <PhenomenaSelect
+          phenomena={phenomena}
+          setLocalFilterObject={setLocalFilterObject}
+          localFilterObject={localFilterObject}
+        />
         {/* <DropdownMenu
           open={phenomenaDropdown}
           onOpenChange={setPhenomenaDropdownOpen}
@@ -262,6 +266,7 @@ export default function FiltersModal({
                 ...filterObject,
                 country: localFilterObject.country,
                 exposure: localFilterObject.exposure,
+                phenomena: localFilterObject.phenomena,
                 time_range: localFilterObject.time_range,
               });
               setMoreFiltersOpen(false);

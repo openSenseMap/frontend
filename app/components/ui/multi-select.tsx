@@ -9,6 +9,7 @@ import { Badge } from "./badge";
 import { Command, CommandGroup, CommandItem } from "./command";
 import { Label } from "./label";
 import { ScrollArea } from "./scroll-area";
+import { preview } from "vite";
 
 type DataItem = Record<"value" | "label", string>;
 
@@ -17,11 +18,33 @@ export function MultiSelect({
   placeholder = "Select an item",
   parentClassName,
   data,
+  setLocalFilterObject,
+  localFilterObject,
 }: {
   label?: string;
   placeholder?: string;
   parentClassName?: string;
   data: DataItem[];
+  localFilterObject: {
+    country: string;
+    exposure: string;
+    phenomena: string[];
+    time_range: {
+      startDate: string;
+      endDate: string;
+    };
+  };
+  setLocalFilterObject: React.Dispatch<
+    React.SetStateAction<{
+      country: string;
+      exposure: string;
+      phenomena: string[];
+      time_range: {
+        startDate: string;
+        endDate: string;
+      };
+    }>
+  >;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -125,6 +148,13 @@ export function MultiSelect({
                         onSelect={(value) => {
                           setInputValue("");
                           setSelected((prev) => [...prev, framework]);
+                          setLocalFilterObject({
+                            ...localFilterObject,
+                            phenomena: [
+                              ...localFilterObject.phenomena,
+                              framework.value,
+                            ],
+                          });
                         }}
                       >
                         {framework.label}

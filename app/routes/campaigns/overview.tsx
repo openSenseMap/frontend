@@ -101,7 +101,7 @@ export default function Campaigns() {
     priority: "",
     country: "",
     exposure: "",
-    phenomena: [""],
+    phenomena: [] as string[],
     time_range: {
       startDate: "",
       endDate: "",
@@ -235,7 +235,7 @@ export default function Campaigns() {
       priority: "",
       country: "",
       exposure: "",
-      phenomena: [""],
+      phenomena: [],
       time_range: {
         startDate: "",
         endDate: "",
@@ -302,17 +302,14 @@ export default function Campaigns() {
       const filterStartDate = filterObject.time_range.startDate;
       const filterEndDate = filterObject.time_range.endDate;
 
-      // If either filter start date or end date is not defined, we consider it as a match.
       if (!filterStartDate || !filterEndDate) {
         return true;
       }
 
-      // If the campaign's start date is not defined, it won't match the filter.
       if (!startDate) {
         return false;
       }
 
-      // If the campaign's end date is not defined, it won't match the filter.
       if (!endDate) {
         return false;
       }
@@ -322,20 +319,34 @@ export default function Campaigns() {
       const filterStartTimestamp = new Date(filterStartDate).getTime();
       const filterEndTimestamp = new Date(filterEndDate).getTime();
 
-      // Check if the campaign's start date is within the filter range.
       const isStartDateWithinRange =
         campaignStartTimestamp >= filterStartTimestamp &&
         campaignStartTimestamp <= filterEndTimestamp;
 
-      // Check if the campaign's end date is within the filter range.
       const isEndDateWithinRange =
         campaignEndTimestamp >= filterStartTimestamp &&
         campaignEndTimestamp <= filterEndTimestamp;
 
-      // If both the start and end dates are within the filter range, it's a match.
       return isStartDateWithinRange && isEndDateWithinRange;
     },
     [filterObject.time_range]
+  );
+
+  const checkPhenomenaMatch = useCallback(
+    (phenomena: string[]) => {
+      const filterPhenomena: string[] = filterObject.phenomena;
+
+      if (filterPhenomena.length === 0) {
+        return true;
+      }
+
+      const hasMatchingPhenomena = phenomena.some((phenomenon) =>
+        filterPhenomena.includes(phenomenon)
+      );
+
+      return hasMatchingPhenomena;
+    },
+    [filterObject.phenomena]
   );
 
   useEffect(() => {
@@ -349,12 +360,14 @@ export default function Campaigns() {
         campaign.startDate,
         campaign.endDate
       );
+      const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena);
       return (
         titleMatches &&
         priorityMatches &&
         countryMatches &&
         exposureMatches &&
-        timeRangeMatches
+        timeRangeMatches &&
+        phenomenaMatches
       );
     });
     setDisplayedCampaigns(filteredCampaigns);
@@ -365,6 +378,7 @@ export default function Campaigns() {
     checkPriorityMatch,
     checkTitleMatch,
     checkTimeRangeMatches,
+    checkPhenomenaMatch,
     filterObject,
   ]);
 
