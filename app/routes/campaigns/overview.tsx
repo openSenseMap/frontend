@@ -409,7 +409,7 @@ export default function Campaigns() {
     setDisplayedCampaigns(sortedCampaigns);
   }, [data, sortBy]);
 
-  const centerpoints = campaigns
+  const centerpoints = displayedCampaigns
     .map((campaign: Campaign) => {
       if (
         typeof campaign.centerpoint === "object" &&
