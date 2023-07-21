@@ -130,7 +130,7 @@ export default function EditBoxGeneral() {
   const [name, setName] = useState(deviceData?.name);
   const [exposure, setExposure] = useState(deviceData?.exposure);
   //* to view toast on edit page
-  const [toastOpen, setToastOpen] = useOutletContext();
+  const [setToastOpen]:any = useOutletContext();
 
   React.useEffect(() => {
     if (actionData) {

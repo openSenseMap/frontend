@@ -223,7 +223,7 @@ export default function EditBox() {
         </nav>
 
         <main className="col-span-6 md:col-span-6">
-          <Outlet context={[toastOpen, setToastOpen]} />
+          <Outlet context={[setToastOpen]} />
         </main>
       </div>
     </div>

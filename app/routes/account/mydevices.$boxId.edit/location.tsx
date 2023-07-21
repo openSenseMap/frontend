@@ -88,7 +88,7 @@ export default function EditLocation() {
     });
   }, []);
   //* to view toast on edit-page
-  const [toastOpen, setToastOpen] = useOutletContext();
+  const [setToastOpen]: any = useOutletContext();
 
   React.useEffect(() => {
     //* if sensors data were updated successfully

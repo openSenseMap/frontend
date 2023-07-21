@@ -105,7 +105,7 @@ export default function EditBoxSensors() {
   /* temp impl. until figuring out how to updating state of nested objects  */
   const [tepmState, setTepmState] = useState(false);
   //* to view toast on edit-page
-  const [toastOpen, setToastOpen] = useOutletContext();
+  const [setToastOpen]: any = useOutletContext();
   //* icons toggle
   const [icon, setIcon] = useState(
     <ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
@@ -215,7 +215,9 @@ export default function EditBoxSensors() {
                                   setTepmState(!tepmState);
                                 }}
                               >
-                                {sensor.icon ? getIcon(sensor.icon):assignIcon(sensor.sensorType, sensor.title)}
+                                {sensor.icon
+                                  ? getIcon(sensor.icon)
+                                  : assignIcon(sensor.sensorType, sensor.title)}
                               </button>
 
                               {/* down arrow icon */}
@@ -255,7 +257,9 @@ export default function EditBoxSensors() {
                           </span>
                         ) : (
                           <span className=" table-cell h-[90px] w-[30%] text-center align-middle">
-                            {sensor.icon ? getIcon(sensor.icon):assignIcon(sensor.sensorType, sensor.title)}
+                            {sensor.icon
+                              ? getIcon(sensor.icon)
+                              : assignIcon(sensor.sensorType, sensor.title)}
                           </span>
                         )}
                       </div>
@@ -315,10 +319,9 @@ export default function EditBoxSensors() {
                                 onChange={(e) => {
                                   setTepmState(!tepmState);
                                   sensor.title = e.target.value;
-                                  if(sensor.title.length === 0){
+                                  if (sensor.title.length === 0) {
                                     sensor.notValidInput = true;
-
-                                  } else{
+                                  } else {
                                     sensor.notValidInput = false;
                                   }
                                 }}
@@ -339,10 +342,9 @@ export default function EditBoxSensors() {
                                 onChange={(e) => {
                                   setTepmState(!tepmState);
                                   sensor.sensorType = e.target.value;
-                                  if(sensor.sensorType.length === 0){
+                                  if (sensor.sensorType.length === 0) {
                                     sensor.notValidInput = true;
-
-                                  } else{
+                                  } else {
                                     sensor.notValidInput = false;
                                   }
                                 }}
@@ -363,10 +365,9 @@ export default function EditBoxSensors() {
                                 onChange={(e) => {
                                   setTepmState(!tepmState);
                                   sensor.unit = e.target.value;
-                                  if(sensor.unit.length === 0){
+                                  if (sensor.unit.length === 0) {
                                     sensor.notValidInput = true;
-
-                                  } else{
+                                  } else {
                                     sensor.notValidInput = false;
                                   }
                                 }}
@@ -455,7 +456,7 @@ export default function EditBoxSensors() {
                             {/* save button */}
                             <button
                               type="button"
-                              disabled= {sensor?.notValidInput}
+                              disabled={sensor?.notValidInput}
                               className="mb-1 mt-2 block rounded-[3px] 
                                 border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
                                 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
