@@ -1,6 +1,11 @@
 import type { ActionArgs, LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData, useOutletContext } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useOutletContext,
+} from "@remix-run/react";
 import React, { useCallback, useState } from "react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
@@ -84,7 +89,6 @@ export default function EditLocation() {
   }, []);
   //* to view toast on edit-page
   const [toastOpen, setToastOpen] = useOutletContext();
-  
 
   React.useEffect(() => {
     //* if sensors data were updated successfully
@@ -138,7 +142,7 @@ export default function EditLocation() {
                   mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
                   style={{
                     width: "69%",
-                    height: "55%",
+                    height: "500px",
                     position: "absolute",
                   }}
                 >
@@ -172,13 +176,20 @@ export default function EditLocation() {
                       autoFocus={true}
                       name="latitude"
                       type="number"
+                      min="-85.06"
+                      max="85.06"
                       value={marker.latitude}
-                      onChange={(e) =>
-                        setMarker({
-                          latitude: e.target.value,
-                          longitude: marker.longitude,
-                        })
-                      }
+                      onChange={(e) => {
+                        if (
+                          Number(e.target.value) >= -85.06 &&
+                          Number(e.target.value) <= 85.06
+                        ) {
+                          setMarker({
+                            latitude: e.target.value,
+                            longitude: marker.longitude,
+                          });
+                        }
+                      }}
                       aria-describedby="name-error"
                       className={
                         "w-full rounded border border-gray-200 px-2 py-1 text-base" +
@@ -205,13 +216,20 @@ export default function EditLocation() {
                       autoFocus={true}
                       name="longitude"
                       type="number"
+                      min="-180"
+                      max="180"
                       value={marker.longitude}
-                      onChange={(e) =>
-                        setMarker({
-                          latitude: marker.latitude,
-                          longitude: e.target.value,
-                        })
-                      }
+                      onChange={(e) => {
+                        if (
+                          Number(e.target.value) >= -180 &&
+                          Number(e.target.value) <= 180
+                        ) {
+                          setMarker({
+                            latitude: marker.latitude,
+                            longitude: e.target.value,
+                          });
+                        }
+                      }}
                       aria-describedby="name-error"
                       className={
                         "w-full rounded border border-gray-200 px-2 py-1 text-base" +
