@@ -48,6 +48,7 @@ import {
 import Markdown from "markdown-to-jsx";
 import Pagination from "~/components/campaigns/overview/pagination";
 import { Button } from "~/components/ui/button";
+import SearchField from "~/components/campaigns/overview/search";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -515,24 +516,7 @@ export default function Campaigns() {
           <span className="float-right" id="max"></span>
           <img className="w-full" id="gradient" src="" alt="legend-gradient" />
         </div> */}
-        <Form>
-          <input
-            className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
-            type="text"
-            name="search"
-            id="search"
-            defaultValue={searchParams.get("search") || ""}
-            placeholder="Search campaigns"
-            // value={filterObject.searchTerm}
-            // onChange={(event) =>
-            //   setFilterObject({
-            //     ...filterObject,
-            //     searchTerm: event.target.value,
-            //   })
-            // }
-          />
-          <Button type="submit">Search </Button>
-        </Form>
+        <SearchField />
         <FiltersBar
           phenomena={phenomena}
           phenomenaState={phenomenaState}
