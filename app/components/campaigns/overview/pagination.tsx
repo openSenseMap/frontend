@@ -35,7 +35,10 @@ const Pagination = ({
       )}
       {pageOptions.map((page) => (
         <Link to={`?page=${page.toString()}`} key={page}>
-          <Button className="bg-muted" variant="outline" size="sm">
+          <Button
+            variant={page === currentPage ? "default" : "outline"}
+            size="sm"
+          >
             {page}
           </Button>
         </Link>
