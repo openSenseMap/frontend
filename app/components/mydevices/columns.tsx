@@ -92,13 +92,13 @@ export const columns: ColumnDef<SenseBox>[] = [
         <div className=" text-right">
           <a
             href={`/explore/${senseBox.id}`}
-            className="btn btn-default rounded-br-none rounded-tr-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className="btn btn-default rounded-br-none rounded-tr-none border-r-0 text-[#000] hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Show
           </a>
           <a
             href={`mydevices/${senseBox.id}/edit`}
-            className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none border-r-0 text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Edit
           </a>
@@ -106,7 +106,7 @@ export const columns: ColumnDef<SenseBox>[] = [
             href="https://sensebox.de/de/go-home"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none border-r-0 text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Data upload
           </a>
