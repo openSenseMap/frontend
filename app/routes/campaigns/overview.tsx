@@ -1,5 +1,5 @@
 import { LinksFunction, LoaderArgs, json } from "@remix-run/node";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import { Form, Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Switch } from "~/components/ui/switch";
@@ -47,6 +47,7 @@ import {
 } from "~/components/campaigns/overview/campaign-badges";
 import Markdown from "markdown-to-jsx";
 import Pagination from "~/components/campaigns/overview/pagination";
+import { Button } from "~/components/ui/button";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -56,13 +57,31 @@ export async function loader({ params, request }: LoaderArgs) {
   const url = new URL(request.url);
   const query = url.searchParams;
   const currentPage = Math.max(Number(query.get("page") || 1), 1);
-  const options = {
+  const options: {
+    take: number;
+    skip: number;
+    orderBy: {
+      updatedAt: string;
+    };
+    where?: {};
+  } = {
     take: PER_PAGE,
     skip: (currentPage - 1) * PER_PAGE,
     orderBy: {
       updatedAt: "desc",
     },
   };
+  const countOptions: { where?: {} } = {};
+
+  if (query.get("search")) {
+    options.where = {
+      title: {
+        contains: query.get("search"),
+        mode: "insensitive",
+      },
+    };
+    countOptions.where = options.where;
+  }
   const campaigns = await getCampaigns(options);
   const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
@@ -99,6 +118,8 @@ export default function Campaigns() {
   const [phenomenaState, setPhenomenaState] = useState(
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
+  const [searchParams] = useSearchParams();
+
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState("");
@@ -437,7 +458,7 @@ export default function Campaigns() {
     }
 
     setDisplayedCampaigns(sortedCampaigns);
-  }, [data, sortBy]);
+  }, [campaigns, sortBy]);
 
   const centerpoints = displayedCampaigns
     .map((campaign: Campaign) => {
@@ -494,15 +515,24 @@ export default function Campaigns() {
           <span className="float-right" id="max"></span>
           <img className="w-full" id="gradient" src="" alt="legend-gradient" />
         </div> */}
-        <input
-          className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
-          type="text"
-          placeholder="Search campaigns"
-          value={filterObject.searchTerm}
-          onChange={(event) =>
-            setFilterObject({ ...filterObject, searchTerm: event.target.value })
-          }
-        />
+        <Form>
+          <input
+            className="focus:ring-blue-400 mx-auto mt-5 w-1/3 rounded-md border border-gray-300 px-4 py-2 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2"
+            type="text"
+            name="search"
+            id="search"
+            defaultValue={searchParams.get("search") || ""}
+            placeholder="Search campaigns"
+            // value={filterObject.searchTerm}
+            // onChange={(event) =>
+            //   setFilterObject({
+            //     ...filterObject,
+            //     searchTerm: event.target.value,
+            //   })
+            // }
+          />
+          <Button type="submit">Search </Button>
+        </Form>
         <FiltersBar
           phenomena={phenomena}
           phenomenaState={phenomenaState}
