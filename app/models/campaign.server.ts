@@ -25,8 +25,15 @@ export async function getOwnCampaigns(userId: string) {
   });
 }
 
-export async function getCampaigns() {
-  return await prisma.campaign.findMany({ include: { participants: true } });
+export async function getCampaigns(options = {}) {
+  return await prisma.campaign.findMany({
+    include: { participants: true },
+    ...options,
+  });
+}
+
+export async function getCampaignCount() {
+  return await prisma.campaign.count();
 }
 
 export async function getFilteredCampaigns(title: string) {

@@ -1,5 +1,5 @@
 import { LinksFunction, LoaderArgs, json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Switch } from "~/components/ui/switch";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/accordion";
 // import Header from "./header";
 import { Map } from "~/components/Map";
-import { getCampaigns } from "~/models/campaign.server";
+import { getCampaignCount, getCampaigns } from "~/models/campaign.server";
 import {
   Layer,
   LngLatBounds,
@@ -46,11 +46,25 @@ import {
   PriorityBadge,
 } from "~/components/campaigns/overview/campaign-badges";
 import Markdown from "markdown-to-jsx";
+import Pagination from "~/components/campaigns/overview/pagination";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
-export async function loader({ params }: LoaderArgs) {
-  const campaigns = await getCampaigns();
+const PER_PAGE = 12;
+
+export async function loader({ params, request }: LoaderArgs) {
+  const url = new URL(request.url);
+  const query = url.searchParams;
+  const currentPage = Math.max(Number(query.get("page") || 1), 1);
+  const options = {
+    take: PER_PAGE,
+    skip: (currentPage - 1) * PER_PAGE,
+    orderBy: {
+      updatedAt: "desc",
+    },
+  };
+  const campaigns = await getCampaigns(options);
+  const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
   if (phenos.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
@@ -60,7 +74,7 @@ export async function loader({ params }: LoaderArgs) {
   // if (data.code === "UnprocessableEntity") {
   //   throw new Response("Campaigns not found", { status: 502 });
   // }
-  return json({ campaigns, phenomena });
+  return json({ campaigns, campaignCount, phenomena });
 }
 export const links: LinksFunction = () => {
   return [
@@ -76,6 +90,8 @@ export default function Campaigns() {
   const { t } = useTranslation("overview");
   const campaigns = data.campaigns as unknown as Campaign[];
   const phenomena = data.phenomena;
+  const campaignCount = data.campaignCount;
+  const totalPages = Math.ceil(campaignCount / PER_PAGE);
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
@@ -332,22 +348,22 @@ export default function Campaigns() {
     [filterObject.time_range]
   );
 
-  const checkPhenomenaMatch = useCallback(
-    (phenomena: string[]) => {
-      const filterPhenomena: string[] = filterObject.phenomena;
+  // const checkPhenomenaMatch = useCallback(
+  //   (phenomena: string[]) => {
+  //     const filterPhenomena: string[] = filterObject.phenomena;
 
-      if (filterPhenomena.length === 0) {
-        return true;
-      }
+  //     if (filterPhenomena.length === 0) {
+  //       return true;
+  //     }
 
-      const hasMatchingPhenomena = phenomena.some((phenomenon) =>
-        filterPhenomena.includes(phenomenon)
-      );
+  //     const hasMatchingPhenomena = phenomena.some((phenomenon) =>
+  //       filterPhenomena.includes(phenomenon)
+  //     );
 
-      return hasMatchingPhenomena;
-    },
-    [filterObject.phenomena]
-  );
+  //     return hasMatchingPhenomena;
+  //   },
+  //   [filterObject.phenomena]
+  // );
 
   useEffect(() => {
     console.log(filterObject);
@@ -360,14 +376,14 @@ export default function Campaigns() {
         campaign.startDate,
         campaign.endDate
       );
-      const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena);
+      // const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena);
       return (
         titleMatches &&
         priorityMatches &&
         countryMatches &&
         exposureMatches &&
-        timeRangeMatches &&
-        phenomenaMatches
+        timeRangeMatches
+        // phenomenaMatches
       );
     });
     setDisplayedCampaigns(filteredCampaigns);
@@ -378,7 +394,7 @@ export default function Campaigns() {
     checkPriorityMatch,
     checkTitleMatch,
     checkTimeRangeMatches,
-    checkPhenomenaMatch,
+    // checkPhenomenaMatch,
     filterObject,
   ]);
 
@@ -540,8 +556,8 @@ export default function Campaigns() {
             }`}
           >
             <span className="absolute left-0 top-0 ">
-              {displayedCampaigns.length} von {campaigns.length} Kampagnen
-              werden angezeigt
+              {displayedCampaigns.length} von {campaignCount} Kampagnen werden
+              angezeigt
             </span>
             {displayedCampaigns.map((item: Campaign, index: number) => (
               <Card
@@ -588,6 +604,13 @@ export default function Campaigns() {
                 </CardFooter>
               </Card>
             ))}
+            {totalPages > 1 && (
+              <Pagination
+                totalPages={totalPages}
+                pageParam="page"
+                className="mt-8 w-full"
+              />
+            )}
           </div>
           <div>
             {showMap && (
