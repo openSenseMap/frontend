@@ -1,4 +1,4 @@
-import { LinksFunction, LoaderArgs, json } from "@remix-run/node";
+import { ActionArgs, LinksFunction, LoaderArgs, json } from "@remix-run/node";
 import { Form, Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -51,6 +51,7 @@ import { Button } from "~/components/ui/button";
 import Filter from "~/components/campaigns/overview/filter";
 import { StarIcon } from "lucide-react";
 import { requireUserId } from "~/session.server";
+import { bookmark } from "~/lib/actions";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -131,6 +132,10 @@ const generateWhereObject = (query: URLSearchParams) => {
 
   return where;
 };
+
+export async function action(args: ActionArgs) {
+  return bookmark(args);
+}
 
 export async function loader({ params, request }: LoaderArgs) {
   const userId = await requireUserId(request);
@@ -652,14 +657,29 @@ export default function Campaigns() {
                     <CardTitle>
                       <div className="mb-4 flex w-full justify-between">
                         <div>
-                          {userId &&
-                          item.bookmarkedByUsers.some(
-                            (user) => user.id === userId
-                          ) ? (
-                            <StarIcon className="h-4 w-4 fill-yellow-300 text-yellow-300" />
-                          ) : (
-                            <StarIcon className="h-4 w-4" />
-                          )}
+                          <Form method="post">
+                            <input
+                              className="hidden"
+                              name="campaignId"
+                              id="campaignId"
+                              value={item.id}
+                            />
+                            <button
+                              type="submit"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              {userId &&
+                              item.bookmarkedByUsers.some(
+                                (user) => user.id === userId
+                              ) ? (
+                                <StarIcon className="h-4 w-4 fill-yellow-300 text-yellow-300" />
+                              ) : (
+                                <StarIcon className="h-4 w-4" />
+                              )}
+                            </button>
+                          </Form>
                         </div>
                         <div className="flex gap-2">
                           {item.country && (

@@ -161,7 +161,7 @@ export async function bookmark({ request }: ActionArgs) {
   }
   try {
     const bookmarked = await bookmarkCampaign({ id: campaignId, ownerId });
-    return redirect("../overview");
+    return json({ bookmarked });
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });
