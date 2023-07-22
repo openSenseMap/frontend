@@ -49,6 +49,7 @@ import {
   deleteCampaignAction,
   updateCommentAction,
   participate,
+  bookmark,
   updateCampaignAction,
 } from "~/lib/actions";
 import OverviewTable from "~/components/campaigns/campaignId/overview-tab/overview-table";
@@ -103,6 +104,8 @@ export async function action(args: ActionArgs) {
       return updateCampaignAction(args);
     case "DELETE_CAMPAIGN":
       return deleteCampaignAction(args);
+    case "BOOKMARK":
+      return bookmark(args);
 
     default:
       // Handle the case when _action doesn't match any of the above cases
@@ -223,15 +226,23 @@ export default function CampaignId() {
           </div>
         </div>
         <div className="flex gap-6">
-          <Button
-            variant="outline"
-            className="flex w-fit gap-2"
-            name="_action"
-            value="BOOKMARK"
-            type="submit"
-          >
-            {t("bookmark")} <StarIcon className="h-4 w-4" />
-          </Button>
+          <Form method="post">
+            <input
+              className="hidden"
+              name="campaignId"
+              id="campaignId"
+              value={campaign.id}
+            />
+            <Button
+              variant="outline"
+              className="flex w-fit gap-2"
+              name="_action"
+              value="BOOKMARK"
+              type="submit"
+            >
+              {t("bookmark")} <StarIcon className="h-4 w-4" />
+            </Button>
+          </Form>
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">
@@ -467,9 +478,11 @@ export default function CampaignId() {
               <Map
                 initialViewState={{
                   // @ts-ignore
-                  latitude: campaign.centerpoint.geometry.coordinates[1],
+                  latitude: 0,
+                  // campaign.centerpoint.geometry.coordinates[1],
                   // @ts-ignore
-                  longitude: campaign.centerpoint.geometry.coordinates[0],
+                  longitude: 0,
+                  // campaign.centerpoint.geometry.coordinates[0],
                   zoom: 4,
                 }}
                 style={{
@@ -480,7 +493,7 @@ export default function CampaignId() {
                   marginLeft: "auto",
                 }}
               >
-                {campaign.feature && (
+                {/* {campaign.feature && (
                   <Source
                     id="polygon"
                     type="geojson"
@@ -493,7 +506,7 @@ export default function CampaignId() {
                   >
                     <Layer {...layer} />
                   </Source>
-                )}
+                )} */}
               </Map>
             </MapProvider>
           )}

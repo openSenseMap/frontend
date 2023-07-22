@@ -3,6 +3,7 @@ import {
   updateCampaign,
   deleteCampaign,
   update,
+  bookmarkCampaign,
 } from "~/models/campaign.server";
 import { redirect } from "@remix-run/server-runtime";
 import type { Exposure, Priority } from "@prisma/client";
@@ -91,7 +92,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
   }
   const updatedAt = new Date();
   const exposure = formData.get("exposure") as ExposureType;
-  const hardware_available =
+  const hardwareAvailable =
     formData.get("hardware_available") === "on" ? true : false;
   console.log(
     campaignId,
@@ -103,7 +104,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     endDate,
     country,
     exposure,
-    hardware_available
+    hardwareAvailable
   );
   try {
     const updatedCampaign = campaignUpdateSchema.parse({
@@ -116,7 +117,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       endDate: endDate,
       updatedAt: updatedAt,
       exposure: exposure,
-      hardware_available: hardware_available,
+      hardwareAvailable: hardwareAvailable,
     });
     const updated = await update(campaignId, updatedCampaign);
     console.log(updated);
@@ -142,6 +143,25 @@ export async function deleteCampaignAction({ request }: ActionArgs) {
     const deleted = await deleteCampaign({ id: campaignId, ownerId });
     return redirect("../overview");
     // return json({ ok: true });
+  } catch (error) {
+    console.error(`form not submitted ${error}`);
+    return json({ error });
+  }
+}
+
+export async function bookmark({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const ownerId = await requireUserId(request);
+  const campaignId = formData.get("campaignId");
+  if (typeof campaignId !== "string" || campaignId.length === 0) {
+    return json(
+      { errors: { campaignId: "campaignId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  try {
+    const bookmarked = await bookmarkCampaign({ id: campaignId, ownerId });
+    return redirect("../overview");
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });

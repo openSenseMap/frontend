@@ -42,6 +42,35 @@ export async function getFilteredCampaigns(title: string) {
   });
 }
 
+export async function bookmarkCampaign({
+  id,
+  ownerId,
+}: Pick<Campaign, "id"> & { ownerId: User["id"] }) {
+  console.log("BOOKMARK");
+  // const user = await prisma.user.findUnique({
+  //   where: { id: ownerId },
+  //   // @ts-ignore
+  //   include: { bookmarkedCampaigns: true },
+  // });
+
+  // // @ts-ignore
+  // const isBookmarked = user.bookmarkedCampaigns.some(
+  //   (bookmark) => bookmark.id === campaignId
+  // );
+
+  // if (isBookmarked) {
+  //   // Campaign is already bookmarked, no need to do anything
+  //   return;
+  // }
+
+  // Bookmark the campaign for the user
+  await prisma.user.update({
+    where: { id: ownerId },
+    // @ts-ignore
+    data: { bookmarkedCampaigns: { connect: { id: id } } },
+  });
+}
+
 export async function createCampaign({
   title,
   feature,
@@ -57,7 +86,7 @@ export async function createCampaign({
   updatedAt,
   phenomena,
   exposure,
-  hardware_available,
+  hardwareAvailable,
   centerpoint,
 }: Pick<
   Campaign,
@@ -74,7 +103,7 @@ export async function createCampaign({
   | "updatedAt"
   | "phenomena"
   | "exposure"
-  | "hardware_available"
+  | "hardwareAvailable"
   | "centerpoint"
 > & {
   ownerId: User["id"];
@@ -97,7 +126,7 @@ export async function createCampaign({
       updatedAt,
       phenomena,
       exposure,
-      hardware_available,
+      hardwareAvailable,
       centerpoint: centerpoint === null ? {} : centerpoint,
       owner: {
         connect: {
@@ -131,7 +160,7 @@ export async function update(
     | "updatedAt"
     | "phenomena"
     | "exposure"
-    | "hardware_available"
+    | "hardwareAvailable"
   >
 ) {
   return prisma.campaign.update({

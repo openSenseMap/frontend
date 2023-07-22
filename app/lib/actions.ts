@@ -2,6 +2,7 @@ import {
   participate,
   deleteCampaignAction,
   updateCampaignAction,
+  bookmark,
 } from "./actions/campaign";
 import {
   updateCampaignEvent,
@@ -16,6 +17,7 @@ import {
 
 export {
   participate,
+  bookmark,
   deleteCampaignAction,
   updateCampaignAction,
   updateCampaignEvent,

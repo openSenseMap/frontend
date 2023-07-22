@@ -50,6 +50,7 @@ model User {
   devices                Device[]
   ownedCampaigns         Campaign[]      @relation("OwnedCampaigns")
   participatingCampaigns Campaign[]      @relation("CampaignParticipant")
+  bookmarkedCampaigns    Campaign[]      @relation("UserBookmarkedCampaigns")
   comments               Comment[]
   events                 CampaignEvent[]
 
@@ -183,11 +184,9 @@ model Campaign {
   centerpoint          Json?
   events               CampaignEvent[]
   exposure             Exposure
-  location_points      Json?
-  hardware_available   Boolean
-  grouptag             String[]
+  hardwareAvailable    Boolean
   comments             Comment[]
-  // boxIds String[]
+  bookmarkedByUsers    User[]          @relation("UserBookmarkedCampaigns")
 }
 
 model Comment {
