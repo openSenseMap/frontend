@@ -91,9 +91,7 @@ export default function Explore() {
               setShowSearch={setShowSearch}
             />
           ) : null}
-          <main className="absolute bottom-0 z-10 w-full">
-            <Outlet />
-          </main>
+          <Outlet />
         </Map>
       </MapProvider>
     </div>
