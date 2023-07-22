@@ -382,7 +382,7 @@ export default function CampaignId() {
           className={`${showMap ? "w-full" : "mt-2 w-1/2"}`}
         >
           <div className="flex items-center justify-center">
-            <TabsList className="mb-4 w-full justify-between p-2">
+            <TabsList className="mb-4 p-2">
               <TabsTrigger
                 value="overview"
                 className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
