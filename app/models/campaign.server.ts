@@ -54,29 +54,30 @@ export async function bookmarkCampaign({
   id,
   ownerId,
 }: Pick<Campaign, "id"> & { ownerId: User["id"] }) {
-  console.log("BOOKMARK");
-  // const user = await prisma.user.findUnique({
-  //   where: { id: ownerId },
-  //   // @ts-ignore
-  //   include: { bookmarkedCampaigns: true },
-  // });
-
-  // // @ts-ignore
-  // const isBookmarked = user.bookmarkedCampaigns.some(
-  //   (bookmark) => bookmark.id === campaignId
-  // );
-
-  // if (isBookmarked) {
-  //   // Campaign is already bookmarked, no need to do anything
-  //   return;
-  // }
-
-  // Bookmark the campaign for the user
-  await prisma.user.update({
+  const user = await prisma.user.findUnique({
     where: { id: ownerId },
-    // @ts-ignore
-    data: { bookmarkedCampaigns: { connect: { id: id } } },
+    include: { bookmarkedCampaigns: true },
   });
+
+  if (!user) {
+    return;
+  }
+
+  const isBookmarked = user.bookmarkedCampaigns.some(
+    (bookmark) => bookmark.id === id
+  );
+
+  if (isBookmarked) {
+    await prisma.user.update({
+      where: { id: ownerId },
+      data: { bookmarkedCampaigns: { disconnect: { id: id } } },
+    });
+  } else {
+    await prisma.user.update({
+      where: { id: ownerId },
+      data: { bookmarkedCampaigns: { connect: { id: id } } },
+    });
+  }
 }
 
 export async function createCampaign({
