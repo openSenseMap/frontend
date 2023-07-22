@@ -39,6 +39,7 @@ import { InfoCard } from "~/utils/info-card";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
 import { getPhenomena } from "~/models/phenomena.server";
+import PhenomenaSelect from "~/components/campaigns/phenomena-select";
 
 // import h337, { Heatmap } from "heatmap.js";
 
@@ -53,6 +54,7 @@ type ExposureType = keyof typeof Exposure;
 export async function action({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
   const formData = await request.formData();
+  console.log(formData);
   const area = formData.get("feature") as any;
   const feature = area ? JSON.parse(area) : null;
 
@@ -100,17 +102,14 @@ export async function action({ request }: ActionArgs) {
   const createdAt = new Date();
   const updatedAt = new Date();
   const phenomenaString = formData.get("phenomena");
-  let phenomenaState: PhenomenaState = {};
+  let phenomena: string[] = [];
   if (typeof phenomenaString === "string") {
-    phenomenaState = JSON.parse(phenomenaString);
+    phenomena = JSON.parse(phenomenaString);
   }
-  const phenomena = Object.keys(phenomenaState).filter(
-    (key) => phenomenaState[key]
-  );
 
   const priority = formData.get("priority") as PriorityType;
   const exposure = formData.get("exposure") as ExposureType;
-  const hardware_available =
+  const hardwareAvailable =
     formData.get("hardware_available") === "on" ? true : false;
   let requiredParticipants: FormDataEntryValue | number =
     formData.get("requiredParticipants") || 1;
@@ -138,7 +137,7 @@ export async function action({ request }: ActionArgs) {
     endDate,
     phenomena,
     exposure,
-    hardware_available,
+    hardwareAvailable,
     centerpoint,
     owner: {
       id: ownerId,
@@ -183,6 +182,7 @@ export default function CreateCampaign() {
   console.log(features);
   const textAreaRef = useRef();
   const [description, setDescription] = useState<string | undefined>("");
+  const [selectedPhenomena, setSelectedPhenomena] = useState<string[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
   const priorityRef = useRef<HTMLInputElement>(null);
@@ -673,9 +673,13 @@ export default function CreateCampaign() {
               type="hidden"
               ref={phenomenaRef}
               name="phenomena"
-              value={JSON.stringify(phenomenaState)}
+              value={JSON.stringify(selectedPhenomena)}
             />
-            <DropdownMenu
+            <PhenomenaSelect
+              phenomena={phenomena}
+              setSelectedPhenomena={setSelectedPhenomena}
+            />
+            {/* <DropdownMenu
               open={openDropdown}
               onOpenChange={setDropdownOpen}
               modal={false}
@@ -715,7 +719,7 @@ export default function CreateCampaign() {
                   );
                 })}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </div>
           <div>
             <label
