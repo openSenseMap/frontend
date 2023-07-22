@@ -2,7 +2,7 @@ import type { Campaign, User, Prisma } from "@prisma/client";
 import { generateSlug } from "~/lib/slug";
 import { prisma } from "~/db.server";
 
-export function getCampaign({ slug }: Pick<Campaign, "slug">) {
+export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
   return prisma.campaign.findFirst({
     where: { slug },
     include: {
@@ -13,6 +13,9 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">) {
       },
       events: true,
       participants: true,
+      bookmarkedByUsers: {
+        where: { id: userId },
+      },
     },
   });
 }
@@ -25,9 +28,14 @@ export async function getOwnCampaigns(userId: string) {
   });
 }
 
-export async function getCampaigns(options = {}) {
+export async function getCampaigns(options = {}, userId: string) {
   return await prisma.campaign.findMany({
-    include: { participants: true },
+    include: {
+      participants: true,
+      bookmarkedByUsers: {
+        where: { id: userId },
+      },
+    },
     ...options,
   });
 }

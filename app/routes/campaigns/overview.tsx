@@ -50,6 +50,7 @@ import Pagination from "~/components/campaigns/overview/pagination";
 import { Button } from "~/components/ui/button";
 import Filter from "~/components/campaigns/overview/filter";
 import { StarIcon } from "lucide-react";
+import { requireUserId } from "~/session.server";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -132,6 +133,7 @@ const generateWhereObject = (query: URLSearchParams) => {
 };
 
 export async function loader({ params, request }: LoaderArgs) {
+  const userId = await requireUserId(request);
   const url = new URL(request.url);
   const query = url.searchParams;
   const currentPage = Math.max(Number(query.get("page") || 1), 1);
@@ -160,7 +162,7 @@ export async function loader({ params, request }: LoaderArgs) {
     };
   }
 
-  const campaigns = await getCampaigns(options);
+  const campaigns = await getCampaigns(options, userId);
   const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
   if (phenos.code === "UnprocessableEntity") {
@@ -171,7 +173,7 @@ export async function loader({ params, request }: LoaderArgs) {
   // if (data.code === "UnprocessableEntity") {
   //   throw new Response("Campaigns not found", { status: 502 });
   // }
-  return json({ campaigns, campaignCount, phenomena });
+  return json({ campaigns, campaignCount, phenomena, userId });
 }
 export const links: LinksFunction = () => {
   return [
@@ -188,6 +190,7 @@ export default function Campaigns() {
   const campaigns = data.campaigns as unknown as Campaign[];
   const phenomena = data.phenomena;
   const campaignCount = data.campaignCount;
+  const userId = data.userId;
   const totalPages = Math.ceil(campaignCount / PER_PAGE);
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
@@ -649,7 +652,14 @@ export default function Campaigns() {
                     <CardTitle>
                       <div className="mb-4 flex w-full justify-between">
                         <div>
-                          <StarIcon className="h-4 w-4" />
+                          {userId &&
+                          item.bookmarkedByUsers.some(
+                            (user) => user.id === userId
+                          ) ? (
+                            <StarIcon className="h-4 w-4 fill-yellow-300 text-yellow-300" />
+                          ) : (
+                            <StarIcon className="h-4 w-4" />
+                          )}
                         </div>
                         <div className="flex gap-2">
                           {item.country && (

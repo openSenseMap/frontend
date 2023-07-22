@@ -133,16 +133,17 @@ export const meta: MetaFunction<typeof loader> = ({ params }) => ({
 export async function loader({ request, params }: LoaderArgs) {
   const userId = await requireUserId(request);
 
-  const campaign = await getCampaign({ slug: params.slug ?? "" });
+  const campaign = await getCampaign({ slug: params.slug ?? "" }, userId);
   if (!campaign) {
     throw new Response("Campaign not found", { status: 502 });
   }
+  const isBookmarked = !!campaign?.bookmarkedByUsers.length;
   const response = await getPhenomena();
   if (response.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
   }
   const phenomena = response.map((p: { slug: string }) => p.slug);
-  return json({ campaign, userId, phenomena });
+  return json({ campaign, userId, phenomena, isBookmarked });
 }
 
 const layer: LayerProps = {
@@ -163,6 +164,8 @@ export default function CampaignId() {
     return { key: participant.name, value: participant.name };
   });
   const userId = data.userId;
+  const bookmarked = data.isBookmarked;
+  console.log(bookmarked);
   const [commentEditMode, setCommentEditMode] = useState(false);
   const [eventEditMode, setEventEditMode] = useState(false);
   const [editEventTitle, setEditEventTitle] = useState<string | undefined>("");
@@ -240,7 +243,12 @@ export default function CampaignId() {
               value="BOOKMARK"
               type="submit"
             >
-              {t("bookmark")} <StarIcon className="h-4 w-4" />
+              {t("bookmark")}{" "}
+              <StarIcon
+                className={`h-4 w-4 ${
+                  bookmarked ? "fill-yellow-300 text-yellow-300" : ""
+                }`}
+              />
             </Button>
           </Form>
           <Dialog>
