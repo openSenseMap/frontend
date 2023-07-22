@@ -3,7 +3,7 @@ import { MultiSelect } from "../ui/multi-select";
 
 type PhenomenaSelectProps = {
   phenomena: string[];
-  localFilterObject: {
+  localFilterObject?: {
     country: string;
     exposure: string;
     phenomena: string[];
@@ -12,7 +12,7 @@ type PhenomenaSelectProps = {
       endDate: string;
     };
   };
-  setLocalFilterObject: Dispatch<
+  setLocalFilterObject?: Dispatch<
     SetStateAction<{
       country: string;
       exposure: string;
@@ -23,12 +23,14 @@ type PhenomenaSelectProps = {
       };
     }>
   >;
+  setSelectedPhenomena?: any;
 };
 
 export default function PhenomenaSelect({
   phenomena,
   setLocalFilterObject,
   localFilterObject,
+  setSelectedPhenomena,
 }: PhenomenaSelectProps) {
   const data = phenomena.map((str) => {
     return {
@@ -43,6 +45,7 @@ export default function PhenomenaSelect({
       data={data}
       setLocalFilterObject={setLocalFilterObject}
       localFilterObject={localFilterObject}
+      setSelectedPhenomena={setSelectedPhenomena}
     />
   );
 }

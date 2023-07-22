@@ -39,7 +39,7 @@ import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
-import FiltersBar from "~/components/campaigns/overview/filters-bar";
+// import FiltersBar from "~/components/campaigns/overview/filters-bar";
 import type { Campaign, Exposure, Priority, Prisma } from "@prisma/client";
 import {
   ExposureBadge,
@@ -48,11 +48,81 @@ import {
 import Markdown from "markdown-to-jsx";
 import Pagination from "~/components/campaigns/overview/pagination";
 import { Button } from "~/components/ui/button";
-import SearchField from "~/components/campaigns/overview/search";
+import Filter from "~/components/campaigns/overview/filter";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
 const PER_PAGE = 12;
+
+const generateWhereObject = (query: URLSearchParams) => {
+  const where: {
+    title?: {
+      contains: string;
+      mode: "insensitive";
+    };
+    priority?: string;
+    country?: {
+      contains: string;
+      mode: "insensitive";
+    };
+    exposure?: string;
+    startDate?: {
+      gte: Date;
+    };
+    endDate?: {
+      lte: Date;
+    };
+    phenomena?: any;
+  } = {};
+
+  if (query.get("search")) {
+    where.title = {
+      contains: query.get("search") || "",
+      mode: "insensitive",
+    };
+  }
+
+  if (query.get("priority")) {
+    const priority = query.get("priority") || "";
+    where.priority = priority;
+  }
+
+  if (query.get("country")) {
+    where.country = {
+      contains: query.get("country") || "",
+      mode: "insensitive",
+    };
+  }
+
+  if (query.get("exposure")) {
+    const exposure = query.get("exposure") || "UNKNOWN";
+    where.exposure = exposure;
+  }
+  if (query.get("phenomena")) {
+    const phenomenaString = query.get("phenomena") || "";
+    const phenomena = JSON.parse(phenomenaString);
+    console.log(phenomena);
+    where.phenomena = {
+      hasSome: phenomena,
+    };
+  }
+
+  if (query.get("startDate")) {
+    const startDate = new Date(query.get("startDate") || "");
+    where.startDate = {
+      gte: startDate,
+    };
+  }
+
+  if (query.get("endDate")) {
+    const endDate = new Date(query.get("endDate") || "");
+    where.endDate = {
+      lte: endDate,
+    };
+  }
+
+  return where;
+};
 
 export async function loader({ params, request }: LoaderArgs) {
   const url = new URL(request.url);
@@ -62,7 +132,7 @@ export async function loader({ params, request }: LoaderArgs) {
     take: number;
     skip: number;
     orderBy: {
-      updatedAt: string;
+      // updatedAt: string;
     };
     where?: {};
   } = {
@@ -71,18 +141,18 @@ export async function loader({ params, request }: LoaderArgs) {
     orderBy: {
       updatedAt: "desc",
     },
+    where: generateWhereObject(query),
   };
-  const countOptions: { where?: {} } = {};
 
-  if (query.get("search")) {
-    options.where = {
-      title: {
-        contains: query.get("search"),
-        mode: "insensitive",
-      },
+  const countOptions = options.where;
+
+  if (query.get("sortBy")) {
+    const sortBy = query.get("sortBy") || "updatedAt";
+    options.orderBy = {
+      [sortBy]: query.get("orderDir") || "asc",
     };
-    countOptions.where = options.where;
   }
+
   const campaigns = await getCampaigns(options);
   const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
@@ -116,9 +186,7 @@ export default function Campaigns() {
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
   // );
-  const [phenomenaState, setPhenomenaState] = useState(
-    Object.fromEntries(phenomena.map((p: string) => [p, false]))
-  );
+
   const [searchParams] = useSearchParams();
 
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
@@ -248,22 +316,7 @@ export default function Campaigns() {
     if (map) {
       const bounds = map.getBounds().toArray().flat();
       setMapBounds(bounds as BBox);
-      console.log(mapBounds);
     }
-
-    // Update the bounds whenever the viewport changes
-    // const handleViewportChange = () => {
-    //   const bounds = map.getBounds();
-    //   setMapBounds(bounds);
-    // };
-
-    // // Attach the event listener for viewport change
-    // map.on('render', handleViewportChange);
-
-    // // Clean up the event listener when the component unmounts
-    // return () => {
-    //   map.off('render', handleViewportChange);
-    // };
   }, [mapRef]);
 
   // const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -279,10 +332,10 @@ export default function Campaigns() {
         endDate: "",
       },
     });
-    const allCampaigns = campaigns.map((campaign: Campaign) => {
-      return campaign;
-    });
-    setDisplayedCampaigns(allCampaigns);
+    // const allCampaigns = campaigns.map((campaign: Campaign) => {
+    //   return campaign;
+    // });
+    // setDisplayedCampaigns(allCampaigns);
     setSelectedCampaign("");
     if (mapRef.current) {
       mapRef.current.flyTo({
@@ -293,82 +346,84 @@ export default function Campaigns() {
     }
   };
 
-  const checkTitleMatch = useCallback(
-    (title: string) => {
-      return title
-        .toLowerCase()
-        .includes(filterObject.searchTerm.toLowerCase());
-    },
-    [filterObject.searchTerm]
-  );
+  // CLIENT-SIDE FILTERING IS REPLACED BY SERVER-SIDE FILTER FOR NOW
 
-  const checkPriorityMatch = useCallback(
-    (priority: string) => {
-      return (
-        !filterObject.priority ||
-        priority.toLowerCase() === filterObject.priority.toLowerCase()
-      );
-    },
-    [filterObject.priority]
-  );
+  // const checkTitleMatch = useCallback(
+  //   (title: string) => {
+  //     return title
+  //       .toLowerCase()
+  //       .includes(filterObject.searchTerm.toLowerCase());
+  //   },
+  //   [filterObject.searchTerm]
+  // );
 
-  const checkCountryMatch = useCallback(
-    (country: string | null) => {
-      if (!country) {
-        return true;
-      }
-      return (
-        !filterObject.country ||
-        country.toLowerCase() === filterObject.country.toLowerCase()
-      );
-    },
-    [filterObject.country]
-  );
+  // const checkPriorityMatch = useCallback(
+  //   (priority: string) => {
+  //     return (
+  //       !filterObject.priority ||
+  //       priority.toLowerCase() === filterObject.priority.toLowerCase()
+  //     );
+  //   },
+  //   [filterObject.priority]
+  // );
 
-  const checkExposureMatch = useCallback(
-    (exposure: string) => {
-      return (
-        !filterObject.exposure ||
-        exposure.toLowerCase() === filterObject.exposure.toLowerCase()
-      );
-    },
-    [filterObject.exposure]
-  );
+  // const checkCountryMatch = useCallback(
+  //   (country: string | null) => {
+  //     if (!country) {
+  //       return true;
+  //     }
+  //     return (
+  //       !filterObject.country ||
+  //       country.toLowerCase() === filterObject.country.toLowerCase()
+  //     );
+  //   },
+  //   [filterObject.country]
+  // );
 
-  const checkTimeRangeMatches = useCallback(
-    (startDate: Date | null, endDate: Date | null) => {
-      const filterStartDate = filterObject.time_range.startDate;
-      const filterEndDate = filterObject.time_range.endDate;
+  // const checkExposureMatch = useCallback(
+  //   (exposure: string) => {
+  //     return (
+  //       !filterObject.exposure ||
+  //       exposure.toLowerCase() === filterObject.exposure.toLowerCase()
+  //     );
+  //   },
+  //   [filterObject.exposure]
+  // );
 
-      if (!filterStartDate || !filterEndDate) {
-        return true;
-      }
+  // const checkTimeRangeMatches = useCallback(
+  //   (startDate: Date | null, endDate: Date | null) => {
+  //     const filterStartDate = filterObject.time_range.startDate;
+  //     const filterEndDate = filterObject.time_range.endDate;
 
-      if (!startDate) {
-        return false;
-      }
+  //     if (!filterStartDate || !filterEndDate) {
+  //       return true;
+  //     }
 
-      if (!endDate) {
-        return false;
-      }
+  //     if (!startDate) {
+  //       return false;
+  //     }
 
-      const campaignStartTimestamp = new Date(startDate).getTime();
-      const campaignEndTimestamp = new Date(endDate).getTime();
-      const filterStartTimestamp = new Date(filterStartDate).getTime();
-      const filterEndTimestamp = new Date(filterEndDate).getTime();
+  //     if (!endDate) {
+  //       return false;
+  //     }
 
-      const isStartDateWithinRange =
-        campaignStartTimestamp >= filterStartTimestamp &&
-        campaignStartTimestamp <= filterEndTimestamp;
+  //     const campaignStartTimestamp = new Date(startDate).getTime();
+  //     const campaignEndTimestamp = new Date(endDate).getTime();
+  //     const filterStartTimestamp = new Date(filterStartDate).getTime();
+  //     const filterEndTimestamp = new Date(filterEndDate).getTime();
 
-      const isEndDateWithinRange =
-        campaignEndTimestamp >= filterStartTimestamp &&
-        campaignEndTimestamp <= filterEndTimestamp;
+  //     const isStartDateWithinRange =
+  //       campaignStartTimestamp >= filterStartTimestamp &&
+  //       campaignStartTimestamp <= filterEndTimestamp;
 
-      return isStartDateWithinRange && isEndDateWithinRange;
-    },
-    [filterObject.time_range]
-  );
+  //     const isEndDateWithinRange =
+  //       campaignEndTimestamp >= filterStartTimestamp &&
+  //       campaignEndTimestamp <= filterEndTimestamp;
+
+  //     return isStartDateWithinRange && isEndDateWithinRange;
+  //   },
+  //   [filterObject.time_range]
+  // );
 
   // const checkPhenomenaMatch = useCallback(
   //   (phenomena: string[]) => {
@@ -387,81 +442,81 @@ export default function Campaigns() {
   //   [filterObject.phenomena]
   // );
 
-  useEffect(() => {
-    console.log(filterObject);
-    const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
-      const titleMatches = checkTitleMatch(campaign.title);
-      const priorityMatches = checkPriorityMatch(campaign.priority);
-      const countryMatches = checkCountryMatch(campaign.country);
-      const exposureMatches = checkExposureMatch(campaign.exposure);
-      const timeRangeMatches = checkTimeRangeMatches(
-        campaign.startDate,
-        campaign.endDate
-      );
-      // const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena);
-      return (
-        titleMatches &&
-        priorityMatches &&
-        countryMatches &&
-        exposureMatches &&
-        timeRangeMatches
-        // phenomenaMatches
-      );
-    });
-    setDisplayedCampaigns(filteredCampaigns);
-  }, [
-    campaigns,
-    checkCountryMatch,
-    checkExposureMatch,
-    checkPriorityMatch,
-    checkTitleMatch,
-    checkTimeRangeMatches,
-    // checkPhenomenaMatch,
-    filterObject,
-  ]);
+  // useEffect(() => {
+  //   console.log(filterObject);
+  //   const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
+  //     const titleMatches = checkTitleMatch(campaign.title);
+  //     const priorityMatches = checkPriorityMatch(campaign.priority);
+  //     const countryMatches = checkCountryMatch(campaign.country);
+  //     const exposureMatches = checkExposureMatch(campaign.exposure);
+  //     const timeRangeMatches = checkTimeRangeMatches(
+  //       campaign.startDate,
+  //       campaign.endDate
+  //     );
+  //     // const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena);
+  //     return (
+  //       titleMatches &&
+  //       priorityMatches &&
+  //       countryMatches &&
+  //       exposureMatches &&
+  //       timeRangeMatches
+  //       // phenomenaMatches
+  //     );
+  //   });
+  //   setDisplayedCampaigns(filteredCampaigns);
+  // }, [
+  //   campaigns,
+  //   checkCountryMatch,
+  //   checkExposureMatch,
+  //   checkPriorityMatch,
+  //   checkTitleMatch,
+  //   checkTimeRangeMatches,
+  //   // checkPhenomenaMatch,
+  //   filterObject,
+  // ]);
 
-  useEffect(() => {
-    let sortedCampaigns;
+  // useEffect(() => {
+  //   let sortedCampaigns;
 
-    switch (sortBy) {
-      case "erstelldatum":
-        sortedCampaigns = campaigns
-          .slice()
-          .sort((campaignA: Campaign, campaignB: Campaign) => {
-            const createdAtA = new Date(campaignA.createdAt).getTime();
-            const createdAtB = new Date(campaignB.createdAt).getTime();
-            return createdAtA - createdAtB;
-          });
-        break;
+  //   switch (sortBy) {
+  //     case "erstelldatum":
+  //       sortedCampaigns = campaigns
+  //         .slice()
+  //         .sort((campaignA: Campaign, campaignB: Campaign) => {
+  //           const createdAtA = new Date(campaignA.createdAt).getTime();
+  //           const createdAtB = new Date(campaignB.createdAt).getTime();
+  //           return createdAtA - createdAtB;
+  //         });
+  //       break;
 
-      case "dringlichkeit":
-        const priorityOrder = {
-          URGENT: 0,
-          HIGH: 1,
-          MEDIUM: 2,
-          LOW: 3,
-        };
+  //     case "dringlichkeit":
+  //       const priorityOrder = {
+  //         URGENT: 0,
+  //         HIGH: 1,
+  //         MEDIUM: 2,
+  //         LOW: 3,
+  //       };
 
-        sortedCampaigns = campaigns
-          .slice()
-          .sort((campaignA: Campaign, campaignB: Campaign) => {
-            const priorityA =
-              priorityOrder[campaignA.priority as keyof typeof priorityOrder];
-            const priorityB =
-              priorityOrder[campaignB.priority as keyof typeof priorityOrder];
+  //       sortedCampaigns = campaigns
+  //         .slice()
+  //         .sort((campaignA: Campaign, campaignB: Campaign) => {
+  //           const priorityA =
+  //             priorityOrder[campaignA.priority as keyof typeof priorityOrder];
+  //           const priorityB =
+  //             priorityOrder[campaignB.priority as keyof typeof priorityOrder];
 
-            return priorityA - priorityB;
-          });
-        break;
+  //           return priorityA - priorityB;
+  //         });
+  //       break;
 
-      default:
-        sortedCampaigns = campaigns.slice();
-    }
+  //     default:
+  //       sortedCampaigns = campaigns.slice();
+  //   }
 
-    setDisplayedCampaigns(sortedCampaigns);
-  }, [campaigns, sortBy]);
+  //   setDisplayedCampaigns(sortedCampaigns);
+  // }, [campaigns, sortBy]);
 
-  const centerpoints = displayedCampaigns
+  const centerpoints = campaigns
     .map((campaign: Campaign) => {
       if (
         typeof campaign.centerpoint === "object" &&
@@ -516,8 +571,13 @@ export default function Campaigns() {
           <span className="float-right" id="max"></span>
           <img className="w-full" id="gradient" src="" alt="legend-gradient" />
         </div> */}
-        <SearchField />
-        <FiltersBar
+        <Filter
+          setShowMap={setShowMap}
+          showMap={showMap}
+          switchDisabled={campaigns.length === 0}
+          phenomena={phenomena}
+        />
+        {/* <FiltersBar
           phenomena={phenomena}
           phenomenaState={phenomenaState}
           resetFilters={resetFilters}
@@ -529,7 +589,7 @@ export default function Campaigns() {
           showMap={showMap}
           sortBy={sortBy}
           switchDisabled={campaigns.length === 0}
-        />
+        /> */}
         {selectedCampaign && (
           <div className="relative ml-auto inline-block">
             <input type="text" value={selectedCampaign.split("-")[0]} />
@@ -570,10 +630,9 @@ export default function Campaigns() {
             }`}
           >
             <span className="absolute left-0 top-0 ">
-              {displayedCampaigns.length} von {campaignCount} Kampagnen werden
-              angezeigt
+              {campaigns.length} von {campaignCount} Kampagnen werden angezeigt
             </span>
-            {displayedCampaigns.map((item: Campaign, index: number) => (
+            {campaigns.map((item: Campaign, index: number) => (
               <Card
                 key={item.id}
                 className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`} // 3 campaigns per row

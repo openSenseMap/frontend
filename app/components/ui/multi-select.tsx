@@ -9,7 +9,6 @@ import { Badge } from "./badge";
 import { Command, CommandGroup, CommandItem } from "./command";
 import { Label } from "./label";
 import { ScrollArea } from "./scroll-area";
-import { preview } from "vite";
 
 type DataItem = Record<"value" | "label", string>;
 
@@ -20,12 +19,14 @@ export function MultiSelect({
   data,
   setLocalFilterObject,
   localFilterObject,
+  setSelectedPhenomena,
 }: {
   label?: string;
   placeholder?: string;
   parentClassName?: string;
   data: DataItem[];
-  localFilterObject: {
+  setSelectedPhenomena: any;
+  localFilterObject?: {
     country: string;
     exposure: string;
     phenomena: string[];
@@ -34,7 +35,7 @@ export function MultiSelect({
       endDate: string;
     };
   };
-  setLocalFilterObject: React.Dispatch<
+  setLocalFilterObject?: React.Dispatch<
     React.SetStateAction<{
       country: string;
       exposure: string;
@@ -148,13 +149,21 @@ export function MultiSelect({
                         onSelect={(value) => {
                           setInputValue("");
                           setSelected((prev) => [...prev, framework]);
-                          setLocalFilterObject({
-                            ...localFilterObject,
-                            phenomena: [
-                              ...localFilterObject.phenomena,
+                          if (localFilterObject && setLocalFilterObject) {
+                            setLocalFilterObject({
+                              ...localFilterObject,
+                              phenomena: [
+                                ...localFilterObject.phenomena,
+                                framework.value,
+                              ],
+                            });
+                          }
+                          if (setSelectedPhenomena) {
+                            setSelectedPhenomena((selected: any) => [
+                              ...selected,
                               framework.value,
-                            ],
-                          });
+                            ]);
+                          }
                         }}
                       >
                         {framework.label}

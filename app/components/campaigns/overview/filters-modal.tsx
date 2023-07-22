@@ -95,8 +95,6 @@ export default function FiltersModal({
   });
   const { t } = useTranslation("campaign-filters-modal");
 
-  console.log(localFilterObject);
-
   return (
     <Dialog open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
       <DialogTrigger>
@@ -137,6 +135,7 @@ export default function FiltersModal({
         </Select>
         <PhenomenaSelect
           phenomena={phenomena}
+          // setSelectedPhenomena={setSelectedPhenomena}
           setLocalFilterObject={setLocalFilterObject}
           localFilterObject={localFilterObject}
         />
@@ -269,6 +268,16 @@ export default function FiltersModal({
                 phenomena: localFilterObject.phenomena,
                 time_range: localFilterObject.time_range,
               });
+              setLocalFilterObject({
+                country: "",
+                exposure: "",
+                phenomena: [""],
+                time_range: {
+                  startDate: "",
+                  endDate: "",
+                },
+              });
+
               setMoreFiltersOpen(false);
             }}
           >
