@@ -36,7 +36,7 @@ export default function OverviewTable({
     <div>
       {userId === campaign.ownerId && !editMode && (
         <Button
-          className="float-right"
+          className="float-right bg-blue-700 text-white"
           variant="outline"
           onClick={() => setEditMode(true)}
         >
