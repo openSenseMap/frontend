@@ -100,11 +100,17 @@ const generateWhereObject = (query: URLSearchParams) => {
   }
   if (query.get("phenomena")) {
     const phenomenaString = query.get("phenomena") || "";
-    const phenomena = JSON.parse(phenomenaString);
-    console.log(phenomena);
-    where.phenomena = {
-      hasSome: phenomena,
-    };
+    try {
+      const phenomena = JSON.parse(phenomenaString);
+
+      if (Array.isArray(phenomena) && phenomena.length > 0) {
+        where.phenomena = {
+          hasSome: phenomena,
+        };
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
   }
 
   if (query.get("startDate")) {

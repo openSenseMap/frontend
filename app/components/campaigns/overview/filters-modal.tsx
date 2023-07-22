@@ -87,7 +87,7 @@ export default function FiltersModal({
   const [localFilterObject, setLocalFilterObject] = useState({
     country: "",
     exposure: "",
-    phenomena: [""],
+    phenomena: [] as string[],
     time_range: {
       startDate: "",
       endDate: "",
