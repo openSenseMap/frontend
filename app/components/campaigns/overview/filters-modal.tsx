@@ -271,7 +271,7 @@ export default function FiltersModal({
               setLocalFilterObject({
                 country: "",
                 exposure: "",
-                phenomena: [""],
+                phenomena: [],
                 time_range: {
                   startDate: "",
                   endDate: "",
