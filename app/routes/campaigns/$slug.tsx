@@ -30,6 +30,7 @@ import {
   Share2Icon,
   DownloadIcon,
   TrashIcon,
+  StarIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
@@ -222,6 +223,15 @@ export default function CampaignId() {
           </div>
         </div>
         <div className="flex gap-6">
+          <Button
+            variant="outline"
+            className="flex w-fit gap-2"
+            name="_action"
+            value="BOOKMARK"
+            type="submit"
+          >
+            {t("bookmark")} <StarIcon className="h-4 w-4" />
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">

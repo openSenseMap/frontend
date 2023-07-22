@@ -49,6 +49,7 @@ import Markdown from "markdown-to-jsx";
 import Pagination from "~/components/campaigns/overview/pagination";
 import { Button } from "~/components/ui/button";
 import Filter from "~/components/campaigns/overview/filter";
+import { StarIcon } from "lucide-react";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -646,14 +647,19 @@ export default function Campaigns() {
                 <Link to={`../${item.slug}`}>
                   <CardHeader>
                     <CardTitle>
-                      <div className="mb-4 flex w-full justify-end gap-2">
-                        {item.country && (
-                          <CountryFlagIcon
-                            country={String(item.country).toUpperCase()}
-                          />
-                        )}
-                        <ExposureBadge exposure={item.exposure} />
-                        <PriorityBadge priority={item.priority} />
+                      <div className="mb-4 flex w-full justify-between">
+                        <div>
+                          <StarIcon className="h-4 w-4" />
+                        </div>
+                        <div className="flex gap-2">
+                          {item.country && (
+                            <CountryFlagIcon
+                              country={String(item.country).toUpperCase()}
+                            />
+                          )}
+                          <ExposureBadge exposure={item.exposure} />
+                          <PriorityBadge priority={item.priority} />
+                        </div>
                       </div>
                       <span>{item.title}</span>
                     </CardTitle>
