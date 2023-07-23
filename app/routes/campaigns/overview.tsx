@@ -40,7 +40,13 @@ import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
 // import FiltersBar from "~/components/campaigns/overview/filters-bar";
-import type { Campaign, Exposure, Priority, Prisma } from "@prisma/client";
+import type {
+  Campaign,
+  Exposure,
+  Priority,
+  Prisma,
+  User,
+} from "@prisma/client";
 import {
   ExposureBadge,
   PriorityBadge,
@@ -602,7 +608,7 @@ export default function Campaigns() {
                             >
                               {userId &&
                               item.bookmarkedByUsers.some(
-                                (user) => user.id === userId
+                                (user: User) => user.id === userId
                               ) ? (
                                 <StarIcon className="h-4 w-4 fill-yellow-300 text-yellow-300" />
                               ) : (
