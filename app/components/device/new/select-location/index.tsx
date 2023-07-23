@@ -1,26 +1,13 @@
-import type { LinksFunction } from "@remix-run/node";
+// import type { LinksFunction } from "@remix-run/node";
 import React, { useCallback, useState } from "react";
 
 import {
   Map,
-  MapProvider,
   Marker,
   type MarkerDragEvent,
   NavigationControl,
 } from "react-map-gl";
 // import { Map } from "~/components/map";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
-
-//*****************************************
-//* required to view mapbox proberly (Y.Q.)
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: "stylesheet",
-      href: mapboxgl,
-    },
-  ];
-};
 
 export interface SelectLocationProps {
   data: any;
@@ -57,31 +44,28 @@ export default function SelectLocation({ data }: SelectLocationProps) {
 
       {/* Map view */}
       <div className="sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
-        <MapProvider>
-          <Map
-            initialViewState={{
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-              zoom: 5,
-            }}
-            mapStyle="mapbox://styles/mapbox/streets-v12"
-            mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
-            style={{
-              width: "100%",
-              height: "40vh",
-            }}
-          >
-            <Marker
-              longitude={marker.longitude}
-              latitude={marker.latitude}
-              anchor="bottom"
-              draggable
-              onDrag={onMarkerDrag}
-              style={{ width: "20px", height: "20px" }}
-            ></Marker>
-            <NavigationControl position="top-left" showCompass={false} />
-          </Map>
-        </MapProvider>
+        <Map
+          initialViewState={{
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+            zoom: 5,
+          }}
+          mapStyle="mapbox://styles/mapbox/streets-v12"
+          mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
+          style={{
+            width: "100%",
+            height: "45vh",
+          }}
+        >
+          <Marker
+            longitude={marker.longitude}
+            latitude={marker.latitude}
+            anchor="bottom"
+            draggable
+            onDrag={onMarkerDrag}
+          ></Marker>
+          <NavigationControl position="top-left" showCompass={false} />
+        </Map>
       </div>
 
       {/* Latitude, Longitude btns */}
@@ -98,23 +82,16 @@ export default function SelectLocation({ data }: SelectLocationProps) {
             <div className="mt-1">
               <input
                 id="latitude"
-                required
+                // required
                 autoFocus={true}
                 name="latitude"
                 type="number"
-                min="-85.06"
-                max="85.06"
                 value={marker.latitude}
                 onChange={(e) => {
-                  if (
-                    Number(e.target.value) >= -85.06 &&
-                    Number(e.target.value) <= 85.06
-                  ) {
-                    setMarker({
-                      latitude: e.target.value,
-                      longitude: marker.longitude,
-                    });
-                  }
+                  setMarker({
+                    latitude: e.target.value,
+                    longitude: marker.longitude,
+                  });
                 }}
                 aria-describedby="name-error"
                 className={
@@ -138,23 +115,15 @@ export default function SelectLocation({ data }: SelectLocationProps) {
             <div className="mt-1">
               <input
                 id="longitude"
-                required
                 autoFocus={true}
                 name="longitude"
                 type="number"
-                min="-180"
-                max="180"
                 value={marker.longitude}
                 onChange={(e) => {
-                  if (
-                    Number(e.target.value) >= -180 &&
-                    Number(e.target.value) <= 180
-                  ) {
-                    setMarker({
-                      latitude: marker.latitude,
-                      longitude: e.target.value,
-                    });
-                  }
+                  setMarker({
+                    latitude: marker.latitude,
+                    longitude: e.target.value,
+                  });
                 }}
                 aria-describedby="name-error"
                 className={
@@ -182,16 +151,9 @@ export default function SelectLocation({ data }: SelectLocationProps) {
                 autoFocus={true}
                 name="height"
                 type="number"
-                min="-200"
-                max="8884"
                 value={height}
                 onChange={(e) => {
-                  if (
-                    Number(e.target.value) >= -200 &&
-                    Number(e.target.value) <= 8884
-                  ) {
-                    setHeight(e.target.value);
-                  }
+                  setHeight(e.target.value);
                 }}
                 aria-describedby="name-error"
                 className="w-full rounded border border-gray-200 px-2 py-1 text-base"
@@ -201,11 +163,13 @@ export default function SelectLocation({ data }: SelectLocationProps) {
         </div>
 
         <button
+          type="button"
           onClick={() => {
             setMarker({
               latitude: data.data.latitude,
               longitude: data.data.longitude,
             });
+            setHeight(data.data.height);
           }}
           className="mb-10 mt-4 font-semibold
                 text-[#337ab7] 
