@@ -28,12 +28,17 @@ export async function getOwnCampaigns(userId: string) {
   });
 }
 
-export async function getCampaigns(options = {}, userId: string) {
+export async function getCampaigns(options = {}, userId?: string) {
   return await prisma.campaign.findMany({
     include: {
       participants: true,
       bookmarkedByUsers: {
         where: { id: userId },
+      },
+    },
+    orderBy: {
+      bookmarkedByUsers: {
+        _count: "desc",
       },
     },
     ...options,
