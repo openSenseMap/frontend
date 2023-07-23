@@ -280,10 +280,17 @@ export default function Campaigns() {
   }, [mapRef]);
 
   useEffect(() => {
-    if (actionData && actionData.ok) {
-      toast({
-        description: "Successfully bookmarked campaign",
-      });
+    if (actionData) {
+      if (actionData.bookmarked) {
+        toast({
+          description: "Campaign successfully bookmarked",
+        });
+      }
+      if (actionData.unbookmarked) {
+        toast({
+          description: "Campaign successfully unbookmarked",
+        });
+      }
     }
   }, [actionData, toast]);
 

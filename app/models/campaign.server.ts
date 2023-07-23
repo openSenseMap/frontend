@@ -1,6 +1,7 @@
 import type { Campaign, User, Prisma } from "@prisma/client";
 import { generateSlug } from "~/lib/slug";
 import { prisma } from "~/db.server";
+import { json } from "@remix-run/node";
 
 export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
   return prisma.campaign.findFirst({
@@ -78,15 +79,23 @@ export async function bookmarkCampaign({
   );
 
   if (isBookmarked) {
-    await prisma.user.update({
+    const unbookmark = await prisma.user.update({
       where: { id: ownerId },
       data: { bookmarkedCampaigns: { disconnect: { id: id } } },
     });
+    if (unbookmark) {
+      return json({ unbookmarked: true });
+    }
+    return unbookmark;
   } else {
-    await prisma.user.update({
+    const bookmark = await prisma.user.update({
       where: { id: ownerId },
       data: { bookmarkedCampaigns: { connect: { id: id } } },
     });
+    if (bookmark) {
+      return json({ bookmarked: true });
+    }
+    return bookmark;
   }
 }
 
