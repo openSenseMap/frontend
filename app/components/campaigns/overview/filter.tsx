@@ -142,10 +142,10 @@ export default function Filter({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-40">
             <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
-              <DropdownMenuRadioItem value="dringlichkeit">
+              <DropdownMenuRadioItem value="priority">
                 {t("priority")}
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="erstelldatum">
+              <DropdownMenuRadioItem value="createdAt">
                 {t("creation date")}
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="updatedAt">

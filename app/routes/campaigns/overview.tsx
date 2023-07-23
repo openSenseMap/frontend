@@ -167,11 +167,8 @@ export async function loader({ params, request }: LoaderArgs) {
 
   if (query.get("sortBy")) {
     const sortBy = query.get("sortBy") || "updatedAt";
-    const orderDir = query.get("orderDir") || "asc";
-
-    // Add the sorting based on sortBy and orderDir
     options.orderBy.push({
-      [sortBy]: orderDir,
+      [sortBy]: "desc",
     });
   }
 
