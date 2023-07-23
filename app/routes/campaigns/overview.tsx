@@ -145,16 +145,21 @@ export async function loader({ params, request }: LoaderArgs) {
   const options: {
     take: number;
     skip: number;
-    orderBy: {
-      // updatedAt: string;
-    };
+    orderBy: [{}, {}];
     where?: {};
   } = {
     take: PER_PAGE,
     skip: (currentPage - 1) * PER_PAGE,
-    orderBy: {
-      updatedAt: "desc",
-    },
+    orderBy: [
+      {
+        bookmarkedByUsers: {
+          _count: "desc",
+        },
+      },
+      {
+        updatedAt: "desc",
+      },
+    ],
     where: generateWhereObject(query),
   };
 
@@ -162,9 +167,12 @@ export async function loader({ params, request }: LoaderArgs) {
 
   if (query.get("sortBy")) {
     const sortBy = query.get("sortBy") || "updatedAt";
-    options.orderBy = {
-      [sortBy]: query.get("orderDir") || "asc",
-    };
+    const orderDir = query.get("orderDir") || "asc";
+
+    // Add the sorting based on sortBy and orderDir
+    options.orderBy.push({
+      [sortBy]: orderDir,
+    });
   }
 
   const campaigns = await getCampaigns(options, userId);

@@ -36,16 +36,16 @@ export async function getCampaigns(options = {}, userId?: string) {
         where: { id: userId },
       },
     },
-    orderBy: [
-      {
-        bookmarkedByUsers: {
-          _count: "desc",
-        },
-      },
-      {
-        updatedAt: "desc",
-      },
-    ],
+    // orderBy: [
+    //   {
+    //     bookmarkedByUsers: {
+    //       _count: "desc",
+    //     },
+    //   },
+    //   {
+    //     updatedAt: "desc",
+    //   },
+    // ],
     ...options,
   });
 }
