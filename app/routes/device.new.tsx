@@ -12,6 +12,7 @@ import General from "~/components/device/new/general";
 import SelectDevice from "~/components/device/new/select-device";
 import SelectSensors from "~/components/device/new/select-sensors";
 import Advanced from "~/components/device/new/advanced";
+import SelectLocation from "~/components/device/new/select-location";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -85,6 +86,7 @@ export const loader = async ({ request }: LoaderArgs) => {
       ...session.get(`form-data-page-2`),
       ...session.get(`form-data-page-3`),
       ...session.get(`form-data-page-4`),
+      ...session.get(`form-data-page-5`),
     };
     return json({ page, data });
   }
@@ -152,6 +154,7 @@ export default function NewDevice() {
             { title: "General" },
             { title: "Select Sensors" },
             { title: "Advanced" },
+            { title: "Select Location" },
             { title: "Summary" },
           ]}
           activeStep={page - 1}
@@ -173,7 +176,7 @@ export default function NewDevice() {
                 Previous
               </button>
             )}
-            {page < 5 && (
+            {page < 6 && (
               <button
                 name="action"
                 // type="button"
@@ -183,7 +186,7 @@ export default function NewDevice() {
                 Next
               </button>
             )}
-            {page === 5 && (
+            {page === 6 && (
               <button
                 name="action"
                 type="submit"
@@ -208,7 +211,10 @@ export default function NewDevice() {
           {page === 4 && (
             <Advanced data={data} />
           )}
-          {page === 5 && <pre>{JSON.stringify(data, null, 2)}</pre>}
+          {page === 5 && (
+            <SelectLocation data={loaderData} />
+          )}
+          {page === 6 && <pre>{JSON.stringify(data, null, 2)}</pre>}
         </div>
         <div className="flex justify-end">
           {page > 1 && (
@@ -222,7 +228,7 @@ export default function NewDevice() {
               Previous
             </button>
           )}
-          {page < 5 && (
+          {page < 6 && (
             <button
               name="action"
               // type="button"
@@ -232,7 +238,7 @@ export default function NewDevice() {
               Next
             </button>
           )}
-          {page === 5 && (
+          {page === 6 && (
             <button
               name="action"
               type="submit"
