@@ -283,16 +283,16 @@ export default function Campaigns() {
     if (actionData) {
       if (actionData.bookmarked) {
         toast({
-          description: "Campaign successfully bookmarked",
+          description: <span>{t("campaign successfully bookmarked")}</span>,
         });
       }
       if (actionData.unbookmarked) {
         toast({
-          description: "Campaign successfully unbookmarked",
+          description: <span>{t("campaign successfully uookmarked")}</span>,
         });
       }
     }
-  }, [actionData, toast]);
+  }, [actionData, t, toast]);
 
   // const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const resetFilters = () => {

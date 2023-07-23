@@ -12,5 +12,8 @@
   "cancel": "Cancel",
   "overview": "Overview",
   "calender": "Calender",
-  "questions and comments": "Questions and comments"
+  "questions and comments": "Questions and comments",
+  "bookmark": "Bookmark",
+  "campaign successfully bookmarked": "Campaign successfully bookmarked",
+  "campaign successfully unbookmarked": "Campaign successfully unbookmarked"
 }

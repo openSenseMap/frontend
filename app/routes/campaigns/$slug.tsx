@@ -155,7 +155,6 @@ export default function CampaignId() {
   });
   const userId = data.userId;
   const bookmarked = data.isBookmarked;
-  console.log(bookmarked);
   const [commentEditMode, setCommentEditMode] = useState(false);
   const [eventEditMode, setEventEditMode] = useState(false);
   const [editEventTitle, setEditEventTitle] = useState<string | undefined>("");
@@ -192,16 +191,16 @@ export default function CampaignId() {
     if (actionData) {
       if (actionData.bookmarked) {
         toast({
-          description: "Campaign successfully bookmarked",
+          description: <span>{t("campaign successfully bookmarked")}</span>,
         });
       }
       if (actionData.unbookmarked) {
         toast({
-          description: "Campaign successfully unbookmarked",
+          description: <span>{t("campaign successfully uookmarked")}</span>,
         });
       }
     }
-  }, [actionData, toast]);
+  }, [actionData, t, toast]);
 
   useEffect(() => {
     if (
