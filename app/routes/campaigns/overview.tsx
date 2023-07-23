@@ -687,16 +687,18 @@ export default function Campaigns() {
                           </Form>
                         </div>
                         <div className="flex gap-2">
-                          {item.country && (
-                            <CountryFlagIcon
-                              country={String(item.country).toUpperCase()}
-                            />
-                          )}
                           <ExposureBadge exposure={item.exposure} />
                           <PriorityBadge priority={item.priority} />
                         </div>
                       </div>
-                      <span>{item.title}</span>
+                      <span className="flex justify-between">
+                        {item.title}{" "}
+                        {item.country && (
+                          <CountryFlagIcon
+                            country={String(item.country).toUpperCase()}
+                          />
+                        )}
+                      </span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="mt-2">
