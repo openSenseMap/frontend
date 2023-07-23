@@ -70,7 +70,7 @@ export const campaignUpdateSchema = z.object({
   endDate: z.date(),
   phenomena: z.array(z.string()),
   exposure: z.enum(["UNKNOWN", "INDOOR", "MOBILE", "OUTDOOR"]),
-  hardware_available: z.boolean(),
+  hardwareAvailable: z.boolean(),
   centerpoint: z.any().optional(),
   // requiredParticipants: z
   //   .number()
