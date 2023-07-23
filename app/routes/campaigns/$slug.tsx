@@ -491,11 +491,9 @@ export default function CampaignId() {
               <Map
                 initialViewState={{
                   // @ts-ignore
-                  latitude: 0,
-                  // campaign.centerpoint.geometry.coordinates[1],
+                  latitude: campaign.centerpoint.geometry.coordinates[1],
                   // @ts-ignore
-                  longitude: 0,
-                  // campaign.centerpoint.geometry.coordinates[0],
+                  longitude: campaign.centerpoint.geometry.coordinates[0],
                   zoom: 4,
                 }}
                 style={{
@@ -506,7 +504,7 @@ export default function CampaignId() {
                   marginLeft: "auto",
                 }}
               >
-                {/* {campaign.feature && (
+                {campaign.feature && (
                   <Source
                     id="polygon"
                     type="geojson"
@@ -519,7 +517,7 @@ export default function CampaignId() {
                   >
                     <Layer {...layer} />
                   </Source>
-                )} */}
+                )}
               </Map>
             </MapProvider>
           )}
