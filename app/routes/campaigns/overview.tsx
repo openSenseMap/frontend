@@ -1,5 +1,11 @@
 import { ActionArgs, LinksFunction, LoaderArgs, json } from "@remix-run/node";
-import { Form, Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useLoaderData,
+  useSearchParams,
+  useActionData,
+} from "@remix-run/react";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Switch } from "~/components/ui/switch";
@@ -59,6 +65,7 @@ import { StarIcon } from "lucide-react";
 import { requireUserId } from "~/session.server";
 import { bookmark } from "~/lib/actions";
 import { generateWhereObject } from "~/components/campaigns/overview/where-query";
+import { useToast } from "~/components/ui/use-toast";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -127,6 +134,8 @@ export const links: LinksFunction = () => {
 
 export default function Campaigns() {
   const data = useLoaderData<typeof loader>();
+  const actionData = useActionData();
+  const { toast } = useToast();
   const { t } = useTranslation("overview");
   const campaigns = data.campaigns as unknown as Campaign[];
   const phenomena = data.phenomena;
@@ -269,6 +278,14 @@ export default function Campaigns() {
       setMapBounds(bounds as BBox);
     }
   }, [mapRef]);
+
+  useEffect(() => {
+    if (actionData && actionData.ok) {
+      toast({
+        description: "Successfully bookmarked campaign",
+      });
+    }
+  }, [actionData, toast]);
 
   // const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const resetFilters = () => {
