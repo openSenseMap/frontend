@@ -5,7 +5,7 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useCatch, useLoaderData } from "@remix-run/react";
+import { Form, useCatch, useLoaderData, useActionData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
@@ -108,20 +108,9 @@ export async function action(args: ActionArgs) {
       return bookmark(args);
 
     default:
-      // Handle the case when _action doesn't match any of the above cases
-      // For example, you can throw an error or return a default action
       throw new Error(`Unknown action: ${_action}`);
   }
 }
-
-// export async function action({ request }: ActionArgs) {
-//   // const ownerId = await requireUserId(request);
-//   const formData = await request.formData();
-//   console.log(formData);
-//   const email = formData.get("email");
-//   const hardware = formData.get("hardware");
-//   return null;
-// }
 
 export const meta: MetaFunction<typeof loader> = ({ params }) => ({
   charset: "utf-8",
@@ -158,6 +147,7 @@ const layer: LayerProps = {
 
 export default function CampaignId() {
   const data = useLoaderData<typeof loader>();
+  const actionData = useActionData();
   const { t } = useTranslation("campaign-slug");
   const campaign = data.campaign;
   const participants = campaign.participants.map(function (participant) {
@@ -197,6 +187,21 @@ export default function CampaignId() {
     values: participants,
     itemClass: "bg-blue-700 text-black",
   });
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.bookmarked) {
+        toast({
+          description: "Campaign successfully bookmarked",
+        });
+      }
+      if (actionData.unbookmarked) {
+        toast({
+          description: "Campaign successfully unbookmarked",
+        });
+      }
+    }
+  }, [actionData, toast]);
 
   useEffect(() => {
     if (
