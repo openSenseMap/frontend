@@ -8,7 +8,21 @@ interface SelectSensorsProps {
 }
 
 export default function SelectSensors({ data }: SelectSensorsProps) {
-  const [selectedSensors, setSelectedSensors] = useState([]);
+  function findSelectedSensors(groupedSensors: any[]) {
+    if (!data.data.sensors) {
+      return [];
+    }
+    else {
+      const sensors = Object.values(groupedSensors).flat();
+      const selectedSensors = sensors.filter((sensor: any) =>
+        data.data.sensors.includes(sensor.id.toString())
+      );
+      return selectedSensors;
+    }// return sensors;
+  }
+
+  const [selectedSensors, setSelectedSensors] = useState(findSelectedSensors(data.groupedSensors));
+  
 
   function toggleSelectedSensor(sensorItem: any) {
     const foundSensor = selectedSensors.find(
@@ -21,7 +35,6 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
     } else {
       setSelectedSensors([].concat(selectedSensors, sensorItem));
     }
-
   }
 
   return (
@@ -45,28 +58,39 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                 <div className="grid grid-cols-8 gap-4">
                   {value.map((sensor: any) => {
                     return (
-                      <Card
-                        data-checked={selectedSensors.includes(sensor)}
-                        onClick={() => toggleSelectedSensor(sensor)}
-                        key={sensor.id}
-                        className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
-                      >
-                        <CardContent className="flex justify-center pt-2">
-                          <AspectRatio ratio={3 / 4}>
-                            {/* <img
-                                        src="/images/"
-                                        alt="senseBox:edu"
-                                        className="rounded-md object-cover"
-                                      /> */}
-                          </AspectRatio>
-                        </CardContent>
-                        <CardFooter className="flex justify-center">
-                          <CardTitle>{sensor.sensor.slug}</CardTitle>
-                          {selectedSensors.includes(sensor) && (
-                            <CheckCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
-                          )}
-                        </CardFooter>
-                      </Card>
+                      <div key={sensor.id}>
+                        <Card
+                          data-checked={selectedSensors.includes(sensor)}
+                          onClick={() => toggleSelectedSensor(sensor)}
+                          key={sensor.id}
+                          className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
+                        >
+                          <CardContent className="flex justify-center pt-2">
+                            <AspectRatio ratio={3 / 4}>
+                              {/* <img
+                                          src="/images/"
+                                          alt="senseBox:edu"
+                                          className="rounded-md object-cover"
+                                        /> */}
+                            </AspectRatio>
+                          </CardContent>
+                          <CardFooter className="flex justify-center">
+                            <CardTitle>{sensor.sensor.slug}</CardTitle>
+                            {selectedSensors.includes(sensor) && (
+                              <CheckCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
+                            )}
+                          </CardFooter>
+                        </Card>
+                        <input
+                          type="checkbox"
+                          id={sensor.slug}
+                          name="sensors"
+                          value={sensor.id}
+                          checked={selectedSensors.includes(sensor)}
+                          readOnly
+                          className="hidden"
+                        />
+                      </div>
                     );
                   })}
                 </div>
