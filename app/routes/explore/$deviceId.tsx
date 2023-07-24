@@ -1,6 +1,6 @@
 // Importing dependencies
 import { Exposure, type Sensor } from "@prisma/client";
-import type { LoaderArgs } from "@remix-run/node";
+import { redirect, type LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
@@ -11,11 +11,10 @@ export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
 
-  if (!params.deviceId) {
-    throw new Response("Device not found", { status: 502 });
+  const device = await getDevice({ id: params.deviceId || "" });
+  if (!device) {
+    return redirect("/explore");
   }
-
-  const device = await getDevice({ id: params.deviceId });
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
