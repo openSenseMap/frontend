@@ -38,10 +38,7 @@ export default function CampaignGrid({
       {campaigns.length > 0 && (
         <>
           {campaigns.map((item: Campaign, index: number) => (
-            <Card
-              key={item.id}
-              className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`} // 3 campaigns per row
-            >
+            <Card key={item.id} className="min-w-fit md:w-[320px] lg:w-[350px]">
               <Link to={`../${item.slug}`}>
                 <CardHeader>
                   <CardTitle>
