@@ -1,4 +1,4 @@
-import { json, type LoaderArgs, redirect } from "@remix-run/node";
+import { json, type LoaderArgs, redirect, type LinksFunction } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation } from "@remix-run/react";
 import { getUserSession, sessionStorage } from "~/session.server";
 import qs from "qs";
@@ -7,11 +7,14 @@ import clsx from "clsx";
 import { getPhenomena } from "~/models/phenomena.server";
 
 import Stepper from "react-stepper-horizontal";
+import { MapProvider } from "react-map-gl";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 
 import General from "~/components/device/new/general";
 import SelectDevice from "~/components/device/new/select-device";
 import SelectSensors from "~/components/device/new/select-sensors";
 import Advanced from "~/components/device/new/advanced";
+import SelectLocation from "~/components/device/new/select-location";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -46,9 +49,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     var getSensorsOfDeviceUrl: URL = new URL(
       process.env.SENSORWIKI_API_URL +
-        (type !== "own_device"
-          ? `devices/${type}/sensors`
-          : `sensors`)
+        (type !== "own_device" ? `devices/${type}/sensors` : `sensors`)
     );
 
     const response = await fetch(getSensorsOfDeviceUrl.toString());
@@ -85,6 +86,7 @@ export const loader = async ({ request }: LoaderArgs) => {
       ...session.get(`form-data-page-2`),
       ...session.get(`form-data-page-3`),
       ...session.get(`form-data-page-4`),
+      ...session.get(`form-data-page-5`),
     };
     return json({ page, data });
   }
@@ -131,6 +133,17 @@ export const action = async ({ request }: LoaderArgs) => {
   }
 };
 
+//*****************************************
+//* required to view mapbox proberly (Y.Q.)
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: "stylesheet",
+      href: mapboxgl,
+    },
+  ];
+};
+
 export default function NewDevice() {
   const navigation = useNavigation();
   const showSpinner = useSpinDelay(navigation.state !== "idle", {
@@ -152,6 +165,7 @@ export default function NewDevice() {
             { title: "General" },
             { title: "Select Sensors" },
             { title: "Advanced" },
+            { title: "Select Location" },
             { title: "Summary" },
           ]}
           activeStep={page - 1}
@@ -173,7 +187,7 @@ export default function NewDevice() {
                 Previous
               </button>
             )}
-            {page < 5 && (
+            {page < 6 && (
               <button
                 name="action"
                 // type="button"
@@ -183,7 +197,7 @@ export default function NewDevice() {
                 Next
               </button>
             )}
-            {page === 5 && (
+            {page === 6 && (
               <button
                 name="action"
                 type="submit"
@@ -196,19 +210,16 @@ export default function NewDevice() {
           </div>
         </div>
         <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
-          {page === 1 && (
-            <SelectDevice data={loaderData} />
+          {page === 1 && <SelectDevice data={loaderData} />}
+          {page === 2 && <General data={data} />}
+          {page === 3 && <SelectSensors data={loaderData} />}
+          {page === 4 && <Advanced data={data} />}
+          {page === 5 && (
+            <MapProvider>
+              <SelectLocation data={loaderData} />
+            </MapProvider>
           )}
-          {page === 2 && (
-            <General data={data} />
-          )}
-          {page === 3 && (
-            <SelectSensors data={loaderData} />
-          )}
-          {page === 4 && (
-            <Advanced data={data} />
-          )}
-          {page === 5 && <pre>{JSON.stringify(data, null, 2)}</pre>}
+          {page === 6 && <pre>{JSON.stringify(data, null, 2)}</pre>}
         </div>
         <div className="flex justify-end">
           {page > 1 && (
@@ -222,7 +233,7 @@ export default function NewDevice() {
               Previous
             </button>
           )}
-          {page < 5 && (
+          {page < 6 && (
             <button
               name="action"
               // type="button"
@@ -232,7 +243,7 @@ export default function NewDevice() {
               Next
             </button>
           )}
-          {page === 5 && (
+          {page === 6 && (
             <button
               name="action"
               type="submit"
