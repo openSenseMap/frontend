@@ -6,25 +6,7 @@ import {
   useSearchParams,
   useActionData,
 } from "@remix-run/react";
-import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Switch } from "~/components/ui/switch";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-// import Header from "./header";
 import { Map } from "~/components/Map";
 import { getCampaignCount, getCampaigns } from "~/models/campaign.server";
 import {
@@ -37,8 +19,6 @@ import {
   Marker,
   Source,
 } from "react-map-gl";
-import { Progress } from "~/components/ui/progress";
-import { CountryFlagIcon } from "~/components/ui/country-flag";
 import type { BBox } from "geojson";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
@@ -46,26 +26,15 @@ import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
 // import FiltersBar from "~/components/campaigns/overview/filters-bar";
-import type {
-  Campaign,
-  Exposure,
-  Priority,
-  Prisma,
-  User,
-} from "@prisma/client";
-import {
-  ExposureBadge,
-  PriorityBadge,
-} from "~/components/campaigns/overview/campaign-badges";
-import Markdown from "markdown-to-jsx";
+import type { Campaign, Prisma } from "@prisma/client";
 import Pagination from "~/components/campaigns/overview/pagination";
 import { Button } from "~/components/ui/button";
 import Filter from "~/components/campaigns/overview/filter";
-import { StarIcon } from "lucide-react";
 import { requireUserId } from "~/session.server";
 import { bookmark } from "~/lib/actions";
 import { generateWhereObject } from "~/components/campaigns/overview/where-query";
 import { useToast } from "~/components/ui/use-toast";
+import CampaignGrid from "~/components/campaigns/overview/grid";
 // import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
@@ -607,80 +576,11 @@ export default function Campaigns() {
             <span className="absolute left-0 top-0 ">
               {campaigns.length} von {campaignCount} Kampagnen werden angezeigt
             </span>
-            {campaigns.map((item: Campaign, index: number) => (
-              <Card
-                key={item.id}
-                className={`w-[350px] ${index % 4 === 0 ? "clear-left" : ""}`} // 3 campaigns per row
-              >
-                <Link to={`../${item.slug}`}>
-                  <CardHeader>
-                    <CardTitle>
-                      <div className="mb-4 flex w-full justify-between">
-                        <div>
-                          <Form method="post">
-                            <input
-                              className="hidden"
-                              name="campaignId"
-                              id="campaignId"
-                              value={item.id}
-                            />
-                            <button
-                              type="submit"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                            >
-                              {userId &&
-                              item.bookmarkedByUsers.some(
-                                (user: User) => user.id === userId
-                              ) ? (
-                                <StarIcon className="h-4 w-4 fill-yellow-300 text-yellow-300" />
-                              ) : (
-                                <StarIcon className="h-4 w-4" />
-                              )}
-                            </button>
-                          </Form>
-                        </div>
-                        <div className="flex gap-2">
-                          <ExposureBadge exposure={item.exposure} />
-                          <PriorityBadge priority={item.priority} />
-                        </div>
-                      </div>
-                      <span className="flex justify-between">
-                        {item.title}{" "}
-                        {item.country && (
-                          <CountryFlagIcon
-                            country={String(item.country).toUpperCase()}
-                          />
-                        )}
-                      </span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="mt-2">
-                    <Progress
-                      max={item.requiredParticipants ?? 0}
-                      value={item.participants.length}
-                      // onMouseEnter={}
-                    />
-                    <span>
-                      {item.requiredParticipants} {t("total participants")}
-                    </span>
-                  </CardContent>
-                </Link>
-                <CardFooter>
-                  <Accordion className="w-full" type="single" collapsible>
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger className="text-blue-600 hover:text-blue-800">
-                        {t("learn more")}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <Markdown>{item.description}</Markdown>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </CardFooter>
-              </Card>
-            ))}
+            <CampaignGrid
+              campaigns={campaigns}
+              showMap={showMap}
+              userId={userId}
+            />
             {totalPages > 1 && (
               <Pagination
                 totalPages={totalPages}
