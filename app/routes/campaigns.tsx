@@ -3,8 +3,18 @@ import { Button } from "~/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Notification from "~/components/header/notification";
+import { useLoaderData } from "@remix-run/react";
+import { json, type LoaderArgs } from "@remix-run/server-runtime";
+import { getUser } from "~/session.server";
+
+export async function loader({ request }: LoaderArgs) {
+  return json({
+    user: await getUser(request),
+  });
+}
 
 export default function CampaignsPage() {
+  const data = useLoaderData<typeof loader>();
   const { t } = useTranslation("campaigns");
 
   const links = [
@@ -64,7 +74,7 @@ export default function CampaignsPage() {
             })}
           </ul>
           <div className="ml-auto mr-2 mt-2 flex gap-2">
-            <Notification />
+            {data?.user?.email ? <Notification /> : null}
 
             <Button size="lg" className=" bg-green-300 text-lg">
               <Link
