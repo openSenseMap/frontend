@@ -22,24 +22,12 @@ import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore/$deviceId";
 import { useRef, useState } from "react";
 import { saveAs } from "file-saver";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import ShareLink from "./share-link";
 import Spinner from "../spinner";
-import { Download, LineChart, Minus, Share2, X } from "lucide-react";
+import { Download, Minus, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import { getGraphColor } from "~/lib/utils";
-import { Tooltip } from "../ui/tooltip";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -52,11 +40,10 @@ ChartJS.register(
   //Legend
 );
 
-export default function Graph() {
+export default function Graph(props: any) {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const [open, setOpen] = useState(true);
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
 
@@ -196,14 +183,14 @@ export default function Graph() {
     }
   }
 
-  function handleDrag(e: any, data: DraggableData) {
+  function handleDrag(_e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
   }
 
   return (
     <>
-      {open && (
+      {props.openGraph && (
         <Draggable
           nodeRef={nodeRef}
           bounds="#osem"
@@ -213,7 +200,7 @@ export default function Graph() {
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(25vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-[calc(100vw-(25vw+30px))]"
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(33vw+20px)] sm:right-auto sm:top-auto sm:max-h-[calc(100vh-24rem)] sm:w-[calc(100vw-(33vw+30px))]"
           >
             {navigation.state === "loading" && (
               <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
@@ -232,23 +219,9 @@ export default function Graph() {
                 >
                   <Download />
                 </button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Share2 className="cursor-pointer" />
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Share this link</AlertDialogTitle>
-                      <ShareLink />
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Close</AlertDialogCancel>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
                 <Minus
                   className="cursor-pointer"
-                  onClick={() => setOpen(false)}
+                  onClick={() => props.setOpenGraph(false)}
                 />
                 <X
                   className="cursor-pointer"
@@ -269,27 +242,6 @@ export default function Graph() {
             </div>
           </div>
         </Draggable>
-      )}
-      {!open && (
-        <div
-          onClick={() => setOpen(true)}
-          className={
-            "absolute bottom-28 left-4 right-4 top-6 z-40 flex cursor-pointer rounded-xl bg-white shadow-lg ring-1 transition-colors duration-300 ease-in-out hover:bg-green-100 sm:bottom-[30px] sm:left-auto sm:right-[50px] sm:top-auto sm:max-h-[calc(100vh-24rem)]"
-          }
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="px-4 py-2 ">
-                  <LineChart />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Open line chart</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
       )}
     </>
   );
