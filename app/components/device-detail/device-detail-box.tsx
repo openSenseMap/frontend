@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import Cookies from "js-cookie";
 
 export interface LastMeasurementProps {
   createdAt: Date;
@@ -45,8 +46,13 @@ export default function DeviceDetailBox() {
   const nodeRef = useRef(null);
   // state variables
   const [open, setOpen] = useState(true);
-  const [offsetPositionX, setOffsetPositionX] = useState(0);
-  const [offsetPositionY, setOffsetPositionY] = useState(0);
+  // Retrieve the x and y position from cookies
+  const [offsetPositionX, setOffsetPositionX] = useState(
+    Number(Cookies.get("offsetPositionXDetail")) || 0
+  );
+  const [offsetPositionY, setOffsetPositionY] = useState(
+    Number(Cookies.get("offsetPositionYDetail")) || 0
+  );
 
   const [searchParams] = useSearchParams();
 
@@ -65,6 +71,9 @@ export default function DeviceDetailBox() {
   function handleDrag(e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
+
+    Cookies.set("offsetPositionXDetail", data.x.toString());
+    Cookies.set("offsetPositionYDetail", data.y.toString());
   }
 
   return (

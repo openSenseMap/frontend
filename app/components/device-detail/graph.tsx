@@ -40,6 +40,7 @@ import Draggable from "react-draggable";
 import { getGraphColor } from "~/lib/utils";
 import { Tooltip } from "../ui/tooltip";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import Cookies from "js-cookie";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -57,8 +58,13 @@ export default function Graph() {
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const [open, setOpen] = useState(true);
-  const [offsetPositionX, setOffsetPositionX] = useState(0);
-  const [offsetPositionY, setOffsetPositionY] = useState(0);
+  // Retrieve the x and y position from cookies
+  const [offsetPositionX, setOffsetPositionX] = useState(
+    Number(Cookies.get("offsetPositionXGraph")) || 0
+  );
+  const [offsetPositionY, setOffsetPositionY] = useState(
+    Number(Cookies.get("offsetPositionYGraph")) || 0
+  );
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
@@ -199,6 +205,9 @@ export default function Graph() {
   function handleDrag(e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
+
+    Cookies.set("offsetPositionXGraph", data.x.toString());
+    Cookies.set("offsetPositionYGraph", data.y.toString());
   }
 
   return (
