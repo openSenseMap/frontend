@@ -34,9 +34,19 @@ const Pagination = ({
         <Link to={`?${previousQuery.toString()}`}>Previous Page</Link>
       )}
       {pageOptions.map((page) => (
-        <Link to={`?page=${page.toString()}`} key={page}>
+        <Link
+          to={`?page=${page.toString()}`}
+          key={page}
+          className={`${typeof page === "string" ? "pointer-events-none" : ""}`}
+          onClick={(e) => {
+            if (typeof page === "string") {
+              e.preventDefault();
+            }
+          }}
+        >
           <Button
             variant={page === currentPage ? "default" : "outline"}
+            disabled={typeof page === "string"}
             size="sm"
           >
             {page}
