@@ -6,15 +6,8 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Form } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
-// import { LoaderArgs, json } from "@remix-run/node";
-// import { getPhenomena } from "~/models/phenomena.server";
-
-// export async function loader({ request }: LoaderArgs) {
-//   // const response = await fetch("https://api.sensors.wiki/phenomena/all");
-//   // const phenomena = await response.json();
-//   const phenomena = await getPhenomena();
-//   return json({ phenomena });
-// }
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
+import { Phenomenon } from "~/models/phenomena.server";
 
 interface SensorFilterProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
@@ -25,10 +18,10 @@ interface SensorFilterProps {
   setIsDialogOpen: (open: boolean) => void;
 
   setIsHovered: (hovered: boolean) => void;
-  phenomena: any[];
+  phenomena: Phenomenon[];
 }
 
-export function SensorFilter(props: SensorFilterProps) {
+export function SensorFilter(props: SensorFilterProps, request: Request) {
   const { t } = useTranslation("navbar");
 
   return (
@@ -76,7 +69,7 @@ export function SensorFilter(props: SensorFilterProps) {
                       onClick={() => props.setSensor(p.slug)}
                     >
                       <SunIcon className="h-4 w-4" />
-                      <span>{p.label.item[0].text}</span>
+                      <span>{sensorWikiLabel(p.label.item)}</span>
                     </button>
                   </li>
                 );
