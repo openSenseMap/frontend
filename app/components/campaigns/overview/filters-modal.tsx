@@ -98,7 +98,7 @@ export default function FiltersModal({
   return (
     <Dialog open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
       <DialogTrigger>
-        <Button variant="outline" className="flex w-fit gap-2">
+        <Button variant="outline" className="flex w-fit gap-2" size="lg">
           {t("more filters")} <FilterIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
