@@ -1,18 +1,19 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SummaryProps {
   data: any;
+  phenomena: any;
 }
 
-export default function Summary({ data }: SummaryProps) {
+export default function Summary({ data, phenomena }: SummaryProps) {
   return (
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
       <h3 className="text-lg font-medium leading-6 text-gray-900">
@@ -23,15 +24,6 @@ export default function Summary({ data }: SummaryProps) {
       </p>
       <h4>Your general Information</h4>
       <Table>
-        {/* <TableCaption>General Information</TableCaption> */}
-        {/* <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Invoice</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-          </TableRow>
-        </TableHeader> */}
         <TableBody>
           <TableRow>
             <TableCell className="font-medium">Type</TableCell>
@@ -51,11 +43,15 @@ export default function Summary({ data }: SummaryProps) {
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Latitude</TableCell>
-            <TableCell className="font-bold">{}</TableCell>
+            <TableCell className="font-bold">{data.latitude}</TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Longitude</TableCell>
-            <TableCell className="font-bold">{}</TableCell>
+            <TableCell className="font-bold">{data.longitude}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell className="font-medium">Height</TableCell>
+            <TableCell className="font-bold">{data.height}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
@@ -71,21 +67,22 @@ export default function Summary({ data }: SummaryProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell className="font-medium">HDC1080</TableCell>
-            <TableCell className="font-medium">Temperature</TableCell>
-            <TableCell className="font-medium">Celsius (°C)</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-medium">HDC1080</TableCell>
-            <TableCell className="font-medium">Temperature</TableCell>
-            <TableCell className="font-medium">Celsius (°C)</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-medium">HDC1080</TableCell>
-            <TableCell className="font-medium">Temperature</TableCell>
-            <TableCell className="font-medium">Celsius (°C)</TableCell>
-          </TableRow>
+          {Object.values(data.sensors).map((phenomenon: any) => {
+            return phenomenon.map((sensor: any, index: any) => {
+              return (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{sensor[0]}</TableCell>
+                  <TableCell className="font-medium">
+                    {sensorWikiLabel(
+                      phenomena.find((pheno: any) => pheno.id == sensor[1])
+                        .label.item
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{sensor[2]}</TableCell>
+                </TableRow>
+              );
+            });
+          })}
         </TableBody>
       </Table>
 

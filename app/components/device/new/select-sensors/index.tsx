@@ -3,7 +3,15 @@ import { useState } from "react";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
-
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 interface SelectSensorsProps {
   data: any;
 }
@@ -30,14 +38,15 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
           Select Sensors
         </h3>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Select the sensors you want to use.
+          Select the sensors you want to use by clicking on the cards. You can
+          add the same sensor multiple times.
         </p>
       </div>
       <div>
         {Object.entries(data.groupedSensors).map(([key, value]) => {
           return (
-            <div key={key} className="border-b-2 border-gray-600 pb-6">
-              <h1 className="pb-4 pt-2 text-xl">
+            <div key={key} className="border-b-2 border-gray-600 pb-6 pt-10">
+              <h1 className="pb-4 pt-2 text-2xl font-bold">
                 {sensorWikiLabel(
                   data.phenomena.find((pheno: any) => pheno.id == key).label
                     .item
@@ -76,55 +85,71 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
               </div>
               <div>
                 <h3>Your added Senors</h3>
-                {addedSensors["p-" + key] &&
-                  addedSensors["p-" + key].map(
-                    (sensorItem: any, index: number) => {
-                      return (
-                        <div key={sensorItem.id}>
-                          <span> {sensorItem[0]}</span>
-                          <span>
-                            {" "}
-                            {sensorWikiLabel(
-                              data.phenomena.find(
-                                (pheno: any) => pheno.id == key
-                              ).label.item
-                            )}
-                          </span>
-                          {/* Maybe add title input here too if we want people to choose a name for their sensor */}
-                          <input
-                            type="checkbox"
-                            name={`sensors[p-${key.toString()}][${index}]`}
-                            value={sensorItem[0]}
-                            checked={true}
-                            readOnly
-                            className="hidden"
-                          />
-                          <input
-                            type="checkbox"
-                            name={`sensors[p-${key.toString()}][${index}]`}
-                            value={key}
-                            checked={true}
-                            readOnly
-                            className="hidden"
-                          />
-                          <select
-                            name={`sensors[p-${key.toString()}][${index}]`}
-                            id="unit"
-                          >
-                            {data.phenomena
-                              .find((pheno: any) => pheno.id == key)
-                              .rov.map((rov: any) => {
-                                return (
-                                  <option key={rov.id} value={rov.unit.slug}>
-                                    {rov.unit.name}
-                                  </option>
-                                );
-                              })}
-                          </select>{" "}
-                        </div>
-                      );
-                    }
-                  )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Sensor</TableHead>
+                      <TableHead>Phenomenon</TableHead>
+                      <TableHead>Unit</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {addedSensors["p-" + key] &&
+                      addedSensors["p-" + key].map(
+                        (sensorItem: any, index: number) => {
+                          return (
+                            <TableRow key={sensorItem.id}>
+                              <input
+                                type="checkbox"
+                                name={`sensors[p-${key.toString()}][${index}]`}
+                                value={sensorItem[0]}
+                                checked={true}
+                                readOnly
+                                className="hidden"
+                              />
+                              <input
+                                type="checkbox"
+                                name={`sensors[p-${key.toString()}][${index}]`}
+                                value={key}
+                                checked={true}
+                                readOnly
+                                className="hidden"
+                              />
+                              <TableCell className="font-medium">
+                                <span> {sensorItem[0]}</span>
+                              </TableCell>
+                              <TableCell>
+                                {sensorWikiLabel(
+                                  data.phenomena.find(
+                                    (pheno: any) => pheno.id == key
+                                  ).label.item
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <select
+                                  name={`sensors[p-${key.toString()}][${index}]`}
+                                  id="unit"
+                                >
+                                  {data.phenomena
+                                    .find((pheno: any) => pheno.id == key)
+                                    .rov.map((rov: any) => {
+                                      return (
+                                        <option
+                                          key={rov.id}
+                                          value={rov.unit.slug}
+                                        >
+                                          {rov.unit.name}
+                                        </option>
+                                      );
+                                    })}
+                                </select>{" "}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+                      )}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           );

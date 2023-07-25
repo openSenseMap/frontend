@@ -87,6 +87,8 @@ export const loader = async ({ request }: LoaderArgs) => {
     return json({ page, data });
   } else {
     // final page so just collect all the data to render
+    const phenomena = await getPhenomena();
+
     const data = {
       ...session.get(`form-data-page-1`),
       ...session.get(`form-data-page-2`),
@@ -94,7 +96,7 @@ export const loader = async ({ request }: LoaderArgs) => {
       ...session.get(`form-data-page-4`),
       ...session.get(`form-data-page-5`),
     };
-    return json({ page, data });
+    return json({ page, data, phenomena });
   }
 };
 
@@ -226,7 +228,9 @@ export default function NewDevice() {
             </MapProvider>
           )}
 
-          {page === 6 && <Summary data={data}></Summary>}
+          {page === 6 && (
+            <Summary data={data} phenomena={loaderData.phenomena}></Summary>
+          )}
         </div>
         <div className="flex justify-end">
           {page > 1 && (
