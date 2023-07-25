@@ -5,8 +5,12 @@ import { Marker, useMap } from "react-map-gl";
 import type { PointFeature } from "supercluster";
 import useSupercluster from "use-supercluster";
 import debounce from "lodash.debounce";
-import type { Campaign } from "@prisma/client";
+import type { Campaign, Prisma } from "@prisma/client";
 import type { DeviceClusterProperties } from "~/routes/explore";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { getCampaigns } from "~/models/campaign.server";
+import { useLoaderData } from "@remix-run/react";
 
 type PointProperties = {
   title: string;
@@ -24,24 +28,49 @@ const options = {
   maxZoom: 14,
 };
 
+// export async function loader({ params, request }: LoaderArgs) {
+//   const campaigns = await getCampaigns(options);
+//   return json({ campaigns });
+// }
+
 export default function PointLayer({
-  centerpoints,
+  campaigns,
   setDisplayedCampaigns,
   setSelectedCampaign,
   setSelectedMarker,
-  campaigns,
 }: {
-  centerpoints: PointFeature<PointProperties>[];
+  campaigns: Campaign[];
   setDisplayedCampaigns: Dispatch<SetStateAction<Campaign[]>>;
   setSelectedCampaign: Dispatch<SetStateAction<string>>;
   setSelectedMarker: Dispatch<SetStateAction<string>>;
-  campaigns: Campaign[];
 }) {
   const { osem: mapRef } = useMap();
   const [bounds, setBounds] = useState(
     mapRef?.getMap().getBounds().toArray().flat() as BBox
   );
   const [zoom, setZoom] = useState(mapRef?.getZoom() || 0);
+
+  const centerpoints = campaigns
+    .map((campaign: Campaign) => {
+      if (
+        typeof campaign.centerpoint === "object" &&
+        campaign.centerpoint !== null &&
+        "geometry" in campaign.centerpoint
+      ) {
+        const centerObject = campaign.centerpoint as Prisma.JsonObject;
+        const geometryObject = centerObject.geometry as Prisma.JsonObject;
+        if (centerObject && geometryObject) {
+          return {
+            coordinates: geometryObject.coordinates,
+            title: campaign.title,
+            id: campaign.id,
+          };
+        }
+      } else {
+        return null;
+      }
+    })
+    .filter((coords) => coords !== null);
 
   const points: PointFeature<GeoJsonProperties & PointProperties>[] =
     useMemo(() => {

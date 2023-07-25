@@ -46,6 +46,7 @@ export async function action(args: ActionArgs) {
 
 export async function loader({ params, request }: LoaderArgs) {
   const userId = await requireUserId(request);
+  const allCampaigns = await getCampaigns({});
   const url = new URL(request.url);
   const query = url.searchParams;
   const currentPage = Math.max(Number(query.get("page") || 1), 1);
@@ -79,7 +80,7 @@ export async function loader({ params, request }: LoaderArgs) {
     });
   }
 
-  const campaigns = await getCampaigns(options, userId);
+  const campaignsOnPage = await getCampaigns(options, userId);
   const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
   if (phenos.code === "UnprocessableEntity") {
@@ -90,7 +91,13 @@ export async function loader({ params, request }: LoaderArgs) {
   // if (data.code === "UnprocessableEntity") {
   //   throw new Response("Campaigns not found", { status: 502 });
   // }
-  return json({ campaigns, campaignCount, phenomena, userId });
+  return json({
+    allCampaigns,
+    campaignsOnPage,
+    campaignCount,
+    phenomena,
+    userId,
+  });
 }
 export const links: LinksFunction = () => {
   return [
@@ -106,7 +113,8 @@ export default function Campaigns() {
   const actionData = useActionData();
   const { toast } = useToast();
   const { t } = useTranslation("overview");
-  const campaigns = data.campaigns as unknown as Campaign[];
+  const allCampaigns = data.allCampaigns as unknown as Campaign[];
+  const campaigns = data.campaignsOnPage as unknown as Campaign[];
   const phenomena = data.phenomena;
   const campaignCount = data.campaignCount;
   const userId = data.userId;
@@ -460,28 +468,6 @@ export default function Campaigns() {
   //   setDisplayedCampaigns(sortedCampaigns);
   // }, [campaigns, sortBy]);
 
-  const centerpoints = campaigns
-    .map((campaign: Campaign) => {
-      if (
-        typeof campaign.centerpoint === "object" &&
-        campaign.centerpoint !== null &&
-        "geometry" in campaign.centerpoint
-      ) {
-        const centerObject = campaign.centerpoint as Prisma.JsonObject;
-        const geometryObject = centerObject.geometry as Prisma.JsonObject;
-        if (centerObject && geometryObject) {
-          return {
-            coordinates: geometryObject.coordinates,
-            title: campaign.title,
-            id: campaign.id,
-          };
-        }
-      } else {
-        return null;
-      }
-    })
-    .filter((coords) => coords !== null);
-
   const handleMapLoad = useCallback(() => {
     const map = mapRef?.current?.getMap();
     if (map) {
@@ -613,16 +599,13 @@ export default function Campaigns() {
                     marginLeft: "auto",
                   }}
                 >
-                  {centerpoints.length > 0 && (
-                    <PointLayer
-                      //@ts-ignore
-                      centerpoints={centerpoints}
-                      setDisplayedCampaigns={setDisplayedCampaigns}
-                      setSelectedCampaign={setSelectedCampaign}
-                      setSelectedMarker={setSelectedMarker}
-                      campaigns={campaigns}
-                    />
-                  )}
+                  <PointLayer
+                    //@ts-ignore
+                    setDisplayedCampaigns={setDisplayedCampaigns}
+                    setSelectedCampaign={setSelectedCampaign}
+                    setSelectedMarker={setSelectedMarker}
+                    campaigns={allCampaigns}
+                  />
                 </Map>
               </MapProvider>
             )}
