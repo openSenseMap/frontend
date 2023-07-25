@@ -1,5 +1,4 @@
 import {
-  Form,
   useLoaderData,
   useMatches,
   useNavigate,
@@ -23,7 +22,7 @@ import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
 import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore/$deviceId";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
 import { Download, Minus, X } from "lucide-react";
@@ -74,106 +73,110 @@ export default function Graph(props: any) {
   };
 
   // Formatting the data for the Line component
-  const lineData = {
-    labels: loaderData.selectedSensors[0].data.map(
-      (measurement: LastMeasurementProps) => measurement.time
-    ),
-    datasets:
-      loaderData.selectedSensors.length === 2
-        ? [
-            {
-              label: loaderData.selectedSensors[0].title,
-              data: loaderData.selectedSensors[0].data,
-              pointRadius: 0,
-              // I think we have to define the color in the loader already? - at least before this initialization
-              borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-              backgroundColor: getGraphColor(
-                loaderData.selectedSensors[0].unit
-              ),
-              yAxisID: "y",
-            },
-            {
-              label: loaderData.selectedSensors[1].title,
-              data: loaderData.selectedSensors[1].data,
-              pointRadius: 0,
-              borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
-              backgroundColor: getGraphColor(
-                loaderData.selectedSensors[1].unit
-              ),
-              yAxisID: "y1",
-            },
-          ]
-        : [
-            {
-              label: loaderData.selectedSensors[0].title,
-              data: loaderData.selectedSensors[0].data,
-              pointRadius: 0,
-              borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-              backgroundColor: getGraphColor(
-                loaderData.selectedSensors[0].unit
-              ),
-              yAxisID: "y",
-            },
-          ],
-  };
+  const lineData = useMemo(() => {
+    return {
+      labels: loaderData.selectedSensors[0].data.map(
+        (measurement: LastMeasurementProps) => measurement.time
+      ),
+      datasets:
+        loaderData.selectedSensors.length === 2
+          ? [
+              {
+                label: loaderData.selectedSensors[0].title,
+                data: loaderData.selectedSensors[0].data,
+                pointRadius: 0,
+                // I think we have to define the color in the loader already? - at least before this initialization
+                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
+                backgroundColor: getGraphColor(
+                  loaderData.selectedSensors[0].unit
+                ),
+                yAxisID: "y",
+              },
+              {
+                label: loaderData.selectedSensors[1].title,
+                data: loaderData.selectedSensors[1].data,
+                pointRadius: 0,
+                borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
+                backgroundColor: getGraphColor(
+                  loaderData.selectedSensors[1].unit
+                ),
+                yAxisID: "y1",
+              },
+            ]
+          : [
+              {
+                label: loaderData.selectedSensors[0].title,
+                data: loaderData.selectedSensors[0].data,
+                pointRadius: 0,
+                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
+                backgroundColor: getGraphColor(
+                  loaderData.selectedSensors[0].unit
+                ),
+                yAxisID: "y",
+              },
+            ],
+    };
+  }, [loaderData.selectedSensors]);
 
-  const options: ChartOptions<"line"> = {
-    maintainAspectRatio: false,
-    interaction: {
-      mode: "index",
-      intersect: false,
-    },
-    parsing: {
-      xAxisKey: "time",
-      yAxisKey: "value",
-    },
-    scales: {
-      x: {
-        type: "time",
-        time: {
-          unit: "hour",
-        },
-        adapters: {
-          date: {
-            // TODO: get preffered langunage from user object
-            locale: de,
+  const options: ChartOptions<"line"> = useMemo(() => {
+    return {
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
+      parsing: {
+        xAxisKey: "time",
+        yAxisKey: "value",
+      },
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "hour",
+          },
+          adapters: {
+            date: {
+              // TODO: get preffered langunage from user object
+              locale: de,
+            },
+          },
+          ticks: {
+            maxTicksLimit: 5,
           },
         },
-        ticks: {
-          maxTicksLimit: 5,
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text:
-            loaderData.selectedSensors[0].title +
-            " in " +
-            loaderData.selectedSensors[0].unit,
-        },
-        type: "linear",
-        display: true,
-        position: "left",
-      },
-      y1: {
-        title: {
-          display: true,
-          text: loaderData.selectedSensors[1]
-            ? loaderData.selectedSensors[1].title +
+        y: {
+          title: {
+            display: true,
+            text:
+              loaderData.selectedSensors[0].title +
               " in " +
-              loaderData.selectedSensors[1].unit
-            : "", //data.sensors[1].unit
+              loaderData.selectedSensors[0].unit,
+          },
+          type: "linear",
+          display: true,
+          position: "left",
         },
-        type: "linear",
-        display: "auto",
-        position: "right",
-        // grid line settings
-        grid: {
-          drawOnChartArea: false, // only want the grid lines for one axis to show up
+        y1: {
+          title: {
+            display: true,
+            text: loaderData.selectedSensors[1]
+              ? loaderData.selectedSensors[1].title +
+                " in " +
+                loaderData.selectedSensors[1].unit
+              : "", //data.sensors[1].unit
+          },
+          type: "linear",
+          display: "auto",
+          position: "right",
+          // grid line settings
+          grid: {
+            drawOnChartArea: false, // only want the grid lines for one axis to show up
+          },
         },
       },
-    },
-  };
+    };
+  }, [loaderData.selectedSensors]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const lineChartBackground = {
