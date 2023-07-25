@@ -1,4 +1,4 @@
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
@@ -9,33 +9,18 @@ interface SelectSensorsProps {
 }
 
 export default function SelectSensors({ data }: SelectSensorsProps) {
-  function findSelectedSensors(groupedSensors: any[]) {
-    if (!data.data.sensors) {
-      return [];
-    }
-    else {
-      const sensors = Object.values(groupedSensors).flat();
-      const selectedSensors = sensors.filter((sensor: any) =>
-        data.data.sensors.includes(sensor.id.toString())
-      );
-      return selectedSensors;
-    }// return sensors;
-  }
+  const [addedSensors, setAddedSensors] = useState(data.data.sensors ?? {});
 
-  const [selectedSensors, setSelectedSensors] = useState(findSelectedSensors(data.groupedSensors));
-  
-
-  function toggleSelectedSensor(sensorItem: any) {
-    const foundSensor = selectedSensors.find(
-      (sensor: any) => sensorItem == sensor
-    );
-    if (foundSensor) {
-      setSelectedSensors(
-        selectedSensors.filter((item: any) => item !== foundSensor)
-      );
+  function addSensor(sensorItem: any, key: string) {
+    //this is an array because objects would not work with the forms [sensorSlug, phenomenonId, unitSlug]
+    let sensorArray = [sensorItem.sensor.slug, sensorItem.phenomenonId, ""];
+    const newSensorObject = { ...addedSensors };
+    if (newSensorObject[key]) {
+      newSensorObject[key].push(sensorArray);
     } else {
-      setSelectedSensors([].concat(selectedSensors, sensorItem));
+      newSensorObject[key] = [sensorArray];
     }
+    setAddedSensors(newSensorObject);
   }
 
   return (
@@ -51,21 +36,21 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
       <div>
         {Object.entries(data.groupedSensors).map(([key, value]) => {
           return (
-            <div key={key}>
+            <div key={key} className="border-b-2 border-gray-600 pb-6">
               <h1 className="pb-4 pt-2 text-xl">
                 {sensorWikiLabel(
                   data.phenomena.find((pheno: any) => pheno.id == key).label
                     .item
                 )}
               </h1>
-              <div className="space-y-6 divide-y divide-gray-200 sm:space-y-5">
+              <div className="space-y-6 sm:space-y-5">
                 <div className="grid grid-cols-8 gap-4">
                   {value.map((sensor: any) => {
                     return (
                       <div key={sensor.id}>
                         <Card
-                          data-checked={selectedSensors.includes(sensor)}
-                          onClick={() => toggleSelectedSensor(sensor)}
+                          // data-checked={selectedSensors.includes(sensor)}
+                          onClick={() => addSensor(sensor, "p-" + key)}
                           key={sensor.id}
                           className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
                         >
@@ -80,25 +65,66 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                           </CardContent>
                           <CardFooter className="flex justify-center">
                             <CardTitle>{sensor.sensor.slug}</CardTitle>
-                            {selectedSensors.includes(sensor) && (
-                              <CheckCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
-                            )}
+                            <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
                           </CardFooter>
                         </Card>
-                        <input
-                          type="checkbox"
-                          id={sensor.slug}
-                          name="sensors"
-                          value={sensor.id}
-                          checked={selectedSensors.includes(sensor)}
-                          readOnly
-                          className="hidden"
-                        />
                       </div>
                     );
                   })}
                 </div>
                 <pre>{JSON.stringify(data.json, null, 2)}</pre>
+              </div>
+              <div>
+                <h3>Your added Senors</h3>
+                {addedSensors["p-" + key] &&
+                  addedSensors["p-" + key].map(
+                    (sensorItem: any, index: number) => {
+                      return (
+                        <div key={sensorItem.id}>
+                          <span> {sensorItem[0]}</span>
+                          <span>
+                            {" "}
+                            {sensorWikiLabel(
+                              data.phenomena.find(
+                                (pheno: any) => pheno.id == key
+                              ).label.item
+                            )}
+                          </span>
+                          {/* Maybe add title input here too if we want people to choose a name for their sensor */}
+                          <input
+                            type="checkbox"
+                            name={`sensors[p-${key.toString()}][${index}]`}
+                            value={sensorItem[0]}
+                            checked={true}
+                            readOnly
+                            className="hidden"
+                          />
+                          <input
+                            type="checkbox"
+                            name={`sensors[p-${key.toString()}][${index}]`}
+                            value={key}
+                            checked={true}
+                            readOnly
+                            className="hidden"
+                          />
+                          <select
+                            name={`sensors[p-${key.toString()}][${index}]`}
+                            id="unit"
+                          >
+                            {data.phenomena
+                              .find((pheno: any) => pheno.id == key)
+                              .rov.map((rov: any) => {
+                                return (
+                                  <option key={rov.id} value={rov.unit.slug}>
+                                    {rov.unit.name}
+                                  </option>
+                                );
+                              })}
+                          </select>{" "}
+                        </div>
+                      );
+                    }
+                  )}
               </div>
             </div>
           );

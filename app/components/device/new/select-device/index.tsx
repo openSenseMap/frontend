@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
@@ -29,7 +30,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
               key={device.id}
               data-checked={deviceType === device.slug}
               onClick={() => setDeviceType(device.slug)}
-              className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+              className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
             >
               <CardContent className="flex justify-center pt-2">
                 <AspectRatio ratio={3 / 4}>
@@ -42,6 +43,9 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
               </CardContent>
               <CardFooter className="flex justify-center">
                 <CardTitle>{device.slug}</CardTitle>
+                {deviceType === device.slug && (
+                  <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
+                )}
               </CardFooter>
             </Card>
           );
@@ -51,7 +55,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           key={4}
           data-checked={deviceType === "own_device"}
           onClick={() => setDeviceType("own_device")}
-          className="data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+          className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
         >
           <CardContent className="flex justify-center pt-2">
             <AspectRatio ratio={3 / 4}>
@@ -64,6 +68,9 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           </CardContent>
           <CardFooter className="flex justify-center">
             <CardTitle>own_device</CardTitle>
+            {deviceType === "own_device" && (
+              <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
+            )}
           </CardFooter>
         </Card>
       </div>
