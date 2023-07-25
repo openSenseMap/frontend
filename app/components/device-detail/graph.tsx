@@ -1,8 +1,11 @@
 import {
+  Form,
   useLoaderData,
   useMatches,
   useNavigate,
   useNavigation,
+  useSearchParams,
+  useSubmit,
 } from "@remix-run/react";
 import {
   Chart as ChartJS,
@@ -55,6 +58,10 @@ export default function Graph(props: any) {
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+
+  // form submission handler
+  const submit = useSubmit();
+  let [searchParams] = useSearchParams();
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
@@ -222,7 +229,13 @@ export default function Graph(props: any) {
             >
               <div className="flex gap-2">
                 <DatePickerGraph />
-                <Select value={loaderData.aggregation}>
+                <Select
+                  value={loaderData.aggregation}
+                  onValueChange={(value) => {
+                    searchParams.set("aggregation", value);
+                    submit(searchParams);
+                  }}
+                >
                   <SelectTrigger className="w-[210px]">
                     <SelectValue placeholder="Select a time aggregate" />
                   </SelectTrigger>
