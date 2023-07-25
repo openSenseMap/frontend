@@ -103,7 +103,7 @@ export const columns: ColumnDef<SenseBox>[] = [
             Edit
           </a>
           <a
-            href="https://sensebox.de/de/go-home"
+            href={`mydevices/${senseBox.id}/dataupload`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none border-r-0 text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"

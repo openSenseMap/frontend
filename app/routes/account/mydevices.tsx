@@ -18,7 +18,6 @@ export async function loader({ request }: LoaderArgs) {
 
   //* get all devices data
   const allDevices = await getUserDevices(userId);
-  console.log("🚀 ~ file: mydevices.tsx:17 ~ loader ~ allDevices:", allDevices);
 
   return json(allDevices);
 }
@@ -138,7 +137,7 @@ export default function MyDevices() {
                         type="submit"
                         name="intent"
                         value="claimToken"
-                        className="btn btn-primary bg-[#337ab7] rounded-bl-[0px] rounded-tl-[0px] disabled:opacity-[.65]"
+                        className="btn btn-primary bg-[#337ab7] rounded-bl-[0px] rounded-tl-[0px] disabled:opacity-[.65] disabled:cursor-not-allowed"
                         disabled={!tokendVal}
                       >
                         Claim device
