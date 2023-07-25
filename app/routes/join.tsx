@@ -5,14 +5,9 @@ import * as React from "react";
 
 import { createUserSession, getUserId } from "~/session.server";
 
-import {
-  createUser,
-  getUserByEmail,
-  getUserByName,
-} from "~/models/user.server";
+import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
-import { useState } from "react";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -77,20 +72,21 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  //* user name shouldn't be unique
   //* check if user exists by name
-  const existingUserByName = await getUserByName(name);
+  /* const existingUserByName = await getUserByName(name);
   if (existingUserByName) {
     return json(
       {
         errors: {
-          name: "A user already exists with this name",
+          name: null,
           email: null,
-          password: null,
+          password: "Please use at least 8 characters.",
         },
       },
       { status: 400 }
     );
-  }
+  } */
 
   //* check if user exists by email
   const existingUserByEmail = await getUserByEmail(email);

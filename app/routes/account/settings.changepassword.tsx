@@ -1,19 +1,15 @@
 import { Form, useActionData } from "@remix-run/react";
-import { LoaderArgs } from "@remix-run/server-runtime";
-import { ActionArgs, json, redirect } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/server-runtime";
+import type { ActionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { getUserEmail, getUserId, logout } from "~/session.server";
 import React, { useState } from "react";
-import {
-  validatePassLength,
-  validatePassType as validatePassType,
-} from "~/utils";
+import { validatePassLength, validatePassType } from "~/utils";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
 import invariant from "tiny-invariant";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 //*****************************************************
 export async function loader({ request }: LoaderArgs) {
@@ -158,7 +154,7 @@ export async function action({ request }: ActionArgs) {
   await updateUserPassword(userId, newPass);
 
   //* logout
-  return logout({request: request, redirectTo: "/explore"});
+  return logout({ request: request, redirectTo: "/explore" });
 }
 
 //****************************************
@@ -198,7 +194,7 @@ export default function Changepassword() {
                   duration={3000}
                   onOpenChange={setToastOpen}
                   className={clsx(
-                    "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:top-4 md:right-4 md:left-auto md:bottom-auto md:w-full",
+                    "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
                     "bg-[#d9edf7] dark:bg-gray-800",
                     "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
                     "radix-state-closed:animate-toast-hide",
@@ -349,7 +345,7 @@ export default function Changepassword() {
                     name="intent"
                     value="cancel"
                     disabled={false}
-                    className="rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
+                    className="rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
                   >
                     Cancel
                   </button>
@@ -359,7 +355,7 @@ export default function Changepassword() {
                     name="intent"
                     value="update"
                     disabled={false}
-                    className="ml-3 rounded border border-gray-200 py-2 px-4 text-black disabled:border-[#ccc]  disabled:text-[#8a8989]"
+                    className="ml-3 rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc]  disabled:text-[#8a8989]"
                   >
                     Update
                   </button>
@@ -380,7 +376,6 @@ export default function Changepassword() {
                     className="rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
                   />
                 </div> */}
-
               </Form>
             </div>
           </div>

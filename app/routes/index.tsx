@@ -13,6 +13,7 @@ import i18next from "~/i18next.server";
 import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 import { getUserId, getUserName } from "~/session.server";
+import { useTranslation } from "react-i18next";
 
 export const loader = async ({ request }: LoaderArgs) => {
   let locale = await i18next.getLocale(request);
@@ -45,21 +46,23 @@ export const loader = async ({ request }: LoaderArgs) => {
     features: featuresResponse.data,
     partners: partnersResponse.data,
     header: { userId: userId, userName: userName },
+    locale: locale,
   });
 };
 
 export default function Index() {
-  const { useCases, features, partners, header } = useLoaderData<{
+  const { useCases, features, partners } = useLoaderData<{
     useCases: UseCase[];
     features: Feature[];
     partners: Partner[];
-    header: { userId: string, userName: string };
   }>();
+
+  const { t } = useTranslation("landing");
 
   return (
     <div className="min-h-full bg-white dark:bg-black">
       <header>
-        <Header data={header} />
+        <Header />
       </header>
       <main>
         <div className="overflow-hidden pt-8 sm:py-20">
@@ -74,14 +77,8 @@ export default function Index() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ ease: "easeInOut", duration: 0.5 }}
                 >
-                  <p className="mt-6 ml-6 text-lg text-gray-600 dark:text-gray-100">
-                    Die wahrscheinlich größte offene Plattform für Umwelt- und
-                    Sensordaten weltweit ermöglicht es allen Menschen kostenfrei
-                    auf umfangreiche Daten zuzugreifen, diese zu analysieren und
-                    eigene Messungen zu veröffentlichen. Dadurch ist ein
-                    einzigartiger Datensatz mit Echtzeitdaten überall auf der
-                    Welt entstanden, der nachprüfbare lokale wie globale Fakten
-                    zu Umweltphänomenen wie dem Klimawandel liefert.
+                  <p className="ml-6 mt-6 text-lg text-gray-600 dark:text-gray-100">
+                    {t("introduction")}
                   </p>
                 </motion.div>
                 <div className="mt-8 flex items-center justify-around gap-x-6 gap-y-4 text-xl">
@@ -95,7 +92,12 @@ export default function Index() {
                       stiffness: 50,
                     }}
                   >
-                    <Link to="/explore" prefetch="intent">
+                    <Link
+                      to="https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      prefetch="intent"
+                    >
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         transition={{
@@ -104,8 +106,8 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-blue-200 dark:bg-blue-200 mt-8 rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-blue-100 p-2 text-gray-300 transition-all hover:scale-105 hover:bg-blue-100 hover:text-white dark:bg-blue-100 dark:text-white">
-                          Donate
+                        <button className="dark:border-blue-200 dark:bg-blue-200 mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-blue-100 p-2 text-gray-300 transition-all hover:scale-105 hover:bg-blue-100 hover:text-white dark:bg-blue-100 dark:text-white">
+                          {t("donate")}
                         </button>
                       </motion.div>
                     </Link>
@@ -129,8 +131,8 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-green-200 dark:bg-green-200 mt-8 rounded-lg border-l-4 border-t-4 border-b-8 border-r-8 border-solid border-green-100 p-2 text-gray-300 transition-all hover:bg-green-100 hover:text-white dark:bg-green-100 dark:text-white">
-                          Explore
+                        <button className="dark:border-green-200 dark:bg-green-200 mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-green-100 p-2 text-gray-300 transition-all hover:bg-green-100 hover:text-white dark:bg-green-100 dark:text-white">
+                          {t("explore")}
                         </button>
                       </motion.div>
                     </Link>

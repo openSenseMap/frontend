@@ -16,7 +16,6 @@ import { createUserSession, getUserId } from "~/session.server";
 import {
   createUser,
   getUserByEmail,
-  getUserByName,
 } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 
@@ -97,8 +96,9 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  //* user name shouldn't be unique
   //* check if user exists by name
-  const existingUserByName = await getUserByName(username);
+  /* const existingUserByName = await getUserByName(username);
   if (existingUserByName) {
     return json(
       {
@@ -110,7 +110,7 @@ export async function action({ request }: ActionArgs) {
       },
       { status: 400 }
     );
-  }
+  } */
 
   //* check if user exists by email
   const existingUserByEmail = await getUserByEmail(email);
@@ -127,17 +127,17 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  invariant(typeof username === "string", "username must be a string");
+
   //* get current locale
   const locale = await i18next.getLocale(request);
   const language = locale === "de" ? "de_DE" : "en_US";
 
-  const user = await createUser(
-    username,
-    email,
-    language,
-    password,
-    username?.toString()
-  );
+  //* temp -> dummy name
+  // const name = "Max Mustermann";
+
+  const user = await createUser(username, email, language, password);
+  // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
     request,

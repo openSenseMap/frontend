@@ -23,6 +23,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
       id: true,
       name: true,
       exposure: true,
+      status: true,
       updatedAt: true,
       sensors: true,
       latitude: true,
@@ -104,6 +105,7 @@ export async function getDevices() {
       latitude: true,
       longitude: true,
       exposure: true,
+      status: true,
       createdAt: true,
     },
   });
@@ -140,6 +142,9 @@ export async function getMeasurements(
       "&to-date=" +
       endDate.toISOString() //new Date().toISOString()
   );
-  const jsonData = await response.json();
-  return jsonData;
+  return (await response.json()) as {
+    value: String;
+    location?: number[];
+    createdAt: Date;
+  }[];
 }

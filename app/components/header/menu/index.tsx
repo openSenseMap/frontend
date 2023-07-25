@@ -146,7 +146,8 @@ export default function Menu() {
               )}
               {data.profile && (
                 <DropdownMenuItem>
-                  <ProfileVisibilitySwitch />
+                  <UserIcon className="mr-2 h-5 w-5" />
+                  <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
 
@@ -164,6 +165,14 @@ export default function Menu() {
                 </DropdownMenuItem>
               </Link>
 
+              <DropdownMenuItem>
+                <Cog6ToothIcon className="mr-2 h-5 w-5" />
+                <Link to="/settings/account">{t("settings_label")}</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CpuChipIcon className="mr-2 h-5 w-5" />
+                <Link to="/profile/me">{t("my_devices_label")}</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <PlusCircleIcon className="mr-2 h-5 w-5" />
                 <span>{t("add_device_label")}</span>

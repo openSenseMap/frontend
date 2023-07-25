@@ -1,11 +1,13 @@
-import { Outlet, useNavigate, useParams } from "@remix-run/react";
+import {
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useParams,
+} from "@remix-run/react";
 import Map from "~/components/map";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
-
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { getDevices } from "~/models/device.server";
 import type {
   GeoJSONSource,
@@ -13,22 +15,27 @@ import type {
   MapLayerMouseEvent,
   MapRef,
 } from "react-map-gl";
-
 import { MapProvider } from "react-map-gl";
-import { Layer, Source } from "react-map-gl";
 import { useState, useRef } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import type { FeatureCollection, Point } from "geojson";
-import {
-  clusterCountLayer,
-  clusterLayer,
-  unclusteredPointLayer,
-} from "~/components/map/layers";
-import type { Device } from "@prisma/client";
 import OverlaySearch from "~/components/search/overlay-search";
-import { Toaster } from "~/components/ui//toaster";
 import { getUser } from "~/session.server";
+import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
+import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
+import { typedjson } from "remix-typedjson";
+import { Toaster } from "~/components/ui/toaster";
+
+export type DeviceClusterProperties =
+  | Supercluster.PointFeature<any>
+  | Supercluster.PointFeature<
+      Supercluster.ClusterProperties & {
+        categories: {
+          [x: number]: number;
+        };
+      }
+    >;
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
@@ -36,16 +43,16 @@ export async function loader({ request }: LoaderArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return json({ devices, user, profile });
+    return typedjson({ devices, user, profile });
   }
-  return json({ devices, user, profile: null });
+  return typedjson({ devices, user, profile: null });
 }
 
 export const links: LinksFunction = () => {
   return [
     {
       rel: "stylesheet",
-      href: mapboxgl,
+      href: mapboxglcss,
     },
   ];
 };
@@ -53,6 +60,9 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const mapRef = useRef<MapRef | null>(null);
 
   /**
    * Focus the search input when the search overlay is displayed
@@ -75,11 +85,6 @@ export default function Explore() {
       },
     ],
   ]);
-
-  const data = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
-
-  const mapRef = useRef<MapRef>(null);
 
   const onMapClick = (e: MapLayerMouseEvent) => {
     if (e.features && e.features.length > 0) {
@@ -108,11 +113,13 @@ export default function Explore() {
   };
 
   //* fly to sensebox location when url inludes deviceId
-  const {deviceId} = useParams();
-  var deviceLoc=[1.3,2.3];
-  if(deviceId){
-    const device = data.devices.features.find((device) => device.properties.id === deviceId);
-    deviceLoc = [device?.properties.latitude, device?.properties.longitude]
+  const { deviceId } = useParams();
+  var deviceLoc = [1.3, 2.3];
+  if (deviceId) {
+    const device = data.devices.features.find(
+      (device: any) => device.properties.id === deviceId
+    );
+    deviceLoc = [device?.properties.latitude, device?.properties.longitude];
   }
 
   return (
@@ -121,32 +128,23 @@ export default function Explore() {
         <Header devices={data.devices} />
         <Map
           ref={mapRef}
-          initialViewState={(deviceId?{ latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }:{ latitude: 7, longitude: 52, zoom: 2 })}
-          interactiveLayerIds={["osem-data", "unclustered-point"]}
-          onClick={onMapClick}
+          initialViewState={
+            deviceId
+              ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
+              : { latitude: 7, longitude: 52, zoom: 2 }
+          }
         >
-          <Source
-            id="osem-data"
-            type="geojson"
-            data={data.devices as FeatureCollection<Point, Device>}
-            cluster={true}
-          >
-            <Layer {...clusterLayer} />
-            <Layer {...clusterCountLayer} />
-            <Layer {...unclusteredPointLayer} />
-          </Source>
-        </Map>
-        <Toaster />
-        {showSearch ? (
-          <OverlaySearch
-            devices={data.devices}
-            searchRef={searchRef}
-            setShowSearch={setShowSearch}
-          />
-        ) : null}
-        <main className="absolute bottom-0 z-10 w-full">
+          <ClusterLayer devices={data.devices} />
+          <Toaster />
+          {showSearch ? (
+            <OverlaySearch
+              devices={data.devices}
+              searchRef={searchRef}
+              setShowSearch={setShowSearch}
+            />
+          ) : null}
           <Outlet />
-        </main>
+        </Map>
       </MapProvider>
     </div>
   );

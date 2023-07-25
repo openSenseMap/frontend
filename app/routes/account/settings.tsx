@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import invariant from "tiny-invariant";
-import { getUserByName, updateUserName, updateUserlocale, verifyLogin } from "~/models/user.server";
+import { updateUserName, updateUserlocale, verifyLogin } from "~/models/user.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { getUserByEmail } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
@@ -87,11 +87,14 @@ export async function action({ request }: ActionArgs) {
 
       await updateUserlocale(email, language);
 
+      await updateUserName(email, name);
+
+      //* user name shouldn't be unique
       //* check if user exists by name before updating user name
-      const existingUserByName = await getUserByName(name);
+      /* const existingUserByName = await getUserByName(name);
       if(!existingUserByName){
         await updateUserName(email, name);
-      }
+      } */
 
       //* return error free to show toast msg
       return json(

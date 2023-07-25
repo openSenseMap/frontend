@@ -10,15 +10,37 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "views"]
 }
 
+model File {
+  id   String @id @unique @default(cuid())
+  blob Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  image     Image?
+}
+
+model Image {
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId String @unique
+
+  contentType String
+  altText     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile?
+}
+
 //* updated user model
 model User {
-  id    String @id @default(cuid())
-  name String @unique
-  email String @unique
-  role String @default("user")
-  language String @default("en_US")
-  boxes String[]
-  emailIsConfirmed Boolean @default(false)
+  id               String   @id @default(cuid())
+  name             String   // This is your name e.g. Max Mustermann
+  email            String   @unique
+  role             String   @default("user")
+  language         String   @default("en_US")
+  boxes            String[]
+  emailIsConfirmed Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -33,8 +55,11 @@ model User {
 model Profile {
   id String @id @default(cuid())
 
-  name   String  @unique
+  username   String  @unique
   public Boolean
+
+  image   Image?  @relation(fields: [imageId], references: [fileId])
+  imageId String? @unique
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
@@ -67,16 +92,28 @@ enum Exposure {
   UNKNOWN
 }
 
+enum Status {
+  ACTIVE
+  INACTIVE
+  OLD
+}
+
 enum Model {
   HOME_V2_LORA
 }
 
 model Device {
-  id       String   @id @default(uuid())
-  name     String
-  exposure Exposure
-  useAuth  Boolean?
-  model String?
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  exposure    Exposure
+  useAuth     Boolean?
+  model       String?
+
+  // Flag to show device on profile
+  public      Boolean  @default(false)
+
+  status   Status   @default(INACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,9 +1,8 @@
-import { Form, Link } from "@remix-run/react";
-import { Theme, useTheme } from "~/utils/theme-provider";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { Link, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import { header } from "~/lib/directus";
 import { useState } from "react";
+import LanguageSelector from "./language-selector";
+import ThemeSelector from "./theme-selector";
 
 const links = [
   {
@@ -28,26 +27,18 @@ const links = [
   },
 ];
 
-type HeaderProps = {
-  data: header;
-};
-
-export default function Header(data: HeaderProps) {
-  const [theme, setTheme] = useTheme();
+export default function Header() {
+  const { header } = useLoaderData<{
+    header: { userId: string; userName: string; };
+  }>();
   const [openMenu, setOpenMenu] = useState(false);
-  const toggleTheme = () => {
-    setTheme((prevTheme) =>
-      prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
-    );
-  };
 
   //* User Id and Name
-  const userId = data.data.userId;
-  const userName = data.data.userName;
+  const userId = header.userId;
+  const userName = header.userName;
 
   //* To control user menu visibility
   const userMenu = () => {
-    console.log("🚀 ~ onClick");
     const profileMenu = document.querySelector(".profile-menu");
     invariant(profileMenu, "profileMenu is not found");
     let profileMenuStatus = profileMenu.classList.contains("invisible");
@@ -61,9 +52,9 @@ export default function Header(data: HeaderProps) {
   };
 
   return (
-    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 md:py-8 dark:border-gray-300 dark:bg-black sm:px-6 lg:px-8">
+    <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 dark:border-gray-300 dark:bg-black sm:px-6 md:py-8 lg:px-8">
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif">
-          {/* Osem Logo*/}
+        {/* Osem Logo*/}
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           {/* Osem Logo*/}
           <Link to="/" className="flex items-center md:pr-10">
@@ -95,76 +86,57 @@ export default function Header(data: HeaderProps) {
             </ul>
           </div>
         </div>
-
-        <div className="flex items-center justify-center md:order-2">
-            {/* Dark Mood */}
-          <div className="items-center justify-center pr-8 flex">
-            <button onClick={toggleTheme}>
-              {theme === "light" ? (
-                <MoonIcon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
-              ) : (
-                <SunIcon className="h-6 w-6 text-gray-400 lg:h-8 lg:w-8" />
-              )}
+        <div>
+          <div className="flex items-center justify-center md:order-2">
+            {/* Theme */}
+            <ThemeSelector />
+            {/* Language */}
+            <LanguageSelector />
+            {/* Collapsible navigation bar */}
+            <button
+              onClick={() => setOpenMenu(!openMenu)}
+              data-collapse-toggle="navbar-cta"
+              type="button"
+              className="inline-flex items-center rounded-lg p-2 px-6 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
+              aria-controls="navbar-cta"
+              aria-expanded="false"
+            >
+              <span className="sr-only">Open main menu</span>
+              <svg
+                className="h-6 w-6"
+                aria-hidden="true"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
             </button>
+            {openMenu && (
+              <div
+                className="absolute right-2 top-full mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black ring-opacity-5"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="options-menu"
+              >
+                {links.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={item.link}
+                    className="dark:hover:text-green-200 block px-4 py-2 text-sm text-gray-700 hover:text-green-100"
+                    role="menuitem"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* Donation */}
-          <button
-            type="button"
-            className="dark:border-green-200 dark:bg-green-200 hidden rounded-lg border-l-2 border-t-2 border-r-4 border-b-4 border-green-100 p-2 text-center text-lg font-thin text-black dark:text-gray-400 md:block"
-          >
-            <Link to="/explore" rel="intent">
-              Donate
-            </Link>
-          </button>
-
-          {/* Collapsible navigation bar */}
-          <button
-            onClick={() => setOpenMenu(!openMenu)}
-            data-collapse-toggle="navbar-cta"
-            type="button"
-            className="px-6 inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
-            aria-controls="navbar-cta"
-            aria-expanded="false"
-          >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              className="h-6 w-6"
-              aria-hidden="true"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          {openMenu && (
-            <div
-              className="absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black ring-opacity-5"
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="options-menu"
-            >
-              {links.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.link}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:text-green-100 dark:hover:text-green-200"
-                  role="menuitem"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
-
-        {/* Collapsible user profile menu */}
-        
       </div>
     </nav>
   );
