@@ -7,10 +7,7 @@ import useSupercluster from "use-supercluster";
 import debounce from "lodash.debounce";
 import type { Campaign, Prisma } from "@prisma/client";
 import type { DeviceClusterProperties } from "~/routes/explore";
-import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { getCampaigns } from "~/models/campaign.server";
-import { useLoaderData } from "@remix-run/react";
+import { useSearchParams } from "@remix-run/react";
 
 type PointProperties = {
   title: string;
@@ -28,19 +25,16 @@ const options = {
   maxZoom: 14,
 };
 
-// export async function loader({ params, request }: LoaderArgs) {
-//   const campaigns = await getCampaigns(options);
-//   return json({ campaigns });
-// }
-
 export default function PointLayer({
   campaigns,
-  setDisplayedCampaigns,
+  // setDisplayedCampaigns,
+  selectedCampaign,
   setSelectedCampaign,
   setSelectedMarker,
 }: {
   campaigns: Campaign[];
-  setDisplayedCampaigns: Dispatch<SetStateAction<Campaign[]>>;
+  selectedCampaign: string;
+  // setDisplayedCampaigns: Dispatch<SetStateAction<Campaign[]>>;
   setSelectedCampaign: Dispatch<SetStateAction<string>>;
   setSelectedMarker: Dispatch<SetStateAction<string>>;
 }) {
@@ -49,6 +43,7 @@ export default function PointLayer({
     mapRef?.getMap().getBounds().toArray().flat() as BBox
   );
   const [zoom, setZoom] = useState(mapRef?.getZoom() || 0);
+  const [searchParams] = useSearchParams();
 
   const centerpoints = campaigns
     .map((campaign: Campaign) => {
@@ -145,10 +140,14 @@ export default function PointLayer({
       const selectedCampaign = campaigns.filter(
         (campaign: Campaign) => campaign.id === markerId
       );
-      console.log(selectedCampaign);
+      const url = new URL(window.location.href);
+      const query = url.searchParams;
+      query.set("search", selectedCampaign[0].title);
+      window.location.href = url.toString();
+      // searchParams.append("search", selectedCampaign[0].title);
 
       setSelectedMarker(markerId);
-      setDisplayedCampaigns(selectedCampaign);
+      // setDisplayedCampaigns(selectedCampaign);
       setSelectedCampaign(selectedCampaign[0].id);
       mapRef?.flyTo({
         center: [longitude, latitude],
@@ -159,7 +158,7 @@ export default function PointLayer({
     [
       campaigns,
       mapRef,
-      setDisplayedCampaigns,
+      // setDisplayedCampaigns,
       setSelectedCampaign,
       setSelectedMarker,
     ]
