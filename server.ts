@@ -17,7 +17,6 @@ app.use(
 
 app.use((req, res, next) => {
   // helpful headers:
-  res.set("x-fly-region", process.env.FLY_REGION ?? "unknown");
   res.set("Strict-Transport-Security", `max-age=${60 * 60 * 24 * 365 * 100}`);
 
   // /clean-urls/ -> /clean-urls
@@ -34,6 +33,7 @@ app.use((req, res, next) => {
 // non-GET/HEAD/OPTIONS requests hit the primary region rather than read-only
 // Postgres DBs.
 // learn more: https://fly.io/docs/getting-started/multi-region-databases/#replay-the-request
+// Don´t know why this is required. Hav to figure it out!
 app.all("*", function getReplayResponse(req, res, next) {
   const { method, path: pathname } = req;
   const { PRIMARY_REGION, FLY_REGION } = process.env;

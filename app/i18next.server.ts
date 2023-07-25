@@ -2,9 +2,12 @@ import Backend from "i18next-fs-backend";
 import { resolve } from "node:path";
 import { RemixI18Next } from "remix-i18next";
 import i18nextOptions from "./i18next-options";
+import { i18nCookie } from "./cookies";
 
 let i18next: RemixI18Next = new RemixI18Next({
   detection: {
+    // persist language selection in cookie
+    cookie: i18nCookie,
     supportedLanguages: i18nextOptions.supportedLngs,
     fallbackLanguage: i18nextOptions.fallbackLng,
   },

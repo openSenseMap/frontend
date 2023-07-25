@@ -16,6 +16,10 @@ import {
 } from "~/models/badge.server";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { getInitials, getUserImgSrc } from "~/utils/misc";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Info, Plus } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { useOptionalUser } from "~/utils";
 
 export async function loader({ params, request }: LoaderArgs) {
   const requestingUserId = await getUserId(request);
@@ -99,6 +103,9 @@ export default function () {
   // Get the data from the loader function using the useLoaderData hook
   const { allBadges, userBackpack, user, profile } =
     useLoaderData<typeof loader>();
+
+  // User is optional
+  const userOptional = useOptionalUser();
 
   const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
     // Determine if badgeA and badgeB are owned by the user and not revoked
@@ -187,20 +194,50 @@ export default function () {
           <div></div>
         </div>
       </div>
-      <div className="col-span-2">
-        <div className="grid grid-cols-2 gap-8">
-          {user?.devices.map((device) => (
-            <DeviceCard
-              key={device.id}
-              // https://github.com/prisma/prisma/discussions/14371
-              // Some kind of weird Date thing going on
-              device={{
-                ...device,
-                createdAt: new Date(device.createdAt),
-                updatedAt: new Date(device.updatedAt),
-              }}
-            />
-          ))}
+      <div className="col-span-2 space-y-4">
+        {userOptional?.id === user?.id && user?.devices?.length === 0 ? (
+          <Alert>
+            <div className="flex justify-between">
+              <div className="flex flex-col">
+                <div className="flex">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle className="ml-4">
+                    You have no device registered
+                  </AlertTitle>
+                </div>
+                <AlertDescription>
+                  You can add up to 3 devices to your account.
+                </AlertDescription>
+              </div>
+              <Button variant="outline" size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </Alert>
+        ) : null}
+        {(userOptional?.id === user?.id || user?.devices?.length) === 0 ? (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle className="ml-6">
+              This user has no public devices.
+            </AlertTitle>
+          </Alert>
+        ) : null}
+        <div className="col-span-2">
+          <div className="grid grid-cols-2 gap-8">
+            {user?.devices.map((device) => (
+              <DeviceCard
+                key={device.id}
+                // https://github.com/prisma/prisma/discussions/14371
+                // Some kind of weird Date thing going on
+                device={{
+                  ...device,
+                  createdAt: new Date(device.createdAt),
+                  updatedAt: new Date(device.updatedAt),
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
