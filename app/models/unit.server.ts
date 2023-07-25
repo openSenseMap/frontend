@@ -1,5 +1,5 @@
-export async function getPhenomena() {
-  const response = await fetch("https://api.sensors.wiki/units/all");
+export async function getUnits() {
+  const response = await fetch("https://api.sensors.wiki/units");
   const jsonData = await response.json();
   return jsonData;
 }

@@ -130,3 +130,85 @@ export async function getMeasurements(
   const jsonData = await response.json();
   return jsonData;
 }
+
+export async function createDeviceInOsemAPIandPostgres(deviceData: any) {
+  console.log("creating device");
+
+  // hack to register to OSEM API
+  const authData = await fetch(
+    `${process.env.OSEM_API_TESTING}/users/sign-in`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "umut@sensebox.de",
+        password: "testtest",
+      }),
+    }
+  ).then((res) => res.json());
+  const registeredDevice = await createDeviceOsemAPI(
+    deviceData,
+    authData.token
+  );
+
+  const newDevicePostgres = await createDevicePostgres(registeredDevice);
+  return newDevicePostgres;
+}
+
+export async function createDevicePostgres(deviceData: any) {
+  const newDevice = await prisma.device.create({
+    data: {
+      id: deviceData._id,
+      userId: deviceData.user,
+      name: deviceData.name,
+      exposure: deviceData.exposure,
+      useAuth: true,
+      latitude: Number(deviceData.latitude),
+      longitude: Number(deviceData.longitude),
+    },
+  });
+  return newDevice;
+}
+
+export async function createDeviceOsemAPI(deviceData: any, token: string) {
+  const registerDevice = await fetch(`${process.env.OSEM_API_TESTING}/bxoes`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: deviceData.name,
+      grouptag: deviceData.groupId,
+      exposure: deviceData.exposure,
+      model: deviceData.type,
+      location: {
+        lat: deviceData.lat,
+        lng: deviceData.lng,
+        ...(deviceData.height && { height: deviceData.height }),
+      },
+      ...(deviceData.ttnEnabled && {
+        ttn: {
+          dev_id: deviceData.ttnDeviceId,
+          app_id: deviceData.ttnAppId,
+          profile: "???",
+        },
+      }),
+      ...(deviceData.mqttEnabled && {
+        mqtt: {
+          enabled: true,
+          url: deviceData.mqttUrl,
+          topic: deviceData.mqttTopic,
+          messageFormat: "json",
+          decodeOptions: deviceData.mqttDecodeOptions,
+          connectionOptions: deviceData.mqttConnectOptions,
+        },
+      }),
+    }),
+  }).then((res) => res.json());
+  console.log("🚀 registered Device:", registerDevice);
+
+  return registerDevice;
+}

@@ -20,6 +20,7 @@ import SelectDevice from "~/components/device/new/select-device";
 import SelectSensors from "~/components/device/new/select-sensors";
 import Advanced from "~/components/device/new/advanced";
 import SelectLocation from "~/components/device/new/select-location";
+import Summary from "~/components/device/new/summary";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -224,7 +225,8 @@ export default function NewDevice() {
               <SelectLocation data={loaderData} />
             </MapProvider>
           )}
-          {page === 6 && <pre>{JSON.stringify(data, null, 2)}</pre>}
+
+          {page === 6 && <Summary data={data}></Summary>}
         </div>
         <div className="flex justify-end">
           {page > 1 && (

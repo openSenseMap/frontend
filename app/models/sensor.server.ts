@@ -19,7 +19,7 @@ export async function getSensors() {
         select: {
           latitude: true,
           longitude: true,
-        }
+        },
       },
     },
   });
@@ -29,12 +29,29 @@ export async function getSensors() {
   };
 
   // return streamify(devices).pipe(jsonstringify(opts));
-  
   for (const sensor of sensors) {
     const coordinates = [sensor.device.longitude, sensor.device.latitude];
     const feature = point(coordinates, sensor);
     geojson.features.push(feature);
   }
+
+  return sensors;
+}
+
+//if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
+export async function registerSensor(sensor: Sensor) {
+  const sensors = await prisma.sensor.create({
+    data: {
+      id: sensor.id,
+      deviceId: sensor.deviceId,
+      title: sensor.title,
+      sensorType: sensor.sensorType,
+      unit: sensor.unit,
+      sensorWikiType: sensor.sensorType,
+      sensorWikiUnit: sensor.unit,
+      sensorWikiPhenomenon: sensor.title,
+    },
+  });
 
   return sensors;
 }
