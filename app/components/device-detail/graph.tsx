@@ -12,8 +12,8 @@ import {
   LinearScale,
   PointElement,
   //Legend,
+  Tooltip as ChartTooltip,
 } from "chart.js";
-import { Tooltip as ChartTooltip } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
@@ -28,6 +28,15 @@ import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import { getGraphColor } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -60,7 +69,7 @@ export default function Graph(props: any) {
   // Formatting the data for the Line component
   const lineData = {
     labels: loaderData.selectedSensors[0].data.map(
-      (measurement: LastMeasurementProps) => measurement.createdAt
+      (measurement: LastMeasurementProps) => measurement.time
     ),
     datasets:
       loaderData.selectedSensors.length === 2
@@ -108,7 +117,7 @@ export default function Graph(props: any) {
       intersect: false,
     },
     parsing: {
-      xAxisKey: "createdAt",
+      xAxisKey: "time",
       yAxisKey: "value",
     },
     scales: {
@@ -211,7 +220,22 @@ export default function Graph(props: any) {
               className="flex cursor-move items-center justify-between px-2 pt-2"
               id="graphTop"
             >
-              <DatePickerGraph />
+              <div className="flex gap-2">
+                <DatePickerGraph />
+                <Select value={loaderData.aggregation}>
+                  <SelectTrigger className="w-[210px]">
+                    <SelectValue placeholder="Select a time aggregate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Time aggregate</SelectLabel>
+                      <SelectItem value="raw">Raw</SelectItem>
+                      <SelectItem value="15m">15 minutes</SelectItem>
+                      <SelectItem value="1d">1 day</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-center justify-end gap-4">
                 <button
                   onClick={handleDownloadClick}

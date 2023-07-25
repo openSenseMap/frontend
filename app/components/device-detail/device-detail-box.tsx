@@ -47,7 +47,7 @@ import {
 import ShareLink from "./share-link";
 
 export interface LastMeasurementProps {
-  createdAt: Date;
+  time: Date;
   value: string;
 }
 
