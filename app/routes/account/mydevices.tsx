@@ -128,7 +128,7 @@ export default function MyDevices() {
                       type="text"
                       ref={tokenRef}
                       maxLength={12}
-                      className="form-control rounded-br-[0px] rounded-tr-[0px] placeholder:text-[#999] placeholder:opacity-100"
+                      className="form-control rounded-br-[0px] rounded-tr-[0px] border-[#ccc] placeholder:text-[#999] placeholder:opacity-100"
                       value={tokendVal}
                       onChange={(e) => setTokenVal(e.target.value)}
                       placeholder="Token"
@@ -138,7 +138,7 @@ export default function MyDevices() {
                         type="submit"
                         name="intent"
                         value="claimToken"
-                        className="btn btn-primary rounded-bl-[0px] rounded-tl-[0px] disabled:opacity-[.65]"
+                        className="btn btn-primary bg-[#337ab7] rounded-bl-[0px] rounded-tl-[0px] disabled:opacity-[.65]"
                         disabled={!tokendVal}
                       >
                         Claim device

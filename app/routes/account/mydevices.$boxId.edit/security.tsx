@@ -115,7 +115,7 @@ export default function EditBoxSecurity() {
                   name="accessToken"
                   id="accessToken"
                   defaultValue="dummy token"
-                  className="form-control rounded-bl-none rounded-tl-none border-l-[0px]"
+                  className="form-control rounded-bl-none rounded-tl-none  border-[#ccc;] border-l-[0px]"
                   type={tokenVisibility ? "text" : "password"}
                   disabled
                 />
