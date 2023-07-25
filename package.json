@@ -156,7 +156,7 @@
     "postcss": "^8.4.21",
     "postcss-cli": "^10.1.0",
     "prettier": "^2.8.3",
-    "prettier-plugin-tailwindcss": "^0.2.1",
+    "prettier-plugin-tailwindcss": "^0.4.1",
     "prisma": "^4.9.0",
     "shadcn-ui": "^0.2.2",
     "start-server-and-test": "^1.15.2",
