@@ -146,10 +146,10 @@ export default function Filter({
                 {t("priority")}
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="createdAt">
-                {t("creation date")}
+                {t("created At")}
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="updatedAt">
-                Updated At
+                {t("updated At")}
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
