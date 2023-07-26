@@ -10,6 +10,7 @@ import invariant from "tiny-invariant";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
+import Home from "~/components/header/home";
 
 //*****************************************************
 export async function loader({ request }: LoaderArgs) {
@@ -182,187 +183,195 @@ export default function Changepassword() {
   }, [actionData]);
 
   return (
-    <div className="mt-14">
-      <div className="grid grid-rows-1">
-        <div className="flex min-h-full items-center justify-center">
-          <div className="mx-auto w-full max-w-5xl font-helvetica">
-            {/*Toast notification */}
-            <div className="mb-12">
-              <ToastPrimitive.Provider>
-                <ToastPrimitive.Root
-                  open={toastOpen}
-                  duration={3000}
-                  onOpenChange={setToastOpen}
-                  className={clsx(
-                    "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
-                    "bg-[#d9edf7] dark:bg-gray-800",
-                    "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
-                    "radix-state-closed:animate-toast-hide",
-                    "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
-                    "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
-                    "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
-                    "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
-                    "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
-                    "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
-                  )}
-                >
-                  <div className="flex">
-                    <div className="flex w-0 flex-1 items-center py-4 pl-5">
-                      <div className="radix mr-3 w-full">
-                        <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-gray-900 dark:text-gray-100">
-                          {actionData?.errors?.passMatch}
-                          <ToastPrimitive.Close aria-label="Close">
-                            <span aria-hidden>×</span>
-                          </ToastPrimitive.Close>
-                        </ToastPrimitive.Title>
+    <div>
+      <div className="pointer-events-none fixed z-10 mb-10 flex h-14 w-full p-2">
+        <Home />
+      </div>
+
+      <div className="mt-14">
+        <div className="grid grid-rows-1">
+          <div className="flex min-h-full items-center justify-center">
+            <div className="mx-auto w-full max-w-5xl font-helvetica">
+              {/*Toast notification */}
+              <div className="mb-12">
+                <ToastPrimitive.Provider>
+                  <ToastPrimitive.Root
+                    open={toastOpen}
+                    duration={3000}
+                    onOpenChange={setToastOpen}
+                    className={clsx(
+                      "inset-x-4 bottom-4 z-50 w-auto rounded-lg shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
+                      "bg-[#d9edf7] dark:bg-gray-800",
+                      "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
+                      "radix-state-closed:animate-toast-hide",
+                      "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
+                      "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
+                      "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
+                      "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
+                      "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
+                      "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+                    )}
+                  >
+                    <div className="flex">
+                      <div className="flex w-0 flex-1 items-center py-4 pl-5">
+                        <div className="radix mr-3 w-full">
+                          <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-gray-900 dark:text-gray-100">
+                            {actionData?.errors?.passMatch}
+                            <ToastPrimitive.Close aria-label="Close">
+                              <span aria-hidden>×</span>
+                            </ToastPrimitive.Close>
+                          </ToastPrimitive.Title>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  {/* <ToastPrimitive.Close>Dismiss</ToastPrimitive.Close> */}
-                </ToastPrimitive.Root>
-                <ToastPrimitive.Viewport />
-              </ToastPrimitive.Provider>
-            </div>
-
-            {/* Heading */}
-            <div className="inline-flex">
-              {/* avatar icon */}
-              <div className="h-9 w-9 rotate-[270deg] overflow-hidden rounded-full leading-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 00-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 00.75-.75v-1.5h1.5A.75.75 0 009 19.5V18h1.5a.75.75 0 00.53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1015.75 1.5zm0 3a.75.75 0 000 1.5A2.25 2.25 0 0118 8.25a.75.75 0 001.5 0 3.75 3.75 0 00-3.75-3.75z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                    {/* <ToastPrimitive.Close>Dismiss</ToastPrimitive.Close> */}
+                  </ToastPrimitive.Root>
+                  <ToastPrimitive.Viewport />
+                </ToastPrimitive.Provider>
               </div>
-              {/* Change password title */}
-              <div>
-                <h1 className="ml-2 text-4xl">Change Password</h1>
+
+              {/* Heading */}
+              <div className="inline-flex">
+                {/* avatar icon */}
+                <div className="h-9 w-9 rotate-[270deg] overflow-hidden rounded-full leading-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 00-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 00.75-.75v-1.5h1.5A.75.75 0 009 19.5V18h1.5a.75.75 0 00.53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1015.75 1.5zm0 3a.75.75 0 000 1.5A2.25 2.25 0 0118 8.25a.75.75 0 001.5 0 3.75 3.75 0 00-3.75-3.75z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                {/* Change password title */}
+                <div>
+                  <h1 className="ml-2 text-4xl">Change Password</h1>
+                </div>
               </div>
-            </div>
 
-            {/* divider */}
-            <hr className="my-2 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+              {/* divider */}
+              <hr className="my-2 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
-            {/* Form */}
-            <div className="pt-4">
-              <Form method="post" className="space-y-6" noValidate>
-                {/* Password */}
-                <div>
-                  <label
-                    htmlFor="currentPassword"
-                    className="block text-base font-bold tracking-normal"
-                  >
-                    Current password
-                  </label>
+              {/* Form */}
+              <div className="pt-4">
+                <Form method="post" className="space-y-6" noValidate>
+                  {/* Password */}
+                  <div>
+                    <label
+                      htmlFor="currentPassword"
+                      className="block text-base font-bold tracking-normal"
+                    >
+                      Current password
+                    </label>
 
-                  <div className="mt-1">
-                    <input
-                      ref={currPassRef}
-                      id="currentPassword"
-                      name="currentPassword"
-                      type="password"
-                      placeholder="Current Password"
-                      // defaultValue={123}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                    />
-                    {actionData?.errors?.currPass && (
-                      <div className="pt-1 text-[#FF0000]" id="currPass-error">
-                        {actionData.errors.currPass}
-                      </div>
-                    )}
+                    <div className="mt-1">
+                      <input
+                        ref={currPassRef}
+                        id="currentPassword"
+                        name="currentPassword"
+                        type="password"
+                        placeholder="Current Password"
+                        // defaultValue={123}
+                        className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
+                      />
+                      {actionData?.errors?.currPass && (
+                        <div
+                          className="pt-1 text-[#FF0000]"
+                          id="currPass-error"
+                        >
+                          {actionData.errors.currPass}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label
-                    htmlFor="newPassword"
-                    className="txt-base block font-bold tracking-normal"
-                  >
-                    New password
-                  </label>
+                  <div>
+                    <label
+                      htmlFor="newPassword"
+                      className="txt-base block font-bold tracking-normal"
+                    >
+                      New password
+                    </label>
 
-                  <div className="mt-1">
-                    <input
-                      ref={newPassRef}
-                      id="newPassword"
-                      name="newPassword"
-                      type="password"
-                      placeholder="New Password"
-                      // defaultValue={123}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                    />
-                    {actionData?.errors?.newPass && (
-                      <div className="pt-1 text-[#FF0000]" id="newPass-error">
-                        {actionData.errors.newPass}
-                      </div>
-                    )}
+                    <div className="mt-1">
+                      <input
+                        ref={newPassRef}
+                        id="newPassword"
+                        name="newPassword"
+                        type="password"
+                        placeholder="New Password"
+                        // defaultValue={123}
+                        className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
+                      />
+                      {actionData?.errors?.newPass && (
+                        <div className="pt-1 text-[#FF0000]" id="newPass-error">
+                          {actionData.errors.newPass}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label
-                    htmlFor="newPasswordConfirm"
-                    className="txt-base block font-bold tracking-normal"
-                  >
-                    Confirm new password
-                  </label>
+                  <div>
+                    <label
+                      htmlFor="newPasswordConfirm"
+                      className="txt-base block font-bold tracking-normal"
+                    >
+                      Confirm new password
+                    </label>
 
-                  <div className="mt-1">
-                    <input
-                      ref={confirmPassRef}
-                      id="newPasswordConfirm"
-                      name="newPasswordConfirm"
-                      type="password"
-                      placeholder="New Password Confirm"
-                      // defaultValue={123}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                    />
-                    {actionData?.errors?.confirmPass && (
-                      <div
-                        className="pt-1 text-[#FF0000]"
-                        id="confirmPass-error"
-                      >
-                        {actionData.errors.confirmPass}
-                      </div>
-                    )}
+                    <div className="mt-1">
+                      <input
+                        ref={confirmPassRef}
+                        id="newPasswordConfirm"
+                        name="newPasswordConfirm"
+                        type="password"
+                        placeholder="New Password Confirm"
+                        // defaultValue={123}
+                        className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
+                      />
+                      {actionData?.errors?.confirmPass && (
+                        <div
+                          className="pt-1 text-[#FF0000]"
+                          id="confirmPass-error"
+                        >
+                          {actionData.errors.confirmPass}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* divider */}
-                <hr className="my-2 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+                  {/* divider */}
+                  <hr className="my-2 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
-                {/* Cancel and Update buttons */}
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    name="intent"
-                    value="cancel"
-                    disabled={false}
-                    className="rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
-                  >
-                    Cancel
-                  </button>
+                  {/* Cancel and Update buttons */}
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      name="intent"
+                      value="cancel"
+                      disabled={false}
+                      className="rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
+                    >
+                      Cancel
+                    </button>
 
-                  <button
-                    type="submit"
-                    name="intent"
-                    value="update"
-                    disabled={false}
-                    className="ml-3 rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc]  disabled:text-[#8a8989]"
-                  >
-                    Update
-                  </button>
-                </div>
+                    <button
+                      type="submit"
+                      name="intent"
+                      value="update"
+                      disabled={false}
+                      className="ml-3 rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc]  disabled:text-[#8a8989]"
+                    >
+                      Update
+                    </button>
+                  </div>
 
-                {/* ui.shadcn.com components */}
-                {/* <div className="grid w-full gap-2">
+                  {/* ui.shadcn.com components */}
+                  {/* <div className="grid w-full gap-2">
                   <Label
                     htmlFor="newPasswordConfirm"
                     className="block text-base font-bold tracking-normal"
@@ -376,7 +385,8 @@ export default function Changepassword() {
                     className="rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
                   />
                 </div> */}
-              </Form>
+                </Form>
+              </div>
             </div>
           </div>
         </div>

@@ -152,27 +152,19 @@ export default function Menu() {
               )}
 
               <Link to="/account/settings">
-                <DropdownMenuItem>
+                <DropdownMenuItem className=" cursor-pointer">
                   <Cog6ToothIcon className="mr-2 h-5 w-5" />
                   <span>{t("settings_label")}</span>
                 </DropdownMenuItem>
               </Link>
 
               <Link to="/account/mydevices">
-                <DropdownMenuItem>
+                <DropdownMenuItem className=" cursor-pointer">
                   <CpuChipIcon className="mr-2 h-5 w-5" />
                   <span>{t("my_devices_label")}</span>
                 </DropdownMenuItem>
               </Link>
 
-              <DropdownMenuItem>
-                <Cog6ToothIcon className="mr-2 h-5 w-5" />
-                <Link to="/settings/account">{t("settings_label")}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CpuChipIcon className="mr-2 h-5 w-5" />
-                <Link to="/profile/me">{t("my_devices_label")}</Link>
-              </DropdownMenuItem>
               <DropdownMenuItem>
                 <PlusCircleIcon className="mr-2 h-5 w-5" />
                 <span>{t("add_device_label")}</span>
