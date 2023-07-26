@@ -1,4 +1,4 @@
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { PlusCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "~/components/ui/button";
 interface SelectSensorsProps {
   data: any;
 }
@@ -28,6 +29,12 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
     } else {
       newSensorObject[key] = [sensorArray];
     }
+    setAddedSensors(newSensorObject);
+  }
+
+  function deleteSensorItem(index: any, key: string) {
+    const newSensorObject = { ...addedSensors };
+    delete newSensorObject["p-" + key][index];
     setAddedSensors(newSensorObject);
   }
 
@@ -64,16 +71,18 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                           className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
                         >
                           <CardContent className="flex justify-center pt-2">
-                            <AspectRatio ratio={3 / 4}>
-                              {/* <img
-                                          src="/images/"
-                                          alt="senseBox:edu"
-                                          className="rounded-md object-cover"
-                                        /> */}
+                            <AspectRatio ratio={4 / 3}>
+                              <img
+                                src={`${ENV.SENSORWIKI_API_URL}images/upload/${sensor.sensor.image}`}
+                                alt={sensor.sensor.slug}
+                                className="rounded-md object-cover"
+                              />
                             </AspectRatio>
                           </CardContent>
                           <CardFooter className="flex justify-center">
-                            <CardTitle>{sensor.sensor.slug}</CardTitle>
+                            <CardTitle className="text-xl">
+                              {sensor.sensor.slug}
+                            </CardTitle>
                             <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
                           </CardFooter>
                         </Card>
@@ -83,19 +92,27 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                 </div>
                 <pre>{JSON.stringify(data.json, null, 2)}</pre>
               </div>
-              <div>
-                <h3>Your added Senors</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[100px]">Sensor</TableHead>
-                      <TableHead>Phenomenon</TableHead>
-                      <TableHead>Unit</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {addedSensors["p-" + key] &&
-                      addedSensors["p-" + key].map(
+              {addedSensors["p-" + key] && (
+                <div className="py-4">
+                  <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
+                    Your added{" "}
+                    {sensorWikiLabel(
+                      data.phenomena.find((pheno: any) => pheno.id == key).label
+                        .item
+                    )}{" "}
+                    sensors
+                  </h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[100px]">Sensor</TableHead>
+                        <TableHead>Phenomenon</TableHead>
+                        <TableHead>Unit</TableHead>
+                        <TableHead>Delete</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {addedSensors["p-" + key].map(
                         (sensorItem: any, index: number) => {
                           return (
                             <TableRow key={sensorItem.id}>
@@ -144,13 +161,21 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                     })}
                                 </select>{" "}
                               </TableCell>
+                              <TableCell>
+                                <XCircleIcon
+                                  onClick={() => deleteSensorItem(index, key)}
+                                  title="Delete Sensor"
+                                  className="h-10 w-10 cursor-pointer text-red-500"
+                                ></XCircleIcon>
+                              </TableCell>
                             </TableRow>
                           );
                         }
                       )}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </div>
           );
         })}

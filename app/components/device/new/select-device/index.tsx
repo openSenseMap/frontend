@@ -33,7 +33,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
               className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
             >
               <CardContent className="flex justify-center pt-2">
-                <AspectRatio ratio={3 / 4}>
+                <AspectRatio ratio={4 / 3}>
                   <img
                     src={`${ENV.SENSORWIKI_API_URL}images/upload/${device.image}`}
                     alt={device.slug}
@@ -58,7 +58,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
         >
           <CardContent className="flex justify-center pt-2">
-            <AspectRatio ratio={3 / 4}>
+            <AspectRatio ratio={4 / 3}>
               {/* <img
                         src="/images/"
                         alt="own:device"
