@@ -12,3 +12,16 @@ export const hasObjPropMatchWithPrefixKey = (
   }
   return false;
 };
+
+export const exposureHelper = (exposure: string) => {
+  switch (exposure) {
+    case "mobile":
+      return "MOBILE";
+    case "outdoor":
+      return "OUTDOOR";
+    case "indoor":
+      return "INDOOR";
+    default:
+      return "UNKNOWN";
+  }
+};

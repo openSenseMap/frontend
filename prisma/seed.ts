@@ -134,7 +134,6 @@ async function seed() {
   await jsonData.forEach((item: any) => {
     k++;
     item.sensors.forEach((sensor: any) => {
-      // console.log(sensor)
       if (sensor.lastMeasurement && sensor._id) {
         updateSensor(sensor._id, sensor.lastMeasurement);
       }

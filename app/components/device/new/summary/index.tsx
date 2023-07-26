@@ -74,7 +74,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
                   <TableCell className="font-medium">{sensor[0]}</TableCell>
                   <TableCell className="font-medium">
                     {sensorWikiLabel(
-                      phenomena.find((pheno: any) => pheno.id == sensor[1])
+                      phenomena.find((pheno: any) => pheno.slug == sensor[1])
                         .label.item
                     )}
                   </TableCell>

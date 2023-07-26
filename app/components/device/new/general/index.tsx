@@ -1,4 +1,3 @@
-
 export interface GeneralProps {
   data: any;
 }
@@ -56,8 +55,8 @@ export default function General({ data }: GeneralProps) {
                   <input
                     id="exposure-indoor"
                     name="exposure"
-                    value="indoor"
-                    defaultChecked={data.exposure === "indoor"}
+                    value="INDOOR"
+                    defaultChecked={data.exposure === "INDOOR"}
                     type="radio"
                     required
                     className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
@@ -73,8 +72,8 @@ export default function General({ data }: GeneralProps) {
                   <input
                     id="exposure-outdoor"
                     name="exposure"
-                    value="outdoor"
-                    defaultChecked={data.exposure === "outdoor"}
+                    value="OUTDOOR"
+                    defaultChecked={data.exposure === "OUTDOOR"}
                     type="radio"
                     required
                     className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
@@ -90,8 +89,8 @@ export default function General({ data }: GeneralProps) {
                   <input
                     id="exposure-mobile"
                     name="exposure"
-                    value="mobile"
-                    defaultChecked={data.exposure === "mobile"}
+                    value="MOBILE"
+                    defaultChecked={data.exposure === "MOBILE"}
                     type="radio"
                     required
                     className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"

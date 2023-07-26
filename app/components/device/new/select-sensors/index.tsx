@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "~/components/ui/button";
+
 interface SelectSensorsProps {
   data: any;
 }
@@ -127,7 +127,11 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                               <input
                                 type="checkbox"
                                 name={`sensors[p-${key.toString()}][${index}]`}
-                                value={key}
+                                value={
+                                  data.phenomena.find(
+                                    (pheno: any) => pheno.id == key
+                                  ).slug
+                                }
                                 checked={true}
                                 readOnly
                                 className="hidden"

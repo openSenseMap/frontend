@@ -5,6 +5,7 @@ import { point } from "@turf/helpers";
 // import jsonstringify from "stringify-stream";
 // import streamify from "stream-array";
 import type { Point } from "geojson";
+import { exposureHelper } from "~/lib/helpers";
 
 // TODO not sure why the replacer is not working!
 // const geoJsonStringifyReplacer = function geoJsonStringifyReplacer(
@@ -131,12 +132,13 @@ export async function getMeasurements(
   return jsonData;
 }
 
-export async function createDeviceInOsemAPIandPostgres(deviceData: any) {
-  console.log("creating device");
-
+export async function createDevice(
+  deviceData: any,
+  userId: string | undefined
+) {
   // hack to register to OSEM API
   const authData = await fetch(
-    `${process.env.OSEM_API_TESTING}/users/sign-in`,
+    `${process.env.OSEM_API_TESTING_URL}/users/sign-in`,
     {
       method: "POST",
       headers: {
@@ -144,71 +146,106 @@ export async function createDeviceInOsemAPIandPostgres(deviceData: any) {
       },
       body: JSON.stringify({
         email: "umut@sensebox.de",
-        password: "testtest",
+        password: `${process.env.TESTING_PW}`,
       }),
     }
   ).then((res) => res.json());
+
+  let sensorArray: any = [];
+  Object.values(deviceData.sensors).forEach((sensorsOfPhenomenon: any) => {
+    sensorsOfPhenomenon.forEach((sensor: any) => {
+      sensorArray.push({
+        title: sensor[1],
+        sensorType: sensor[0],
+        unit: sensor[2],
+      });
+    });
+  });
   const registeredDevice = await createDeviceOsemAPI(
-    deviceData,
+    { ...deviceData, sensors: sensorArray },
     authData.token
   );
-
-  const newDevicePostgres = await createDevicePostgres(registeredDevice);
+  const newDevicePostgres = await createDevicePostgres(
+    registeredDevice.data,
+    userId
+  );
   return newDevicePostgres;
 }
 
-export async function createDevicePostgres(deviceData: any) {
+export async function createDevicePostgres(
+  deviceData: any,
+  userId: string | undefined
+) {
   const newDevice = await prisma.device.create({
     data: {
       id: deviceData._id,
-      userId: deviceData.user,
+      userId: userId ?? "unknown",
       name: deviceData.name,
-      exposure: deviceData.exposure,
-      useAuth: true,
-      latitude: Number(deviceData.latitude),
-      longitude: Number(deviceData.longitude),
+      exposure: exposureHelper(deviceData.exposure),
+      useAuth: deviceData.useAuth,
+      latitude: Number(deviceData.currentLocation.coordinates[1]),
+      longitude: Number(deviceData.currentLocation.coordinates[0]),
     },
   });
+
+  for await (const sensor of deviceData.sensors) {
+    await prisma.sensor.create({
+      data: {
+        id: sensor._id,
+        deviceId: newDevice.id,
+        title: sensor.title,
+        sensorType: sensor.sensorType,
+        unit: sensor.unit,
+        sensorWikiType: sensor.title,
+        sensorWikiUnit: sensor.unit,
+        sensorWikiPhenomenon: sensor.sensorType,
+      },
+    });
+  }
+
   return newDevice;
 }
 
 export async function createDeviceOsemAPI(deviceData: any, token: string) {
-  const registerDevice = await fetch(`${process.env.OSEM_API_TESTING}/bxoes`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: deviceData.name,
-      grouptag: deviceData.groupId,
-      exposure: deviceData.exposure,
-      model: deviceData.type,
-      location: {
-        lat: deviceData.lat,
-        lng: deviceData.lng,
-        ...(deviceData.height && { height: deviceData.height }),
+  const registerDevice = await fetch(
+    `${process.env.OSEM_API_TESTING_URL}/boxes`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-      ...(deviceData.ttnEnabled && {
-        ttn: {
-          dev_id: deviceData.ttnDeviceId,
-          app_id: deviceData.ttnAppId,
-          profile: "???",
+      body: JSON.stringify({
+        name: deviceData.name,
+        grouptag: deviceData.groupId,
+        exposure: deviceData.exposure.toLowerCase(),
+        // model: deviceData.type,
+        sensors: deviceData.sensors,
+        location: {
+          lat: deviceData.latitude,
+          lng: deviceData.longitude,
+          ...(deviceData.height && { height: deviceData.height }),
         },
+        ...(deviceData.ttnEnabled && {
+          ttn: {
+            dev_id: deviceData.ttnDeviceId,
+            app_id: deviceData.ttnAppId,
+            profile: "???",
+          },
+        }),
+        ...(deviceData.mqttEnabled && {
+          mqtt: {
+            enabled: true,
+            url: deviceData.mqttUrl,
+            topic: deviceData.mqttTopic,
+            messageFormat: "json",
+            decodeOptions: deviceData.mqttDecodeOptions,
+            connectionOptions: deviceData.mqttConnectOptions,
+          },
+        }),
       }),
-      ...(deviceData.mqttEnabled && {
-        mqtt: {
-          enabled: true,
-          url: deviceData.mqttUrl,
-          topic: deviceData.mqttTopic,
-          messageFormat: "json",
-          decodeOptions: deviceData.mqttDecodeOptions,
-          connectionOptions: deviceData.mqttConnectOptions,
-        },
-      }),
-    }),
-  }).then((res) => res.json());
-  console.log("🚀 registered Device:", registerDevice);
+    }
+  ).then((res) => res.json());
 
   return registerDevice;
 }

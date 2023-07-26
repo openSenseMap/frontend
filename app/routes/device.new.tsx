@@ -5,7 +5,7 @@ import {
   type LinksFunction,
 } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation } from "@remix-run/react";
-import { getUserSession, sessionStorage } from "~/session.server";
+import { getUser, getUserSession, sessionStorage } from "~/session.server";
 import qs from "qs";
 import { useSpinDelay } from "spin-delay";
 import clsx from "clsx";
@@ -21,6 +21,8 @@ import SelectSensors from "~/components/device/new/select-sensors";
 import Advanced from "~/components/device/new/advanced";
 import SelectLocation from "~/components/device/new/select-location";
 import Summary from "~/components/device/new/summary";
+import { createDevice } from "~/models/device.server";
+import { getUserId } from "~/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -102,10 +104,10 @@ export const loader = async ({ request }: LoaderArgs) => {
 
 export const action = async ({ request }: LoaderArgs) => {
   const text = await request.text();
+  const userId = await getUserId(request);
+
   // use qs.parse to support multi-value values (by email checkbox list)
   const { page, action, ...data } = qs.parse(text);
-
-  // console.log({ page, action, data });
 
   if (action === "next" || action === "previous") {
     const session = await getUserSession(request);
@@ -128,12 +130,13 @@ export const action = async ({ request }: LoaderArgs) => {
       ...session.get(`form-data-page-2`),
       ...session.get(`form-data-page-3`),
       ...session.get(`form-data-page-4`),
+      ...session.get(`form-data-page-5`),
     };
 
-    console.log(finalData);
+    const newDevice = await createDevice(finalData, userId);
 
     session.flash("global_message", "You successfully added your device!");
-    return redirect("/explore", {
+    return redirect(`/explore/${newDevice.id}`, {
       headers: {
         "set-cookie": await sessionStorage.commitSession(session),
       },
