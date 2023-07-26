@@ -49,7 +49,7 @@ export default function EditBox() {
 
   return (
     <div>
-      <div className="pointer-events-none fixed z-10 mb-10 flex h-14 w-full p-2">
+      <div className="pointer-events-none z-10 mb-10 flex h-14 w-full p-2">
         <Home />
       </div>
 
@@ -120,7 +120,7 @@ export default function EditBox() {
                   }
                   onClick={() => setCurrentView("general")}
                 >
-                  <TableCellsIcon className=" mr-2 inline h-5 w-5" />
+                  <TableCellsIcon className=" mr-2 inline h-5 w-5 align-sub" />
                   General
                 </li>
               </Link>
@@ -134,7 +134,7 @@ export default function EditBox() {
                   }
                   onClick={() => setCurrentView("sensors")}
                 >
-                  <TableCellsIcon className=" mr-2 inline h-5 w-5" />
+                  <TableCellsIcon className=" mr-2 inline h-5 w-5 align-sub" />
                   Sensors
                 </li>
               </Link>

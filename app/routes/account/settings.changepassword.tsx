@@ -184,7 +184,7 @@ export default function Changepassword() {
 
   return (
     <div>
-      <div className="pointer-events-none fixed z-10 mb-10 flex h-14 w-full p-2">
+      <div className="pointer-events-none z-10 mb-10 flex h-14 w-full p-2">
         <Home />
       </div>
 

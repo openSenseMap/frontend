@@ -34,11 +34,11 @@ export default function DataUpload() {
 
   return (
     <div>
-      <div className="pointer-events-none fixed z-10 mb-10 flex h-14 w-full p-2">
+      <div className="pointer-events-none z-10 mb-10 flex h-14 w-full p-2">
         <Home />
       </div>
 
-      <div className="mx-8 mr-20 mt-20">
+      <div className="mx-8 mr-20 mt-14">
         <div className="grid grid-cols-8 gap-10 font-helvetica text-[15px] tracking-wide max-md:grid-cols-2 lg:grid-rows-1">
           <nav className="col-span-2 md:col-span-2">
             <ul>

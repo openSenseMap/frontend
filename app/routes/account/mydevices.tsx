@@ -8,8 +8,8 @@ import { getUserId } from "~/session.server";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
 
-import { DataTable } from "~/components/mydevices/data-table";
-import { columns } from "~/components/mydevices/columns";
+import { DataTable } from "~/components/mydevices/dt/data-table";
+import { columns } from "~/components/mydevices/dt/columns";
 import Home from "~/components/header/home";
 
 export async function loader({ request }: LoaderArgs) {
@@ -67,11 +67,11 @@ export default function MyDevices() {
 
   return (
     <div>
-      <div className="pointer-events-none fixed z-10 mb-10 flex h-14 w-full p-2">
+      <div className="pointer-events-none z-10 mb-10 flex h-14 w-full p-2">
         <Home />
       </div>
 
-      <div className="mx-8 mt-20">
+      <div className="mx-8 mt-14">
         <div className="grid grid-flow-col gap-8 font-helvetica tracking-wide max-md:grid-rows-2  lg:grid-rows-1">
           {/* First row - left column, create new sensebox   */}
           <div className=" col-span-6 mb-7">
