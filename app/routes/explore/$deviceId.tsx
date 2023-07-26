@@ -5,7 +5,7 @@ import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
-import { getDevice, getMeasurements } from "~/models/device.server";
+import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 
 export async function loader({ params, request }: LoaderArgs) {
