@@ -72,15 +72,19 @@ export async function loader({ params, request }: LoaderArgs) {
   };
 
   const countOptions = options.where;
+  let sort = "";
 
   if (query.get("sortBy")) {
     const sortBy = query.get("sortBy") || "updatedAt";
+    if (sortBy === "priority") {
+      sort = "priority";
+    }
     options.orderBy.push({
       [sortBy]: "desc",
     });
   }
 
-  const campaignsOnPage = await getCampaigns(options, userId);
+  const campaignsOnPage = await getCampaigns(options, userId, sort);
   const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
   if (phenos.code === "UnprocessableEntity") {
@@ -135,7 +139,7 @@ export default function Campaigns() {
   // const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [priority, setpriority] = useState("");
-  const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([]);
+  // const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([]);
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
   const [zoom, setZoom] = useState(1);
@@ -555,8 +559,8 @@ export default function Campaigns() {
           <div
             className={`${
               showMap
-                ? "mx-auto mt-10 flex flex-col gap-4"
-                : "mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"
+                ? "mx-auto mt-10 flex w-full flex-col gap-4"
+                : "mt-10 grid w-full gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"
             }`}
           >
             <span className="absolute left-0 top-0 ">
@@ -571,7 +575,7 @@ export default function Campaigns() {
               <Pagination
                 totalPages={totalPages}
                 pageParam="page"
-                className="mt-8 w-full"
+                className="mt-8"
               />
             )}
           </div>
@@ -601,7 +605,8 @@ export default function Campaigns() {
                 >
                   <PointLayer
                     //@ts-ignore
-                    setDisplayedCampaigns={setDisplayedCampaigns}
+                    selectedCampaign={selectedCampaign}
+                    // setDisplayedCampaigns={setDisplayedCampaigns}
                     setSelectedCampaign={setSelectedCampaign}
                     setSelectedMarker={setSelectedMarker}
                     campaigns={allCampaigns}

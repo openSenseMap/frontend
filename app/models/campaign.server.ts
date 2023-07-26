@@ -29,8 +29,19 @@ export async function getOwnCampaigns(userId: string) {
   });
 }
 
-export async function getCampaigns(options = {}, userId?: string) {
-  return await prisma.campaign.findMany({
+const priorityOrder = {
+  URGENT: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+};
+
+export async function getCampaigns(
+  options = {},
+  userId?: string,
+  sortBy?: string
+) {
+  const campaigns = await prisma.campaign.findMany({
     include: {
       participants: true,
       bookmarkedByUsers: {
@@ -49,6 +60,19 @@ export async function getCampaigns(options = {}, userId?: string) {
     // ],
     ...options,
   });
+  if (sortBy === "priority") {
+    return campaigns
+      .slice()
+      .sort((campaignA: Campaign, campaignB: Campaign) => {
+        const priorityA =
+          priorityOrder[campaignA.priority as keyof typeof priorityOrder];
+        const priorityB =
+          priorityOrder[campaignB.priority as keyof typeof priorityOrder];
+
+        return priorityA - priorityB;
+      });
+  }
+  return campaigns;
 }
 
 export async function getCampaignCount() {
