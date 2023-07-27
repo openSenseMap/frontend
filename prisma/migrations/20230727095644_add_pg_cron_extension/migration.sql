@@ -13,5 +13,28 @@ AS $$
 	END;
 $$;
 
--- Call stored procedure every 5 minutes
+-- Call stored procedure to update sensor status every 5 minutes
 SELECT cron.schedule('sensor-update-status', '*/5 * * * *', 'CALL update_sensor_status()');
+
+-- Stored procedure to set Device status
+CREATE OR REPLACE PROCEDURE update_device_status()
+LANGUAGE SQL
+AS $$
+	UPDATE "Device" SET status='OLD'
+	WHERE EXISTS (
+		SELECT * FROM "Sensor" WHERE "Device".id="Sensor"."deviceId" AND status='OLD'
+	);
+
+	UPDATE "Device" SET status='INACTIVE'
+	WHERE EXISTS (
+		SELECT * FROM "Sensor" WHERE "Device".id="Sensor"."deviceId" AND status='INACTIVE'
+	);
+
+	UPDATE "Device" SET status='ACTIVE'
+	WHERE EXISTS (
+		SELECT * FROM "Sensor" WHERE "Device".id="Sensor"."deviceId" AND status='ACTIVE'
+	);
+$$;
+
+-- Call stored procedure to update device status every 7 minutes
+SELECT cron.schedule('device-update-status', '*/7 * * * *', 'CALL update_device_status()');
