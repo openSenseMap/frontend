@@ -58,6 +58,7 @@ async function seed() {
   await prisma.user.delete({ where: { email } }).catch(() => {
     // no worries if it doesn't exist yet
   });
+  await prisma.measurement.deleteMany({}).catch(() => {});
 
   //* create intial user
   const user = await prisma.user.create({
@@ -107,6 +108,27 @@ async function seed() {
     printProgress(`ℹ️  Imported ${j} of ${sensors.length} sensors.`);
   }
   process.stdout.write("\n");
+
+  try {
+    const measurements = await csvtojson().fromFile("prisma/measurements.csv");
+    let k = 0;
+    for await (const measurement of measurements) {
+      k++;
+      await prisma.measurement.create({
+        data: {
+          time: new Date(measurement.time),
+          value: Number(measurement.value),
+          sensorId: measurement.sensorId,
+        },
+      });
+      printProgress(
+        `ℹ️  Imported ${k} of ${measurements.length} measurements.`
+      );
+    }
+    process.stdout.write("\n");
+  } catch (error) {
+    console.log("ℹ️  No measurements found for import!");
+  }
 
   console.log(`Database has been seeded. 🌱`);
 }

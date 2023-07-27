@@ -1,7 +1,7 @@
 import { prisma } from "~/db.server";
 
 export function getMeasurement(sensorId: string, aggregation: string) {
-  if (aggregation === "15min") {
+  if (aggregation === "15m") {
     return prisma.measurements_15min.findMany({
       where: {
         sensorId: sensorId,
@@ -22,7 +22,7 @@ export function getMeasurement(sensorId: string, aggregation: string) {
   }
 
   return prisma.measurement.findMany({
-    take: 10000,
+    take: 5000,
     where: {
       sensorId: sensorId,
     },
