@@ -3,6 +3,8 @@ import {
   useMatches,
   useNavigate,
   useNavigation,
+  useSearchParams,
+  useSubmit,
 } from "@remix-run/react";
 import {
   Chart as ChartJS,
@@ -12,15 +14,15 @@ import {
   LinearScale,
   PointElement,
   //Legend,
+  Tooltip as ChartTooltip,
 } from "chart.js";
-import { Tooltip as ChartTooltip } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de } from "date-fns/locale";
 import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore/$deviceId";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
 import { Download, Minus, X } from "lucide-react";
@@ -28,6 +30,15 @@ import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import { getGraphColor } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -47,6 +58,10 @@ export default function Graph(props: any) {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
 
+  // form submission handler
+  const submit = useSubmit();
+  let [searchParams] = useSearchParams();
+
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
 
@@ -58,106 +73,110 @@ export default function Graph(props: any) {
   };
 
   // Formatting the data for the Line component
-  const lineData = {
-    labels: loaderData.selectedSensors[0].data.map(
-      (measurement: LastMeasurementProps) => measurement.createdAt
-    ),
-    datasets:
-      loaderData.selectedSensors.length === 2
-        ? [
-            {
-              label: loaderData.selectedSensors[0].title,
-              data: loaderData.selectedSensors[0].data,
-              pointRadius: 0,
-              // I think we have to define the color in the loader already? - at least before this initialization
-              borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-              backgroundColor: getGraphColor(
-                loaderData.selectedSensors[0].unit
-              ),
-              yAxisID: "y",
-            },
-            {
-              label: loaderData.selectedSensors[1].title,
-              data: loaderData.selectedSensors[1].data,
-              pointRadius: 0,
-              borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
-              backgroundColor: getGraphColor(
-                loaderData.selectedSensors[1].unit
-              ),
-              yAxisID: "y1",
-            },
-          ]
-        : [
-            {
-              label: loaderData.selectedSensors[0].title,
-              data: loaderData.selectedSensors[0].data,
-              pointRadius: 0,
-              borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-              backgroundColor: getGraphColor(
-                loaderData.selectedSensors[0].unit
-              ),
-              yAxisID: "y",
-            },
-          ],
-  };
+  const lineData = useMemo(() => {
+    return {
+      labels: loaderData.selectedSensors[0].data.map(
+        (measurement: LastMeasurementProps) => measurement.time
+      ),
+      datasets:
+        loaderData.selectedSensors.length === 2
+          ? [
+              {
+                label: loaderData.selectedSensors[0].title,
+                data: loaderData.selectedSensors[0].data,
+                pointRadius: 0,
+                // I think we have to define the color in the loader already? - at least before this initialization
+                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
+                backgroundColor: getGraphColor(
+                  loaderData.selectedSensors[0].unit
+                ),
+                yAxisID: "y",
+              },
+              {
+                label: loaderData.selectedSensors[1].title,
+                data: loaderData.selectedSensors[1].data,
+                pointRadius: 0,
+                borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
+                backgroundColor: getGraphColor(
+                  loaderData.selectedSensors[1].unit
+                ),
+                yAxisID: "y1",
+              },
+            ]
+          : [
+              {
+                label: loaderData.selectedSensors[0].title,
+                data: loaderData.selectedSensors[0].data,
+                pointRadius: 0,
+                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
+                backgroundColor: getGraphColor(
+                  loaderData.selectedSensors[0].unit
+                ),
+                yAxisID: "y",
+              },
+            ],
+    };
+  }, [loaderData.selectedSensors]);
 
-  const options: ChartOptions<"line"> = {
-    maintainAspectRatio: false,
-    interaction: {
-      mode: "index",
-      intersect: false,
-    },
-    parsing: {
-      xAxisKey: "createdAt",
-      yAxisKey: "value",
-    },
-    scales: {
-      x: {
-        type: "time",
-        time: {
-          unit: "hour",
-        },
-        adapters: {
-          date: {
-            // TODO: get preffered langunage from user object
-            locale: de,
+  const options: ChartOptions<"line"> = useMemo(() => {
+    return {
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
+      parsing: {
+        xAxisKey: "time",
+        yAxisKey: "value",
+      },
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "hour",
+          },
+          adapters: {
+            date: {
+              // TODO: get preffered langunage from user object
+              locale: de,
+            },
+          },
+          ticks: {
+            maxTicksLimit: 5,
           },
         },
-        ticks: {
-          maxTicksLimit: 5,
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text:
-            loaderData.selectedSensors[0].title +
-            " in " +
-            loaderData.selectedSensors[0].unit,
-        },
-        type: "linear",
-        display: true,
-        position: "left",
-      },
-      y1: {
-        title: {
-          display: true,
-          text: loaderData.selectedSensors[1]
-            ? loaderData.selectedSensors[1].title +
+        y: {
+          title: {
+            display: true,
+            text:
+              loaderData.selectedSensors[0].title +
               " in " +
-              loaderData.selectedSensors[1].unit
-            : "", //data.sensors[1].unit
+              loaderData.selectedSensors[0].unit,
+          },
+          type: "linear",
+          display: true,
+          position: "left",
         },
-        type: "linear",
-        display: "auto",
-        position: "right",
-        // grid line settings
-        grid: {
-          drawOnChartArea: false, // only want the grid lines for one axis to show up
+        y1: {
+          title: {
+            display: true,
+            text: loaderData.selectedSensors[1]
+              ? loaderData.selectedSensors[1].title +
+                " in " +
+                loaderData.selectedSensors[1].unit
+              : "", //data.sensors[1].unit
+          },
+          type: "linear",
+          display: "auto",
+          position: "right",
+          // grid line settings
+          grid: {
+            drawOnChartArea: false, // only want the grid lines for one axis to show up
+          },
         },
       },
-    },
-  };
+    };
+  }, [loaderData.selectedSensors]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const lineChartBackground = {
@@ -211,7 +230,28 @@ export default function Graph(props: any) {
               className="flex cursor-move items-center justify-between px-2 pt-2"
               id="graphTop"
             >
-              <DatePickerGraph />
+              <div className="flex gap-2">
+                <DatePickerGraph />
+                <Select
+                  value={loaderData.aggregation}
+                  onValueChange={(value) => {
+                    searchParams.set("aggregation", value);
+                    submit(searchParams);
+                  }}
+                >
+                  <SelectTrigger className="w-[210px]">
+                    <SelectValue placeholder="Select a time aggregate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Time aggregate</SelectLabel>
+                      <SelectItem value="raw">Raw</SelectItem>
+                      <SelectItem value="15m">15 minutes</SelectItem>
+                      <SelectItem value="1d">1 day</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-center justify-end gap-4">
                 <button
                   onClick={handleDownloadClick}

@@ -159,3 +159,21 @@ model Measurement {
 
   @@unique([sensorId, time])
 }
+
+// A view on a continuous aggregation
+view measurements_15min {
+  sensorId String
+  time      DateTime
+  value   Float?
+
+  @@unique([sensorId, time])
+}
+
+// Daily CAGG
+view measurements_1day {
+  sensorId String
+  time      DateTime
+  value   Float?
+
+  @@unique([sensorId, time])
+}

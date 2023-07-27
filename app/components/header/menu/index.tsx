@@ -4,25 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
 import {
-  Bars3Icon,
-  // UserCircleIcon,
-  CpuChipIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon,
-  ArrowLeftOnRectangleIcon,
-  PlusCircleIcon,
-  GlobeAltIcon,
-  PuzzlePieceIcon,
-  QuestionMarkCircleIcon,
-  EnvelopeIcon,
-  IdentificationIcon,
-  LockClosedIcon,
-  CurrencyEuroIcon,
-  UserGroupIcon,
-  UserIcon,
-  ArrowTopRightOnSquareIcon,
-} from "@heroicons/react/24/outline";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -34,7 +15,24 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
-import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
+import {
+  Globe,
+  LogIn,
+  LogOut,
+  PlusCircle,
+  Puzzle,
+  Menu as MenuIcon,
+  Cpu,
+  Settings,
+  HelpCircle,
+  Mail,
+  Fingerprint,
+  FileLock2,
+  Coins,
+  Users2,
+  User2,
+  ExternalLink,
+} from "lucide-react";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -103,9 +101,9 @@ export default function Menu() {
             className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
           >
             {data.user === null ? (
-              <Bars3Icon className="mx-auto h-6 w-6" />
+              <MenuIcon className="mx-auto h-6 w-6" />
             ) : (
-              <UserIcon className="mx-auto h-6 w-6" />
+              <User2 className="mx-auto h-6 w-6" />
             )}
           </button>
         </div>
@@ -146,7 +144,7 @@ export default function Menu() {
               )}
               {data.profile && (
                 <DropdownMenuItem>
-                  <UserIcon className="mr-2 h-5 w-5" />
+                  <User2 className="mr-2 h-6 w-6" />
                   <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
@@ -166,7 +164,16 @@ export default function Menu() {
               </Link>
 
               <DropdownMenuItem>
-                <PlusCircleIcon className="mr-2 h-5 w-5" />
+                <Settings className="mr-2 h-5 w-5" />
+                <Link to="/settings/account">{t("settings_label")}</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Cpu className="mr-2 h-5 w-5" />
+                <Link to="/profile/me">{t("my_devices_label")}</Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem>
+                <PlusCircle className="mr-2 h-5 w-5" />
                 <span>{t("add_device_label")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -175,46 +182,46 @@ export default function Menu() {
           <DropdownMenuGroup>
             <Link to="https://docs.sensebox.de/" target="_blank">
               <DropdownMenuItem>
-                <PuzzlePieceIcon className="mr-2 h-5 w-5" />
+                <Puzzle className="mr-2 h-5 w-5" />
                 <span>{t("tutorials_label")}</span>
-                <ArrowTopRightOnSquareIcon className="ml-auto h-4 w-4 text-gray-300" />
+                <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
               </DropdownMenuItem>
             </Link>
             <Link to="https://docs.opensensemap.org/" target="_blank">
               <DropdownMenuItem>
-                <GlobeAltIcon className="mr-2 h-5 w-5" />
+                <Globe className="mr-2 h-5 w-5" />
                 <span>{t("api_docs_label")}</span>
-                <ArrowTopRightOnSquareIcon className="ml-auto h-4 w-4 text-gray-300" />
+                <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
               </DropdownMenuItem>
             </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <QuestionMarkCircleIcon className="mr-2 h-5 w-5" />
+              <HelpCircle className="mr-2 h-5 w-5" />
               <span>{t("faq_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <EnvelopeIcon className="mr-2 h-5 w-5" />
+              <Mail className="mr-2 h-5 w-5" />
               <span>{t("contact_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <IdentificationIcon className="mr-2 h-5 w-5" />
+              <Fingerprint className="mr-2 h-5 w-5" />
               <span>{t("imprint_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <LockClosedIcon className="mr-2 h-5 w-5" />
+              <FileLock2 className="mr-2 h-5 w-5" />
               <span>{t("data_protection_label")}</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <CurrencyEuroIcon className="mr-2 h-5 w-5" />
+              <Coins className="mr-2 h-5 w-5" />
               <span>{t("donate_label")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <UserGroupIcon className="mr-2 h-5 w-5" />
+              <Users2 className="mr-2 h-5 w-5" />
               <span>{t("promotion_label")}</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -229,7 +236,7 @@ export default function Menu() {
                 onClick={() => setOpen(false)}
               >
                 <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
-                  <ArrowRightOnRectangleIcon className="mr-2 h-5 w-5" />
+                  <LogIn className="mr-2 h-5 w-5" />
                   <span className="text-green-100">{t("login_label")}</span>
                 </button>
               </Link>
@@ -250,7 +257,7 @@ export default function Menu() {
                   className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
                   disabled={isLoggingOut}
                 >
-                  <ArrowLeftOnRectangleIcon className="mr-2 h-5 w-5" />
+                  <LogOut className="mr-2 h-5 w-5" />
                   <span className="text-red-500">{t("logout_label")}</span>
                 </button>
               </Form>
