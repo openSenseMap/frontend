@@ -1,0 +1,19 @@
+name: 🗑️ Purge untagged images
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  packages: write
+
+jobs:
+  purge_untagged_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧹 Remove untagged images
+        uses: vlaurin/action-ghcr-prune@v0.5.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          organization: ${{ github.repository_owner}}
+          container: ${{ github.event.repository.name }}
+          prune-untagged: true
