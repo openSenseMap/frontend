@@ -125,6 +125,7 @@ export default function Menu() {
             ) : (
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
+                  {/* Max Mustermann */}
                   {data.user.name}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
@@ -147,6 +148,21 @@ export default function Menu() {
                   <Link to="/profile/me"> Profile</Link>
                 </DropdownMenuItem>
               )}
+
+              <Link to="/account/settings">
+                <DropdownMenuItem className=" cursor-pointer">
+                  <Settings className="mr-2 h-5 w-5" />
+                  <span>{t("settings_label")}</span>
+                </DropdownMenuItem>
+              </Link>
+
+              <Link to="/account/mydevices">
+                <DropdownMenuItem className=" cursor-pointer">
+                  <Cpu className="mr-2 h-5 w-5" />
+                  <span>{t("my_devices_label")}</span>
+                </DropdownMenuItem>
+              </Link>
+
               <DropdownMenuItem>
                 <Settings className="mr-2 h-5 w-5" />
                 <Link to="/settings/account">{t("settings_label")}</Link>
@@ -155,6 +171,7 @@ export default function Menu() {
                 <Cpu className="mr-2 h-5 w-5" />
                 <Link to="/profile/me">{t("my_devices_label")}</Link>
               </DropdownMenuItem>
+
               <DropdownMenuItem>
                 <PlusCircle className="mr-2 h-5 w-5" />
                 <span>{t("add_device_label")}</span>

@@ -137,6 +137,8 @@ model Sensor {
   unit       String
   sensorType String
 
+  icon String?
+
   lastMeasurement Json?
 
   data Json?

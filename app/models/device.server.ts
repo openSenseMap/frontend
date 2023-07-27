@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device, Sensor } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 import { point } from "@turf/helpers";
@@ -31,6 +31,48 @@ export function getDevice({ id }: Pick<Device, "id">) {
     },
     where: { id },
   });
+}
+
+export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
+  return prisma.device.findUnique({
+    select: {
+      id: true,
+      name: true,
+      exposure: true,
+      updatedAt: true,
+      latitude: true,
+      longitude: true,
+    },
+    where: { id },
+  });
+}
+
+export function updateDeviceInfo({
+  id,
+  name,
+  exposure,
+}: Pick<Device, "id" | "name" | "exposure">) {
+  return prisma.device.update({
+    where: { id },
+    data: {
+      name: name,
+      exposure: exposure,
+    },
+  });
+}
+
+export function updateDeviceLocation({ id, latitude, longitude }: Pick<Device, "id" |"latitude" | "longitude">){
+  return prisma.device.update({
+    where: { id },
+    data: {
+      latitude: latitude,
+      longitude: longitude,
+    },
+  });
+}
+
+export function deleteDevice({ id }: Pick<Device, "id">) {
+  return prisma.device.delete({ where: { id } });
 }
 
 export function getUserDevices(userId: Device["userId"]) {
