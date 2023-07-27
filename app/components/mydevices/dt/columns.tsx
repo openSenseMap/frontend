@@ -3,12 +3,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Exposure } from "@prisma/client";
 
 export type SenseBox = {
   id: string;
   name: string;
-  exposure: "indoor" | "outdoor" | "mobile" | "unknown";
-  model: string;
+  exposure: Exposure;
+  // model: string;
 };
 
 export const columns: ColumnDef<SenseBox>[] = [
@@ -42,7 +43,7 @@ export const columns: ColumnDef<SenseBox>[] = [
       );
     },
   },
-  {
+  /* {
     accessorKey: "model",
     header: ({ column }) => {
       return (
@@ -56,7 +57,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         </Button>
       );
     },
-  },
+  }, */
   {
     accessorKey: "id",
     header: "Sensebox ID",
