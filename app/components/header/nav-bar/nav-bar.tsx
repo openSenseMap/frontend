@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import Search from "~/components/search";
-import { SunIcon, CalendarDaysIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { TimeFilter } from "~/components/header/navBar/time-filter/time-filter";
 import type { DateRange } from "react-day-picker";
 import getUserLocale from "get-user-locale";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import type { Device } from "@prisma/client";
+import { CalendarDays, Sun, Search as SearchIcon } from "lucide-react";
 
 interface NavBarProps {
   devices: Device[];
@@ -14,8 +14,7 @@ interface NavBarProps {
 
 type ValuePiece = Date | string | null;
 
-type Value = ValuePiece 
-
+type Value = ValuePiece;
 
 export default function NavBar(props: NavBarProps) {
   let { t } = useTranslation("navbar");
@@ -27,8 +26,12 @@ export default function NavBar(props: NavBarProps) {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [value, onChange] = React.useState<Value>(null);
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
-  const [singleDate, setSingleDate] = React.useState<Date | undefined>(undefined)
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(
+    undefined
+  );
+  const [singleDate, setSingleDate] = React.useState<Date | undefined>(
+    undefined
+  );
   const userLocaleString = getUserLocale();
 
   /**
@@ -88,20 +91,20 @@ export default function NavBar(props: NavBarProps) {
           }}
         >
           <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-orange-500">
-            <SunIcon className="h-4 w-4 text-white" />
+            <Sun className="h-4 w-4 text-white" />
             <div className="text-center text-white">
               {t("temperature_label")}
             </div>
           </div>
-          <div className="flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full ring-slate-900/10 bg-white pl-2 pr-3 shadow-lg ring-1">
-            <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
+          <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
+            <SearchIcon className="h-4 w-4 text-blue-500" />
             <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">
               <kbd>Ctrl</kbd> + <kbd>K</kbd>
             </span>
           </div>
           <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-blue-700">
-            <CalendarDaysIcon className="h-4 w-4 text-white" />
+            <CalendarDays className="h-4 w-4 text-white" />
             <div className="text-center text-white">
               {timeState === "live" ? (
                 <span>{t("live_label")}</span>
@@ -154,9 +157,9 @@ export default function NavBar(props: NavBarProps) {
         >
           <button
             onClick={() => displaySearch()}
-            className="ring-slate-900/10 hover:ring-slate-300 mx-auto mb-2 flex h-7 w-1/2 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1 hover:bg-gray-200"
+            className="ring-slate-900/10 mx-auto mb-2 flex h-7 w-1/2 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1 hover:bg-gray-200 hover:ring-slate-300"
           >
-            <MagnifyingGlassIcon className="h-6 w-6 text-blue-500" />
+            <SearchIcon className="h-6 w-6 text-blue-500" />
             <span className="text-center text-blue-500">Suche</span>
             <span className="flex-none text-xs font-semibold text-gray-400">
               <kbd>{t("ctrl")}</kbd> + <kbd>K</kbd>

@@ -4,7 +4,6 @@ import * as React from "react";
 // import { useSearchParams, useSubmit } from "@remix-run/react";
 import { format } from "date-fns";
 import { de, enGB } from "date-fns/locale";
-import { CalendarIcon } from "@heroicons/react/24/outline";
 import { Clock, CalendarSearch, CalendarClock } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
@@ -18,6 +17,8 @@ import { useToast } from "@/components/ui/use-toast";
 
 import { getUserLocale } from "get-user-locale";
 import { useTranslation } from "react-i18next";
+
+import { Calendar as CalendarIcon } from "lucide-react";
 
 interface TimeFilterProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
