@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { useState } from "react";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { Info } from "lucide-react";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -44,7 +44,7 @@ export default function EditBoxTTN() {
 
             <div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
               <p className="inline-flex my-1">
-                <InformationCircleIcon className=" mr-1 inline h-5 w-5 align-sub" />
+                <Info className=" mr-1 inline h-5 w-5 align-sub" />
                 Transfer this device to another user!
               </p>
               <hr className="border-[#f7e1b5] my-4" />

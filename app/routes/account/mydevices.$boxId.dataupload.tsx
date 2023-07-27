@@ -3,8 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, Link, Outlet, useLocation, useParams } from "@remix-run/react";
 import { useState } from "react";
 import { getUserId } from "~/session.server";
-import { ArrowSmallLeftIcon } from "@heroicons/react/24/outline";
-import { Upload } from "lucide-react";
+import { ArrowLeft, Upload } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import Home from "~/components/header/home";
 
@@ -43,7 +42,7 @@ export default function DataUpload() {
           <nav className="col-span-2 md:col-span-2">
             <ul>
               <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
-                <ArrowSmallLeftIcon className=" mr-2 inline h-5 w-5" />
+                <ArrowLeft className=" mr-2 inline h-5 w-5" />
                 <Link to="/account/mydevices">Back to Dashboard</Link>
               </li>
             </ul>

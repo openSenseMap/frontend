@@ -1,20 +1,14 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Link, Outlet, useLocation, useParams } from "@remix-run/react";
+import { Link, Outlet, useParams } from "@remix-run/react";
 import { useState } from "react";
 import { getUserId } from "~/session.server";
-import {
-  ArrowSmallLeftIcon,
-  CloudArrowUpIcon,
-  DocumentTextIcon,
-  TableCellsIcon,
-  WifiIcon,
-} from "@heroicons/react/24/outline";
 
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { ArrowRightLeft, Lock, MapPin } from "lucide-react";
+import { ArrowRightLeft, Lock, MapPin, FileText, Wifi, Sheet, Cpu, ArrowLeft, UploadCloud
+} from "lucide-react";
 import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
@@ -47,12 +41,12 @@ export default function EditBox2() {
     {
       title: "General",
       href: `/account/mydevices/${boxId}/edit/general`,
-      icon: TableCellsIcon,
+      icon: Sheet,
     },
     {
       title: "Sensors",
       href: `/account/mydevices/${boxId}/edit/sensors`,
-      icon: TableCellsIcon,
+      icon: Cpu,
     },
     {
       title: "location",
@@ -67,17 +61,17 @@ export default function EditBox2() {
     {
       title: "script",
       href: `/account/mydevices/${boxId}/edit/script`,
-      icon: DocumentTextIcon,
+      icon: FileText,
     },
     {
       title: "mqtt",
       href: `/account/mydevices/${boxId}/edit/mqtt`,
-      icon: WifiIcon,
+      icon: Wifi,
     },
     {
       title: "ttn",
       href: `/account/mydevices/${boxId}/edit/ttn`,
-      icon: CloudArrowUpIcon,
+      icon: UploadCloud,
     },
     {
       title: "transfer",
@@ -141,7 +135,7 @@ export default function EditBox2() {
         </div>
 
         <div className="rounded text-[#676767]">
-          <ArrowSmallLeftIcon className=" mr-2 inline h-5 w-5" />
+          <ArrowLeft className=" mr-2 inline h-5 w-5" />
           <Link to="/account/mydevices">Back to Dashboard</Link>
         </div>
 

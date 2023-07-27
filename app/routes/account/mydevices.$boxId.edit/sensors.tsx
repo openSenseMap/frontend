@@ -10,13 +10,13 @@ import React, { useState } from "react";
 import { getUserId } from "~/session.server";
 import {
   ChevronDownIcon,
-  ChevronsDownIcon,
+  Trash2,
   ClipboardCopy,
   Edit,
   Plus,
   Save,
   Undo2,
-  Wifi,
+  X,
   ThermometerIcon,
   WindIcon,
   Droplets,
@@ -31,7 +31,6 @@ import {
   updateSensor,
 } from "~/models/sensor.server";
 import { typedjson } from "remix-typedjson";
-import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import invariant from "tiny-invariant";
 import {
   DropdownMenu,
@@ -437,7 +436,7 @@ export default function EditBoxSensors() {
                                 border-[#d43f3a] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff]
                                 hover:border-[#ac2925] hover:bg-[#c9302c]"
                               >
-                                <TrashIcon className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
+                                <Trash2 className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
                                 Delete
                               </button>
                             </span>
@@ -501,7 +500,7 @@ export default function EditBoxSensors() {
                                 text-[14px] leading-[1.6] text-[#fff] 
                                 hover:border-[#ac2925] hover:bg-[#c9302c]"
                             >
-                              <XMarkIcon className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />
+                              <X className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />
                               Cancel
                             </button>
                           </span>
