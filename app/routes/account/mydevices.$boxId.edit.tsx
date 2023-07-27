@@ -16,6 +16,8 @@ import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
 import { ArrowRightLeft, Lock, MapPin } from "lucide-react";
 import Home from "~/components/header/home";
+import { Separator } from "~/components/ui/separator";
+import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -34,28 +36,65 @@ export async function action({ request }: ActionArgs) {
 }
 
 //**********************************
-export default function EditBox() {
-  //* to keep selected view highlited after reloading
-  const pathName = useLocation().pathname;
-  const currentPage = pathName.substring(pathName.lastIndexOf("/") + 1);
-  //* default view (General)
-  const [currentView, setCurrentView] = useState(currentPage);
-
+export default function EditBox2() {
   //* Toast notification when device info is updated
   const [toastOpen, setToastOpen] = useState(false);
 
   // Get deviceId from route path
   const { boxId } = useParams();
 
+  const sidebarNavItems = [
+    {
+      title: "General",
+      href: `/account/mydevices/${boxId}/edit/general`,
+      icon: TableCellsIcon,
+    },
+    {
+      title: "Sensors",
+      href: `/account/mydevices/${boxId}/edit/sensors`,
+      icon: TableCellsIcon,
+    },
+    {
+      title: "location",
+      href: `/account/mydevices/${boxId}/edit/location`,
+      icon: MapPin,
+    },
+    {
+      title: "security",
+      href: `/account/mydevices/${boxId}/edit/security`,
+      icon: Lock,
+    },
+    {
+      title: "script",
+      href: `/account/mydevices/${boxId}/edit/script`,
+      icon: DocumentTextIcon,
+    },
+    {
+      title: "mqtt",
+      href: `/account/mydevices/${boxId}/edit/mqtt`,
+      icon: WifiIcon,
+    },
+    {
+      title: "ttn",
+      href: `/account/mydevices/${boxId}/edit/ttn`,
+      icon: CloudArrowUpIcon,
+    },
+    {
+      title: "transfer",
+      href: `/account/mydevices/${boxId}/edit/transfer`,
+      icon: ArrowRightLeft,
+    },
+  ];
+
   return (
-    <div>
-      <div className="pointer-events-none z-10 mb-10 flex h-14 w-full p-2">
+    <>
+      <div className="pointer-events-none z-10 flex h-14 w-full p-2">
         <Home />
       </div>
 
-      <div className="mx-8 mr-20 mt-14">
+      <div className="space-y-6 p-10 pb-14">
         {/*Toast notification */}
-        <div className={toastOpen ? "mb-12" : ""}>
+        <div className={toastOpen ? "mb-2" : ""}>
           <ToastPrimitive.Provider>
             <ToastPrimitive.Root
               open={toastOpen}
@@ -100,139 +139,27 @@ export default function EditBox() {
             <ToastPrimitive.Viewport />
           </ToastPrimitive.Provider>
         </div>
-        <div className="grid grid-cols-8 gap-10 font-helvetica text-[15px] tracking-wide max-md:grid-cols-2 lg:grid-rows-1">
-          <nav className="col-span-2 md:col-span-2">
-            <ul>
-              <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
-                <ArrowSmallLeftIcon className=" mr-2 inline h-5 w-5" />
-                <Link to="/account/mydevices">Back to Dashboard</Link>
-              </li>
 
-              {/* divider */}
-              <hr className="my-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+        <div className="rounded text-[#676767]">
+          <ArrowSmallLeftIcon className=" mr-2 inline h-5 w-5" />
+          <Link to="/account/mydevices">Back to Dashboard</Link>
+        </div>
 
-              <Link to="general">
-                <li
-                  className={
-                    currentView === "general"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("general")}
-                >
-                  <TableCellsIcon className=" mr-2 inline h-5 w-5 align-sub" />
-                  General
-                </li>
-              </Link>
-
-              <Link to="sensors">
-                <li
-                  className={
-                    currentView === "sensors"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("sensors")}
-                >
-                  <TableCellsIcon className=" mr-2 inline h-5 w-5 align-sub" />
-                  Sensors
-                </li>
-              </Link>
-
-              <Link to="location">
-                <li
-                  className={
-                    currentView === "location"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("location")}
-                >
-                  <MapPin className=" mr-2 inline h-5 w-5 align-sub" />
-                  Location
-                </li>
-              </Link>
-
-              <Link to="security">
-                <li
-                  className={
-                    currentView === "security"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("security")}
-                >
-                  <Lock className=" mr-2 inline h-5 w-5 align-sub" />
-                  Security
-                </li>
-              </Link>
-
-              <Link to="script">
-                <li
-                  className={
-                    currentView === "script"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("script")}
-                >
-                  <DocumentTextIcon className=" mr-2 inline h-5 w-5 align-sub" />
-                  Script
-                </li>
-              </Link>
-
-              {/* MQTT */}
-              <Link to="mqtt">
-                <li
-                  className={
-                    currentView === "mqtt"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("mqtt")}
-                >
-                  <WifiIcon className=" mr-2 inline h-5 w-5 align-sub" />
-                  MQTT
-                </li>
-              </Link>
-
-              {/* TheThingsNetwork */}
-              <Link to="ttn">
-                <li
-                  className={
-                    currentView === "ttn"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("ttn")}
-                >
-                  <CloudArrowUpIcon className=" mr-2 inline h-5 w-5 align-sub" />
-                  TheThingsNetwork
-                </li>
-              </Link>
-
-              {/* Transfer */}
-              <Link to="transfer">
-                <li
-                  className={
-                    currentView === "transfer"
-                      ? "rounded bg-[#4eaf47] p-3 text-[#fff]"
-                      : "rounded p-3 text-[#676767] hover:bg-[#eee]"
-                  }
-                  onClick={() => setCurrentView("transfer")}
-                >
-                  <ArrowRightLeft className=" mr-2 inline h-5 w-5 align-sub" />
-                  Transfer
-                </li>
-              </Link>
-            </ul>
-          </nav>
-
-          <main className="col-span-6 md:col-span-6">
+        <div className="space-y-0.5">
+          <h2 className="text-2xl font-bold tracking-tight">Device settings</h2>
+          <p className="text-muted-foreground">Manage your device data.</p>
+        </div>
+        <Separator />
+        <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
+          {/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
+          <aside className="-mx-4 lg:w-1/5">
+            <EditDviceSidebarNav items={sidebarNavItems} />
+          </aside>
+          <div className="flex-1">
             <Outlet context={[setToastOpen]} />
-          </main>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
