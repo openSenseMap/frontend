@@ -2,7 +2,7 @@ datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  extensions        = [timescaledb(version: "2.10.2")]
+  extensions        = [timescaledb(version: "2.10.2"), pg_cron]
 }
 
 generator client {
