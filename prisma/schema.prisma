@@ -2,7 +2,7 @@ datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  extensions        = [timescaledb(version: "2.10.2")]
+  extensions        = [timescaledb(version: "2.10.2"), pg_cron]
 }
 
 generator client {
@@ -35,7 +35,7 @@ model Image {
 //* updated user model
 model User {
   id               String   @id @default(cuid())
-  name             String   // This is your name e.g. Max Mustermann
+  name             String // This is your name e.g. Max Mustermann
   email            String   @unique
   role             String   @default("user")
   language         String   @default("en_US")
@@ -55,8 +55,8 @@ model User {
 model Profile {
   id String @id @default(cuid())
 
-  username   String  @unique
-  public Boolean
+  username String  @unique
+  public   Boolean
 
   image   Image?  @relation(fields: [imageId], references: [fileId])
   imageId String? @unique
@@ -111,9 +111,9 @@ model Device {
   model       String?
 
   // Flag to show device on profile
-  public      Boolean  @default(false)
+  public Boolean @default(false)
 
-  status   Status   @default(INACTIVE)
+  status Status @default(INACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,6 +136,7 @@ model Sensor {
   title      String
   unit       String
   sensorType String
+  status     Status @default(INACTIVE)
 
   icon String?
 
@@ -163,8 +164,8 @@ model Measurement {
 // A view on a continuous aggregation
 view measurements_15min {
   sensorId String
-  time      DateTime
-  value   Float?
+  time     DateTime
+  value    Float?
 
   @@unique([sensorId, time])
 }
@@ -172,8 +173,8 @@ view measurements_15min {
 // Daily CAGG
 view measurements_1day {
   sensorId String
-  time      DateTime
-  value   Float?
+  time     DateTime
+  value    Float?
 
   @@unique([sensorId, time])
 }

@@ -114,7 +114,8 @@ jobs:
         uses: nick-fields/retry@v2.8.3
         with:
           timeout_minutes: 10
-          max_attempts: 3
+          max_attempts: 5
+          retry_wait_seconds: 45
           retry_on: error
           command: npx prisma migrate reset --force
 
