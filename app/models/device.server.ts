@@ -68,13 +68,28 @@ export function upsertDevice(device: any) {
     },
     update: {
       name: device.name,
+      exposure:
+        device.exposure === "indoor"
+          ? "INDOOR"
+          : device.exposure === "outdoor"
+          ? "OUTDOOR"
+          : device.exposure === "mobile"
+          ? "MOBILE"
+          : "UNKNOWN",
     },
     create: {
       id: device._id as string,
       name: device.name as string,
       userId: "cleqyv5pi00003uxdszv4mdnk", // TODO set correct user
       useAuth: false,
-      exposure: "INDOOR",
+      exposure:
+        device.exposure === "indoor"
+          ? "INDOOR"
+          : device.exposure === "outdoor"
+          ? "OUTDOOR"
+          : device.exposure === "mobile"
+          ? "MOBILE"
+          : "UNKNOWN",
       latitude: Number(device.currentLocation.coordinates[1]),
       longitude: Number(device.currentLocation.coordinates[0]),
     },
