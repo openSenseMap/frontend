@@ -1,13 +1,24 @@
-import { Outlet, useLoaderData } from "@remix-run/react";
+import {
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useParams,
+} from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
-import type { MapRef } from "react-map-gl";
+import type {
+  GeoJSONSource,
+  LngLatLike,
+  MapLayerMouseEvent,
+  MapRef,
+} from "react-map-gl";
 import { MapProvider } from "react-map-gl";
 import { useState, useRef } from "react";
 import { useHotkeys } from "@mantine/hooks";
+import type { FeatureCollection, Point } from "geojson";
 import OverlaySearch from "~/components/search/overlay-search";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
@@ -47,13 +58,11 @@ export const links: LinksFunction = () => {
 };
 
 export default function Explore() {
-  // data from our loader
-  const data = useLoaderData<typeof loader>();
-
-  const mapRef = useRef<MapRef | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-
   const [showSearch, setShowSearch] = useState<boolean>(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const mapRef = useRef<MapRef | null>(null);
 
   /**
    * Focus the search input when the search overlay is displayed
@@ -77,11 +86,54 @@ export default function Explore() {
     ],
   ]);
 
+  const onMapClick = (e: MapLayerMouseEvent) => {
+    if (e.features && e.features.length > 0) {
+      const feature = e.features[0];
+
+      if (feature.layer.id === "osem-data") {
+        const source = mapRef.current?.getSource("osem-data") as GeoJSONSource;
+        source.getClusterExpansionZoom(
+          feature.properties?.cluster_id,
+          (err, zoom) => {
+            if (err) {
+              return;
+            }
+
+            mapRef.current?.easeTo({
+              center: (feature.geometry as Point).coordinates as LngLatLike,
+              zoom,
+              duration: 500,
+            });
+          }
+        );
+      } else if (feature.layer.id === "unclustered-point") {
+        navigate(`/explore/${feature.properties?.id}`);
+      }
+    }
+  };
+
+  //* fly to sensebox location when url inludes deviceId
+  const { deviceId } = useParams();
+  var deviceLoc = [1.3, 2.3];
+  if (deviceId) {
+    const device = data.devices.features.find(
+      (device: any) => device.properties.id === deviceId
+    );
+    deviceLoc = [device?.properties.latitude, device?.properties.longitude];
+  }
+
   return (
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        <Map ref={mapRef}>
+        <Map
+          ref={mapRef}
+          initialViewState={
+            deviceId
+              ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
+              : { latitude: 7, longitude: 52, zoom: 2 }
+          }
+        >
           <ClusterLayer devices={data.devices} />
           <Toaster />
           {showSearch ? (

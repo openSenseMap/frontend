@@ -65,6 +65,18 @@ async function seed() {
     data: dummyUser,
   });
 
+  // Create profile for initial user
+  const profile = await prisma.profile.create({
+    data: {
+      username: "sensei",
+      public: false,
+      userId: dummyUser.id,
+    },
+  });
+  console.log(
+    `ℹ️  Create profile ${profile.username} 🥷🏼  for account with ${user.email}`
+  );
+
   // Import devices and connect it to user
   const devices = await csvtojson().fromFile("prisma/devices.csv");
 

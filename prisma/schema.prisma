@@ -138,6 +138,8 @@ model Sensor {
   sensorType String
   status     Status @default(INACTIVE)
 
+  icon String?
+
   lastMeasurement Json?
 
   data Json?
