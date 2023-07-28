@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "react-i18next";
 
 interface SelectSensorsProps {
   data: any;
@@ -19,6 +20,7 @@ interface SelectSensorsProps {
 
 export default function SelectSensors({ data }: SelectSensorsProps) {
   const [addedSensors, setAddedSensors] = useState(data.data.sensors ?? {});
+  const { t } = useTranslation("newdevice");
 
   function addSensor(sensorItem: any, key: string) {
     //this is an array because objects would not work with the forms [sensorSlug, phenomenonId, unitSlug]
@@ -42,11 +44,10 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
-          Select Sensors
+          {t("select_sensors")}
         </h3>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Select the sensors you want to use by clicking on the cards. You can
-          add the same sensor multiple times.
+          {t("select_sensors_text")}
         </p>
       </div>
       <div>
@@ -95,20 +96,22 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
               {addedSensors["p-" + key] && (
                 <div className="py-4">
                   <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
-                    Your added{" "}
+                    {t("your_added")}{" "}
                     {sensorWikiLabel(
                       data.phenomena.find((pheno: any) => pheno.id == key).label
                         .item
                     )}{" "}
-                    sensors
+                    {t("sensors")}
                   </h3>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Sensor</TableHead>
-                        <TableHead>Phenomenon</TableHead>
-                        <TableHead>Unit</TableHead>
-                        <TableHead>Delete</TableHead>
+                        <TableHead className="w-[100px]">
+                          {t("sensor")}
+                        </TableHead>
+                        <TableHead>{t("phenomenon")}</TableHead>
+                        <TableHead>{t("unit")}</TableHead>
+                        <TableHead>{t("delete")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

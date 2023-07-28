@@ -1,15 +1,20 @@
+import { useTranslation } from "react-i18next";
+
 export interface GeneralProps {
   data: any;
 }
 
 export default function General({ data }: GeneralProps) {
+  const { t } = useTranslation("newdevice");
+
   return (
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Profile</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          {t("profile")}
+        </h3>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          This information will be displayed publicly so be careful what you
-          share.
+          {t("public_information")}
         </p>
       </div>
 
@@ -19,7 +24,7 @@ export default function General({ data }: GeneralProps) {
             htmlFor="username"
             className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
           >
-            Name of your station
+            {t("station_name")}
           </label>
           <div className="mt-1 sm:col-span-2 sm:mt-0">
             <div className="flex max-w-lg rounded-md shadow-sm">
@@ -42,13 +47,13 @@ export default function General({ data }: GeneralProps) {
               className="text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
               id="device-exposure"
             >
-              Exposure
+              {t("exposure")}
             </div>
           </div>
           <div className="sm:col-span-2">
             <div className="max-w-lg">
               <p className="text-sm text-gray-500">
-                This is how your device is exposed/placed.
+                {t("exposure_explaination")}
               </p>
               <div className="mt-4 space-y-4">
                 <div className="flex items-center">
@@ -112,7 +117,7 @@ export default function General({ data }: GeneralProps) {
             htmlFor="username"
             className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
           >
-            Group ID (optional)
+            Group ID ({t("optional")})
           </label>
           <div className="mt-1 sm:col-span-2 sm:mt-0">
             <div className="flex max-w-lg rounded-md shadow-sm">

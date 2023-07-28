@@ -1,6 +1,7 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
@@ -11,15 +12,16 @@ interface SelectDeviceProps {
 
 export default function SelectDevice({ data }: SelectDeviceProps) {
   const [deviceType, setDeviceType] = useState(data.data.type);
+  const { t } = useTranslation("newdevice");
 
   return (
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
-          Select Device
+          {t("select_device")}
         </h3>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Which hardware do you use?
+          {t("select_device_text")}
         </p>
       </div>
 
@@ -67,7 +69,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
             </AspectRatio>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <CardTitle>own_device</CardTitle>
+            <CardTitle>{t("own_device")}</CardTitle>
             {deviceType === "own_device" && (
               <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
             )}
@@ -116,7 +118,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
             htmlFor="type-own_device"
             className="ml-3 block text-sm font-medium text-gray-700"
           >
-            own_device
+            {t("own_device")}
           </label>
         </div>
       </div>
@@ -125,10 +127,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
         <Alert>
           <InfoIcon className="h-4 w-4" />
           <AlertTitle>Info</AlertTitle>
-          <AlertDescription>
-            Dein Gerät is nicht in der Liste? Füge es im Sensor-Wiki hinzu, um
-            es auf der openSenseMap zu benutzen: Anleitung
-          </AlertDescription>
+          <AlertDescription>{t("device_not_in_List")}</AlertDescription>
         </Alert>
       </div>
     </div>

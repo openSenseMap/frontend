@@ -1,5 +1,6 @@
 // import type { LinksFunction } from "@remix-run/node";
 import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Map,
@@ -21,6 +22,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
     longitude: data.data.longitude ? data.data.longitude : 7.3,
   });
   const [height, setHeight] = useState(data.data.height ? data.data.height : 0);
+  const { t } = useTranslation("newdevice");
 
   //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
@@ -35,10 +37,10 @@ export default function SelectLocation({ data }: SelectLocationProps) {
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
-          Location
+          {t("location")}
         </h3>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Here you can select the location of your device
+          {t("location_text")}
         </p>
       </div>
 
@@ -141,7 +143,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
               htmlFor="height"
               className="txt-base block font-bold tracking-normal"
             >
-              Heigth
+              {t("height")}
             </label>
 
             <div className="mt-1">
@@ -175,7 +177,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
                 text-[#337ab7] 
                 hover:text-[#23527c] hover:underline"
         >
-          Reset location
+          {t("reset_location")}
         </button>
       </div>
     </div>

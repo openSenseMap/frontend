@@ -23,6 +23,7 @@ import SelectLocation from "~/components/device/new/select-location";
 import Summary from "~/components/device/new/summary";
 import { createDevice } from "~/models/device.server";
 import { getUserId } from "~/session.server";
+import { useTranslation } from "react-i18next";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -157,6 +158,8 @@ export const links: LinksFunction = () => {
 
 export default function NewDevice() {
   const navigation = useNavigation();
+  const { t } = useTranslation("newdevice");
+
   const showSpinner = useSpinDelay(navigation.state !== "idle", {
     delay: 200,
     minDuration: 300,
@@ -183,7 +186,7 @@ export default function NewDevice() {
         />
         <div className="flex justify-between pt-5">
           <div className="flex items-center gap-1">
-            <h1 className="text-2xl font-bold">Add Device</h1>
+            <h1 className="text-2xl font-bold">{t("add_device")}</h1>
             <Spinner visible={showSpinner} />
           </div>
           <div className="flex justify-end">
@@ -195,7 +198,7 @@ export default function NewDevice() {
                 formNoValidate
                 className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
-                Previous
+                {t("prev")}
               </button>
             )}
             {page < 6 && (
@@ -205,7 +208,7 @@ export default function NewDevice() {
                 value="next"
                 className="ml-3 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
-                Next
+                {t("next")}
               </button>
             )}
             {page === 6 && (
@@ -215,7 +218,7 @@ export default function NewDevice() {
                 value="submit"
                 className="ml-3 rounded-md border border-gray-300 bg-green-300 px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
-                Submit
+                {t("submit")}
               </button>
             )}
           </div>
@@ -244,7 +247,7 @@ export default function NewDevice() {
               formNoValidate
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
-              Previous
+              {t("prev")}
             </button>
           )}
           {page < 6 && (
@@ -254,7 +257,7 @@ export default function NewDevice() {
               value="next"
               className="ml-3 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
-              Next
+              {t("next")}
             </button>
           )}
           {page === 6 && (
@@ -264,7 +267,7 @@ export default function NewDevice() {
               value="submit"
               className="ml-3 rounded-md border border-gray-300 bg-green-300 px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
-              Submit
+              {t("submit")}
             </button>
           )}
         </div>
