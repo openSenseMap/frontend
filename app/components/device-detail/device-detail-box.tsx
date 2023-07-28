@@ -19,6 +19,7 @@ import {
 } from "../ui/accordion";
 import type { loader } from "~/routes/explore/$deviceId";
 import {
+  Archive,
   ChevronUp,
   LineChart,
   Minus,
@@ -45,6 +46,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import ShareLink from "./share-link";
+import { getArchiveLink } from "~/utils/device";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -269,6 +271,16 @@ export default function DeviceDetailBox() {
                     className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
                   >
                     <Minus />
+                  </div>
+                  <div className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90">
+                    <a
+                      href={getArchiveLink(data.device)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open archive"
+                    >
+                      <Archive />
+                    </a>
                   </div>
                   {sensorIds.length > 0 && !openGraph ? (
                     <div
