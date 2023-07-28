@@ -61,7 +61,31 @@ export function updateDeviceInfo({
   });
 }
 
-export function updateDeviceLocation({ id, latitude, longitude }: Pick<Device, "id" |"latitude" | "longitude">){
+export function upsertDevice(device: any) {
+  return prisma.device.upsert({
+    where: {
+      id: device._id,
+    },
+    update: {
+      name: device.name,
+    },
+    create: {
+      id: device._id as string,
+      name: device.name as string,
+      userId: "cleqyv5pi00003uxdszv4mdnk", // TODO set correct user
+      useAuth: false,
+      exposure: "INDOOR",
+      latitude: Number(device.currentLocation.coordinates[1]),
+      longitude: Number(device.currentLocation.coordinates[0]),
+    },
+  });
+}
+
+export function updateDeviceLocation({
+  id,
+  latitude,
+  longitude,
+}: Pick<Device, "id" | "latitude" | "longitude">) {
   return prisma.device.update({
     where: { id },
     data: {
