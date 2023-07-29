@@ -206,12 +206,17 @@ export default function DefineAreaMap({
           </PopoverContent>
         </Popover>
         {geojsonUploadData && (
-          <Source type="geojson" data={geojsonUploadData}>
+          <Source
+            id="geojsonUploadData"
+            type="geojson"
+            data={geojsonUploadData}
+          >
             <Layer
               type="fill"
               paint={{
-                "fill-color": "#555555",
-                "fill-opacity": 0.5,
+                "fill-color": "#f09733",
+                "fill-outline-color": "#929db3",
+                "fill-opacity": 0.3,
               }}
             />
           </Source>
