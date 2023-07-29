@@ -156,45 +156,69 @@ export default function CampaignArea() {
   //   }
   // }, [container, convertedData]);
 
-  const handleFileUpload = () => {
-    if (fileInputRef.current != null) {
-      const file = fileInputRef.current.files?.[0];
-      // const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e?.target?.result;
-        if (content && typeof content === "string") {
-          const geojson = JSON.parse(content);
-          if (valid(geojson)) {
-            const normalized_geojson = normalize(geojson);
-            const flattened = flatten(normalized_geojson);
-            setGeojsonUploadData(flattened);
-            setFeatures(flattened);
-            toast({
-              title: `${t("imported sucessfully")}`,
-              description: `${flattened.features.length} ${t(
-                "features added"
-              )}`,
-            });
-            const [x1, y1, x2, y2] = bbox(flattened);
-            if (mapRef.current) {
-              mapRef.current.fitBounds([x1, y1, x2, y2], {
-                padding: 50,
-                duration: 1000,
-              });
-              setPopup(false);
-            }
-          } else {
-            toast({
-              title: `${t("import failed")}`,
-              description: `${t("upload a file that contains valid geojson")}`,
-            });
-          }
-        }
+  function readFileAsync(file: File) {
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+
+      reader.onload = () => {
+        resolve(reader.result);
       };
-      if (file) {
-        reader.readAsText(file);
+
+      reader.onerror = reject;
+
+      reader.readAsText(file);
+    });
+  }
+
+  const handleFileUpload = async () => {
+    if (!fileInputRef.current) return null;
+    const file = fileInputRef.current.files?.[0];
+    if (!file) {
+      toast({
+        title: `${t("import failed")}`,
+        description: `${t("No file selected")}`,
+      });
+      return null;
+    }
+    try {
+      const fileContent = await readFileAsync(file);
+      const geojson = JSON.parse(fileContent);
+      if (!valid(geojson)) {
+        toast({
+          title: `${t("import failed")}`,
+          description: `${t(
+            "please upload a file that contains valid geojson"
+          )}`,
+        });
+        return null;
       }
+      // store features in this format consistently
+      const normalized_geojson = normalize(geojson);
+      const flattened_geojson = flatten(normalized_geojson);
+      // update state of source data for the layer
+      setGeojsonUploadData(flattened_geojson);
+      setFeatures(flattened_geojson);
+
+      const [x1, y1, x2, y2] = bbox(flattened_geojson);
+      if (mapRef.current) {
+        mapRef.current.fitBounds([x1, y1, x2, y2], {
+          padding: 50,
+          duration: 1000,
+        });
+        setPopup(false); // reset popup state
+      }
+      toast({
+        title: `${t("imported sucessfully")}`,
+        description: `${flattened_geojson.features.length} ${t(
+          "features added"
+        )}`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: `${t("Something went wrong")}`,
+        description: `${t("please try again")}`,
+      });
     }
   };
 
@@ -255,7 +279,11 @@ export default function CampaignArea() {
                       {t("upload a valid geojson file here")}
                     </DialogDescription>
                   </DialogHeader>
-                  <input type="file" accept=".geojson" ref={fileInputRef} />
+                  <input
+                    type="file"
+                    accept=".geojson, .json"
+                    ref={fileInputRef}
+                  />
                   <DialogFooter>
                     <DialogClose>
                       <Button onClick={handleFileUpload}>{t("select")}</Button>
