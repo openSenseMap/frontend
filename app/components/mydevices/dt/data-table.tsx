@@ -57,13 +57,13 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
     },
-    /* initialState: {
+    initialState: {
       pagination: {
-        pageSize: 4,
+        pageSize: 5,
       },
-    }, */
+    },
   });
-  const tableColsWidth = [20, 10, 10, 20, 40];
+  const tableColsWidth = [30, 30, 40];
 
   return (
     <div>
@@ -145,7 +145,7 @@ export function DataTable<TData, TValue>({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[10, 20, 30, 40, 50].map((item) => (
+                {[5, 10, 20, 30, 40, 50].map((item) => (
                   <SelectItem key={item} value={item.toString()}>
                     {item}
                   </SelectItem>
