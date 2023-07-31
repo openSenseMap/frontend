@@ -3,9 +3,10 @@ import { Exposure, type Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
-import BottomBar from "~/components/bottom-bar/bottom-bar";
+import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
-import { getDevice, getMeasurements } from "~/models/device.server";
+import { getDevice } from "~/models/device.server";
+import { getMeasurement } from "~/models/measurement.server";
 
 export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
@@ -19,6 +20,7 @@ export async function loader({ params, request }: LoaderArgs) {
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
+  const aggregation = url.searchParams.get("aggregation") || "raw";
   var sensorsToQuery = device?.sensors.filter((sensor: Sensor) =>
     sensorIds.includes(sensor.id)
   );
@@ -33,12 +35,13 @@ export async function loader({ params, request }: LoaderArgs) {
 
   const selectedSensors: Sensor[] = await Promise.all(
     sensorsToQuery.map(async (sensor: Sensor) => {
-      const sensorData = await getMeasurements(
-        params.deviceId,
-        sensor.id,
-        new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
-        new Date()
-      );
+      const sensorData = await getMeasurement(sensor.id, aggregation);
+      // const sensorData = await getMeasurements(
+      //   params.deviceId,
+      //   sensor.id,
+      //   new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
+      //   new Date()
+      // );
       return {
         ...sensor,
         data: sensorData as any,
@@ -49,8 +52,10 @@ export async function loader({ params, request }: LoaderArgs) {
   const data = {
     device: device,
     selectedSensors: selectedSensors,
+    aggregation: aggregation,
     OSEM_API_URL: process.env.OSEM_API_URL,
   };
+  // console.log(data);
   return typedjson(data);
 }
 
@@ -69,7 +74,7 @@ export default function DeviceId() {
       {data.device.exposure === Exposure.MOBILE ? (
         <MobileBoxView sensors={data.selectedSensors} />
       ) : null}
-      <BottomBar device={data.device} selectedSensors={data.selectedSensors} />
+      <DeviceDetailBox />
     </>
   );
 }

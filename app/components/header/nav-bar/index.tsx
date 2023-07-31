@@ -1,10 +1,10 @@
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { Device } from "@prisma/client";
 import { useState, useEffect, useRef, createContext } from "react";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { SearchIcon, XIcon } from "lucide-react";
 
 interface NavBarProps {
   devices: Device[];
@@ -60,7 +60,7 @@ export default function NavBar(props: NavBarProps) {
     <div className="pointer-events-auto relative w-full md:w-1/2">
       <div className="absolute left-0 top-0 w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4">
         <div className="flex w-full items-center gap-2 px-2 md:gap-4">
-          <MagnifyingGlassIcon className="aspect-square h-6" />
+          <SearchIcon className="aspect-square h-6" />
           <input
             ref={inputRef}
             placeholder={t("placeholder") || undefined}
@@ -75,7 +75,7 @@ export default function NavBar(props: NavBarProps) {
             </span>
           )}
           {open && (
-            <XMarkIcon
+            <XIcon
               onClick={() => {
                 setSearchString("");
                 setOpen(false);

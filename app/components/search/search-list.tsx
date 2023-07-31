@@ -2,16 +2,11 @@ import { useState, useEffect, useCallback, useContext } from "react";
 import { useMap } from "react-map-gl";
 import { useNavigate, useSearchParams } from "@remix-run/react";
 
-import {
-  CpuChipIcon,
-  GlobeEuropeAfricaIcon,
-  MapPinIcon,
-} from "@heroicons/react/24/outline";
-
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
 import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
 import { NavbarContext } from "../header/nav-bar";
+import { Cpu, Globe, MapPin } from "lucide-react";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -139,7 +134,7 @@ export default function SearchList(props: SearchListProps) {
           index={i}
           active={i === cursor}
           name={device.display_name}
-          icon={CpuChipIcon}
+          icon={Cpu}
           controlPress={controlPress}
           onMouseEnter={() => setCursor(i)}
           onClick={() => {
@@ -159,11 +154,7 @@ export default function SearchList(props: SearchListProps) {
             index={i + props.searchResultsDevice.length}
             active={i + props.searchResultsDevice.length === cursor}
             name={location.place_name}
-            icon={
-              location.place_type.includes("country")
-                ? GlobeEuropeAfricaIcon
-                : MapPinIcon
-            }
+            icon={location.place_type.includes("country") ? Globe : MapPin}
             controlPress={controlPress}
             onMouseEnter={() => setCursor(i + props.searchResultsDevice.length)}
             onClick={() => {

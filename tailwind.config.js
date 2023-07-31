@@ -31,6 +31,18 @@ module.exports = {
         800: "var(--color-gray-800)",
         900: "var(--color-gray-900)",
       },
+      zinc: {
+        50: "var(--color-zinc-50)",
+        100: "var(--color-zinc-100)",
+        200: "var(--color-zinc-200)",
+        300: "var(--color-zinc-300)",
+        400: "var(--color-zinc-400)",
+        500: "var(--color-zinc-500)",
+        600: "var(--color-zinc-600)",
+        700: "var(--color-zinc-700)",
+        800: "var(--color-zinc-800)",
+        900: "var(--color-zinc-900)",
+      },
       slate: {
         50: "var(--color-slate-50)",
         100: "var(--color-slate-100)",
@@ -114,7 +126,8 @@ module.exports = {
       fontFamily: {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
-        helvetica: ["Helvetica", "Arial", "sans-serif"],
+        monospace: ["Courier New", "Courier", "monospace"],
+        helvetica: ["Helvetica","Arial","sans-serif"],
       },
       keyframes: {
         'sidebarOpen': {

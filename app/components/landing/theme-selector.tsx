@@ -1,5 +1,5 @@
 import { Theme, useTheme } from "~/utils/theme-provider";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { Moon, Sun } from "lucide-react";
 
 export default function ThemeSelector() {
   // Get the current theme from the `ThemeProvider` component.
@@ -20,9 +20,9 @@ export default function ThemeSelector() {
     <div className="flex items-center justify-center pr-8">
       <button onClick={toggleTheme}>
         {theme === "light" ? (
-          <MoonIcon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
+          <Moon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
         ) : (
-          <SunIcon className="h-6 w-6 text-gray-400 lg:h-8 lg:w-8" />
+          <Sun className="h-6 w-6 text-white lg:h-8 lg:w-8" />
         )}
       </button>
     </div>

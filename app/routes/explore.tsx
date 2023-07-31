@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
@@ -50,11 +50,28 @@ export default function Explore() {
 
   const mapRef = useRef<MapRef | null>(null);
 
+  //* fly to sensebox location when url inludes deviceId
+  const { deviceId } = useParams();
+  var deviceLoc = [1.3, 2.3];
+  if (deviceId) {
+    const device = data.devices.features.find(
+      (device: any) => device.properties.id === deviceId
+    );
+    deviceLoc = [device?.properties.latitude, device?.properties.longitude];
+  }
+
   return (
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        <Map ref={mapRef}>
+        <Map
+          ref={mapRef}
+          initialViewState={
+            deviceId
+              ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
+              : { latitude: 7, longitude: 52, zoom: 2 }
+          }
+        >
           <ClusterLayer devices={data.devices} />
           <Toaster />
           <main className="absolute bottom-0 z-10 w-full">
