@@ -11,7 +11,7 @@ import {
   GeolocateControl,
   type MapRef,
   Source,
-  GeolocateResultEvent,
+  type GeolocateResultEvent,
 } from "react-map-gl";
 import { Button } from "~/components/ui/button";
 // import { Map } from "~/components/map";
