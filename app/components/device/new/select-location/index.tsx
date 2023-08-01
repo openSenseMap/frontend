@@ -1,13 +1,19 @@
 // import type { LinksFunction } from "@remix-run/node";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { MapPinIcon } from "@heroicons/react/24/outline";
 
 import {
   Map,
   Marker,
   type MarkerDragEvent,
   NavigationControl,
+  GeolocateControl,
+  type MapRef,
+  Source,
+  GeolocateResultEvent,
 } from "react-map-gl";
+import { Button } from "~/components/ui/button";
 // import { Map } from "~/components/map";
 
 export interface SelectLocationProps {
@@ -16,22 +22,47 @@ export interface SelectLocationProps {
 
 //**********************************
 export default function SelectLocation({ data }: SelectLocationProps) {
+  const mapRef = useRef<MapRef | null>(null);  
+
+  //* map view
+  const [viewState, setViewState] = React.useState({
+    longitude: 10,
+    latitude: 51,
+    zoom: 3.5,
+  });
+
   //* map marker
   const [marker, setMarker] = useState({
     latitude: data.data.latitude ? data.data.latitude : 51,
-    longitude: data.data.longitude ? data.data.longitude : 7.3,
+    longitude: data.data.longitude ? data.data.longitude : 10,
   });
-  const [height, setHeight] = useState(data.data.height ? data.data.height : 0);
+  
+  const [height, setHeight] = useState(data.data.height ? data.data.height : 339.71);
   const { t } = useTranslation("newdevice");
 
   //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
     console.log(event);
     setMarker({
-      longitude: event.lngLat.lng,
-      latitude: event.lngLat.lat,
+      longitude: Math.round(event.lngLat.lng*1000000)/1000000,
+      latitude: Math.round(event.lngLat.lat*1000000)/1000000,
     });
   }, []);
+
+  //* on-geolocate event
+  const onGeolocate = useCallback((event: GeolocateResultEvent) => {
+    console.log(event);
+    setMarker({
+      longitude: Math.round(event.coords.longitude*1000000)/1000000,
+      latitude: Math.round(event.coords.latitude*1000000)/1000000,
+    });
+  }, []);
+
+  //* derive elevation on-marker change
+  useEffect(() => {
+    const elevation = mapRef.current?.queryTerrainElevation([marker.longitude, marker.latitude])
+    setHeight(elevation ? Math.round(elevation*100)/100 : 0);
+  }, [marker]);
 
   return (
     <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
@@ -47,27 +78,74 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       {/* Map view */}
       <div className="sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
         <Map
-          initialViewState={{
-            latitude: marker.latitude,
-            longitude: marker.longitude,
-            zoom: 5,
-          }}
+          ref={mapRef}
+          {...viewState}
+          onMove={(evt) => setViewState(evt.viewState)}
           mapStyle="mapbox://styles/mapbox/streets-v12"
           mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
           style={{
             width: "100%",
             height: "45vh",
           }}
+          terrain={{
+            source: "mapbox-dem"
+          }}
         >
+          <Source
+            id="mapbox-dem"
+            type="raster-dem"
+            url="mapbox://mapbox.mapbox-terrain-dem-v1"
+            tileSize={512}
+            maxzoom={14}
+          />
           <Marker
             longitude={marker.longitude}
             latitude={marker.latitude}
-            anchor="bottom"
+            anchor="center"
             draggable
             onDrag={onMarkerDrag}
           ></Marker>
           <NavigationControl position="top-left" showCompass={false} />
+          <GeolocateControl onGeolocate={onGeolocate}/>
         </Map>
+      </div>
+
+      <div className="flex justify-between sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => {
+            setMarker({
+              latitude: data.data.latitude ? data.data.latitude : 51,
+              longitude: data.data.longitude ? data.data.longitude : 10,
+            });
+            setViewState({
+              latitude: data.data.latitude ? data.data.latitude : 51,
+              longitude: data.data.longitude ? data.data.longitude : 10,
+              zoom: 3.5,
+            });
+            setHeight(data.data.height);
+          }}
+          className="bg-red-500 hover:bg-red-700"
+        >
+          {t("reset_location")}
+        </Button>
+
+        <Button
+          type="button"
+          variant="default"
+          onClick={() => {
+            setMarker({
+              latitude: viewState.latitude,
+              longitude: viewState.longitude,
+            });
+            setHeight(data.data.height);
+          }}
+          className="bg-blue-500 hover:bg-blue-700"
+        >
+          <MapPinIcon className="mr-2 h-4 w-4" />
+          Set marker location to current map center
+        </Button>
       </div>
 
       {/* Latitude, Longitude btns */}
@@ -163,22 +241,6 @@ export default function SelectLocation({ data }: SelectLocationProps) {
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setMarker({
-              latitude: data.data.latitude,
-              longitude: data.data.longitude,
-            });
-            setHeight(data.data.height);
-          }}
-          className="mb-10 mt-4 font-semibold
-                text-[#337ab7] 
-                hover:text-[#23527c] hover:underline"
-        >
-          {t("reset_location")}
-        </button>
       </div>
     </div>
   );
