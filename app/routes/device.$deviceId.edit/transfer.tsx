@@ -2,7 +2,6 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
-import { useState } from "react";
 import { Info } from "lucide-react";
 
 //*****************************************************
@@ -20,9 +19,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 //**********************************
-export default function EditBoxTTN() {
-  const [mqttVal, setMqttVal] = useState(false);
-
+export default function EditBoxTransfer() {
   return (
     <div className="grid grid-rows-1">
       <div className="flex min-h-full items-center justify-center">

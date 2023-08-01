@@ -41,42 +41,42 @@ export default function EditBox() {
   const sidebarNavItems = [
     {
       title: "General",
-      href: `/account/mydevices/${deviceId}/edit/general`,
+      href: `/device/${deviceId}/edit/general`,
       icon: Sheet,
     },
     {
       title: "Sensors",
-      href: `/account/mydevices/${deviceId}/edit/sensors`,
+      href: `/device/${deviceId}/edit/sensors`,
       icon: Cpu,
     },
     {
       title: "location",
-      href: `/account/mydevices/${deviceId}/edit/location`,
+      href: `/device/${deviceId}/edit/location`,
       icon: MapPin,
     },
     {
       title: "security",
-      href: `/account/mydevices/${deviceId}/edit/security`,
+      href: `/device/${deviceId}/edit/security`,
       icon: Lock,
     },
     {
       title: "script",
-      href: `/account/mydevices/${deviceId}/edit/script`,
+      href: `/device/${deviceId}/edit/script`,
       icon: FileText,
     },
     {
       title: "mqtt",
-      href: `/account/mydevices/${deviceId}/edit/mqtt`,
+      href: `/device/${deviceId}/edit/mqtt`,
       icon: Wifi,
     },
     {
       title: "ttn",
-      href: `/account/mydevices/${deviceId}/edit/ttn`,
+      href: `/device/${deviceId}/edit/ttn`,
       icon: UploadCloud,
     },
     {
       title: "transfer",
-      href: `/account/mydevices/${deviceId}/edit/transfer`,
+      href: `/device/${deviceId}/edit/transfer`,
       icon: ArrowRightLeft,
     },
   ];
