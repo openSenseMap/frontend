@@ -149,15 +149,6 @@ export default function Menu() {
                 </DropdownMenuItem>
               )}
 
-              
-
-              <Link to="/account/mydevices">
-                <DropdownMenuItem className=" cursor-pointer">
-                  <Cpu className="mr-2 h-5 w-5" />
-                  <span>{t("my_devices_label")}</span>
-                </DropdownMenuItem>
-              </Link>
-
               <Link to="/settings/account">
                 <DropdownMenuItem className=" cursor-pointer">
                   <Settings className="mr-2 h-5 w-5" />
@@ -165,10 +156,12 @@ export default function Menu() {
                 </DropdownMenuItem>
               </Link>
 
-              <DropdownMenuItem>
-                <Cpu className="mr-2 h-5 w-5" />
-                <Link to="/profile/me">{t("my_devices_label")}</Link>
-              </DropdownMenuItem>
+              <Link to="/profile/me">
+                <DropdownMenuItem className=" cursor-pointer">
+                  <Cpu className="mr-2 h-5 w-5" />
+                  <span>{t("my_devices_label")}</span>
+                </DropdownMenuItem>
+              </Link>
 
               <DropdownMenuItem>
                 <PlusCircle className="mr-2 h-5 w-5" />

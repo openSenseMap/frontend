@@ -1,3 +1,5 @@
+
+//* Unused page - we can delete it
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useLoaderData } from "@remix-run/react";
@@ -46,7 +48,6 @@ export async function action({ request }: ActionArgs) {
 
 //***********************************
 export default function MyDevices() {
-  //* to load user data
   const devicesData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
@@ -197,7 +198,6 @@ export default function MyDevices() {
           </div>
         </div>
         {/* Second row - show devices data */}
-        <div className=" ">
           <div className="py-8">
             <div>
               <h2 className="text-2xl font-semibold leading-tight">
@@ -209,7 +209,6 @@ export default function MyDevices() {
               <DataTable columns={columns} data={devicesData} />
             </div>
           </div>
-        </div>
       </div>
     </div>
   );

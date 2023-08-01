@@ -18,11 +18,6 @@ import {
   Undo2,
   X,
   ThermometerIcon,
-  WindIcon,
-  Droplets,
-  Tornado,
-  SunMoonIcon,
-  MicIcon,
 } from "lucide-react";
 import {
   addNewSensor,
@@ -47,7 +42,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
   }
@@ -69,7 +64,7 @@ export async function action({ request, params }: ActionArgs) {
 
   for (const sensor of updatedSensorsDataJson) {
     if (sensor?.new === true && sensor?.edited === true) {
-      const deviceID = params.boxId;
+      const deviceID = params.deviceId;
       invariant(deviceID, `deviceID not found!`);
 
       await addNewSensor({

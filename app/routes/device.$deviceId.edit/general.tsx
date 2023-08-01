@@ -24,7 +24,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
@@ -41,14 +41,13 @@ export async function action({ request, params }: ActionArgs) {
   const formData = await request.formData();
   const { intent, name, exposure, passwordDelete } =
     Object.fromEntries(formData);
-  console.log("🚀 ~ file: general.tsx:45 ~ action ~ intent:", intent);
 
   const errors = {
     exposure: exposure ? null : "Invalid exposure.",
     passwordDelete: passwordDelete ? null : "Password is required.",
   };
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
   invariant(typeof deviceID === "string", " Device id not found.");
   invariant(typeof name === "string", "Device name is required.");
   invariant(typeof exposure === "string", "Device name is required.");
@@ -70,7 +69,6 @@ export async function action({ request, params }: ActionArgs) {
 
   switch (intent) {
     case "save": {
-      console.log("🚀 ~ file: general.tsx:58 ~ action ~ save:");
       await updateDeviceInfo({ id: deviceID, name: name, exposure: exposure });
       return json({
         errors: {

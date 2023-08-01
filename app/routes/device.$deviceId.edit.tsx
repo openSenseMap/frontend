@@ -19,7 +19,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   return json({ DevieID: deviceID });
 }
@@ -30,52 +30,53 @@ export async function action({ request }: ActionArgs) {
 }
 
 //**********************************
-export default function EditBox2() {
+export default function EditBox() {
   //* Toast notification when device info is updated
   const [toastOpen, setToastOpen] = useState(false);
 
   // Get deviceId from route path
-  const { boxId } = useParams();
+  const { deviceId } = useParams();
+  
 
   const sidebarNavItems = [
     {
       title: "General",
-      href: `/account/mydevices/${boxId}/edit/general`,
+      href: `/account/mydevices/${deviceId}/edit/general`,
       icon: Sheet,
     },
     {
       title: "Sensors",
-      href: `/account/mydevices/${boxId}/edit/sensors`,
+      href: `/account/mydevices/${deviceId}/edit/sensors`,
       icon: Cpu,
     },
     {
       title: "location",
-      href: `/account/mydevices/${boxId}/edit/location`,
+      href: `/account/mydevices/${deviceId}/edit/location`,
       icon: MapPin,
     },
     {
       title: "security",
-      href: `/account/mydevices/${boxId}/edit/security`,
+      href: `/account/mydevices/${deviceId}/edit/security`,
       icon: Lock,
     },
     {
       title: "script",
-      href: `/account/mydevices/${boxId}/edit/script`,
+      href: `/account/mydevices/${deviceId}/edit/script`,
       icon: FileText,
     },
     {
       title: "mqtt",
-      href: `/account/mydevices/${boxId}/edit/mqtt`,
+      href: `/account/mydevices/${deviceId}/edit/mqtt`,
       icon: Wifi,
     },
     {
       title: "ttn",
-      href: `/account/mydevices/${boxId}/edit/ttn`,
+      href: `/account/mydevices/${deviceId}/edit/ttn`,
       icon: UploadCloud,
     },
     {
       title: "transfer",
-      href: `/account/mydevices/${boxId}/edit/transfer`,
+      href: `/account/mydevices/${deviceId}/edit/transfer`,
       icon: ArrowRightLeft,
     },
   ];
@@ -114,7 +115,7 @@ export default function EditBox2() {
                       {/* Account successfully deleted. */}
                       <div>
                         senseBox succesfully updated -
-                        <Link to={`/explore/${boxId}`}>
+                        <Link to={`/explore/${deviceId}`}>
                           {" "}
                           <span className="text-[#4eaf47] hover:underline">
                             view
@@ -136,7 +137,7 @@ export default function EditBox2() {
 
         <div className="rounded text-[#676767]">
           <ArrowLeft className=" mr-2 inline h-5 w-5" />
-          <Link to="/account/mydevices">Back to Dashboard</Link>
+          <Link to="/profile/me">Back to Dashboard</Link>
         </div>
 
         <div className="space-y-0.5">

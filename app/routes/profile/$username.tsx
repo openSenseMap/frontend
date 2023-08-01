@@ -20,6 +20,9 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
+import { DataTable } from "~/components/mydevices/dt/data-table";
+import { columns } from "~/components/mydevices/dt/columns";
+import DevicesDashboard from "../device";
 
 export async function loader({ params, request }: LoaderArgs) {
   const requestingUserId = await getUserId(request);
@@ -224,20 +227,26 @@ export default function () {
           </Alert>
         ) : null}
         <div className="col-span-2">
-          <div className="grid grid-cols-2 gap-8">
-            {user?.devices.map((device) => (
-              <DeviceCard
-                key={device.id}
-                // https://github.com/prisma/prisma/discussions/14371
-                // Some kind of weird Date thing going on
-                device={{
-                  ...device,
-                  createdAt: new Date(device.createdAt),
-                  updatedAt: new Date(device.updatedAt),
-                }}
-              />
-            ))}
-          </div>
+          {/* show devices dashboard */}
+          {/* {user?.devices && (
+            <div className="py-8">
+              <div>
+                <h2 className="text-2xl font-semibold leading-tight">
+                  List of my Devices
+                </h2>
+              </div>
+              
+              <div className="mx-auto py-3">
+                <DataTable columns={columns} data={user.devices} />
+              </div>
+            </div>
+          )} */}
+
+          {
+            user?.devices &&
+            <DevicesDashboard devices={user.devices}></DevicesDashboard>
+          }
+          
         </div>
       </div>
     </div>

@@ -5,17 +5,13 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { getUserId } from "~/session.server";
-import { ArrowLeft, Upload } from "lucide-react";
-import { Input } from "~/components/ui/input";
+import { ArrowLeft } from "lucide-react";
 import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { getDeviceWithoutSensors } from "~/models/device.server";
@@ -25,9 +21,12 @@ import { getSensors } from "~/models/sensor.server";
 export async function loader({ request, params }: LoaderArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
+  console.log("🚀 ~ file: device.$deviceId.overview.tsx:28 ~ loader ~ userId:", userId)
   if (!userId) return redirect("/");
+  console.log("🚀 ~ file: device.$deviceId.overview.tsx:32 ~ loader ~ params:", params)
 
   if (!params.boxId) {
+    
     throw new Response("Device not found", { status: 502 });
   }
   //* get device data
@@ -44,7 +43,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 //**********************************
-export default function DeviceOnverview() {
+export default function DeviceOverview2() {
 
   const { deviceData, sensorsData } = useLoaderData<typeof loader>();
 

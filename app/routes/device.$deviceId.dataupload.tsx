@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, Outlet, useLocation, useParams } from "@remix-run/react";
+import { Form, Link, useLocation } from "@remix-run/react";
 import { useState } from "react";
 import { getUserId } from "~/session.server";
 import { ArrowLeft, Upload } from "lucide-react";
@@ -13,7 +13,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   return json({});
 }
@@ -24,7 +24,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 //**********************************
-export default function DataUpload() {
+export default function DataUpload2() {
   //* to keep selected view highlited after reloading
   const pathName = useLocation().pathname;
 
@@ -43,7 +43,7 @@ export default function DataUpload() {
             <ul>
               <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
                 <ArrowLeft className=" mr-2 inline h-5 w-5" />
-                <Link to="/account/mydevices">Back to Dashboard</Link>
+                <Link to="/profile/me">Back to Dashboard</Link>
               </li>
             </ul>
           </nav>
