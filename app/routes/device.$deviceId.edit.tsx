@@ -12,6 +12,7 @@ import { ArrowRightLeft, Lock, MapPin, FileText, Wifi, Sheet, Cpu, ArrowLeft, Up
 import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
+import { NavBar } from "~/components/nav-bar";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderArgs) {
@@ -82,12 +83,11 @@ export default function EditBox() {
   ];
 
   return (
-    <>
-      <div className="pointer-events-none z-10 flex h-14 w-full p-2">
-        <Home />
-      </div>
 
-      <div className="space-y-6 p-10 pb-14">
+      <div className="space-y-6 px-10 pb-16  font-helvetica">
+      <NavBar />
+
+
         {/*Toast notification */}
         <div className={toastOpen ? "mb-2" : ""}>
           <ToastPrimitive.Provider>
@@ -155,6 +155,5 @@ export default function EditBox() {
           </div>
         </div>
       </div>
-    </>
   );
 }
