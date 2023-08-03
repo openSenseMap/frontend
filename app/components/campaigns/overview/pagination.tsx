@@ -24,7 +24,10 @@ const Pagination = ({
 
   return (
     <nav
-      className={["inline-flex items-center justify-center gap-2", className]
+      className={[
+        "inline-flex w-full items-center justify-center gap-2",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
       {...attrs}
