@@ -88,12 +88,12 @@ export default function CampaignGrid({
                 </CardHeader>
                 <CardContent className="mt-2">
                   <Progress
-                    max={item.requiredParticipants ?? 0}
+                    max={item.minimumParticipants ?? 0}
                     value={item.participants.length}
                     // onMouseEnter={}
                   />
                   <span>
-                    {item.requiredParticipants} {t("total participants")}
+                    {item.minimumParticipants} {t("total participants")}
                   </span>
                 </CardContent>
               </Link>

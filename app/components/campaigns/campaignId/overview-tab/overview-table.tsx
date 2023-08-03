@@ -66,7 +66,7 @@ export default function OverviewTable({
             <TableRow>
               <TableCell>Teilnehmer</TableCell>
               <TableCell>
-                {campaign.participants.length} / {campaign.requiredParticipants}
+                {campaign.participants.length} / {campaign.minimumParticipants}
               </TableCell>
             </TableRow>
             <TableRow>
