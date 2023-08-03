@@ -1,4 +1,5 @@
 import { useMatches } from "@remix-run/react";
+import moment from "moment";
 import { useMemo } from "react";
 
 import type { User } from "~/models/user.server";
@@ -89,8 +90,7 @@ export function validateName(name: string) {
 //* validate passwords type (changePassword page)
 export function validatePassType(passwords: any) {
   const index = passwords.findIndex(
-    (password: any) =>
-      typeof password !== "string" || password.length === 0
+    (password: any) => typeof password !== "string" || password.length === 0
   );
   return { isValid: index == -1 ? true : false, index: index };
 }
@@ -99,4 +99,30 @@ export function validatePassType(passwords: any) {
 export function validatePassLength(passwords: any) {
   const index = passwords.findIndex((password: any) => password.length < 8);
   return { isValid: index == -1 ? true : false, index: index };
+}
+
+//* Get Minute Formatted String - last sensor measurement update
+export function getMinuteFormattedString(lastMeasurementAt: string) {
+  const secondsAgo = moment().diff(
+    moment(lastMeasurementAt),
+    "seconds");
+
+  if (secondsAgo === null || secondsAgo === undefined) {
+    return "-";
+  } else {
+    if (secondsAgo < 120) {
+      return "now";
+    }
+    return `${Math.floor(secondsAgo / 60)} minutes ago`;
+  }
+}
+
+export function diffFromCreateDate(DeviceCreatedAt: string) {
+  const createDate = moment(DeviceCreatedAt);
+  const yearsFromCreate = moment().diff(createDate, "years");
+  return `Created ${
+    yearsFromCreate === 0
+      ? `${moment().diff(createDate, "days")} day(s)`
+      : `${yearsFromCreate} year` + (yearsFromCreate > 1 ? "s" : "")
+  } ago`;
 }
