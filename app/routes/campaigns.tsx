@@ -19,6 +19,10 @@ export default function CampaignsPage() {
 
   const links = [
     {
+      name: "Info",
+      link: "./info",
+    },
+    {
       name: t("overview"),
       link: "./overview",
     },
@@ -26,10 +30,7 @@ export default function CampaignsPage() {
       name: "Tutorial",
       link: "./tutorial",
     },
-    {
-      name: "Info",
-      link: "./info",
-    },
+
     {
       name: "Support",
       link: "./support",
