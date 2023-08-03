@@ -560,7 +560,7 @@ export default function Campaigns() {
             className={`${
               showMap
                 ? "mx-auto mt-10 flex w-full flex-col gap-4"
-                : "mt-10 grid w-full gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"
+                : "mt-10 flex w-full flex-wrap gap-4"
             }`}
           >
             <span className="absolute left-0 top-0 ">
