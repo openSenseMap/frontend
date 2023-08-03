@@ -1,26 +1,25 @@
 export default function Info() {
   return (
-    <div className="h-full w-full">
-      <h1 className="ml-10 text-lg font-bold">
-        OpensenseMap Kampagnen Manager
+    <div className="flex h-full flex-col items-center justify-center gap-4">
+      <h1 className="dark:text-green-200 mt-8 text-4xl font-bold text-green-100 ">
+        Welcome
       </h1>
-      <div className="mt-4 ml-10 flex flex-col">
-        <span>
-          Der OpensenseMap Kampagnen Manager ist Ihr Werkzeug um Kampagnen für
-          die OpensenseMap zu erstellen oder an diesen teilzunehmen.{" "}
-        </span>
-        <span>
-          Citizen Scientists können sich hier zu einem gemeinsamen Ziel
-          zusammenfinden, sowie sich untereinander austauschen und organisieren.
-        </span>
-        <span className="mt-5">
-          Klicke{" "}
-          <a className="underlined text-blue-500" href="./">
-            hier
-          </a>{" "}
-          um aktuelle Kampagnen zu erkunden!
-        </span>
-      </div>
+      <h2 className="dark:text-green-200 text-xl font-semibold text-green-100 ">
+        to the
+      </h2>
+      <h1 className="dark:text-green-200 text-4xl text-green-100">
+        OpenSenseMap Campaign Manager
+      </h1>
+      <p className="mb-6 text-center text-lg font-semibold ">
+        Create or contribute to campaigns on the openSenseMap and connect with
+        fellow citizen scientists to unite efforts for a shared goal!
+      </p>
+      <a
+        href="./"
+        className="rounded-full bg-blue-700 px-6 py-2 text-lg text-white "
+      >
+        Explore Campaigns
+      </a>
     </div>
   );
 }
