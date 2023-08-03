@@ -43,9 +43,15 @@ export async function getCampaigns(
 ) {
   const campaigns = await prisma.campaign.findMany({
     include: {
-      participants: true,
+      participants: {
+        select: {
+          id: true,
+        },
+      },
       bookmarkedByUsers: {
-        where: { id: userId },
+        where: {
+          id: userId,
+        },
       },
     },
     // orderBy: [
@@ -128,10 +134,10 @@ export async function createCampaign({
   feature,
   ownerId,
   description,
+  instructions,
   priority,
   country,
-  requiredSensors,
-  requiredParticipants,
+  minimumParticipants,
   startDate,
   endDate,
   createdAt,
@@ -145,10 +151,11 @@ export async function createCampaign({
   | "title"
   | "feature"
   | "description"
+  | "instructions"
   | "priority"
   | "country"
   | "requiredSensors"
-  | "requiredParticipants"
+  | "minimumParticipants"
   | "startDate"
   | "endDate"
   | "createdAt"
@@ -167,11 +174,10 @@ export async function createCampaign({
       slug,
       feature: feature === null ? {} : feature,
       description,
+      instructions,
       priority,
-      // participantCount: 0,
       country,
-      requiredSensors,
-      requiredParticipants,
+      minimumParticipants,
       startDate,
       endDate,
       createdAt,

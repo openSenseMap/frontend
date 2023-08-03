@@ -94,6 +94,7 @@ export async function action({ request }: ActionArgs) {
 
   const title = formData.get("title");
   const description = formData.get("description");
+  const instructions = formData.get("instructions");
   const begin = formData.get("startDate");
   const startDate =
     begin && typeof begin === "string" ? new Date(begin) : undefined;
@@ -111,26 +112,21 @@ export async function action({ request }: ActionArgs) {
   const exposure = formData.get("exposure") as ExposureType;
   const hardwareAvailable =
     formData.get("hardware_available") === "on" ? true : false;
-  let requiredParticipants: FormDataEntryValue | number =
-    formData.get("requiredParticipants") || 1;
-  let requiredSensors: FormDataEntryValue | number =
-    formData.get("requiredSensors") || 1;
-  if (typeof requiredParticipants === "string") {
-    requiredParticipants = parseInt(requiredParticipants);
-  }
-  if (typeof requiredSensors === "string") {
-    requiredSensors = parseInt(requiredSensors);
+  let minimumParticipants: FormDataEntryValue | number =
+    formData.get("minimumParticipants") || 1;
+
+  if (typeof minimumParticipants === "string") {
+    minimumParticipants = parseInt(minimumParticipants);
   }
 
   const campaignData = {
     title,
     description,
+    instructions,
     feature,
     priority,
     country,
-    participantCount: 0,
-    requiredParticipants: requiredParticipants,
-    requiredSensors: requiredSensors,
+    minimumParticipants: minimumParticipants,
     createdAt,
     updatedAt,
     startDate,
@@ -181,12 +177,13 @@ export default function CreateCampaign() {
   const { features } = useContext(FeatureContext);
   console.log(features);
   const textAreaRef = useRef();
-  const [description, setDescription] = useState<string | undefined>("");
+  const [instructions, setInstructions] = useState<string | undefined>("");
   const [selectedPhenomena, setSelectedPhenomena] = useState<string[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
-  const descriptionRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
+  const instructionsRef = useRef<HTMLDivElement>(null);
   const priorityRef = useRef<HTMLInputElement>(null);
-  const requiredParticipantsRef = useRef<HTMLInputElement>(null);
+  const minimumParticipantsRef = useRef<HTMLInputElement>(null);
   const requiredSensorsRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
@@ -310,8 +307,8 @@ export default function CreateCampaign() {
         scrollToRef(priorityRef);
         break;
       }
-      case "requiredParticipants": {
-        scrollToRef(requiredParticipantsRef);
+      case "minimumParticipants": {
+        scrollToRef(minimumParticipantsRef);
         break;
       }
       case "requiredSensors": {
@@ -430,30 +427,59 @@ export default function CreateCampaign() {
           />
 
           <div>
-            <label htmlFor="description" className="flex justify-between">
+            <label htmlFor="description">
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
                 {t("description")}
               </span>
+            </label>
+            <div className="mt-1">
+              <input
+                ref={descriptionRef}
+                id="description"
+                required
+                autoFocus={true}
+                name="description"
+                type="description"
+                autoComplete="description"
+                aria-invalid={
+                  actionData?.error?.issues[0].message ? true : undefined
+                }
+                aria-describedby="description-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.error?.issues[0].path[0] === "description" && (
+                <div className="pt-1 text-red-500" id="email-error">
+                  {actionData.error.issues[0].message}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="instructions" className="flex justify-between">
+              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+                {t("Instructions")}
+              </span>
               {InfoCard({
                 content: (
-                  <p>Geben Sie hier eine Beschreibung für Ihre Kampagne</p>
+                  <p>Geben Sie hier eine Anleitung für Ihre Teilnehmer</p>
                 ),
               })}
             </label>
-            <div className="mt-1" ref={descriptionRef}>
+            <div className="mt-1" ref={instructionsRef}>
               <textarea
                 className="hidden"
-                value={description}
-                name="description"
-                id="description"
+                value={instructions}
+                name="instructions"
+                id="instructions"
               ></textarea>
               <ClientOnly>
                 {() => (
                   <>
                     <MarkdownEditor
                       textAreaRef={textAreaRef}
-                      comment={description}
-                      setComment={setDescription}
+                      comment={instructions}
+                      setComment={setInstructions}
                     />
                     <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
                       <span className="text-gray text-xs leading-4">
@@ -467,19 +493,19 @@ export default function CreateCampaign() {
                 )}
               </ClientOnly>
               {/* <textarea
-                id="description"
-                ref={descriptionRef}
-                name="description"
-                // type="description"
-                autoComplete="new-description"
+                id="instructions"
+                ref={instructionsRef}
+                name="instructions"
+                // type="instructions"
+                autoComplete="new-instructions"
                 aria-invalid={
                   actionData?.error?.issues[0].message ? true : undefined
                 }
-                aria-describedby="description-error"
+                aria-describedby="instructions-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               /> */}
-              {actionData?.error?.issues[0].path[0] === "description" && (
-                <div className="pt-1 text-red-500" id="description-error">
+              {actionData?.error?.issues[0].path[0] === "instructions" && (
+                <div className="pt-1 text-red-500" id="instructions-error">
                   {actionData.error.issues[0].message}
                 </div>
               )}
@@ -545,7 +571,7 @@ export default function CreateCampaign() {
           </div>
           <div>
             <label
-              htmlFor="requiredParticipants"
+              htmlFor="minimumParticipants"
               className="flex justify-between"
             >
               <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
@@ -562,51 +588,19 @@ export default function CreateCampaign() {
             </label>
             <div className="mt-1">
               <input
-                id="requiredParticipants"
-                ref={requiredParticipantsRef}
-                name="requiredParticipants"
+                id="minimumParticipants"
+                ref={minimumParticipantsRef}
+                name="minimumParticipants"
                 type="number"
-                autoComplete="new-requiredParticipants"
+                autoComplete="new-minimumParticipants"
                 aria-invalid={
                   actionData?.error?.issues[0].message ? true : undefined
                 }
-                aria-describedby="requiredParticipants-error"
+                aria-describedby="minimumParticipants-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.error?.issues[0].path[0] ===
-                "requiredParticipants" && (
-                <div className="pt-1 text-red-500" id="description-error">
-                  {actionData.error.issues[0].message}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="hidden">
-            <label htmlFor="requiredSensors" className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
-                {t("sensors")}
-              </span>
-              {InfoCard({
-                content: (
-                  <p>Wie viele Sensoren benötigen Sie für die Kampagne</p>
-                ),
-              })}
-            </label>
-            <div className="mt-1">
-              <input
-                id="requiredSensors"
-                ref={requiredSensorsRef}
-                name="requiredSensors"
-                type="number"
-                value={1}
-                autoComplete="new-requiredSensors"
-                aria-invalid={
-                  actionData?.error?.issues[0].message ? true : undefined
-                }
-                aria-describedby="requiredSensors-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.error?.issues[0].path[0] === "requiredSensors" && (
+                "minimumParticipants" && (
                 <div className="pt-1 text-red-500" id="description-error">
                   {actionData.error.issues[0].message}
                 </div>

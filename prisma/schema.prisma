@@ -108,12 +108,13 @@ enum Model {
 }
 
 model Device {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   name        String
   description String?
   exposure    Exposure
   useAuth     Boolean?
   model       String?
+  campaign    Campaign[]
 
   // Flag to show device on profile
   public Boolean @default(false)
@@ -164,29 +165,30 @@ model Measurement {
 }
 
 model Campaign {
-  id                   String          @id @default(uuid())
-  title                String
-  slug                 String          @unique
-  feature              Json
-  owner                User            @relation("OwnedCampaigns", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  ownerId              String
-  description          String
-  priority             Priority
-  country              String?
-  participants         User[]          @relation("CampaignParticipant")
-  requiredParticipants Int?
-  requiredSensors      Int?
-  createdAt            DateTime
-  updatedAt            DateTime
-  startDate            DateTime
-  endDate              DateTime?
-  phenomena            String[]
-  centerpoint          Json?
-  events               CampaignEvent[]
-  exposure             Exposure
-  hardwareAvailable    Boolean
-  comments             Comment[]
-  bookmarkedByUsers    User[]          @relation("UserBookmarkedCampaigns")
+  id                  String          @id @default(uuid())
+  title               String
+  slug                String          @unique
+  feature             Json
+  owner               User            @relation("OwnedCampaigns", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId             String
+  instructions        String?
+  description         String
+  priority            Priority
+  country             String?
+  participants        User[]          @relation("CampaignParticipant")
+  minimumParticipants Int?
+  createdAt           DateTime
+  updatedAt           DateTime
+  startDate           DateTime
+  endDate             DateTime?
+  phenomena           String[]
+  centerpoint         Json?
+  events              CampaignEvent[]
+  exposure            Exposure
+  hardwareAvailable   Boolean
+  comments            Comment[]
+  devices             Device[]
+  bookmarkedByUsers   User[]          @relation("UserBookmarkedCampaigns")
 }
 
 model Comment {
