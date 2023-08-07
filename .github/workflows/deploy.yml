@@ -98,7 +98,7 @@ jobs:
 
       - name: 🐳 Docker compose
         # the sleep is just there to give time for postgres to get started
-        run: docker-compose up -d && sleep 60
+        run: docker-compose -f docker-compose.ci.yml up -d && sleep 60
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
@@ -106,7 +106,8 @@ jobs:
         uses: nick-fields/retry@v2.8.3
         with:
           timeout_minutes: 10
-          max_attempts: 3
+          max_attempts: 5
+          retry_wait_seconds: 45
           retry_on: error
           command: npx prisma migrate reset --force
 

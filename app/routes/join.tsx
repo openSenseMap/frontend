@@ -72,7 +72,23 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  //* check if user exist by email
+  //* user name shouldn't be unique
+  //* check if user exists by name
+  /* const existingUserByName = await getUserByName(name);
+  if (existingUserByName) {
+    return json(
+      {
+        errors: {
+          name: null,
+          email: null,
+          password: "Please use at least 8 characters.",
+        },
+      },
+      { status: 400 }
+    );
+  } */
+
+  //* check if user exists by email
   const existingUserByEmail = await getUserByEmail(email);
   if (existingUserByEmail) {
     return json(

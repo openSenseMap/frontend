@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
@@ -6,9 +6,7 @@ import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import { useState, useRef } from "react";
-import { useHotkeys } from "@mantine/hooks";
-import OverlaySearch from "~/components/search/overlay-search";
+import { useRef } from "react";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
@@ -51,46 +49,31 @@ export default function Explore() {
   const data = useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
 
-  const [showSearch, setShowSearch] = useState<boolean>(false);
-
-  /**
-   * Focus the search input when the search overlay is displayed
-   */
-  const focusSearchInput = () => {
-    searchRef.current?.focus();
-  };
-
-  /**
-   * Display the search overlay when the ctrl + k key combination is pressed
-   */
-  useHotkeys([
-    [
-      "ctrl+K",
-      () => {
-        setShowSearch(!showSearch);
-        setTimeout(() => {
-          focusSearchInput();
-        }, 100);
-      },
-    ],
-  ]);
+  //* fly to sensebox location when url inludes deviceId
+  const { deviceId } = useParams();
+  var deviceLoc = [1.3, 2.3];
+  if (deviceId) {
+    const device = data.devices.features.find(
+      (device: any) => device.properties.id === deviceId
+    );
+    deviceLoc = [device?.properties.latitude, device?.properties.longitude];
+  }
 
   return (
     <div className="h-full w-full">
       <MapProvider>
         <Header devices={data.devices} />
-        <Map ref={mapRef}>
+        <Map
+          ref={mapRef}
+          initialViewState={
+            deviceId
+              ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
+              : { latitude: 7, longitude: 52, zoom: 2 }
+          }
+        >
           <ClusterLayer devices={data.devices} />
           <Toaster />
-          {showSearch ? (
-            <OverlaySearch
-              devices={data.devices}
-              searchRef={searchRef}
-              setShowSearch={setShowSearch}
-            />
-          ) : null}
           <main className="absolute bottom-0 z-10 w-full">
             <Outlet />
           </main>
