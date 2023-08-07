@@ -1,5 +1,5 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 
@@ -25,7 +25,7 @@ export default function EditBoxSensors() {
   return (
     <div className="grid grid-rows-1">
       <div className="flex min-h-full items-center justify-center">
-        <div className="font-helvetica mx-auto w-full text-[14px]">
+        <div className="mx-auto w-full font-helvetica text-[14px]">
           {/* Form */}
           <Form method="post" noValidate>
             {/* Heading */}
@@ -42,7 +42,7 @@ export default function EditBoxSensors() {
             <hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
             <textarea
-              className="font-monospace my-5 h-[350px] w-full rounded-[1px] border-[#ccc] text-[90%]"
+              className="my-5 h-[350px] w-full rounded-[1px] border-[#ccc] font-monospace text-[90%]"
               defaultValue={dummyScript}
             ></textarea>
 

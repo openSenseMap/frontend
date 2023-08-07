@@ -7,7 +7,9 @@ import {
   updateUserName,
   updateUserlocale,
   verifyLogin,
-  deleteUserByEmail , getUserByEmail } from "~/models/user.server";
+  deleteUserByEmail,
+  getUserByEmail,
+} from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
@@ -31,9 +33,8 @@ export async function loader({ request }: LoaderArgs) {
 //*****************************************************
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const { intent, ...values } = Object.fromEntries(formData);
-  const { name, email, passwordUpdate, passwordDelete, language, ...rest } =
-    values;
+  const { intent, name, email, passwordUpdate, passwordDelete, language } =
+    Object.fromEntries(formData);
 
   const errors = {
     name: name ? null : "Invalid name",

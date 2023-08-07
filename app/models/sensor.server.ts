@@ -1,4 +1,4 @@
-import type { Device, Sensor } from "@prisma/client";
+import type { Sensor } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 export function getSensors(deviceId: Sensor["deviceId"]) {
@@ -8,7 +8,7 @@ export function getSensors(deviceId: Sensor["deviceId"]) {
       title: true,
       unit: true,
       sensorType: true,
-      icon: true
+      icon: true,
     },
     where: { deviceId },
   });
@@ -18,8 +18,8 @@ export function addNewSensor({
   title,
   unit,
   sensorType,
-  deviceId
-}: Pick<Sensor, "title" | "unit" | "sensorType" |"deviceId">) {
+  deviceId,
+}: Pick<Sensor, "title" | "unit" | "sensorType" | "deviceId">) {
   return prisma.sensor.create({
     data: {
       title: title,
@@ -36,7 +36,7 @@ export function updateSensor({
   unit,
   sensorType,
   icon,
-}: Pick<Sensor, "id" | "title" | "unit" | "sensorType" | "icon">) {  
+}: Pick<Sensor, "id" | "title" | "unit" | "sensorType" | "icon">) {
   return prisma.sensor.update({
     data: {
       title: title,
