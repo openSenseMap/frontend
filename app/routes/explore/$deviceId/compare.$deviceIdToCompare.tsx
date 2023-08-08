@@ -1,13 +1,15 @@
-import type { Sensor } from "@prisma/client";
+import type { Prisma, Sensor } from "@prisma/client";
 import { json, redirect, type LoaderArgs } from "@remix-run/node";
 import {
+  Form,
   useLoaderData,
   useNavigate,
   useNavigation,
   useSearchParams,
+  useSubmit,
 } from "@remix-run/react";
 import { ChevronUp, LineChart, Minus, Share2, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import ShareLink from "~/components/device-detail/share-link";
@@ -151,7 +153,6 @@ export async function loader({ params, request }: LoaderArgs) {
 
 export default function CompareDevices() {
   const data = useLoaderData<typeof loader>();
-  console.log(data);
 
   const navigation = useNavigation();
   const nodeRef = useRef(null);
@@ -161,6 +162,13 @@ export default function CompareDevices() {
   const [openGraph, setOpenGraph] = useState(
     Boolean(data.selectedSensors.length > 0 ? true : false)
   );
+
+  // form submission handler
+  const submit = useSubmit();
+
+  useEffect(() => {
+    setOpenGraph(Boolean(data.selectedSensors.length));
+  }, [data.selectedSensors]);
 
   const [searchParams] = useSearchParams();
   // get list of selected sensor ids from URL search params
@@ -312,41 +320,135 @@ export default function CompareDevices() {
                         Sensors
                       </AccordionTrigger>
                       <AccordionContent>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[100px]">
-                                Phenomenon
-                              </TableHead>
-                              <TableHead>{data.device1.name}</TableHead>
-                              <TableHead>{data.device2.name}</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {data.sensorGroups.map((sensorGroup, index) => (
-                              <TableRow key={index}>
-                                <TableCell className="font-medium">
-                                  {sensorGroup[0]?.title ||
-                                    sensorGroup[1]?.title}
-                                </TableCell>
-                                <TableCell>
-                                  {sensorGroup[0]
-                                    ? sensorGroup[0]?.lastMeasurement?.value +
-                                      " " +
-                                      sensorGroup[0]?.unit
-                                    : "---"}
-                                </TableCell>
-                                <TableCell>
-                                  {sensorGroup[1]
-                                    ? sensorGroup[1]?.lastMeasurement?.value +
-                                      " " +
-                                      sensorGroup[1]?.unit
-                                    : "---"}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                        <Form
+                          method="get"
+                          onChange={(e) => {
+                            submit(e.currentTarget);
+                          }}
+                          className={
+                            navigation.state === "loading"
+                              ? "pointer-events-none"
+                              : ""
+                          }
+                        >
+                          <div>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Phenomenon</TableHead>
+                                  <TableHead>{data.device1.name}</TableHead>
+                                  <TableHead>{data.device2.name}</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {data.sensorGroups.map(
+                                  (sensorGroup: Sensor[], index) => {
+                                    // dont really know why this is necessary - some kind of TypeScript/i18n bug?
+                                    const lastMeasurement0 = sensorGroup[0]
+                                      ?.lastMeasurement as Prisma.JsonObject;
+                                    const value0 =
+                                      lastMeasurement0?.value as string;
+                                    const lastMeasurement1 = sensorGroup[1]
+                                      ?.lastMeasurement as Prisma.JsonObject;
+                                    const value1 =
+                                      lastMeasurement1?.value as string;
+
+                                    return (
+                                      <TableRow key={index}>
+                                        <TableCell className="font-medium">
+                                          {sensorGroup[0]?.title ||
+                                            sensorGroup[1]?.title}
+                                        </TableCell>
+                                        <TableCell>
+                                          {sensorGroup[0] ? (
+                                            <label htmlFor={sensorGroup[0].id}>
+                                              <input
+                                                className="peer hidden"
+                                                disabled={
+                                                  !sensorIds.includes(
+                                                    sensorGroup[0].id
+                                                  ) &&
+                                                  searchParams.getAll("sensor")
+                                                    .length >= 2
+                                                    ? true
+                                                    : false
+                                                } // check if there are already two selected and this one is not one of them
+                                                type="checkbox"
+                                                name="sensor"
+                                                id={sensorGroup[0].id}
+                                                value={sensorGroup[0].id}
+                                                defaultChecked={sensorIds.includes(
+                                                  sensorGroup[0].id
+                                                )}
+                                              />
+                                              <p
+                                                className={
+                                                  "cursor-pointer truncate text-sm font-medium leading-5" +
+                                                  (sensorIds.includes(
+                                                    sensorGroup[0].id
+                                                  )
+                                                    ? " text-green-100"
+                                                    : "text-gray-900")
+                                                }
+                                              >
+                                                {sensorGroup[0]
+                                                  ? value0 +
+                                                    " " +
+                                                    sensorGroup[0]?.unit
+                                                  : "---"}
+                                              </p>
+                                            </label>
+                                          ) : null}
+                                        </TableCell>
+                                        <TableCell>
+                                          {sensorGroup[1] ? (
+                                            <label htmlFor={sensorGroup[1].id}>
+                                              <input
+                                                className="peer hidden"
+                                                disabled={
+                                                  !sensorIds.includes(
+                                                    sensorGroup[1].id
+                                                  ) &&
+                                                  searchParams.getAll("sensor")
+                                                    .length >= 2
+                                                    ? true
+                                                    : false
+                                                } // check if there are already two selected and this one is not one of them
+                                                type="checkbox"
+                                                name="sensor"
+                                                id={sensorGroup[1].id}
+                                                value={sensorGroup[1].id}
+                                                defaultChecked={sensorIds.includes(
+                                                  sensorGroup[1].id
+                                                )}
+                                              />
+                                              <p
+                                                className={
+                                                  "cursor-pointer truncate text-sm font-medium leading-5" +
+                                                  (sensorIds.includes(
+                                                    sensorGroup[1].id
+                                                  )
+                                                    ? " text-green-100"
+                                                    : "text-gray-900")
+                                                }
+                                              >
+                                                {sensorGroup[1]
+                                                  ? value1 +
+                                                    " " +
+                                                    sensorGroup[1]?.unit
+                                                  : "---"}
+                                              </p>
+                                            </label>
+                                          ) : null}
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  }
+                                )}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </Form>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
