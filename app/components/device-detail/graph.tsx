@@ -29,7 +29,6 @@ import { Download, Minus, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
-import { getGraphColor } from "~/lib/utils";
 import {
   Select,
   SelectContent,
@@ -54,6 +53,7 @@ ChartJS.register(
 export default function Graph(props: any) {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
+  console.log("🚀 ~ file: graph.tsx:56 ~ Graph ~ loaderData:", loaderData)
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
@@ -85,21 +85,16 @@ export default function Graph(props: any) {
                 label: loaderData.selectedSensors[0].title,
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
-                // I think we have to define the color in the loader already? - at least before this initialization
-                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[0].unit
-                ),
+                borderColor: loaderData.selectedSensors[0].color,
+                backgroundColor: loaderData.selectedSensors[0].color,
                 yAxisID: "y",
               },
               {
                 label: loaderData.selectedSensors[1].title,
                 data: loaderData.selectedSensors[1].data,
                 pointRadius: 0,
-                borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[1].unit
-                ),
+                borderColor: loaderData.selectedSensors[1].color,
+                backgroundColor: loaderData.selectedSensors[1].color,
                 yAxisID: "y1",
               },
             ]
@@ -108,10 +103,8 @@ export default function Graph(props: any) {
                 label: loaderData.selectedSensors[0].title,
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
-                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[0].unit
-                ),
+                borderColor: loaderData.selectedSensors[0].color,
+                backgroundColor: loaderData.selectedSensors[0].color,
                 yAxisID: "y",
               },
             ],
@@ -266,6 +259,7 @@ export default function Graph(props: any) {
                 <X
                   className="cursor-pointer"
                   onClick={() =>
+                    // TODO: fix this
                     routeChange("/explore/" + matches[0].params.deviceId)
                   }
                 />

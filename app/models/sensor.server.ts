@@ -3,13 +3,6 @@ import { prisma } from "~/db.server";
 
 export function getSensors(deviceId: Sensor["deviceId"]) {
   return prisma.sensor.findMany({
-    select: {
-      id: true,
-      title: true,
-      unit: true,
-      sensorType: true,
-      icon: true,
-    },
     where: { deviceId },
   });
 }
