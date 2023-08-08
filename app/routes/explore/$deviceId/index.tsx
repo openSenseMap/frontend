@@ -7,6 +7,8 @@ import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
+import { getGraphColor } from "~/lib/utils";
+import { getSensors } from "~/models/sensor.server";
 
 export async function loader({ params, request }: LoaderArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
@@ -17,11 +19,12 @@ export async function loader({ params, request }: LoaderArgs) {
   }
 
   const device = await getDevice({ id: params.deviceId });
+  const sensors = await getSensors(params.deviceId);
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
   const aggregation = url.searchParams.get("aggregation") || "raw";
-  var sensorsToQuery = device?.sensors.filter((sensor: Sensor) =>
+  var sensorsToQuery = sensors.filter((sensor: Sensor) =>
     sensorIds.includes(sensor.id)
   );
 
@@ -36,26 +39,26 @@ export async function loader({ params, request }: LoaderArgs) {
   const selectedSensors: Sensor[] = await Promise.all(
     sensorsToQuery.map(async (sensor: Sensor) => {
       const sensorData = await getMeasurement(sensor.id, aggregation);
-      // const sensorData = await getMeasurements(
-      //   params.deviceId,
-      //   sensor.id,
-      //   new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
-      //   new Date()
-      // );
       return {
         ...sensor,
         data: sensorData as any,
       };
     })
   );
+  selectedSensors.map((sensor: any) => {
+    const color = getGraphColor(sensor.title);
+    sensor.color = color;
+    return color;
+  });
   // Combine the device data with the selected sensors and return the result as JSON + add env variable
   const data = {
     device: device,
+    sensors: sensors,
     selectedSensors: selectedSensors,
     aggregation: aggregation,
     OSEM_API_URL: process.env.OSEM_API_URL,
   };
-  // console.log(data);
+
   return typedjson(data);
 }
 

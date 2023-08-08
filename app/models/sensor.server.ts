@@ -1,15 +1,15 @@
-import type { Device, Sensor } from "@prisma/client";
+import type { Sensor } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 export function getSensors(deviceId: Sensor["deviceId"]) {
   return prisma.sensor.findMany({
-    select: {
-      id: true,
-      title: true,
-      unit: true,
-      sensorType: true,
-      icon: true
-    },
+    // select: {
+    //   id: true,
+    //   title: true,
+    //   unit: true,
+    //   sensorType: true,
+    //   icon: true
+    // },
     where: { deviceId },
   });
 }

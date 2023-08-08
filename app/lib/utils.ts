@@ -5,6 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// TODO: add german phenomena
 export function getGraphColor(phenomena: string) {
   switch (phenomena.toLowerCase()) {
     case "barometric pressure":
