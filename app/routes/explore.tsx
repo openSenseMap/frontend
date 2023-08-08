@@ -74,9 +74,7 @@ export default function Explore() {
         >
           <ClusterLayer devices={data.devices} />
           <Toaster />
-          <main className="absolute bottom-0 z-10 w-full">
-            <Outlet />
-          </main>
+          <Outlet />
         </Map>
       </MapProvider>
     </div>
