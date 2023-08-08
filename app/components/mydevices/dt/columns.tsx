@@ -1,9 +1,9 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Exposure } from "@prisma/client";
+import type { Exposure } from "@prisma/client";
 
 export type SenseBox = {
   id: string;
@@ -17,14 +17,14 @@ export const columns: ColumnDef<SenseBox>[] = [
     accessorKey: "name",
     header: ({ column }) => {
       return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="pl-0"
-          >
-            Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="pl-0"
+        >
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
       );
     },
   },

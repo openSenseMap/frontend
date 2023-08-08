@@ -1,5 +1,5 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
@@ -29,7 +29,7 @@ export default function EditBoxMQTT() {
   return (
     <div className="grid grid-rows-1">
       <div className="flex min-h-full items-center justify-center">
-        <div className="font-helvetica mx-auto w-full text-[14px]">
+        <div className="mx-auto w-full font-helvetica text-[14px]">
           {/* Form */}
           <Form method="post" noValidate>
             {/* Heading */}
@@ -57,12 +57,12 @@ export default function EditBoxMQTT() {
 
             <div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
               <p>
-                openSenseMap offers a{" "} 
+                openSenseMap offers a{" "}
                 <a
                   href="http://mqtt.org/"
                   className="cursor-pointer text-[#4eaf47]"
                 >
-                   MQTT{" "}
+                  MQTT{" "}
                 </a>{" "}
                 client for connecting to public brokers. Documentation for the
                 parameters is provided{" "}
@@ -139,7 +139,11 @@ export default function EditBoxMQTT() {
                 Message format*
               </label>
               <div className="mt-1">
-                <RadioGroup defaultValue="json" disabled={!mqttVal} className="disabled:cursor-not-allowed">
+                <RadioGroup
+                  defaultValue="json"
+                  disabled={!mqttVal}
+                  className="disabled:cursor-not-allowed"
+                >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="json" id="r1" />
                     <Label htmlFor="r1">json</Label>

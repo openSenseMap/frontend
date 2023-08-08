@@ -1,5 +1,5 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { RefreshCw, Save } from "lucide-react";
@@ -61,7 +61,7 @@ export default function EditBoxSecurity() {
             </div>
 
             <div className="my-6 flex items-center space-x-2">
-              <Checkbox id="enableAuth"/>
+              <Checkbox id="enableAuth" />
               <label
                 htmlFor="enableAuth"
                 className="cursor-pointer text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -115,7 +115,7 @@ export default function EditBoxSecurity() {
                   name="accessToken"
                   id="accessToken"
                   defaultValue="dummy token"
-                  className="form-control rounded-bl-none rounded-tl-none  border-[#ccc;] border-l-[0px]"
+                  className="form-control rounded-bl-none rounded-tl-none  border-l-[0px] border-[#ccc;]"
                   type={tokenVisibility ? "text" : "password"}
                   disabled
                 />

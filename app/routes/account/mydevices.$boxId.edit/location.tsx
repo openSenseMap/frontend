@@ -16,13 +16,8 @@ import {
   getDeviceWithoutSensors,
   updateDeviceLocation,
 } from "~/models/device.server";
-import {
-  Map,
-  MapProvider,
-  Marker,
-  MarkerDragEvent,
-  NavigationControl,
-} from "react-map-gl";
+import type { MarkerDragEvent } from "react-map-gl";
+import { Map, MapProvider, Marker, NavigationControl } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 
 //*****************************************************
@@ -88,7 +83,7 @@ export default function EditLocation() {
     });
   }, []);
   //* to view toast on edit-page
-  const [setToastOpen]: any = useOutletContext();
+  const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>();
 
   React.useEffect(() => {
     //* if sensors data were updated successfully
@@ -96,7 +91,7 @@ export default function EditLocation() {
       //* show notification when data is successfully updated
       setToastOpen(true);
     }
-  }, [actionData]);
+  }, [actionData, setToastOpen]);
 
   return (
     <div className="grid grid-rows-1">
@@ -250,7 +245,7 @@ export default function EditLocation() {
                   });
                 }}
                 className="mb-10 mt-4 font-semibold
-                text-[#337ab7] 
+                text-[#337ab7]
                 hover:text-[#23527c] hover:underline"
               >
                 Reset location

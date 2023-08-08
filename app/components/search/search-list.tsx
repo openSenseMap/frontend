@@ -24,9 +24,9 @@ export default function SearchList(props: SearchListProps) {
     props.searchResultsDevice.length + props.searchResultsLocation.length
   );
 
-  var length =
+  const length =
     props.searchResultsDevice.length + props.searchResultsLocation.length;
-  var searchResultsAll = props.searchResultsDevice.concat(
+  const searchResultsAll = props.searchResultsDevice.concat(
     props.searchResultsLocation
   );
   const [selected, setSelected] = useState(searchResultsAll[cursor]);
@@ -36,7 +36,6 @@ export default function SearchList(props: SearchListProps) {
     (selected.type === "device"
       ? `/explore/${selected.deviceId}`
       : "/explore") +
-      // @ts-ignore
       (searchParams.size > 0 ? "?" + searchParams.toString() : "")
   );
 
@@ -46,7 +45,6 @@ export default function SearchList(props: SearchListProps) {
         (result.type === "device"
           ? `/explore/${result.deviceId}`
           : "/explore") +
-        // @ts-ignore
         (searchParams.size > 0 ? "?" + searchParams.toString() : "")
       );
     },

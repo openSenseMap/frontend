@@ -1,23 +1,11 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-} from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
-import { ArrowLeft, Upload } from "lucide-react";
-import { Input } from "~/components/ui/input";
+import { ArrowLeft } from "lucide-react";
 import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { getDeviceWithoutSensors } from "~/models/device.server";
 import { getSensors } from "~/models/sensor.server";
 
@@ -45,7 +33,6 @@ export async function action({ request }: ActionArgs) {
 
 //**********************************
 export default function DeviceOnverview() {
-
   const { deviceData, sensorsData } = useLoaderData<typeof loader>();
 
   return (
@@ -54,7 +41,7 @@ export default function DeviceOnverview() {
         <Home />
       </div>
 
-      <div className="space-y-6 p-10 pb-14 mx-auto max-w-5xl font-helvetica">
+      <div className="mx-auto max-w-5xl space-y-6 p-10 pb-14 font-helvetica">
         <div className="rounded text-[#676767]">
           <ArrowLeft className=" mr-2 inline h-5 w-5" />
           <Link to="/account/mydevices">Back to Dashboard</Link>
@@ -134,15 +121,15 @@ export default function DeviceOnverview() {
         {/* sensers table */}
         <Table>
           <TableBody className="border-[1px]">
-            {sensorsData.map((sensor)=>(
+            {sensorsData.map((sensor) => (
               <TableRow key={sensor.id}>
-              <TableCell className=" w-[50%] border-r-[1px]">
-                {sensor?.title}
-              </TableCell>
-              <TableCell className=" w-[50%] border-r-[1px] font-semibold">
-                {sensor?.id}
-              </TableCell>
-            </TableRow>
+                <TableCell className=" w-[50%] border-r-[1px]">
+                  {sensor?.title}
+                </TableCell>
+                <TableCell className=" w-[50%] border-r-[1px] font-semibold">
+                  {sensor?.id}
+                </TableCell>
+              </TableRow>
             ))}
           </TableBody>
         </Table>

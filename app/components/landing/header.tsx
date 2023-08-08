@@ -1,5 +1,4 @@
-import { Link, useLoaderData } from "@remix-run/react";
-import invariant from "tiny-invariant";
+import { Link } from "@remix-run/react";
 import { useState } from "react";
 import LanguageSelector from "./language-selector";
 import ThemeSelector from "./theme-selector";
@@ -28,28 +27,7 @@ const links = [
 ];
 
 export default function Header() {
-  const { header } = useLoaderData<{
-    header: { userId: string; userName: string; };
-  }>();
   const [openMenu, setOpenMenu] = useState(false);
-
-  //* User Id and Name
-  const userId = header.userId;
-  const userName = header.userName;
-
-  //* To control user menu visibility
-  const userMenu = () => {
-    const profileMenu = document.querySelector(".profile-menu");
-    invariant(profileMenu, "profileMenu is not found");
-    let profileMenuStatus = profileMenu.classList.contains("invisible");
-    if (profileMenuStatus) {
-      profileMenu.classList.remove("invisible");
-      profileMenu.classList.add("visible");
-    } else {
-      profileMenu.classList.remove("visible");
-      profileMenu.classList.add("invisible");
-    }
-  };
 
   return (
     <nav className="relative z-50 mx-auto flex max-w-7xl justify-between px-2 py-2 dark:border-gray-300 dark:bg-black sm:px-6 md:py-8 lg:px-8">
