@@ -14,6 +14,7 @@ import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 import { getUserId, getUserName } from "~/session.server";
 import { useTranslation } from "react-i18next";
+import PricingPlans from "~/components/landing/pricing-plans";
 
 export const loader = async ({ request }: LoaderArgs) => {
   let locale = await i18next.getLocale(request);
@@ -164,6 +165,11 @@ export default function Index() {
       <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Tools />
+        </div>
+      </section>
+      <section className="py-20 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <PricingPlans />
         </div>
       </section>
       <section className="py-20 sm:py-20">
