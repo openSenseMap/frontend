@@ -7,7 +7,16 @@ import { getUserId } from "~/session.server";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import { ArrowRightLeft, Lock, MapPin, FileText, Wifi, Sheet, Cpu, ArrowLeft, UploadCloud
+import {
+  ArrowRightLeft,
+  Lock,
+  MapPin,
+  FileText,
+  Wifi,
+  Sheet,
+  Cpu,
+  ArrowLeft,
+  UploadCloud,
 } from "lucide-react";
 import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";

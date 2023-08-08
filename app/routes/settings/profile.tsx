@@ -3,12 +3,12 @@ import {
   Link,
   Outlet,
   useActionData,
-  useFormAction,
+  // useFormAction,
   useLoaderData,
-  useNavigation,
+  // useNavigation,
 } from "@remix-run/react";
-import type { DataFunctionArgs } from "@remix-run/node";
-import { json, type ActionArgs, redirect } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import type { DataFunctionArgs, ActionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
@@ -101,13 +101,13 @@ export async function action({ request }: ActionArgs) {
 export default function EditUserProfilePage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-  const formAction = useFormAction();
+  // const navigation = useNavigation();
+  // const formAction = useFormAction();
 
-  const isSubmitting =
-    navigation.state === "submitting" &&
-    navigation.formAction === formAction &&
-    navigation.formMethod === "post";
+  // const isSubmitting =
+  //   navigation.state === "submitting" &&
+  //   navigation.formAction === formAction &&
+  //   navigation.formMethod === "post";
 
   // The `useForm` hook will return everything you need to setup a form
   // including the error and config of each field
