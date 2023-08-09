@@ -38,6 +38,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -53,22 +59,21 @@ ChartJS.register(
 export default function Graph(props: any) {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
-  console.log("🚀 ~ file: graph.tsx:56 ~ Graph ~ loaderData:", loaderData)
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
 
   // form submission handler
   const submit = useSubmit();
-  let [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
 
-  let matches = useMatches();
-  let navigate = useNavigate();
+  const matches = useMatches();
+  const navigate = useNavigate();
   const routeChange = (newPath: string) => {
-    let path = newPath;
+    const path = newPath;
     navigate(path);
   };
 
@@ -186,13 +191,40 @@ export default function Graph(props: any) {
     },
   };
 
-  function handleDownloadClick() {
+  function handlePngDownloadClick() {
     if (chartRef.current) {
       if (chartRef.current === null) return;
       // why is chartRef.current always never???
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
+  }
+
+  function handleCsvDownloadClick() {
+    const labels = lineData.labels; //chartRef.current.data.labels;
+    const datasets = lineData.datasets; //chartRef.current.data.datasets;
+    console.log(lineData);
+    
+
+    // Creating a CSV content string
+    let csvContent = "Time,";
+    for (const dataset of datasets) {
+      csvContent += `${dataset.label},`;
+    }
+    csvContent += "\n";
+
+    for (let i = 0; i < labels.length; i++) {
+      csvContent += `${labels[i]},`;
+      for (const dataset of datasets) {
+        csvContent += `${dataset?.data[i]?.value},`;
+      }
+      // TODO: add new line if not last line
+      csvContent += "\n";
+    }
+
+    // Creating a Blob and saving it as a CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "chart_data.csv");
   }
 
   function handleDrag(_e: any, data: DraggableData) {
@@ -246,12 +278,19 @@ export default function Graph(props: any) {
                 </Select>
               </div>
               <div className="flex items-center justify-end gap-4">
-                <button
-                  onClick={handleDownloadClick}
-                  className="inline-flex items-center justify-center"
-                >
-                  <Download />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Download />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handlePngDownloadClick}>
+                      PNG
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCsvDownloadClick}>
+                      CSV
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Minus
                   className="cursor-pointer"
                   onClick={() => props.setOpenGraph(false)}
