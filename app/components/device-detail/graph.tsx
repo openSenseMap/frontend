@@ -59,6 +59,7 @@ ChartJS.register(
 export default function Graph(props: any) {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
+  console.log("🚀 ~ file: graph.tsx:62 ~ Graph ~ loaderData:", loaderData);
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
@@ -201,24 +202,26 @@ export default function Graph(props: any) {
   }
 
   function handleCsvDownloadClick() {
-    const labels = lineData.labels; //chartRef.current.data.labels;
-    const datasets = lineData.datasets; //chartRef.current.data.datasets;
-    console.log(lineData);
-    
+    const labels = lineData.labels;
+    const dataset = lineData.datasets[0];
 
-    // Creating a CSV content string
-    let csvContent = "Time,";
-    for (const dataset of datasets) {
-      csvContent += `${dataset.label},`;
-    }
+    // header
+    let csvContent = "timestamp,deviceId,sensorId,value,unit,phenomena";
     csvContent += "\n";
-
     for (let i = 0; i < labels.length; i++) {
+      // timestamp
       csvContent += `${labels[i]},`;
-      for (const dataset of datasets) {
-        csvContent += `${dataset?.data[i]?.value},`;
-      }
-      // TODO: add new line if not last line
+      // deviceId
+      csvContent += `${loaderData.selectedSensors[0].deviceId},`;
+      // sensorId
+      csvContent += `${dataset?.data[i]?.sensorId},`;
+      // value
+      csvContent += `${dataset?.data[i]?.value},`;
+      // unit
+      csvContent += `${loaderData.selectedSensors[0].unit},`;
+      // phenomenon
+      csvContent += `${loaderData.selectedSensors[0].title}`;
+      // new line
       csvContent += "\n";
     }
 
@@ -286,9 +289,11 @@ export default function Graph(props: any) {
                     <DropdownMenuItem onClick={handlePngDownloadClick}>
                       PNG
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCsvDownloadClick}>
-                      CSV
-                    </DropdownMenuItem>
+                    {loaderData.selectedSensors.length < 2 && (
+                      <DropdownMenuItem onClick={handleCsvDownloadClick}>
+                        CSV
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Minus
