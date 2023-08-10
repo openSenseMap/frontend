@@ -1,7 +1,7 @@
 import {
   useLoaderData,
-  useMatches,
-  useNavigate,
+  // useMatches,
+  // useNavigate,
   useNavigation,
   useSearchParams,
   useSubmit,
@@ -25,7 +25,7 @@ import type { loader } from "~/routes/explore/$deviceId";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
-import { Download, Minus, X } from "lucide-react";
+import { Download, Minus } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
@@ -71,12 +71,12 @@ export default function Graph(props: any) {
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
 
-  const matches = useMatches();
-  const navigate = useNavigate();
-  const routeChange = (newPath: string) => {
-    const path = newPath;
-    navigate(path);
-  };
+  // const matches = useMatches();
+  // const navigate = useNavigate();
+  // const routeChange = (newPath: string) => {
+  //   const path = newPath;
+  //   navigate(path);
+  // };
 
   // Formatting the data for the Line component
   const lineData = useMemo(() => {
@@ -300,13 +300,13 @@ export default function Graph(props: any) {
                   className="cursor-pointer"
                   onClick={() => props.setOpenGraph(false)}
                 />
-                <X
+                {/* <X
                   className="cursor-pointer"
                   onClick={() =>
                     // TODO: fix this
                     routeChange("/explore/" + matches[0].params.deviceId)
                   }
-                />
+                /> */}
               </div>
             </div>
             <div className="flex h-full w-full justify-center bg-white">

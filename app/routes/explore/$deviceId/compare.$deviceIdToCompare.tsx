@@ -38,7 +38,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getDevice } from "~/models/device.server";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getSensors } from "~/models/sensor.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getGraphColor } from "~/lib/utils";
@@ -49,6 +48,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { Separator } from "~/components/ui/separator";
 
 function mergeSensors(
   sensorsFromDevice1: Sensor[],
@@ -211,11 +211,10 @@ export default function CompareDevices() {
                 )}
                 <div
                   id="deviceDetailBoxTop"
-                  className="flex w-full cursor-move items-center gap-3 py-2"
+                  className="flex w-full cursor-move items-center px-4 pt-4 text-xl"
                 >
-                  <div className="flex flex-1 text-center text-xl text-zinc-600">
-                    {data.device1.name + " | " + data.device2.name}
-                  </div>
+                  <p className="w-1/2 flex items-center justify-center text-center">{data.device1.name}</p>
+                  <p className="w-1/2 flex items-center justify-center text-center">{data.device2.name}</p>
                 </div>
                 <div className="relative flex-1 overflow-y-auto">
                   <Accordion
@@ -225,7 +224,7 @@ export default function CompareDevices() {
                     defaultValue="item-1"
                   >
                     <AccordionItem value="item-1" className="sticky top-0 z-10">
-                      <AccordionTrigger className="font-bold">
+                      <AccordionTrigger className="justify-start gap-2 font-bold">
                         Image
                       </AccordionTrigger>
                       <AccordionContent>
@@ -252,60 +251,25 @@ export default function CompareDevices() {
                     type="single"
                     collapsible
                     className="w-full"
-                    defaultValue="item-1"
+                    // defaultValue="item-1"
                   >
                     <AccordionItem value="item-1">
-                      <AccordionTrigger className="font-bold">
+                      <AccordionTrigger className="justify-start gap-2 font-bold">
                         Description
                       </AccordionTrigger>
                       <AccordionContent>
-                        <div className="py-4">
-                          <Tabs defaultValue="device1">
-                            <TabsList className="grid w-full grid-cols-2">
-                              <TabsTrigger value="device1">
-                                {data.device1.name}
-                              </TabsTrigger>
-                              <TabsTrigger value="device2">
-                                {data.device2.name}
-                              </TabsTrigger>
-                              <TabsContent value="device1">
-                                Lorem ipsum dolor sit amet, consetetur
-                                sadipscing elitr, sed diam nonumy eirmod tempor
-                                invidunt ut labore et dolore magna aliquyam
-                                erat, sed diam voluptua. At vero eos et accusam
-                                et justo duo dolores et ea rebum. Stet clita
-                                kasd gubergren, no sea takimata sanctus est
-                                Lorem ipsum dolor sit amet. Lorem ipsum dolor
-                                sit amet, consetetur sadipscing elitr, sed diam
-                              </TabsContent>
-                              <TabsContent value="device2">
-                                Lorem ipsum dolor sit amet, consetetur
-                                sadipscing elitr, sed diam nonumy eirmod tempor
-                                invidunt ut labore et dolore magna aliquyam
-                                erat, sed diam voluptua. At vero eos et accusam
-                                et justo duo dolores et ea rebum. Stet clita
-                                kasd gubergren, no sea takimata sanctus est
-                                Lorem ipsum dolor sit amet. Lorem ipsum dolor
-                                sit amet, consetetur sadipscing elitr, sed diam
-                              </TabsContent>
-                            </TabsList>
-                          </Tabs>
-                        </div>
                         {/* display single row table with both descriptions next to each other */}
-                        {/* <Table>
-                      <TableBody>
-                      <TableRow>
-                      <TableCell>
-                      {data.device1.description ||
-                        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam"}
-                        </TableCell>
-                        <TableCell>
-                        {data.device2.description ||
-                          "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam"}
-                          </TableCell>
-                          </TableRow>
-                          </TableBody>
-                        </Table> */}
+                        <div className="flex w-full items-center justify-center">
+                          <p className="p-4">
+                            {data.device1.description ||
+                              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam"}
+                          </p>
+                          <Separator orientation="vertical" />
+                          <p className="p-4">
+                            {data.device2.description ||
+                              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam"}
+                          </p>
+                        </div>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -316,7 +280,7 @@ export default function CompareDevices() {
                     defaultValue="item-1"
                   >
                     <AccordionItem value="item-1">
-                      <AccordionTrigger className="font-bold">
+                      <AccordionTrigger className="justify-start gap-2 font-bold">
                         Sensors
                       </AccordionTrigger>
                       <AccordionContent>
