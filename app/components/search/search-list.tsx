@@ -30,23 +30,20 @@ export default function SearchList(props: SearchListProps) {
     props.searchResultsLocation
   );
   const [selected, setSelected] = useState(searchResultsAll[cursor]);
-
   const [searchParams] = useSearchParams();
   const [navigateTo, setNavigateTo] = useState(
-    (selected.type === "device"
+    selected.type === "device"
       ? `/explore/${selected.deviceId}`
-      : "/explore") +
-      (searchParams.size > 0 ? "?" + searchParams.toString() : "")
+      : `/explore${searchParams.size > 0 ? "?" + searchParams.toString() : ""}`
   );
 
   const handleNavigate = useCallback(
     (result: any) => {
-      return (
-        (result.type === "device"
-          ? `/explore/${result.deviceId}`
-          : "/explore") +
-        (searchParams.size > 0 ? "?" + searchParams.toString() : "")
-      );
+      return result.type === "device"
+        ? `/explore/${result.deviceId}`
+        : `/explore${
+            searchParams.size > 0 ? "?" + searchParams.toString() : ""
+          }`;
     },
     [searchParams]
   );
