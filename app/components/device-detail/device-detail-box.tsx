@@ -21,7 +21,7 @@ import type { loader } from "~/routes/explore/$deviceId";
 import {
   Archive,
   ChevronUp,
-  GitCompare,
+  Scale,
   LineChart,
   Minus,
   Share2,
@@ -306,7 +306,7 @@ export default function DeviceDetailBox() {
                     onClick={() => handleCompareClick()}
                     className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
                   >
-                    <GitCompare />
+                    <Scale />
                   </div>
                   <div className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90">
                     <a
