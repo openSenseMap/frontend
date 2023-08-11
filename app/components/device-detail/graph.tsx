@@ -59,7 +59,6 @@ ChartJS.register(
 export default function Graph(props: any) {
   // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
-  console.log("🚀 ~ file: graph.tsx:62 ~ Graph ~ loaderData:", loaderData);
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
