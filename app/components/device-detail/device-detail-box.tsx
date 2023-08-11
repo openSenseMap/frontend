@@ -21,11 +21,13 @@ import type { loader } from "~/routes/explore/$deviceId";
 import {
   Archive,
   ChevronUp,
+  GitCompare,
   LineChart,
   Minus,
   Share2,
   Thermometer,
   X,
+  XSquare,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -47,6 +49,8 @@ import {
 } from "../ui/alert-dialog";
 import ShareLink from "./share-link";
 import { getArchiveLink } from "~/utils/device";
+import { useBetween } from "use-between";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -57,6 +61,13 @@ export interface DeviceAndSelectedSensors {
   device: DeviceWithSensors;
   selectedSensors: Sensor[];
 }
+
+const useCompareMode = () => {
+  const [compareMode, setCompareMode] = useState(false);
+  return { compareMode, setCompareMode };
+};
+
+export const useSharedCompareMode = () => useBetween(useCompareMode);
 
 export default function DeviceDetailBox() {
   const navigation = useNavigation();
@@ -69,6 +80,7 @@ export default function DeviceDetailBox() {
   );
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+  const { compareMode, setCompareMode } = useSharedCompareMode();
 
   useEffect(() => {
     setOpenGraph(Boolean(data.selectedSensors.length));
@@ -93,8 +105,28 @@ export default function DeviceDetailBox() {
     setOffsetPositionY(data.y);
   }
 
+  function handleCompareClick() {
+    setCompareMode(!compareMode);
+    setOpen(false);
+  }
+
   return (
     <>
+      {compareMode && (
+        <Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse">
+          <XSquare
+            className="h-4 w-4 cursor-pointer"
+            onClick={() => {
+              setCompareMode(!compareMode);
+              setOpen(true);
+            }}
+          />
+          <AlertTitle>Compare devices</AlertTitle>
+          <AlertDescription className="inline">
+            Choose a device from the map to compare with.
+          </AlertDescription>
+        </Alert>
+      )}
       {open && (
         <Draggable
           nodeRef={nodeRef}
@@ -269,6 +301,12 @@ export default function DeviceDetailBox() {
                     className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
                   >
                     <Minus />
+                  </div>
+                  <div
+                    onClick={() => handleCompareClick()}
+                    className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                  >
+                    <GitCompare />
                   </div>
                   <div className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90">
                     <a

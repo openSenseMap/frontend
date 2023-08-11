@@ -156,6 +156,15 @@ module.exports = {
             transform: 'translateY(0)'
           },
         },
+        'pulse': {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '.5',
+          },
+        },
+
         // shadcn accordion animation
         "accordion-down": {
           from: { height: 0 },
@@ -172,6 +181,7 @@ module.exports = {
         'sidebarClose': 'sidebarClose 300ms ease-out',
         'contentShow': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
         'contentClose': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         // shadcn accordion animation
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",

@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useContext } from "react";
 import { useMap } from "react-map-gl";
-import { useNavigate, useSearchParams } from "@remix-run/react";
+import { useMatches, useNavigate, useSearchParams } from "@remix-run/react";
 
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
 import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
 import { NavbarContext } from "../header/nav-bar";
 import { Cpu, Globe, MapPin } from "lucide-react";
+import { useSharedCompareMode } from "../device-detail/device-detail-box";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -17,6 +18,8 @@ export default function SearchList(props: SearchListProps) {
   const { osem } = useMap();
   const navigate = useNavigate();
   const { setOpen } = useContext(NavbarContext);
+  const { compareMode } = useSharedCompareMode();
+  const matches = useMatches();
 
   const { cursor, setCursor, enterPress, controlPress } = useKeyboardNav(
     0,
@@ -32,20 +35,24 @@ export default function SearchList(props: SearchListProps) {
   const [selected, setSelected] = useState(searchResultsAll[cursor]);
   const [searchParams] = useSearchParams();
   const [navigateTo, setNavigateTo] = useState(
-    selected.type === "device"
+    compareMode
+      ? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
+      : selected.type === "device"
       ? `/explore/${selected.deviceId}`
       : `/explore${searchParams.size > 0 ? "?" + searchParams.toString() : ""}`
   );
 
   const handleNavigate = useCallback(
     (result: any) => {
-      return result.type === "device"
+      return compareMode
+        ? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
+        : result.type === "device"
         ? `/explore/${result.deviceId}`
         : `/explore${
             searchParams.size > 0 ? "?" + searchParams.toString() : ""
           }`;
     },
-    [searchParams]
+    [searchParams, compareMode, matches, selected]
   );
 
   const setShowSearchCallback = useCallback(

@@ -49,6 +49,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Separator } from "~/components/ui/separator";
+import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 
 function mergeSensors(
   sensorsFromDevice1: Sensor[],
@@ -162,6 +163,8 @@ export default function CompareDevices() {
   const [openGraph, setOpenGraph] = useState(
     Boolean(data.selectedSensors.length > 0 ? true : false)
   );
+  const { setCompareMode } = useSharedCompareMode();
+  setCompareMode(false);
 
   // form submission handler
   const submit = useSubmit();
@@ -213,8 +216,12 @@ export default function CompareDevices() {
                   id="deviceDetailBoxTop"
                   className="flex w-full cursor-move items-center px-4 pt-4 text-xl"
                 >
-                  <p className="w-1/2 flex items-center justify-center text-center">{data.device1.name}</p>
-                  <p className="w-1/2 flex items-center justify-center text-center">{data.device2.name}</p>
+                  <p className="flex w-1/2 items-center justify-center text-center">
+                    {data.device1.name}
+                  </p>
+                  <p className="flex w-1/2 items-center justify-center text-center">
+                    {data.device2.name}
+                  </p>
                 </div>
                 <div className="relative flex-1 overflow-y-auto">
                   <Accordion
