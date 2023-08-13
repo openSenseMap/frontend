@@ -5,7 +5,7 @@ import {
   type LinksFunction,
 } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation } from "@remix-run/react";
-import { getUser, getUserSession, sessionStorage } from "~/session.server";
+import { getUserSession, sessionStorage } from "~/session.server";
 import qs from "qs";
 import { useSpinDelay } from "spin-delay";
 import clsx from "clsx";
@@ -14,6 +14,7 @@ import { getPhenomena } from "~/models/phenomena.server";
 import Stepper from "react-stepper-horizontal";
 import { MapProvider } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxglgeocoder from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
 import General from "~/components/device/new/general";
 import SelectDevice from "~/components/device/new/select-device";
@@ -153,6 +154,10 @@ export const links: LinksFunction = () => {
       rel: "stylesheet",
       href: mapboxgl,
     },
+    {
+      rel: "stylesheet",
+      href: mapboxglgeocoder,
+    }
   ];
 };
 
@@ -238,7 +243,7 @@ export default function NewDevice() {
             <Summary data={data} phenomena={loaderData.phenomena}></Summary>
           )}
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end py-6">
           {page > 1 && (
             <button
               name="action"

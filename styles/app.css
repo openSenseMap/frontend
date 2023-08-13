@@ -124,3 +124,7 @@ kbd {
   vertical-align: middle;
   white-space: nowrap;
 }
+
+.mapboxgl-ctrl-geocoder {
+  width: 500px!important;
+}
