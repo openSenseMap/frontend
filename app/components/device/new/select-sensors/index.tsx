@@ -41,7 +41,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
   }
 
   return (
-    <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
+    <div className="space-y-4 pt-4">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
           {t("select_sensors")}
