@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SummaryProps {
@@ -15,6 +15,7 @@ interface SummaryProps {
 }
 
 export default function Summary({ data, phenomena }: SummaryProps) {
+  const { t } = useTranslation("newdevice");
   return (
     <>
       <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
@@ -27,7 +28,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
           </p>
         </div>
 
-        <h4 className="pt-6"> {t("general")}</h4>
+        <h4 className="pt-6"> {t("summary_general")}</h4>
 
         <Table>
           <TableBody>
@@ -62,7 +63,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
           </TableBody>
         </Table>
 
-        <h4 className="pt-6">{t("your_sensors")}</h4>
+        <h4 className="pt-6">{t("summary_sensors")}</h4>
         <Table>
           {/* <TableCaption>General Information</TableCaption> */}
           <TableHeader>

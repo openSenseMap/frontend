@@ -1,14 +1,27 @@
-// import type { LinksFunction } from "@remix-run/node";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   Map,
+  type MapLayerMouseEvent,
+  type MapRef,
   Marker,
   type MarkerDragEvent,
   NavigationControl,
+  GeolocateControl,
+  type GeolocateResultEvent,
+  Source,
 } from "react-map-gl";
-// import { Map } from "~/components/map";
+
+import GeocoderControl from "~/components/map/geocoder-control";
+import { InfoIcon } from "lucide-react";
+import getUserLocale from "get-user-locale";
 
 export interface SelectLocationProps {
   data: any;
@@ -16,25 +29,77 @@ export interface SelectLocationProps {
 
 //**********************************
 export default function SelectLocation({ data }: SelectLocationProps) {
+  const { t } = useTranslation("newdevice");
+  const mapRef = useRef<MapRef | null>(null);
+  const userLocaleString = getUserLocale()?.toString() || "en";
+
+  //* map view
+  const [viewState, setViewState] = React.useState({
+    latitude: data.data.latitude ? data.data.latitude : 51,
+    longitude: data.data.longitude ? data.data.longitude : 10,
+    zoom: 3.5,
+  });
+
   //* map marker
   const [marker, setMarker] = useState({
-    latitude: data.data.latitude ? data.data.latitude : 51,
-    longitude: data.data.longitude ? data.data.longitude : 7.3,
+    latitude: data.data.latitude ? data.data.latitude : "",
+    longitude: data.data.longitude ? data.data.longitude : "",
   });
-  const [height, setHeight] = useState(data.data.height ? data.data.height : 0);
-  const { t } = useTranslation("newdevice");
+
+  //* location height
+  const [height, setHeight] = useState(
+    data.data.height ? data.data.height : ""
+  );
 
   //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
-    console.log(event);
+    // console.log(event);
     setMarker({
-      longitude: event.lngLat.lng,
-      latitude: event.lngLat.lat,
+      longitude: Math.round(event.lngLat.lng * 1000000) / 1000000,
+      latitude: Math.round(event.lngLat.lat * 1000000) / 1000000,
     });
   }, []);
 
+  //* on-geolocate event
+  const onGeolocate = useCallback((event: GeolocateResultEvent) => {
+    // console.log(event);
+    setMarker({
+      longitude: Math.round(event.coords.longitude * 1000000) / 1000000,
+      latitude: Math.round(event.coords.latitude * 1000000) / 1000000,
+    });
+  }, []);
+
+  //* on-geocoder-result event
+  const onResult = (event: any) => {
+    // console.log(event);
+    setMarker({
+      longitude: Math.round(event.result.geometry.coordinates[0] * 1000000) / 1000000,
+      latitude: Math.round(event.result.geometry.coordinates[1] * 1000000) / 1000000
+    });
+  };
+  
+  //* on-map-click event
+  const onClick = (event: MapLayerMouseEvent) => {
+    // console.log(event);
+    setMarker({
+      longitude: Math.round(event.lngLat.lng * 1000000) / 1000000,
+      latitude: Math.round(event.lngLat.lat * 1000000) / 1000000,
+    });
+  };
+
+  //* derive elevation on-marker change
+  useEffect(() => {
+    setTimeout(() => {
+      const elevation = mapRef.current?.queryTerrainElevation([
+        marker.longitude,
+        marker.latitude,
+      ]);
+      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
+    }, 2000);
+  }, [marker]);
+
   return (
-    <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
+    <div className="space-y-4 pt-4">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
           {t("location")}
@@ -45,32 +110,58 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       </div>
 
       {/* Map view */}
-      <div className="sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+      <div className="sm:items-start sm:gap-4 sm:border-gray-200 sm:pt-2">
         <Map
-          initialViewState={{
-            latitude: marker.latitude,
-            longitude: marker.longitude,
-            zoom: 5,
-          }}
+          ref={mapRef}
+          {...viewState}
+          onMove={(evt) => setViewState(evt.viewState)}
+          onClick={onClick}
           mapStyle="mapbox://styles/mapbox/streets-v12"
           mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
           style={{
             width: "100%",
-            height: "45vh",
+            height: "55vh",
+          }}
+          terrain={{
+            source: "mapbox-dem",
           }}
         >
-          <Marker
-            longitude={marker.longitude}
-            latitude={marker.latitude}
-            anchor="bottom"
-            draggable
-            onDrag={onMarkerDrag}
-          ></Marker>
+          <Source
+            id="mapbox-dem"
+            type="raster-dem"
+            url="mapbox://mapbox.mapbox-terrain-dem-v1"
+            tileSize={512}
+            maxzoom={14}
+          />
+          {marker.latitude ? (
+            <Marker
+              longitude={marker.longitude}
+              latitude={marker.latitude}
+              anchor="center"
+              draggable
+              onDrag={onMarkerDrag}
+            />
+          ) : null}
           <NavigationControl position="top-left" showCompass={false} />
+          <GeocoderControl
+            mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
+            position="top-right"
+            marker={false}
+            onResult={onResult}
+            placeholder={t("search_placeholder").toString()}
+            language={userLocaleString}
+            
+          />
+          <GeolocateControl
+            onGeolocate={onGeolocate}
+            showAccuracyCircle={true}
+            position="top-right"
+            positionOptions={{ enableHighAccuracy: true }}
+          />
         </Map>
       </div>
 
-      {/* Latitude, Longitude btns */}
+      {/* Latitude, Longitude */}
       <div>
         <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
           <div>
@@ -78,14 +169,13 @@ export default function SelectLocation({ data }: SelectLocationProps) {
               htmlFor="latitude"
               className="txt-base block font-bold tracking-normal"
             >
-              Latitude
+              {t("latitude")}
             </label>
 
             <div className="mt-1">
               <input
                 id="latitude"
-                // required
-                autoFocus={true}
+                required
                 name="latitude"
                 type="number"
                 value={marker.latitude}
@@ -111,13 +201,13 @@ export default function SelectLocation({ data }: SelectLocationProps) {
               htmlFor="longitude"
               className="txt-base block font-bold tracking-normal"
             >
-              Longitude
+              {t("longitude")}
             </label>
 
             <div className="mt-1">
               <input
                 id="longitude"
-                autoFocus={true}
+                required
                 name="longitude"
                 type="number"
                 value={marker.longitude}
@@ -144,13 +234,24 @@ export default function SelectLocation({ data }: SelectLocationProps) {
               className="txt-base block font-bold tracking-normal"
             >
               {t("height")}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="h-full">
+                    <InfoIcon className="ml-2 h-4 w-4" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="w-[300px] text-justify text-sm font-thin">
+                      {t("height_info_text")}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </label>
 
             <div className="mt-1">
               <input
                 id="height"
                 required
-                autoFocus={true}
                 name="height"
                 type="number"
                 value={height}
@@ -163,22 +264,6 @@ export default function SelectLocation({ data }: SelectLocationProps) {
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setMarker({
-              latitude: data.data.latitude,
-              longitude: data.data.longitude,
-            });
-            setHeight(data.data.height);
-          }}
-          className="mb-10 mt-4 font-semibold
-                text-[#337ab7] 
-                hover:text-[#23527c] hover:underline"
-        >
-          {t("reset_location")}
-        </button>
       </div>
     </div>
   );

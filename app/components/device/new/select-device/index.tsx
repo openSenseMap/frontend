@@ -1,7 +1,7 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
@@ -15,7 +15,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
   const { t } = useTranslation("newdevice");
 
   return (
-    <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
+    <div className="space-y-4 pt-4">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
           {t("select_device")}
@@ -127,7 +127,23 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
         <Alert>
           <InfoIcon className="h-4 w-4" />
           <AlertTitle>Info</AlertTitle>
-          <AlertDescription>{t("device_not_in_List")}</AlertDescription>
+          <AlertDescription>
+            <Trans
+              t={t}
+              i18nKey="select_device_info_text"
+              components={[
+                <a
+                  key="add_device_to_sensorwiki"
+                  href="https://sensors.wiki/device/add"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-500 hover:text-blue-700 hover:underline"
+                >
+                  placeholder
+                </a>
+              ]}
+            />
+          </AlertDescription>
         </Alert>
       </div>
     </div>
