@@ -9,15 +9,15 @@ type GeocoderControlProps = Omit<GeocoderOptions, 'accessToken' | 'mapboxgl' | '
 
   position: ControlPosition;
 
-  onLoading?: (e: object) => void;
-  onResults?: (e: object) => void;
-  onResult?: (e: object) => void;
-  onError?: (e: object) => void;
+  onLoading: (e: object) => void;
+  onResults: (e: object) => void;
+  onResult: (e: object) => void;
+  onError: (e: object) => void;
 };
 
 /* eslint-disable complexity,max-statements */
 export default function GeocoderControl(props: GeocoderControlProps) {
-  const [marker, setMarker] = useState(null);
+  const [marker, setMarker] = useState<any>(null);
 
   const geocoder = useControl<MapboxGeocoder>(
     () => {
@@ -36,7 +36,7 @@ export default function GeocoderControl(props: GeocoderControlProps) {
           result &&
           (result.center || (result.geometry?.type === 'Point' && result.geometry.coordinates));
         if (location && props.marker) {
-          setMarker(<Marker {...props.marker} longitude={location[0]} latitude={location[1]} />);
+          setMarker(<Marker longitude={location[0]} latitude={location[1]} />);
         } else {
           setMarker(null);
         }

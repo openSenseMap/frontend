@@ -89,12 +89,14 @@ export default function SelectLocation({ data }: SelectLocationProps) {
 
   //* derive elevation on-marker change
   useEffect(() => {
-    const elevation = mapRef.current?.queryTerrainElevation([
-      marker.longitude,
-      marker.latitude,
-    ]);
-    setHeight(elevation ? Math.round(elevation * 100) / 100 : data.data.height);
-  }, [marker, data.data.height]);
+    setTimeout(() => {
+      const elevation = mapRef.current?.queryTerrainElevation([
+        marker.longitude,
+        marker.latitude,
+      ]);
+      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
+    }, 2000);
+  }, [marker]);
 
   return (
     <div className="space-y-4 pt-4">
