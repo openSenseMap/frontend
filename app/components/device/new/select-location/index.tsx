@@ -67,17 +67,33 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       longitude: Math.round(event.coords.longitude * 1000000) / 1000000,
       latitude: Math.round(event.coords.latitude * 1000000) / 1000000,
     });
+    mapRef.current?.on("moveend", () => {
+      const elevation = mapRef.current?.queryTerrainElevation([
+        event.coords.longitude,
+        event.coords.latitude,
+      ]);
+      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
+    });
   }, []);
 
   //* on-geocoder-result event
   const onResult = (event: any) => {
     // console.log(event);
     setMarker({
-      longitude: Math.round(event.result.geometry.coordinates[0] * 1000000) / 1000000,
-      latitude: Math.round(event.result.geometry.coordinates[1] * 1000000) / 1000000
+      longitude:
+        Math.round(event.result.geometry.coordinates[0] * 1000000) / 1000000,
+      latitude:
+        Math.round(event.result.geometry.coordinates[1] * 1000000) / 1000000,
+    });
+    mapRef.current?.on("moveend", () => {
+      const elevation = mapRef.current?.queryTerrainElevation([
+        event.result.geometry.coordinates[0],
+        event.result.geometry.coordinates[1],
+      ]);
+      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
     });
   };
-  
+
   //* on-map-click event
   const onClick = (event: MapLayerMouseEvent) => {
     // console.log(event);
@@ -89,13 +105,11 @@ export default function SelectLocation({ data }: SelectLocationProps) {
 
   //* derive elevation on-marker change
   useEffect(() => {
-    setTimeout(() => {
-      const elevation = mapRef.current?.queryTerrainElevation([
-        marker.longitude,
-        marker.latitude,
-      ]);
-      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
-    }, 2000);
+    const elevation = mapRef.current?.queryTerrainElevation([
+      marker.longitude,
+      marker.latitude,
+    ]);
+    setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
   }, [marker]);
 
   return (
@@ -150,7 +164,6 @@ export default function SelectLocation({ data }: SelectLocationProps) {
             onResult={onResult}
             placeholder={t("search_placeholder").toString()}
             language={userLocaleString}
-            
           />
           <GeolocateControl
             onGeolocate={onGeolocate}
