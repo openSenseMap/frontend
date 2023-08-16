@@ -165,10 +165,8 @@ export default function DeviceDetailBox() {
                         Description
                       </AccordionTrigger>
                       <AccordionContent>
-                        quis lectus nulla at volutpat diam ut venenatis tellus
-                        in metus vulputate eu scelerisque felis imperdiet proin
-                        fermentum leo vel orci porta non pulvinar neque laoreet
-                        suspendisse interdum consectetur libero
+                        {/* use device description */}
+                        {data.device.description}
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -196,7 +194,7 @@ export default function DeviceDetailBox() {
                         >
                           <div>
                             <ul className="z-0 flex-1 divide-y divide-gray-200 overflow-y-auto">
-                              {data.device.sensors.map((sensor: Sensor) => {
+                              {data.sensors.map((sensor: Sensor) => {
                                 // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                                 const lastMeasurement =
                                   sensor.lastMeasurement as Prisma.JsonObject;

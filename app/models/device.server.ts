@@ -1,4 +1,4 @@
-import type { Device, Sensor } from "@prisma/client";
+import type { Device } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 import { point } from "@turf/helpers";
@@ -19,16 +19,22 @@ import type { Point } from "geojson";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return prisma.device.findFirst({
-    select: {
-      id: true,
-      name: true,
-      exposure: true,
-      status: true,
-      updatedAt: true,
-      sensors: true,
-      latitude: true,
-      longitude: true,
-    },
+    // select: {
+    //   id: true,
+    //   name: true,
+    //   description: true,
+    //   exposure: true,
+    //   status: true,
+    //   updatedAt: true,
+    //   sensors: true,
+    //   latitude: true,
+    //   longitude: true,
+    //   useAuth: true,
+    //   model: true,
+    //   public: true,
+    //   createdAt: true,
+    //   userId: true,
+    // },
     where: { id },
   });
 }
@@ -61,7 +67,11 @@ export function updateDeviceInfo({
   });
 }
 
-export function updateDeviceLocation({ id, latitude, longitude }: Pick<Device, "id" |"latitude" | "longitude">){
+export function updateDeviceLocation({
+  id,
+  latitude,
+  longitude,
+}: Pick<Device, "id" | "latitude" | "longitude">) {
   return prisma.device.update({
     where: { id },
     data: {
@@ -109,7 +119,7 @@ export async function getDevices() {
       createdAt: true,
     },
   });
-  const geojson: GeoJSON.FeatureCollection<Point, any> = {
+  const geojson: GeoJSON.FeatureCollection<Point> = {
     type: "FeatureCollection",
     features: [],
   };
@@ -126,8 +136,8 @@ export async function getDevices() {
 }
 
 export async function getMeasurements(
-  deviceId: any,
-  sensorId: any,
+  deviceId: string,
+  sensorId: string,
   startDate: Date,
   endDate: Date
 ) {
@@ -143,7 +153,7 @@ export async function getMeasurements(
       endDate.toISOString() //new Date().toISOString()
   );
   return (await response.json()) as {
-    value: String;
+    value: string;
     location?: number[];
     createdAt: Date;
   }[];

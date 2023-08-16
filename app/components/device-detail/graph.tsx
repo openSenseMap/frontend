@@ -1,7 +1,7 @@
 import {
   useLoaderData,
-  useMatches,
-  useNavigate,
+  // useMatches,
+  // useNavigate,
   useNavigation,
   useSearchParams,
   useSubmit,
@@ -25,11 +25,10 @@ import type { loader } from "~/routes/explore/$deviceId";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
-import { Download, Minus, X } from "lucide-react";
+import { Download, Minus } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
-import { getGraphColor } from "~/lib/utils";
 import {
   Select,
   SelectContent,
@@ -39,6 +38,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -60,17 +65,17 @@ export default function Graph(props: any) {
 
   // form submission handler
   const submit = useSubmit();
-  let [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
 
-  let matches = useMatches();
-  let navigate = useNavigate();
-  const routeChange = (newPath: string) => {
-    let path = newPath;
-    navigate(path);
-  };
+  // const matches = useMatches();
+  // const navigate = useNavigate();
+  // const routeChange = (newPath: string) => {
+  //   const path = newPath;
+  //   navigate(path);
+  // };
 
   // Formatting the data for the Line component
   const lineData = useMemo(() => {
@@ -85,21 +90,16 @@ export default function Graph(props: any) {
                 label: loaderData.selectedSensors[0].title,
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
-                // I think we have to define the color in the loader already? - at least before this initialization
-                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[0].unit
-                ),
+                borderColor: loaderData.selectedSensors[0].color,
+                backgroundColor: loaderData.selectedSensors[0].color,
                 yAxisID: "y",
               },
               {
                 label: loaderData.selectedSensors[1].title,
                 data: loaderData.selectedSensors[1].data,
                 pointRadius: 0,
-                borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[1].unit
-                ),
+                borderColor: loaderData.selectedSensors[1].color,
+                backgroundColor: loaderData.selectedSensors[1].color,
                 yAxisID: "y1",
               },
             ]
@@ -108,10 +108,8 @@ export default function Graph(props: any) {
                 label: loaderData.selectedSensors[0].title,
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
-                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[0].unit
-                ),
+                borderColor: loaderData.selectedSensors[0].color,
+                backgroundColor: loaderData.selectedSensors[0].color,
                 yAxisID: "y",
               },
             ],
@@ -193,13 +191,42 @@ export default function Graph(props: any) {
     },
   };
 
-  function handleDownloadClick() {
+  function handlePngDownloadClick() {
     if (chartRef.current) {
       if (chartRef.current === null) return;
       // why is chartRef.current always never???
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
+  }
+
+  function handleCsvDownloadClick() {
+    const labels = lineData.labels;
+    const dataset = lineData.datasets[0];
+
+    // header
+    let csvContent = "timestamp,deviceId,sensorId,value,unit,phenomena";
+    csvContent += "\n";
+    for (let i = 0; i < labels.length; i++) {
+      // timestamp
+      csvContent += `${labels[i]},`;
+      // deviceId
+      csvContent += `${loaderData.selectedSensors[0].deviceId},`;
+      // sensorId
+      csvContent += `${dataset?.data[i]?.sensorId},`;
+      // value
+      csvContent += `${dataset?.data[i]?.value},`;
+      // unit
+      csvContent += `${loaderData.selectedSensors[0].unit},`;
+      // phenomenon
+      csvContent += `${loaderData.selectedSensors[0].title}`;
+      // new line
+      csvContent += "\n";
+    }
+
+    // Creating a Blob and saving it as a CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "chart_data.csv");
   }
 
   function handleDrag(_e: any, data: DraggableData) {
@@ -253,22 +280,32 @@ export default function Graph(props: any) {
                 </Select>
               </div>
               <div className="flex items-center justify-end gap-4">
-                <button
-                  onClick={handleDownloadClick}
-                  className="inline-flex items-center justify-center"
-                >
-                  <Download />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Download />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handlePngDownloadClick}>
+                      PNG
+                    </DropdownMenuItem>
+                    {loaderData.selectedSensors.length < 2 && (
+                      <DropdownMenuItem onClick={handleCsvDownloadClick}>
+                        CSV
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Minus
                   className="cursor-pointer"
                   onClick={() => props.setOpenGraph(false)}
                 />
-                <X
+                {/* <X
                   className="cursor-pointer"
                   onClick={() =>
+                    // TODO: fix this
                     routeChange("/explore/" + matches[0].params.deviceId)
                   }
-                />
+                /> */}
               </div>
             </div>
             <div className="flex h-full w-full justify-center bg-white">

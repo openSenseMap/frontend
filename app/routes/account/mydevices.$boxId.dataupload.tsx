@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, Outlet, useLocation, useParams } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { useState } from "react";
 import { getUserId } from "~/session.server";
 import { ArrowLeft, Upload } from "lucide-react";
@@ -13,8 +13,6 @@ export async function loader({ request, params }: LoaderArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
-
   return json({});
 }
 
@@ -25,9 +23,6 @@ export async function action({ request }: ActionArgs) {
 
 //**********************************
 export default function DataUpload() {
-  //* to keep selected view highlited after reloading
-  const pathName = useLocation().pathname;
-
   const [measurementData, setMeasurementData] = useState("");
   const [dataFormat, setDataFormat] = useState("CSV");
 
