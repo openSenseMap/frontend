@@ -131,4 +131,12 @@
     position: relative;
     display:table-cell
   }
+
+  .donate-dev{
+    background: transparent url('https://www.betterplace.org/assets/new_spinner.gif') 275px 20px no-repeat;
+  }
+
+  .donate-iframe{
+    max-width: 600px; max-height: none; width: 100%; background-color: transparent; overflow: hidden; height: 994px;
+  }
 }

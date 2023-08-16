@@ -1,4 +1,10 @@
-import { Form, Link, useNavigation, useSearchParams, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useNavigation,
+  useSearchParams,
+  useLoaderData,
+} from "@remix-run/react";
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import type { loader } from "~/routes/explore";
@@ -11,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
@@ -32,6 +39,7 @@ import {
   User2,
   ExternalLink,
 } from "lucide-react";
+import Donate from "~/components/landing/donate-iframe";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -147,8 +155,6 @@ export default function Menu() {
                 </DropdownMenuItem>
               )}
 
-              
-
               <Link to="/account/mydevices">
                 <DropdownMenuItem className=" cursor-pointer">
                   <Cpu className="mr-2 h-5 w-5" />
@@ -183,6 +189,7 @@ export default function Menu() {
                 <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
               </DropdownMenuItem>
             </Link>
+
             <Link to="https://docs.opensensemap.org/" target="_blank">
               <DropdownMenuItem>
                 <Globe className="mr-2 h-5 w-5" />
@@ -211,17 +218,28 @@ export default function Menu() {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Coins className="mr-2 h-5 w-5" />
-              <span>{t("donate_label")}</span>
-            </DropdownMenuItem>
+            <Dialog>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Coins className="mr-2 inline h-5 w-5" />
+                  <span> {t("donate_label")}</span>
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent className={"max-h-screen overflow-y-scroll"}>
+                <Donate />
+              </DialogContent>
+            </Dialog>
+
             <DropdownMenuItem>
               <Users2 className="mr-2 h-5 w-5" />
               <span>{t("promotion_label")}</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
+
           <DropdownMenuSeparator />
+
           <DropdownMenuGroup>
             {data.user === null ? (
               <Link
