@@ -7,6 +7,7 @@ import { getUserEmail, getUserId } from "~/session.server";
 import { Separator } from "~/components/ui/separator";
 import { validatePassLength, validatePassType } from "~/utils";
 import { useToast } from "@/components/ui/use-toast";
+import React from "react";
 
 //*****************************************************
 export async function loader({ request }: LoaderArgs) {
