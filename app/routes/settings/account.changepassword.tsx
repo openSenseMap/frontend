@@ -1,10 +1,9 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
-import React, { useState } from "react";
 import invariant from "tiny-invariant";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
-import { getUserEmail, getUserId, logout } from "~/session.server";
+import { getUserEmail, getUserId } from "~/session.server";
 import { Separator } from "~/components/ui/separator";
 import { validatePassLength, validatePassType } from "~/utils";
 import { useToast } from "@/components/ui/use-toast";
