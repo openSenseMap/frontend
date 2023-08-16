@@ -93,9 +93,8 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                 </div>
                 <pre>{JSON.stringify(data.json, null, 2)}</pre>
               </div>
-              {addedSensors["p-" + key] && addedSensors["p-" + key].length >= 1 && (
+              {addedSensors["p-" + key] && addedSensors["p-" + key].length > 0 && (
                 <div className="py-4">
-                  <div>{addedSensors["p-" + key].length}</div>
                   <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
                     {t("your_added")}{" "}
                     {sensorWikiLabel(
@@ -107,6 +106,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>{t("title")}</TableHead>
                         <TableHead className="w-[100px]">
                           {t("sensor")}
                         </TableHead>
@@ -120,6 +120,13 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                         (sensorItem: any, index: number) => {
                           return (
                             <TableRow key={sensorItem.id}>
+                              <TableCell>
+                                <input
+                                  type="text"
+                                  name={`sensors[p-${key.toString()}][${index}]`}
+                                  // value={''}
+                                />
+                              </TableCell>
                               <input
                                 type="checkbox"
                                 name={`sensors[p-${key.toString()}][${index}]`}

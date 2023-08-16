@@ -68,6 +68,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
           {/* <TableCaption>General Information</TableCaption> */}
           <TableHeader>
             <TableRow>
+              <TableHead>{t("title")}</TableHead>
               <TableHead>{t("sensor")}</TableHead>
               <TableHead>{t("phenomenon")}</TableHead>
               <TableHead>{t("unit")}</TableHead>
@@ -79,13 +80,14 @@ export default function Summary({ data, phenomena }: SummaryProps) {
                 return (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{sensor[0]}</TableCell>
+                    <TableCell className="font-medium">{sensor[1]}</TableCell>
                     <TableCell className="font-medium">
                       {sensorWikiLabel(
-                        phenomena.find((pheno: any) => pheno.slug == sensor[1])
+                        phenomena.find((pheno: any) => pheno.slug == sensor[2])
                           .label.item
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{sensor[2]}</TableCell>
+                    <TableCell className="font-medium">{sensor[3]}</TableCell>
                   </TableRow>
                 );
               });

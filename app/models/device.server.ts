@@ -155,9 +155,10 @@ export async function createDevice(
   Object.values(deviceData.sensors).forEach((sensorsOfPhenomenon: any) => {
     sensorsOfPhenomenon.forEach((sensor: any) => {
       sensorArray.push({
-        title: sensor[1],
-        sensorType: sensor[0],
-        unit: sensor[2],
+        name: sensor[0],
+        title: sensor[2],
+        sensorType: sensor[1],
+        unit: sensor[3],
       });
     });
   });
