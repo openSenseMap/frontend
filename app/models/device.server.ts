@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device, Sensor } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 import { point } from "@turf/helpers";
@@ -168,18 +168,23 @@ export async function createDevice(
   );
   const newDevicePostgres = await createDevicePostgres(
     registeredDevice.data,
-    userId
+    userId,
+    sensorArray,
+    deviceData
   );
   return newDevicePostgres;
 }
 
 export async function createDevicePostgres(
   deviceData: any,
-  userId: string | undefined
+  userId: string | undefined,
+  sensorArray: any[],
+  formDeviceData: any
 ) {
   const newDevice = await prisma.device.create({
     data: {
       id: deviceData._id,
+      sensorWikiModel: formDeviceData.type,
       userId: userId ?? "unknown",
       name: deviceData.name,
       exposure: exposureHelper(deviceData.exposure),
@@ -189,12 +194,12 @@ export async function createDevicePostgres(
     },
   });
 
-  for await (const sensor of deviceData.sensors) {
+  for await (let [i, sensor] of deviceData.sensors) {
     await prisma.sensor.create({
       data: {
         id: sensor._id,
         deviceId: newDevice.id,
-        title: sensor.title,
+        title: sensorArray[i].name,
         sensorType: sensor.sensorType,
         unit: sensor.unit,
         sensorWikiType: sensor.title,
