@@ -36,7 +36,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
   function deleteSensorItem(index: any, key: string) {
     const newSensorObject = { ...addedSensors };
-    delete newSensorObject["p-" + key][index];
+    newSensorObject["p-" + key].splice(index, 1)
     setAddedSensors(newSensorObject);
   }
 
@@ -93,8 +93,9 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                 </div>
                 <pre>{JSON.stringify(data.json, null, 2)}</pre>
               </div>
-              {addedSensors["p-" + key] && (
+              {addedSensors["p-" + key] && addedSensors["p-" + key].length >= 1 && (
                 <div className="py-4">
+                  <div>{addedSensors["p-" + key].length}</div>
                   <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
                     {t("your_added")}{" "}
                     {sensorWikiLabel(
