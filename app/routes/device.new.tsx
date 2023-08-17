@@ -11,7 +11,6 @@ import { useSpinDelay } from "spin-delay";
 import clsx from "clsx";
 import { getPhenomena } from "~/models/phenomena.server";
 
-import Stepper from "react-stepper-horizontal";
 import { MapProvider } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import mapboxglgeocoder from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -25,6 +24,9 @@ import Summary from "~/components/device/new/summary";
 import { createDevice } from "~/models/device.server";
 import { getUserId } from "~/session.server";
 import { useTranslation } from "react-i18next";
+import Stepper from "~/components/stepper";
+import { N } from "vitest/dist/types-c1386a7d";
+import { useNavigate } from "react-router-dom";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -163,6 +165,7 @@ export const links: LinksFunction = () => {
 
 export default function NewDevice() {
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const { t } = useTranslation("newdevice");
 
   const showSpinner = useSpinDelay(navigation.state !== "idle", {
@@ -174,21 +177,28 @@ export default function NewDevice() {
   const page = Number(loaderData.page);
   const data = loaderData.data;
 
+  function selectStep(index:number){
+    navigate("/device/new?page="+index);
+  }
+
   return (
     <div className="container">
       <Form method="post">
         <input name="page" type="hidden" value={page} />
-        <Stepper
-          steps={[
-            { title: "Select Device" },
-            { title: "General" },
-            { title: "Select Sensors" },
-            { title: "Advanced" },
-            { title: "Select Location" },
-            { title: "Summary" },
-          ]}
-          activeStep={page - 1}
-        />
+      
+          <Stepper
+            steps={[
+              { title: "Select Device" },
+              { title: "General" },
+              { title: "Select Sensors" },
+              { title: "Advanced" },
+              { title: "Select Location" },
+              { title: "Summary" },
+            ]}
+            activeStep={page - 1}
+            setStep={selectStep}
+          ></Stepper>
+
         <div className="flex justify-between pt-5">
           <div className="flex items-center gap-1">
             <h1 className="text-2xl font-bold">{t("add_device")}</h1>
