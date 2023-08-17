@@ -5,6 +5,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SelectDeviceProps {
   data: any;
@@ -32,7 +33,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
               key={device.id}
               data-checked={deviceType === device.slug}
               onClick={() => setDeviceType(device.slug)}
-              className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+              className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300 cursor-pointer"
             >
               <CardContent className="flex justify-center pt-2">
                 <AspectRatio ratio={4 / 3}>
@@ -44,7 +45,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
                 </AspectRatio>
               </CardContent>
               <CardFooter className="flex justify-center">
-                <CardTitle>{device.slug}</CardTitle>
+                <CardTitle>{sensorWikiLabel(device.label.item)}</CardTitle>
                 {deviceType === device.slug && (
                   <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
                 )}
@@ -57,7 +58,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           key={4}
           data-checked={deviceType === "own_device"}
           onClick={() => setDeviceType("own_device")}
-          className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
+          className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300 cursor-pointer"
         >
           <CardContent className="flex justify-center pt-2">
             <AspectRatio ratio={4 / 3}>

@@ -24,7 +24,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
   function addSensor(sensorItem: any, key: string) {
     //this is an array because objects would not work with the forms [sensorSlug, phenomenonId, unitSlug]
-    let sensorArray = [sensorItem.sensor.slug, sensorItem.phenomenonId, ""];
+    let sensorArray = ["", sensorItem.sensor.slug, sensorItem.phenomenonId, ""];
     const newSensorObject = { ...addedSensors };
     if (newSensorObject[key]) {
       newSensorObject[key].push(sensorArray);
@@ -124,13 +124,13 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                 <input
                                   type="text"
                                   name={`sensors[p-${key.toString()}][${index}]`}
-                                  // value={''}
+                                  placeholder={sensorItem[0] ? sensorItem[0] : 'Your sensors name'}
                                 />
                               </TableCell>
                               <input
                                 type="checkbox"
                                 name={`sensors[p-${key.toString()}][${index}]`}
-                                value={sensorItem[0]}
+                                value={sensorItem[1]}
                                 checked={true}
                                 readOnly
                                 className="hidden"
@@ -148,7 +148,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                 className="hidden"
                               />
                               <TableCell className="font-medium">
-                                <span> {sensorItem[0]}</span>
+                                <span> {sensorItem[1]}</span>
                               </TableCell>
                               <TableCell>
                                 {sensorWikiLabel(
