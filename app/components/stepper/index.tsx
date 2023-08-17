@@ -1,7 +1,4 @@
-'use client'
-
 import clsx from "clsx";
-import { i } from "vitest/dist/index-2dd51af4";
 
 interface Step {
     title: string;
