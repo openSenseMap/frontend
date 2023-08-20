@@ -4,12 +4,17 @@ import {
   redirect,
   type LinksFunction,
 } from "@remix-run/node";
-import { Form, useLoaderData, useNavigation } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import { getUserSession, sessionStorage } from "~/session.server";
 import qs from "qs";
 import { useSpinDelay } from "spin-delay";
 import clsx from "clsx";
 import { getPhenomena } from "~/models/phenomena.server";
+
+import * as z from "zod";
+import { zfd } from "zod-form-data";
+import { withZod } from "@remix-validated-form/with-zod";
+import { ValidatedForm } from "remix-validated-form";
 
 import Stepper from "react-stepper-horizontal";
 import { MapProvider } from "react-map-gl";
@@ -25,6 +30,128 @@ import Summary from "~/components/device/new/summary";
 import { createDevice } from "~/models/device.server";
 import { getUserId } from "~/session.server";
 import { useTranslation } from "react-i18next";
+
+// validator for the form
+export const validator: any = {
+  ///////////////////
+  // select device //
+  ///////////////////
+  1: withZod(
+    z.object({
+      type: z.enum(
+        ["sensebox_edu", "sensebox_home", "airdatainfo_device", "own_device"],
+        {
+          errorMap: (issue, ctx) => {
+            return { message: "Please select your device type." };
+          },
+        }
+      ),
+    })
+  ),
+
+  /////////////
+  // general //
+  /////////////
+  2: withZod(
+    z.object({
+      name: zfd.text(
+        z.string().min(3, {
+          message: "Name must be at least 3 characters long.",
+        })
+      ),
+
+      exposure: z.enum(["INDOOR", "OUTDOOR", "MOBILE"]),
+
+      groupId: zfd.text(
+        z
+          .union([z.string().length(0), z.string().min(3)])
+          .optional()
+          .transform((e) => (e === "" ? undefined : e))
+      ),
+    })
+  ),
+
+  ////////////////////
+  // select sensors //
+  ////////////////////
+  3: withZod(z.object({})),
+
+  //////////////
+  // advanced //
+  //////////////
+  4: withZod(
+    z.object({
+      // mqtt
+      mqtt: z
+        .object({
+          enabled: zfd.checkbox({ trueValue: "on" }),
+
+          url: zfd.text(
+            z.string().url({
+              message: "Please enter a valid URL.",
+            })
+          ),
+
+          topic: zfd.text(
+            z.string().min(1, {
+              message: "Please enter a valid topic.",
+            })
+          ),
+
+          messageFormat: z.enum(["json", "csv"], {
+            errorMap: (issue, ctx) => {
+              return { message: "Please select your device type." };
+            },
+          }),
+
+          decodeOptions: zfd.text(
+            z.string().min(1, {
+              message: "Please enter valid decode options.",
+            })
+          ),
+
+          connectionOptions: zfd.text(
+            z.string().min(1, {
+              message: "Please enter valid connect options.",
+            })
+          ),
+        })
+        .optional(),
+
+      // ttn
+      ttn: z
+        .object({
+          enabled: zfd.checkbox({ trueValue: "on" }),
+
+          app_id: zfd.text(
+            z.string().min(1, {
+              message: "Please enter a valid App ID.",
+            })
+          ),
+
+          dev_id: zfd.text(
+            z.string().min(1, {
+              message: "Please enter a valid Device ID.",
+            })
+          ),
+        })
+        .optional(),
+    })
+  ),
+
+  ////////////////////
+  // select sensors //
+  ////////////////////
+  5: withZod(
+    z.object({
+      latitude: zfd.numeric(z.number().min(-90).max(90)),
+
+      longitude: zfd.numeric(z.number().min(-180).max(180)),
+
+      height: zfd.numeric(z.number().min(-200).max(10000)),
+    })
+  ),
+};
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
@@ -157,7 +284,7 @@ export const links: LinksFunction = () => {
     {
       rel: "stylesheet",
       href: mapboxglgeocoder,
-    }
+    },
   ];
 };
 
@@ -176,7 +303,40 @@ export default function NewDevice() {
 
   return (
     <div className="container">
-      <Form method="post">
+      <ValidatedForm
+        method="post"
+        validator={validator[`${page}`]}
+        noValidate
+        // defaultValues={{
+        //   deviceType: undefined,
+        //   general: {
+        //     name: "",
+        //     exposure: "unknown",
+        //     groupId: "",
+        //   },
+        //   mqtt: {
+        //     enabled: false,
+        //     url: "",
+        //     topic: "",
+        //     messageFormat: "json",
+        //     decodeOptions: "",
+        //     connectionOptions: "",
+        //   },
+        //   ttn: {
+        //     enabled: false,
+        //     app_id: "",
+        //     dev_id: "",
+        //   },
+        // }}
+        // onSubmit={(e) => {
+        //   toast({
+        //     description: "You subbmitted the form!",
+        //   });
+        //   setTabValue("device");
+        //   props.setIsAddDeviceDialogOpen(false);
+        // }}
+        // className="space-y-8"
+      >
         <input name="page" type="hidden" value={page} />
         <Stepper
           steps={[
@@ -276,7 +436,7 @@ export default function NewDevice() {
             </button>
           )}
         </div>
-      </Form>
+      </ValidatedForm>
     </div>
   );
 }
