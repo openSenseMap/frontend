@@ -1,6 +1,7 @@
 import { InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { useField } from "remix-validated-form";
 
 export interface GeneralProps {
   data: any;
@@ -8,7 +9,11 @@ export interface GeneralProps {
 
 export default function General({ data }: GeneralProps) {
   const { t } = useTranslation("newdevice");
-  
+
+  const nameField = useField("name");
+  const exposureField = useField("exposure");
+  const groupIdField = useField("groupId");
+
   return (
     <div className="space-y-4 pt-4">
       <div>
@@ -28,7 +33,7 @@ export default function General({ data }: GeneralProps) {
         </Alert>
       </div>
 
-      <div className="mt-6 space-y-6 sm:mt-5 sm:space-y-5">
+      <div className="mt-6 sm:mt-5">
         <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
           <label
             htmlFor="username"
@@ -39,6 +44,7 @@ export default function General({ data }: GeneralProps) {
           <div className="mt-1 sm:col-span-2 sm:mt-0">
             <div className="flex max-w-lg rounded-md shadow-sm">
               <input
+                {...nameField.getInputProps({ id: "name" })}
                 type="text"
                 name="name"
                 id="name"
@@ -48,10 +54,18 @@ export default function General({ data }: GeneralProps) {
                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 sm:text-sm"
               />
             </div>
+            {nameField.error && (
+              <span className="ml-1 text-sm font-medium text-red-500">
+                {nameField.error}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+        <div
+          data-error={nameField.error !== undefined}
+          className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:border-t sm:border-gray-200"
+        >
           <div>
             <div
               className="text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
@@ -68,6 +82,7 @@ export default function General({ data }: GeneralProps) {
               <div className="mt-4 space-y-4">
                 <div className="flex items-center">
                   <input
+                    {...exposureField.getInputProps({ id: "exposure" })}
                     id="exposure-indoor"
                     name="exposure"
                     value="INDOOR"
@@ -85,6 +100,7 @@ export default function General({ data }: GeneralProps) {
                 </div>
                 <div className="flex items-center">
                   <input
+                    {...exposureField.getInputProps({ id: "exposure" })}
                     id="exposure-outdoor"
                     name="exposure"
                     value="OUTDOOR"
@@ -102,6 +118,7 @@ export default function General({ data }: GeneralProps) {
                 </div>
                 <div className="flex items-center">
                   <input
+                    {...exposureField.getInputProps({ id: "exposure" })}
                     id="exposure-mobile"
                     name="exposure"
                     value="MOBILE"
@@ -118,11 +135,20 @@ export default function General({ data }: GeneralProps) {
                   </label>
                 </div>
               </div>
+              {exposureField.error && (
+                <span className="ml-2 mt-2 text-sm font-medium text-red-500">
+                  {exposureField.error}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+        <div
+          data-exposureError={exposureField.error !== undefined}
+          data-groupIdError={groupIdField.error !== undefined}
+          className="pt-5 data-[exposureError=false]:mt-6 data-[groupIdError=false]:mb-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+        >
           <label
             htmlFor="groupId"
             className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
@@ -132,6 +158,7 @@ export default function General({ data }: GeneralProps) {
           <div className="mt-1 sm:col-span-2 sm:mt-0">
             <div className="flex max-w-lg rounded-md shadow-sm">
               <input
+                {...groupIdField.getInputProps({ id: "groupId" })}
                 type="text"
                 name="groupId"
                 id="groupId"
@@ -140,6 +167,11 @@ export default function General({ data }: GeneralProps) {
                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 sm:text-sm"
               />
             </div>
+            {groupIdField.error && (
+              <span className="ml-1 text-sm font-medium text-red-500">
+                {groupIdField.error}
+              </span>
+            )}
           </div>
         </div>
       </div>
