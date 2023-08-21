@@ -73,9 +73,9 @@ export function getMeasurement(
     });
   }
 
-  // If neither start date nor aggregation are specified, fetch default measurements with a limit of 5000.
+  // If neither start date nor aggregation are specified, fetch default measurements with a limit of 20000.
   return prisma.measurement.findMany({
-    take: 5000,
+    take: 20000,
     where: {
       sensorId: sensorId,
     },

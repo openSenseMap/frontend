@@ -27,8 +27,8 @@ export async function loader({ params, request }: LoaderArgs) {
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
   const aggregation = url.searchParams.get("aggregation") || "raw";
-  const startDate = url.searchParams.get("from") || undefined;
-  const endDate = url.searchParams.get("to") || undefined;
+  const startDate = url.searchParams.get("date_from") || undefined;
+  const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = sensors.filter((sensor: Sensor) =>
     sensorIds.includes(sensor.id)
   );

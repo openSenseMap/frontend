@@ -40,10 +40,10 @@ export default function DatePickerGraph() {
   // Update search params when date or aggregation changes
   useEffect(() => {
     if (date?.from) {
-      searchParams.set("from", date?.from?.toDateString() ?? "");
+      searchParams.set("date_from", date?.from?.toDateString() ?? "");
     }
     if (date?.to) {
-      searchParams.set("to", date?.to?.toDateString() ?? "");
+      searchParams.set("date_to", date?.to?.toDateString() ?? "");
     }
     searchParams.set("aggregation", aggregation ?? "");
   }, [date, aggregation, searchParams]);
