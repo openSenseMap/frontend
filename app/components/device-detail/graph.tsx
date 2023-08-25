@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { datesHave48HourRange } from "~/lib/utils";
+import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -244,7 +245,10 @@ export default function Graph(props: any) {
               className="flex cursor-move items-center justify-between px-2 pt-2"
               id="graphTop"
             >
-              <DatePickerGraph />
+              <div className="flex items-center justify-center gap-4">
+                <DatePickerGraph />
+                <FixedTimeRangeButtons />
+              </div>
               <div className="flex items-center justify-end gap-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger>
