@@ -294,7 +294,15 @@ export default function CompareDevices() {
                         <Form
                           method="get"
                           onChange={(e) => {
-                            submit(e.currentTarget);
+                            // handle sensor selection and keep time/aggregation params if at least one sensor is selected
+                            const formData = new FormData(e.currentTarget);
+                            if (formData.getAll("sensor").length > 0) {
+                              searchParams.delete("sensor");
+                              searchParams.forEach((value, key) => {
+                                formData.append(key, value);
+                              });
+                            }
+                            submit(formData);
                           }}
                           className={
                             navigation.state === "loading"
