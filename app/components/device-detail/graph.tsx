@@ -94,6 +94,7 @@ export default function Graph(props: any) {
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
       maintainAspectRatio: false,
+      spanGaps: false,
       interaction: {
         mode: "index",
         intersect: false,
