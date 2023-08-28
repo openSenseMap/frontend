@@ -30,6 +30,7 @@ import {
 } from "../ui/dropdown-menu";
 import { datesHave48HourRange } from "~/lib/utils";
 import FixedTimeRangeButtons from "./fixed-time-range-buttons";
+import { isBrowser, isTablet } from "react-device-detect";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -43,7 +44,6 @@ ChartJS.register(
 );
 
 export default function Graph(props: any) {
-  // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
@@ -94,6 +94,7 @@ export default function Graph(props: any) {
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
       maintainAspectRatio: false,
+      responsive: true,
       interaction: {
         mode: "index",
         intersect: false,
@@ -220,6 +221,60 @@ export default function Graph(props: any) {
   function handleDrag(_e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
+  }
+
+  if (!isBrowser && !isTablet) {
+    return (
+      <>
+        {props.openGraph && (
+          <div
+            ref={nodeRef}
+            className="max-w[calc(100vw-32px)] absolute bottom-0 left-0 z-40 h-full max-h-[calc(100vh-3rem)] w-full px-4 py-2"
+          >
+            <div className="shadow-zinc-800/5 ring-zinc-900/5 relative flex h-full w-full flex-col gap-4 rounded-xl bg-white text-sm font-medium text-zinc-800 shadow-lg ring-1">
+              {navigation.state === "loading" && (
+                <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+                  <Spinner />
+                </div>
+              )}
+              <div
+                className="flex cursor-move items-center justify-between px-2 pt-2"
+                id="graphTop"
+              >
+                <div className="flex items-center justify-center gap-4">
+                  <DatePickerGraph />
+                  <FixedTimeRangeButtons />
+                </div>
+                <div className="flex items-center justify-end gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Download />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handlePngDownloadClick}>
+                        PNG
+                      </DropdownMenuItem>
+                      {loaderData.selectedSensors.length < 2 && (
+                        <DropdownMenuItem onClick={handleCsvDownloadClick}>
+                          CSV
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Minus
+                    className="cursor-pointer"
+                    onClick={() => props.setOpenGraph(false)}
+                  />
+                </div>
+              </div>
+              <div className="flex h-full w-full justify-center bg-white">
+                <Line data={lineData} options={options} ref={chartRef}></Line>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   return (

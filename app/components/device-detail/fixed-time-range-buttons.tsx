@@ -47,7 +47,7 @@ export default function FixedTimeRangeButtons() {
   }
 
   return (
-    <div className="flex cursor-pointer items-center justify-center gap-2 h-full">
+    <div className="sm:flex cursor-pointer items-center justify-center gap-2 h-full hidden">
       <Badge
         onClick={getLast24Hours}
         variant="outline"
