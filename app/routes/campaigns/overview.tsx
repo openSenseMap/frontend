@@ -35,7 +35,8 @@ import { bookmark } from "~/lib/actions";
 import { generateWhereObject } from "~/components/campaigns/overview/where-query";
 import { useToast } from "~/components/ui/use-toast";
 import CampaignGrid from "~/components/campaigns/overview/grid";
-// import h337, { Heatmap } from "heatmap.js";
+import { triggerNotification } from "~/novu.server";
+import h337, { Heatmap } from "heatmap.js";
 // import fs from "fs";
 
 const PER_PAGE = 12;
@@ -47,6 +48,7 @@ export async function action(args: ActionArgs) {
 export async function loader({ params, request }: LoaderArgs) {
   const userId = await requireUserId(request);
   const allCampaigns = await getCampaigns({});
+  await triggerNotification();
   const url = new URL(request.url);
   const query = url.searchParams;
   const currentPage = Math.max(Number(query.get("page") || 1), 1);
@@ -154,104 +156,9 @@ export default function Campaigns() {
       endDate: "",
     },
   });
-  // const [container, setContainer] = useState<HTMLElement | undefined>(
-  //   undefined
-  // );
-  // const [containerWrapper, setContainerWrapper] = useState<
-  //   HTMLElement | undefined
-  // >(undefined);
-  const mouseData: any[][] = [];
 
-  // const convertedData = testData.map(([x, y, value]) => ({
-  //   x,
-  //   y,
-  //   value,
-  // })) as readonly h337.DataPoint<"value", "x", "y">[];
-  // console.log(convertedData);
 
-  // const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
-
-  // useEffect(() => {
-  //   if (typeof window != "undefined") {
-  //     const container = document.getElementById("view")!;
-  //     setContainer(container);
-  //     const wrapper = document.getElementById("view-wrapper")!;
-  //     setContainerWrapper(wrapper);
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   if (typeof window != "undefined") {
-  //     var legendCanvas = document.createElement("canvas");
-  //     legendCanvas.width = 100;
-  //     legendCanvas.height = 10;
-  //     var min = document.querySelector("#min");
-  //     var max = document.querySelector("#max");
-  //     var gradientImg = document.querySelector("#gradient");
-  //     var legendCtx = legendCanvas.getContext("2d");
-  //     var gradientCfg = {};
-
-  //     function updateLegend(data: any) {
-  //       // the onExtremaChange callback gives us min, max, and the gradientConfig
-  //       // so we can update the legend
-  //       min.innerHTML = data.min;
-  //       max.innerHTML = data.max;
-  //       // regenerate gradient image
-  //       if (data.gradient != gradientCfg) {
-  //         gradientCfg = data.gradient;
-  //         var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
-  //         for (var key in gradientCfg) {
-  //           gradient.addColorStop(key, gradientCfg[key]);
-  //         }
-  //         legendCtx.fillStyle = gradient;
-  //         legendCtx.fillRect(0, 0, 100, 10);
-  //         gradientImg.src = legendCanvas.toDataURL();
-  //       }
-  //     }
-
-  //     if (container) {
-  //       heatMap.current = h337.create({
-  //         container: container,
-  //         onExtremaChange: function (data) {
-  //           updateLegend(data);
-  //         },
-  //         radius: 25,
-  //         maxOpacity: 0.5,
-  //         minOpacity: 0.25,
-  //         blur: 0.75,
-  //       });
-  //     }
-  //     if (containerWrapper) {
-  //       containerWrapper.onclick = function (ev: any) {
-  //         if (heatMap.current) {
-  //           heatMap.current.addData({
-  //             x: ev.layerX,
-  //             y: ev.layerY,
-  //             value: 1,
-  //           });
-  //         }
-  //       };
-  //     }
-  //   }
-  // }, [container, containerWrapper]);
-
-  // useEffect(() => {
-  //   if (container) {
-  //     heatMap.current = h337.create({
-  //       container: container,
-  //       maxOpacity: 0.6,
-  //       radius: 50,
-  //       blur: 0.9,
-  //     });
-  //     heatMap.current.setData({
-  //       min: 0,
-  //       max: 100,
-  //       data: convertedData,
-  //     });
-  //   }
-  // }, [container, convertedData]);
-
-  useEffect(() => {
+   useEffect(() => {
     // Access the map instance when the component mounts
     const map = mapRef?.current?.getMap();
     if (map) {
@@ -480,38 +387,22 @@ export default function Campaigns() {
   }, []);
 
   return (
-    <div
-      id="view-wrapper"
-      onClick={(e: any) => {
-        mouseData.push([e.pageX, e.pageY, 30]);
-        console.log(mouseData);
-        localStorage.setItem("overview", JSON.stringify(mouseData));
-      }}
-      // className="flex flex-col "
-    >
-      <div id="view" className="flex flex-col">
-        {/* <Header /> */}
-        {/* <Link to={"./create"} className="ml-auto mt-2 mr-2">
+      <div id="view">
+        <div className="flex flex-col">
+          {/* <Header /> */}
+          {/* <Link to={"./create"} className="ml-auto mt-2 mr-2">
         <Button size="lg" className="bg-green-300 text-lg ">
           Erstellen
         </Button>
       </Link> */}
-        {/* <div
-          id="heatmapLegend"
-          className="absolute top-10 right-0 bg-white p-4"
-        >
-          <h2>Legende</h2>
-          <span className="float-left" id="min"></span>
-          <span className="float-right" id="max"></span>
-          <img className="w-full" id="gradient" src="" alt="legend-gradient" />
-        </div> */}
-        <Filter
-          setShowMap={setShowMap}
-          showMap={showMap}
-          switchDisabled={campaigns.length === 0}
-          phenomena={phenomena}
-        />
-        {/* <FiltersBar
+
+          <Filter
+            setShowMap={setShowMap}
+            showMap={showMap}
+            switchDisabled={campaigns.length === 0}
+            phenomena={phenomena}
+          />
+          {/* <FiltersBar
           phenomena={phenomena}
           phenomenaState={phenomenaState}
           resetFilters={resetFilters}
@@ -524,99 +415,100 @@ export default function Campaigns() {
           sortBy={sortBy}
           switchDisabled={campaigns.length === 0}
         /> */}
-        {selectedCampaign && (
-          <div className="relative ml-auto inline-block">
-            <input type="text" value={selectedCampaign.split("-")[0]} />
-            <XMarkIcon
-              onClick={() => {
-                setSelectedCampaign("");
-                resetFilters();
-                mapRef.current?.flyTo({
-                  center: [0, 0],
-                  duration: 1000,
-                  zoom: 1,
-                });
-              }}
-              className="absolute right-2 top-2 ml-auto h-5 w-5"
-            />
+          {selectedCampaign && (
+            <div className="relative ml-auto inline-block">
+              <input type="text" value={selectedCampaign.split("-")[0]} />
+              <XMarkIcon
+                onClick={() => {
+                  setSelectedCampaign("");
+                  resetFilters();
+                  mapRef.current?.flyTo({
+                    center: [0, 0],
+                    duration: 1000,
+                    zoom: 1,
+                  });
+                }}
+                className="absolute right-2 top-2 ml-auto h-5 w-5"
+              />
+            </div>
+          )}
+        </div>
+        <hr className="w-full bg-gray-700" />
+        {campaigns.length === 0 ? (
+          <div className="flex w-full flex-col items-center justify-center gap-2">
+            <span className="mt-6 text-red-500">{t("no campaigns yet")}. </span>{" "}
+            <div>
+              {t("click")}{" "}
+              <Link className="text-blue-500 underline" to="../../create/area">
+                {t("here")}
+              </Link>{" "}
+              {t("to create a campaign")}
+            </div>
+          </div>
+        ) : (
+          <div className="relative flex w-full justify-between">
+            <div
+              className={`${
+                showMap
+                  ? "mx-auto mt-10 flex w-full flex-col gap-4"
+                  : "mt-10 flex w-full flex-wrap gap-4"
+              }`}
+            >
+              <span className="absolute left-0 top-0 ">
+                {campaigns.length} {t("of")} {campaignCount}{" "}
+                {t("campaigns are shown")}
+              </span>
+              <CampaignGrid
+                campaigns={campaigns}
+                showMap={showMap}
+                userId={userId}
+              />
+              {totalPages > 1 && (
+                <Pagination
+                  totalPages={totalPages}
+                  pageParam="page"
+                  className="mt-8"
+                />
+              )}
+            </div>
+            <div>
+              {showMap && (
+                <MapProvider>
+                  <Map
+                    initialViewState={{
+                      latitude: 51,
+                      longitude: 7,
+                      zoom: 1,
+                    }}
+                    interactiveLayerIds={["marker-layer"]}
+                    // preserveDrawingBuffer
+                    // onMouseMove={handleMapMouseMove}
+                    // onClick={handleMapClick}
+                    onLoad={handleMapLoad}
+                    onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
+                    ref={mapRef}
+                    style={{
+                      height: "60vh",
+                      width: "40vw",
+                      position: "sticky",
+                      top: 0,
+                      marginLeft: "auto",
+                    }}
+                  >
+                    <PointLayer
+                      //@ts-ignore
+                      selectedCampaign={selectedCampaign}
+                      // setDisplayedCampaigns={setDisplayedCampaigns}
+                      setSelectedCampaign={setSelectedCampaign}
+                      setSelectedMarker={setSelectedMarker}
+                      campaigns={allCampaigns}
+                    />
+                  </Map>
+                </MapProvider>
+              )}
+            </div>
           </div>
         )}
       </div>
-      <hr className="w-full bg-gray-700" />
-      {campaigns.length === 0 ? (
-        <div className="flex w-full flex-col items-center justify-center gap-2">
-          <span className="mt-6 text-red-500">{t("no campaigns yet")}. </span>{" "}
-          <div>
-            {t("click")}{" "}
-            <Link className="text-blue-500 underline" to="../../create/area">
-              {t("here")}
-            </Link>{" "}
-            {t("to create a campaign")}
-          </div>
-        </div>
-      ) : (
-        <div className="relative flex w-full justify-between">
-          <div
-            className={`${
-              showMap
-                ? "mx-auto mt-10 flex w-full flex-col gap-4"
-                : "mt-10 flex w-full flex-wrap gap-4"
-            }`}
-          >
-            <span className="absolute left-0 top-0 ">
-              {campaigns.length} von {campaignCount} Kampagnen werden angezeigt
-            </span>
-            <CampaignGrid
-              campaigns={campaigns}
-              showMap={showMap}
-              userId={userId}
-            />
-            {totalPages > 1 && (
-              <Pagination
-                totalPages={totalPages}
-                pageParam="page"
-                className="mt-8"
-              />
-            )}
-          </div>
-          <div>
-            {showMap && (
-              <MapProvider>
-                <Map
-                  initialViewState={{
-                    latitude: 51,
-                    longitude: 7,
-                    zoom: 1,
-                  }}
-                  interactiveLayerIds={["marker-layer"]}
-                  // preserveDrawingBuffer
-                  // onMouseMove={handleMapMouseMove}
-                  // onClick={handleMapClick}
-                  onLoad={handleMapLoad}
-                  onZoom={(e) => setZoom(Math.floor(e.viewState.zoom))}
-                  ref={mapRef}
-                  style={{
-                    height: "60vh",
-                    width: "40vw",
-                    position: "sticky",
-                    top: 0,
-                    marginLeft: "auto",
-                  }}
-                >
-                  <PointLayer
-                    //@ts-ignore
-                    selectedCampaign={selectedCampaign}
-                    // setDisplayedCampaigns={setDisplayedCampaigns}
-                    setSelectedCampaign={setSelectedCampaign}
-                    setSelectedMarker={setSelectedMarker}
-                    campaigns={allCampaigns}
-                  />
-                </Map>
-              </MapProvider>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
   );
 }

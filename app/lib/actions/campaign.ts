@@ -10,6 +10,7 @@ import type { Exposure, Priority } from "@prisma/client";
 import type { ActionArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { campaignUpdateSchema } from "../validations/campaign";
+import { triggerNotification } from "~/novu.server";
 
 export async function participate({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
@@ -31,6 +32,7 @@ export async function participate({ request }: ActionArgs) {
   // }
   try {
     const updated = await updateCampaign(campaignId, ownerId);
+    await triggerNotification();
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);

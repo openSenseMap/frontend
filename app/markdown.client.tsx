@@ -1,6 +1,7 @@
 import MDEditor from "@uiw/react-md-editor";
 import { iconConfig } from "./editor-icon-config";
 import rehypeSanitize from "rehype-sanitize";
+import rehypeVideo from "rehype-video";
 
 type MDEditorProps = {
   comment: string | undefined;
@@ -23,7 +24,7 @@ export const MarkdownEditor = ({
       value={comment}
       onChange={setComment}
       previewOptions={{
-        rehypePlugins: [[rehypeSanitize]],
+        rehypePlugins: [[rehypeVideo]],
       }}
       textareaProps={{
         spellCheck: "true",

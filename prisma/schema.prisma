@@ -10,6 +10,11 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "views"]
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../ERD.svg"
+}
+
 model File {
   id   String @id @unique @default(cuid())
   blob Bytes

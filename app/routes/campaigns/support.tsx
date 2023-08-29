@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 type FileTypes = {
   [key: string]: string[];
@@ -36,6 +37,7 @@ export async function action({ request }: ActionArgs) {
 
 export default function Support() {
   const [files, setFiles] = useState<File[]>([]);
+  const { t } = useTranslation("support");
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -60,28 +62,26 @@ export default function Support() {
     <div className="flex min-h-full flex-col justify-center">
       <div className="w-full text-center">
         <p>
-          Nutzen Sie dieses Formular um technische Unterstützung bei Problemen
-          zu erhalten, <br /> die beim Erstellen oder Verwalten von Kampagnen
-          auftreten.
+          {t("use this form to receive technical support")} <br />{" "}
+          {t("for issues that arise while creating or managing campaigns.")}
         </p>
       </div>
-      <div className="mx-auto mt-2 w-full max-w-md px-8">
+      <div className="mx-auto my-4 w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
             <div className="my-2 rounded bg-blue-500 text-white">
               <InformationCircleIcon className="float-right m-1 h-6 w-6" />
               <p className="p-4">
-                Es tut uns Leid, dass Sie auf ein Problem gestoßen sind! Bitte
-                geben Sie hier möglichst viele Informationen darüber an, wie
-                dieses Problem aufgetreten ist. Dies hilft uns bei der
-                effizienten Behebung des Problems.
+                {t(
+                  "we are sorry that you have encountered an issue! Please provide as much information as possible about how this problem occurred. This will assist us in efficiently resolving the issue."
+                )}
               </p>
             </div>
             <label
               htmlFor="description"
               className="block text-sm font-medium text-gray-700"
             >
-              Description
+              {t("description")}
             </label>
             <div className="mt-1">
               <input
@@ -108,7 +108,7 @@ export default function Support() {
             htmlFor="detailed-description"
             className="block text-sm font-medium text-gray-700"
           >
-            Describe in more detail
+            {t("detailed description")}
           </label>
           <div className="mt-1">
             <textarea
@@ -139,7 +139,9 @@ export default function Support() {
             {isDragActive ? (
               <p>Drop the files here ...</p>
             ) : (
-              <p>Drag 'n' drop some files here, or click to select files</p>
+              <p>
+                {t("drag and drop some files here, or click to select files")}
+              </p>
             )}
             <ul>{filesList()}</ul>
           </div>
@@ -147,7 +149,7 @@ export default function Support() {
             <CardHeader>
               <CardTitle>Browser</CardTitle>
               <CardDescription>
-                In welchen Browsern treten die Probleme auf
+                {t("in which browser do the problems occur")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -215,7 +217,7 @@ export default function Support() {
                   htmlFor="Sonstige"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Sonstige
+                  {t("other")}
                 </label>
               </div>
             </CardContent>
@@ -224,9 +226,9 @@ export default function Support() {
           {/* <input type="hidden" name="redirectTo" value={redirectTo} /> */}
           <button
             type="submit"
-            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
+            className="hover:bg-blue-600 focus:bg-blue-400 w-full rounded bg-blue-500 px-4 py-2 text-white"
           >
-            Abschicken
+            {t("submit")}
           </button>
         </Form>
       </div>

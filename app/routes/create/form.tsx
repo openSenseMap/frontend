@@ -40,6 +40,7 @@ import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
 import { getPhenomena } from "~/models/phenomena.server";
 import PhenomenaSelect from "~/components/campaigns/phenomena-select";
+import YouTube, { YouTubeProps } from "react-youtube";
 
 // import h337, { Heatmap } from "heatmap.js";
 
@@ -178,6 +179,7 @@ export default function CreateCampaign() {
   console.log(features);
   const textAreaRef = useRef();
   const [instructions, setInstructions] = useState<string | undefined>("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [selectedPhenomena, setSelectedPhenomena] = useState<string[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -192,6 +194,16 @@ export default function CreateCampaign() {
   const hardwareAvailableRef = useRef<HTMLButtonElement>(null);
 
   const { t } = useTranslation("campaign-form");
+
+  const handleYoutubeUrlChange = (event: any) => {
+    setYoutubeUrl(event.target.value);
+  };
+
+  const getYoutubeVideoId = (url: string) => {
+    const videoIdRegex = /(?:youtube\.com\/watch\?v=|youtu.be\/)([\w-]+)/;
+    const match = url.match(videoIdRegex);
+    return match ? match[1] : undefined;
+  };
 
   // const [container, setContainer] = useState<HTMLElement | undefined>(
   //   undefined
@@ -266,6 +278,7 @@ export default function CreateCampaign() {
   //   }
   // }, [container, containerWrapper]);
 
+  // function to scroll to any field of the form
   const scrollToRef = (
     ref:
       | RefObject<HTMLInputElement>
@@ -282,18 +295,21 @@ export default function CreateCampaign() {
   };
 
   useEffect(() => {
+    // do nothing if no error occured
     if (!actionData || !actionData.error) {
       return;
     }
 
     const { issues } = actionData.error;
 
+    // do nothing if there are no issues
     if (!Array.isArray(issues) || issues.length === 0) {
       return;
     }
 
     const errorField = issues[0].path[0];
 
+    // scroll to the field that causes the error
     switch (errorField) {
       case "title": {
         scrollToRef(titleRef);
@@ -301,6 +317,10 @@ export default function CreateCampaign() {
       }
       case "description": {
         scrollToRef(descriptionRef);
+        break;
+      }
+      case "instructions": {
+        scrollToRef(instructionsRef);
         break;
       }
       case "priority": {
@@ -336,10 +356,10 @@ export default function CreateCampaign() {
         break;
       }
       default: {
-        //statements;
         break;
       }
     }
+    // changes whenever the form is submitted
   }, [actionData]);
 
   useEffect(() => {
@@ -476,11 +496,18 @@ export default function CreateCampaign() {
               <ClientOnly>
                 {() => (
                   <>
+                    {/* <input
+                      type="text"
+                      value={youtubeUrl}
+                      onChange={handleYoutubeUrlChange}
+                      placeholder="Enter YouTube URL"
+                    /> */}
                     <MarkdownEditor
                       textAreaRef={textAreaRef}
                       comment={instructions}
                       setComment={setInstructions}
                     />
+
                     <div className="w-100 border-blue-grey relative flex justify-between rounded-b-lg border border-l border-r border-t-0 px-2 py-1 shadow-md">
                       <span className="text-gray text-xs leading-4">
                         Bild hinzufügen
@@ -513,7 +540,7 @@ export default function CreateCampaign() {
           </div>
           <div>
             <label htmlFor="priority" className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+              <span className="text-sm font-medium text-gray-700 ">
                 {t("priority")}
               </span>
               {InfoCard({
@@ -574,7 +601,7 @@ export default function CreateCampaign() {
               htmlFor="minimumParticipants"
               className="flex justify-between"
             >
-              <span className="text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']">
+              <span className="text-sm font-medium text-gray-700 ">
                 {t("participants")}
               </span>
               {InfoCard({
@@ -637,7 +664,7 @@ export default function CreateCampaign() {
           <div>
             <label
               htmlFor="endDate"
-              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+              className="block text-sm font-medium text-gray-700 "
             >
               {t("endDate")}
             </label>
@@ -663,7 +690,14 @@ export default function CreateCampaign() {
             </div>
           </div>
           <div>
+            <label
+              htmlFor="phenomena"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+            >
+              phenomena
+            </label>
             <input
+              id="phenomena"
               type="hidden"
               ref={phenomenaRef}
               name="phenomena"

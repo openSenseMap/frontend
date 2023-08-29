@@ -1,6 +1,6 @@
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import type { MapRef, PopupProps } from "react-map-gl";
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,10 +11,15 @@ import {
 import { Button } from "~/components/ui/button";
 import { FeatureContext } from "../create";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
-import { Link } from "@remix-run/react";
+import { Form, Link, useLoaderData, useSubmit } from "@remix-run/react";
 import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import type { LinksFunction } from "@remix-run/server-runtime";
+import {
+  redirect,
+  type ActionArgs,
+  type LinksFunction,
+  LoaderArgs,
+} from "@remix-run/server-runtime";
 import {
   Dialog,
   DialogClose,
@@ -26,7 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { valid } from "geojson-validation";
-import h337, { Heatmap } from "heatmap.js";
+import h337, { DataPoint, Heatmap } from "heatmap.js";
 import { useTranslation } from "react-i18next";
 import { useToast } from "~/components/ui/use-toast";
 import { ArrowRightIcon } from "lucide-react";
@@ -35,6 +40,8 @@ import flatten from "geojson-flatten";
 import bbox from "@turf/bbox";
 import DefineAreaMap from "~/components/campaigns/area/map";
 import type { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
+import { createClick, getClicks } from "~/models/clicks.server";
+import { triggerNotification } from "~/novu.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -53,9 +60,34 @@ export const links: LinksFunction = () => {
   ];
 };
 
+export async function loader({ request }: LoaderArgs) {
+  await triggerNotification();
+  return null;
+}
+// export async function action({ request }: ActionArgs) {
+//   const formData = await request.formData();
+//   const x_string = formData.get("x");
+//   if (typeof x_string != "string") {
+//     throw Error("x has to be a number");
+//   }
+//   const x_number = parseInt(x_string);
+//   // ... validate other data
+//   await createClick({
+//     x: x_number,
+//     y: y_number,
+//     page,
+//     viewportWidth: viewportWidth_number,
+//     viewportHeight: viewportHeight_number,
+//   });
+
+//   return null;
+// }
+
 export default function CampaignArea() {
   const { t } = useTranslation("campaign-area");
   const { toast } = useToast();
+  const data = useLoaderData<typeof loader>();
+
   const [popup, setPopup] = useState<PopupProps | false>();
   const [geojsonUploadData, setGeojsonUploadData] = useState<FeatureCollection<
     Geometry,
@@ -66,6 +98,32 @@ export default function CampaignArea() {
   const mapRef = useRef<MapRef | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const mouseData: any[][] = [];
+  // const points: DataPoint<"value", "x", "y">[] = [];
+  // data.forEach((d) => {
+  //   const point = {
+  //     x: d.x,
+  //     y: d.y,
+  //     value: 1,
+  //   };
+  //   points.push(point);
+  // });
+
+  const submit = useSubmit();
+
+  // function handleClick(e: any) {
+  //   const x = e.clientX;
+  //   const y = e.clientY;
+  //   const page = "area";
+  //   const viewportWidth = window.innerWidth;
+  //   const viewportHeight = window.innerHeight;
+  //   const formData = new FormData();
+  //   formData.set("x", x);
+  //   formData.set("y", y);
+  //   formData.set("page", page);
+  //   formData.set("viewportWidth", viewportWidth.toString());
+  //   formData.set("viewportHeight", viewportHeight.toString());
+  //   submit(formData, { method: "post" });
+  // }
 
   // const [container, setContainer] = useState<HTMLElement | undefined>(
   //   undefined
@@ -224,19 +282,21 @@ export default function CampaignArea() {
 
   return (
     <div
-      // id="view-wrapper"
-      className="grid h-full w-full grid-cols-3 gap-4" //TODO: change grid layout
+      id="view-wrapper"
+      //rest of component
+      // className="grid h-full w-full grid-cols-3 gap-4" //TODO: change grid layout
       onClick={(e: any) => {
         mouseData.push([e.clientX, e.clientY, 30]);
         localStorage.setItem("area", JSON.stringify(mouseData));
       }}
     >
-      {/* <div id="heatmapLegend" className="lef-0 absolute bottom-0 bg-white p-4">
+      {/* <div id="heatmapLegend" className="absolute bottom-0 left-0 bg-white p-4">
         <h2>Legend</h2>
         <span className="float-left" id="min"></span>
         <span className="float-right" id="max"></span>
         <img className="w-full" id="gradient" src="" alt="legend-gradient" />
       </div> */}
+      {/* <div id="view" className="h-full w-full"> */}
       <div className="flex w-2/3 flex-col gap-3">
         <div className="m-2 flex flex-col gap-1">
           <h1 className="text-lg font-bold">{t("define area of interest")}</h1>
@@ -296,10 +356,10 @@ export default function CampaignArea() {
         </div>
       </div>
       <div
-        id="view-wrapper"
+        // id="view-wrapper"
         className="fixed inset-y-0 right-0 z-0 col-span-2 h-full w-2/3"
       >
-        <div className="h-full w-full" id="view">
+        <div className="h-full w-full">
           <Link
             to={"/create/form"}
             className="absolute right-4 top-4 z-50 ml-auto"
@@ -323,5 +383,6 @@ export default function CampaignArea() {
         </div>
       </div>
     </div>
+    // </div>
   );
 }

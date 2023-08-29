@@ -3,8 +3,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function Tutorial() {
   return (
     <div className="h-full w-full">
-      <div className="mx-auto flex w-full items-center justify-center">
-        <Tabs defaultValue="contribute" className="w-1/2">
+      <div className="relative mx-auto flex w-full items-center justify-center">
+        <div className="absolute left-0 top-0 m-4 w-1/4 rounded-lg border border-gray-300 bg-white px-2 py-4">
+          <div className="flex flex-col space-y-2">
+            <h2 className="font-bold">Navigation Menu</h2>
+            <a href="#create-step-1" className="hover:text-green-100">
+              Step 1: Select Campaigns Tab
+            </a>
+            <a href="#create-step-2" className="hover:text-green-100">
+              Step 2: Click Create Button{" "}
+            </a>
+            <a href="#create-step-3" className="hover:text-green-100">
+              Step 3: Define Area of Interest{" "}
+            </a>
+            <a href="#create-step-4" className="hover:text-green-100">
+              Step 4: Fill out Form{" "}
+            </a>
+            <a href="#create-step-5" className="hover:text-green-100">
+              Step 5: Review your campaign{" "}
+            </a>
+          </div>
+        </div>
+
+        <Tabs defaultValue="contribute" className="w-1/3">
           <TabsList>
             <TabsTrigger value="contribute">Contribute</TabsTrigger>
             <TabsTrigger value="create">Create a Campaign</TabsTrigger>
@@ -39,7 +60,9 @@ export default function Tutorial() {
               <ol className="flex flex-col gap-6">
                 <li>
                   <div>
-                    <h2 className="text-lg font-bold">Step 1</h2>
+                    <h2 className="text-lg font-bold" id="create-step-1">
+                      Step 1
+                    </h2>
                     <p className="my-4">
                       On the landing page, select the campaigns tab in the
                       top-right corner.
@@ -52,7 +75,9 @@ export default function Tutorial() {
                 </li>
                 <li>
                   <div>
-                    <h2 className="text-lg font-bold">Step 2</h2>
+                    <h2 className="text-lg font-bold" id="create-step-2">
+                      Step 2
+                    </h2>
                     <p className="my-4">
                       On the Info page click on the "Create"- Button in the
                       top-right corner

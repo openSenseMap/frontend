@@ -117,6 +117,11 @@ export const meta: MetaFunction<typeof loader> = ({ params }) => ({
   title: "openSenseMap",
   description: `Trage zu dieser Kampagne bei: ${params.slug}`,
   viewport: "width=device-width,initial-scale=1",
+  "og:title": "openSenseMap",
+  "og:description": `Trage zu dieser Kampagne bei: ${params.slug}`,
+  // "og:image": "URL_TO_IMAGE",
+  "og:url": `https://magellan.testing.opensensemap.org/`,
+  "og:type": "website",
 });
 
 export async function loader({ request, params }: LoaderArgs) {

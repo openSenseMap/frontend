@@ -23,7 +23,7 @@ export default function CampaignsPage() {
       link: "./info",
     },
     {
-      name: t("overview"),
+      name: t("explore"),
       link: "./overview",
     },
     {
