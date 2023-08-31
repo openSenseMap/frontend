@@ -4,9 +4,12 @@ import Menu from "./menu";
 import { useLoaderData } from "@remix-run/react";
 import Notification from "./notification";
 import type { loader } from "~/routes/explore/$deviceId";
+import { Dispatch } from "react";
 
 interface HeaderProps {
   devices: any;
+  setFilterOn: Dispatch<boolean>;
+  setFilteredDevices: Dispatch<any>;
 }
 
 export default function Header(props: HeaderProps) {
@@ -14,7 +17,7 @@ export default function Header(props: HeaderProps) {
   return (
     <div className="items-top pointer-events-none fixed z-10 flex h-14 w-full justify-between gap-4 p-2">
       <Home />
-      <NavBar devices={props.devices} />
+      <NavBar devices={props.devices} setFilterOn={props.setFilterOn} setFilteredDevices={props.setFilteredDevices}/>
       <div className="flex">
         {data?.user?.email ? <Notification /> : null}
         <Menu />

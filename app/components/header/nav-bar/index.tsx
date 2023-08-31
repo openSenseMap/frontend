@@ -1,5 +1,5 @@
 import type { Device } from "@prisma/client";
-import { useState, useEffect, useRef, createContext } from "react";
+import { useState, useEffect, useRef, createContext, Dispatch } from "react";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,6 +8,8 @@ import { SearchIcon, XIcon } from "lucide-react";
 
 interface NavBarProps {
   devices: Device[];
+  setFilterOn: Dispatch<boolean>;
+  setFilteredDevices: Dispatch<any>;
 }
 
 export const NavbarContext = createContext({
@@ -97,6 +99,8 @@ export default function NavBar(props: NavBarProps) {
                 <NavbarHandler
                   devices={props.devices}
                   searchString={searchString}
+                  setFilterOn={props.setFilterOn} 
+                  setFilteredDevices={props.setFilteredDevices}
                 />
               </motion.div>
             )}
