@@ -47,7 +47,6 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   // data from our loader
   const data = useLoaderData<typeof loader>();
-  const [devices, setDevices] = useState(data.devices);
   const [filteredDevices, setFilteredDevices] = useState({});
   const [filterOn, setFilterOn] = useState(false);
 
@@ -57,7 +56,7 @@ export default function Explore() {
   const { deviceId } = useParams();
   var deviceLoc : any;
   if (deviceId) {
-    const device = devices.features.find(
+    const device = data.devices.features.find(
       (device: any) => device.properties.id === deviceId
     );
     deviceLoc = [device?.properties.latitude, device?.properties.longitude];
@@ -67,7 +66,7 @@ export default function Explore() {
     <div className="h-full w-full">
         <MapProvider>
           <Header
-            devices={{devices}}
+            devices={data.devices}
             setFilterOn={setFilterOn}
             setFilteredDevices = {setFilteredDevices}
           />
@@ -79,7 +78,7 @@ export default function Explore() {
                 : { latitude: 7, longitude: 52, zoom: 2 }
             }
           >
-            <ClusterLayer devices={!filterOn ? devices : filteredDevices} />
+            <ClusterLayer devices={!filterOn ? data.devices : filteredDevices} />
             <Toaster />
             <Outlet />
           </Map>

@@ -6,7 +6,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLocation } from "@remix-run/react";
+import { X } from "lucide-react";
 import { Dispatch, useEffect, useState } from "react";
+import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 
 interface FilterOptionsProps {
@@ -63,6 +65,7 @@ export default function FilterOptions({
   const [exposure, setExposure] = useState("ANY");
   const [status, setStatus] = useState("ANY");
   const [phenomenon, setPhenomenon] = useState("ANY");
+  const [totalDevices, setTotalDevices] = useState(devices.features.length);
 
   // const hostname = window.location.host;
   const currentPathname = useLocation().pathname;
@@ -87,74 +90,105 @@ export default function FilterOptions({
       currentPathname + "?" + filterParams.toString()
     );
 
-    setFilteredDevices(getFilteredDevices(devices.devices, filterParams));
+    const filterdDevces = getFilteredDevices(devices, filterParams);
+    setTotalDevices(filterdDevces.features.length);
+    setFilteredDevices(filterdDevces);
     setFilterOn(true);
   }
 
+  function resetFilters() {
+    setFilteredDevices(devices);
+    setTotalDevices(devices.features.length);
+    setExposure("ANY");
+    setStatus("ANY");
+    setPhenomenon("ANY");
+  }
+
   return (
-    <div className="mt-2 space-y-3 border-[1px] p-3">
-      <div className="flex justify-between">
-        <Label className=" text-base">Exposure: </Label>
-        &nbsp;
-        <Select
-          value={exposure}
-          onValueChange={(value) => {
-            updateFilterUrl(value, status, phenomenon);
-          }}
-        >
-          <SelectTrigger className="h-6 w-3/4 text-base">
-            <SelectValue className="h-6" placeholder="ANY" />
-          </SelectTrigger>
-          <SelectContent className="">
-            <SelectItem value="ANY">any</SelectItem>
-            <SelectItem value="INDOOR">indoor</SelectItem>
-            <SelectItem value="OUTDOOR">outdoor</SelectItem>
-            <SelectItem value="MOBILE">mobile</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="mt-[8px] space-y-3 border-[1px] px-3 py-[3px] ">
+      <div className="space-y-2">
+        <div className="space-y-[2px]">
+          <Label className=" text-base">Exposure: </Label>
+          &nbsp;
+          <Select
+            value={exposure}
+            onValueChange={(value) => {
+              updateFilterUrl(value, status, phenomenon);
+            }}
+          >
+            <SelectTrigger className="h-6 w-full text-base">
+              <SelectValue className="h-6" placeholder="ANY" />
+            </SelectTrigger>
+            <SelectContent className="">
+              <SelectItem value="ANY">any</SelectItem>
+              <SelectItem value="INDOOR">indoor</SelectItem>
+              <SelectItem value="OUTDOOR">outdoor</SelectItem>
+              <SelectItem value="MOBILE">mobile</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-[2px]">
+          <Label className=" text-base">Status: </Label>
+          &nbsp;
+          <Select
+            value={status}
+            onValueChange={(value) => {
+              updateFilterUrl(exposure, value, phenomenon);
+            }}
+          >
+            <SelectTrigger className="h-6 w-full text-base">
+              <SelectValue className="h-6" placeholder="ANY" />
+            </SelectTrigger>
+            <SelectContent className="">
+              <SelectItem value="ANY">any</SelectItem>
+              <SelectItem value="ACTIVE">active</SelectItem>
+              <SelectItem value="INACTIVE">inactive</SelectItem>
+              <SelectItem value="OLD">old</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-[2px]">
+          <Label className=" text-base">Phenonmenon: </Label>
+          &nbsp;
+          <Select
+            value={phenomenon}
+            onValueChange={(value) => {
+              updateFilterUrl(exposure, status, value);
+            }}
+          >
+            <SelectTrigger className="h-6 w-full text-base">
+              <SelectValue className="h-6" placeholder="ANY" />
+            </SelectTrigger>
+            <SelectContent className="">
+              <SelectItem value="ANY">any</SelectItem>
+              <SelectItem value="Temperatur">Temperatur</SelectItem>
+              <SelectItem value="Helligkeit">Helligkeit</SelectItem>
+              <SelectItem value="PM10">PM10</SelectItem>
+              <SelectItem value="PM2.5">PM2.5</SelectItem>
+              <SelectItem value="Luftdruck">Luftdruck</SelectItem>
+              <SelectItem value="Luftfeuchtigkeit">Luftfeuchtigkeit</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
       <div className="flex justify-between">
-        <Label className=" text-base">Status: </Label>
-        &nbsp;
-        <Select
-          value={status}
-          onValueChange={(value) => {
-            updateFilterUrl(exposure, value, phenomenon);
+        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
+          Results ({totalDevices})
+        </Label>
+
+        <Button
+          variant="outline"
+          className=" px-2 py-[1px] text-base"
+          onClick={() => {
+            resetFilters();
           }}
         >
-          <SelectTrigger className="h-6 w-3/4 text-base">
-            <SelectValue className="h-6" placeholder="ANY" />
-          </SelectTrigger>
-          <SelectContent className="">
-            <SelectItem value="ANY">any</SelectItem>
-            <SelectItem value="ACTIVE">active</SelectItem>
-            <SelectItem value="INACTIVE">inactive</SelectItem>
-            <SelectItem value="OLD">old</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex justify-between">
-        <Label className=" text-base">Phenonmenon: </Label>
-        &nbsp;
-        <Select
-          value={phenomenon}
-          onValueChange={(value) => {
-            updateFilterUrl(exposure, status, value);
-          }}
-        >
-          <SelectTrigger className="h-6 w-3/4 text-base">
-            <SelectValue className="h-6" placeholder="ANY" />
-          </SelectTrigger>
-          <SelectContent className="">
-            <SelectItem value="ANY">any</SelectItem>
-            <SelectItem value="Temperatur">Temperatur</SelectItem>
-            <SelectItem value="Helligkeit">Helligkeit</SelectItem>
-            <SelectItem value="PM10">PM10</SelectItem>
-            <SelectItem value="PM2.5">PM2.5</SelectItem>
-            <SelectItem value="Luftdruck">Luftdruck</SelectItem>
-            <SelectItem value="Luftfeuchtigkeit">Luftfeuchtigkeit</SelectItem>
-          </SelectContent>
-        </Select>
+          <span>
+            <X className=" m-0 inline h-3.5 w-3.5 p-0 align-sub" /> Reset
+            filters
+          </span>
+        </Button>
       </div>
     </div>
   );
