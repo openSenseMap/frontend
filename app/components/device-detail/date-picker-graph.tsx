@@ -48,6 +48,14 @@ export default function DatePickerGraph() {
     searchParams.set("aggregation", aggregation ?? "");
   }, [date, aggregation, searchParams]);
 
+  // Update date range when loader data changes (fromDate and toDate)
+  useEffect(() => {
+    setDate({
+      from: loaderData.fromDate ? new Date(loaderData.fromDate) : undefined,
+      to: loaderData.toDate ? new Date(loaderData.toDate) : undefined,
+    });
+  }, [loaderData]);
+
   return (
     <div className={cn("grid gap-2")}>
       {/* Date Range Picker */}

@@ -273,8 +273,15 @@ export default function Graph(props: any) {
                 />
               </div>
             </div>
-            <div className="flex h-full w-full justify-center bg-white">
-              <Line data={lineData} options={options} ref={chartRef}></Line>
+            <div className="flex h-full w-full justify-center items-center bg-white">
+              {(loaderData.selectedSensors[0].data.length === 0 &&
+                loaderData.selectedSensors[1] === undefined) ||
+              (loaderData.selectedSensors[0].data.length === 0 &&
+                loaderData.selectedSensors[1].data.length === 0) ? (
+                <div>There is no data for the selected time period.</div>
+              ) : (
+                <Line data={lineData} options={options} ref={chartRef}></Line>
+              )}
             </div>
           </div>
         </Draggable>
