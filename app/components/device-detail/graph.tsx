@@ -95,6 +95,7 @@ export default function Graph(props: any) {
     return {
       maintainAspectRatio: false,
       responsive: true,
+      spanGaps: false,
       interaction: {
         mode: "index",
         intersect: false,
