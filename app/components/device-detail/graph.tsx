@@ -18,7 +18,7 @@ import type { loader } from "~/routes/explore/$deviceId";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
-import { Download, Minus } from "lucide-react";
+import { Download, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
@@ -223,60 +223,6 @@ export default function Graph(props: any) {
     setOffsetPositionY(data.y);
   }
 
-  if (!isBrowser && !isTablet) {
-    return (
-      <>
-        {props.openGraph && (
-          <div
-            ref={nodeRef}
-            className="max-w[calc(100vw-32px)] absolute bottom-0 left-0 z-40 h-full max-h-[calc(100vh-3rem)] w-full px-4 py-2"
-          >
-            <div className="shadow-zinc-800/5 ring-zinc-900/5 relative flex h-full w-full flex-col gap-4 rounded-xl bg-white text-sm font-medium text-zinc-800 shadow-lg ring-1">
-              {navigation.state === "loading" && (
-                <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-                  <Spinner />
-                </div>
-              )}
-              <div
-                className="flex cursor-move items-center justify-between px-2 pt-2"
-                id="graphTop"
-              >
-                <div className="flex items-center justify-center gap-4">
-                  <DatePickerGraph />
-                  <FixedTimeRangeButtons />
-                </div>
-                <div className="flex items-center justify-end gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <Download />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={handlePngDownloadClick}>
-                        PNG
-                      </DropdownMenuItem>
-                      {loaderData.selectedSensors.length < 2 && (
-                        <DropdownMenuItem onClick={handleCsvDownloadClick}>
-                          CSV
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Minus
-                    className="cursor-pointer"
-                    onClick={() => props.setOpenGraph(false)}
-                  />
-                </div>
-              </div>
-              <div className="flex h-full w-full justify-center bg-white">
-                <Line data={lineData} options={options} ref={chartRef}></Line>
-              </div>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
-
   return (
     <>
       {props.openGraph && (
@@ -286,10 +232,11 @@ export default function Graph(props: any) {
           handle="#graphTop"
           defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
           onDrag={handleDrag}
+          disabled={!isBrowser && !isTablet}
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(33vw+20px)] sm:right-auto sm:top-auto sm:h-[35%] sm:max-h-[35%] sm:w-[calc(100vw-(33vw+30px))]"
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
           >
             {navigation.state === "loading" && (
               <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
@@ -320,7 +267,7 @@ export default function Graph(props: any) {
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Minus
+                <X
                   className="cursor-pointer"
                   onClick={() => props.setOpenGraph(false)}
                 />
