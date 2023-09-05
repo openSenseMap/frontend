@@ -4,7 +4,6 @@ import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";
 import { cn } from "~/lib/utils";
 import FilterOptions from "./filter-options/filter-options";
-import { Dispatch } from "react";
 
 interface NavBarHandlerProps {
   devices: Device[];

@@ -1,5 +1,5 @@
 import type { Device } from "@prisma/client";
-import { useState, useEffect, useRef, createContext, Dispatch } from "react";
+import { useState, useEffect, useRef, createContext } from "react";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
 import { AnimatePresence, motion } from "framer-motion";

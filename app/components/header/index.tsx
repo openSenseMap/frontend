@@ -4,7 +4,6 @@ import Menu from "./menu";
 import { useLoaderData } from "@remix-run/react";
 import Notification from "./notification";
 import type { loader } from "~/routes/explore/$deviceId";
-import { Dispatch } from "react";
 
 interface HeaderProps {
   devices: any;

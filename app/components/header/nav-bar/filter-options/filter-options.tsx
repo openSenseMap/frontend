@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import { useLocation } from "@remix-run/react";
 import { X } from "lucide-react";
-import { Dispatch, useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { FilterOptionsContext } from "~/routes/explore";

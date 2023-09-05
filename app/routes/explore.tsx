@@ -64,8 +64,6 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   // data from our loader
   const data = useLoaderData<typeof loader>();
-  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState({});
-  const [filterOptionsOn, setFilterOptionsOn] = useState(false);
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -74,6 +72,8 @@ export default function Explore() {
   const [globalFilterParams, setGlobalFilterParams] = useState(
     new URLSearchParams(currentFilterParams)
   );
+  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState({});
+  const [filterOptionsOn, setFilterOptionsOn] = useState(false);
 
   //* fly to sensebox location when url inludes deviceId
   const { deviceId } = useParams();
