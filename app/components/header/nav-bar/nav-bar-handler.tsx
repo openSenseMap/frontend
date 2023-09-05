@@ -9,14 +9,10 @@ import { Dispatch } from "react";
 interface NavBarHandlerProps {
   devices: Device[];
   searchString: string;
-  setFilterOn: Dispatch<boolean>;
-  setFilteredDevices: Dispatch<any>;
 }
 
 function getSections(
   devices: Device[],
-  setFilterOn: Dispatch<any>,
-  setFilteredDevices: Dispatch<any>
 ) {
   return [
     {
@@ -32,8 +28,6 @@ function getSections(
       component: (
         <FilterOptions
           devices={devices}
-          setFilterOn={setFilterOn}
-          setFilteredDevices={setFilteredDevices}
         ></FilterOptions>
       ),
     },
@@ -55,10 +49,8 @@ function getSections(
 export default function NavbarHandler({
   devices,
   searchString,
-  setFilterOn,
-  setFilteredDevices,
 }: NavBarHandlerProps) {
-  const sections = getSections(devices, setFilterOn, setFilteredDevices);
+  const sections = getSections(devices);
 
   const { cursor, setCursor } = useKeyboardNav(0, 0, sections.length);
 

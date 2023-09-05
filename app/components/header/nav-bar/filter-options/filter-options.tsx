@@ -14,8 +14,6 @@ import { FilterOptionsContext } from "~/routes/explore";
 
 interface FilterOptionsProps {
   devices: any;
-  setFilterOn: Dispatch<any>;
-  setFilteredDevices: Dispatch<any>;
 }
 
 /**
@@ -59,13 +57,14 @@ function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
 }
 
 //*************************************
-export default function FilterOptions({
-  devices,
-  setFilterOn,
-  setFilteredDevices,
-}: FilterOptionsProps) {
+export default function FilterOptions({ devices }: FilterOptionsProps) {
   //* Use params in parent page url (explore)
-  const {globalFilterParams, setGlobalFilterParams } = useContext(FilterOptionsContext);
+  const {
+    globalFilterParams,
+    setGlobalFilterParams,
+    setFilterOptionsOn,
+    setGlobalFilteredDevices,
+  } = useContext(FilterOptionsContext);
   //* Fetch params values
   const { exposure, status, phenomenon } = Object.fromEntries(
     globalFilterParams.entries()
@@ -123,14 +122,17 @@ export default function FilterOptions({
   }
 
   //*********************** Step 2
-  function setLocalFilterParams(isReset: boolean, filterParams: URLSearchParams | null) {
+  function setLocalFilterParams(
+    isReset: boolean,
+    filterParams: URLSearchParams | null
+  ) {
     if (!isReset && filterParams) {
       const filteredDevices = getFilteredDevices(devices, filterParams);
       setTotalDevices(filteredDevices.features.length);
-      setFilteredDevices(filteredDevices);
-      setFilterOn(true);
+      setGlobalFilteredDevices(filteredDevices);
+      setFilterOptionsOn(true);
     } else {
-      setFilteredDevices(devices);
+      setGlobalFilteredDevices(devices);
       setTotalDevices(devices.features.length);
       setExposureVal("ALL");
       setStatusVal("ALL");

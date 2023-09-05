@@ -8,8 +8,6 @@ import { SearchIcon, XIcon } from "lucide-react";
 
 interface NavBarProps {
   devices: Device[];
-  setFilterOn: Dispatch<boolean>;
-  setFilteredDevices: Dispatch<any>;
 }
 
 export const NavbarContext = createContext({
@@ -99,8 +97,6 @@ export default function NavBar(props: NavBarProps) {
                 <NavbarHandler
                   devices={props.devices}
                   searchString={searchString}
-                  setFilterOn={props.setFilterOn} 
-                  setFilteredDevices={props.setFilteredDevices}
                 />
               </motion.div>
             )}

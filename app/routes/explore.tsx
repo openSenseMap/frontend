@@ -15,8 +15,6 @@ import {
   useRef,
   useState,
   createContext,
-  Dispatch,
-  SetStateAction,
 } from "react";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
@@ -29,6 +27,8 @@ import { Toaster } from "~/components/ui/toaster";
 export const FilterOptionsContext = createContext({
   globalFilterParams: new URLSearchParams(""),
   setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  setFilterOptionsOn: (_filterOptionsOn: boolean) => {},
+  setGlobalFilteredDevices: (_GlobalFilteredDevices: {}) => {},
 });
 
 export type DeviceClusterProperties =
@@ -64,8 +64,8 @@ export const links: LinksFunction = () => {
 export default function Explore() {
   // data from our loader
   const data = useLoaderData<typeof loader>();
-  const [filteredDevices, setFilteredDevices] = useState({});
-  const [filterOn, setFilterOn] = useState(false);
+  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState({});
+  const [filterOptionsOn, setFilterOptionsOn] = useState(false);
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -86,13 +86,11 @@ export default function Explore() {
   }
 
   return (
-    <FilterOptionsContext.Provider value={{ globalFilterParams, setGlobalFilterParams }}>
+    <FilterOptionsContext.Provider value={{ globalFilterParams, setGlobalFilterParams, setFilterOptionsOn, setGlobalFilteredDevices}}>
       <div className="h-full w-full">
         <MapProvider>
           <Header
             devices={data.devices}
-            setFilterOn={setFilterOn}
-            setFilteredDevices={setFilteredDevices}
           />
           <Map
             ref={mapRef}
@@ -103,7 +101,7 @@ export default function Explore() {
             }
           >
             <ClusterLayer
-              devices={!filterOn ? data.devices : filteredDevices}
+              devices={!filterOptionsOn ? data.devices : GlobalFilteredDevices}
             />
             <Toaster />
             <Outlet />
