@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/select";
 import { useLocation } from "@remix-run/react";
 import { X } from "lucide-react";
-import { Dispatch, useEffect, useState } from "react";
+import { Dispatch, useContext, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
+import { FilterOptionsContext } from "~/routes/explore";
 
 interface FilterOptionsProps {
   devices: any;
@@ -19,7 +20,7 @@ interface FilterOptionsProps {
 
 /**
  * This function  is called when the user make a change on filter tab. It reaturns list of devices based on user selection.
- *
+
  * @param devices all devices data
  * @param filterParams attributes and selected values
  */
@@ -29,7 +30,7 @@ function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
   );
   var results: any = [];
 
-  if (exposure === "ANY" && status === "ANY" && phenomenon === "ANY") {
+  if (exposure === "ALL" && status === "ALL" && phenomenon === "ALL") {
     return devices;
   } else {
     for (let index = 0; index < devices.features.length; index++) {
@@ -40,9 +41,9 @@ function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
       });
 
       if (
-        (exposure === "ANY" || exposure === device.properties.exposure) &&
-        (status === "ANY" || status === device.properties.status) &&
-        (phenomenon === "ANY" || sensorsList.includes(phenomenon))
+        (exposure === "ALL" || exposure === device.properties.exposure) &&
+        (status === "ALL" || status === device.properties.status) &&
+        (phenomenon === "ALL" || sensorsList.includes(phenomenon))
       ) {
         results.push(device);
       }
@@ -57,20 +58,45 @@ function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
   }
 }
 
+//*************************************
 export default function FilterOptions({
   devices,
   setFilterOn,
   setFilteredDevices,
 }: FilterOptionsProps) {
-  const [exposure, setExposure] = useState("ANY");
-  const [status, setStatus] = useState("ANY");
-  const [phenomenon, setPhenomenon] = useState("ANY");
+  //* Use params in parent page url (explore)
+  const {globalFilterParams, setGlobalFilterParams } = useContext(FilterOptionsContext);
+  //* Fetch params values
+  const { exposure, status, phenomenon } = Object.fromEntries(
+    globalFilterParams.entries()
+  );
+  //* Set initial filter params based on url options
+  const [exposureVal, setExposureVal] = useState(
+    exposure != undefined ? exposure : "ALL"
+  );
+  const [statusVal, setStatusVal] = useState(
+    status != undefined ? status : "ALL"
+  );
+  const [phenomenonVal, setPhenomenonVal] = useState(
+    phenomenon != undefined ? phenomenon : "ALL"
+  );
+  //* To show total number of shown devices
   const [totalDevices, setTotalDevices] = useState(devices.features.length);
-
+  //* To update total resutls each time filter-option is clicked
+  const filteredDevices = getFilteredDevices(devices, globalFilterParams);
+  if (
+    globalFilterParams.size > 0 &&
+    filteredDevices.features.length != totalDevices
+  ) {
+    setTotalDevices(filteredDevices.features.length);
+  }
   // const hostname = window.location.host;
+  //* To update current url
   const currentPathname = useLocation().pathname;
 
-  function updateFilterUrl(
+  //*************************
+  //* triggered when filter param is changed
+  function updateFilterParams(
     exposureVal: string,
     statusVal: string,
     phenomenonVal: string
@@ -81,27 +107,35 @@ export default function FilterOptions({
       phenomenon: `${phenomenonVal}`,
     });
 
-    setExposure(exposureVal);
-    setStatus(statusVal);
-    setPhenomenon(phenomenonVal);
+    setExposureVal(exposureVal);
+    setStatusVal(statusVal);
+    setPhenomenonVal(phenomenonVal);
+
+    //* update url
     window.history.pushState(
       null,
       "",
       currentPathname + "?" + filterParams.toString()
     );
 
-    const filterdDevces = getFilteredDevices(devices, filterParams);
-    setTotalDevices(filterdDevces.features.length);
-    setFilteredDevices(filterdDevces);
-    setFilterOn(true);
+    setGlobalFilterParams(filterParams);
+    setLocalFilterParams(false, filterParams);
   }
 
-  function resetFilters() {
-    setFilteredDevices(devices);
-    setTotalDevices(devices.features.length);
-    setExposure("ANY");
-    setStatus("ANY");
-    setPhenomenon("ANY");
+  //*********************** Step 2
+  function setLocalFilterParams(isReset: boolean, filterParams: URLSearchParams | null) {
+    if (!isReset && filterParams) {
+      const filteredDevices = getFilteredDevices(devices, filterParams);
+      setTotalDevices(filteredDevices.features.length);
+      setFilteredDevices(filteredDevices);
+      setFilterOn(true);
+    } else {
+      setFilteredDevices(devices);
+      setTotalDevices(devices.features.length);
+      setExposureVal("ALL");
+      setStatusVal("ALL");
+      setPhenomenonVal("ALL");
+    }
   }
 
   return (
@@ -111,16 +145,16 @@ export default function FilterOptions({
           <Label className=" text-base">Exposure: </Label>
           &nbsp;
           <Select
-            value={exposure}
+            value={exposureVal}
             onValueChange={(value) => {
-              updateFilterUrl(value, status, phenomenon);
+              updateFilterParams(value, statusVal, phenomenonVal);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ANY" />
+              <SelectValue className="h-6" placeholder="ALL" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ANY">any</SelectItem>
+              <SelectItem value="ALL">all</SelectItem>
               <SelectItem value="INDOOR">indoor</SelectItem>
               <SelectItem value="OUTDOOR">outdoor</SelectItem>
               <SelectItem value="MOBILE">mobile</SelectItem>
@@ -131,16 +165,16 @@ export default function FilterOptions({
           <Label className=" text-base">Status: </Label>
           &nbsp;
           <Select
-            value={status}
+            value={statusVal}
             onValueChange={(value) => {
-              updateFilterUrl(exposure, value, phenomenon);
+              updateFilterParams(exposureVal, value, phenomenonVal);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ANY" />
+              <SelectValue className="h-6" placeholder="ALL" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ANY">any</SelectItem>
+              <SelectItem value="ALL">all</SelectItem>
               <SelectItem value="ACTIVE">active</SelectItem>
               <SelectItem value="INACTIVE">inactive</SelectItem>
               <SelectItem value="OLD">old</SelectItem>
@@ -151,16 +185,16 @@ export default function FilterOptions({
           <Label className=" text-base">Phenonmenon: </Label>
           &nbsp;
           <Select
-            value={phenomenon}
+            value={phenomenonVal}
             onValueChange={(value) => {
-              updateFilterUrl(exposure, status, value);
+              updateFilterParams(exposureVal, statusVal, value);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ANY" />
+              <SelectValue className="h-6" placeholder="ALL" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ANY">any</SelectItem>
+              <SelectItem value="ALL">all</SelectItem>
               <SelectItem value="Temperatur">Temperatur</SelectItem>
               <SelectItem value="Helligkeit">Helligkeit</SelectItem>
               <SelectItem value="PM10">PM10</SelectItem>
@@ -181,7 +215,7 @@ export default function FilterOptions({
           variant="outline"
           className=" px-2 py-[1px] text-base"
           onClick={() => {
-            resetFilters();
+            setLocalFilterParams(true, null);
           }}
         >
           <span>
