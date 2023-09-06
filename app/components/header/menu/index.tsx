@@ -39,7 +39,8 @@ import {
   User2,
   ExternalLink,
 } from "lucide-react";
-import Donate from "~/components/landing/donate-iframe";
+import DonationText from "~/components/landing/donate-text";
+import DonationiFrame from "~/components/landing/donate-iframe";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -227,8 +228,12 @@ export default function Menu() {
                   <span> {t("donate_label")}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
-              <DialogContent className={"max-h-screen overflow-y-scroll"}>
-                <Donate />
+              <DialogContent className={"max-h-screen overflow-y-scroll !max-w-[60%]"}>
+                {/* <Donate /> */}
+                <div className="grid grid-cols-2">
+                  <DonationText />
+                  <DonationiFrame/>
+                </div>
               </DialogContent>
             </Dialog>
 

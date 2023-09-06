@@ -164,7 +164,7 @@ export default function AccountPage() {
         // description: "",
       });
     }
-  }, [actionData]);
+  }, [actionData, toast]);
 
   return (
     <div className="space-y-6">

@@ -151,7 +151,7 @@ export async function action({ request }: ActionArgs) {
   //* update user password
   await updateUserPassword(userId, newPass);
 
-  return redirect ("")
+  return redirect("");
   //* logout
   // return logout({ request: request, redirectTo: "/explore" });
 }
@@ -176,13 +176,13 @@ export default function ChangePaasswordPage() {
       confirmPassRef.current?.focus();
     } else if (actionData?.errors?.passMatch) {
       newPassRef.current?.focus();
-    }else {
+    } else {
       toast({
         title: "Password sucessfully updated.",
         // description: "",
       });
     }
-  }, [actionData]);
+  }, [actionData, toast]);
 
   return (
     <div className="space-y-6">
