@@ -50,6 +50,7 @@ import {
 } from "~/components/ui/tooltip";
 import { Separator } from "~/components/ui/separator";
 import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
+import addDays from "date-fns/addDays";
 
 function mergeSensors(
   sensorsFromDevice1: Sensor[],
@@ -115,6 +116,8 @@ export async function loader({ params, request }: LoaderArgs) {
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
   const aggregation = url.searchParams.get("aggregation") || "raw";
+  const startDate = url.searchParams.get("date_from") || undefined;
+  const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = [...sensorsFromDevice1, ...sensorsFromDevice2].filter(
     (sensor: Sensor) => sensorIds.includes(sensor.id)
   );
@@ -130,11 +133,24 @@ export async function loader({ params, request }: LoaderArgs) {
 
   const selectedSensors: Sensor[] = await Promise.all(
     sensorsToQuery.map(async (sensor: Sensor) => {
-      const sensorData = await getMeasurement(sensor.id, aggregation);
-      return {
-        ...sensor,
-        data: sensorData as any,
-      };
+      if (startDate && endDate) {
+        const sensorData = await getMeasurement(
+          sensor.id,
+          aggregation,
+          new Date(startDate),
+          addDays(new Date(endDate), 1)
+        );
+        return {
+          ...sensor,
+          data: sensorData as any,
+        };
+      } else {
+        const sensorData = await getMeasurement(sensor.id, aggregation);
+        return {
+          ...sensor,
+          data: sensorData as any,
+        };
+      }
     })
   );
   selectedSensors.map((sensor: any) => {
@@ -149,6 +165,8 @@ export async function loader({ params, request }: LoaderArgs) {
     sensorGroups,
     selectedSensors,
     aggregation: aggregation,
+    fromDate: startDate,
+    toDate: endDate,
   });
 }
 
