@@ -2,6 +2,9 @@ import { InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { useField } from "remix-validated-form";
+import TagsInput from "react-tagsinput";
+import "react-tagsinput/react-tagsinput.css";
+import { useState } from "react";
 
 export interface GeneralProps {
   data: any;
@@ -13,6 +16,13 @@ export default function General({ data }: GeneralProps) {
   const nameField = useField("name");
   const exposureField = useField("exposure");
   const groupIdField = useField("groupId");
+
+
+  const [tags, setTags] = useState(data.groupId ? data.groupId.split(", ") : []);
+
+  const handleChange = (tags: any) => {
+    setTags(tags);
+  };
 
   return (
     <div className="space-y-4 pt-4">
@@ -156,15 +166,29 @@ export default function General({ data }: GeneralProps) {
             Group ID ({t("optional")})
           </label>
           <div className="mt-1 sm:col-span-2 sm:mt-0">
-            <div className="flex max-w-lg rounded-md shadow-sm">
+            <div className="flex max-w-lg rounded-md flex-1 border border-gray-300 focus-within:border-[3px] focus-within:border-blue-700 sm:text-sm">
               <input
                 {...groupIdField.getInputProps({ id: "groupId" })}
                 type="text"
                 name="groupId"
                 id="groupId"
-                defaultValue={data.groupId}
+                defaultValue={tags.length > 0 ? tags.join(", ") : undefined}
                 autoComplete="name"
-                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 sm:text-sm"
+                className="hidden"
+              />
+              <TagsInput
+                value={tags}
+                onChange={handleChange}
+                className="block w-full flex-1 rounded-md sm:text-sm"
+                focusedClassName=""
+                tagProps={{
+                  className: "bg-blue-700 inline-block m-1 p-1 rounded-md inline-flex items-center text-white",
+                  classNameRemove: "h-5 w-5 text-black ml-1 bg-white cursor-pointer rounded-full after:content-['_×'] text-center",
+                }}
+                inputProps={{
+                  className: "border-0 rounded-md focus:ring-0 focus:border-0 w-fit m-1 p-1",
+                  placeholder: "Add a Group ID",
+                }}
               />
             </div>
             {groupIdField.error && (

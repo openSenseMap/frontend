@@ -23,10 +23,6 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
   const { t } = useTranslation("newdevice");
 
   const sensorsField = useField("sensors");
-  console.log(
-    "🚀 ~ file: index.tsx:26 ~ SelectSensors ~ sensorField:",
-    sensorsField
-  );
 
   function addSensor(sensorItem: any, key: string) {
     //this is an array because objects would not work with the forms [sensorSlug, phenomenonId, unitSlug]
