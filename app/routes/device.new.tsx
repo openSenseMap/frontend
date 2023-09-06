@@ -4,7 +4,7 @@ import {
   redirect,
   type LinksFunction,
 } from "@remix-run/node";
-import { useLoaderData, useNavigation } from "@remix-run/react";
+import { useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
 import { getUserSession, sessionStorage } from "~/session.server";
 import qs from "qs";
 import { useSpinDelay } from "spin-delay";
@@ -74,17 +74,52 @@ export const validator: any = {
   ////////////////////
   // select sensors //
   ////////////////////
-  3: withZod(z.object({})),
+  3: withZod(
+    z.object({
+      
+  })),
 
   //////////////
   // advanced //
   //////////////
   4: withZod(
     z.object({
+      // ttn
+      ttn: z
+        .object({
+          // enabled: zfd.checkbox({ trueValue: "on" }),
+
+          appId: zfd.text(
+            z.string().min(1, {
+              message: "Please enter a valid App ID.",
+            })
+          ),
+
+          devId: zfd.text(
+            z.string().min(1, {
+              message: "Please enter a valid Device ID.",
+            })
+          ),
+
+          decodeProfile: zfd.text(
+            z.string().min(1)
+          ),
+
+          decodeOptions: zfd.text(
+            z.string().min(1, {
+              message: "Please enter valid decoding options"
+            }).optional()
+          ),
+
+          port: zfd.numeric(z.number().optional())
+
+        })
+        .optional(),
+
       // mqtt
       mqtt: z
         .object({
-          enabled: zfd.checkbox({ trueValue: "on" }),
+          // enabled: zfd.checkbox({ trueValue: "on" }),
 
           url: zfd.text(
             z.string().url({
@@ -110,28 +145,9 @@ export const validator: any = {
             })
           ),
 
-          connectionOptions: zfd.text(
+          connectOptions: zfd.text(
             z.string().min(1, {
               message: "Please enter valid connect options.",
-            })
-          ),
-        })
-        .optional(),
-
-      // ttn
-      ttn: z
-        .object({
-          enabled: zfd.checkbox({ trueValue: "on" }),
-
-          app_id: zfd.text(
-            z.string().min(1, {
-              message: "Please enter a valid App ID.",
-            })
-          ),
-
-          dev_id: zfd.text(
-            z.string().min(1, {
-              message: "Please enter a valid Device ID.",
             })
           ),
         })
@@ -289,6 +305,7 @@ export const links: LinksFunction = () => {
 };
 
 export default function NewDevice() {
+  const navigate = useNavigate();
   const navigation = useNavigation();
   const { t } = useTranslation("newdevice");
 
@@ -360,7 +377,13 @@ export default function NewDevice() {
                 name="action"
                 // type="button"
                 value="previous"
-                formNoValidate
+                onClick={
+                  e => {
+                    e.preventDefault()
+                    const previousPage = Number(page) -1
+                    navigate(`?page=${previousPage}`)
+                  }
+                }
                 className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 {t("prev")}
@@ -409,7 +432,13 @@ export default function NewDevice() {
               name="action"
               // type="button"
               value="previous"
-              formNoValidate
+              onClick={
+                e => {
+                  console.log(e)
+                  const previousPage = Number(page) -1
+                  navigate(`?page=${previousPage}`)
+                }
+              }
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
               {t("prev")}
