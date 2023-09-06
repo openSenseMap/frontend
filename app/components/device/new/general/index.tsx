@@ -172,13 +172,14 @@ export default function General({ data }: GeneralProps) {
                 type="text"
                 name="groupId"
                 id="groupId"
-                defaultValue={tags.length > 0 ? tags.join(", ") : undefined}
-                autoComplete="name"
+                value={tags.length > 0 ? tags.join(", ") : ""}
                 className="hidden"
+                disabled={tags.length === 0}
               />
               <TagsInput
                 value={tags}
                 onChange={handleChange}
+                addKeys={[9, 13, 32, 188]}
                 className="block w-full flex-1 rounded-md sm:text-sm"
                 focusedClassName=""
                 tagProps={{
