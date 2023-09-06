@@ -76,8 +76,16 @@ export const validator: any = {
   ////////////////////
   3: withZod(
     z.object({
-      
-  })),
+      sensors: z.object({}, {
+        errorMap: (issue, ctx) => {
+          switch (issue.code) {
+            default:
+              return { message: "Please select at least one sensor." };
+          }
+        }
+      }),
+    })
+  ),
 
   //////////////
   // advanced //
@@ -101,18 +109,18 @@ export const validator: any = {
             })
           ),
 
-          decodeProfile: zfd.text(
-            z.string().min(1)
-          ),
+          decodeProfile: zfd.text(z.string().min(1)),
 
           decodeOptions: zfd.text(
-            z.string().min(1, {
-              message: "Please enter valid decoding options"
-            }).optional()
+            z
+              .string()
+              .min(1, {
+                message: "Please enter valid decoding options",
+              })
+              .optional()
           ),
 
-          port: zfd.numeric(z.number().optional())
-
+          port: zfd.numeric(z.number().optional()),
         })
         .optional(),
 
@@ -377,13 +385,11 @@ export default function NewDevice() {
                 name="action"
                 // type="button"
                 value="previous"
-                onClick={
-                  e => {
-                    e.preventDefault()
-                    const previousPage = Number(page) -1
-                    navigate(`?page=${previousPage}`)
-                  }
-                }
+                onClick={(e) => {
+                  e.preventDefault();
+                  const previousPage = Number(page) - 1;
+                  navigate(`?page=${previousPage}`);
+                }}
                 className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 {t("prev")}
@@ -432,13 +438,11 @@ export default function NewDevice() {
               name="action"
               // type="button"
               value="previous"
-              onClick={
-                e => {
-                  console.log(e)
-                  const previousPage = Number(page) -1
-                  navigate(`?page=${previousPage}`)
-                }
-              }
+              onClick={(e) => {
+                console.log(e);
+                const previousPage = Number(page) - 1;
+                navigate(`?page=${previousPage}`);
+              }}
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
               {t("prev")}

@@ -16,7 +16,6 @@ interface AdvancedProps {
 }
 
 export default function Advanced({ data }: AdvancedProps) {
-
   const { t } = useTranslation("newdevice");
 
   // ttn form fields
@@ -32,7 +31,6 @@ export default function Advanced({ data }: AdvancedProps) {
   const ttnDecodeOptionsField = useField("ttn.decodeOptions");
   const ttnPortField = useField("ttn.port");
 
-  
   // mqtt form fields
   const [mqttEnabled, setMqttEnabled] = useState<boolean | undefined>(
     data.mqttEnabled === "on"
@@ -648,9 +646,13 @@ export default function Advanced({ data }: AdvancedProps) {
             </div>
 
             <div
-              data-mqttdecodeoptionserror={mqttDecodeOptionsField.error !== undefined}
-              data-mqttconnectoptionserror={mqttConnectOptionsField.error !== undefined}
-              className="pt-5 data-[mqttdecodeoptionserror=false]:mt-6 data-[mqttconnectoptionserror=false]:mb-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+              data-mqttdecodeoptionserror={
+                mqttDecodeOptionsField.error !== undefined
+              }
+              data-mqttconnectoptionserror={
+                mqttConnectOptionsField.error !== undefined
+              }
+              className="pt-5 data-[mqttconnectoptionserror=false]:mb-6 data-[mqttdecodeoptionserror=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
             >
               <label
                 htmlFor="mqttConnectOptions"
