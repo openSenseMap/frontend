@@ -1,11 +1,12 @@
 import type { Device } from "@prisma/client";
 import { Exposure } from "@prisma/client";
-import { useNavigate } from "@remix-run/react";
+import { useMatches, useNavigate } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, Rocket } from "lucide-react";
 import { useState } from "react";
 import type { MarkerProps } from "react-map-gl";
 import { Marker, useMap } from "react-map-gl";
+import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 import { cn } from "~/lib/utils";
 
 interface BoxMarkerProps extends MarkerProps {
@@ -27,7 +28,9 @@ const getStatusColor = (device: Device) => {
 
 export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
   const navigate = useNavigate();
+  const matches = useMatches();
   const { osem } = useMap();
+  const { compareMode, setCompareMode } = useSharedCompareMode();
 
   const isFullZoom = osem && osem?.getZoom() >= 14;
 
@@ -62,7 +65,16 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
             "group absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg",
             isFullZoom ? "-left-4 -top-4" : "-left-[10px] -top-[10px]"
           )}
-          onClick={() => navigate(`${device.id}`)}
+          onClick={() => {
+            if (compareMode) {
+              navigate(
+                `/explore/${matches[2].params.deviceId}/compare/${device.id}`
+              );
+              setCompareMode(false);
+              return;
+            }
+            navigate(`${device.id}`);
+          }}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
         >

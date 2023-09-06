@@ -134,27 +134,3 @@ export async function getDevices() {
 
   return geojson;
 }
-
-export async function getMeasurements(
-  deviceId: string,
-  sensorId: string,
-  startDate: Date,
-  endDate: Date
-) {
-  const response = await fetch(
-    process.env.OSEM_API_URL +
-      "/boxes/" +
-      deviceId +
-      "/data/" +
-      sensorId +
-      "?from-date=" +
-      startDate.toISOString() + //new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
-      "&to-date=" +
-      endDate.toISOString() //new Date().toISOString()
-  );
-  return (await response.json()) as {
-    value: string;
-    location?: number[];
-    createdAt: Date;
-  }[];
-}

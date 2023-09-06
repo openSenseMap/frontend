@@ -65,3 +65,10 @@ export function getGraphColor(phenomena: string) {
       return "#000000"; // Default color if phenomena is not found (Black)
   }
 }
+
+export function datesHave48HourRange(date1: Date, date2: Date): boolean {
+  const timeDifference = Math.abs(date2.getTime() - date1.getTime());
+  const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+  return hoursDifference <= 48;
+}
