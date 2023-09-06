@@ -48,12 +48,12 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   if (filterOptionsOn && globalFilterParams.size > 0 && filteredDevices && filteredDevices.features.length != totalDevices) {
       setTotalDevices(filteredDevices.features.length);
   }
-  // const hostname = window.location.host;
+
   //* To update current url
   const currentPathname = useLocation().pathname;
 
   //*************************
-  //* triggered when filter param is changed
+  //* Triggered when filter param is changed
   function updateFilterParams(
     exposureVal: string,
     statusVal: string,
@@ -80,7 +80,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     setLocalFilterParams(false, filterParams);
   }
 
-  //*********************** Step 2
+  //***********************
+  //* To set filters params after any change / reset filters
   function setLocalFilterParams(
     isReset: boolean,
     filterParams: URLSearchParams | null
