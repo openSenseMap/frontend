@@ -37,7 +37,7 @@ export type DeviceClusterProperties =
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
 
-  //* git filtered devices if filter params exist
+  //* Get filtered devices if filter params exist in url
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
