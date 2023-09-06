@@ -145,9 +145,9 @@ export default function General({ data }: GeneralProps) {
         </div>
 
         <div
-          data-exposureError={exposureField.error !== undefined}
-          data-groupIdError={groupIdField.error !== undefined}
-          className="pt-5 data-[exposureError=false]:mt-6 data-[groupIdError=false]:mb-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+          data-exposureerror={exposureField.error !== undefined}
+          data-groupiderror={groupIdField.error !== undefined}
+          className="pt-5 data-[exposureerror=false]:mt-6 data-[groupiderror=false]:mb-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
         >
           <label
             htmlFor="groupId"
