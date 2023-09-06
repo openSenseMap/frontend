@@ -16,16 +16,10 @@ interface AdvancedProps {
 }
 
 export default function Advanced({ data }: AdvancedProps) {
-  // console.log(data)
 
   const { t } = useTranslation("newdevice");
 
-  // const formContext = useFormContext();
-
   // ttn form fields
-  // const [ttnEnabled, setTtnEnabled] = useControlField<boolean | undefined>(
-  //   "ttnEnabled"
-  // );
   const [ttnEnabled, setTtnEnabled] = useState<boolean | undefined>(
     data["ttn.enabled"] === "on"
   );
@@ -38,10 +32,8 @@ export default function Advanced({ data }: AdvancedProps) {
   const ttnDecodeOptionsField = useField("ttn.decodeOptions");
   const ttnPortField = useField("ttn.port");
 
+  
   // mqtt form fields
-  // const [mqttEnabled, setMqttEnabled] = useControlField<boolean | undefined>(
-  //   "mqttEnabled"
-  // );
   const [mqttEnabled, setMqttEnabled] = useState<boolean | undefined>(
     data.mqttEnabled === "on"
   );

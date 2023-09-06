@@ -37,7 +37,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
             <Card
               key={device.id}
               data-checked={deviceType === device.slug}
-              onClick={() => setDeviceType(device.slug)}
+              onClick={() => { setDeviceType(device.slug); deviceTypeField.validate() }}
               className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
             >
               <CardContent className="flex justify-center pt-2">
