@@ -11,49 +11,10 @@ import { useContext, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { FilterOptionsContext } from "~/routes/explore";
+import { getFilteredDevices } from "~/utils";
 
 interface FilterOptionsProps {
   devices: any;
-}
-
-/**
- * This function  is called when the user make a change on filter tab. It reaturns list of devices based on user selection.
-
- * @param devices all devices data
- * @param filterParams attributes and selected values
- */
-function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
-  const { exposure, status, phenomenon } = Object.fromEntries(
-    filterParams.entries()
-  );
-  var results: any = [];
-
-  if (exposure === "ALL" && status === "ALL" && phenomenon === "ALL") {
-    return devices;
-  } else {
-    for (let index = 0; index < devices.features.length; index++) {
-      const device = devices.features[index];
-      //* extract list of sensors titles
-      const sensorsList = device.properties.sensors.map((s: any) => {
-        return s.title;
-      });
-
-      if (
-        (exposure === "ALL" || exposure === device.properties.exposure) &&
-        (status === "ALL" || status === device.properties.status) &&
-        (phenomenon === "ALL" || sensorsList.includes(phenomenon))
-      ) {
-        results.push(device);
-      }
-
-      if (index === devices.features.length - 1) {
-        return {
-          type: "FeatureCollection",
-          features: results,
-        };
-      }
-    }
-  }
 }
 
 //*************************************
@@ -61,8 +22,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   //* Use params in parent page url (explore)
   const {
     globalFilterParams,
-    setGlobalFilterParams,
+    filterOptionsOn,
     setFilterOptionsOn,
+    setGlobalFilterParams,
     setGlobalFilteredDevices,
   } = useContext(FilterOptionsContext);
   //* Fetch params values
@@ -83,11 +45,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   const [totalDevices, setTotalDevices] = useState(devices.features.length);
   //* To update total resutls each time filter-option is clicked
   const filteredDevices = getFilteredDevices(devices, globalFilterParams);
-  if (
-    globalFilterParams.size > 0 &&
-    filteredDevices.features.length != totalDevices
-  ) {
-    setTotalDevices(filteredDevices.features.length);
+  if (filterOptionsOn && globalFilterParams.size > 0 && filteredDevices && filteredDevices.features.length != totalDevices) {
+      setTotalDevices(filteredDevices.features.length);
   }
   // const hostname = window.location.host;
   //* To update current url
@@ -133,6 +92,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       setFilterOptionsOn(true);
     } else {
       setGlobalFilteredDevices(devices);
+      setFilterOptionsOn(false);
       setTotalDevices(devices.features.length);
       setExposureVal("ALL");
       setStatusVal("ALL");
@@ -209,7 +169,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       </div>
 
       <div className="flex justify-between">
-        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
+        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]  bg-[#F2F2F2]">
           Results ({totalDevices})
         </Label>
 
@@ -221,8 +181,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           }}
         >
           <span>
-            <X className=" m-0 inline h-3.5 w-3.5 p-0 align-sub" /> Reset
-            filters
+            <X className=" m-0 inline h-3.5 w-3.5 p-0 align-sub" /> Reset filters
           </span>
         </Button>
       </div>

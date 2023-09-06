@@ -1,9 +1,4 @@
-import {
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useParams,
-} from "@remix-run/react";
+import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
@@ -11,23 +6,21 @@ import type { LoaderArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import {
-  useRef,
-  useState,
-  createContext,
-} from "react";
+import { useRef, useState, createContext } from "react";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { Toaster } from "~/components/ui/toaster";
+import { getFilteredDevices } from "~/utils";
 
 //* Used in filter-options component
 export const FilterOptionsContext = createContext({
   globalFilterParams: new URLSearchParams(""),
-  setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  filterOptionsOn: false,
   setFilterOptionsOn: (_filterOptionsOn: boolean) => {},
+  setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
   setGlobalFilteredDevices: (_GlobalFilteredDevices: {}) => {},
 });
 
@@ -43,13 +36,29 @@ export type DeviceClusterProperties =
 
 export async function loader({ request }: LoaderArgs) {
   const devices = await getDevices();
+
+  //* git filtered devices if filter params exist
+  const url = new URL(request.url);
+  const filterParams = url.search;
+  const urlFilterParams = new URLSearchParams(url.search);
+  var filteredDevices = {};
+  if (urlFilterParams.size > 0 && urlFilterParams.has("exposure")) {
+    filteredDevices = getFilteredDevices(devices, urlFilterParams);
+  }
+
   const user = await getUser(request);
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({ devices, user, profile });
+    return typedjson({ devices, user, profile, filterParams, filteredDevices });
   }
-  return typedjson({ devices, user, profile: null });
+  return typedjson({
+    devices,
+    user,
+    profile: null,
+    filterParams,
+    filteredDevices,
+  });
 }
 
 export const links: LinksFunction = () => {
@@ -68,12 +77,16 @@ export default function Explore() {
   const mapRef = useRef<MapRef | null>(null);
 
   //* Used in filter-options component
-  const currentFilterParams = useLocation().search;
+
   const [globalFilterParams, setGlobalFilterParams] = useState(
-    new URLSearchParams(currentFilterParams)
+    new URLSearchParams(data.filterParams)
   );
-  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState({});
-  const [filterOptionsOn, setFilterOptionsOn] = useState(false);
+  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
+    globalFilterParams.size > 0 ? data.filteredDevices : {}
+  );
+  const [filterOptionsOn, setFilterOptionsOn] = useState(
+    globalFilterParams.size > 0 ? true : false
+  );
 
   //* fly to sensebox location when url inludes deviceId
   const { deviceId } = useParams();
@@ -86,12 +99,18 @@ export default function Explore() {
   }
 
   return (
-    <FilterOptionsContext.Provider value={{ globalFilterParams, setGlobalFilterParams, setFilterOptionsOn, setGlobalFilteredDevices}}>
+    <FilterOptionsContext.Provider
+      value={{
+        globalFilterParams,
+        filterOptionsOn,
+        setFilterOptionsOn,
+        setGlobalFilterParams,
+        setGlobalFilteredDevices,
+      }}
+    >
       <div className="h-full w-full">
         <MapProvider>
-          <Header
-            devices={data.devices}
-          />
+          <Header devices={data.devices} />
           <Map
             ref={mapRef}
             initialViewState={
