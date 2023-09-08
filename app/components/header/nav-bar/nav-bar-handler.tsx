@@ -1,39 +1,56 @@
 import type { Device } from "@prisma/client";
 import Search from "~/components/search";
-import { Clock4Icon, Cog, IceCream2Icon } from "lucide-react";
+import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";
 import { cn } from "~/lib/utils";
+import FilterOptions from "./filter-options/filter-options";
 
 interface NavBarHandlerProps {
   devices: Device[];
   searchString: string;
 }
 
-const sections = [
-  {
-    title: "Datum & Zeit",
-    icon: Clock4Icon,
-    color: "bg-blue-100",
-    component: <div>Datum & Zeit</div>,
-  },
-  {
-    title: "Phänomen",
-    icon: IceCream2Icon,
-    color: "bg-slate-500",
-    component: <div>Phänomen</div>,
-  },
-  {
-    title: "Einstellungen",
-    icon: Cog,
-    color: "bg-green-100",
-    component: <div>Einstellungen</div>,
-  },
-];
+function getSections(
+  devices: Device[],
+) {
+  return [
+    {
+      title: "Datum & Zeit",
+      icon: Clock4Icon,
+      color: "bg-blue-100",
+      component: <div>Datum & Zeit</div>,
+    },
+    {
+      title: "Filter",
+      icon: Filter,
+      color: "bg-gray-300",
+      component: (
+        <FilterOptions
+          devices={devices}
+        ></FilterOptions>
+      ),
+    },
+    {
+      title: "Phänomen",
+      icon: IceCream2Icon,
+      color: "bg-slate-500",
+      component: <div>Phänomen</div>,
+    },
+    {
+      title: "Einstellungen",
+      icon: Cog,
+      color: "bg-green-100",
+      component: <div>Einstellungen</div>,
+    },
+  ];
+}
 
 export default function NavbarHandler({
   devices,
   searchString,
 }: NavBarHandlerProps) {
+  const sections = getSections(devices);
+
   const { cursor, setCursor } = useKeyboardNav(0, 0, sections.length);
 
   if (searchString.length >= 2) {
@@ -51,7 +68,9 @@ export default function NavbarHandler({
               section.color,
               cursor === index && "ring-2 ring-slate-200 ring-offset-2"
             )}
-            onClick={() => setCursor(index)}
+            onClick={() => {
+              setCursor(index);
+            }}
           >
             <section.icon className="h-4 w-4" />
             <span className="hidden md:block">{section.title}</span>
