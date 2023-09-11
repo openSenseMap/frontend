@@ -67,6 +67,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
               </h1>
               <div className="space-y-6 sm:space-y-5">
                 <div className="grid grid-cols-8 gap-4">
+                  { /** @ts-ignore */}
                   {value.map((sensor: any) => {
                     return (
                       <div key={sensor.id}>
