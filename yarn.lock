@@ -3350,6 +3350,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-tagsinput@^3.20.0":
+  "integrity" "sha512-jfdX/VzJP7SWRfHQSLUq3lvnIKbbtaB/7yPV2O8KsdBHvcpnBT7reBkWn614cfJsUH/Ge3kQTikHKooaSAPwIA=="
+  "resolved" "https://registry.npmjs.org/@types/react-tagsinput/-/react-tagsinput-3.20.0.tgz"
+  "version" "3.20.0"
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*", "@types/react@^18.0.15", "@types/react@^18.0.26":
   "integrity" "sha512-RD0ivG1kEztNBdoAK7lekI9M+azSnitIn85h4iOiaLjaTrMjzslhaqCGaI4IyCJ1RljWiLCEu4jyrLLgqxBTew=="
   "resolved" "https://registry.npmjs.org/@types/react/-/react-18.0.28.tgz"
@@ -10664,6 +10671,11 @@
     "get-nonce" "^1.0.0"
     "invariant" "^2.2.4"
     "tslib" "^2.0.0"
+
+"react-tagsinput@^3.20.3":
+  "integrity" "sha512-a+7nZ9gg0SwuoPPmh2AAB98OXYduwi6WgYWgWlPts3mq1ookXGphq9Fe/XLhQcdunkiqJO4WXjWXtHE9UlFyiw=="
+  "resolved" "https://registry.npmjs.org/react-tagsinput/-/react-tagsinput-3.20.3.tgz"
+  "version" "3.20.3"
 
 "react-textarea-autosize@8.3.4":
   "integrity" "sha512-CdtmP8Dc19xL8/R6sWvtknD/eCXkQr30dtvC4VmGInhRsfF8X/ihXCq6+9l9qbxmKRiq407/7z5fxE7cVWQNgQ=="

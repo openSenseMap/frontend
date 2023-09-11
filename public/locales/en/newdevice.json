@@ -39,6 +39,11 @@
     "ttn_port_info": "The TTN port to listen for messages. Optional, if not provided, all ports are used.",
     "enable": "Enable",
     "mqtt_info_text": "The openSenseMap offers a <0>MQTT</0> client for connecting to public brokers. Documentation for the parameters is provided <1>here</1>. Please note that it's only possible to receive measurements through MQTT.",
+    "mqtt_url_info": "The URL to the MQTT server.",
+    "mqtt_topic_info":"The MQTT topic to subscribe to.",
+    "mqtt_message_format_info":"The format the MQTT messages are in.",
+    "mqtt_decode_options_info":"A json encoded string with options for decoding the message. `jsonPath` for `json`.",
+    "mqtt_connect_options_info":"A json encoded string with options to supply to the MQTT client", 
     
     "location": "Location",
     "location_text": "Click on the map to choose a location for your device. You can also enter your coordinates manually or use the geosearch.",

@@ -5,6 +5,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
+import { useField } from "remix-validated-form";
 
 interface SelectDeviceProps {
   data: any;
@@ -14,12 +15,17 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
   const [deviceType, setDeviceType] = useState(data.data.type);
   const { t } = useTranslation("newdevice");
 
+  const deviceTypeField = useField("type");
+
   return (
     <div className="space-y-4 pt-4">
       <div>
         <h3 className="text-lg font-medium leading-6 text-gray-900">
           {t("select_device")}
         </h3>
+        {deviceTypeField.error && (
+          <span className="text-red-500">{deviceTypeField.error}</span>
+        )}
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
           {t("select_device_text")}
         </p>
@@ -31,7 +37,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
             <Card
               key={device.id}
               data-checked={deviceType === device.slug}
-              onClick={() => setDeviceType(device.slug)}
+              onClick={() => { setDeviceType(device.slug); deviceTypeField.validate() }}
               className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300"
             >
               <CardContent className="flex justify-center pt-2">
@@ -82,14 +88,16 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           return (
             <div key={device.id} className="flex items-center">
               <input
+                {...deviceTypeField.getInputProps({
+                  id: `type-${device.slug}`,
+                })}
                 id={`type-${device.slug}`}
                 name="type"
                 value={device.slug}
-                defaultChecked={deviceType === device.slug}
                 checked={deviceType === device.slug}
                 onChange={() => setDeviceType(device.slug)}
                 type="radio"
-                required
+                // required
                 className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
               />
               <label
@@ -104,14 +112,14 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
 
         <div key={4} className="flex items-center">
           <input
+            {...deviceTypeField.getInputProps({ id: `type-own_device` })}
             id="type-own_device"
             name="type"
             value="own_device"
-            defaultChecked={deviceType === "own_device"}
             checked={deviceType === "own_device"}
             onChange={() => setDeviceType("own_device")}
             type="radio"
-            required
+            // required
             className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
           />
           <label
@@ -140,7 +148,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
                   className="text-blue-500 hover:text-blue-700 hover:underline"
                 >
                   placeholder
-                </a>
+                </a>,
               ]}
             />
           </AlertDescription>
