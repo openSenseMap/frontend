@@ -1,4 +1,4 @@
-import type { Device, Sensor } from "@prisma/client";
+import type { Device } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 import { point } from "@turf/helpers";

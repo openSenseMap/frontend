@@ -30,8 +30,6 @@ import { createDevice } from "~/models/device.server";
 import { getUserId } from "~/session.server";
 import { useTranslation } from "react-i18next";
 import Stepper from "~/components/stepper";
-import { N } from "vitest/dist/types-c1386a7d";
-import { useNavigate } from "react-router-dom";
 
 // validator for the form
 export const validator: any = {
@@ -315,7 +313,6 @@ export const links: LinksFunction = () => {
 };
 
 export default function NewDevice() {
-  const navigate = useNavigate();
   const navigation = useNavigation();
   const navigate = useNavigate();
   const { t } = useTranslation("newdevice");
