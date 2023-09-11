@@ -368,19 +368,18 @@ export default function NewDevice() {
       >
         <input name="page" type="hidden" value={page} />
       
-          <Stepper
-            steps={[
-              { title: "Select Device" },
-              { title: "General" },
-              { title: "Select Sensors" },
-              { title: "Advanced" },
-              { title: "Select Location" },
-              { title: "Summary" },
-            ]}
-            activeStep={page - 1}
-            setStep={selectStep}
-          ></Stepper>
-
+        <Stepper
+          steps={[
+            { title: "Select Device" },
+            { title: "General" },
+            { title: "Select Sensors" },
+            { title: "Advanced" },
+            { title: "Select Location" },
+            { title: "Summary" },
+          ]}
+          activeStep={page - 1}
+          setStep={selectStep}
+        />
         <div className="flex justify-between pt-5">
           <div className="flex items-center gap-1">
             <h1 className="text-2xl font-bold">{t("add_device")}</h1>
