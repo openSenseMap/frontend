@@ -9,19 +9,37 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useField } from "remix-validated-form";
 
 interface AdvancedProps {
   data: any;
 }
 
 export default function Advanced({ data }: AdvancedProps) {
-  const [mqttEnabled, setMqttEnabled] = useState(data.mqttEnabled);
-  const [ttnEnabled, setTtnEnabled] = useState(data.ttnEnabled);
-  const [ttnDecodeProfile, setTtnDecodeProfile] = useState(
-    data.ttnDecodeProfile ? data.ttnDecodeProfile : ""
-  );
-
   const { t } = useTranslation("newdevice");
+
+  // ttn form fields
+  const [ttnEnabled, setTtnEnabled] = useState<boolean | undefined>(
+    data["ttn.enabled"] === "on"
+  );
+  const ttnAppIdField = useField("ttn.appId");
+  const ttnDeviceIdField = useField("ttn.devId");
+  const ttnDecodeProfileField = useField("ttn.decodeProfile");
+  const [ttnDecodeProfile, setTtnDecodeProfile] = useState<string | undefined>(
+    data["ttn.decodeProfile"] ? data["ttn.decodeProfile"] : undefined
+  );
+  const ttnDecodeOptionsField = useField("ttn.decodeOptions");
+  const ttnPortField = useField("ttn.port");
+
+  // mqtt form fields
+  const [mqttEnabled, setMqttEnabled] = useState<boolean | undefined>(
+    data.mqttEnabled === "on"
+  );
+  const mqttUrlField = useField("mqtt.url");
+  const mqttTopicField = useField("mqtt.topic");
+  const mqttFormatField = useField("mqtt.messageFormat");
+  const mqttDecodeOptionsField = useField("mqtt.decodeOptions");
+  const mqttConnectOptionsField = useField("mqtt.connectOptions");
 
   return (
     <div className=" pt-4">
@@ -80,15 +98,12 @@ export default function Advanced({ data }: AdvancedProps) {
         <div className="flex items-center space-x-2">
           <Checkbox
             id="ttnEnabled"
-            name="ttnEnabled"
+            name="ttn.enabled"
             checked={ttnEnabled}
             onCheckedChange={(checked) => {
               checked === "indeterminate"
                 ? setTtnEnabled(undefined)
                 : setTtnEnabled(checked);
-              // if (checked === false) {
-              //   formContext.validateField("mqtt");
-              // }
             }}
           />
           <label
@@ -99,16 +114,16 @@ export default function Advanced({ data }: AdvancedProps) {
           </label>
         </div>
         {ttnEnabled ? (
-          <div className="mt-6 space-y-6 sm:mt-5 sm:space-y-5">
+          <div className="mt-6 sm:mt-5">
             <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="ttnAppId"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Application ID
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="h-full">
+                    <TooltipTrigger className="h-full" asChild>
                       <InfoIcon className="ml-2 h-4 w-4" />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -122,28 +137,37 @@ export default function Advanced({ data }: AdvancedProps) {
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...ttnAppIdField.getInputProps({ id: "ttnAppId" })}
                     type="text"
-                    name="ttnAppId"
+                    name="ttn.appId"
                     id=" ttnAppId"
                     required
-                    defaultValue={data.ttnAppId}
+                    defaultValue={data["ttn.appId"]}
                     autoComplete="mqttDecodeOptions"
                     className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
                     disabled={!ttnEnabled}
                   />
                 </div>
+                {ttnAppIdField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {ttnAppIdField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={ttnAppIdField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="ttnDeviceId"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Device ID
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="h-full">
+                    <TooltipTrigger className="h-full" asChild>
                       <InfoIcon className="ml-2 h-4 w-4" />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -157,28 +181,37 @@ export default function Advanced({ data }: AdvancedProps) {
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...ttnDeviceIdField.getInputProps({ id: "ttnDeviceId" })}
                     type="text"
-                    name="ttnDeviceId"
+                    name="ttn.devId"
                     id="ttnDeviceId"
                     required
-                    defaultValue={data.ttnDeviceId}
+                    defaultValue={data["ttn.devId"]}
                     autoComplete="ttnDeviceId"
                     className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
                     disabled={!ttnEnabled}
                   />
                 </div>
+                {ttnDeviceIdField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {ttnDeviceIdField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={ttnDeviceIdField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="ttnDecodeProfile"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Decoding Profile
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="h-full">
+                    <TooltipTrigger className="h-full" asChild>
                       <InfoIcon className="ml-2 h-4 w-4" />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -206,13 +239,17 @@ export default function Advanced({ data }: AdvancedProps) {
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <select
-                    name="ttnDecodeProfile"
+                    {...ttnDecodeProfileField.getInputProps({
+                      id: "ttnDecodeProfile",
+                    })}
+                    name="ttn.decodeProfile"
                     id="ttnDecodeProfile"
                     required
                     placeholder="Profile"
                     value={ttnDecodeProfile}
                     onChange={(e) => {
                       setTtnDecodeProfile(e.target.value);
+                      ttnDecodeProfileField.validate();
                     }}
                     className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
                     disabled={!ttnEnabled}
@@ -228,18 +265,26 @@ export default function Advanced({ data }: AdvancedProps) {
                     <option value="cayenne-lpp">Cayenne LPP (beta)</option>
                   </select>
                 </div>
+                {ttnDecodeProfileField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {ttnDecodeProfileField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={ttnDecodeProfileField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="ttnDecodeOptions"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Decoding Options
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="h-full">
+                    <TooltipTrigger className="h-full" asChild>
                       <InfoIcon className="ml-2 h-4 w-4" />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -253,33 +298,44 @@ export default function Advanced({ data }: AdvancedProps) {
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...ttnDecodeOptionsField.getInputProps({
+                      id: "ttnDecodeOptions",
+                    })}
                     type="text"
-                    name="ttnDecodeOptions"
+                    name="ttn.decodeOptions"
                     id="ttnDecodeOptions"
                     required
-                    value={data.ttnDecodeOptions}
+                    defaultValue={data["ttn.decodeOptions"]}
                     autoComplete="ttnDecodeOptions"
                     className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
                     disabled={
                       !ttnEnabled ||
                       ttnDecodeProfile === "sensebox/home" ||
                       ttnDecodeProfile === "cayenne-lpp" ||
-                      ttnDecodeProfile === ""
+                      ttnDecodeProfile === undefined
                     }
                   />
                 </div>
+                {ttnDecodeOptionsField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {ttnDecodeOptionsField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={ttnDecodeOptionsField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="ttnPort"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Port (optional)
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="h-full">
+                    <TooltipTrigger className="h-full" asChild>
                       <InfoIcon className="ml-2 h-4 w-4" />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -293,14 +349,20 @@ export default function Advanced({ data }: AdvancedProps) {
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...ttnPortField.getInputProps({ id: "ttnPort" })}
                     type="number"
-                    name="ttnPort"
+                    name="ttn.port"
                     id="ttnPort"
-                    value={data.ttnPort}
+                    value={data["ttn.port"]}
                     className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
                     disabled={!ttnEnabled}
                   />
                 </div>
+                {ttnPortField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {ttnPortField.error}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -372,19 +434,30 @@ export default function Advanced({ data }: AdvancedProps) {
           </label>
         </div>
         {mqttEnabled ? (
-          <div className="mt-6 space-y-6 sm:mt-5 sm:space-y-5">
+          <div className="mt-6 sm:mt-5">
             <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="mqttUrl"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 URL
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="h-full" asChild>
+                      <InfoIcon className="ml-2 h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm font-thin">{t("mqtt_url_info")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </label>
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...mqttUrlField.getInputProps({ id: "mqttUrl" })}
                     type="url"
-                    name="mqttUrl"
+                    name="mqtt.url"
                     id="name"
                     required
                     defaultValue={data.mqttUrl}
@@ -393,21 +466,42 @@ export default function Advanced({ data }: AdvancedProps) {
                     disabled={!mqttEnabled}
                   />
                 </div>
+                {mqttUrlField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {mqttUrlField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={mqttUrlField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="mqttTopic"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 "
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 "
               >
                 Topic
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="h-full" asChild>
+                      <InfoIcon className="ml-2 h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm font-thin">
+                        {t("mqtt_topic_info")}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </label>
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...mqttTopicField.getInputProps({ id: "mqttTopic" })}
                     type="text"
-                    name="mqttTopic"
+                    name="mqtt.topic"
                     id="mqttTopic"
                     required
                     defaultValue={data.mqttTopic}
@@ -416,17 +510,37 @@ export default function Advanced({ data }: AdvancedProps) {
                     disabled={!mqttEnabled}
                   />
                 </div>
+                {mqttTopicField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {mqttTopicField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={mqttTopicField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <div>
                 <label
-                  className="text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
+                  className="flex text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
                   id="label-notifications"
                   htmlFor="mqttFormat"
                 >
                   Message format
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="h-full" asChild>
+                        <InfoIcon className="ml-2 h-4 w-4" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm font-thin">
+                          {t("mqtt_message_format_info")}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </label>
               </div>
               <div className="sm:col-span-2">
@@ -437,8 +551,11 @@ export default function Advanced({ data }: AdvancedProps) {
                   <div className="mt-4 space-y-4">
                     <div className="flex items-center">
                       <input
+                        {...mqttFormatField.getInputProps({
+                          id: "format-json",
+                        })}
                         id="format-json"
-                        name="mqttFormat"
+                        name="mqtt.messageFormat"
                         value="json"
                         defaultChecked={data.mqttFormat === "json"}
                         type="radio"
@@ -455,8 +572,9 @@ export default function Advanced({ data }: AdvancedProps) {
                     </div>
                     <div className="flex items-center">
                       <input
+                        {...mqttFormatField.getInputProps({ id: "format-csv" })}
                         id="format-csv"
-                        name="mqttFormat"
+                        name="mqtt.messageFormat"
                         value="csv"
                         defaultChecked={data.mqttFormat === "csv"}
                         type="radio"
@@ -472,22 +590,45 @@ export default function Advanced({ data }: AdvancedProps) {
                       </label>
                     </div>
                   </div>
+                  {mqttFormatField.error && (
+                    <span className="ml-1 text-sm font-medium text-red-500">
+                      {mqttFormatField.error}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-error={mqttFormatField.error !== undefined}
+              className="pt-5 data-[error=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="mqttDecodeOptions"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Decoding options
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="h-full" asChild>
+                      <InfoIcon className="ml-2 h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="w-[300px] text-sm font-thin">
+                        {t("mqtt_decode_options_info")}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </label>
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...mqttDecodeOptionsField.getInputProps({
+                      id: "mqttDecodeOptions",
+                    })}
                     type="text"
-                    name="mqttDecodeOptions"
+                    name="mqtt.decodeOptions"
                     id="mqttDecodeOptions"
                     required
                     defaultValue={data.mqttDecodeOptions}
@@ -496,21 +637,49 @@ export default function Advanced({ data }: AdvancedProps) {
                     disabled={!mqttEnabled}
                   />
                 </div>
+                {mqttDecodeOptionsField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {mqttDecodeOptionsField.error}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+            <div
+              data-mqttdecodeoptionserror={
+                mqttDecodeOptionsField.error !== undefined
+              }
+              data-mqttconnectoptionserror={
+                mqttConnectOptionsField.error !== undefined
+              }
+              className="pt-5 data-[mqttconnectoptionserror=false]:mb-6 data-[mqttdecodeoptionserror=false]:mt-6 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200"
+            >
               <label
                 htmlFor="mqttConnectOptions"
-                className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
               >
                 Connect options
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="h-full" asChild>
+                      <InfoIcon className="ml-2 h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm font-thin">
+                        {t("mqtt_connect_options_info")}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </label>
               <div className="mt-1 sm:col-span-2 sm:mt-0">
                 <div className="flex max-w-lg rounded-md shadow-sm">
                   <input
+                    {...mqttConnectOptionsField.getInputProps({
+                      id: "mqttConnectOptions",
+                    })}
                     type="text"
-                    name="mqttConnectOptions"
+                    name="mqtt.connectOptions"
                     id="mqttConnectOptions"
                     required
                     defaultValue={data.mqttConnectOptions}
@@ -519,6 +688,11 @@ export default function Advanced({ data }: AdvancedProps) {
                     disabled={!mqttEnabled}
                   />
                 </div>
+                {mqttConnectOptionsField.error && (
+                  <span className="ml-1 text-sm font-medium text-red-500">
+                    {mqttConnectOptionsField.error}
+                  </span>
+                )}
               </div>
             </div>
           </div>

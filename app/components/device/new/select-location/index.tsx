@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Tooltip,
@@ -22,6 +22,7 @@ import {
 import GeocoderControl from "~/components/map/geocoder-control";
 import { InfoIcon } from "lucide-react";
 import getUserLocale from "get-user-locale";
+import { useField } from "remix-validated-form";
 
 export interface SelectLocationProps {
   data: any;
@@ -32,6 +33,10 @@ export default function SelectLocation({ data }: SelectLocationProps) {
   const { t } = useTranslation("newdevice");
   const mapRef = useRef<MapRef | null>(null);
   const userLocaleString = getUserLocale()?.toString() || "en";
+
+  const latitudeField = useField("latitude");
+  const longitudeField = useField("longitude");
+  const heightField = useField("height");
 
   //* map view
   const [viewState, setViewState] = React.useState({
@@ -51,30 +56,43 @@ export default function SelectLocation({ data }: SelectLocationProps) {
     data.data.height ? data.data.height : ""
   );
 
+  //* height derivation helper function
+  const heightDerivation = useCallback(
+    (lng: number, lat: number) => {
+      const elevation = mapRef.current?.queryTerrainElevation([lng, lat]);
+      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
+      setTimeout(() => heightField.validate(), 0);
+    },
+    [heightField]
+  );
+
   //* on-marker-drag event
-  const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
-    // console.log(event);
-    setMarker({
-      longitude: Math.round(event.lngLat.lng * 1000000) / 1000000,
-      latitude: Math.round(event.lngLat.lat * 1000000) / 1000000,
-    });
-  }, []);
+  const onMarkerDrag = useCallback(
+    (event: MarkerDragEvent) => {
+      // console.log(event);
+      setMarker({
+        longitude: Math.round(event.lngLat.lng * 1000000) / 1000000,
+        latitude: Math.round(event.lngLat.lat * 1000000) / 1000000,
+      });
+      heightDerivation(event.lngLat.lng, event.lngLat.lat);
+    },
+    [heightDerivation]
+  );
 
   //* on-geolocate event
-  const onGeolocate = useCallback((event: GeolocateResultEvent) => {
-    // console.log(event);
-    setMarker({
-      longitude: Math.round(event.coords.longitude * 1000000) / 1000000,
-      latitude: Math.round(event.coords.latitude * 1000000) / 1000000,
-    });
-    mapRef.current?.on("moveend", () => {
-      const elevation = mapRef.current?.queryTerrainElevation([
-        event.coords.longitude,
-        event.coords.latitude,
-      ]);
-      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
-    });
-  }, []);
+  const onGeolocate = useCallback(
+    (event: GeolocateResultEvent) => {
+      // console.log(event);
+      setMarker({
+        longitude: Math.round(event.coords.longitude * 1000000) / 1000000,
+        latitude: Math.round(event.coords.latitude * 1000000) / 1000000,
+      });
+      mapRef.current?.on("moveend", () => {
+        heightDerivation(event.coords.longitude, event.coords.latitude);
+      });
+    },
+    [heightDerivation]
+  );
 
   //* on-geocoder-result event
   const onResult = (event: any) => {
@@ -86,11 +104,10 @@ export default function SelectLocation({ data }: SelectLocationProps) {
         Math.round(event.result.geometry.coordinates[1] * 1000000) / 1000000,
     });
     mapRef.current?.on("moveend", () => {
-      const elevation = mapRef.current?.queryTerrainElevation([
+      heightDerivation(
         event.result.geometry.coordinates[0],
-        event.result.geometry.coordinates[1],
-      ]);
-      setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
+        event.result.geometry.coordinates[1]
+      );
     });
   };
 
@@ -101,16 +118,8 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       longitude: Math.round(event.lngLat.lng * 1000000) / 1000000,
       latitude: Math.round(event.lngLat.lat * 1000000) / 1000000,
     });
+    heightDerivation(event.lngLat.lng, event.lngLat.lat);
   };
-
-  //* derive elevation on-marker change
-  useEffect(() => {
-    const elevation = mapRef.current?.queryTerrainElevation([
-      marker.longitude,
-      marker.latitude,
-    ]);
-    setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
-  }, [marker]);
 
   return (
     <div className="space-y-4 pt-4">
@@ -178,25 +187,39 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       <div>
         <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
           <div>
-            <label
-              htmlFor="latitude"
-              className="txt-base block font-bold tracking-normal"
-            >
-              {t("latitude")}
-            </label>
+            <div className="flex">
+              <label
+                htmlFor="latitude"
+                className="txt-base block font-bold tracking-normal"
+              >
+                {t("latitude")}
+              </label>
+              {latitudeField.error && (
+                <span className="ml-2 text-red-500">{latitudeField.error}</span>
+              )}
+            </div>
 
             <div className="mt-1">
               <input
+                {...latitudeField.getInputProps({ id: "latitude" })}
                 id="latitude"
-                required
+                // required
                 name="latitude"
                 type="number"
+                min="-90"
+                max="90"
                 value={marker.latitude}
                 onChange={(e) => {
-                  setMarker({
-                    latitude: e.target.value,
-                    longitude: marker.longitude,
-                  });
+                  if (
+                    Number(e.target.value) >= -90 &&
+                    Number(e.target.value) <= 90
+                  ) {
+                    setMarker({
+                      latitude: e.target.value,
+                      longitude: marker.longitude,
+                    });
+                    latitudeField.validate();
+                  }
                 }}
                 aria-describedby="name-error"
                 className={
@@ -210,25 +233,41 @@ export default function SelectLocation({ data }: SelectLocationProps) {
           </div>
 
           <div>
-            <label
-              htmlFor="longitude"
-              className="txt-base block font-bold tracking-normal"
-            >
-              {t("longitude")}
-            </label>
+            <div className="flex">
+              <label
+                htmlFor="longitude"
+                className="txt-base block font-bold tracking-normal"
+              >
+                {t("longitude")}
+              </label>
+              {longitudeField.error && (
+                <span className="ml-2 text-red-500">
+                  {longitudeField.error}
+                </span>
+              )}
+            </div>
 
             <div className="mt-1">
               <input
+                {...longitudeField.getInputProps({ id: "longitude" })}
                 id="longitude"
-                required
+                // required
                 name="longitude"
                 type="number"
+                min="-180"
+                max="180"
                 value={marker.longitude}
                 onChange={(e) => {
-                  setMarker({
-                    latitude: marker.latitude,
-                    longitude: e.target.value,
-                  });
+                  if (
+                    Number(e.target.value) >= -180 &&
+                    Number(e.target.value) <= 180
+                  ) {
+                    setMarker({
+                      latitude: marker.latitude,
+                      longitude: e.target.value,
+                    });
+                    longitudeField.validate();
+                  }
                 }}
                 aria-describedby="name-error"
                 className={
@@ -242,34 +281,45 @@ export default function SelectLocation({ data }: SelectLocationProps) {
           </div>
 
           <div>
-            <label
-              htmlFor="height"
-              className="txt-base block font-bold tracking-normal"
-            >
-              {t("height")}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="h-full">
-                    <InfoIcon className="ml-2 h-4 w-4" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="w-[300px] text-justify text-sm font-thin">
-                      {t("height_info_text")}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </label>
-
+            <div className="flex">
+              <label
+                htmlFor="height"
+                className="txt-base block font-bold tracking-normal"
+              >
+                {t("height")}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="h-full">
+                      <InfoIcon className="ml-2 h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="w-[300px] text-justify text-sm font-thin">
+                        {t("height_info_text")}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </label>
+              {heightField.error && (
+                <span className="ml-2 text-red-500">{heightField.error}</span>
+              )}
+            </div>
             <div className="mt-1">
               <input
+                {...heightField.getInputProps({ id: "height" })}
                 id="height"
-                required
+                // required
                 name="height"
                 type="number"
                 value={height}
                 onChange={(e) => {
-                  setHeight(e.target.value);
+                  if (
+                    Number(e.target.value) >= -200 &&
+                    Number(e.target.value) <= 10000
+                  ) {
+                    setHeight(e.target.value);
+                    heightField.validate();
+                  }
                 }}
                 aria-describedby="name-error"
                 className="w-full rounded border border-gray-200 px-2 py-1 text-base"

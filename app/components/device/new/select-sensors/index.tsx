@@ -6,13 +6,13 @@ import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { useTranslation } from "react-i18next";
+import { useField } from "remix-validated-form";
 
 interface SelectSensorsProps {
   data: any;
@@ -21,6 +21,8 @@ interface SelectSensorsProps {
 export default function SelectSensors({ data }: SelectSensorsProps) {
   const [addedSensors, setAddedSensors] = useState(data.data.sensors ?? {});
   const { t } = useTranslation("newdevice");
+
+  const sensorsField = useField("sensors");
 
   function addSensor(sensorItem: any, key: string) {
     //this is an array because objects would not work with the forms [sensorSlug, phenomenonId, unitSlug]
@@ -46,6 +48,9 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
         <h3 className="text-lg font-medium leading-6 text-gray-900">
           {t("select_sensors")}
         </h3>
+        {sensorsField.error && (
+          <span className="text-red-500">{sensorsField.error}</span>
+        )}
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
           {t("select_sensors_text")}
         </p>
@@ -67,7 +72,10 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                       <div key={sensor.id}>
                         <Card
                           // data-checked={selectedSensors.includes(sensor)}
-                          onClick={() => addSensor(sensor, "p-" + key)}
+                          onClick={() => {
+                            addSensor(sensor, "p-" + key);
+                            sensorsField.validate();
+                          }}
                           key={sensor.id}
                           className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
                         >
@@ -178,7 +186,10 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                               </TableCell>
                               <TableCell>
                                 <XCircleIcon
-                                  onClick={() => deleteSensorItem(index, key)}
+                                  onClick={() => {
+                                    deleteSensorItem(index, key);
+                                    sensorsField.validate();
+                                  }}
                                   title="Delete Sensor"
                                   className="h-10 w-10 cursor-pointer text-red-500"
                                 ></XCircleIcon>
