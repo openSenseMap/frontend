@@ -28,11 +28,11 @@ export default function CreateCampaignPage() {
   return (
     <div className="h-full w-full">
       <main>
-        <div className="hidden w-full items-center text-gray-400 dark:text-gray-300 md:order-1 md:flex">
+        <div className="order-1 flex w-full items-center justify-center text-gray-400 dark:text-gray-300 md:items-start md:justify-start">
           <Link to="/" className="m-2">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
           </Link>
-          <ul className="mt-4 flex flex-row p-4 md:space-x-8 md:text-lg">
+          <ul className="mt-4 flex flex-row space-x-8 p-4 text-lg">
             {links.map((item, index) => {
               return (
                 <li key={index}>
