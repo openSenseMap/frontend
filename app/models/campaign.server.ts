@@ -154,7 +154,6 @@ export async function createCampaign({
   | "instructions"
   | "priority"
   | "country"
-  | "requiredSensors"
   | "minimumParticipants"
   | "startDate"
   | "endDate"
