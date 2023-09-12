@@ -5,6 +5,7 @@ export function getEnv() {
     DIRECTUS_URL: process.env.DIRECTUS_URL,
     MYBADGES_API_URL: process.env.MYBADGES_API_URL,
     MYBADGES_URL: process.env.MYBADGES_URL,
+    NOVU_API_KEY: process.env.NOVU_API_KEY,
     NOVU_API_URL: process.env.NOVU_API_URL,
     NOVU_WEBSOCKET_URL: process.env.NOVU_WEBSOCKET_URL,
     NOVU_APPLICATION_IDENTIFIER: process.env.NOVU_APPLICATION_IDENTIFIER,
