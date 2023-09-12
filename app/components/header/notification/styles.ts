@@ -12,19 +12,19 @@ const ncWidth = "350px !important";
 export const styles = {
   bellButton: {
     root: {
-      marginTop: "20px",
+      marginTop: "5px",
       svg: {
         color: secondaryColor,
         fill: primaryColor,
-        minWidth: "80px",
+        minWidth: "75px",
         minHeight: "80px",
       },
     },
     dot: {
-      marginRight: "-30px",
-      marginTop: "-30px",
+      marginRight: "-25px",
+      marginTop: "-20px",
       rect: {
-        fill: primaryColor,
+        fill: "red",
         strokeWidth: "0",
         width: "3px",
         height: "3px",
