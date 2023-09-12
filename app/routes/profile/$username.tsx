@@ -1,4 +1,3 @@
-import DeviceCard from "~/components/device-card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
 
@@ -20,8 +19,6 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
-import { DataTable } from "~/components/mydevices/dt/data-table";
-import { columns } from "~/components/mydevices/dt/columns";
 import DevicesDashboard from "../device";
 
 export async function loader({ params, request }: LoaderArgs) {

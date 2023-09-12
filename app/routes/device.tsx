@@ -1,25 +1,7 @@
-import { Device, Exposure, Status } from "@prisma/client";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { typedjson } from "remix-typedjson";
+import { Exposure, Status } from "@prisma/client";
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
-import { getUserDevices } from "~/models/device.server";
-import { getUserId } from "~/session.server";
 
-
-
-/* export async function loader({ request }: LoaderArgs) {
-  //* if user is not logged in, redirect to home
-  const userId = await getUserId(request);
-  if (!userId) return redirect("/");
-
-  //* get all devices data
-  const allDevices = await getUserDevices(userId);
-
-  return json(allDevices);
-} */
 
 interface UserDevices {
   devices: {

@@ -201,7 +201,7 @@ export default function DeviceDashboard() {
           <CardContent>
             <div className="mt-4 flex flex-wrap gap-3">
               {deviceData.sensors.map((sensor: any) => (
-                <Card className=" rounded-3xl">
+                <Card key={sensor._id} className=" rounded-3xl">
                   <CardHeader>
                     <CardTitle className="mb-2">
                       <sensor.icon className=" h-5.5 w-5.5 mr-2 inline align-bottom" />
