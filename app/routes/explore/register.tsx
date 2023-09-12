@@ -20,6 +20,7 @@ import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import i18next from "app/i18next.server";
 import invariant from "tiny-invariant";
+import { createNewSubscriber } from "~/novu.server";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -79,6 +80,7 @@ export async function action({ request }: ActionArgs) {
 
   const user = await createUser(username, email, language, password);
   // const user = await createUser(email, password, username?.toString());
+  createNewSubscriber(user.id, email, username);
 
   return createUserSession({
     request,
@@ -221,7 +223,7 @@ export default function RegisterDialog() {
             <Input type="hidden" name="redirectTo" value={redirectTo} />
             <button
               type="submit"
-              className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
+              className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 focus:bg-blue-200 disabled:bg-blue-100"
               // onClick={() => {
               //   toast({
               //     description: "Creating account ...",
