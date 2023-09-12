@@ -1,5 +1,6 @@
 import type { Prisma, Sensor } from "@prisma/client";
-import { json, redirect, type LoaderArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import {
   Form,
   useLoaderData,

@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import type { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore.$deviceId._index";
 import { PopoverClose } from "@radix-ui/react-popover";
 
 export default function DatePickerGraph() {
