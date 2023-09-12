@@ -14,30 +14,9 @@ import {
   PopoverArrow,
   PopoverContent,
 } from "~/components/ui/popover";
-import type { LinksFunction } from "@remix-run/server-runtime";
-import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
-import geocode from "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
-import draw from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import normalize from "@mapbox/geojson-normalize";
 import flatten from "geojson-flatten";
 import type { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
-
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: "stylesheet",
-      href: maplibregl,
-    },
-    {
-      rel: "stylesheet",
-      href: draw,
-    },
-    {
-      rel: "stylesheet",
-      href: geocode,
-    },
-  ];
-};
 
 type MapProps = {
   mapRef: any;
