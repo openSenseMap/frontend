@@ -1,7 +1,12 @@
-import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useNavigation,
+  useSearchParams,
+  useLoaderData,
+} from "@remix-run/react";
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
-import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
 import {
   DropdownMenu,
@@ -12,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
@@ -33,6 +39,8 @@ import {
   User2,
   ExternalLink,
 } from "lucide-react";
+import DonationText from "~/components/landing/donate-text";
+import DonationiFrame from "~/components/landing/donate-iframe";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -47,7 +55,6 @@ export function useFirstRender() {
 export default function Menu() {
   const [searchParams] = useSearchParams();
   const redirectTo =
-    // @ts-ignore
     searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const data = useLoaderData<typeof loader>();
   const [open, setOpen] = useState(false);
@@ -149,6 +156,13 @@ export default function Menu() {
                 </DropdownMenuItem>
               )}
 
+              <Link to="/profile/me">
+                <DropdownMenuItem className=" cursor-pointer">
+                  <Cpu className="mr-2 h-5 w-5" />
+                  <span>{t("my_devices_label")}</span>
+                </DropdownMenuItem>
+              </Link>
+
               <Link to="/settings/account">
                 <DropdownMenuItem className=" cursor-pointer">
                   <Settings className="mr-2 h-5 w-5" />
@@ -156,12 +170,10 @@ export default function Menu() {
                 </DropdownMenuItem>
               </Link>
 
-              <Link to="/profile/me">
-                <DropdownMenuItem className=" cursor-pointer">
-                  <Cpu className="mr-2 h-5 w-5" />
-                  <span>{t("my_devices_label")}</span>
-                </DropdownMenuItem>
-              </Link>
+              <DropdownMenuItem>
+                <Cpu className="mr-2 h-5 w-5" />
+                <Link to="/profile/me">{t("my_devices_label")}</Link>
+              </DropdownMenuItem>
 
               <DropdownMenuItem>
                 <PlusCircle className="mr-2 h-5 w-5" />
@@ -178,6 +190,7 @@ export default function Menu() {
                 <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
               </DropdownMenuItem>
             </Link>
+
             <Link to="https://docs.opensensemap.org/" target="_blank">
               <DropdownMenuItem>
                 <Globe className="mr-2 h-5 w-5" />
@@ -206,17 +219,34 @@ export default function Menu() {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Coins className="mr-2 h-5 w-5" />
-              <span>{t("donate_label")}</span>
-            </DropdownMenuItem>
+            <Dialog>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Coins className="mr-2 inline h-5 w-5" />
+                  <span> {t("donate_label")}</span>
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent
+                className={"max-h-screen !max-w-[60%] overflow-y-scroll"}
+              >
+                {/* <Donate /> */}
+                <div className="grid grid-cols-2">
+                  <DonationText />
+                  <DonationiFrame />
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <DropdownMenuItem>
               <Users2 className="mr-2 h-5 w-5" />
               <span>{t("promotion_label")}</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
+
           <DropdownMenuSeparator />
+
           <DropdownMenuGroup>
             {data.user === null ? (
               <Link

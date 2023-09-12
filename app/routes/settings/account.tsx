@@ -7,9 +7,9 @@ import {
   updateUserName,
   updateUserlocale,
   verifyLogin,
+  deleteUserByEmail,
+  getUserByEmail,
 } from "~/models/user.server";
-import { deleteUserByEmail } from "~/models/user.server";
-import { getUserByEmail } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
 import { Separator } from "~/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
@@ -32,8 +32,7 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const { intent, ...values } = Object.fromEntries(formData);
-  const { name, email, passwordUpdate, passwordDelete, language, ...rest } =
-    values;
+  const { name, email, passwordUpdate, passwordDelete, language } = values;
 
   const errors = {
     name: name ? null : "Invalid name",
@@ -131,7 +130,7 @@ export async function action({ request }: ActionArgs) {
     }
   }
 
-  return redirect ("");
+  return redirect("");
 }
 
 //**********************************
@@ -165,7 +164,7 @@ export default function AccountPage() {
         // description: "",
       });
     }
-  }, [actionData]);
+  }, [actionData, toast]);
 
   return (
     <div className="space-y-6">

@@ -1,9 +1,9 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Exposure } from "@prisma/client";
+import type { Exposure } from "@prisma/client";
 
 export type SenseBox = {
   id: string;

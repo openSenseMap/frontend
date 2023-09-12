@@ -1,4 +1,4 @@
-import type { Device, Sensor } from "@prisma/client";
+import type { Device } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 import { point } from "@turf/helpers";
@@ -19,16 +19,22 @@ import type { Point } from "geojson";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return prisma.device.findFirst({
-    select: {
-      id: true,
-      name: true,
-      exposure: true,
-      status: true,
-      updatedAt: true,
-      sensors: true,
-      latitude: true,
-      longitude: true,
-    },
+    // select: {
+    //   id: true,
+    //   name: true,
+    //   description: true,
+    //   exposure: true,
+    //   status: true,
+    //   updatedAt: true,
+    //   sensors: true,
+    //   latitude: true,
+    //   longitude: true,
+    //   useAuth: true,
+    //   model: true,
+    //   public: true,
+    //   createdAt: true,
+    //   userId: true,
+    // },
     where: { id },
   });
 }
@@ -61,7 +67,11 @@ export function updateDeviceInfo({
   });
 }
 
-export function updateDeviceLocation({ id, latitude, longitude }: Pick<Device, "id" |"latitude" | "longitude">){
+export function updateDeviceLocation({
+  id,
+  latitude,
+  longitude,
+}: Pick<Device, "id" | "latitude" | "longitude">) {
   return prisma.device.update({
     where: { id },
     data: {
@@ -107,9 +117,14 @@ export async function getDevices() {
       exposure: true,
       status: true,
       createdAt: true,
+      sensors: {
+        select:{
+          title:true,
+        }
+      },
     },
   });
-  const geojson: GeoJSON.FeatureCollection<Point, any> = {
+  const geojson: GeoJSON.FeatureCollection<Point> = {
     type: "FeatureCollection",
     features: [],
   };
@@ -123,28 +138,4 @@ export async function getDevices() {
   }
 
   return geojson;
-}
-
-export async function getMeasurements(
-  deviceId: any,
-  sensorId: any,
-  startDate: Date,
-  endDate: Date
-) {
-  const response = await fetch(
-    process.env.OSEM_API_URL +
-      "/boxes/" +
-      deviceId +
-      "/data/" +
-      sensorId +
-      "?from-date=" +
-      startDate.toISOString() + //new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
-      "&to-date=" +
-      endDate.toISOString() //new Date().toISOString()
-  );
-  return (await response.json()) as {
-    value: String;
-    location?: number[];
-    createdAt: Date;
-  }[];
 }

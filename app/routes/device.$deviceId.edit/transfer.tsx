@@ -1,5 +1,5 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { Info } from "lucide-react";
@@ -19,7 +19,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 //**********************************
-export default function EditBoxTransfer() {
+export default function EditBoxTTN() {
   return (
     <div className="grid grid-rows-1">
       <div className="flex min-h-full items-center justify-center">
@@ -40,16 +40,21 @@ export default function EditBoxTransfer() {
             <hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
             <div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-              <p className="inline-flex my-1">
+              <p className="my-1 inline-flex">
                 <Info className=" mr-1 inline h-5 w-5 align-sub" />
                 Transfer this device to another user!
               </p>
-              <hr className="border-[#f7e1b5] my-4" />
+              <hr className="my-4 border-[#f7e1b5]" />
               <p className=" my-1">
-                To perform the transfer, enter the name below and click the button. A <b>token</b> will be displayed. You pass this <b>token</b> to the new owner. The new owner has to enter the token in his account and click on <b>Claim device</b>. After that the device will be transferred to the new account. 
+                To perform the transfer, enter the name below and click the
+                button. A <b>token</b> will be displayed. You pass this{" "}
+                <b>token</b> to the new owner. The new owner has to enter the
+                token in his account and click on <b>Claim device</b>. After
+                that the device will be transferred to the new account.
                 <br />
                 <br />
-                The transfer may be delayed until the new owner has entered the <b>token</b>.
+                The transfer may be delayed until the new owner has entered the{" "}
+                <b>token</b>.
               </p>
             </div>
 

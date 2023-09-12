@@ -118,7 +118,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 //**********************************
-export default function EditBoxGeneral() {
+export default function () {
   const deviceData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [passwordDelVal, setPasswordVal] = useState(""); //* to enable delete account button
@@ -128,7 +128,7 @@ export default function EditBoxGeneral() {
   const [name, setName] = useState(deviceData?.name);
   const [exposure, setExposure] = useState(deviceData?.exposure);
   //* to view toast on edit page
-  const [setToastOpen]:any = useOutletContext();
+  const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>();
 
   React.useEffect(() => {
     if (actionData) {
@@ -146,7 +146,7 @@ export default function EditBoxGeneral() {
         passwordDelRef.current?.focus();
       }
     }
-  }, [actionData]);
+  }, [actionData, setToastOpen]);
 
   return (
     <div className="grid grid-rows-1">

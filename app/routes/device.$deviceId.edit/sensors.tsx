@@ -17,7 +17,6 @@ import {
   Save,
   Undo2,
   X,
-  ThermometerIcon,
 } from "lucide-react";
 import {
   addNewSensor,
@@ -99,11 +98,7 @@ export default function EditBoxSensors() {
   /* temp impl. until figuring out how to updating state of nested objects  */
   const [tepmState, setTepmState] = useState(false);
   //* to view toast on edit-page
-  const [setToastOpen]: any = useOutletContext();
-  //* icons toggle
-  const [icon, setIcon] = useState(
-    <ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
-  );
+  const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>();
 
   React.useEffect(() => {
     //* if sensors data were updated successfully
@@ -125,7 +120,7 @@ export default function EditBoxSensors() {
         }
       }
     }
-  }, [actionData]);
+  }, [actionData, sensorsData, setToastOpen]);
 
   return (
     <div className="grid grid-rows-1">
@@ -390,7 +385,7 @@ export default function EditBoxSensors() {
                                 setTepmState(!tepmState);
                                 sensor.deleting = false;
                               }}
-                              className="mb-1 mt-2 block rounded-[3px] 
+                              className="mb-1 mt-2 block rounded-[3px]
                               border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff]
                               hover:border-[#204d74] hover:bg-[#286090]"
                             >
@@ -410,7 +405,7 @@ export default function EditBoxSensors() {
                                   sensor.editing = true;
                                   // console.log("🚀 ~ file: sensors.tsx:248 ~ {sensorsData?.map ~ sensorsData:", sensorsData);
                                 }}
-                                className="mb-1 mt-2 block rounded-[3px] 
+                                className="mb-1 mt-2 block rounded-[3px]
                                 border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
                                 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
                               >
@@ -451,7 +446,7 @@ export default function EditBoxSensors() {
                             <button
                               type="button"
                               disabled={sensor?.notValidInput}
-                              className="mb-1 mt-2 block rounded-[3px] 
+                              className="mb-1 mt-2 block rounded-[3px]
                                 border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1
                                 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
                               onClick={() => {
@@ -490,9 +485,9 @@ export default function EditBoxSensors() {
                                   sensor.sensorType = data[index].sensorType;
                                 }
                               }}
-                              className="mb-1 mt-2 block rounded-[3px] 
+                              className="mb-1 mt-2 block rounded-[3px]
                                 border-[#ac2925] bg-[#d9534f] px-[5px] py-[3px] pt-1
-                                text-[14px] leading-[1.6] text-[#fff] 
+                                text-[14px] leading-[1.6] text-[#fff]
                                 hover:border-[#ac2925] hover:bg-[#c9302c]"
                             >
                               <X className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />

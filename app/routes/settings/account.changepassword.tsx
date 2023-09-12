@@ -1,13 +1,13 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
-import React, { useState } from "react";
 import invariant from "tiny-invariant";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
-import { getUserEmail, getUserId, logout } from "~/session.server";
+import { getUserEmail, getUserId } from "~/session.server";
 import { Separator } from "~/components/ui/separator";
 import { validatePassLength, validatePassType } from "~/utils";
 import { useToast } from "@/components/ui/use-toast";
+import React from "react";
 
 //*****************************************************
 export async function loader({ request }: LoaderArgs) {
@@ -151,7 +151,7 @@ export async function action({ request }: ActionArgs) {
   //* update user password
   await updateUserPassword(userId, newPass);
 
-  return redirect ("")
+  return redirect("");
   //* logout
   // return logout({ request: request, redirectTo: "/explore" });
 }
@@ -176,13 +176,13 @@ export default function ChangePaasswordPage() {
       confirmPassRef.current?.focus();
     } else if (actionData?.errors?.passMatch) {
       newPassRef.current?.focus();
-    }else {
+    } else {
       toast({
         title: "Password sucessfully updated.",
         // description: "",
       });
     }
-  }, [actionData]);
+  }, [actionData, toast]);
 
   return (
     <div className="space-y-6">

@@ -1,11 +1,4 @@
-import {
-  useLoaderData,
-  useMatches,
-  useNavigate,
-  useNavigation,
-  useSearchParams,
-  useSubmit,
-} from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -13,32 +6,31 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  //Legend,
+  Legend,
   Tooltip as ChartTooltip,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
-import { de } from "date-fns/locale";
+import { de, enGB } from "date-fns/locale";
 import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore/$deviceId";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
-import { Download, Minus, X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
-import { getGraphColor } from "~/lib/utils";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { datesHave48HourRange } from "~/lib/utils";
+import FixedTimeRangeButtons from "./fixed-time-range-buttons";
+import { isBrowser, isTablet } from "react-device-detect";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -47,30 +39,18 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
-  ChartTooltip
-  //Legend
+  ChartTooltip,
+  Legend
 );
 
 export default function Graph(props: any) {
-  // access env variable on client side
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
 
-  // form submission handler
-  const submit = useSubmit();
-  let [searchParams] = useSearchParams();
-
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
-
-  let matches = useMatches();
-  let navigate = useNavigate();
-  const routeChange = (newPath: string) => {
-    let path = newPath;
-    navigate(path);
-  };
 
   // Formatting the data for the Line component
   const lineData = useMemo(() => {
@@ -85,21 +65,16 @@ export default function Graph(props: any) {
                 label: loaderData.selectedSensors[0].title,
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
-                // I think we have to define the color in the loader already? - at least before this initialization
-                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[0].unit
-                ),
+                borderColor: loaderData.selectedSensors[0].color,
+                backgroundColor: loaderData.selectedSensors[0].color,
                 yAxisID: "y",
               },
               {
                 label: loaderData.selectedSensors[1].title,
                 data: loaderData.selectedSensors[1].data,
                 pointRadius: 0,
-                borderColor: getGraphColor(loaderData.selectedSensors[1].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[1].unit
-                ),
+                borderColor: loaderData.selectedSensors[1].color,
+                backgroundColor: loaderData.selectedSensors[1].color,
                 yAxisID: "y1",
               },
             ]
@@ -108,10 +83,8 @@ export default function Graph(props: any) {
                 label: loaderData.selectedSensors[0].title,
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
-                borderColor: getGraphColor(loaderData.selectedSensors[0].unit),
-                backgroundColor: getGraphColor(
-                  loaderData.selectedSensors[0].unit
-                ),
+                borderColor: loaderData.selectedSensors[0].color,
+                backgroundColor: loaderData.selectedSensors[0].color,
                 yAxisID: "y",
               },
             ],
@@ -121,6 +94,8 @@ export default function Graph(props: any) {
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
       maintainAspectRatio: false,
+      responsive: true,
+      spanGaps: false,
       interaction: {
         mode: "index",
         intersect: false,
@@ -133,16 +108,39 @@ export default function Graph(props: any) {
         x: {
           type: "time",
           time: {
-            unit: "hour",
+            // display hour when timerange < 1 day and day when timerange > 1 day
+            unit: datesHave48HourRange(
+              new Date(loaderData.fromDate),
+              new Date(loaderData.toDate)
+            )
+              ? "hour"
+              : "day",
+            displayFormats: {
+              day: "dd.MM.yyyy",
+              millisecond: "mm:ss",
+              second: "mm:ss",
+              minute: "HH:mm",
+              hour: "HH:mm",
+            },
+            tooltipFormat: "dd.MM.yyyy HH:mm",
           },
           adapters: {
             date: {
-              // TODO: get preffered langunage from user object
-              locale: de,
+              locale: loaderData.locale === "de" ? de : enGB,
             },
           },
           ticks: {
-            maxTicksLimit: 5,
+            major: {
+              enabled: true,
+            },
+            font: (context) => {
+              if (context.tick && context.tick.major) {
+                return {
+                  weight: "bold",
+                };
+              }
+            },
+            maxTicksLimit: 8,
           },
         },
         y: {
@@ -176,30 +174,49 @@ export default function Graph(props: any) {
         },
       },
     };
-  }, [loaderData.selectedSensors]);
+  }, [
+    loaderData.fromDate,
+    loaderData.toDate,
+    loaderData.locale,
+    loaderData.selectedSensors,
+  ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const lineChartBackground = {
-    id: "lineChartBackground",
-    beforeDatasetDraw(chart: ChartJS<"line">) {
-      const {
-        ctx,
-        chartArea: { top, left, width, height },
-      } = chart;
-
-      ctx.save();
-      ctx.fillStyle = "white";
-      ctx.fillRect(left, top, width, height);
-    },
-  };
-
-  function handleDownloadClick() {
+  function handlePngDownloadClick() {
     if (chartRef.current) {
       if (chartRef.current === null) return;
       // why is chartRef.current always never???
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
+  }
+
+  function handleCsvDownloadClick() {
+    const labels = lineData.labels;
+    const dataset = lineData.datasets[0];
+
+    // header
+    let csvContent = "timestamp,deviceId,sensorId,value,unit,phenomena";
+    csvContent += "\n";
+    for (let i = 0; i < labels.length; i++) {
+      // timestamp
+      csvContent += `${labels[i]},`;
+      // deviceId
+      csvContent += `${loaderData.selectedSensors[0].deviceId},`;
+      // sensorId
+      csvContent += `${dataset?.data[i]?.sensorId},`;
+      // value
+      csvContent += `${dataset?.data[i]?.value},`;
+      // unit
+      csvContent += `${loaderData.selectedSensors[0].unit},`;
+      // phenomenon
+      csvContent += `${loaderData.selectedSensors[0].title}`;
+      // new line
+      csvContent += "\n";
+    }
+
+    // Creating a Blob and saving it as a CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "chart_data.csv");
   }
 
   function handleDrag(_e: any, data: DraggableData) {
@@ -216,10 +233,11 @@ export default function Graph(props: any) {
           handle="#graphTop"
           defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
           onDrag={handleDrag}
+          disabled={!isBrowser && !isTablet}
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-28 left-4 right-4 top-6 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:bottom-[30px] sm:left-[calc(33vw+20px)] sm:right-auto sm:top-auto sm:h-[35%] sm:max-h-[35%] sm:w-[calc(100vw-(33vw+30px))]"
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
           >
             {navigation.state === "loading" && (
               <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
@@ -230,55 +248,41 @@ export default function Graph(props: any) {
               className="flex cursor-move items-center justify-between px-2 pt-2"
               id="graphTop"
             >
-              <div className="flex gap-2">
+              <div className="flex items-center justify-center gap-4">
                 <DatePickerGraph />
-                <Select
-                  value={loaderData.aggregation}
-                  onValueChange={(value) => {
-                    searchParams.set("aggregation", value);
-                    submit(searchParams);
-                  }}
-                >
-                  <SelectTrigger className="w-[210px]">
-                    <SelectValue placeholder="Select a time aggregate" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Time aggregate</SelectLabel>
-                      <SelectItem value="raw">Raw</SelectItem>
-                      <SelectItem value="15m">15 minutes</SelectItem>
-                      <SelectItem value="1d">1 day</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <FixedTimeRangeButtons />
               </div>
               <div className="flex items-center justify-end gap-4">
-                <button
-                  onClick={handleDownloadClick}
-                  className="inline-flex items-center justify-center"
-                >
-                  <Download />
-                </button>
-                <Minus
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Download />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handlePngDownloadClick}>
+                      PNG
+                    </DropdownMenuItem>
+                    {loaderData.selectedSensors.length < 2 && (
+                      <DropdownMenuItem onClick={handleCsvDownloadClick}>
+                        CSV
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <X
                   className="cursor-pointer"
                   onClick={() => props.setOpenGraph(false)}
                 />
-                <X
-                  className="cursor-pointer"
-                  onClick={() =>
-                    routeChange("/explore/" + matches[0].params.deviceId)
-                  }
-                />
               </div>
             </div>
-            <div className="flex h-full w-full justify-center bg-white">
-              <Line
-                data={lineData}
-                options={options}
-                ref={chartRef}
-                // activate this to set the chart backgroundColor but then the reference lines dissapear
-                // plugins={[lineChartBackground]}
-              ></Line>
+            <div className="flex h-full w-full justify-center items-center bg-white">
+              {(loaderData.selectedSensors[0].data.length === 0 &&
+                loaderData.selectedSensors[1] === undefined) ||
+              (loaderData.selectedSensors[0].data.length === 0 &&
+                loaderData.selectedSensors[1].data.length === 0) ? (
+                <div>There is no data for the selected time period.</div>
+              ) : (
+                <Line data={lineData} options={options} ref={chartRef}></Line>
+              )}
             </div>
           </div>
         </Draggable>
