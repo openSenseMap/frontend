@@ -125,7 +125,7 @@ export default function CampaignArea() {
 
   return (
     <div className="flex flex-col md:flex-row">
-      <div className="flex w-full flex-col gap-3 md:w-1/4">
+      <div className="flex w-full flex-col items-center justify-center gap-3 md:w-1/4">
         <div className="m-2 flex flex-col gap-1">
           <h1 className="text-lg font-bold">{t("define area of interest")}</h1>
           <span>
@@ -135,7 +135,7 @@ export default function CampaignArea() {
           </span>
           <span>{t("choose one of the following options:")}</span>
         </div>
-        <div className="m-4 flex flex-col gap-2">
+        <div className="m-4 flex flex-row gap-2 md:flex-col">
           <Card>
             <CardHeader>
               <CardTitle className="whitespace-nowrap">Option 1: </CardTitle>
