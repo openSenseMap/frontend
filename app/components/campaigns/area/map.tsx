@@ -90,8 +90,14 @@ export default function DefineAreaMap({
     (e: any) => {
       setFeatures((currFeatures: any) => {
         const newFeatures = { ...currFeatures };
-        for (const f of e.features) {
-          delete newFeatures[f.id];
+
+        for (const feature of e.features) {
+          if (feature.id) {
+            // Filter out the feature with the matching 'id'
+            newFeatures.features = newFeatures.features.filter(
+              (f: any) => f.id !== feature.id
+            );
+          }
         }
         return newFeatures;
       });
@@ -144,9 +150,9 @@ export default function DefineAreaMap({
         ref={(ref) => (mapRef.current = ref && ref.getMap())}
         initialViewState={{ latitude: 7, longitude: 52, zoom: 2 }}
         style={{
-          width: "70%",
+          width: "100%",
           height: "100%",
-          position: "fixed",
+          position: "relative",
           top: 0,
           right: 0,
         }}

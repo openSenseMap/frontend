@@ -189,7 +189,9 @@ export default function CampaignArea() {
             to={"/create/form"}
             className="absolute right-4 top-4 z-50 ml-auto"
           >
-            <Button disabled={Object.keys(features).length === 0}>
+            <Button
+              disabled={!features.features || features.features.length === 0}
+            >
               {t("next")}
               <ArrowRightIcon className="ml-2 h-4 w-4" />
             </Button>
