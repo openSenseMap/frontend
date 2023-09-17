@@ -65,7 +65,7 @@ export default function DatePickerGraph() {
             id="date"
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal ring-1 ring-zinc-900/5",
+              "w-full justify-start text-left font-normal border dark:border-zinc-700",
               !date && "text-muted-foreground"
             )}
           >
