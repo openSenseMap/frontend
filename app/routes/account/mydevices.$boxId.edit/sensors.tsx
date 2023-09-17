@@ -456,12 +456,10 @@ export default function EditBoxSensors() {
                                   sensor.unit &&
                                   sensor.sensorType
                                 ) {
-                                  console.log("all valid");
                                   sensor.notValidInput = false;
                                   sensor.editing = false;
                                   sensor.edited = true;
                                 } else {
-                                  console.log("not all are valid");
                                   sensor.notValidInput = true;
                                 }
                               }}

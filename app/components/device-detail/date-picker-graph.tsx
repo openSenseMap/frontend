@@ -65,7 +65,7 @@ export default function DatePickerGraph() {
             id="date"
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal",
+              "w-full justify-start text-left font-normal ring-1 ring-zinc-900/5",
               !date && "text-muted-foreground"
             )}
           >
@@ -98,8 +98,9 @@ export default function DatePickerGraph() {
               setDate(dates);
             }}
             numberOfMonths={1}
+            className="dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95"
           />
-          <div className="flex w-full items-center justify-evenly py-2">
+          <div className="flex w-full items-center justify-evenly py-2 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
             {/* Aggregation Selector */}
             <Select
               value={aggregation}

@@ -102,7 +102,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   }
 
   return (
-    <div className="mt-[8px] space-y-3 border-[1px] px-3 py-[3px] ">
+    <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
       <div className="space-y-2">
         <div className="space-y-[2px]">
           <Label className=" text-base">Exposure: </Label>
@@ -113,7 +113,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
               updateFilterParams(value, statusVal, phenomenonVal);
             }}
           >
-            <SelectTrigger className="h-6 w-full text-base">
+            <SelectTrigger className="h-6 w-full text-base dark:border-zinc-800 border-4">
               <SelectValue className="h-6" placeholder="ALL" />
             </SelectTrigger>
             <SelectContent className="">

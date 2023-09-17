@@ -1,4 +1,5 @@
 import type { DeviceClusterProperties } from "~/routes/explore";
+import { useTheme } from "~/utils/theme-provider";
 
 type DonutChartClusterType = {
   cluster: any;
@@ -17,6 +18,7 @@ export default function DonutChartCluster({
   cluster,
   clusterOnClick,
 }: DonutChartClusterType) {
+  const [theme,] = useTheme();
   const { categories, point_count: pointCount } = cluster.properties;
   const {
     ACTIVE: active = 0,
@@ -92,7 +94,7 @@ export default function DonutChartCluster({
           );
         })}
         <circle cx={r} cy={r} r={r0} fill="transparent" />
-        <text dominantBaseline="central" transform={`translate(${r}, ${r})`}>
+        <text dominantBaseline="central" fill={theme === "dark" ? "white" : "black"} transform={`translate(${r}, ${r})`}>
           {pointCount}
         </text>
       </svg>
