@@ -26,6 +26,23 @@ export default function DatePickerGraph() {
     to: loaderData.toDate ? new Date(loaderData.toDate) : undefined,
   });
 
+  if (
+    !date?.from &&
+    !date?.to &&
+    loaderData.selectedSensors[0].data.length > 0
+  ) {
+    // on initial load, without a selected time range, check what time rage the last 20000 data points are in
+    const firstDate = loaderData.selectedSensors[0].data[0].time;
+    const lastDate =
+      loaderData.selectedSensors[0].data[
+        loaderData.selectedSensors[0].data.length - 1
+      ].time;
+    setDate({
+      from: lastDate ? new Date(lastDate) : undefined,
+      to: firstDate ? new Date(firstDate) : undefined,
+    });
+  }
+
   // Update search params when date or aggregation changes
   useEffect(() => {
     if (date?.from) {
