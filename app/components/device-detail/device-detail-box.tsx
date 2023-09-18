@@ -17,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import type { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore.$deviceId._index";
 import {
   Archive,
   ChevronUp,

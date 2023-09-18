@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
-import type { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore.$deviceId._index";
 import { PopoverClose } from "@radix-ui/react-popover";
 
 export default function DatePickerGraph() {

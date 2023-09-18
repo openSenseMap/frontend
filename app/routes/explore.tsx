@@ -42,7 +42,7 @@ export async function loader({ request }: LoaderArgs) {
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
   var filteredDevices = {};
-  if (urlFilterParams.size > 0 && urlFilterParams.has("exposure")) {
+  if (urlFilterParams.size == 3 && urlFilterParams.has("exposure")) {
     filteredDevices = getFilteredDevices(devices, urlFilterParams);
   }
 
@@ -82,12 +82,12 @@ export default function Explore() {
     new URLSearchParams(data.filterParams)
   );
   
-  //* 3 here is number of filter options
+  //* Check if params belongs to filter options then assign filterd data
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    globalFilterParams.size == 3 ? data.filteredDevices : {}
+    globalFilterParams.size == 3 && globalFilterParams.has("exposure")? data.filteredDevices : {}
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
-    globalFilterParams.size == 3 ? true : false
+    globalFilterParams.size == 3 && globalFilterParams.has("exposure")? true : false
   );
 
   //* fly to sensebox location when url inludes deviceId

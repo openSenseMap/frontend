@@ -19,7 +19,7 @@ import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de, enGB } from "date-fns/locale";
 import type { LastMeasurementProps } from "./device-detail-box";
-import type { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore.$deviceId._index";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";

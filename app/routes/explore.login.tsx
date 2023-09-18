@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs, V2_MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -69,15 +69,14 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-export const meta: MetaFunction = () => {
-  return {
-    title: "Login",
-  };
+export const meta: V2_MetaFunction = () => {
+  return [{ title: "Login" }];
 };
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo = (searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore")
+  const redirectTo =
+    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
