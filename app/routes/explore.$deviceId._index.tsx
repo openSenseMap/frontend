@@ -1,7 +1,11 @@
 // Importing dependencies
 import { Exposure, type Sensor } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
-import { useCatch, useLoaderData } from "@remix-run/react";
+import {
+  //isRouteErrorResponse,
+  useLoaderData,
+  //useRouteError,
+} from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
@@ -11,6 +15,7 @@ import { getGraphColor } from "~/lib/utils";
 import { getSensors } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
+import { GeneralErrorBoundary } from "~/components/error-boundary";
 
 export async function loader({ params, request }: LoaderArgs) {
   const locale = await i18next.getLocale(request);
@@ -104,24 +109,19 @@ export default function DeviceId() {
   );
 }
 
-// Defining a CatchBoundary component to handle errors thrown by the loader
-export function CatchBoundary() {
-  // Retrieving the error thrown by the loader using the useCatch hook
-  const caught = useCatch();
+export function ErrorBoundary() {
+  //const error = useRouteError();
 
-  // If the error has a status code of 502, render an error message
-  if (caught.status === 502) {
-    return (
-      <div className="absolute bottom-0 z-10 w-full">
-        <div className="flex animate-fade-in-up items-center justify-center bg-white py-10">
-          <div className="text-red-500">
-            Oh no, we could not find this Device ID. Are you sure it exists?
-          </div>
-        </div>
+  return (
+    <div className="absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-row px-4 py-2 md:bottom-[30px] md:left-[10px] md:top-auto md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0">
+      <div
+        id="deviceDetailBox"
+        className={
+          "shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:max-h-[calc(100vh-8rem)]"
+        }
+      >
+        <GeneralErrorBoundary />
       </div>
-    );
-  }
-
-  // If the error has a different status code, throw a new error with the status code included in the message
-  throw new Error(`Unsupported thrown response status code: ${caught.status}`);
+    </div>
+  );
 }
