@@ -31,6 +31,7 @@ import {
 import { datesHave48HourRange } from "~/lib/utils";
 import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 import { isBrowser, isTablet } from "react-device-detect";
+import { useTheme } from "~/utils/theme-provider";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -51,6 +52,9 @@ export default function Graph(props: any) {
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
+
+  // get theme from tailwind
+  const [theme] = useTheme();
 
   // Formatting the data for the Line component
   const lineData = useMemo(() => {
@@ -142,6 +146,12 @@ export default function Graph(props: any) {
             },
             maxTicksLimit: 8,
           },
+          grid: {
+            color:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+            borderColor:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+          },
         },
         y: {
           title: {
@@ -154,6 +164,12 @@ export default function Graph(props: any) {
           type: "linear",
           display: true,
           position: "left",
+          grid: {
+            color:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+            borderColor:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+          },
         },
         y1: {
           title: {
