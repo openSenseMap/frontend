@@ -195,6 +195,7 @@ export default function Graph(props: any) {
     loaderData.toDate,
     loaderData.locale,
     loaderData.selectedSensors,
+    theme,
   ]);
 
   function handlePngDownloadClick() {
