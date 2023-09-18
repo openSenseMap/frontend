@@ -108,13 +108,14 @@ export default function DeviceDetailBox() {
 
   function handleCompareClick() {
     setCompareMode(!compareMode);
+    setOpenGraph(false);
     setOpen(false);
   }
 
   return (
     <>
       {compareMode && (
-        <Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse">
+        <Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
           <XSquare
             className="h-4 w-4 cursor-pointer"
             onClick={() => {
@@ -144,7 +145,7 @@ export default function DeviceDetailBox() {
             <div
               id="deviceDetailBox"
               className={
-                "shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:max-h-[calc(100vh-8rem)]"
+                "shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:max-h-[calc(100vh-8rem)]"
               }
             >
               {navigation.state === "loading" && (
@@ -163,14 +164,11 @@ export default function DeviceDetailBox() {
                       : "h-4 w-4 rounded-full bg-red-500"
                   }
                 ></div>
-                <div className="flex flex-1 text-center text-xl text-zinc-600">
+                <div className="flex flex-1 text-center text-xl text-zinc-600 dark:dark:text-zinc-100">
                   {data.device.name}
                 </div>
-                <div onClick={() => routeChange("/explore")}>
-                  <X />
-                </div>
               </div>
-              <div className="relative flex-1 overflow-y-auto">
+              <div className="no-scrollbar relative flex-1 overflow-y-scroll">
                 <Accordion
                   type="single"
                   collapsible
@@ -178,11 +176,11 @@ export default function DeviceDetailBox() {
                   defaultValue="item-1"
                 >
                   <AccordionItem value="item-1" className="sticky top-0 z-10">
-                    <AccordionTrigger className="font-bold">
+                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
                       Image
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="flex w-full items-center justify-center p-4">
+                      <div className="flex w-full items-center justify-center p-4 opacity-100">
                         <img
                           className="rounded-lg"
                           alt=""
@@ -199,7 +197,7 @@ export default function DeviceDetailBox() {
                   defaultValue={data.device.description ? "item-1" : ""}
                 >
                   <AccordionItem value="item-1">
-                    <AccordionTrigger className="font-bold">
+                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
                       Description
                     </AccordionTrigger>
                     <AccordionContent>
@@ -215,7 +213,7 @@ export default function DeviceDetailBox() {
                   defaultValue={"item-1"}
                 >
                   <AccordionItem value="item-1">
-                    <AccordionTrigger className="font-bold">
+                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
                       Sensors
                     </AccordionTrigger>
                     <AccordionContent>
@@ -239,7 +237,7 @@ export default function DeviceDetailBox() {
                         }
                       >
                         <div>
-                          <ul className="z-0 flex-1 divide-y divide-gray-200 overflow-y-auto">
+                          <ul className="no-scrollbar z-0 flex-1 divide-y divide-gray-200 overflow-y-scroll">
                             {data.sensors.map((sensor: Sensor) => {
                               // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                               const lastMeasurement =
@@ -272,19 +270,19 @@ export default function DeviceDetailBox() {
                                       ></div>
                                       <div className="relative flex min-w-0 flex-1 cursor-pointer items-center gap-4">
                                         {/* add dynamic icons here */}
-                                        <Thermometer />
+                                        <Thermometer className="dark:text-zinc-200" />
                                         <div className={"truncate"}>
                                           <p
                                             className={
-                                              "truncate text-sm font-medium leading-5" +
+                                              "truncate text-sm font-medium leading-5 dark:text-zinc-200 " +
                                               (sensorIds.includes(sensor.id)
-                                                ? " text-green-100"
+                                                ? "text-green-100"
                                                 : "text-gray-900")
                                             }
                                           >
                                             {sensor.title}
                                           </p>
-                                          <p className="truncate text-xs text-gray-600">
+                                          <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
                                             {value + sensor.unit}
                                           </p>
                                         </div>
@@ -307,23 +305,23 @@ export default function DeviceDetailBox() {
                 <div className="flex flex-col items-center gap-2">
                   <div
                     onClick={() => routeChange("/explore")}
-                    className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                   >
                     <X />
                   </div>
                   <div
                     onClick={() => setOpen(false)}
-                    className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                   >
                     <Minus />
                   </div>
                   <div
                     onClick={() => handleCompareClick()}
-                    className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                   >
                     <Scale />
                   </div>
-                  <div className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90">
+                  <div className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90">
                     <a
                       href={getArchiveLink(data.device)}
                       target="_blank"
@@ -336,7 +334,7 @@ export default function DeviceDetailBox() {
                   {sensorIds.length > 0 && !openGraph ? (
                     <div
                       onClick={() => setOpenGraph(true)}
-                      className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                      className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                     >
                       <TooltipProvider>
                         <Tooltip>
@@ -350,7 +348,7 @@ export default function DeviceDetailBox() {
                       </TooltipProvider>
                     </div>
                   ) : null}
-                  <div className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90">
+                  <div className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Share2 className="cursor-pointer" />
@@ -377,7 +375,7 @@ export default function DeviceDetailBox() {
           onClick={() => {
             setOpen(true);
           }}
-          className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl bg-white shadow-lg ring-1 transition-colors duration-300 ease-in-out hover:brightness-90 sm:bottom-[30px] sm:left-[10px]"
+          className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 sm:bottom-[30px] sm:left-[10px]"
         >
           <TooltipProvider>
             <Tooltip>

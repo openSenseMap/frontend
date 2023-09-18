@@ -89,9 +89,9 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
             )}
           >
             {device.exposure === Exposure.MOBILE ? (
-              <Rocket className="h-4 w-4" />
+              <Rocket className="text-black h-4 w-4" />
             ) : (
-              <Box className="h-4 w-4" />
+              <Box className="text-black h-4 w-4" />
             )}
             {isFullZoom && device.status === "ACTIVE" ? (
               <div
@@ -105,7 +105,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           {isFullZoom ? (
             <motion.span
               layoutId={device.id}
-              className="max-w-[100px] overflow-hidden overflow-ellipsis whitespace-nowrap px-1 group-hover:max-w-fit group-hover:overflow-auto"
+              className="text-black max-w-[100px] overflow-hidden overflow-ellipsis whitespace-nowrap px-1 group-hover:max-w-fit group-hover:overflow-auto"
               initial={{ opacity: 0, translateX: -20 }}
               animate={{ opacity: 1, translateX: 0 }}
               exit={{ opacity: 0, translateX: -20 }}

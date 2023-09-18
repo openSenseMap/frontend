@@ -224,7 +224,7 @@ export default function CompareDevices() {
             <div className="flex flex-row">
               <div
                 id="deviceDetailBox"
-                className="shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 sm:max-h-[calc(100vh-8rem)]"
+                className="shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm sm:max-h-[calc(100vh-8rem)]"
               >
                 {navigation.state === "loading" && (
                   <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -242,7 +242,7 @@ export default function CompareDevices() {
                     {data.device2.name}
                   </p>
                 </div>
-                <div className="relative flex-1 overflow-y-auto">
+                <div className="no-scrollbar relative flex-1 overflow-y-scroll">
                   <Accordion
                     type="single"
                     collapsible
@@ -456,20 +456,20 @@ export default function CompareDevices() {
                 <div className="flex flex-col items-center gap-2">
                   <div
                     onClick={() => routeChange("/explore")}
-                    className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                    className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                   >
                     <X />
                   </div>
                   <div
                     onClick={() => setOpen(false)}
-                    className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                    className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                   >
                     <Minus />
                   </div>
                   {sensorIds.length > 0 && !openGraph ? (
                     <div
                       onClick={() => setOpenGraph(true)}
-                      className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90"
+                      className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
                     >
                       <TooltipProvider>
                         <Tooltip>
@@ -483,7 +483,7 @@ export default function CompareDevices() {
                       </TooltipProvider>
                     </div>
                   ) : null}
-                  <div className="shadow-zinc-800/5 ring-zinc-900/5 cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 hover:brightness-90">
+                  <div className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Share2 className="cursor-pointer" />
@@ -510,7 +510,7 @@ export default function CompareDevices() {
           onClick={() => {
             setOpen(true);
           }}
-          className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl bg-white shadow-lg ring-1 transition-colors duration-300 ease-in-out hover:brightness-90 sm:bottom-[30px] sm:left-[10px]"
+          className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 sm:bottom-[30px] sm:left-[10px]"
         >
           <TooltipProvider>
             <Tooltip>

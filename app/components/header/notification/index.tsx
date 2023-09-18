@@ -6,6 +6,7 @@ import {
 import type { IMessage } from "@novu/notification-center";
 import { useLoaderData } from "@remix-run/react";
 import type { loader } from "~/root";
+import { useTheme } from "~/utils/theme-provider";
 
 function onNotificationClick(message: IMessage) {
   if (message?.cta?.data?.url) {
@@ -16,6 +17,8 @@ function onNotificationClick(message: IMessage) {
 
 export default function Notification() {
   const data = useLoaderData<typeof loader>();
+  // get theme from tailwind
+  const [theme] = useTheme();
   return (
     <div className="pointer-events-auto mr-4 box-border flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-black hover:bg-gray-100">
       <NovuProvider
@@ -26,7 +29,7 @@ export default function Notification() {
         //i18n={{}}
       >
         <PopoverNotificationCenter
-          colorScheme="light"
+          colorScheme={theme === "dark" ? "dark" : "light"}
           offset={8}
           showUserPreferences={false}
           onNotificationClick={onNotificationClick}

@@ -1,4 +1,9 @@
-import { useLoaderData, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -31,6 +36,15 @@ import {
 import { datesHave48HourRange } from "~/lib/utils";
 import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 import { isBrowser, isTablet } from "react-device-detect";
+import { useTheme } from "~/utils/theme-provider";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -49,8 +63,15 @@ export default function Graph(props: any) {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
 
+  // form submission handler
+  const submit = useSubmit();
+  const [searchParams] = useSearchParams();
+
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
+
+  // get theme from tailwind
+  const [theme] = useTheme();
 
   // Formatting the data for the Line component
   const lineData = useMemo(() => {
@@ -142,6 +163,12 @@ export default function Graph(props: any) {
             },
             maxTicksLimit: 8,
           },
+          grid: {
+            color:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+            borderColor:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+          },
         },
         y: {
           title: {
@@ -154,6 +181,12 @@ export default function Graph(props: any) {
           type: "linear",
           display: true,
           position: "left",
+          grid: {
+            color:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+            borderColor:
+              theme === "dark" ? "rgba(255, 255, 255)" : "rgba(0, 0, 0, 0.1)",
+          },
         },
         y1: {
           title: {
@@ -179,6 +212,7 @@ export default function Graph(props: any) {
     loaderData.toDate,
     loaderData.locale,
     loaderData.selectedSensors,
+    theme,
   ]);
 
   function handlePngDownloadClick() {
@@ -237,7 +271,7 @@ export default function Graph(props: any) {
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
           >
             {navigation.state === "loading" && (
               <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
@@ -250,6 +284,24 @@ export default function Graph(props: any) {
             >
               <div className="flex items-center justify-center gap-4">
                 <DatePickerGraph />
+                <Select
+                  value={loaderData.aggregation}
+                  onValueChange={(value) => {
+                    searchParams.set("aggregation", value);
+                    submit(searchParams);
+                  }}
+                >
+                  <SelectTrigger className="w-[140px] dark:border-zinc-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="raw">Raw</SelectItem>
+                      <SelectItem value="15m">15 minutes</SelectItem>
+                      <SelectItem value="1d">1 day</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
                 <FixedTimeRangeButtons />
               </div>
               <div className="flex items-center justify-end gap-4">
@@ -274,7 +326,7 @@ export default function Graph(props: any) {
                 />
               </div>
             </div>
-            <div className="flex h-full w-full justify-center items-center bg-white">
+            <div className="flex h-full w-full items-center justify-center">
               {(loaderData.selectedSensors[0].data.length === 0 &&
                 loaderData.selectedSensors[1] === undefined) ||
               (loaderData.selectedSensors[0].data.length === 0 &&

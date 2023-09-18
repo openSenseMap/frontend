@@ -115,7 +115,7 @@ export default function Menu() {
           </button>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95" align="end" forceMount>
         <div
           className={
             navigation.state === "loading" ? "pointer-events-none" : ""

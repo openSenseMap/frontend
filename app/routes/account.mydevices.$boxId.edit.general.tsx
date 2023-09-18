@@ -41,7 +41,6 @@ export async function action({ request, params }: ActionArgs) {
   const formData = await request.formData();
   const { intent, name, exposure, passwordDelete } =
     Object.fromEntries(formData);
-  console.log("🚀 ~ file: general.tsx:45 ~ action ~ intent:", intent);
 
   const errors = {
     exposure: exposure ? null : "Invalid exposure.",
@@ -70,7 +69,6 @@ export async function action({ request, params }: ActionArgs) {
 
   switch (intent) {
     case "save": {
-      console.log("🚀 ~ file: general.tsx:58 ~ action ~ save:");
       await updateDeviceInfo({ id: deviceID, name: name, exposure: exposure });
       return json({
         errors: {
