@@ -1,4 +1,9 @@
-import { useLoaderData, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -32,6 +37,14 @@ import { datesHave48HourRange } from "~/lib/utils";
 import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 import { isBrowser, isTablet } from "react-device-detect";
 import { useTheme } from "~/utils/theme-provider";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -49,6 +62,10 @@ export default function Graph(props: any) {
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+
+  // form submission handler
+  const submit = useSubmit();
+  const [searchParams] = useSearchParams();
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
@@ -267,6 +284,24 @@ export default function Graph(props: any) {
             >
               <div className="flex items-center justify-center gap-4">
                 <DatePickerGraph />
+                <Select
+                  value={loaderData.aggregation}
+                  onValueChange={(value) => {
+                    searchParams.set("aggregation", value);
+                    submit(searchParams);
+                  }}
+                >
+                  <SelectTrigger className="w-[140px] dark:border-zinc-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="raw">Raw</SelectItem>
+                      <SelectItem value="15m">15 minutes</SelectItem>
+                      <SelectItem value="1d">1 day</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
                 <FixedTimeRangeButtons />
               </div>
               <div className="flex items-center justify-end gap-4">
