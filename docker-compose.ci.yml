@@ -4,7 +4,6 @@ services:
     image: timescale/timescaledb-ha:pg14-latest
     # Preload pg_cron extension
     # https://github.com/timescale/timescaledb-docker-ha/issues/293
-    # Extension is created with prisma
     command:
       - -cshared_preload_libraries=timescaledb,pg_cron
     restart: always
@@ -14,3 +13,6 @@ services:
       - POSTGRES_DB=postgres
     ports:
       - "5432:5432"
+    volumes:
+      - ./scripts/postgres/101_create_timescaledb_extension.sh:/docker-entrypoint-initdb.d/101_create_timescaledb_extension.sh
+      - ./scripts/postgres/102_create_pgcron_extension.sh:/docker-entrypoint-initdb.d/102_create_pgcron_extension.sh
