@@ -66,10 +66,6 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
             isFullZoom ? "-left-4 -top-4" : "-left-[10px] -top-[10px]"
           )}
           onClick={() => {
-            console.log(
-              "🚀 ~ file: box-marker.tsx:70 ~ BoxMarker ~ compareMode:",
-              compareMode
-            );
             if (compareMode) {
               navigate(
                 `/explore/${matches[2].params.deviceId}/compare/${device.id}`
