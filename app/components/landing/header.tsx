@@ -24,6 +24,10 @@ const links = [
     name: "Partners",
     link: "#partners",
   },
+  {
+    name: "Donate",
+    link: "#donate",
+  },
 ];
 
 export default function Header() {

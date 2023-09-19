@@ -89,7 +89,6 @@ export default function Search(props: SearchProps) {
    * useEffect hook that is called when the search string changes. It calls the getLocations and getDevices functions to get the search results for locations and devices.
    */
   useEffect(() => {
-    console.log(props.searchString);
     if (props.searchString.length >= 2) {
       getLocations(props.searchString);
       getDevices(props.searchString);

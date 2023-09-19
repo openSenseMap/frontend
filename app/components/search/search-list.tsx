@@ -126,7 +126,7 @@ export default function SearchList(props: SearchListProps) {
   });
 
   return (
-    <div className="w-full overflow-visible rounded-[1.25rem] bg-white pb-2">
+    <div className="w-full overflow-visible rounded-[1.25rem] bg-white pb-2 text-black dark:bg-zinc-800 dark:opacity-90 dark:text-zinc-200">
       {props.searchResultsDevice.length > 0 && (
         <hr className="solid mx-2 mb-2 border-t-2" />
       )}

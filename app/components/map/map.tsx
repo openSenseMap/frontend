@@ -1,6 +1,7 @@
 import type { MapProps, MapRef } from "react-map-gl";
 import { NavigationControl, Map as ReactMap } from "react-map-gl";
 import { forwardRef } from "react";
+import { useTheme } from "~/utils/theme-provider";
 
 const Map = forwardRef<MapRef, MapProps>(
   (
@@ -8,6 +9,8 @@ const Map = forwardRef<MapRef, MapProps>(
     { children, mapStyle, fog = null, terrain = null, ...props },
     ref
   ) => {
+    // get theme from tailwind
+    const [theme] = useTheme();
     return (
       <ReactMap
         id="osem"
@@ -17,7 +20,11 @@ const Map = forwardRef<MapRef, MapProps>(
           latitude: 25,
           zoom: 2,
         }}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapStyle={
+          theme === "dark"
+            ? "mapbox://styles/mapbox/dark-v11"
+            : "mapbox://styles/mapbox/streets-v12"
+        }
         mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
         pitchWithRotate={false}
         preserveDrawingBuffer

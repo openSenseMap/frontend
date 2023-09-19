@@ -47,25 +47,25 @@ export default function FixedTimeRangeButtons() {
   }
 
   return (
-    <div className="flex cursor-pointer items-center justify-center gap-2 h-full">
+    <div className="hidden h-full cursor-pointer items-center justify-center gap-2 sm:flex">
       <Badge
         onClick={getLast24Hours}
         variant="outline"
-        className={isLast24Hours ? "text-green-300" : ""}
+        className={isLast24Hours ? "text-green-300 dark:text-green-300" : ""}
       >
         24 hours
       </Badge>
       <Badge
         onClick={getLastWeek}
         variant="outline"
-        className={isLastWeek ? "text-green-300" : ""}
+        className={isLastWeek ? "text-green-300 dark:text-green-300" : ""}
       >
         1 week
       </Badge>
       <Badge
         onClick={getLastMonth}
         variant="outline"
-        className={isLastMonth ? "text-green-300" : ""}
+        className={isLastMonth ? "text-green-300 dark:text-green-300" : ""}
       >
         1 month
       </Badge>

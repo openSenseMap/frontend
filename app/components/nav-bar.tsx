@@ -11,7 +11,7 @@ import {
 import { LogOut, Mailbox, Plus, Settings, UserIcon } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
-import { UserAvatar } from "~/routes/resources/user-avatar";
+import { UserAvatar } from "~/routes/resources.user-avatar";
 
 const sidebarNavItems = [
   {

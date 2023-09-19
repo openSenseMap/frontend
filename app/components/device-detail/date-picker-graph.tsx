@@ -9,15 +9,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import type { loader } from "~/routes/explore/$deviceId";
+import type { loader } from "~/routes/explore.$deviceId._index";
 import { PopoverClose } from "@radix-ui/react-popover";
 
 export default function DatePickerGraph() {
@@ -33,9 +25,23 @@ export default function DatePickerGraph() {
     from: loaderData.fromDate ? new Date(loaderData.fromDate) : undefined,
     to: loaderData.toDate ? new Date(loaderData.toDate) : undefined,
   });
-  const [aggregation, setAggregation] = useState<string | undefined>(
-    loaderData.aggregation
-  );
+
+  if (
+    !date?.from &&
+    !date?.to &&
+    loaderData.selectedSensors[0].data.length > 0
+  ) {
+    // on initial load, without a selected time range, check what time rage the last 20000 data points are in
+    const firstDate = loaderData.selectedSensors[0].data[0].time;
+    const lastDate =
+      loaderData.selectedSensors[0].data[
+        loaderData.selectedSensors[0].data.length - 1
+      ].time;
+    setDate({
+      from: lastDate ? new Date(lastDate) : undefined,
+      to: firstDate ? new Date(firstDate) : undefined,
+    });
+  }
 
   // Update search params when date or aggregation changes
   useEffect(() => {
@@ -45,8 +51,15 @@ export default function DatePickerGraph() {
     if (date?.to) {
       searchParams.set("date_to", date?.to?.toDateString() ?? "");
     }
-    searchParams.set("aggregation", aggregation ?? "");
-  }, [date, aggregation, searchParams]);
+  }, [date, searchParams]);
+
+  // Update date range when loader data changes (fromDate and toDate)
+  useEffect(() => {
+    setDate({
+      from: loaderData.fromDate ? new Date(loaderData.fromDate) : undefined,
+      to: loaderData.toDate ? new Date(loaderData.toDate) : undefined,
+    });
+  }, [loaderData]);
 
   return (
     <div className={cn("grid gap-2")}>
@@ -57,7 +70,7 @@ export default function DatePickerGraph() {
             id="date"
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal",
+              "w-full justify-start border text-left font-normal dark:border-zinc-700",
               !date && "text-muted-foreground"
             )}
           >
@@ -90,26 +103,9 @@ export default function DatePickerGraph() {
               setDate(dates);
             }}
             numberOfMonths={1}
+            className="dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95"
           />
-          <div className="flex w-full items-center justify-evenly py-2">
-            {/* Aggregation Selector */}
-            <Select
-              value={aggregation}
-              onValueChange={(value) => {
-                setAggregation(value);
-              }}
-            >
-              <SelectTrigger className="w-1/2">
-                <SelectValue placeholder="Time aggregation" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="raw">Raw</SelectItem>
-                  <SelectItem value="15m">15 minutes</SelectItem>
-                  <SelectItem value="1d">1 day</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+          <div className="flex w-full items-center justify-evenly py-2 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
             <PopoverClose
               className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
               onClick={() => {
