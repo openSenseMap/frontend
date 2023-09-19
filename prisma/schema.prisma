@@ -2,7 +2,7 @@ datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  extensions        = [timescaledb(version: "2.10.2"), pg_cron]
+  extensions        = [timescaledb(version: "2.10.2")]
 }
 
 generator client {
@@ -46,7 +46,6 @@ model User {
   updatedAt DateTime @updatedAt
 
   password Password?
-  notes    Note[]
   devices  Device[]
 
   profile Profile?
@@ -70,19 +69,6 @@ model Password {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
-}
-
-//* Temp. (should be deleted at some point)
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
 }
 
 enum Exposure {
