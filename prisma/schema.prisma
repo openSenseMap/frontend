@@ -2,12 +2,11 @@ datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  extensions        = [timescaledb(version: "2.10.2")]
 }
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions", "views"]
+  previewFeatures = ["views"]
 }
 
 model File {
