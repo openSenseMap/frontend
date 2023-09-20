@@ -45,12 +45,18 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   const [totalDevices, setTotalDevices] = useState(devices.features.length);
   //* To update total resutls each time filter-option is clicked
   const filteredDevices = getFilteredDevices(devices, globalFilterParams);
-  if (filterOptionsOn && globalFilterParams.size > 0 && filteredDevices && filteredDevices.features.length != totalDevices) {
-      setTotalDevices(filteredDevices.features.length);
+  if (
+    filterOptionsOn &&
+    globalFilterParams.size > 0 &&
+    filteredDevices &&
+    filteredDevices.features.length != totalDevices
+  ) {
+    setTotalDevices(filteredDevices.features.length);
   }
 
   //* To update current url
   const currentPathname = useLocation().pathname;
+  const currentSearchParams = new URLSearchParams(window.location.search);
 
   //*************************
   //* Triggered when filter param is changed
@@ -59,25 +65,39 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     statusVal: string,
     phenomenonVal: string
   ) {
-    const filterParams = new URLSearchParams({
-      exposure: `${exposureVal}`,
-      status: `${statusVal}`,
-      phenomenon: `${phenomenonVal}`,
-    });
+    if (
+      currentSearchParams.has("exposure") &&
+      currentSearchParams.has("status") &&
+      currentSearchParams.has("phenomenon")
+    ) {
+      currentSearchParams.set("exposure", exposureVal);
+      currentSearchParams.set("status", statusVal);
+      currentSearchParams.set("phenomenon", phenomenonVal);
+    } else {
+      const filterParams = new URLSearchParams({
+        exposure: `${exposureVal}`,
+        status: `${statusVal}`,
+        phenomenon: `${phenomenonVal}`,
+      });
 
-    setExposureVal(exposureVal);
-    setStatusVal(statusVal);
-    setPhenomenonVal(phenomenonVal);
+      filterParams.forEach((value, key) => {
+        currentSearchParams.append(key, value);
+      });
+    }
 
     //* update url
     window.history.pushState(
       null,
       "",
-      currentPathname + "?" + filterParams.toString()
+      currentPathname + "?" + currentSearchParams.toString()
     );
 
-    setGlobalFilterParams(filterParams);
-    setLocalFilterParams(false, filterParams);
+    setExposureVal(exposureVal);
+    setStatusVal(statusVal);
+    setPhenomenonVal(phenomenonVal);
+
+    setGlobalFilterParams(currentSearchParams);
+    setLocalFilterParams(false, currentSearchParams);
   }
 
   //***********************
@@ -95,9 +115,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       setGlobalFilteredDevices(devices);
       setFilterOptionsOn(false);
       setTotalDevices(devices.features.length);
-      setExposureVal("ALL");
-      setStatusVal("ALL");
-      setPhenomenonVal("ALL");
+
+      updateFilterParams("ALL", "ALL", "ALL");
     }
   }
 
@@ -113,7 +132,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
               updateFilterParams(value, statusVal, phenomenonVal);
             }}
           >
-            <SelectTrigger className="h-6 w-full text-base dark:border-zinc-800 border-4">
+            <SelectTrigger className="h-6 w-full border-4 text-base dark:border-zinc-800">
               <SelectValue className="h-6" placeholder="ALL" />
             </SelectTrigger>
             <SelectContent className="">
@@ -170,7 +189,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       </div>
 
       <div className="flex justify-between">
-        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]  bg-[#F2F2F2]">
+        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] bg-[#F2F2F2] px-2 py-[1px] text-base  leading-[2.2]">
           Results ({totalDevices})
         </Label>
 
@@ -182,7 +201,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           }}
         >
           <span>
-            <X className=" m-0 inline h-3.5 w-3.5 p-0 align-sub" /> Reset filters
+            <X className=" m-0 inline h-3.5 w-3.5 p-0 align-sub" /> Reset
+            filters
           </span>
         </Button>
       </div>
