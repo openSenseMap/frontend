@@ -43,8 +43,8 @@ export async function loader({ request }: LoaderArgs) {
   const urlFilterParams = new URLSearchParams(url.search);
   var filteredDevices = {};
   if (
-    urlFilterParams.has("exposure") &&
-    urlFilterParams.has("status") &&
+    urlFilterParams.has("exposure") ||
+    urlFilterParams.has("status") ||
     urlFilterParams.has("phenomenon")
   ) {
     filteredDevices = getFilteredDevices(devices, urlFilterParams);
@@ -88,15 +88,15 @@ export default function Explore() {
 
   //* Check if params belongs to filter options then assign filterd data
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    globalFilterParams.has("exposure") &&
-      globalFilterParams.has("status") &&
+    globalFilterParams.has("exposure") ||
+      globalFilterParams.has("status") ||
       globalFilterParams.has("phenomenon")
       ? data.filteredDevices
       : {}
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
-    globalFilterParams.has("exposure") &&
-      globalFilterParams.has("status") &&
+    globalFilterParams.has("exposure") ||
+      globalFilterParams.has("status") ||
       globalFilterParams.has("phenomenon")
       ? true
       : false

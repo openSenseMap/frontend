@@ -66,13 +66,16 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     phenomenonVal: string
   ) {
     if (
-      currentSearchParams.has("exposure") &&
-      currentSearchParams.has("status") &&
+      currentSearchParams.has("exposure") ||
+      currentSearchParams.has("status") ||
       currentSearchParams.has("phenomenon")
     ) {
-      currentSearchParams.set("exposure", exposureVal);
-      currentSearchParams.set("status", statusVal);
-      currentSearchParams.set("phenomenon", phenomenonVal);
+      currentSearchParams.set("exposure", exposureVal ? exposureVal : "ALL");
+      currentSearchParams.set("status", statusVal ? statusVal : "ALL");
+      currentSearchParams.set(
+        "phenomenon",
+        phenomenonVal ? phenomenonVal : "ALL"
+      );
     } else {
       const filterParams = new URLSearchParams({
         exposure: `${exposureVal}`,

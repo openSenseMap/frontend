@@ -108,10 +108,12 @@ export function validatePassLength(passwords: any) {
  * @param filterParams attributes and selected values
  */
 export function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
-  const { exposure, status, phenomenon } = Object.fromEntries(
+  // if a param is missing/undefined set it as ALL
+  const { exposure= "ALL", status= "ALL", phenomenon= "ALL" } = Object.fromEntries(
     filterParams.entries()
   );
-  var results: any = [];
+
+  let results: any = [];
 
   if (exposure === "ALL" && status === "ALL" && phenomenon === "ALL") {
     return devices;
