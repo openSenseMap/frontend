@@ -1,9 +1,10 @@
-import type { Sensor } from "@prisma/client";
-import { prisma } from "~/db.server";
+import { eq } from "drizzle-orm";
+import { sensor, type InsertSensor, type SelectSensor } from "drizzle/schema";
+import { drizzleClient } from "~/db.server";
 
-export function getSensors(deviceId: Sensor["deviceId"]) {
-  return prisma.sensor.findMany({
-    where: { deviceId },
+export function getSensors(deviceId: SelectSensor["deviceId"]) {
+  return drizzleClient.query.sensor.findMany({
+    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
   });
 }
 
@@ -12,14 +13,12 @@ export function addNewSensor({
   unit,
   sensorType,
   deviceId,
-}: Pick<Sensor, "title" | "unit" | "sensorType" | "deviceId">) {
-  return prisma.sensor.create({
-    data: {
-      title: title,
-      unit: unit,
-      sensorType: sensorType,
-      deviceId: deviceId,
-    },
+}: Pick<InsertSensor, "title" | "unit" | "sensorType" | "deviceId">) {
+  return drizzleClient.insert(sensor).values({
+    title,
+    unit,
+    sensorType,
+    deviceId,
   });
 }
 
@@ -29,18 +28,17 @@ export function updateSensor({
   unit,
   sensorType,
   icon,
-}: Pick<Sensor, "id" | "title" | "unit" | "sensorType" | "icon">) {
-  return prisma.sensor.update({
-    data: {
-      title: title,
-      unit: unit,
-      sensorType: sensorType,
-      icon: icon,
-    },
-    where: { id },
-  });
+}: Pick<InsertSensor, "id" | "title" | "unit" | "sensorType">) {
+  return drizzleClient
+    .update(sensor)
+    .set({
+      title,
+      unit,
+      sensorType,
+    })
+    .where(eq(sensor.id, id));
 }
 
-export function deleteSensor(id: Sensor["id"]) {
-  return prisma.sensor.delete({ where: { id } });
+export function deleteSensor(id: SelectSensor["id"]) {
+  return drizzleClient.delete(sensor).where(eq(sensor.id, id));
 }

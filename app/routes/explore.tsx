@@ -81,13 +81,17 @@ export default function Explore() {
   const [globalFilterParams, setGlobalFilterParams] = useState(
     new URLSearchParams(data.filterParams)
   );
-  
+
   //* Check if params belongs to filter options then assign filterd data
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")? data.filteredDevices : {}
+    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
+      ? data.filteredDevices
+      : {}
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")? true : false
+    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
+      ? true
+      : false
   );
 
   //* fly to sensebox location when url inludes deviceId

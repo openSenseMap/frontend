@@ -1,16 +1,21 @@
 import type { Profile, User } from "@prisma/client";
-import { prisma } from "~/db.server";
+import type { SelectProfile } from "drizzle/schema";
+import { drizzleClient, prisma } from "~/db.server";
 
-export async function getProfileByUserId(id: Profile["id"]) {
-  return prisma.profile.findUnique({ where: { userId: id } });
+export async function getProfileByUserId(id: SelectProfile["id"]) {
+  return drizzleClient.query.profile.findFirst({
+    where: (profile, { eq }) => eq(profile.userId, id),
+  });
 }
 
-export async function getProfileByUsername(username: Profile["username"]) {
-  return prisma.profile.findUnique({
-    where: { username },
-    include: {
+export async function getProfileByUsername(
+  username: SelectProfile["username"]
+) {
+  return drizzleClient.query.profile.findFirst({
+    where: (profile, { eq }) => eq(profile.username, username),
+    with: {
       user: {
-        include: {
+        with: {
           devices: true,
         },
       },

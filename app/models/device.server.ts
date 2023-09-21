@@ -1,47 +1,37 @@
-import type { Device } from "@prisma/client";
-import { prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 
 import { point } from "@turf/helpers";
-// import jsonstringify from "stringify-stream";
-// import streamify from "stream-array";
 import type { Point } from "geojson";
+import { eq } from "drizzle-orm";
+import { device, type SelectDevice } from "drizzle/schema";
 
-// TODO not sure why the replacer is not working!
-// const geoJsonStringifyReplacer = function geoJsonStringifyReplacer(
-//   key: any,
-//   device: any
-// ) {
-//   if (key === "") {
-//     const coordinates = [device.latitude, device.longitude];
-//     return point<Device>(coordinates, device);
-//   }
-// };
-
-export function getDevice({ id }: Pick<Device, "id">) {
-  return prisma.device.findFirst({
-    // select: {
-    //   id: true,
-    //   name: true,
-    //   description: true,
-    //   exposure: true,
-    //   status: true,
-    //   updatedAt: true,
-    //   sensors: true,
-    //   latitude: true,
-    //   longitude: true,
-    //   useAuth: true,
-    //   model: true,
-    //   public: true,
-    //   createdAt: true,
-    //   userId: true,
-    // },
-    where: { id },
+export function getDevice({ id }: Pick<SelectDevice, "id">) {
+  return drizzleClient.query.device.findFirst({
+    where: (device, { eq }) => eq(device.id, id),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      exposure: true,
+      status: true,
+      updatedAt: true,
+      latitude: true,
+      longitude: true,
+      useAuth: true,
+      public: true,
+      createdAt: true,
+      userId: true,
+    },
+    with: {
+      sensors: true,
+    },
   });
 }
 
-export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
-  return prisma.device.findUnique({
-    select: {
+export function getDeviceWithoutSensors({ id }: Pick<SelectDevice, "id">) {
+  return drizzleClient.query.device.findFirst({
+    where: (device, { eq }) => eq(device.id, id),
+    columns: {
       id: true,
       name: true,
       exposure: true,
@@ -49,7 +39,6 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
       latitude: true,
       longitude: true,
     },
-    where: { id },
   });
 }
 
@@ -57,79 +46,57 @@ export function updateDeviceInfo({
   id,
   name,
   exposure,
-}: Pick<Device, "id" | "name" | "exposure">) {
-  return prisma.device.update({
-    where: { id },
-    data: {
+}: Pick<SelectDevice, "id" | "name" | "exposure">) {
+  return drizzleClient
+    .update(device)
+    .set({
       name: name,
       exposure: exposure,
-    },
-  });
+    })
+    .where(eq(device.id, id));
 }
 
 export function updateDeviceLocation({
   id,
   latitude,
   longitude,
-}: Pick<Device, "id" | "latitude" | "longitude">) {
-  return prisma.device.update({
-    where: { id },
-    data: {
-      latitude: latitude,
-      longitude: longitude,
-    },
-  });
+}: Pick<SelectDevice, "id" | "latitude" | "longitude">) {
+  return drizzleClient
+    .update(device)
+    .set({
+      latitude,
+      longitude,
+    })
+    .where(eq(device.id, id));
 }
 
-export function deleteDevice({ id }: Pick<Device, "id">) {
-  return prisma.device.delete({ where: { id } });
+export function deleteDevice({ id }: Pick<SelectDevice, "id">) {
+  return drizzleClient.delete(device).where(eq(device.id, id));
 }
 
-export function getUserDevices(userId: Device["userId"]) {
-  return prisma.device.findMany({
-    select: {
+export function getUserDevices(userId: SelectDevice["userId"]) {
+  // TODO: where clause
+  return drizzleClient.query.device.findMany({
+    where: (device, { eq }) => eq(device.userId, userId),
+    columns: {
       id: true,
       name: true,
       latitude: true,
       longitude: true,
       exposure: true,
-      model: true,
       createdAt: true,
       updatedAt: true,
+      // userId: true,
     },
-    where: { userId },
   });
 }
 
 export async function getDevices() {
-  // const opts = {
-  //   open: '{"type":"FeatureCollection","features":[',
-  //   close: "]}",
-  //   geoJsonStringifyReplacer,
-  // };
-
-  const devices = await prisma.device.findMany({
-    select: {
-      id: true,
-      name: true,
-      latitude: true,
-      longitude: true,
-      exposure: true,
-      status: true,
-      createdAt: true,
-      sensors: {
-        select:{
-          title:true,
-        }
-      },
-    },
-  });
+  const devices = await drizzleClient.query.device.findMany();
   const geojson: GeoJSON.FeatureCollection<Point> = {
     type: "FeatureCollection",
     features: [],
   };
-
-  // return streamify(devices).pipe(jsonstringify(opts));
 
   for (const device of devices) {
     const coordinates = [device.longitude, device.latitude];

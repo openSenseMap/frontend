@@ -2,40 +2,26 @@ import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
-import { prisma } from "~/db.server";
+import { drizzleClient, prisma } from "~/db.server";
 import { createProfile } from "./profile.server";
+import { user } from "drizzle/schema";
+import type { SelectPassword, SelectUser } from "drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export type { User } from "@prisma/client";
 
-export async function getUserById(id: User["id"]) {
-  return prisma.user.findUnique({ where: { id } });
+export async function getUserById(id: SelectUser["id"]) {
+  return drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.id, id),
+  });
 }
 
 export async function getUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { email } });
 }
 
-// export async function getUserWithDevicesByName(name: User["name"]) {
-//   return prisma.user.findUnique({
-//     where: { name },
-//     include: { devices: true },
-//   });
-// }
-
-// export async function getUserWithDevicesByNameOrId(
-//   name: User["name"],
-//   id: User["id"]
-// ) {
-//   return prisma.user.findUnique({
-//     where: {
-//       OR: [],
-//     },
-//     include: { devices: true },
-//   });
-// }
-
-export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+export async function deleteUserByEmail(email: SelectUser["email"]) {
+  return drizzleClient.delete(user).where(eq(user.email, email));
 }
 
 //* user name shouldn't be unique
@@ -43,13 +29,16 @@ export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { name } });
 } */
 
-export async function updateUserName(email: User["email"], newUserName: string){
+export async function updateUserName(
+  email: User["email"],
+  newUserName: string
+) {
   return prisma.user.update({
     where: { email },
     data: {
       name: newUserName,
     },
-  })
+  });
 }
 
 export async function updateUserPassword(
@@ -78,7 +67,7 @@ export async function updateUserlocale(
 }
 
 export async function getUsers() {
-  return prisma.user.findMany();
+  return drizzleClient.query.user.findMany();
 }
 
 const preparePasswordHash = function preparePasswordHash(
@@ -120,16 +109,17 @@ export async function createUser(
 }
 
 export async function verifyLogin(
-  email: User["email"],
-  password: Password["hash"]
+  email: SelectUser["email"],
+  password: SelectPassword["hash"]
 ) {
-  const userWithPassword = await prisma.user.findUnique({
-    where: { email },
-    include: {
+  const userWithPassword = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email),
+    with: {
       profile: true,
       password: true,
     },
   });
+  console.log(userWithPassword);
 
   if (!userWithPassword || !userWithPassword.password) {
     return null;

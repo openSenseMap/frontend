@@ -16,6 +16,7 @@ import { getSensors } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
 import { GeneralErrorBoundary } from "~/components/error-boundary";
+import type { SelectDevice, SelectSensor } from "drizzle";
 
 export async function loader({ params, request }: LoaderArgs) {
   const locale = await i18next.getLocale(request);
@@ -27,7 +28,12 @@ export async function loader({ params, request }: LoaderArgs) {
   }
 
   const device = await getDevice({ id: params.deviceId });
+  console.log(device);
+
+  // TODO: do we really have to query the sensors here?
+  // They are included in the device array
   const sensors = await getSensors(params.deviceId);
+  console.log(sensors);
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");

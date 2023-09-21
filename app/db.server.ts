@@ -1,10 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import invariant from "tiny-invariant";
+import * as schema from "../drizzle/schema";
+import type { PrismaClient } from "@prisma/client";
 
+let drizzleClient: PostgresJsDatabase<typeof schema>;
 let prisma: PrismaClient;
 
 declare global {
-  var __db__: PrismaClient;
+  var __db__: PostgresJsDatabase<typeof schema>;
 }
 
 // this is needed because in development we don't want to restart
@@ -12,12 +16,12 @@ declare global {
 // create a new connection to the DB with every change either.
 // in production we'll have a single connection to the DB.
 if (process.env.NODE_ENV === "production") {
-  prisma = getClient();
+  drizzleClient = getClient();
 } else {
   if (!global.__db__) {
     global.__db__ = getClient();
   }
-  prisma = global.__db__;
+  drizzleClient = global.__db__;
 }
 
 function getClient() {
@@ -26,36 +30,16 @@ function getClient() {
 
   const databaseUrl = new URL(DATABASE_URL);
 
-  const isLocalHost = databaseUrl.hostname === "localhost";
+  console.log(`🔌 setting up drizzle client to ${databaseUrl.host}`);
 
-  const PRIMARY_REGION = isLocalHost ? null : false;
-
-  const isReadReplicaRegion = !PRIMARY_REGION;
-
-  if (!isLocalHost) {
-    databaseUrl.host = `${databaseUrl.host}`;
-    if (!isReadReplicaRegion) {
-      // 5433 is the read-replica port
-      databaseUrl.port = "5433";
-    }
-  }
-
-  console.log(`🔌 setting up prisma client to ${databaseUrl.host}`);
   // NOTE: during development if you change anything in this function, remember
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is. So if you need to change
   // something in this file, you'll need to manually restart the server.
-  const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl.toString(),
-      },
-    },
-  });
-  // connect eagerly
-  client.$connect();
+  const queryClient = postgres(DATABASE_URL);
+  const client = drizzle(queryClient, { schema });
 
   return client;
 }
 
-export { prisma };
+export { prisma, drizzleClient };
