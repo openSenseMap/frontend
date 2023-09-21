@@ -5,9 +5,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useLocation } from "@remix-run/react";
+import { useSearchParams } from "@remix-run/react";
 import { X } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { FilterOptionsContext } from "~/routes/explore";
@@ -41,87 +41,56 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   const [phenomenonVal, setPhenomenonVal] = useState(
     phenomenon != undefined ? phenomenon : "ALL"
   );
+
   //* To show total number of shown devices
   const [totalDevices, setTotalDevices] = useState(devices.features.length);
   //* To update total resutls each time filter-option is clicked
   const filteredDevices = getFilteredDevices(devices, globalFilterParams);
   if (
     filterOptionsOn &&
-    globalFilterParams.size > 0 &&
     filteredDevices &&
     filteredDevices.features.length != totalDevices
   ) {
     setTotalDevices(filteredDevices.features.length);
   }
-
-  //* To update current url
-  const currentPathname = useLocation().pathname;
-  const currentSearchParams = new URLSearchParams(window.location.search);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   //*************************
   //* Triggered when filter param is changed
-  function updateFilterParams(
-    exposureVal: string,
-    statusVal: string,
-    phenomenonVal: string
-  ) {
-    if (
-      currentSearchParams.has("exposure") ||
-      currentSearchParams.has("status") ||
-      currentSearchParams.has("phenomenon")
-    ) {
-      currentSearchParams.set("exposure", exposureVal ? exposureVal : "ALL");
-      currentSearchParams.set("status", statusVal ? statusVal : "ALL");
-      currentSearchParams.set(
-        "phenomenon",
-        phenomenonVal ? phenomenonVal : "ALL"
-      );
-    } else {
-      const filterParams = new URLSearchParams({
-        exposure: `${exposureVal}`,
-        status: `${statusVal}`,
-        phenomenon: `${phenomenonVal}`,
-      });
-
-      filterParams.forEach((value, key) => {
-        currentSearchParams.append(key, value);
-      });
-    }
-
-    //* update url
-    window.history.pushState(
-      null,
-      "",
-      currentPathname + "?" + currentSearchParams.toString()
-    );
-
-    setExposureVal(exposureVal);
-    setStatusVal(statusVal);
-    setPhenomenonVal(phenomenonVal);
-
-    setGlobalFilterParams(currentSearchParams);
-    setLocalFilterParams(false, currentSearchParams);
+  function filterDevices() {
+    setGlobalFilterParams(searchParams);
+    const filteredDevices = getFilteredDevices(devices, searchParams);
+    setTotalDevices(filteredDevices.features.length);
+    setGlobalFilteredDevices(filteredDevices);
+    setFilterOptionsOn(true);
   }
 
-  //***********************
-  //* To set filters params after any change / reset filters
-  function setLocalFilterParams(
-    isReset: boolean,
-    filterParams: URLSearchParams | null
-  ) {
-    if (!isReset && filterParams) {
-      const filteredDevices = getFilteredDevices(devices, filterParams);
-      setTotalDevices(filteredDevices.features.length);
-      setGlobalFilteredDevices(filteredDevices);
-      setFilterOptionsOn(true);
-    } else {
-      setGlobalFilteredDevices(devices);
-      setFilterOptionsOn(false);
-      setTotalDevices(devices.features.length);
+  //*************************
+  //* To reset search params to default (show all devices)
+  function onFilterOptionsReset() {
+    setGlobalFilteredDevices(devices);
+    setFilterOptionsOn(false);
+    setTotalDevices(devices.features.length);
 
-      updateFilterParams("ALL", "ALL", "ALL");
-    }
+    setExposureVal("ALL");
+    setStatusVal("ALL");
+    setPhenomenonVal("ALL");
   }
+
+  //* works after updating state twice
+  useEffect(() => {
+    if (exposureVal) {
+      searchParams.set("exposure", exposureVal ? exposureVal : "ALL");
+    }
+    if (statusVal) {
+      searchParams.set("status", statusVal ? statusVal : "ALL");
+    }
+    if (phenomenonVal) {
+      searchParams.set("phenomenon", phenomenonVal ? phenomenonVal : "ALL");
+    }
+
+    setSearchParams(searchParams);
+  }, [exposureVal, statusVal, phenomenonVal]);
 
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
@@ -132,7 +101,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Select
             value={exposureVal}
             onValueChange={(value) => {
-              updateFilterParams(value, statusVal, phenomenonVal);
+              setExposureVal(value);
+              filterDevices();
             }}
           >
             <SelectTrigger className="h-6 w-full border-4 text-base dark:border-zinc-800">
@@ -152,7 +122,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Select
             value={statusVal}
             onValueChange={(value) => {
-              updateFilterParams(exposureVal, value, phenomenonVal);
+              setStatusVal(value);
+              filterDevices();
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
@@ -172,7 +143,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Select
             value={phenomenonVal}
             onValueChange={(value) => {
-              updateFilterParams(exposureVal, statusVal, value);
+              setPhenomenonVal(value);
+              filterDevices();
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
@@ -200,7 +172,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           variant="outline"
           className=" px-2 py-[1px] text-base"
           onClick={() => {
-            setLocalFilterParams(true, null);
+            onFilterOptionsReset();
           }}
         >
           <span>
