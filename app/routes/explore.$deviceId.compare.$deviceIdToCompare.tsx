@@ -1,6 +1,6 @@
 import type { Prisma, Sensor } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
   useLoaderData,
@@ -95,7 +95,7 @@ function mergeSensors(
   return sensorGroups;
 }
 
-export async function loader({ params, request }: LoaderArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
 

@@ -1,7 +1,7 @@
 import type {
   LinksFunction,
-  LoaderArgs,
-  V2_MetaFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
 } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -66,13 +66,13 @@ export const links: LinksFunction = () => {
   ];
 };
 
-export const meta: V2_MetaFunction = () => [
+export const meta: MetaFunction = () => [
   { charset: "utf-8" },
   { title: "openSenseMap" },
   { viewport: "width=device-width,initial-scale=1" },
 ];
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
   const user = await getUser(request);
   const themeSession = await getThemeSession(request);

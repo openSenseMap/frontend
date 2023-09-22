@@ -1,4 +1,8 @@
-import type { ActionArgs, LinksFunction, LoaderArgs } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  LinksFunction,
+  LoaderFunctionArgs,
+} from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -21,7 +25,7 @@ import { Map, MapProvider, Marker, NavigationControl } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -50,7 +54,7 @@ export const links: LinksFunction = () => {
 };
 
 //*****************************************************
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { latitude, longitude } = Object.fromEntries(formData);
 

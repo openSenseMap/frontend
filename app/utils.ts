@@ -41,7 +41,8 @@ export function useMatchesData(
     () => matchingRoutes.find((route) => route.id === id),
     [matchingRoutes, id]
   );
-  return route?.data;
+
+  return route?.data as Record<string, unknown>;
 }
 
 function isUser(user: any): user is User {
@@ -89,8 +90,7 @@ export function validateName(name: string) {
 //* validate passwords type (changePassword page)
 export function validatePassType(passwords: any) {
   const index = passwords.findIndex(
-    (password: any) =>
-      typeof password !== "string" || password.length === 0
+    (password: any) => typeof password !== "string" || password.length === 0
   );
   return { isValid: index == -1 ? true : false, index: index };
 }
@@ -107,7 +107,10 @@ export function validatePassLength(passwords: any) {
  * @param devices all devices data
  * @param filterParams attributes and selected values
  */
-export function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
+export function getFilteredDevices(
+  devices: any,
+  filterParams: URLSearchParams
+) {
   const { exposure, status, phenomenon } = Object.fromEntries(
     filterParams.entries()
   );
@@ -140,4 +143,3 @@ export function getFilteredDevices(devices: any, filterParams: URLSearchParams) 
     }
   }
 }
-

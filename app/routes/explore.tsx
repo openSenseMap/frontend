@@ -2,7 +2,7 @@ import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
-import type { LoaderArgs, LinksFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
@@ -34,7 +34,7 @@ export type DeviceClusterProperties =
       }
     >;
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const devices = await getDevices();
 
   //* Get filtered devices if filter params exist in url
@@ -81,13 +81,17 @@ export default function Explore() {
   const [globalFilterParams, setGlobalFilterParams] = useState(
     new URLSearchParams(data.filterParams)
   );
-  
+
   //* Check if params belongs to filter options then assign filterd data
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")? data.filteredDevices : {}
+    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
+      ? data.filteredDevices
+      : {}
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")? true : false
+    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
+      ? true
+      : false
   );
 
   //* fly to sensebox location when url inludes deviceId
