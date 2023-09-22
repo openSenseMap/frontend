@@ -69,8 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
         //   }
         // }
       }
-    ),
-    acceptMultipleErrors: () => true,
+    )
   });
   if (submission.intent !== "submit") {
     return json({ status: "idle", submission } as const);
