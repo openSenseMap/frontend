@@ -112,7 +112,7 @@ export default function EditBox2() {
                 "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
                 "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
                 "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
-                "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-[ease]",
+                "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;",
                 "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
               )}
             >

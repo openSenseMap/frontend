@@ -66,7 +66,7 @@ export default function NavBar(props: NavBarProps) {
             placeholder={t("placeholder") || undefined}
             onFocus={() => setOpen(true)}
             onChange={(e) => setSearchString(e.target.value)}
-            className="h-fit w-full flex-1 border-none focus:border-none focus:outline-none focus:ring-0 dark:bg-zinc-800 dark:text-zinc-200"
+            className="h-fit w-full flex-1 border-none focus:border-none bg-white focus:outline-none focus:ring-0 dark:bg-zinc-800 dark:text-zinc-200"
             value={searchString}
           />
           {!open && (

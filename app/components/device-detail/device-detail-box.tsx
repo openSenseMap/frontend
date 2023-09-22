@@ -91,8 +91,11 @@ export default function DeviceDetailBox() {
 
   let navigate = useNavigate();
   const routeChange = (newPath: string) => {
-    let path = newPath;
-    navigate(path);
+    // keep all params except sensor and date params
+    searchParams.delete("sensor");
+    searchParams.delete("date_from");
+    searchParams.delete("date_to");
+    navigate({pathname: newPath, search: searchParams.toString()});
   };
 
   // form submission handler
