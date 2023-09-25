@@ -1,4 +1,4 @@
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { i18nCookie } from "~/cookies";
 
@@ -17,7 +17,7 @@ export async function loader() {
  * The action gets the language from the form data, and sets the cookie for the language.
  * The action also returns a 200 status code, which indicates that the request was successful.
  */
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const lang = (await request.formData()).get("language");
   return json(
     {},

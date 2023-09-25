@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
@@ -15,7 +15,7 @@ import { Separator } from "~/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 
 //*****************************************************
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { intent, ...values } = Object.fromEntries(formData);
   const { name, email, passwordUpdate, passwordDelete, language } = values;

@@ -8,7 +8,7 @@ import {
   // useNavigation,
 } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
-import type { DataFunctionArgs, ActionArgs } from "@remix-run/node";
+import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
@@ -44,7 +44,7 @@ export async function loader({ request }: DataFunctionArgs) {
   return json({ profile });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
   const submission = await parse(formData, {
@@ -69,8 +69,7 @@ export async function action({ request }: ActionArgs) {
         //   }
         // }
       }
-    ),
-    acceptMultipleErrors: () => true,
+    )
   });
   if (submission.intent !== "submit") {
     return json({ status: "idle", submission } as const);

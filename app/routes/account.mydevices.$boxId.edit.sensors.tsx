@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -36,7 +36,7 @@ import {
 import { assignIcon, getIcon, iconsList } from "~/utils/sensoricons";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -51,7 +51,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   //* ToDo: upadte it to include button clicks inside form
   const formData = await request.formData();
   const { updatedSensorsData } = Object.fromEntries(formData);

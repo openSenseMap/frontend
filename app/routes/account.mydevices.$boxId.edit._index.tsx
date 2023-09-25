@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Link, Outlet, useParams } from "@remix-run/react";
 import { useState } from "react";
@@ -23,7 +23,7 @@ import { Separator } from "~/components/ui/separator";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -34,7 +34,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   return redirect("/");
 }
 

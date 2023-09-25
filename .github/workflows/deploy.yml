@@ -98,7 +98,7 @@ jobs:
 
       - name: 🐳 Docker compose
         # the sleep is just there to give time for postgres to get started
-        run: docker-compose -f docker-compose.ci.yml up -d && sleep 60
+        run: docker compose -f docker-compose.ci.yml up -d && sleep 60
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 

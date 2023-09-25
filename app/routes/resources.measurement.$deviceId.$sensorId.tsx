@@ -1,9 +1,9 @@
 import type { Measurement } from "@prisma/client";
-import type { ActionArgs } from "@remix-run/node"; // or cloudflare/deno
+import type { ActionFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
 import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
     return json({ message: "Method not allowed" }, 405);
   }
