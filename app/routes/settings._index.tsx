@@ -2,7 +2,7 @@ import { Link, Outlet } from "@remix-run/react";
 import { SidebarNav } from "~/components/sidebar-nav";
 import { Separator } from "~/components/ui/separator";
 
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
 import { Button } from "~/components/ui/button";
@@ -23,7 +23,7 @@ const sidebarNavItems = [
   },
 ];
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
   return json({});
 }

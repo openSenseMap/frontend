@@ -1,6 +1,6 @@
 // Importing dependencies
 import { Exposure, type Sensor } from "@prisma/client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   //isRouteErrorResponse,
   useLoaderData,
@@ -18,7 +18,7 @@ import { addDays } from "date-fns";
 import { GeneralErrorBoundary } from "~/components/error-boundary";
 import type { SelectDevice, SelectSensor } from "drizzle";
 
-export async function loader({ params, request }: LoaderArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);

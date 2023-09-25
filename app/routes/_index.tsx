@@ -1,4 +1,4 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { motion } from "framer-motion";
@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import Donate from "~/components/landing/donate";
 import PricingPlans from "~/components/landing/pricing-plans";
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   let locale = await i18next.getLocale(request);
   const directus = await getDirectusClient();
 

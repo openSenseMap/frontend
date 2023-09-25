@@ -1,4 +1,4 @@
-import type { LoaderArgs } from "@remix-run/server-runtime";
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { getProfileByUserId } from "~/models/profile.server";
 import { requireUser } from "~/session.server";
@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { getInitials, getUserImgSrc } from "~/utils/misc";
 import { useEffect } from "react";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireUser(request);
   const profile = await getProfileByUserId(user.id);
 

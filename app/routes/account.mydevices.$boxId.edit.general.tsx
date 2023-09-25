@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -19,7 +19,7 @@ import { verifyLogin } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -37,7 +37,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { intent, name, exposure, passwordDelete } =
     Object.fromEntries(formData);
