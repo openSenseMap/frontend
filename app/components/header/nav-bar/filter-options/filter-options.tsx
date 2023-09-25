@@ -5,12 +5,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams } from "@remix-run/react";
+import { useSearchParams, useNavigation } from "@remix-run/react";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { getFilteredDevices } from "~/utils";
+import Spinner from "../../../spinner";
 
 interface FilterOptionsProps {
   devices: any;
@@ -20,6 +21,7 @@ interface FilterOptionsProps {
 export default function FilterOptions({ devices }: FilterOptionsProps) {
   //* searchParams hook
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigation = useNavigation();
 
   //* Set initial filter params based on url Search Params
   const [exposureVal, setExposureVal] = useState(
@@ -28,9 +30,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       : "ALL"
   );
   const [statusVal, setStatusVal] = useState(
-    searchParams.has("status")
-      ? searchParams.get("status") || undefined
-      : "ALL"
+    searchParams.has("status") ? searchParams.get("status") || undefined : "ALL"
   );
   const [phenomenonVal, setPhenomenonVal] = useState(
     searchParams.has("phenomenon")
@@ -93,6 +93,11 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
 
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
+      {navigation.state === "loading" && (
+        <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]" >
+          <Spinner />
+        </div>
+      )}
       <div className="space-y-2">
         <div className="space-y-[2px]">
           <Label className=" text-base">Exposure: </Label>
