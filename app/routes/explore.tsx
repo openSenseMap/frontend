@@ -6,7 +6,7 @@ import {
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
-import type { LoaderArgs, LinksFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
@@ -29,8 +29,8 @@ export type DeviceClusterProperties =
       }
     >;
 
-//*****************************************************
-export async function loader({ request }: LoaderArgs) {
+
+export async function loader({ request }: LoaderFunctionArgs) {
   const devices = await getDevices();
 
   //* Get filtered devices if filter params exist in url

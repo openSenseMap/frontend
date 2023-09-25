@@ -2,7 +2,7 @@ import DeviceCard from "~/components/device-card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
 
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
@@ -21,7 +21,7 @@ import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
 
-export async function loader({ params, request }: LoaderArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
 
   // Get username or userid from URL params
