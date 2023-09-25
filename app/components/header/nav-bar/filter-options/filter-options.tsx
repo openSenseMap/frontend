@@ -7,10 +7,9 @@ import {
 } from "@/components/ui/select";
 import { useSearchParams } from "@remix-run/react";
 import { X } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import { FilterOptionsContext } from "~/routes/explore";
 import { getFilteredDevices } from "~/utils";
 
 interface FilterOptionsProps {
@@ -19,33 +18,38 @@ interface FilterOptionsProps {
 
 //*************************************
 export default function FilterOptions({ devices }: FilterOptionsProps) {
-  //* Use params in parent page url (explore)
-  const {
-    globalFilterParams,
-    filterOptionsOn,
-    setFilterOptionsOn,
-    setGlobalFilterParams,
-    setGlobalFilteredDevices,
-  } = useContext(FilterOptionsContext);
-  //* Fetch params values
-  const { exposure, status, phenomenon } = Object.fromEntries(
-    globalFilterParams.entries()
-  );
-  //* Set initial filter params based on url options
+  //* searchParams hook
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  //* Set initial filter params based on url Search Params
   const [exposureVal, setExposureVal] = useState(
-    exposure != undefined ? exposure : "ALL"
+    searchParams.has("exposure")
+      ? searchParams.get("exposure") || undefined
+      : "ALL"
   );
   const [statusVal, setStatusVal] = useState(
-    status != undefined ? status : "ALL"
+    searchParams.has("status")
+      ? searchParams.get("status") || undefined
+      : "ALL"
   );
   const [phenomenonVal, setPhenomenonVal] = useState(
-    phenomenon != undefined ? phenomenon : "ALL"
+    searchParams.has("phenomenon")
+      ? searchParams.get("phenomenon") || undefined
+      : "ALL"
+  );
+
+  const filterOptionsOn = useState(
+    searchParams.has("exposure") ||
+      searchParams.has("status") ||
+      searchParams.has("phenomenon")
+      ? true
+      : false
   );
 
   //* To show total number of shown devices
   const [totalDevices, setTotalDevices] = useState(devices.features.length);
   //* To update total resutls each time filter-option is clicked
-  const filteredDevices = getFilteredDevices(devices, globalFilterParams);
+  const filteredDevices = getFilteredDevices(devices, searchParams);
   if (
     filterOptionsOn &&
     filteredDevices &&
@@ -53,23 +57,18 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   ) {
     setTotalDevices(filteredDevices.features.length);
   }
-  const [searchParams, setSearchParams] = useSearchParams();
 
   //*************************
   //* Triggered when filter param is changed
   function filterDevices() {
-    setGlobalFilterParams(searchParams);
+    // setGlobalFilterParams(searchParams);
     const filteredDevices = getFilteredDevices(devices, searchParams);
     setTotalDevices(filteredDevices.features.length);
-    setGlobalFilteredDevices(filteredDevices);
-    setFilterOptionsOn(true);
   }
 
   //*************************
   //* To reset search params to default (show all devices)
   function onFilterOptionsReset() {
-    setGlobalFilteredDevices(devices);
-    setFilterOptionsOn(false);
     setTotalDevices(devices.features.length);
 
     setExposureVal("ALL");
