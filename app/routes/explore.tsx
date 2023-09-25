@@ -2,7 +2,6 @@ import {
   Outlet,
   useLoaderData,
   useParams,
-  useSearchParams,
 } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";

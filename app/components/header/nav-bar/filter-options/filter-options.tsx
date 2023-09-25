@@ -87,9 +87,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     if (phenomenonVal) {
       searchParams.set("phenomenon", phenomenonVal ? phenomenonVal : "ALL");
     }
-
+    
     setSearchParams(searchParams);
-  }, [exposureVal, statusVal, phenomenonVal]);
+  }, [exposureVal, statusVal, phenomenonVal, searchParams, setSearchParams]);
 
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
