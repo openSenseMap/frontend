@@ -12,6 +12,8 @@ import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { getFilteredDevices } from "~/utils";
 import Spinner from "../../../spinner";
+import { Separator } from "~/components/ui/separator";
+import invariant from "tiny-invariant";
 
 interface FilterOptionsProps {
   devices: any;
@@ -22,6 +24,8 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   //* searchParams hook
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
+  // To show more phenomena options
+  const [seeMorePhenomena, setSeeMorePhenomena] = useState(false);
 
   //* Set initial filter params based on url Search Params
   const [exposureVal, setExposureVal] = useState(
@@ -36,6 +40,10 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     searchParams.has("phenomenon")
       ? searchParams.get("phenomenon") || undefined
       : "ALL"
+  );
+  invariant(
+    typeof phenomenonVal === "string",
+    "phenomenonVal must be a string"
   );
 
   const filterOptionsOn = useState(
@@ -87,14 +95,14 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     if (phenomenonVal) {
       searchParams.set("phenomenon", phenomenonVal ? phenomenonVal : "ALL");
     }
-    
+
     setSearchParams(searchParams);
   }, [exposureVal, statusVal, phenomenonVal, searchParams, setSearchParams]);
 
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
       {navigation.state === "loading" && (
-        <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]" >
+        <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
           <Spinner />
         </div>
       )}
@@ -142,7 +150,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           </Select>
         </div>
         <div className="space-y-[2px]">
-          <Label className=" text-base">Phenonmenon: </Label>
+          <Label className=" text-base">Phenomenon: </Label>
           &nbsp;
           <Select
             value={phenomenonVal}
@@ -162,6 +170,44 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
               <SelectItem value="PM2.5">PM2.5</SelectItem>
               <SelectItem value="Luftdruck">Luftdruck</SelectItem>
               <SelectItem value="Luftfeuchtigkeit">Luftfeuchtigkeit</SelectItem>
+              {!seeMorePhenomena &&
+                ![
+                  "Radioactivity",
+                  "08A Pressure BME680",
+                  "08A Temperature SHT31 flex",
+                ].includes(phenomenonVal) && (
+                  <>
+                    <Separator />
+                    <button
+                      className="py-1.5 pl-8 pr-2 text-sm"
+                      onClick={() => {
+                        setSeeMorePhenomena(true);
+                      }}
+                    >
+                      See More
+                    </button>
+                  </>
+                )}
+
+              {(seeMorePhenomena ||
+                [
+                  "Radioactivity",
+                  "08A Pressure BME680",
+                  "08A Temperature SHT31 flex",
+                ].includes(phenomenonVal)) && (
+                <>
+                  <SelectItem value="Radioactivity">Radioactivity</SelectItem>
+                  <SelectItem value="08A Pressure BME680">
+                    08A Pressure BME680
+                  </SelectItem>
+                  <SelectItem value="08A Temperature BME680">
+                    08A Temperature BME680
+                  </SelectItem>
+                  <SelectItem value="08A Temperature SHT31 flex">
+                    08A Temperature SHT31
+                  </SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>
