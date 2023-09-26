@@ -96,22 +96,48 @@ export default function Summary({ data, phenomena }: SummaryProps) {
         </Table>
 
         <h4 className="pt-6">Your Extensions</h4>
-        {data.ttnEnabled && (
+        {data["ttn.enabled"] && (
           <div>
             <h5>TTN</h5>
             <Table>
               {/* <TableCaption>General Information</TableCaption> */}
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">ttnAppId</TableCell>
-                  <TableCell className="font-medium">{data.ttnAppId}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">ttnDeviceId</TableCell>
+                  <TableCell className="font-medium">App ID</TableCell>
                   <TableCell className="font-medium">
-                    {data.ttnDeviceId}
+                    {data["ttn.appId"]}
                   </TableCell>
                 </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Device ID</TableCell>
+                  <TableCell className="font-medium">
+                    {data["ttn.devId"]}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Decode Profile</TableCell>
+                  <TableCell className="font-medium">
+                    {data["ttn.decodeProfile"]}
+                  </TableCell>
+                </TableRow>
+                {!data["ttn.decodeOptions"] || data["ttn.decodeOptions"] !== "" && (
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      Decode Options
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {data["ttn.decodeOptions"]}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {data["ttn.port"] !== "" && (
+                  <TableRow>
+                    <TableCell className="font-medium">Port</TableCell>
+                    <TableCell className="font-medium">
+                      {data["ttn.port"]}
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
@@ -124,35 +150,35 @@ export default function Summary({ data, phenomena }: SummaryProps) {
               {/* <TableCaption>General Information</TableCaption> */}
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">mqttUrl</TableCell>
-                  <TableCell className="font-medium">{data.mqttUrl}</TableCell>
+                  <TableCell className="font-medium">URL</TableCell>
+                  <TableCell className="font-medium">{data["mqtt.url"]}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">mqttTopic</TableCell>
+                  <TableCell className="font-medium">Topic</TableCell>
                   <TableCell className="font-medium">
-                    {data.mqttTopic}
+                    {data["mqtt.topic"]}
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">mqttFormat</TableCell>
+                  <TableCell className="font-medium">Message Format</TableCell>
                   <TableCell className="font-medium">
-                    {data.mqttFormat}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    mqttDecodeOptions
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {data.mqttDecodeOptions}
+                    {data["mqtt.messageFormat"]}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">
-                    mqttConnectOptions
+                    Decode Options
                   </TableCell>
                   <TableCell className="font-medium">
-                    {data.mqttConnectOptions}
+                    {data["mqtt.decodeOptions"]}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    Connection Options
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {data["mqtt.connectOptions"]}
                   </TableCell>
                 </TableRow>
               </TableBody>
