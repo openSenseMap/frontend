@@ -115,7 +115,11 @@ export default function Menu() {
           </button>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95" align="end" forceMount>
+      <DropdownMenuContent
+        className="w-56 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95"
+        align="end"
+        forceMount
+      >
         <div
           className={
             navigation.state === "loading" ? "pointer-events-none" : ""
@@ -145,7 +149,7 @@ export default function Menu() {
           {data.user !== null ? (
             <DropdownMenuGroup>
               {navigation.state === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
+                <div className="bg-white dark:bg-zinc-800 bg-opacity-30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md">
                   <Spinner />
                 </div>
               )}
@@ -228,11 +232,13 @@ export default function Menu() {
                   <span> {t("donate_label")}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
-              <DialogContent className={"max-h-screen overflow-y-scroll !max-w-[60%]"}>
+              <DialogContent
+                className={"max-h-screen overflow-y-scroll !max-w-[60%]"}
+              >
                 {/* <Donate /> */}
                 <div className="grid grid-cols-2">
                   <DonationText />
-                  <DonationiFrame/>
+                  <DonationiFrame />
                 </div>
               </DialogContent>
             </Dialog>

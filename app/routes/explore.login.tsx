@@ -21,6 +21,7 @@ import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import Spinner from "~/components/spinner";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -38,21 +39,21 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!validateEmail(email)) {
     return json(
       { errors: { email: "Email is invalid", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
       { errors: { password: "Password is required", email: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (password.length < 8) {
     return json(
       { errors: { password: "Password is too short", email: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -61,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!user) {
     return json(
       { errors: { email: "Invalid email or password", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -110,8 +111,13 @@ export default function LoginPage() {
       <div
         id="login-modal"
         data-state="open"
-        className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
+        className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
       >
+        {navigation.state === "loading" && (
+          <div className="bg-white dark:bg-zinc-800 bg-opacity-30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+            <Spinner />
+          </div>
+        )}
         <span className="pl-5 text-4xl font-medium">{t("login_label")}</span>
         <Link
           to={{
@@ -129,7 +135,7 @@ export default function LoginPage() {
             <div>
               <Label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
               >
                 {t("email_label")}
               </Label>
@@ -158,7 +164,7 @@ export default function LoginPage() {
             <div>
               <Label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
               >
                 {t("password_label")}
               </Label>
@@ -201,11 +207,11 @@ export default function LoginPage() {
                   id="remember"
                   name="remember"
                   type="checkbox"
-                  className="text-blue-600 h-4 w-4 rounded border-gray-300 px-1 py-1 focus:ring-blue-500"
+                  className="text-blue-600 h-4 w-4 rounded border-gray-300 dark:border-zinc-200 px-1 py-1 focus:ring-blue-500"
                 />
                 <Label
                   htmlFor="remember"
-                  className="ml-2 block text-sm text-gray-900"
+                  className="ml-2 block text-sm text-gray-900 dark:text-zinc-200"
                 >
                   {t("remember_label")}
                 </Label>
@@ -213,7 +219,7 @@ export default function LoginPage() {
               <div className="text-center text-sm text-gray-500">
                 {t("no_account_label")}{" "}
                 <Link
-                  className="text-blue-500 underline"
+                  className="text-blue-500 underline dark:text-zinc-200"
                   to={{
                     pathname: "/explore/register",
                     search: searchParams.toString(),

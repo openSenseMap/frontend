@@ -116,6 +116,9 @@ export default function DeviceDetailBox() {
     setOpen(false);
   }
 
+  console.log(navigation.state !== "loading");
+  
+
   return (
     <>
       {compareMode && (
@@ -153,7 +156,7 @@ export default function DeviceDetailBox() {
               }
             >
               {navigation.state === "loading" && (
-                <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                <div className="bg-white dark:bg-zinc-800 bg-opacity-30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md">
                   <Spinner />
                 </div>
               )}

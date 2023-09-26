@@ -139,5 +139,9 @@ export default function Explore() {
 }
 
 export function ErrorBoundary() {
-  return <ErrorMessage />;
+  return (
+    <div className="bg-black dark:bg-zinc-300">
+      <ErrorMessage />
+    </div>
+  );
 }
