@@ -234,19 +234,22 @@ export async function createDeviceOsemAPI(deviceData: any, token: string) {
         },
         ...(deviceData.ttnEnabled && {
           ttn: {
-            dev_id: deviceData.ttnDeviceId,
-            app_id: deviceData.ttnAppId,
-            profile: "???",
+            dev_id: deviceData['ttn.devId'],
+            app_id: deviceData['ttn.appId'],
+            profile: deviceData['ttn.decodeProfile'],
+            ...(deviceData['ttn.decodeOptions'] && { decodeOptions: deviceData['ttn.decodeOptions'] }),
+            ...(deviceData['ttn.port'] && { port: deviceData['ttn.port'] }),
+
           },
         }),
         ...(deviceData.mqttEnabled && {
           mqtt: {
             enabled: true,
-            url: deviceData.mqttUrl,
-            topic: deviceData.mqttTopic,
-            messageFormat: "json",
-            decodeOptions: deviceData.mqttDecodeOptions,
-            connectionOptions: deviceData.mqttConnectOptions,
+            url: deviceData['mqtt.url'],
+            topic: deviceData['mqtt.topic'],
+            messageFormat: deviceData['mqtt.messageFormat'],
+            decodeOptions: deviceData['mqtt.decodeOptions'],
+            connectionOptions: deviceData['mqtt.connectOptions'],
           },
         }),
       }),
