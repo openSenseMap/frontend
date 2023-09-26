@@ -7,13 +7,14 @@ import {
 } from "@/components/ui/select";
 import { useSearchParams, useNavigation } from "@remix-run/react";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { getFilteredDevices } from "~/utils";
 import Spinner from "../../../spinner";
 import { Separator } from "~/components/ui/separator";
 import invariant from "tiny-invariant";
+import { FilterOptionsContext } from "~/routes/explore";
 
 interface FilterOptionsProps {
   devices: any;
@@ -21,6 +22,14 @@ interface FilterOptionsProps {
 
 //*************************************
 export default function FilterOptions({ devices }: FilterOptionsProps) {
+  //* Use  filtered devices in parent page (explore)
+  const {
+    filterOptionsOn,
+    setFilterOptionsOn,
+    GlobalFilteredDevices,
+    setGlobalFilteredDevices,
+  } = useContext(FilterOptionsContext);
+
   //* searchParams hook
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
@@ -31,46 +40,36 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   const [exposureVal, setExposureVal] = useState(
     searchParams.has("exposure")
       ? searchParams.get("exposure") || undefined
-      : "ALL"
+      : "ALL",
   );
   const [statusVal, setStatusVal] = useState(
-    searchParams.has("status") ? searchParams.get("status") || undefined : "ALL"
+    searchParams.has("status")
+      ? searchParams.get("status") || undefined
+      : "ALL",
   );
   const [phenomenonVal, setPhenomenonVal] = useState(
     searchParams.has("phenomenon")
       ? searchParams.get("phenomenon") || undefined
-      : "ALL"
+      : "ALL",
   );
   invariant(
     typeof phenomenonVal === "string",
-    "phenomenonVal must be a string"
-  );
-
-  const filterOptionsOn = useState(
-    searchParams.has("exposure") ||
-      searchParams.has("status") ||
-      searchParams.has("phenomenon")
-      ? true
-      : false
+    "phenomenonVal must be a string",
   );
 
   //* To show total number of shown devices
-  const [totalDevices, setTotalDevices] = useState(devices.features.length);
-  //* To update total resutls each time filter-option is clicked
-  const filteredDevices = getFilteredDevices(devices, searchParams);
-  if (
-    filterOptionsOn &&
-    filteredDevices &&
-    filteredDevices.features.length != totalDevices
-  ) {
-    setTotalDevices(filteredDevices.features.length);
-  }
+  const [totalDevices, setTotalDevices] = useState(
+    filterOptionsOn
+      ? (GlobalFilteredDevices as any).features.length
+      : devices.features.length,
+  );
 
   //*************************
   //* Triggered when filter param is changed
   function filterDevices() {
     // setGlobalFilterParams(searchParams);
     const filteredDevices = getFilteredDevices(devices, searchParams);
+    setGlobalFilteredDevices(filteredDevices);
     setTotalDevices(filteredDevices.features.length);
   }
 
@@ -78,6 +77,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   //* To reset search params to default (show all devices)
   function onFilterOptionsReset() {
     setTotalDevices(devices.features.length);
+    setGlobalFilteredDevices(devices);
 
     setExposureVal("ALL");
     setStatusVal("ALL");
@@ -205,15 +205,20 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       </div>
 
       <div className="flex justify-between">
-        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] bg-[#F2F2F2] px-2 py-[1px] text-base  leading-[2.2]">
+        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
           Results ({totalDevices})
         </Label>
 
         <Button
           variant="outline"
-          className=" px-2 py-[1px] text-base"
+          className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
           onClick={() => {
             onFilterOptionsReset();
+            searchParams.set("exposure", "ALL");
+            searchParams.set("status", "ALL");
+            searchParams.set("phenomenon", "ALL");
+            setSearchParams(searchParams);
+            setFilterOptionsOn(false);
           }}
         >
           <span>

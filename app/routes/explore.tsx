@@ -1,8 +1,4 @@
-import {
-  Outlet,
-  useLoaderData,
-  useParams,
-} from "@remix-run/react";
+import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
@@ -10,7 +6,7 @@ import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import { useRef } from "react";
+import { useRef, createContext, useState } from "react";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
@@ -18,6 +14,16 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { Toaster } from "~/components/ui/toaster";
 import { getFilteredDevices } from "~/utils";
+
+//* Used in filter-options component
+export const FilterOptionsContext = createContext({
+  // globalFilterParams: new URLSearchParams(""),
+  filterOptionsOn: false,
+  setFilterOptionsOn: (_filterOptionsOn: boolean) => {},
+  // setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  GlobalFilteredDevices: {},
+  setGlobalFilteredDevices: (_GlobalFilteredDevices: {}) => {},
+});
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -28,7 +34,6 @@ export type DeviceClusterProperties =
         };
       }
     >;
-
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const devices = await getDevices();
@@ -77,35 +82,52 @@ export default function Explore() {
 
   const mapRef = useRef<MapRef | null>(null);
 
+  //* initialize filtered devices if any
+  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
+    data.filteredDevices ? data.filteredDevices : {},
+  );
+  const [filterOptionsOn, setFilterOptionsOn] = useState(
+    data.filteredDevices ? true : false,
+  );
+
   //* fly to sensebox location when url inludes deviceId
   const { deviceId } = useParams();
   var deviceLoc: any;
   if (deviceId) {
     const device = data.devices.features.find(
-      (device: any) => device.properties.id === deviceId
+      (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [device?.properties.latitude, device?.properties.longitude];
   }
 
   return (
-    <div className="h-full w-full">
-      <MapProvider>
-        <Header devices={data.devices} />
-        <Map
-          ref={mapRef}
-          initialViewState={
-            deviceId
-              ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
-              : { latitude: 7, longitude: 52, zoom: 2 }
-          }
-        >
-          <ClusterLayer
-            devices={data.filteredDevices ? data.filteredDevices : data.devices}
-          />
-          <Toaster />
-          <Outlet />
-        </Map>
-      </MapProvider>
-    </div>
+    <FilterOptionsContext.Provider
+      value={{
+        filterOptionsOn,
+        setFilterOptionsOn,
+        GlobalFilteredDevices,
+        setGlobalFilteredDevices,
+      }}
+    >
+      <div className="h-full w-full">
+        <MapProvider>
+          <Header devices={data.devices} />
+          <Map
+            ref={mapRef}
+            initialViewState={
+              deviceId
+                ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
+                : { latitude: 7, longitude: 52, zoom: 2 }
+            }
+          >
+            <ClusterLayer
+              devices={filterOptionsOn ? data.filteredDevices : data.devices}
+            />
+            <Toaster />
+            <Outlet />
+          </Map>
+        </MapProvider>
+      </div>
+    </FilterOptionsContext.Provider>
   );
 }
