@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { sensor, type InsertSensor, type SelectSensor } from "drizzle/schema";
+import { sensor, type InsertSensor, type SelectSensor } from "db/schema";
 import { drizzleClient } from "~/db.server";
 
 export function getSensors(deviceId: SelectSensor["deviceId"]) {

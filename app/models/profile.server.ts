@@ -1,5 +1,5 @@
 import type { Profile, User } from "@prisma/client";
-import type { SelectProfile } from "drizzle/schema";
+import type { SelectProfile } from "db/schema";
 import { drizzleClient, prisma } from "~/db.server";
 
 export async function getProfileByUserId(id: SelectProfile["id"]) {

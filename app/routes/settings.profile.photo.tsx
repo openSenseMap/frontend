@@ -20,12 +20,14 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { z } from "zod";
-import { prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 import { requireUserId } from "~/session.server";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";
 import { getUserImgSrc } from "~/utils/misc";
+import { profileImage } from "db/schema";
+import { eq } from "drizzle-orm";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
@@ -41,19 +43,21 @@ const PhotoFormSchema = z.object({
       .instanceof(File)
       .refine(
         (file) => file.name !== "" && file.size !== 0,
-        "Image is required"
+        "Image is required",
       )
       .refine((file) => {
         return file.size <= MAX_SIZE;
-      }, "Image size must be less than 3MB")
+      }, "Image size must be less than 3MB"),
   ),
 });
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const user = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: { imageId: true, username: true },
+  const user = await drizzleClient.query.profile.findFirst({
+    where: (profile, { eq }) => eq(profile.userId, userId),
+    with: {
+      profileImage: true,
+    },
   });
   if (!user) {
     console.log("User not found");
@@ -67,7 +71,7 @@ export async function action({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
   const formData = await unstable_parseMultipartFormData(
     request,
-    unstable_createMemoryUploadHandler({ maxPartSize: MAX_SIZE })
+    unstable_createMemoryUploadHandler({ maxPartSize: MAX_SIZE }),
   );
 
   const submission = parse(formData, { schema: PhotoFormSchema });
@@ -81,45 +85,32 @@ export async function action({ request }: DataFunctionArgs) {
         status: "error",
         submission,
       } as const,
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const { photoFile } = submission.value;
 
-  const newPrismaPhoto = {
+  // Query user profile
+  const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
+    where: (profile, { eq }) => eq(profile.userId, userId),
+    with: {
+      profileImage: true,
+    },
+  });
+
+  // Insert new profile image
+  await drizzleClient.insert(profileImage).values({
+    blob: Buffer.from(await photoFile.arrayBuffer()),
     contentType: photoFile.type,
-    file: {
-      create: {
-        blob: Buffer.from(await photoFile.arrayBuffer()),
-      },
-    },
-  };
-
-  const previousUserPhoto = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: { imageId: true },
+    profileId: previousProfileWithImage?.id,
   });
 
-  await prisma.profile.update({
-    select: { id: true },
-    where: { userId: userId },
-    data: {
-      image: {
-        upsert: {
-          update: newPrismaPhoto,
-          create: newPrismaPhoto,
-        },
-      },
-    },
-  });
-
-  if (previousUserPhoto?.imageId) {
-    void prisma.image
-      .delete({
-        where: { fileId: previousUserPhoto.imageId },
-      })
-      .catch(() => {}); // ignore the error, maybe it never existed?
+  // If an old profile image exists, delete it
+  if (previousProfileWithImage?.profileImage?.id) {
+    await drizzleClient
+      .delete(profileImage)
+      .where(eq(profileImage.id, previousProfileWithImage.profileImage.id));
   }
 
   return redirect("/settings/profile");
@@ -158,7 +149,7 @@ export default function PhotoChooserModal() {
           {...form.props}
         >
           <img
-            src={newImageSrc ?? getUserImgSrc(data.user.imageId)}
+            src={newImageSrc ?? getUserImgSrc(data.user.profileImage?.id)}
             className="h-64 w-64 rounded-full"
             alt={"test"}
           />

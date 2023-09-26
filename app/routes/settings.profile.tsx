@@ -12,7 +12,7 @@ import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
-import { prisma } from "~/db.server";
+import { drizzleClient, prisma } from "~/db.server";
 import { getUserImgSrc } from "~/utils/misc";
 import { z } from "zod";
 import { nameSchema } from "~/utils/user-validation";
@@ -28,15 +28,18 @@ const profileFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const profile = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: {
+  const profile = await drizzleClient.query.profile.findFirst({
+    where: (profile, { eq }) => eq(profile.userId, userId),
+    columns: {
       id: true,
       username: true,
       public: true,
-      imageId: true,
+    },
+    with: {
+      profileImage: true,
     },
   });
+
   if (!profile) {
     // throw await authenticator.logout(request, { redirectTo: "/" });
     throw new Error();
@@ -68,8 +71,8 @@ export async function action({ request }: ActionFunctionArgs) {
         //     });
         //   }
         // }
-      }
-    )
+      },
+    ),
   });
   if (submission.intent !== "submit") {
     return json({ status: "idle", submission } as const);
@@ -80,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
         status: "error",
         submission,
       } as const,
-      { status: 400 }
+      { status: 400 },
     );
   }
   const { username, visibility } = submission.value;
@@ -164,7 +167,7 @@ export default function EditUserProfilePage() {
         <div className="flex w-1/2 justify-center">
           <div className="relative h-52 w-52">
             <img
-              src={getUserImgSrc(data.profile.imageId)}
+              src={getUserImgSrc(data.profile.profileImage?.id)}
               alt={data.profile.username}
               className="h-full w-full rounded-full object-cover"
             />

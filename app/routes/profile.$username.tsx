@@ -36,12 +36,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // 2. Get profile and if it is private or not me -> throw an error
     // const profile = await getProfileByUserId(user.id);
-    if (!profile.public && profile.user.id !== requestingUserId) {
+    if (!profile.public && profile.userId !== requestingUserId) {
       throw new Response("not found", { status: 404 });
     }
 
     // 3. If profile is public or logged in user -> return data for profile
-    const profileMail = profile.user.email;
+    const profileMail = profile.user?.email;
     // Get the access token using the getMyBadgesAccessToken function
     const authToken = await getMyBadgesAccessToken().then((authData) => {
       return authData.access_token;
@@ -55,7 +55,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         }
       );
 
-      if (profile.user.id !== requestingUserId) {
+      if (profile.user && profile.user.id !== requestingUserId) {
         profile.user.devices = profile.user.devices.filter(
           (device) => device.public === true
         );

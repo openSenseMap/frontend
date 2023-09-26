@@ -16,7 +16,6 @@ import { getSensors } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
 import { GeneralErrorBoundary } from "~/components/error-boundary";
-import type { SelectDevice, SelectSensor } from "drizzle";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -41,7 +40,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startDate = url.searchParams.get("date_from") || undefined;
   const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = sensors.filter((sensor: Sensor) =>
-    sensorIds.includes(sensor.id)
+    sensorIds.includes(sensor.id),
   );
 
   if (!sensorsToQuery) {
@@ -60,7 +59,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           sensor.id,
           aggregation,
           new Date(startDate),
-          addDays(new Date(endDate), 1)
+          addDays(new Date(endDate), 1),
         );
         return {
           ...sensor,
@@ -73,7 +72,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           data: sensorData as any,
         };
       }
-    })
+    }),
   );
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);

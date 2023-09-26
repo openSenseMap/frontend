@@ -1,7 +1,7 @@
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import invariant from "tiny-invariant";
-import * as schema from "../drizzle/schema";
+import * as schema from "../db/schema";
 import type { PrismaClient } from "@prisma/client";
 
 let drizzleClient: PostgresJsDatabase<typeof schema>;

@@ -1,18 +1,22 @@
 import { type DataFunctionArgs } from "@remix-run/node";
-import { prisma } from "~/db.server";
+import invariant from "tiny-invariant";
+import { drizzleClient } from "~/db.server";
 
 export async function loader({ params }: DataFunctionArgs) {
-  const image = await prisma.image.findUnique({
-    where: { fileId: params.fileId },
-    select: { contentType: true, file: { select: { blob: true } } },
-  });
+  invariant(params.fileId, 'File ID is required');
+
+  const image = await drizzleClient.query.profileImage.findFirst({
+    where: (profileImage, { eq }) => eq(profileImage.id, params.fileId as string)
+  })
 
   if (!image) throw new Response("Not found", { status: 404 });
 
-  return new Response(image.file.blob, {
+  return new Response(image.blob, {
     headers: {
       "Content-Type": image.contentType,
-      "Cache-Control": "max-age=31536000",
+      "Content-Length": Buffer.byteLength(image.blob).toString(),
+      "Content-Disposition": `inline; filename="${params.fileId}"`,
+      "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
 }

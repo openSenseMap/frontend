@@ -3,7 +3,7 @@ import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
 import { eq } from "drizzle-orm";
-import { device, type SelectDevice } from "drizzle/schema";
+import { device, type SelectDevice } from "db/schema";
 
 export function getDevice({ id }: Pick<SelectDevice, "id">) {
   return drizzleClient.query.device.findFirst({

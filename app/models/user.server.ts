@@ -4,8 +4,8 @@ import crypto from "node:crypto";
 
 import { drizzleClient, prisma } from "~/db.server";
 import { createProfile } from "./profile.server";
-import { user } from "drizzle/schema";
-import type { SelectPassword, SelectUser } from "drizzle/schema";
+import { user } from "db/schema";
+import type { SelectPassword, SelectUser } from "db/schema";
 import { eq } from "drizzle-orm";
 
 export type { User } from "@prisma/client";
@@ -17,7 +17,9 @@ export async function getUserById(id: SelectUser["id"]) {
 }
 
 export async function getUserByEmail(email: User["email"]) {
-  return prisma.user.findUnique({ where: { email } });
+  return drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email)
+  });
 }
 
 export async function deleteUserByEmail(email: SelectUser["email"]) {
