@@ -4,8 +4,6 @@ import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import prom from "express-prometheus-middleware";
-// import cron from "node-cron";
-// import { addLiveData } from "~/models/add-live-data.server";
 
 const app = express();
 const metricsApp = express();
@@ -78,12 +76,6 @@ app.use(morgan("tiny"));
 
 const MODE = process.env.NODE_ENV;
 const BUILD_DIR = path.join(process.cwd(), "build");
-
-// cron.schedule("*/10 * * * *", function () {
-//   if (MODE === "production") {
-//     addLiveData();
-//   }
-// });
 
 app.all(
   "*",
