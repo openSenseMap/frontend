@@ -80,19 +80,19 @@ export default function Explore() {
   //* Used in filter-options component
 
   const [globalFilterParams, setGlobalFilterParams] = useState(
-    new URLSearchParams(data.filterParams)
+    new URLSearchParams(data.filterParams),
   );
 
   //* Check if params belongs to filter options then assign filterd data
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
     globalFilterParams.size == 3 && globalFilterParams.has("exposure")
       ? data.filteredDevices
-      : {}
+      : {},
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
     globalFilterParams.size == 3 && globalFilterParams.has("exposure")
       ? true
-      : false
+      : false,
   );
 
   //* fly to sensebox location when url inludes deviceId
@@ -100,7 +100,7 @@ export default function Explore() {
   var deviceLoc: any;
   if (deviceId) {
     const device = data.devices.features.find(
-      (device: any) => device.properties.id === deviceId
+      (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [device?.properties.latitude, device?.properties.longitude];
   }

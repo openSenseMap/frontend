@@ -116,9 +116,6 @@ export default function DeviceDetailBox() {
     setOpen(false);
   }
 
-  console.log(navigation.state !== "loading");
-  
-
   return (
     <>
       {compareMode && (

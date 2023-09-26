@@ -15,6 +15,17 @@ export const goToLocation = (map: MapRef | undefined, center: LngLatLike) => {
   });
 };
 
+//function to zoom back out of map
+export const zoomOut = (map: MapRef | undefined) => {
+  map?.flyTo({
+    center: [0, 0],
+    animate: true,
+    speed: 1.6,
+    zoom: 1,
+    essential: true,
+  });
+};
+
 /**
  * The function that is called when the user clicks on a location with the bbox property in the search results. It flies the map to the location and closes the search results.
  *
@@ -22,7 +33,7 @@ export const goToLocation = (map: MapRef | undefined, center: LngLatLike) => {
  */
 export const goToLocationBBox = (
   map: MapRef | undefined,
-  bbox: LngLatBounds
+  bbox: LngLatBounds,
 ) => {
   map?.fitBounds(bbox, {
     animate: true,
@@ -41,7 +52,7 @@ export const goToDevice = (
   map: MapRef | undefined,
   lng: number,
   lat: number,
-  id: string
+  id: string,
 ) => {
   map?.flyTo({
     center: [lng, lat],

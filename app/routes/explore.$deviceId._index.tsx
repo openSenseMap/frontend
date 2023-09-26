@@ -1,11 +1,6 @@
-// Importing dependencies
 import { Exposure, type Sensor } from "@prisma/client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import {
-  //isRouteErrorResponse,
-  useLoaderData,
-  //useRouteError,
-} from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
@@ -16,6 +11,8 @@ import { getSensors } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
 import ErrorMessage from "~/components/error-message";
+import { useMap } from "react-map-gl";
+import { zoomOut } from "~/lib/search-map-helper";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -110,5 +107,8 @@ export default function DeviceId() {
 }
 
 export function ErrorBoundary() {
+  const { osem } = useMap();
+  // zoom out to world map when error occurs
+  zoomOut(osem);
   return <ErrorMessage />;
 }
