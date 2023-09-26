@@ -42,9 +42,9 @@ export default function Stepper(props: SearchProps) {
             >
               <path
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="m7 9 4-4-4-4M1 9l4-4-4-4"
               />
             </svg>
