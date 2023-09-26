@@ -121,7 +121,7 @@ export default function Explore() {
             }
           >
             <ClusterLayer
-              devices={filterOptionsOn ? data.filteredDevices : data.devices}
+              devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             />
             <Toaster />
             <Outlet />

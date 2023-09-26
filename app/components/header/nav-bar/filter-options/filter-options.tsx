@@ -69,6 +69,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   function filterDevices() {
     // setGlobalFilterParams(searchParams);
     const filteredDevices = getFilteredDevices(devices, searchParams);
+    setFilterOptionsOn(true);
     setGlobalFilteredDevices(filteredDevices);
     setTotalDevices(filteredDevices.features.length);
   }
