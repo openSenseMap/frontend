@@ -39,13 +39,8 @@ export const validator: any = {
   ///////////////////
   1: withZod(
     z.object({
-      type: z.enum(
-        ["sensebox_edu", "sensebox_home", "airdatainfo_device", "own_device"],
-        {
-          errorMap: (issue, ctx) => {
-            return { message: "Please select your device type." };
-          },
-        }
+      type: zfd.text(
+        z.string({required_error: "Please select a device type"})
       ),
     })
   ),
@@ -77,14 +72,17 @@ export const validator: any = {
   ////////////////////
   3: withZod(
     z.object({
-      sensors: z.object({}, {
-        errorMap: (issue, ctx) => {
-          switch (issue.code) {
-            default:
-              return { message: "Please select at least one sensor." };
-          }
+      sensors: z.object(
+        {},
+        {
+          errorMap: (issue, ctx) => {
+            switch (issue.code) {
+              default:
+                return { message: "Please select at least one sensor." };
+            }
+          },
         }
-      }),
+      ),
     })
   ),
 
@@ -265,14 +263,23 @@ export const action = async ({ request }: LoaderArgs) => {
   // use qs.parse to support multi-value values (by email checkbox list)
   const { page, action, ...data } = qs.parse(text);
 
-  console.log(typeof Number(action))
+  console.log(typeof Number(action));
 
-  if (action === "next" || action === "previous" || typeof Number(action) === "number" ) {
+  if (
+    action === "next" ||
+    action === "previous" ||
+    typeof Number(action) === "number"
+  ) {
     const session = await getUserSession(request);
     session.set(`form-data-page-${page}`, data);
 
     const pageToNumber = Number(page);
-    const nextPage = action === "next" ? pageToNumber + 1 : (action === "previous" ? pageToNumber - 1 : Number(action));
+    const nextPage =
+      action === "next"
+        ? pageToNumber + 1
+        : action === "previous"
+        ? pageToNumber - 1
+        : Number(action);
     return redirect(`?page=${nextPage}`, {
       headers: {
         "set-cookie": await sessionStorage.commitSession(session),
@@ -334,12 +341,12 @@ export default function NewDevice() {
   const page = Number(loaderData.page);
   const data = loaderData.data;
 
-  function selectStep(index:number){
-    navigate("/device/new?page="+index);
+  function selectStep(index: number) {
+    navigate("/device/new?page=" + index);
   }
 
   useEffect(() => {
-    if (!activatedSteps.includes(page)){
+    if (!activatedSteps.includes(page)) {
       setActivatedSteps([...activatedSteps, page]);
     }
   }, [page, activatedSteps]);
@@ -382,7 +389,7 @@ export default function NewDevice() {
         // className="space-y-8"
       >
         <input name="page" type="hidden" value={page} />
-      
+
         <Stepper
           steps={[
             { title: "Select Device" },
