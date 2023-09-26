@@ -6,7 +6,7 @@ import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices } from "~/models/device.server";
 import type { MapRef } from "react-map-gl";
 import { MapProvider } from "react-map-gl";
-import { useRef, useState, createContext } from "react";
+import { useRef, createContext, useState } from "react";
 import { getUser } from "~/session.server";
 import type Supercluster from "supercluster";
 import { getProfileByUserId } from "~/models/profile.server";
@@ -17,10 +17,11 @@ import { getFilteredDevices } from "~/utils";
 
 //* Used in filter-options component
 export const FilterOptionsContext = createContext({
-  globalFilterParams: new URLSearchParams(""),
+  // globalFilterParams: new URLSearchParams(""),
   filterOptionsOn: false,
   setFilterOptionsOn: (_filterOptionsOn: boolean) => {},
-  setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  // setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  GlobalFilteredDevices: {},
   setGlobalFilteredDevices: (_GlobalFilteredDevices: {}) => {},
 });
 
@@ -41,8 +42,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
-  var filteredDevices = {};
-  if (urlFilterParams.size == 3 && urlFilterParams.has("exposure")) {
+  var filteredDevices = null;
+  if (
+    urlFilterParams.has("exposure") ||
+    urlFilterParams.has("status") ||
+    urlFilterParams.has("phenomenon")
+  ) {
     filteredDevices = getFilteredDevices(devices, urlFilterParams);
   }
 
@@ -50,7 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({ devices, user, profile, filterParams, filteredDevices });
+    return typedjson({ devices, user, profile, filteredDevices });
   }
   return typedjson({
     devices,
@@ -70,28 +75,19 @@ export const links: LinksFunction = () => {
   ];
 };
 
+//*********************************
 export default function Explore() {
   // data from our loader
   const data = useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
 
-  //* Used in filter-options component
-
-  const [globalFilterParams, setGlobalFilterParams] = useState(
-    new URLSearchParams(data.filterParams)
-  );
-
-  //* Check if params belongs to filter options then assign filterd data
+  //* initialize filtered devices if any
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
-      ? data.filteredDevices
-      : {}
+    data.filteredDevices ? data.filteredDevices : {},
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
-      ? true
-      : false
+    data.filteredDevices ? true : false,
   );
 
   //* fly to sensebox location when url inludes deviceId
@@ -99,7 +95,7 @@ export default function Explore() {
   var deviceLoc: any;
   if (deviceId) {
     const device = data.devices.features.find(
-      (device: any) => device.properties.id === deviceId
+      (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [device?.properties.latitude, device?.properties.longitude];
   }
@@ -107,10 +103,9 @@ export default function Explore() {
   return (
     <FilterOptionsContext.Provider
       value={{
-        globalFilterParams,
         filterOptionsOn,
         setFilterOptionsOn,
-        setGlobalFilterParams,
+        GlobalFilteredDevices,
         setGlobalFilteredDevices,
       }}
     >
@@ -126,7 +121,7 @@ export default function Explore() {
             }
           >
             <ClusterLayer
-              devices={!filterOptionsOn ? data.devices : GlobalFilteredDevices}
+              devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             />
             <Toaster />
             <Outlet />
