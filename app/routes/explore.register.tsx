@@ -192,7 +192,7 @@ export default function RegisterDialog() {
         className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
       >
         {navigation.state === "loading" && (
-          <div className="bg-white dark:bg-zinc-800 bg-opacity-30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+          <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
             <Spinner />
           </div>
         )}

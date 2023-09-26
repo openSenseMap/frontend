@@ -149,7 +149,7 @@ export default function Menu() {
           {data.user !== null ? (
             <DropdownMenuGroup>
               {navigation.state === "loading" && (
-                <div className="bg-white dark:bg-zinc-800 bg-opacity-30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+                <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                   <Spinner />
                 </div>
               )}
