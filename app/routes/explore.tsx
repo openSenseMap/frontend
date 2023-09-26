@@ -111,7 +111,7 @@ export const links: LinksFunction = () => {
   ];
 };
 
-// The 21-06-2023 works with the seed Data, for Production take now minus 10 minutes
+// This is for the live data display. The 21-06-2023 works with the seed Data, for Production take now minus 10 minutes
 let currentDate = new Date("2023-06-21T14:13:11.024Z");
 if (process.env.NODE_ENV === "production") {
   currentDate = new Date(Date.now() - 1000 * 600);

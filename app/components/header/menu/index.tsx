@@ -37,7 +37,6 @@ import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
 import ProfileDialog from "~/components/header/menu/profile";
 import SettingsDialog from "~/components/header/menu/user-settings";
 import MyDevicesDialog from "~/components/header/menu/my-devices";
-import AddDeviceDialog from "~/components/header/menu/add-device";
 
 export default function Menu() {
   const [searchParams] = useSearchParams();
@@ -134,14 +133,12 @@ export default function Menu() {
                   <CpuChipIcon className="mr-2 h-5 w-5" />
                   <span>{t("my_devices_label")}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    setIsAddDeviceDialogOpen(!isAddDeviceDialogOpen)
-                  }
-                >
-                  <PlusCircleIcon className="mr-2 h-5 w-5" />
-                  <span>{t("add_device_label")}</span>
-                </DropdownMenuItem>
+                <Link to="/device/new" target="_blank">
+                  <DropdownMenuItem>
+                    <PlusCircleIcon className="mr-2 h-5 w-5" />
+                    <span>{t("add_device_label")}</span>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuSeparator />
               </DropdownMenuGroup>
             ) : null}
@@ -244,10 +241,6 @@ export default function Menu() {
       <MyDevicesDialog
         isMyDevicesDialogOpen={isMyDevicesDialogOpen}
         setIsMyDevicesDialogOpen={setIsMyDevicesDialogOpen}
-      />
-      <AddDeviceDialog
-        isAddDeviceDialogOpen={isAddDeviceDialogOpen}
-        setIsAddDeviceDialogOpen={setIsAddDeviceDialogOpen}
       />
     </div>
   );
