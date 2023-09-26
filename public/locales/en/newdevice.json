@@ -28,6 +28,7 @@
     "phenomenon": "Phenomenon",
     "unit": "Unit",
     "delete": "Delete",
+    "title": "Title",
 
     "advanced": "Advanced",
     "advanced_text": "Advanced connectivity settings for your device. You can only choose one option.",

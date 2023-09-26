@@ -16,7 +16,6 @@ import { zfd } from "zod-form-data";
 import { withZod } from "@remix-validated-form/with-zod";
 import { ValidatedForm } from "remix-validated-form";
 
-import Stepper from "react-stepper-horizontal";
 import { MapProvider } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
 import mapboxglgeocoder from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -30,6 +29,8 @@ import Summary from "~/components/device/new/summary";
 import { createDevice } from "~/models/device.server";
 import { getUserId } from "~/session.server";
 import { useTranslation } from "react-i18next";
+import Stepper from "~/components/stepper";
+import { useEffect, useState } from "react";
 
 // validator for the form
 export const validator: any = {
@@ -175,6 +176,8 @@ export const validator: any = {
       height: zfd.numeric(z.number().min(-200).max(10000)),
     })
   ),
+
+  6: withZod(z.object({})),
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
@@ -262,11 +265,14 @@ export const action = async ({ request }: LoaderArgs) => {
   // use qs.parse to support multi-value values (by email checkbox list)
   const { page, action, ...data } = qs.parse(text);
 
-  if (action === "next" || action === "previous") {
+  console.log(typeof Number(action))
+
+  if (action === "next" || action === "previous" || typeof Number(action) === "number" ) {
     const session = await getUserSession(request);
     session.set(`form-data-page-${page}`, data);
 
-    const nextPage = Number(page) + (action === "next" ? 1 : -1);
+    const pageToNumber = Number(page);
+    const nextPage = action === "next" ? pageToNumber + 1 : (action === "previous" ? pageToNumber - 1 : Number(action));
     return redirect(`?page=${nextPage}`, {
       headers: {
         "set-cookie": await sessionStorage.commitSession(session),
@@ -313,8 +319,8 @@ export const links: LinksFunction = () => {
 };
 
 export default function NewDevice() {
-  const navigate = useNavigate();
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const { t } = useTranslation("newdevice");
 
   const showSpinner = useSpinDelay(navigation.state !== "idle", {
@@ -322,13 +328,26 @@ export default function NewDevice() {
     minDuration: 300,
   });
 
+  const [activatedSteps, setActivatedSteps] = useState<number[]>([]);
+
   const loaderData = useLoaderData();
   const page = Number(loaderData.page);
   const data = loaderData.data;
 
+  function selectStep(index:number){
+    navigate("/device/new?page="+index);
+  }
+
+  useEffect(() => {
+    if (!activatedSteps.includes(page)){
+      setActivatedSteps([...activatedSteps, page]);
+    }
+  }, [page, activatedSteps]);
+
   return (
     <div className="container">
       <ValidatedForm
+        id="new-device-form"
         method="post"
         validator={validator[`${page}`]}
         noValidate
@@ -363,6 +382,7 @@ export default function NewDevice() {
         // className="space-y-8"
       >
         <input name="page" type="hidden" value={page} />
+      
         <Stepper
           steps={[
             { title: "Select Device" },
@@ -373,6 +393,8 @@ export default function NewDevice() {
             { title: "Summary" },
           ]}
           activeStep={page - 1}
+          setStep={selectStep}
+          activatedSteps={activatedSteps}
         />
         <div className="flex justify-between pt-5">
           <div className="flex items-center gap-1">

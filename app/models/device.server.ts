@@ -155,9 +155,10 @@ export async function createDevice(
   Object.values(deviceData.sensors).forEach((sensorsOfPhenomenon: any) => {
     sensorsOfPhenomenon.forEach((sensor: any) => {
       sensorArray.push({
-        title: sensor[1],
-        sensorType: sensor[0],
-        unit: sensor[2],
+        name: sensor[0],
+        title: sensor[2],
+        sensorType: sensor[1],
+        unit: sensor[3],
       });
     });
   });
@@ -167,18 +168,23 @@ export async function createDevice(
   );
   const newDevicePostgres = await createDevicePostgres(
     registeredDevice.data,
-    userId
+    userId,
+    sensorArray,
+    deviceData
   );
   return newDevicePostgres;
 }
 
 export async function createDevicePostgres(
   deviceData: any,
-  userId: string | undefined
+  userId: string | undefined,
+  sensorArray: any[],
+  formDeviceData: any
 ) {
   const newDevice = await prisma.device.create({
     data: {
       id: deviceData._id,
+      sensorWikiModel: formDeviceData.type,
       userId: userId ?? "unknown",
       name: deviceData.name,
       exposure: exposureHelper(deviceData.exposure),
@@ -188,12 +194,12 @@ export async function createDevicePostgres(
     },
   });
 
-  for await (const sensor of deviceData.sensors) {
+  for await (let [i, sensor] of deviceData.sensors) {
     await prisma.sensor.create({
       data: {
         id: sensor._id,
         deviceId: newDevice.id,
-        title: sensor.title,
+        title: sensorArray[i].name,
         sensorType: sensor.sensorType,
         unit: sensor.unit,
         sensorWikiType: sensor.title,

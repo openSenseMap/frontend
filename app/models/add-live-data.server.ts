@@ -43,7 +43,7 @@ export async function updateSensor(id: string, lastMeasurement: any) {
     },
   });
   if (sensor) {
-    const sensorUpdated = await prisma.sensor.update({
+    await prisma.sensor.update({
       where: {
         id: id,
       },

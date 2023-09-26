@@ -26,7 +26,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
   function addSensor(sensorItem: any, key: string) {
     //this is an array because objects would not work with the forms [sensorSlug, phenomenonId, unitSlug]
-    let sensorArray = [sensorItem.sensor.slug, sensorItem.phenomenonId, ""];
+    let sensorArray = ["", sensorItem.sensor.slug, sensorItem.phenomenonId, ""];
     const newSensorObject = { ...addedSensors };
     if (newSensorObject[key]) {
       newSensorObject[key].push(sensorArray);
@@ -38,7 +38,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
   function deleteSensorItem(index: any, key: string) {
     const newSensorObject = { ...addedSensors };
-    delete newSensorObject["p-" + key][index];
+    newSensorObject["p-" + key].splice(index, 1)
     setAddedSensors(newSensorObject);
   }
 
@@ -67,6 +67,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
               </h1>
               <div className="space-y-6 sm:space-y-5">
                 <div className="grid grid-cols-8 gap-4">
+                  { /** @ts-ignore */}
                   {value.map((sensor: any) => {
                     return (
                       <div key={sensor.id}>
@@ -101,7 +102,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                 </div>
                 <pre>{JSON.stringify(data.json, null, 2)}</pre>
               </div>
-              {addedSensors["p-" + key] && (
+              {addedSensors["p-" + key] && addedSensors["p-" + key].length > 0 && (
                 <div className="py-4">
                   <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
                     {t("your_added")}{" "}
@@ -114,6 +115,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>{t("title")}</TableHead>
                         <TableHead className="w-[100px]">
                           {t("sensor")}
                         </TableHead>
@@ -127,10 +129,17 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                         (sensorItem: any, index: number) => {
                           return (
                             <TableRow key={sensorItem.id}>
+                              <TableCell>
+                                <input
+                                  type="text"
+                                  name={`sensors[p-${key.toString()}][${index}]`}
+                                  placeholder={sensorItem[0] ? sensorItem[0] : 'Your sensors name'}
+                                />
+                              </TableCell>
                               <input
                                 type="checkbox"
                                 name={`sensors[p-${key.toString()}][${index}]`}
-                                value={sensorItem[0]}
+                                value={sensorItem[1]}
                                 checked={true}
                                 readOnly
                                 className="hidden"
@@ -148,7 +157,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                 className="hidden"
                               />
                               <TableCell className="font-medium">
-                                <span> {sensorItem[0]}</span>
+                                <span> {sensorItem[1]}</span>
                               </TableCell>
                               <TableCell>
                                 {sensorWikiLabel(

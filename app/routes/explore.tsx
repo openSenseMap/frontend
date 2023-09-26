@@ -135,7 +135,7 @@ export default function Explore() {
   const [selectedPheno, setSelectedPheno] = useState<any | undefined>(
     undefined
   );
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [filteredData, setFilteredData] = useState<
     GeoJSON.FeatureCollection<Point, any>
   >({
@@ -197,6 +197,7 @@ export default function Explore() {
     } else {
       setSelectedPheno(undefined);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   function calculateLabelPositions(length: number): string[] {
