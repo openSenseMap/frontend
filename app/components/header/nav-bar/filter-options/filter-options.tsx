@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import { useSearchParams, useNavigation } from "@remix-run/react";
 import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { getFilteredDevices } from "~/utils";
@@ -45,8 +45,6 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     typeof phenomenonVal === "string",
     "phenomenonVal must be a string"
   );
-  //* Prevent React from triggering useEffect twice
-  const useEffectTriggered = useRef(false);
 
   const filterOptionsOn = useState(
     searchParams.has("exposure") ||
@@ -86,24 +84,6 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     setPhenomenonVal("ALL");
   }
 
-  //* works after updating state twice
-  useEffect(() => {
-    if (!useEffectTriggered.current) {
-      console.log("🚀🚀🚀 ~ use effect:");
-      if (exposureVal != searchParams.get("phenomenon")) {
-        searchParams.set("exposure", exposureVal ? exposureVal : "ALL");
-      }
-      if (statusVal != searchParams.get("status")) {
-        searchParams.set("status", statusVal ? statusVal : "ALL");
-      }
-      if (phenomenonVal != searchParams.get("phenomenon")) {
-        searchParams.set("phenomenon", phenomenonVal ? phenomenonVal : "ALL");
-      }
-      setSearchParams(searchParams);
-      useEffectTriggered.current = true;
-    }
-  }, [exposureVal, statusVal, phenomenonVal, searchParams]);
-
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
       {navigation.state === "loading" && (
@@ -119,8 +99,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
             value={exposureVal}
             onValueChange={(value) => {
               setExposureVal(value);
-              useEffectTriggered.current = false;
+              searchParams.set("exposure", value);
               filterDevices();
+              setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full border-4 text-base dark:border-zinc-800">
@@ -141,8 +122,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
             value={statusVal}
             onValueChange={(value) => {
               setStatusVal(value);
-              useEffectTriggered.current = false;
+              searchParams.set("status", value);
               filterDevices();
+              setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
@@ -163,8 +145,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
             value={phenomenonVal}
             onValueChange={(value) => {
               setPhenomenonVal(value);
-              useEffectTriggered.current = false;
+              searchParams.set("phenomenon", value);
               filterDevices();
+              setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
