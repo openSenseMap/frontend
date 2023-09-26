@@ -14,6 +14,7 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { Toaster } from "~/components/ui/toaster";
 import { getFilteredDevices } from "~/utils";
+import ErrorMessage from "~/components/error-message";
 
 //* Used in filter-options component
 export const FilterOptionsContext = createContext({
@@ -135,4 +136,8 @@ export default function Explore() {
       </div>
     </FilterOptionsContext.Provider>
   );
+}
+
+export function ErrorBoundary() {
+  return <ErrorMessage />;
 }

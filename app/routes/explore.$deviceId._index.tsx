@@ -15,7 +15,7 @@ import { getGraphColor } from "~/lib/utils";
 import { getSensors } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
-import { GeneralErrorBoundary } from "~/components/error-boundary";
+import ErrorMessage from "~/components/error-message";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -35,7 +35,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startDate = url.searchParams.get("date_from") || undefined;
   const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = sensors.filter((sensor: Sensor) =>
-    sensorIds.includes(sensor.id)
+    sensorIds.includes(sensor.id),
   );
 
   if (!sensorsToQuery) {
@@ -54,7 +54,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           sensor.id,
           aggregation,
           new Date(startDate),
-          addDays(new Date(endDate), 1)
+          addDays(new Date(endDate), 1),
         );
         return {
           ...sensor,
@@ -67,7 +67,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           data: sensorData as any,
         };
       }
-    })
+    }),
   );
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
@@ -110,18 +110,5 @@ export default function DeviceId() {
 }
 
 export function ErrorBoundary() {
-  //const error = useRouteError();
-
-  return (
-    <div className="absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-row px-4 py-2 md:bottom-[30px] md:left-[10px] md:top-auto md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0">
-      <div
-        id="deviceDetailBox"
-        className={
-          "shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:max-h-[calc(100vh-8rem)]"
-        }
-      >
-        <GeneralErrorBoundary />
-      </div>
-    </div>
-  );
+  return <ErrorMessage />;
 }
