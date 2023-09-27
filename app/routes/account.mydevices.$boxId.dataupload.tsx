@@ -6,6 +6,7 @@ import { getUserId } from "~/session.server";
 import { ArrowLeft, Upload } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import Home from "~/components/header/home";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -171,6 +172,14 @@ export default function DataUpload() {
           </main>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

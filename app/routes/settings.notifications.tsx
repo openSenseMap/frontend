@@ -1,4 +1,5 @@
 import { Form } from "@remix-run/react";
+import ErrorMessage from "~/components/error-message";
 import { Separator } from "~/components/ui/separator";
 
 export default function NotificationsPage() {
@@ -12,6 +13,14 @@ export default function NotificationsPage() {
       </div>
       <Separator />
       <Form></Form>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

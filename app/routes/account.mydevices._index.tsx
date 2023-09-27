@@ -11,6 +11,7 @@ import { clsx } from "clsx";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import { columns } from "~/components/mydevices/dt/columns";
 import Home from "~/components/header/home";
+import ErrorMessage from "~/components/error-message";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
@@ -36,7 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
           token: "Token was not found",
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -172,7 +173,7 @@ export default function MyDevices() {
                         "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
                         "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
                         "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;",
-                        "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+                        "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75",
                       )}
                     >
                       <div className="flex">
@@ -211,6 +212,14 @@ export default function MyDevices() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

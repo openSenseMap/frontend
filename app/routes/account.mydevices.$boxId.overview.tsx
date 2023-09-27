@@ -8,6 +8,7 @@ import { Separator } from "~/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { getDeviceWithoutSensors } from "~/models/device.server";
 import { getSensors } from "~/models/sensor.server";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -134,6 +135,14 @@ export default function DeviceOnverview() {
           </TableBody>
         </Table>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }
