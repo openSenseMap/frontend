@@ -1,7 +1,7 @@
-import type { Measurement } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
 import { json } from "@remix-run/node";
-import { prisma } from "~/db.server";
+import { measurement, type Measurement } from "db/schema";
+import { drizzleClient } from "~/db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
@@ -14,9 +14,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     value: Number(data.value),
   }));
 
-  await prisma.measurement.createMany({
-    data: measurements,
-  });
+  await drizzleClient.insert(measurement).values(measurements);
 
   return null;
 };

@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device } from "db/schema";
 
 /**
  * Replace german s (ß) with two s
@@ -19,7 +19,7 @@ export function getArchiveLink(device: Device) {
     .reverse()
     .join("-");
   const normalizedName = doubleGermanS(
-    device.name.replace(/[^A-Za-z0-9._-]/g, "_")
+    device.name.replace(/[^A-Za-z0-9._-]/g, "_"),
   );
 
   return `https://archive.opensensemap.org/${yesterday}/${device.id}-${normalizedName}`;

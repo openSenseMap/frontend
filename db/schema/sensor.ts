@@ -38,5 +38,5 @@ export const sensorRelations = relations(sensor, ({ one }) => ({
 /**
  * Types
  */
-export type SelectSensor = InferSelectModel<typeof sensor>;
+export type Sensor = InferSelectModel<typeof sensor>;
 export type InsertSensor = InferInsertModel<typeof sensor>;

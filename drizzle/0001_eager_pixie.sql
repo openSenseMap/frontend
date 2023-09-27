@@ -1,0 +1,1 @@
+ALTER TABLE "device" ALTER COLUMN "name" SET NOT NULL;

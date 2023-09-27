@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import type { Device } from "@prisma/client";
+import type { Device } from "db/schema";
 
 interface DeviceCardProps {
   device: Device;

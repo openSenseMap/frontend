@@ -1,7 +1,7 @@
-import type { Sensor } from "@prisma/client";
 import MobileBoxLayer from "./mobile-box-layer";
 import { HIGH_COLOR, LOW_COLOR } from "./color-palette";
 import { useEffect, useRef, useState } from "react";
+import type { Sensor } from "db/schema";
 
 export default function MobileBoxView({ sensors }: { sensors: Sensor[] }) {
   return (

@@ -1,4 +1,3 @@
-import type { Sensor } from "@prisma/client";
 import {
   featureCollection,
   lineString,
@@ -10,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Layer, Source, useMap } from "react-map-gl";
 import bbox from "@turf/bbox";
 import { HIGH_COLOR, LOW_COLOR, createPalette } from "./color-palette";
+import type { Sensor } from "db/schema";
 
 const FIT_PADDING = 50;
 const BOTTOM_BAR_HEIGHT = 400;
@@ -45,7 +45,7 @@ export default function MobileBoxLayer({
       minValue,
       maxValue,
       minColor as string,
-      maxColor as string
+      maxColor as string,
     );
 
     // generate points from the sensor data
@@ -55,7 +55,7 @@ export default function MobileBoxLayer({
         value: Number(measurement.value),
         createdAt: new Date(measurement.createdAt),
         color: palette(Number(measurement.value)).hex(),
-      })
+      }),
     );
 
     if (points.length === 0) return;
@@ -65,7 +65,7 @@ export default function MobileBoxLayer({
     const lines = multiLineString([line.geometry.coordinates]);
 
     setSourceData(
-      featureCollection<Point | MultiLineString>([...points, lines])
+      featureCollection<Point | MultiLineString>([...points, lines]),
     );
   }, [maxColor, minColor, sensor.data]);
 

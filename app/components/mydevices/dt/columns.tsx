@@ -3,7 +3,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Exposure } from "@prisma/client";
 
 export type SenseBox = {
   id: string;

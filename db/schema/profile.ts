@@ -41,5 +41,5 @@ export const profileRelations = relations(profile, ({ one }) => ({
 /**
  * Types
  */
-export type SelectProfile = InferSelectModel<typeof profile>;
+export type Profile = InferSelectModel<typeof profile>;
 export type InsertProfile = InferInsertModel<typeof profile>;

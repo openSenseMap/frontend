@@ -8,6 +8,20 @@
       "when": 1695657480539,
       "tag": "0000_condemned_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1695821060650,
+      "tag": "0001_eager_pixie",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1695822863417,
+      "tag": "0002_uneven_celestials",
+      "breakpoints": true
     }
   ]
 }

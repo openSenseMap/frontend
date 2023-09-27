@@ -1,5 +1,4 @@
 // Importing dependencies
-import { Exposure, type Sensor } from "@prisma/client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   //isRouteErrorResponse,
@@ -16,6 +15,7 @@ import { getSensors } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
 import { GeneralErrorBoundary } from "~/components/error-boundary";
+import type { Sensor } from "db/schema";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -106,7 +106,7 @@ export default function DeviceId() {
   return (
     <>
       {/* If the box is mobile, iterate over selected sensors and show trajectory */}
-      {data.device.exposure === Exposure.MOBILE ? (
+      {data.device.exposure === "mobile" ? (
         <MobileBoxView sensors={data.selectedSensors} />
       ) : null}
       <DeviceDetailBox />

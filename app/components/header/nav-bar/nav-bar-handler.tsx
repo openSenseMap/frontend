@@ -1,18 +1,16 @@
-import type { Device } from "@prisma/client";
 import Search from "~/components/search";
 import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";
 import { cn } from "~/lib/utils";
 import FilterOptions from "./filter-options/filter-options";
+import type { Device } from "db/schema";
 
 interface NavBarHandlerProps {
   devices: Device[];
   searchString: string;
 }
 
-function getSections(
-  devices: Device[],
-) {
+function getSections(devices: Device[]) {
   return [
     {
       title: "Datum & Zeit",
@@ -24,11 +22,7 @@ function getSections(
       title: "Filter",
       icon: Filter,
       color: "bg-gray-300",
-      component: (
-        <FilterOptions
-          devices={devices}
-        ></FilterOptions>
-      ),
+      component: <FilterOptions devices={devices}></FilterOptions>,
     },
     {
       title: "Phänomen",

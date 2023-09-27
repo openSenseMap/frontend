@@ -7,14 +7,16 @@ import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
  */
 export const password = pgTable("password", {
   hash: text("hash").notNull(),
-  userId: text("user_id").references(() => user.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
+  userId: text("user_id")
+    .references(() => user.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    })
+    .notNull(),
 });
 
 /**
  * Types
  */
-export type SelectPassword = InferSelectModel<typeof password>;
+export type Password = InferSelectModel<typeof password>;
 export type InsertPassword = InferInsertModel<typeof password>;

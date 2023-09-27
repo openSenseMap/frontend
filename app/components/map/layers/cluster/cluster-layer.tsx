@@ -1,4 +1,3 @@
-import type { Device } from "@prisma/client";
 import type {
   GeoJsonProperties,
   BBox,
@@ -13,6 +12,7 @@ import type { DeviceClusterProperties } from "~/routes/explore";
 import DonutChartCluster from "./donut-chart-cluster";
 import BoxMarker from "./box-marker";
 import debounce from "lodash.debounce";
+import type { Device } from "db/schema";
 
 const DEBOUNCE_VALUE = 50;
 
@@ -49,7 +49,7 @@ export default function ClusterLayer({
 
   // the viewport bounds and zoom level
   const [bounds, setBounds] = useState(
-    mapRef?.getMap().getBounds().toArray().flat() as BBox
+    mapRef?.getMap().getBounds().toArray().flat() as BBox,
   );
   const [zoom, setZoom] = useState(mapRef?.getZoom() || 0);
 
@@ -99,7 +99,7 @@ export default function ClusterLayer({
 
       const expansionZoom = Math.min(
         supercluster.getClusterExpansionZoom(cluster.id as number),
-        20
+        20,
       );
 
       mapRef?.getMap().flyTo({
@@ -110,7 +110,7 @@ export default function ClusterLayer({
         essential: true,
       });
     },
-    [mapRef, supercluster]
+    [mapRef, supercluster],
   );
 
   const clusterMarker = useMemo(() => {

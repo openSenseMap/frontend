@@ -52,12 +52,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       const backpackData = await getUserBackpack(profileMail, authToken).then(
         (backpackData) => {
           return backpackData;
-        }
+        },
       );
 
       if (profile.user && profile.user.id !== requestingUserId) {
         profile.user.devices = profile.user.devices.filter(
-          (device) => device.public === true
+          (device) => device.public === true,
         );
       }
 
@@ -110,10 +110,10 @@ export default function () {
   const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
     // Determine if badgeA and badgeB are owned by the user and not revoked
     const badgeAOwned = userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked
+      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked,
     );
     const badgeBOwned = userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked
+      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked,
     );
     // Sort badges based on ownership:
     // Owned badges come first, followed by non-owned badges
@@ -134,7 +134,7 @@ export default function () {
         <div className="flex flex-col space-y-2">
           <Avatar className="h-64 w-64">
             <AvatarImage
-              src={getUserImgSrc(profile?.imageId)}
+              src={getUserImgSrc(profile?.profileImage?.id)}
               alt={profile?.username}
             />
             <AvatarFallback>{getInitials(user?.name || "")}</AvatarFallback>

@@ -1,4 +1,3 @@
-import type { Prisma, Sensor } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -52,10 +51,11 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 import addDays from "date-fns/addDays";
+import type { Sensor } from "db/schema";
 
 function mergeSensors(
   sensorsFromDevice1: Sensor[],
-  sensorsFromDevice2: Sensor[]
+  sensorsFromDevice2: Sensor[],
 ) {
   // Combine both arrays
   const mergedArray = [...sensorsFromDevice1, ...sensorsFromDevice2];
@@ -67,7 +67,7 @@ function mergeSensors(
   mergedArray.forEach((sensor) => {
     // Check if there's an existing group for the title
     const groupIndex = sensorGroups.findIndex(
-      (group) => group[0].title === sensor.title
+      (group) => group[0].title === sensor.title,
     );
 
     if (groupIndex !== -1) {
@@ -120,7 +120,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startDate = url.searchParams.get("date_from") || undefined;
   const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = [...sensorsFromDevice1, ...sensorsFromDevice2].filter(
-    (sensor: Sensor) => sensorIds.includes(sensor.id)
+    (sensor: Sensor) => sensorIds.includes(sensor.id),
   );
 
   if (!sensorsToQuery) {
@@ -139,7 +139,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           sensor.id,
           aggregation,
           new Date(startDate),
-          addDays(new Date(endDate), 1)
+          addDays(new Date(endDate), 1),
         );
         return {
           ...sensor,
@@ -152,7 +152,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           data: sensorData as any,
         };
       }
-    })
+    }),
   );
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
@@ -180,7 +180,7 @@ export default function CompareDevices() {
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const [open, setOpen] = useState(true);
   const [openGraph, setOpenGraph] = useState(
-    Boolean(data.selectedSensors.length > 0 ? true : false)
+    Boolean(data.selectedSensors.length > 0 ? true : false),
   );
   const { setCompareMode } = useSharedCompareMode();
   setCompareMode(false);
@@ -364,7 +364,7 @@ export default function CompareDevices() {
                                                 className="peer hidden"
                                                 disabled={
                                                   !sensorIds.includes(
-                                                    sensorGroup[0].id
+                                                    sensorGroup[0].id,
                                                   ) &&
                                                   searchParams.getAll("sensor")
                                                     .length >= 2
@@ -376,14 +376,14 @@ export default function CompareDevices() {
                                                 id={sensorGroup[0].id}
                                                 value={sensorGroup[0].id}
                                                 defaultChecked={sensorIds.includes(
-                                                  sensorGroup[0].id
+                                                  sensorGroup[0].id,
                                                 )}
                                               />
                                               <p
                                                 className={
                                                   "cursor-pointer truncate text-sm font-medium leading-5" +
                                                   (sensorIds.includes(
-                                                    sensorGroup[0].id
+                                                    sensorGroup[0].id,
                                                   )
                                                     ? " text-green-100"
                                                     : "text-gray-900")
@@ -405,7 +405,7 @@ export default function CompareDevices() {
                                                 className="peer hidden"
                                                 disabled={
                                                   !sensorIds.includes(
-                                                    sensorGroup[1].id
+                                                    sensorGroup[1].id,
                                                   ) &&
                                                   searchParams.getAll("sensor")
                                                     .length >= 2
@@ -417,14 +417,14 @@ export default function CompareDevices() {
                                                 id={sensorGroup[1].id}
                                                 value={sensorGroup[1].id}
                                                 defaultChecked={sensorIds.includes(
-                                                  sensorGroup[1].id
+                                                  sensorGroup[1].id,
                                                 )}
                                               />
                                               <p
                                                 className={
                                                   "cursor-pointer truncate text-sm font-medium leading-5" +
                                                   (sensorIds.includes(
-                                                    sensorGroup[1].id
+                                                    sensorGroup[1].id,
                                                   )
                                                     ? " text-green-100"
                                                     : "text-gray-900")
@@ -441,7 +441,7 @@ export default function CompareDevices() {
                                         </TableCell>
                                       </TableRow>
                                     );
-                                  }
+                                  },
                                 )}
                               </TableBody>
                             </Table>

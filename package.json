@@ -47,7 +47,6 @@
     "@mantine/hooks": "^6.0.8",
     "@novu/notification-center": "^0.15.0",
     "@paralleldrive/cuid2": "^2.2.2",
-    "@prisma/client": "^4.16.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-avatar": "^1.0.2",
@@ -171,7 +170,6 @@
     "postcss-cli": "^10.1.0",
     "prettier": "3.0.2",
     "prettier-plugin-tailwindcss": "^0.5.3",
-    "prisma": "^4.16.1",
     "shadcn-ui": "^0.2.2",
     "start-server-and-test": "^2.0.0",
     "tailwindcss": "^3.2.4",
@@ -184,8 +182,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "prisma": {
-    "seed": "ts-node --require tsconfig-paths/register prisma/seed.ts"
   }
 }

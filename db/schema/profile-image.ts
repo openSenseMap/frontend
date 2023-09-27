@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import type { InferInsertModel, InferSelectModel} from "drizzle-orm";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { bytea } from "./types";
 import { profile } from "./profile";
@@ -21,11 +21,10 @@ export const profileImage = pgTable("profile_image", {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
-
 });
 
 /**
  * Types
  */
-export type SelectImage = InferSelectModel<typeof profileImage>;
+export type Image = InferSelectModel<typeof profileImage>;
 export type InsertImage = InferInsertModel<typeof profileImage>;

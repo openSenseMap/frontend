@@ -12,7 +12,7 @@ import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
-import { drizzleClient, prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 import { getUserImgSrc } from "~/utils/misc";
 import { z } from "zod";
 import { nameSchema } from "~/utils/user-validation";
@@ -20,6 +20,8 @@ import { getFieldsetConstraint, parse } from "@conform-to/zod";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { profile } from "db/schema";
+import { eq } from "drizzle-orm";
 
 const profileFormSchema = z.object({
   username: nameSchema.optional(),
@@ -88,14 +90,13 @@ export async function action({ request }: ActionFunctionArgs) {
   }
   const { username, visibility } = submission.value;
 
-  await prisma.profile.update({
-    select: { userId: true, username: true },
-    where: { userId: userId },
-    data: {
+  await drizzleClient
+    .update(profile)
+    .set({
       username,
       public: visibility,
-    },
-  });
+    })
+    .where(eq(profile.userId, userId));
 
   return redirect(`/settings/profile`);
 }

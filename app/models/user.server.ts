@@ -1,16 +1,13 @@
-import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
-import { drizzleClient, prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 import { createProfile } from "./profile.server";
-import { user } from "db/schema";
-import type { SelectPassword, SelectUser } from "db/schema";
+import type { Password, User } from "db/schema";
+import { password as passwordTable, user } from "db/schema";
 import { eq } from "drizzle-orm";
 
-export type { User } from "@prisma/client";
-
-export async function getUserById(id: SelectUser["id"]) {
+export async function getUserById(id: User["id"]) {
   return drizzleClient.query.user.findFirst({
     where: (user, { eq }) => eq(user.id, id),
   });
@@ -18,11 +15,11 @@ export async function getUserById(id: SelectUser["id"]) {
 
 export async function getUserByEmail(email: User["email"]) {
   return drizzleClient.query.user.findFirst({
-    where: (user, { eq }) => eq(user.email, email)
+    where: (user, { eq }) => eq(user.email, email),
   });
 }
 
-export async function deleteUserByEmail(email: SelectUser["email"]) {
+export async function deleteUserByEmail(email: User["email"]) {
   return drizzleClient.delete(user).where(eq(user.email, email));
 }
 
@@ -33,39 +30,42 @@ export async function deleteUserByEmail(email: SelectUser["email"]) {
 
 export async function updateUserName(
   email: User["email"],
-  newUserName: string
+  newUserName: string,
 ) {
-  return prisma.user.update({
-    where: { email },
-    data: {
+  return drizzleClient
+    .update(user)
+    .set({
       name: newUserName,
-    },
-  });
+    })
+    .where(eq(user.email, email));
 }
 
 export async function updateUserPassword(
   userId: Password["userId"],
-  password: string
+  newPassword: string,
 ) {
-  const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13);
-  return prisma.password.update({
-    where: { userId },
-    data: {
+  const hashedPassword = await bcrypt.hash(
+    preparePasswordHash(newPassword),
+    13,
+  );
+  return drizzleClient
+    .update(passwordTable)
+    .set({
       hash: hashedPassword,
-    },
-  });
+    })
+    .where(eq(passwordTable.userId, userId));
 }
 
 export async function updateUserlocale(
   email: User["email"],
-  language: User["language"]
+  language: User["language"],
 ) {
-  return prisma.user.update({
-    where: { email },
-    data: {
+  return drizzleClient
+    .update(user)
+    .set({
       language: language,
-    },
-  });
+    })
+    .where(eq(user.email, email));
 }
 
 export async function getUsers() {
@@ -73,7 +73,7 @@ export async function getUsers() {
 }
 
 const preparePasswordHash = function preparePasswordHash(
-  plaintextPassword: string
+  plaintextPassword: string,
 ) {
   // first round: hash plaintextPassword with sha512
   const hash = crypto.createHash("sha512");
@@ -87,32 +87,34 @@ export async function createUser(
   name: User["name"],
   email: User["email"],
   language: User["language"],
-  password: string
+  password: string,
 ) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
-  const user = await prisma.user.create({
-    data: {
+  // Maybe wrap in a transaction
+  // https://stackoverflow.com/questions/76082778/drizzle-orm-how-do-you-insert-in-a-parent-and-child-table
+  const newUser = await drizzleClient
+    .insert(user)
+    .values({
       name,
       email,
       language,
-      boxes: [],
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
-      },
-    },
+    })
+    .returning();
+
+  await drizzleClient.insert(passwordTable).values({
+    hash: hashedPassword,
+    userId: newUser[0].id,
   });
 
-  await createProfile(user.id, name);
+  await createProfile(newUser[0].id, name);
 
   return user;
 }
 
 export async function verifyLogin(
-  email: SelectUser["email"],
-  password: SelectPassword["hash"]
+  email: User["email"],
+  password: Password["hash"],
 ) {
   const userWithPassword = await drizzleClient.query.user.findFirst({
     where: (user, { eq }) => eq(user.email, email),
@@ -130,7 +132,7 @@ export async function verifyLogin(
   //* compare stored password with entered one
   const isValid = await bcrypt.compare(
     preparePasswordHash(password),
-    userWithPassword.password.hash
+    userWithPassword.password.hash,
   );
 
   if (!isValid) {

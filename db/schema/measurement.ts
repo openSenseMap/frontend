@@ -1,3 +1,4 @@
+import type { InferSelectModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import {
   doublePrecision,
@@ -22,7 +23,7 @@ export const measurement = pgTable(
   },
   (t) => ({
     unq: unique().on(t.sensorId, t.time),
-  })
+  }),
 );
 
 /**
@@ -39,5 +40,10 @@ export const measurements15minView = pgMaterializedView("measurements_15min", {
     .notNull(),
   value: doublePrecision("value"),
 }).as(
-  sql`select ${measurement.sensorId}, time_bucket('15 min', ${measurement.time}) AS time, AVG(value) AS value from ${measurement} GROUP BY 1, 2 WITH NO DATA`
+  sql`select ${measurement.sensorId}, time_bucket('15 min', ${measurement.time}) AS time, AVG(value) AS value from ${measurement} GROUP BY 1, 2 WITH NO DATA`,
 );
+
+/**
+ * Types
+ */
+export type Measurement = InferSelectModel<typeof measurement>;

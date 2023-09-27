@@ -23,7 +23,7 @@ export const device = pgTable("device", {
     .primaryKey()
     .notNull()
     .$defaultFn(() => createId()),
-  name: text("name"),
+  name: text("name").notNull(),
   description: text("description"),
   useAuth: boolean("useAuth"),
   exposure: exposureEnum("exposure"),
@@ -50,5 +50,5 @@ export const deviceRelations = relations(device, ({ one, many }) => ({
 /**
  * Types
  */
-export type SelectDevice = InferSelectModel<typeof device>;
+export type Device = InferSelectModel<typeof device>;
 export type InsertDevice = InferInsertModel<typeof device>;

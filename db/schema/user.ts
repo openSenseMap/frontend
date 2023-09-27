@@ -14,7 +14,7 @@ export const user = pgTable("user", {
     .primaryKey()
     .notNull()
     .$defaultFn(() => createId()),
-  name: text("name"),
+  name: text("name").notNull(),
   email: text("email").unique().notNull(),
   role: text("role").$type<"admin" | "user">().default("user"),
   language: text("language").default("en_US"),
@@ -41,5 +41,5 @@ export const userRelations = relations(user, ({ one, many }) => ({
 /**
  * Types
  */
-export type SelectUser = InferSelectModel<typeof user>;
+export type User = InferSelectModel<typeof user>;
 export type InsertUser = InferInsertModel<typeof user>;

@@ -8,8 +8,6 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import Graph from "./graph";
-import type { Prisma, Sensor } from "@prisma/client";
-import type { DeviceWithSensors } from "types";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -52,6 +50,7 @@ import { getArchiveLink } from "~/utils/device";
 import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isMobile, isTablet, isBrowser } from "react-device-detect";
+import type { Device, Sensor } from "db/schema";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -59,7 +58,7 @@ export interface LastMeasurementProps {
 }
 
 export interface DeviceAndSelectedSensors {
-  device: DeviceWithSensors;
+  device: Device;
   selectedSensors: Sensor[];
 }
 
@@ -77,7 +76,7 @@ export default function DeviceDetailBox() {
   // state variables
   const [open, setOpen] = useState(true);
   const [openGraph, setOpenGraph] = useState(
-    Boolean(data.selectedSensors.length > 0 ? true : false)
+    Boolean(data.selectedSensors.length > 0 ? true : false),
   );
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
@@ -95,7 +94,7 @@ export default function DeviceDetailBox() {
     searchParams.delete("sensor");
     searchParams.delete("date_from");
     searchParams.delete("date_to");
-    navigate({pathname: newPath, search: searchParams.toString()});
+    navigate({ pathname: newPath, search: searchParams.toString() });
   };
 
   // form submission handler
@@ -264,7 +263,7 @@ export default function DeviceDetailBox() {
                                         id={sensor.id}
                                         value={sensor.id}
                                         defaultChecked={sensorIds.includes(
-                                          sensor.id
+                                          sensor.id,
                                         )}
                                       />
                                       <div
