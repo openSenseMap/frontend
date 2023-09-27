@@ -7,6 +7,7 @@ import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
 import { Button } from "~/components/ui/button";
 import { NavBar } from "~/components/nav-bar";
+import ErrorMessage from "~/components/error-message";
 
 const sidebarNavItems = [
   {
@@ -32,7 +33,7 @@ export default function SettingsLayoutPage() {
   return (
     <>
       <div className="hidden space-y-6 px-10 pb-16 md:block">
-        <NavBar></NavBar>
+        <NavBar />
         <div className="mx-auto max-w-screen-2xl space-y-4">
           <div className="flex justify-between">
             <div>
@@ -57,5 +58,16 @@ export default function SettingsLayoutPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="hidden space-y-6 px-10 pb-16 md:block">
+      <NavBar />
+      <div className="flex w-full items-center justify-center">
+        <ErrorMessage />
+      </div>
+    </div>
   );
 }

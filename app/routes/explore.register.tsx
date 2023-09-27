@@ -25,6 +25,9 @@ import { useTranslation } from "react-i18next";
 import i18next from "app/i18next.server";
 import invariant from "tiny-invariant";
 import Spinner from "~/components/spinner";
+import { useMap } from "react-map-gl";
+import { zoomOut } from "~/lib/search-map-helper";
+import ErrorMessage from "~/components/error-message";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -320,6 +323,17 @@ export default function RegisterDialog() {
           </Form>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const { osem } = useMap();
+  // zoom out to world map when error occurs
+  zoomOut(osem);
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

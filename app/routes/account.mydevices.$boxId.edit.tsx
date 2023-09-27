@@ -21,6 +21,7 @@ import {
 import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -113,7 +114,7 @@ export default function EditBox2() {
                 "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
                 "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
                 "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;",
-                "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75"
+                "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75",
               )}
             >
               <div className="flex">
@@ -164,5 +165,13 @@ export default function EditBox2() {
         </div>
       </div>
     </>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
+    </div>
   );
 }

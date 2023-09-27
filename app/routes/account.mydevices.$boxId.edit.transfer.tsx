@@ -3,6 +3,7 @@ import { redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { Info } from "lucide-react";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -115,6 +116,14 @@ export default function EditBoxTTN() {
           </Form>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

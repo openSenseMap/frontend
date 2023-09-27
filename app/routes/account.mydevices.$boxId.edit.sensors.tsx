@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { assignIcon, getIcon, iconsList } from "~/utils/sensoricons";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -512,3 +513,12 @@ export default function EditBoxSensors() {
     </div>
   );
 }
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
+    </div>
+  );
+}
+

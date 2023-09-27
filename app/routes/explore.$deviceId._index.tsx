@@ -110,5 +110,9 @@ export function ErrorBoundary() {
   const { osem } = useMap();
   // zoom out to world map when error occurs
   zoomOut(osem);
-  return <ErrorMessage />;
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
+    </div>
+  );
 }

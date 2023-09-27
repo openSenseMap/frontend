@@ -140,7 +140,7 @@ export default function Explore() {
 
 export function ErrorBoundary() {
   return (
-    <div className="bg-black dark:bg-zinc-300">
+    <div className="w-screen h-screen flex items-center justify-center">
       <ErrorMessage />
     </div>
   );

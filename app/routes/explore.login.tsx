@@ -22,6 +22,9 @@ import { safeRedirect, validateEmail } from "~/utils";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
+import ErrorMessage from "~/components/error-message";
+import { useMap } from "react-map-gl";
+import { zoomOut } from "~/lib/search-map-helper";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -232,6 +235,17 @@ export default function LoginPage() {
           </Form>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const { osem } = useMap();
+  // zoom out to world map when error occurs
+  zoomOut(osem);
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }
