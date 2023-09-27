@@ -6,6 +6,7 @@ import { useNavigate } from "@remix-run/react";
 
 export default function ErrorMessage() {
   let navigate = useNavigate();
+  const goBack = () => navigate(-1);
 
   return (
     <Alert className="w-1/2 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
@@ -13,7 +14,7 @@ export default function ErrorMessage() {
         <X
           className="cursor-pointer h-4 w-4"
           onClick={() => {
-            navigate("/");
+            goBack();
           }}
         />
       </div>
