@@ -3,12 +3,13 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Device } from "db/schema";
 
 export type SenseBox = {
   id: string;
   name: string;
-  exposure: Exposure;
-  // model: string;
+  exposure: Device["exposure"];
+  model: string;
 };
 
 export const columns: ColumnDef<SenseBox>[] = [

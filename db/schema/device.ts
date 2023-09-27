@@ -6,7 +6,7 @@ import {
   timestamp,
   doublePrecision,
 } from "drizzle-orm/pg-core";
-import { exposureEnum, statusEnum } from "./enum";
+import { deviceModelEnum, exposureEnum, statusEnum } from "./enum";
 import {
   relations,
   type InferInsertModel,
@@ -28,6 +28,7 @@ export const device = pgTable("device", {
   useAuth: boolean("useAuth"),
   exposure: exposureEnum("exposure"),
   status: statusEnum("status").default("inactive"),
+  model: deviceModelEnum("model"),
   public: boolean("public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
