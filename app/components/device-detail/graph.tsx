@@ -54,7 +54,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   ChartTooltip,
-  Legend
+  Legend,
 );
 
 export default function Graph(props: any) {
@@ -77,7 +77,7 @@ export default function Graph(props: any) {
   const lineData = useMemo(() => {
     return {
       labels: loaderData.selectedSensors[0].data.map(
-        (measurement: LastMeasurementProps) => measurement.time
+        (measurement: LastMeasurementProps) => measurement.time,
       ),
       datasets:
         loaderData.selectedSensors.length === 2
@@ -132,7 +132,7 @@ export default function Graph(props: any) {
             // display hour when timerange < 1 day and day when timerange > 1 day
             unit: datesHave48HourRange(
               new Date(loaderData.fromDate),
-              new Date(loaderData.toDate)
+              new Date(loaderData.toDate),
             )
               ? "hour"
               : "day",
@@ -274,7 +274,7 @@ export default function Graph(props: any) {
             className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
           >
             {navigation.state === "loading" && (
-              <div className="bg-gray-100/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+              <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                 <Spinner />
               </div>
             )}

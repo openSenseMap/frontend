@@ -20,6 +20,7 @@ import { getFieldsetConstraint, parse } from "@conform-to/zod";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import ErrorMessage from "~/components/error-message";
 
 const profileFormSchema = z.object({
   username: nameSchema.optional(),
@@ -68,8 +69,8 @@ export async function action({ request }: ActionFunctionArgs) {
         //     });
         //   }
         // }
-      }
-    )
+      },
+    ),
   });
   if (submission.intent !== "submit") {
     return json({ status: "idle", submission } as const);
@@ -80,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
         status: "error",
         submission,
       } as const,
-      { status: 400 }
+      { status: 400 },
     );
   }
   const { username, visibility } = submission.value;
@@ -181,6 +182,14 @@ export default function EditUserProfilePage() {
         </div>
       </div>
       <Outlet />
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

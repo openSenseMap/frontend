@@ -24,6 +24,10 @@ import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import i18next from "app/i18next.server";
 import invariant from "tiny-invariant";
+import Spinner from "~/components/spinner";
+import { useMap } from "react-map-gl";
+import { zoomOut } from "~/lib/search-map-helper";
+import ErrorMessage from "~/components/error-message";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -45,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
           password: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -60,14 +64,14 @@ export async function action({ request }: ActionFunctionArgs) {
           email: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!validateEmail(email)) {
     return json(
       { errors: { username: null, email: "Email is invalid", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -80,7 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
           email: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -93,7 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
           email: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -124,7 +128,7 @@ export async function action({ request }: ActionFunctionArgs) {
           password: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -188,8 +192,13 @@ export default function RegisterDialog() {
       <div
         id="signup-modal"
         data-state="open"
-        className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
+        className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
       >
+        {navigation.state === "loading" && (
+          <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+            <Spinner />
+          </div>
+        )}
         <span className="pl-5 text-4xl font-medium">{t("register_label")}</span>
         <Link
           to={{
@@ -207,7 +216,7 @@ export default function RegisterDialog() {
             <div>
               <Label
                 htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
               >
                 {"Username"}
               </Label>
@@ -231,7 +240,7 @@ export default function RegisterDialog() {
             <div>
               <Label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
               >
                 {t("email_label")}
               </Label>
@@ -260,7 +269,7 @@ export default function RegisterDialog() {
             <div>
               <Label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
               >
                 {t("password_label")}
               </Label>
@@ -298,7 +307,7 @@ export default function RegisterDialog() {
               {isCreating ? t("transition_label") : t("register_label")}
             </button>
             <div className="flex items-center justify-center">
-              <div className="text-center text-sm text-gray-500">
+              <div className="text-center text-sm text-gray-500 dark:text-zinc-200">
                 {t("already_account_label")}{" "}
                 <Link
                   className="text-blue-500 underline"
@@ -314,6 +323,17 @@ export default function RegisterDialog() {
           </Form>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const { osem } = useMap();
+  // zoom out to world map when error occurs
+  zoomOut(osem);
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

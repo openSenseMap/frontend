@@ -8,6 +8,7 @@ import { Separator } from "~/components/ui/separator";
 import { validatePassLength, validatePassType } from "~/utils";
 import { useToast } from "@/components/ui/use-toast";
 import React from "react";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -50,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
           passMatch: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -75,7 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
           passMatch: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -94,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
           passMatch: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -109,7 +110,7 @@ export async function action({ request }: ActionFunctionArgs) {
           passMatch: "Please make sure your passwords match.",
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -126,7 +127,7 @@ export async function action({ request }: ActionFunctionArgs) {
           passMatch: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -144,7 +145,7 @@ export async function action({ request }: ActionFunctionArgs) {
           passMatch: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -309,6 +310,14 @@ export default function ChangePaasswordPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
 import type { MarkerDragEvent } from "react-map-gl";
 import { Map, MapProvider, Marker, NavigationControl } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -261,3 +262,12 @@ export default function EditLocation() {
     </div>
   );
 }
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
+    </div>
+  );
+}
+
