@@ -2,7 +2,7 @@ datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  extensions        = [timescaledb(version: "2.10.2")]
+  extensions        = [timescaledb(version: "2.10.2"), pg_cron]
 }
 
 generator client {
@@ -10,15 +10,37 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "views"]
 }
 
+model File {
+  id   String @id @unique @default(cuid())
+  blob Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  image     Image?
+}
+
+model Image {
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId String @unique
+
+  contentType String
+  altText     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile?
+}
+
 //* updated user model
 model User {
-  id    String @id @default(cuid())
-  name String @unique
-  email String @unique
-  role String @default("user")
-  language String @default("en_US")
-  boxes String[]
-  emailIsConfirmed Boolean @default(false)
+  id               String   @id @default(cuid())
+  name             String // This is your name e.g. Max Mustermann
+  email            String   @unique
+  role             String   @default("user")
+  language         String   @default("en_US")
+  boxes            String[]
+  emailIsConfirmed Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -33,8 +55,11 @@ model User {
 model Profile {
   id String @id @default(cuid())
 
-  name   String  @unique
-  public Boolean
+  username String  @unique
+  public   Boolean
+
+  image   Image?  @relation(fields: [imageId], references: [fileId])
+  imageId String? @unique
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
@@ -78,13 +103,17 @@ enum Model {
 }
 
 model Device {
-  id       String   @id @default(uuid())
-  name     String
-  exposure Exposure
-  status   Status   @default(INACTIVE)
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  exposure    Exposure
+  useAuth     Boolean?
+  model       String?
 
-  useAuth Boolean?
-  model String?
+  // Flag to show device on profile
+  public Boolean @default(false)
+
+  status Status @default(INACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -108,6 +137,9 @@ model Sensor {
   title      String
   unit       String
   sensorType String
+  status     Status @default(INACTIVE)
+
+  icon String?
 
   lastMeasurement Json?
 
@@ -129,6 +161,24 @@ model Measurement {
   time     DateTime @default(now()) @db.Timestamptz(3)
 
   value Float?
+
+  @@unique([sensorId, time])
+}
+
+// A view on a continuous aggregation
+view measurements_15min {
+  sensorId String
+  time     DateTime
+  value    Float?
+
+  @@unique([sensorId, time])
+}
+
+// Daily CAGG
+view measurements_1day {
+  sensorId String
+  time     DateTime
+  value    Float?
 
   @@unique([sensorId, time])
 }

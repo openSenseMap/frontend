@@ -36,6 +36,18 @@ module.exports = {
         800: "var(--color-gray-800)",
         900: "var(--color-gray-900)",
       },
+      zinc: {
+        50: "var(--color-zinc-50)",
+        100: "var(--color-zinc-100)",
+        200: "var(--color-zinc-200)",
+        300: "var(--color-zinc-300)",
+        400: "var(--color-zinc-400)",
+        500: "var(--color-zinc-500)",
+        600: "var(--color-zinc-600)",
+        700: "var(--color-zinc-700)",
+        800: "var(--color-zinc-800)",
+        900: "var(--color-zinc-900)",
+      },
       slate: {
         50: "var(--color-slate-50)",
         100: "var(--color-slate-100)",
@@ -123,7 +135,8 @@ module.exports = {
       fontFamily: {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
-        helvetica: ["Helvetica", "Arial", "sans-serif"],
+        monospace: ["Courier New", "Courier", "monospace"],
+        helvetica: ["Helvetica","Arial","sans-serif"],
       },
       keyframes: {
         sidebarOpen: {
@@ -152,6 +165,15 @@ module.exports = {
             transform: "translateY(0)",
           },
         },
+        'pulse': {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '.5',
+          },
+        },
+
         // shadcn accordion animation
         "accordion-down": {
           from: { height: 0 },
@@ -163,11 +185,12 @@ module.exports = {
         },
       },
       animation: {
-        "fade-in-up": "fade-in-up 1s ease-out",
-        sidebarOpen: "sidebarOpen 300ms ease-out",
-        sidebarClose: "sidebarClose 300ms ease-out",
-        contentShow: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-        contentClose: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        'fade-in-up': 'fade-in-up 1s ease-out',
+        'sidebarOpen': 'sidebarOpen 300ms ease-out',
+        'sidebarClose': 'sidebarClose 300ms ease-out',
+        'contentShow': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'contentClose': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         // shadcn accordion animation
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",

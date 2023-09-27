@@ -58,11 +58,24 @@ async function seed() {
   await prisma.user.delete({ where: { email } }).catch(() => {
     // no worries if it doesn't exist yet
   });
+  await prisma.measurement.deleteMany({}).catch(() => {});
 
   //* create intial user
   const user = await prisma.user.create({
     data: dummyUser,
   });
+
+  // Create profile for initial user
+  const profile = await prisma.profile.create({
+    data: {
+      username: "sensei",
+      public: false,
+      userId: dummyUser.id,
+    },
+  });
+  console.log(
+    `ℹ️  Create profile ${profile.username} 🥷🏼  for account with ${user.email}`
+  );
 
   // Import devices and connect it to user
   const devices = await csvtojson().fromFile("prisma/devices.csv");
@@ -143,6 +156,27 @@ async function seed() {
     );
   });
   process.stdout.write("\n");
+
+  try {
+    const measurements = await csvtojson().fromFile("prisma/measurements.csv");
+    let k = 0;
+    for await (const measurement of measurements) {
+      k++;
+      await prisma.measurement.create({
+        data: {
+          time: new Date(measurement.time),
+          value: Number(measurement.value),
+          sensorId: measurement.sensorId,
+        },
+      });
+      printProgress(
+        `ℹ️  Imported ${k} of ${measurements.length} measurements.`
+      );
+    }
+    process.stdout.write("\n");
+  } catch (error) {
+    console.log("ℹ️  No measurements found for import!");
+  }
 
   console.log(`Database has been seeded. 🌱`);
 }

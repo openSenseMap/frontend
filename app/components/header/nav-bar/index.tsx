@@ -1,251 +1,108 @@
-import { useEffect, useState, useRef } from "react";
-import { useSearchParams } from "@remix-run/react";
-
-import Search from "~/components/search";
-import {
-  SunIcon,
-  CalendarDaysIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
-import { TimeFilter } from "~/components/header/nav-bar/time-filter";
-import type { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-import { useTranslation } from "react-i18next";
-import getUserLocale from "get-user-locale";
 import type { Device } from "@prisma/client";
-import { SensorFilter } from "../nav-bar/sensor-filter";
-import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
+import { useState, useEffect, useRef, createContext } from "react";
+import { useMap } from "react-map-gl";
+import NavbarHandler from "./nav-bar-handler";
+import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { SearchIcon, XIcon } from "lucide-react";
 
 interface NavBarProps {
   devices: Device[];
-  phenomena: any[];
 }
 
-type ValuePiece = Date | string | null;
-
-type Value = ValuePiece;
+export const NavbarContext = createContext({
+  open: false,
+  setOpen: (_open: boolean) => {},
+});
 
 export default function NavBar(props: NavBarProps) {
-  let { t } = useTranslation("navbar");
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [searchString, setSearchString] = useState("");
 
-  const [timeState, setTimeState] = useState<string | undefined>(undefined);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const { osem: mapRef } = useMap();
 
-  const [value, onChange] = useState<Value>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [singleDate, setSingleDate] = useState<Date | undefined>(undefined);
-  const userLocaleString = getUserLocale();
-  const [isSensorDialogOpen, setIsSensorDialogOpen] = useState(false);
-  const [sensor, setSensor] = useState<string | undefined>("all");
+  const { t } = useTranslation("search");
 
-  /**
-   * Set the time state based on the search params
-   */
   useEffect(() => {
-    if (searchParams.has("filterType")) {
-      var filterType = searchParams.get("filterType");
-      if (filterType === "live") {
-        setTimeState("live");
-      } else if (filterType === "pointintime" && searchParams.has("date")) {
-        setTimeState("pointintime");
-        setSingleDate(new Date(searchParams.get("date") as string));
-      } else if (
-        filterType === "timeperiod" &&
-        searchParams.has("from") &&
-        searchParams.has("to")
-      ) {
-        setTimeState("timeperiod");
-        setDateRange({
-          from: new Date(searchParams.get("from") as string),
-          to: new Date(searchParams.get("to") as string),
-        });
-      } else {
-        return;
+    if (mapRef) {
+      mapRef.on("click", () => setOpen(false));
+    }
+  }, [mapRef]);
+
+  // register keyboard shortcuts
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((prevState) => !prevState);
       }
-    } else {
-      searchParams.append("filterType", "live");
-      setTimeState("live");
-    }
-  }, [searchParams, setSearchParams]);
-
-  /**
-   * Focus the search input
-   */
-  const focusSearchInput = () => {
-    searchRef.current?.focus();
-  };
-
-  /**
-   * Display the search
-   */
-  const displaySearch = () => {
-    setShowSearch(true);
-    setTimeout(() => {
-      focusSearchInput();
-    }, 100);
-  };
-
-  /**
-   * Close the search when the escape key is pressed
-   *
-   * @param event event object
-   */
-  const closeSearch = (event: any) => {
-    if (event.key === "Escape") {
-      setShowSearch(false);
-    }
-  };
-
-  /**
-   * useEffect hook to attach and remove the event listener
-   */
-  useEffect(() => {
-    // attach the event listener
-    document.addEventListener("keydown", closeSearch);
-
-    // remove the event listener
-    return () => {
-      document.removeEventListener("keydown", closeSearch);
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+      }
     };
-  });
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  // focus input when opening
+  useEffect(() => {
+    if (open) {
+      inputRef.current?.focus();
+    } else {
+      inputRef.current?.blur();
+      setSearchString("");
+    }
+  }, [open]);
 
   return (
-    <div className="pointer-events-auto h-10 w-1/2">
-      {!isHovered && !showSearch ? (
-        <div
-          className="flex h-10 w-full items-center justify-around rounded-[1.25rem] border border-gray-100 bg-white shadow-xl"
-          onMouseEnter={() => {
-            setIsHovered(true);
-          }}
-        >
-          <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-orange-500">
-            <SunIcon className="h-4 w-4 text-white" />
-            <div className="text-center text-white">
-              {sensorWikiLabel(
-                props.phenomena.filter(
-                  (pheno) => pheno.slug === searchParams.get("phenomenon")
-                )[0]?.label.item
-              ) || t("all_stations")}
-            </div>
-          </div>
-          <div className="ring-slate-900/10 flex h-6 w-3/12 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1">
-            <MagnifyingGlassIcon className="h-4 w-4 text-blue-500" />
-            <span className="text-center text-blue-500">Suche</span>
-            <span className="flex-none text-xs font-semibold text-gray-400">
-              <kbd>Ctrl</kbd> + <kbd>K</kbd>
-            </span>
-          </div>
-          <div className="flex h-6 w-3/12 items-center justify-center space-x-2 rounded-full bg-blue-700">
-            <CalendarDaysIcon className="h-4 w-4 text-white" />
-            <div className="text-center text-white">
-              {timeState === "live" ? (
-                <span>{t("live_label")}</span>
-              ) : timeState === "pointintime" ? (
-                singleDate ? (
-                  <>
-                    {format(
-                      singleDate,
-                      userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
-                    )}
-                  </>
-                ) : (
-                  t("date_picker_label")
-                )
-              ) : timeState === "timeperiod" ? (
-                dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(
-                        dateRange.from,
-                        userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
-                      )}{" "}
-                      -{" "}
-                      {format(
-                        dateRange.to,
-                        userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
-                      )}
-                    </>
-                  ) : (
-                    format(
-                      dateRange.from,
-                      userLocaleString === "de" ? "dd/MM/yyyy" : "MM/dd/yyyy"
-                    )
-                  )
-                ) : (
-                  t("date_range_picker_label")
-                )
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : isHovered && !showSearch ? (
-        <div
-          className="w-full items-center overflow-visible rounded-[1.25rem] border border-gray-100 bg-white p-2 shadow"
-          onMouseLeave={() => {
-            if (!isDialogOpen) {
-              setIsHovered(false);
-            }
-          }}
-        >
-          <button
-            onClick={() => displaySearch()}
-            className="ring-slate-900/10 mx-auto mb-2 flex h-7 w-1/2 items-center justify-between space-x-2 rounded-full bg-white pl-2 pr-3 shadow-lg ring-1 hover:bg-gray-200 hover:ring-slate-300"
-          >
-            <MagnifyingGlassIcon className="h-6 w-6 text-blue-500" />
-            <span className="text-center text-blue-500">Suche</span>
-            <span className="flex-none text-xs font-semibold text-gray-400">
-              <kbd>{t("ctrl")}</kbd> + <kbd>K</kbd>
-            </span>
-          </button>
-          <hr className="solid border-t-2 px-2"></hr>
-          <div className="flex w-full justify-between p-2">
-            <SensorFilter
-              isDialogOpen={isSensorDialogOpen}
-              setIsDialogOpen={setIsSensorDialogOpen}
-              sensor={sensor}
-              setSensor={setSensor}
-              setIsHovered={setIsHovered}
-              phenomena={props.phenomena}
-            />
-            <TimeFilter
-              dateRange={dateRange}
-              setDateRange={setDateRange}
-              singleDate={singleDate}
-              setSingleDate={setSingleDate}
-              isDialogOpen={isDialogOpen}
-              setIsDialogOpen={setIsDialogOpen}
-              setIsHovered={setIsHovered}
-              onChange={onChange}
-              value={value}
-              timeState={timeState}
-              setTimeState={setTimeState}
-            />
-          </div>
-        </div>
-      ) : (
-        <div
-          className="w-full items-center rounded-[1.25rem] border border-gray-100 bg-white px-2 py-1 shadow-xl"
-          onMouseLeave={() => {
-            setIsHovered(false);
-          }}
-          onMouseEnter={() => {
-            setIsHovered(true);
-          }}
-        >
-          <Search
-            devices={props.devices}
-            searchRef={searchRef}
-            setShowSearch={() => {
-              setShowSearch(false);
-              setIsHovered(false);
-            }}
+    <div className="pointer-events-auto relative w-full md:w-1/2">
+      <div className="absolute left-0 top-0 w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4 dark:bg-zinc-800 dark:opacity-90 dark:backdrop-blur-sm dark:text-zinc-200 dark:ring-white">
+        <div className="flex w-full items-center gap-2 px-2 md:gap-4 text-black dark:text-zinc-200">
+          <SearchIcon className="aspect-square h-6 dark:text-zinc-200" />
+          <input
+            ref={inputRef}
+            placeholder={t("placeholder") || undefined}
+            onFocus={() => setOpen(true)}
+            onChange={(e) => setSearchString(e.target.value)}
+            className="h-fit w-full flex-1 border-none focus:border-none bg-white focus:outline-none focus:ring-0 dark:bg-zinc-800 dark:text-zinc-200"
+            value={searchString}
           />
+          {!open && (
+            <span className="hidden flex-none text-xs font-semibold text-gray-400 md:block">
+              <kbd>ctrl</kbd> + <kbd>K</kbd>
+            </span>
+          )}
+          {open && (
+            <XIcon
+              onClick={() => {
+                setSearchString("");
+                setOpen(false);
+                inputRef.current?.blur();
+              }}
+              className="h-6"
+            />
+          )}
         </div>
-      )}
+        <NavbarContext.Provider value={{ open, setOpen }}>
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                className="overflow-hidden"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <NavbarHandler
+                  devices={props.devices}
+                  searchString={searchString}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </NavbarContext.Provider>
+      </div>
     </div>
   );
 }

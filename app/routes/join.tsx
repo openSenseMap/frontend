@@ -1,25 +1,25 @@
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 
 import { createUserSession, getUserId } from "~/session.server";
 
-import {
-  createUser,
-  getUserByEmail,
-  getUserByName,
-} from "~/models/user.server";
+import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
@@ -76,22 +76,23 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  //* check if user exist by name
-  const existingUserByName = await getUserByName(name);
+  //* user name shouldn't be unique
+  //* check if user exists by name
+  /* const existingUserByName = await getUserByName(name);
   if (existingUserByName) {
     return json(
       {
         errors: {
-          name: "A user already exists with this name",
+          name: null,
           email: null,
-          password: null,
+          password: "Please use at least 8 characters.",
         },
       },
       { status: 400 }
     );
-  }
+  } */
 
-  //* check if user exist by email
+  //* check if user exists by email
   const existingUserByEmail = await getUserByEmail(email);
   if (existingUserByEmail) {
     return json(
@@ -121,9 +122,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return {
-    title: "Sign Up",
-  };
+  return [{ title: "Sign Up" }];
 };
 
 export default function Join() {

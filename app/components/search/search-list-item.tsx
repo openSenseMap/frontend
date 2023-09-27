@@ -1,53 +1,56 @@
-// import type { LngLatBounds, LngLatLike } from "react-map-gl";
-import { useNavigate } from "@remix-run/react";
-import { useSearchParams } from "@remix-run/react";
-import { useMap } from "react-map-gl";
+import type { VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { HTMLProps } from "react";
 
-import { goTo } from "~/lib/search-map-helper";
+export type HeroIcon = React.ComponentType<
+  React.PropsWithoutRef<React.ComponentProps<"svg">> & {
+    title?: string | undefined;
+    titleId?: string | undefined;
+  }
+>;
 
-interface SearchListItemProps {
+interface SearchListItemProps
+  extends VariantProps<typeof searchListItemStyle>,
+    HTMLProps<HTMLDivElement> {
   index: number;
-  active: boolean;
-  type: String;
-  item: any;
-  icon: any;
-  setShowSearch: (data: boolean) => void;
-  setCursor: (data: number) => void;
   controlPress: boolean;
+  icon: HeroIcon;
+  name: string;
 }
 
-export default function SearchListItem(props: SearchListItemProps) {
-  const navigate = useNavigate();
-  const { osem } = useMap();
-  const [searchParams] = useSearchParams();
-  const navigateTo =
-    (props.type === "device" ? `/explore/${props.item.deviceId}` : "/explore") +
-    // @ts-ignore
-    (searchParams.size > 0 ? "?" + searchParams.toString() : "");
+const searchListItemStyle = cva(
+  "relative my-1 flex gap-2 h-8 px-2 items-center rounded-lg data-[active=true]:bg-green-100 data-[active=true]:text-white",
+  {
+    variants: {
+      active: {
+        true: "bg-green-100 text-white",
+      },
+    },
+  }
+);
+
+export default function SearchListItem({
+  active,
+  index,
+  controlPress,
+  icon,
+  name,
+  ...props
+}: SearchListItemProps) {
+  const Icon = icon;
 
   return (
-    <div
-      className="z-50 mx-2 my-1 flex h-8 items-center rounded-lg data-[active=false]:bg-white data-[active=true]:bg-green-100"
-      onClick={() => {
-        goTo(osem, props.item);
-        props.setShowSearch(false);
-        navigate(navigateTo);
-      }}
-      data-active={props.active}
-      onMouseEnter={() => {
-        props.setCursor(props.index);
-      }}
-    >
-      {props.controlPress ? (
-        <div className="w-6 pl-2">
-          <kbd>{props.index + 1}</kbd>
+    <div className={searchListItemStyle({ active })} {...props}>
+      {controlPress && (
+        <div className="w-6">
+          <kbd>{index + 1}</kbd>
         </div>
-      ) : null}
-      <props.icon className="h-8 w-8 pl-2" />
-      <span className="inline-block pl-2 align-middle">
-        {props.type === "device"
-          ? props.item.display_name
-          : props.item.place_name}
+      )}
+      <div className="h-8 w-8 p-1">
+        <Icon className="h-full" />
+      </div>
+      <span className="inline-block overflow-hidden overflow-ellipsis whitespace-nowrap align-middle">
+        {name}
       </span>
     </div>
   );

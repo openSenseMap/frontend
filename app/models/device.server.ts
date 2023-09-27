@@ -20,18 +20,70 @@ import { exposureHelper } from "~/lib/helpers";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return prisma.device.findFirst({
+    // select: {
+    //   id: true,
+    //   name: true,
+    //   description: true,
+    //   exposure: true,
+    //   status: true,
+    //   updatedAt: true,
+    //   sensors: true,
+    //   latitude: true,
+    //   longitude: true,
+    //   useAuth: true,
+    //   model: true,
+    //   public: true,
+    //   createdAt: true,
+    //   userId: true,
+    // },
+    where: { id },
+  });
+}
+
+export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
+  return prisma.device.findUnique({
     select: {
       id: true,
       name: true,
       exposure: true,
-      status: true,
       updatedAt: true,
-      sensors: true,
       latitude: true,
       longitude: true,
     },
     where: { id },
   });
+}
+
+export function updateDeviceInfo({
+  id,
+  name,
+  exposure,
+}: Pick<Device, "id" | "name" | "exposure">) {
+  return prisma.device.update({
+    where: { id },
+    data: {
+      name: name,
+      exposure: exposure,
+    },
+  });
+}
+
+export function updateDeviceLocation({
+  id,
+  latitude,
+  longitude,
+}: Pick<Device, "id" | "latitude" | "longitude">) {
+  return prisma.device.update({
+    where: { id },
+    data: {
+      latitude: latitude,
+      longitude: longitude,
+    },
+  });
+}
+
+export function deleteDevice({ id }: Pick<Device, "id">) {
+  return prisma.device.delete({ where: { id } });
 }
 
 export function getUserDevices(userId: Device["userId"]) {
@@ -66,9 +118,14 @@ export async function getDevices() {
       exposure: true,
       status: true,
       createdAt: true,
+      sensors: {
+        select:{
+          title:true,
+        }
+      },
     },
   });
-  const geojson: GeoJSON.FeatureCollection<Point, any> = {
+  const geojson: GeoJSON.FeatureCollection<Point> = {
     type: "FeatureCollection",
     features: [],
   };
