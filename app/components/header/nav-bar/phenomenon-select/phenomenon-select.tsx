@@ -6,8 +6,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
-import { getPhenomena, type Phenomenon } from "~/models/phenomena.server";
-import { json, type LoaderArgs } from "@remix-run/node";
 import { useState } from "react";
 import {
   Select,
@@ -18,14 +16,11 @@ import {
 } from "@/components/ui/select";
 import { Label } from "~/components/ui/label";
 import Spinner from "~/components/spinner";
+import type { loader } from "~/routes/explore";
 
-export const loader = async ({ request }: LoaderArgs) => {
-  const phenomena = await getPhenomena();
-  return json({ phenomena });
-};
 export function PhenomenonSelect() {
   const { t } = useTranslation("navbar");
-  const loaderData = useLoaderData();
+  const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   // const [phenomenon, setPhenomenon] = useState<string | undefined>("all");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,11 +53,12 @@ export function PhenomenonSelect() {
         <SelectContent className="">
           <SelectItem value={"all"}>{t("all_stations")}</SelectItem>
 
-          {loaderData.phenomena.map((p, i) => (
-            <SelectItem key={i} value={p.slug}>
-              {sensorWikiLabel(p.label.item)}
-            </SelectItem>
-          ))}
+          {loaderData.phenomena &&
+            loaderData.phenomena.map((p, i) => (
+              <SelectItem key={i} value={p.slug}>
+                {sensorWikiLabel(p.label.item)}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     </div>
