@@ -52,6 +52,8 @@ import { getArchiveLink } from "~/utils/device";
 import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isMobile, isTablet, isBrowser } from "react-device-detect";
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -82,6 +84,7 @@ export default function DeviceDetailBox() {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const { compareMode, setCompareMode } = useSharedCompareMode();
+  const [refreshOn, SetRefreshOn] = useState(false);
 
   useEffect(() => {
     setOpenGraph(Boolean(data.selectedSensors.length));
@@ -221,6 +224,22 @@ export default function DeviceDetailBox() {
                       Sensors
                     </AccordionTrigger>
                     <AccordionContent>
+                      {/* refersh toggle */}
+                      <div className="flex items-center space-x-1 justify-end">
+                        <Label htmlFor="refresh-sensor" className=" text-base">
+                          Refresh
+                        </Label>
+                        <Switch
+                          id="refresh-sensor"
+                          onClick={() => SetRefreshOn(!refreshOn)}
+                        />
+                        {refreshOn && (
+                          <Label className=" border border-r-2 text-xs p-[3px]1">
+                            Refreshing in 30 seconds
+                          </Label>
+                        )}
+                      </div>
+
                       <Form
                         method="get"
                         onChange={(e) => {
