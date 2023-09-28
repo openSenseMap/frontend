@@ -24,7 +24,6 @@ import {
   getSensors,
   updateSensor,
 } from "~/models/sensor.server";
-import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
 import {
   DropdownMenu,
