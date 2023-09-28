@@ -5,6 +5,7 @@
   "temperature_label": "Temperature",
   "all_stations": "All devices",
   "phenomenons": "Phenomena",
+  "choose_phenomenon": "Choose phenomenon",
   "date_label": "Time period",
   "ctrl": "Ctrl",
   "button": "Show",

@@ -23,8 +23,6 @@ export default function Legend({ title, values }: LegendProps) {
     return null;
   }
 
-  console.log(values);
-
   return (
     <Accordion
       type="single"

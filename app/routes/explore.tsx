@@ -130,10 +130,9 @@ export default function Explore() {
   //listen to search params change
   useEffect(() => {
     //filters devices for pheno
-    if (searchParams.has("phenomenon")) {
+    if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
       let sensorsFiltered: any = [];
-      let currentParam = searchParams.get("phenomenon");
-
+      let currentParam = searchParams.get("mapPheno");
       //check if pheno exists in sensor-wiki data
       let pheno = data.phenomena.filter(
         (pheno: any) => pheno.slug == currentParam?.toString(),
@@ -338,9 +337,9 @@ export default function Explore() {
               </Source>
             )}
 
-            <ClusterLayer
+            {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
-            />
+            /> */}
             <Toaster />
             <Outlet />
           </Map>

@@ -20,7 +20,7 @@ const randomEnumValue = (enumeration: any) => {
 };
 
 const preparePasswordHash = function preparePasswordHash(
-  plaintextPassword: string
+  plaintextPassword: string,
 ) {
   // first round: hash plaintextPassword with sha512
   const hash = crypto.createHash("sha512");
@@ -35,7 +35,7 @@ async function seed() {
   const email = "opensensemap@opensenselab.org";
   const hashedPassword = await bcrypt.hash(
     preparePasswordHash("osemrocks"),
-    13
+    13,
   ); // make salt_factor configurable oSeM API uses 13 by default
   const dummyUser = {
     id: "cleqyv5pi00003uxdszv4mdnk", //* to connect it to imported data
@@ -74,7 +74,7 @@ async function seed() {
     },
   });
   console.log(
-    `ℹ️  Create profile ${profile.username} 🥷🏼  for account with ${user.email}`
+    `ℹ️  Create profile ${profile.username} 🥷🏼  for account with ${user.email}`,
   );
 
   // Import devices and connect it to user
@@ -100,7 +100,7 @@ async function seed() {
   process.stdout.write("\n");
 
   const sensors = await csvtojson().fromFile(
-    "prisma/sensors_matched_sensors_pheno_units.csv"
+    "prisma/sensors_matched_sensors_pheno_units.csv",
   );
 
   let j = 0;
@@ -125,6 +125,7 @@ async function seed() {
     printProgress(`ℹ️  Imported ${j} of ${sensors.length} sensors.`);
   }
 
+  // This contains some measurements that can be used to test live Data: (Date: 2023-06-21T14:13:11.024Z)
   const jsonData = require("./boxes_full.json");
   async function updateSensor(id: string, lastMeasurement: any) {
     const sensor = await prisma.sensor.findFirst({
@@ -152,7 +153,7 @@ async function seed() {
       }
     });
     printProgress(
-      `ℹ️  Imported ${k} of ${jsonData.length} devices with lastMeasurements.`
+      `ℹ️  Imported ${k} of ${jsonData.length} devices with lastMeasurements.`,
     );
   });
   process.stdout.write("\n");
@@ -170,7 +171,7 @@ async function seed() {
         },
       });
       printProgress(
-        `ℹ️  Imported ${k} of ${measurements.length} measurements.`
+        `ℹ️  Imported ${k} of ${measurements.length} measurements.`,
       );
     }
     process.stdout.write("\n");
