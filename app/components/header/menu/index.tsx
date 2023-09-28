@@ -178,12 +178,13 @@ export default function Menu() {
                 <Cpu className="mr-2 h-5 w-5" />
                 <Link to="/profile/me">{t("my_devices_label")}</Link>
               </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <PlusCircle className="mr-2 h-5 w-5" />
-                <span>{t("add_device_label")}</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <Link to="/device/new" target="_blank">
+                <DropdownMenuItem>
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  <span>{t("add_device_label")}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </Link>
             </DropdownMenuGroup>
           ) : null}
           <DropdownMenuGroup>

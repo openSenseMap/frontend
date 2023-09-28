@@ -5,7 +5,7 @@ import {
   type LinksFunction,
 } from "@remix-run/node";
 import { useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
-import { getUserSession, sessionStorage } from "~/session.server";
+import { getUserSession, sessionStorage, getUserId } from "~/session.server";
 import qs from "qs";
 import { useSpinDelay } from "spin-delay";
 import clsx from "clsx";
@@ -27,7 +27,6 @@ import Advanced from "~/components/device/new/advanced";
 import SelectLocation from "~/components/device/new/select-location";
 import Summary from "~/components/device/new/summary";
 import { createDevice } from "~/models/device.server";
-import { getUserId } from "~/session.server";
 import { useTranslation } from "react-i18next";
 import Stepper from "~/components/stepper";
 import { useEffect, useState } from "react";
@@ -40,9 +39,9 @@ export const validator: any = {
   1: withZod(
     z.object({
       type: zfd.text(
-        z.string({required_error: "Please select a device type"})
+        z.string({ required_error: "Please select a device type" }),
       ),
-    })
+    }),
   ),
 
   /////////////
@@ -53,7 +52,7 @@ export const validator: any = {
       name: zfd.text(
         z.string().min(3, {
           message: "Name must be at least 3 characters long.",
-        })
+        }),
       ),
 
       exposure: z.enum(["INDOOR", "OUTDOOR", "MOBILE"]),
@@ -62,9 +61,9 @@ export const validator: any = {
         z
           .union([z.string().length(0), z.string().min(3)])
           .optional()
-          .transform((e) => (e === "" ? undefined : e))
+          .transform((e) => (e === "" ? undefined : e)),
       ),
-    })
+    }),
   ),
 
   ////////////////////
@@ -81,9 +80,9 @@ export const validator: any = {
                 return { message: "Please select at least one sensor." };
             }
           },
-        }
+        },
       ),
-    })
+    }),
   ),
 
   //////////////
@@ -99,13 +98,13 @@ export const validator: any = {
           appId: zfd.text(
             z.string().min(1, {
               message: "Please enter a valid App ID.",
-            })
+            }),
           ),
 
           devId: zfd.text(
             z.string().min(1, {
               message: "Please enter a valid Device ID.",
-            })
+            }),
           ),
 
           decodeProfile: zfd.text(z.string().min(1)),
@@ -116,7 +115,7 @@ export const validator: any = {
               .min(1, {
                 message: "Please enter valid decoding options",
               })
-              .optional()
+              .optional(),
           ),
 
           port: zfd.numeric(z.number().optional()),
@@ -131,13 +130,13 @@ export const validator: any = {
           url: zfd.text(
             z.string().url({
               message: "Please enter a valid URL.",
-            })
+            }),
           ),
 
           topic: zfd.text(
             z.string().min(1, {
               message: "Please enter a valid topic.",
-            })
+            }),
           ),
 
           messageFormat: z.enum(["json", "csv"], {
@@ -149,17 +148,17 @@ export const validator: any = {
           decodeOptions: zfd.text(
             z.string().min(1, {
               message: "Please enter valid decode options.",
-            })
+            }),
           ),
 
           connectOptions: zfd.text(
             z.string().min(1, {
               message: "Please enter valid connect options.",
-            })
+            }),
           ),
         })
         .optional(),
-    })
+    }),
   ),
 
   ////////////////////
@@ -172,7 +171,7 @@ export const validator: any = {
       longitude: zfd.numeric(z.number().min(-180).max(180)),
 
       height: zfd.numeric(z.number().min(-200).max(10000)),
-    })
+    }),
   ),
 
   6: withZod(z.object({})),
@@ -190,7 +189,7 @@ export const loader = async ({ request }: LoaderArgs) => {
       } ?? {};
 
     var getAllDevicesUrl: URL = new URL(
-      process.env.SENSORWIKI_API_URL + "devices"
+      process.env.SENSORWIKI_API_URL + "devices",
     );
 
     const response = await fetch(getAllDevicesUrl.toString());
@@ -211,7 +210,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     var getSensorsOfDeviceUrl: URL = new URL(
       process.env.SENSORWIKI_API_URL +
-        (type !== "own_device" ? `devices/${type}/sensors` : `sensors`)
+        (type !== "own_device" ? `devices/${type}/sensors` : `sensors`),
     );
 
     const response = await fetch(getSensorsOfDeviceUrl.toString());
