@@ -48,7 +48,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
   const rawSensorsData = await getSensors(deviceID);
 
-  return typedjson(rawSensorsData);
+  return json(rawSensorsData as any);
 }
 
 //*****************************************************
