@@ -7,6 +7,7 @@ import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import { useField } from "remix-validated-form";
+import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
 
 interface SelectDeviceProps {
   data: any;
@@ -35,28 +36,37 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
       <div className="grid grid-cols-4 gap-4">
         {data.devices.map((device: any) => {
           return (
-            <Card
+            <SensorWikHoverCard
               key={device.id}
-              data-checked={deviceType === device.slug}
-              onClick={() => { setDeviceType(device.slug); deviceTypeField.validate() }}
-              className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300 cursor-pointer"
-            >
-              <CardContent className="flex justify-center pt-2">
-                <AspectRatio ratio={4 / 3}>
-                  <img
-                    src={`${ENV.SENSORWIKI_API_URL}images/upload/${device.image}`}
-                    alt={device.slug}
-                    className="rounded-md object-cover"
-                  />
-                </AspectRatio>
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <CardTitle>{sensorWikiLabel(device.label.item)}</CardTitle>
-                {deviceType === device.slug && (
-                  <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
-                )}
-              </CardFooter>
-            </Card>
+              slug={device.slug}
+              type="devices"
+              trigger={
+                <Card
+                  data-checked={deviceType === device.slug}
+                  onClick={() => {
+                    setDeviceType(device.slug);
+                    deviceTypeField.validate();
+                  }}
+                  className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300 cursor-pointer"
+                >
+                  <CardContent className="flex justify-center pt-2">
+                    <AspectRatio ratio={4 / 3}>
+                      <img
+                        src={`${ENV.SENSORWIKI_API_URL}images/upload/${device.image}`}
+                        alt={device.slug}
+                        className="rounded-md object-cover"
+                      />
+                    </AspectRatio>
+                  </CardContent>
+                  <CardFooter className="flex justify-center">
+                    <CardTitle>{sensorWikiLabel(device.label.item)}</CardTitle>
+                    {deviceType === device.slug && (
+                      <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
+                    )}
+                  </CardFooter>
+                </Card>
+              }
+            />
           );
         })}
 

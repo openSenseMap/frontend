@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { useTranslation } from "react-i18next";
 import { useField } from "remix-validated-form";
+import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
 
 interface SelectSensorsProps {
   data: any;
@@ -38,7 +39,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
   function deleteSensorItem(index: any, key: string) {
     const newSensorObject = { ...addedSensors };
-    newSensorObject["p-" + key].splice(index, 1)
+    newSensorObject["p-" + key].splice(index, 1);
     setAddedSensors(newSensorObject);
   }
 
@@ -59,150 +60,166 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
         {Object.entries(data.groupedSensors).map(([key, value]) => {
           return (
             <div key={key} className="border-b-2 border-gray-600 pb-6 pt-10">
-              <h1 className="pb-4 pt-2 text-2xl font-bold">
-                {sensorWikiLabel(
-                  data.phenomena.find((pheno: any) => pheno.id == key).label
-                    .item
-                )}
-              </h1>
+              <SensorWikHoverCard
+                slug={data.phenomena.find((pheno: any) => pheno.id == key).slug}
+                type="phenomena"
+                trigger={
+                  <h1 className="pb-4 pt-2 text-2xl font-bold w-fit">
+                    {sensorWikiLabel(
+                      data.phenomena.find((pheno: any) => pheno.id == key).label
+                        .item,
+                    )}
+                  </h1>
+                }
+              />
               <div className="space-y-6 sm:space-y-5">
                 <div className="grid grid-cols-8 gap-4">
-                  { /** @ts-ignore */}
+                  {/** @ts-ignore */}
                   {value.map((sensor: any) => {
                     return (
-                      <div key={sensor.id}>
-                        <Card
-                          // data-checked={selectedSensors.includes(sensor)}
-                          onClick={() => {
-                            addSensor(sensor, "p-" + key);
-                            sensorsField.validate();
-                          }}
-                          key={sensor.id}
-                          className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
-                        >
-                          <CardContent className="flex justify-center pt-2">
-                            <AspectRatio ratio={4 / 3}>
-                              <img
-                                src={`${ENV.SENSORWIKI_API_URL}images/upload/${sensor.sensor.image}`}
-                                alt={sensor.sensor.slug}
-                                className="rounded-md object-cover"
-                              />
-                            </AspectRatio>
-                          </CardContent>
-                          <CardFooter className="flex justify-center">
-                            <CardTitle className="text-xl">
-                              {sensor.sensor.slug}
-                            </CardTitle>
-                            <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
-                          </CardFooter>
-                        </Card>
-                      </div>
+                      <SensorWikHoverCard
+                        key={sensor.id}
+                        slug={sensor.sensor.slug}
+                        type="sensors"
+                        trigger={
+                          <Card
+                            // data-checked={selectedSensors.includes(sensor)}
+                            onClick={() => {
+                              addSensor(sensor, "p-" + key);
+                              sensorsField.validate();
+                            }}
+                            key={sensor.id}
+                            className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
+                          >
+                            <CardContent className="flex justify-center pt-2">
+                              <AspectRatio ratio={4 / 3}>
+                                <img
+                                  src={`${ENV.SENSORWIKI_API_URL}images/upload/${sensor.sensor.image}`}
+                                  alt={sensor.sensor.slug}
+                                  className="rounded-md object-cover"
+                                />
+                              </AspectRatio>
+                            </CardContent>
+                            <CardFooter className="flex justify-center">
+                              <CardTitle className="text-xl">
+                                {sensor.sensor.label.item[0].text}
+                              </CardTitle>
+                              <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
+                            </CardFooter>
+                          </Card>
+                        }
+                      />
                     );
                   })}
                 </div>
                 <pre>{JSON.stringify(data.json, null, 2)}</pre>
               </div>
-              {addedSensors["p-" + key] && addedSensors["p-" + key].length > 0 && (
-                <div className="py-4">
-                  <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
-                    {t("your_added")}{" "}
-                    {sensorWikiLabel(
-                      data.phenomena.find((pheno: any) => pheno.id == key).label
-                        .item
-                    )}{" "}
-                    {t("sensors")}
-                  </h3>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("title")}</TableHead>
-                        <TableHead className="w-[100px]">
-                          {t("sensor")}
-                        </TableHead>
-                        <TableHead>{t("phenomenon")}</TableHead>
-                        <TableHead>{t("unit")}</TableHead>
-                        <TableHead>{t("delete")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {addedSensors["p-" + key].map(
-                        (sensorItem: any, index: number) => {
-                          return (
-                            <TableRow key={sensorItem.id}>
-                              <TableCell>
+              {addedSensors["p-" + key] &&
+                addedSensors["p-" + key].length > 0 && (
+                  <div className="py-4">
+                    <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
+                      {t("your_added")}{" "}
+                      {sensorWikiLabel(
+                        data.phenomena.find((pheno: any) => pheno.id == key)
+                          .label.item,
+                      )}{" "}
+                      {t("sensors")}
+                    </h3>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("title")}</TableHead>
+                          <TableHead className="w-[100px]">
+                            {t("sensor")}
+                          </TableHead>
+                          <TableHead>{t("phenomenon")}</TableHead>
+                          <TableHead>{t("unit")}</TableHead>
+                          <TableHead>{t("delete")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {addedSensors["p-" + key].map(
+                          (sensorItem: any, index: number) => {
+                            return (
+                              <TableRow key={sensorItem.id}>
+                                <TableCell>
+                                  <input
+                                    type="text"
+                                    name={`sensors[p-${key.toString()}][${index}]`}
+                                    placeholder={
+                                      sensorItem[0]
+                                        ? sensorItem[0]
+                                        : "Your sensors name"
+                                    }
+                                  />
+                                </TableCell>
                                 <input
-                                  type="text"
+                                  type="checkbox"
                                   name={`sensors[p-${key.toString()}][${index}]`}
-                                  placeholder={sensorItem[0] ? sensorItem[0] : 'Your sensors name'}
+                                  value={sensorItem[1]}
+                                  checked={true}
+                                  readOnly
+                                  className="hidden"
                                 />
-                              </TableCell>
-                              <input
-                                type="checkbox"
-                                name={`sensors[p-${key.toString()}][${index}]`}
-                                value={sensorItem[1]}
-                                checked={true}
-                                readOnly
-                                className="hidden"
-                              />
-                              <input
-                                type="checkbox"
-                                name={`sensors[p-${key.toString()}][${index}]`}
-                                value={
-                                  data.phenomena.find(
-                                    (pheno: any) => pheno.id == key
-                                  ).slug
-                                }
-                                checked={true}
-                                readOnly
-                                className="hidden"
-                              />
-                              <TableCell className="font-medium">
-                                <span> {sensorItem[1]}</span>
-                              </TableCell>
-                              <TableCell>
-                                {sensorWikiLabel(
-                                  data.phenomena.find(
-                                    (pheno: any) => pheno.id == key
-                                  ).label.item
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <select
+                                <input
+                                  type="checkbox"
                                   name={`sensors[p-${key.toString()}][${index}]`}
-                                  id="unit"
-                                >
-                                  {data.phenomena
-                                    .find((pheno: any) => pheno.id == key)
-                                    .rov.map((rov: any) => {
-                                      return (
-                                        <option
-                                          key={rov.id}
-                                          value={rov.unit.slug}
-                                        >
-                                          {rov.unit.name}
-                                        </option>
-                                      );
-                                    })}
-                                </select>{" "}
-                              </TableCell>
-                              <TableCell>
-                                <XCircleIcon
-                                  onClick={() => {
-                                    deleteSensorItem(index, key);
-                                    sensorsField.validate();
-                                  }}
-                                  title="Delete Sensor"
-                                  className="h-10 w-10 cursor-pointer text-red-500"
-                                ></XCircleIcon>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        }
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                                  value={
+                                    data.phenomena.find(
+                                      (pheno: any) => pheno.id == key,
+                                    ).slug
+                                  }
+                                  checked={true}
+                                  readOnly
+                                  className="hidden"
+                                />
+                                <TableCell className="font-medium">
+                                  <span> {sensorItem[1]}</span>
+                                </TableCell>
+                                <TableCell>
+                                  {sensorWikiLabel(
+                                    data.phenomena.find(
+                                      (pheno: any) => pheno.id == key,
+                                    ).label.item,
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <select
+                                    name={`sensors[p-${key.toString()}][${index}]`}
+                                    id="unit"
+                                  >
+                                    {data.phenomena
+                                      .find((pheno: any) => pheno.id == key)
+                                      .rov.map((rov: any) => {
+                                        return (
+                                          <option
+                                            key={rov.id}
+                                            value={rov.unit.slug}
+                                          >
+                                            {rov.unit.name}
+                                          </option>
+                                        );
+                                      })}
+                                  </select>{" "}
+                                </TableCell>
+                                <TableCell>
+                                  <XCircleIcon
+                                    onClick={() => {
+                                      deleteSensorItem(index, key);
+                                      sensorsField.validate();
+                                    }}
+                                    title="Delete Sensor"
+                                    className="h-10 w-10 cursor-pointer text-red-500"
+                                  ></XCircleIcon>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          },
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
             </div>
           );
         })}
