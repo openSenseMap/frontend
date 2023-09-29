@@ -17,6 +17,7 @@ import {
 import { Label } from "~/components/ui/label";
 import Spinner from "~/components/spinner";
 import type { loader } from "~/routes/explore";
+import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
 
 export function PhenomenonSelect() {
   const { t } = useTranslation("navbar");
@@ -50,14 +51,25 @@ export function PhenomenonSelect() {
         <SelectTrigger className="h-6 w-full text-base">
           <SelectValue className="h-6" placeholder="ALL" />
         </SelectTrigger>
-        <SelectContent className="">
+        <SelectContent className="overflow-visible">
           <SelectItem value={"all"}>{t("all_stations")}</SelectItem>
 
           {loaderData.phenomena &&
             loaderData.phenomena.map((p, i) => (
-              <SelectItem key={i} value={p.slug}>
-                {sensorWikiLabel(p.label.item)}
-              </SelectItem>
+              <SensorWikHoverCard
+                key={i}
+                slug={p.slug}
+                type="phenomena"
+                avoidCollisions={false}
+                side="right"
+                trigger={
+                  <SelectItem value={p.slug}>
+                    {sensorWikiLabel(p.label.item)}
+                  </SelectItem>
+                }
+                openDelay={0}
+                closeDelay={0}
+              />
             ))}
         </SelectContent>
       </Select>
