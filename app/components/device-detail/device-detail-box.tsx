@@ -120,21 +120,20 @@ export default function DeviceDetailBox() {
     setOpen(false);
   }
 
-  function runRefreshTimer() {
-    setTimeout(() => {
-      setRefreshSecond(refreshSecond - 1);
-    }, 1000);
-  }
-
   useEffect(() => {
+    let interval: any = null;
     if (refreshOn) {
-      if (refreshSecond == 1) {
+      if (refreshSecond == 0) {
         setRefreshSecond(59);
-      } else {
-        runRefreshTimer();
       }
+      interval = setInterval(() => {
+        setRefreshSecond((refreshSecond) => refreshSecond - 1);
+      }, 1000);
+    } else if (!refreshOn) {
+      clearInterval(interval);
     }
-  }, [refreshSecond, refreshOn, runRefreshTimer]);
+    return () => clearInterval(interval);
+  }, [refreshOn, refreshSecond]);
 
   return (
     <>
@@ -398,7 +397,7 @@ export default function DeviceDetailBox() {
                   >
                     {refreshOn ? (
                       <>
-                        <Label className=" absolute text-xs m-0 p-0">
+                        <Label className=" absolute text-xs m-0 p-0 cursor-pointer ">
                           {refreshSecond}
                         </Label>
                         <RefreshCcw className="m-0 p-0 inline h-9  w-9"></RefreshCcw>
