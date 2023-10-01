@@ -17,12 +17,10 @@ interface SensorWikHoverCardProps {
 }
 const getData = async (slug: string, type: string) => {
   const locale = getUserLocale();
-  console.log(locale);
   const response = await fetch(
     `${ENV.SENSORWIKI_API_URL}${type}/${slug}?lang=${locale}`,
   );
   const data = await response.json();
-  console.log(data);
 
   let content;
   switch (type) {
@@ -91,7 +89,7 @@ export default function SensorWikHoverCard(props: SensorWikHoverCardProps) {
 
   return (
     <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
-      <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
+      <HoverCardTrigger  asChild>{trigger}</HoverCardTrigger>
       <HoverCardContent side={side} avoidCollisions={avoidCollisions}>{content}</HoverCardContent>
     </HoverCard>
   );

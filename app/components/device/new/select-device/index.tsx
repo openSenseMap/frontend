@@ -40,6 +40,8 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
               key={device.id}
               slug={device.slug}
               type="devices"
+              openDelay={300}
+              closeDelay={100}
               trigger={
                 <Card
                   data-checked={deviceType === device.slug}
