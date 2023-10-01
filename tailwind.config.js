@@ -87,6 +87,7 @@ module.exports = {
       yellow: {
         500: "var(--color-yellow-500)",
       },
+      sensorWiki: "var(--color-yellow-sensorWiki)",
       headerBorder: "var(--color-headerBorder)",
     },
     extend: {

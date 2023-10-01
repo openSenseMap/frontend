@@ -3,24 +3,33 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import getUserLocale from "get-user-locale";
 
 interface SensorWikHoverCardProps {
   slug: string;
   type: "phenomena" | "sensors" | "devices" | "domains" | "units";
+  phenomenonSlug?: string;
   trigger: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   avoidCollisions?: boolean;
   openDelay?: number;
   closeDelay?: number;
 }
-const getData = async (slug: string, type: string) => {
+const getData = async (slug: string, type: string, phenomenonSlug?: string) => {
   const locale = getUserLocale();
   const response = await fetch(
     `${ENV.SENSORWIKI_API_URL}${type}/${slug}?lang=${locale}`,
   );
   const data = await response.json();
+
+  let sensorElement;
+  if (phenomenonSlug) {
+    sensorElement = data.elements.find(
+      (element: any) => element.phenomena.slug === phenomenonSlug,
+    );
+  }
 
   let content;
   switch (type) {
@@ -36,9 +45,40 @@ const getData = async (slug: string, type: string) => {
     case "sensors":
       content = (
         <div>
-          {data.description
-            ? data.description.item[0].text
-            : "No data available."}
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-bold">Manufacturer</TableCell>
+                <TableCell>
+                  {data.manufacturer ? data.manufacturer : "n/s"}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-bold">Price</TableCell>
+                <TableCell>{data.price ? data.price : "n/s"}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-bold">Life period</TableCell>
+                <TableCell>
+                  {data.lifePeriod ? data.lifePeriod : "n/s"}
+                </TableCell>
+              </TableRow>
+              {phenomenonSlug && (
+                <>
+                  <TableRow>
+                    <TableCell className="font-bold">Accuracy</TableCell>
+                    <TableCell>{sensorElement.accuracy ? sensorElement.accuracy : "n/s"}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-bold">Unit</TableCell>
+                    <TableCell>
+                      {sensorElement.accuracyUnit ? `${sensorElement.accuracyUnit.name} (${sensorElement.accuracyUnit.notation})` : "n/s"}
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
+            </TableBody>
+          </Table>
         </div>
       );
       break;
@@ -78,19 +118,34 @@ const getData = async (slug: string, type: string) => {
 
 export default function SensorWikHoverCard(props: SensorWikHoverCardProps) {
   const [content, setContent] = useState<any | null>(null);
-  const { slug, type, trigger, side, avoidCollisions, openDelay, closeDelay } = props;
+  const {
+    slug,
+    type,
+    trigger,
+    phenomenonSlug,
+    side,
+    avoidCollisions,
+    openDelay,
+    closeDelay,
+  } = props;
 
   useEffect(() => {
-    getData(slug, type).then((content) => {
+    getData(slug, type, phenomenonSlug).then((content) => {
       setContent(content);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
-      <HoverCardTrigger  asChild>{trigger}</HoverCardTrigger>
-      <HoverCardContent side={side} avoidCollisions={avoidCollisions}>{content}</HoverCardContent>
+      <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
+      <HoverCardContent
+        className="bg-sensorWiki"
+        side={side}
+        avoidCollisions={avoidCollisions}
+      >
+        {content}
+      </HoverCardContent>
     </HoverCard>
   );
 }

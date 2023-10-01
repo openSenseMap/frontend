@@ -85,10 +85,11 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
       <div>
         {Object.entries(data.groupedSensors).map(([key, value]) => {
+          const phenomenonSlug: string = data.phenomena.find((pheno: any) => pheno.id == key).slug;
           return (
             <div key={key} className="border-b-2 border-gray-600 pb-6 pt-10">
               <SensorWikHoverCard
-                slug={data.phenomena.find((pheno: any) => pheno.id == key).slug}
+                slug={phenomenonSlug}
                 type="phenomena"
                 trigger={
                   <h1 className="pb-4 pt-2 text-2xl font-bold w-fit">
@@ -108,6 +109,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                         key={sensor.id}
                         slug={sensor.sensor.slug}
                         type="sensors"
+                        phenomenonSlug={phenomenonSlug}
                         openDelay={300}
                         closeDelay={100}
                         trigger={
