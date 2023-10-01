@@ -11,9 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Trans, useTranslation } from "react-i18next";
 import { useField } from "remix-validated-form";
 import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
+import { InfoIcon } from "lucide-react";
 
 interface SelectSensorsProps {
   data: any;
@@ -56,6 +58,31 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
           {t("select_sensors_text")}
         </p>
       </div>
+
+      <div className="py-2">
+        <Alert>
+          <InfoIcon className="h-4 w-4" />
+          <AlertTitle>Info</AlertTitle>
+          <AlertDescription>
+            <Trans
+              t={t}
+              i18nKey="select_sensors_info_text"
+              components={[
+                <a
+                  key="add_sensor_to_sensorwiki"
+                  href="https://sensors.wiki/sensor/add"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-500 hover:text-blue-700 hover:underline"
+                >
+                  placeholder
+                </a>,
+              ]}
+            />
+          </AlertDescription>
+        </Alert>
+      </div>
+
       <div>
         {Object.entries(data.groupedSensors).map(([key, value]) => {
           return (
@@ -81,6 +108,8 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                         key={sensor.id}
                         slug={sensor.sensor.slug}
                         type="sensors"
+                        openDelay={300}
+                        closeDelay={100}
                         trigger={
                           <Card
                             // data-checked={selectedSensors.includes(sensor)}
@@ -187,17 +216,29 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                   <select
                                     name={`sensors[p-${key.toString()}][${index}]`}
                                     id="unit"
+                                    className="overflow-visible"
                                   >
                                     {data.phenomena
                                       .find((pheno: any) => pheno.id == key)
                                       .rov.map((rov: any) => {
                                         return (
-                                          <option
-                                            key={rov.id}
-                                            value={rov.unit.slug}
-                                          >
-                                            {rov.unit.name}
-                                          </option>
+                                          <SensorWikHoverCard
+                                          key={rov.id}
+                                          slug={rov.unit.slug}
+                                          type="units"
+                                          avoidCollisions={false}
+                                          side="right"
+                                            trigger={
+                                              <option
+                                                key={rov.id}
+                                                value={rov.unit.slug}
+                                              >
+                                                {rov.unit.name}
+                                              </option>
+                                            }
+                                            openDelay={0}
+                                            closeDelay={0}
+                                          />
                                         );
                                       })}
                                   </select>{" "}
