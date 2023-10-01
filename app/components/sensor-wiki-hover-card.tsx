@@ -86,7 +86,8 @@ export default function SensorWikHoverCard(props: SensorWikHoverCardProps) {
     getData(slug, type).then((content) => {
       setContent(content);
     });
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   return (
     <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
