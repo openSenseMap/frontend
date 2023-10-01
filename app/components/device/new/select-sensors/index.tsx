@@ -223,11 +223,11 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                       .rov.map((rov: any) => {
                                         return (
                                           <SensorWikHoverCard
-                                          key={rov.id}
-                                          slug={rov.unit.slug}
-                                          type="units"
-                                          avoidCollisions={false}
-                                          side="right"
+                                            key={rov.id}
+                                            slug={rov.unit.slug}
+                                            type="units"
+                                            avoidCollisions={false}
+                                            side="right"
                                             trigger={
                                               <option
                                                 key={rov.id}
