@@ -100,7 +100,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                 }
               />
               <div className="space-y-6 sm:space-y-5">
-                <div className="grid grid-cols-8 gap-4">
+                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                   {/** @ts-ignore */}
                   {value.map((sensor: any) => {
                     return (
