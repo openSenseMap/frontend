@@ -67,12 +67,16 @@ const getData = async (slug: string, type: string, phenomenonSlug?: string) => {
                 <>
                   <TableRow>
                     <TableCell className="font-bold">Accuracy</TableCell>
-                    <TableCell>{sensorElement.accuracy ? sensorElement.accuracy : "n/s"}</TableCell>
+                    <TableCell>
+                      {sensorElement.accuracy ? sensorElement.accuracy : "n/s"}
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-bold">Unit</TableCell>
                     <TableCell>
-                      {sensorElement.accuracyUnit ? `${sensorElement.accuracyUnit.name} (${sensorElement.accuracyUnit.notation})` : "n/s"}
+                      {sensorElement.accuracyUnit
+                        ? `${sensorElement.accuracyUnit.name} (${sensorElement.accuracyUnit.notation})`
+                        : "n/s"}
                     </TableCell>
                   </TableRow>
                 </>
