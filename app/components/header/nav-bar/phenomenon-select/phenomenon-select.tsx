@@ -5,7 +5,9 @@ import {
 } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
+import type { SensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
+import type { Key } from "react";
 import { useState } from "react";
 import {
   Select,
@@ -54,11 +56,16 @@ export function PhenomenonSelect() {
           <SelectItem value={"all"}>{t("all_stations")}</SelectItem>
 
           {loaderData.phenomena &&
-            loaderData.phenomena.map((p, i) => (
-              <SelectItem key={i} value={p.slug}>
-                {sensorWikiLabel(p.label.item)}
-              </SelectItem>
-            ))}
+            loaderData.phenomena.map(
+              (
+                p: { slug: string; label: { item: SensorWikiLabel[] } },
+                i: Key | null | undefined,
+              ) => (
+                <SelectItem key={i} value={p.slug}>
+                  {sensorWikiLabel(p.label.item)}
+                </SelectItem>
+              ),
+            )}
         </SelectContent>
       </Select>
     </div>
