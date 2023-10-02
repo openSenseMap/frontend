@@ -24,7 +24,6 @@ import {
   getSensors,
   updateSensor,
 } from "~/models/sensor.server";
-import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
 import {
   DropdownMenu,
@@ -34,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { assignIcon, getIcon, iconsList } from "~/utils/sensoricons";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -47,7 +47,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
   const rawSensorsData = await getSensors(deviceID);
 
-  return typedjson(rawSensorsData);
+  return json(rawSensorsData as any);
 }
 
 //*****************************************************
@@ -512,3 +512,12 @@ export default function EditBoxSensors() {
     </div>
   );
 }
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
+    </div>
+  );
+}
+

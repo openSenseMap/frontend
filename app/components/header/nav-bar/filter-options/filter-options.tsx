@@ -88,7 +88,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
       {navigation.state === "loading" && (
-        <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+        <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <Spinner />
         </div>
       )}
