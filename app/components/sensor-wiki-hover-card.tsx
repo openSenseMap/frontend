@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/hover-card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import getUserLocale from "get-user-locale";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SensorWikHoverCardProps {
   slug: string;
@@ -18,12 +18,8 @@ interface SensorWikHoverCardProps {
   closeDelay?: number;
 }
 const getData = async (slug: string, type: string, phenomenonSlug?: string) => {
-  const locale = getUserLocale();
-  const response = await fetch(
-    `${ENV.SENSORWIKI_API_URL}${type}/${slug}?lang=${locale}`,
-  );
+  const response = await fetch(`${ENV.SENSORWIKI_API_URL}${type}/${slug}`);
   const data = await response.json();
-
   let sensorElement;
   if (phenomenonSlug) {
     sensorElement = data.elements.find(
@@ -90,7 +86,7 @@ const getData = async (slug: string, type: string, phenomenonSlug?: string) => {
       content = (
         <div>
           {data.description
-            ? data.description.item[0].text
+            ? sensorWikiLabel(data.description.item)
             : "No data available."}
         </div>
       );
@@ -99,7 +95,7 @@ const getData = async (slug: string, type: string, phenomenonSlug?: string) => {
       content = (
         <div>
           {data.description
-            ? data.description.item[0].text
+            ? sensorWikiLabel(data.description.item)
             : "No data available."}
         </div>
       );
@@ -108,7 +104,7 @@ const getData = async (slug: string, type: string, phenomenonSlug?: string) => {
       content = (
         <div>
           {data.description
-            ? data.description.item[0].text
+            ? sensorWikiLabel(data.description.item)
             : "No data available."}
         </div>
       );
