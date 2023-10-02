@@ -119,9 +119,9 @@ export async function getDevices() {
       status: true,
       createdAt: true,
       sensors: {
-        select:{
-          title:true,
-        }
+        select: {
+          title: true,
+        },
       },
     },
   });
@@ -172,7 +172,7 @@ export async function getMeasurements(
   deviceId: any,
   sensorId: any,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ) {
   const response = await fetch(
     process.env.OSEM_API_URL +
@@ -183,7 +183,7 @@ export async function getMeasurements(
       "?from-date=" +
       startDate.toISOString() + //new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
       "&to-date=" +
-      endDate.toISOString() //new Date().toISOString()
+      endDate.toISOString(), //new Date().toISOString()
   );
   const jsonData = await response.json();
   return jsonData;
@@ -191,7 +191,7 @@ export async function getMeasurements(
 
 export async function createDevice(
   deviceData: any,
-  userId: string | undefined
+  userId: string | undefined,
 ) {
   // hack to register to OSEM API
   const authData = await fetch(
@@ -202,10 +202,10 @@ export async function createDevice(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: "umut@sensebox.de",
+        email: `${process.env.TESTING_ACCOUNT}`,
         password: `${process.env.TESTING_PW}`,
       }),
-    }
+    },
   ).then((res) => res.json());
 
   let sensorArray: any = [];
@@ -221,13 +221,13 @@ export async function createDevice(
   });
   const registeredDevice = await createDeviceOsemAPI(
     { ...deviceData, sensors: sensorArray },
-    authData.token
+    authData.token,
   );
   const newDevicePostgres = await createDevicePostgres(
     registeredDevice.data,
     userId,
     sensorArray,
-    deviceData
+    deviceData,
   );
   return newDevicePostgres;
 }
@@ -236,7 +236,7 @@ export async function createDevicePostgres(
   deviceData: any,
   userId: string | undefined,
   sensorArray: any[],
-  formDeviceData: any
+  formDeviceData: any,
 ) {
   const newDevice = await prisma.device.create({
     data: {
@@ -291,26 +291,27 @@ export async function createDeviceOsemAPI(deviceData: any, token: string) {
         },
         ...(deviceData.ttnEnabled && {
           ttn: {
-            dev_id: deviceData['ttn.devId'],
-            app_id: deviceData['ttn.appId'],
-            profile: deviceData['ttn.decodeProfile'],
-            ...(deviceData['ttn.decodeOptions'] && { decodeOptions: deviceData['ttn.decodeOptions'] }),
-            ...(deviceData['ttn.port'] && { port: deviceData['ttn.port'] }),
-
+            dev_id: deviceData["ttn.devId"],
+            app_id: deviceData["ttn.appId"],
+            profile: deviceData["ttn.decodeProfile"],
+            ...(deviceData["ttn.decodeOptions"] && {
+              decodeOptions: deviceData["ttn.decodeOptions"],
+            }),
+            ...(deviceData["ttn.port"] && { port: deviceData["ttn.port"] }),
           },
         }),
         ...(deviceData.mqttEnabled && {
           mqtt: {
             enabled: true,
-            url: deviceData['mqtt.url'],
-            topic: deviceData['mqtt.topic'],
-            messageFormat: deviceData['mqtt.messageFormat'],
-            decodeOptions: deviceData['mqtt.decodeOptions'],
-            connectionOptions: deviceData['mqtt.connectOptions'],
+            url: deviceData["mqtt.url"],
+            topic: deviceData["mqtt.topic"],
+            messageFormat: deviceData["mqtt.messageFormat"],
+            decodeOptions: deviceData["mqtt.decodeOptions"],
+            connectionOptions: deviceData["mqtt.connectOptions"],
           },
         }),
       }),
-    }
+    },
   ).then((res) => res.json());
 
   return registerDevice;
