@@ -7,7 +7,6 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { getProfileByUsername } from "~/models/profile.server";
-import { GeneralErrorBoundary } from "~/components/error-boundary";
 import type { MyBadge } from "~/models/badge.server";
 import {
   getAllBadges,
@@ -20,6 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
+import ErrorMessage from "~/components/error-message";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
@@ -52,12 +52,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       const backpackData = await getUserBackpack(profileMail, authToken).then(
         (backpackData) => {
           return backpackData;
-        }
+        },
       );
 
       if (profile.user.id !== requestingUserId) {
         profile.user.devices = profile.user.devices.filter(
-          (device) => device.public === true
+          (device) => device.public === true,
         );
       }
 
@@ -110,10 +110,10 @@ export default function () {
   const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
     // Determine if badgeA and badgeB are owned by the user and not revoked
     const badgeAOwned = userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked
+      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked,
     );
     const badgeBOwned = userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked
+      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked,
     );
     // Sort badges based on ownership:
     // Owned badges come first, followed by non-owned badges
@@ -246,12 +246,8 @@ export default function () {
 
 export function ErrorBoundary() {
   return (
-    <GeneralErrorBoundary
-      statusHandlers={{
-        404: ({ params }) => (
-          <p>No user with the username "{params.username}" exists</p>
-        ),
-      }}
-    />
+    <div className="w-full flex items-center justify-center">
+      <ErrorMessage />
+    </div>
   );
 }

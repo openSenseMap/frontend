@@ -7,7 +7,8 @@ import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { getDeviceWithoutSensors } from "~/models/device.server";
-import { getSensors } from "~/models/sensor.server";
+import { getSensorsFromDevice } from "~/models/sensor.server";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -21,7 +22,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   //* get device data
   const deviceData = await getDeviceWithoutSensors({ id: params.boxId });
   //* get sensors data
-  const sensorsData = await getSensors(params.boxId);
+  const sensorsData = await getSensorsFromDevice(params.boxId);
 
   return json({ deviceData, sensorsData });
 }
@@ -134,6 +135,14 @@ export default function DeviceOnverview() {
           </TableBody>
         </Table>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

@@ -38,6 +38,12 @@ export async function getSensors() {
   return sensors;
 }
 
+export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
+  return prisma.sensor.findMany({
+    where: { deviceId },
+  });
+}
+
 //if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
 export async function registerSensor(sensor: Sensor) {
   const sensors = await prisma.sensor.create({

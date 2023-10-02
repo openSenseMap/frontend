@@ -1,8 +1,8 @@
 import {
   json,
-  type LoaderArgs,
   redirect,
   type LinksFunction,
+  type LoaderFunctionArgs,
 } from "@remix-run/node";
 import { useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
 import { getUserSession, sessionStorage, getUserId } from "~/session.server";
@@ -177,7 +177,7 @@ export const validator: any = {
   6: withZod(z.object({})),
 };
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page") ?? "1");
   const session = await getUserSession(request);
@@ -198,7 +198,7 @@ export const loader = async ({ request }: LoaderArgs) => {
     //   return a.slug.localeCompare(b.slug);
     // });
 
-    return json({ page, data, devices });
+    return json({ page, data, devices, phenomena: null });
   } else if (page === 3) {
     const data =
       {
@@ -239,7 +239,7 @@ export const loader = async ({ request }: LoaderArgs) => {
     return json({ page, data, groupedSensors: groupedSensors, phenomena });
   } else if (page < 4) {
     const data = session.get(`form-data-page-${page}`) ?? {};
-    return json({ page, data });
+    return json({ page, data, phenomena: null });
   } else {
     // final page so just collect all the data to render
     const phenomena = await getPhenomena();
@@ -255,7 +255,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   }
 };
 
-export const action = async ({ request }: LoaderArgs) => {
+export const action = async ({ request }: LoaderFunctionArgs) => {
   const text = await request.text();
   const userId = await getUserId(request);
 
@@ -336,7 +336,7 @@ export default function NewDevice() {
 
   const [activatedSteps, setActivatedSteps] = useState<number[]>([]);
 
-  const loaderData = useLoaderData();
+  const loaderData = useLoaderData<typeof loader>();
   const page = Number(loaderData.page);
   const data = loaderData.data;
 

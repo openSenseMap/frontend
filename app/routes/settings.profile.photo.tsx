@@ -26,6 +26,7 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";
 import { getUserImgSrc } from "~/utils/misc";
+import ErrorMessage from "~/components/error-message";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
@@ -41,11 +42,11 @@ const PhotoFormSchema = z.object({
       .instanceof(File)
       .refine(
         (file) => file.name !== "" && file.size !== 0,
-        "Image is required"
+        "Image is required",
       )
       .refine((file) => {
         return file.size <= MAX_SIZE;
-      }, "Image size must be less than 3MB")
+      }, "Image size must be less than 3MB"),
   ),
 });
 
@@ -67,7 +68,7 @@ export async function action({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
   const formData = await unstable_parseMultipartFormData(
     request,
-    unstable_createMemoryUploadHandler({ maxPartSize: MAX_SIZE })
+    unstable_createMemoryUploadHandler({ maxPartSize: MAX_SIZE }),
   );
 
   const submission = parse(formData, { schema: PhotoFormSchema });
@@ -81,7 +82,7 @@ export async function action({ request }: DataFunctionArgs) {
         status: "error",
         submission,
       } as const,
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -194,5 +195,13 @@ export default function PhotoChooserModal() {
         </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
+    </div>
   );
 }

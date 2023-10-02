@@ -77,7 +77,7 @@ export default function DeviceDetailBox() {
   // state variables
   const [open, setOpen] = useState(true);
   const [openGraph, setOpenGraph] = useState(
-    Boolean(data.selectedSensors.length > 0 ? true : false)
+    Boolean(data.selectedSensors.length > 0 ? true : false),
   );
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
@@ -95,7 +95,8 @@ export default function DeviceDetailBox() {
     searchParams.delete("sensor");
     searchParams.delete("date_from");
     searchParams.delete("date_to");
-    navigate({pathname: newPath, search: searchParams.toString()});
+    searchParams.delete("aggregation");
+    navigate({ pathname: newPath, search: searchParams.toString() });
   };
 
   // form submission handler
@@ -152,7 +153,7 @@ export default function DeviceDetailBox() {
               }
             >
               {navigation.state === "loading" && (
-                <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                   <Spinner />
                 </div>
               )}
@@ -264,7 +265,7 @@ export default function DeviceDetailBox() {
                                         id={sensor.id}
                                         value={sensor.id}
                                         defaultChecked={sensorIds.includes(
-                                          sensor.id
+                                          sensor.id,
                                         )}
                                       />
                                       <div

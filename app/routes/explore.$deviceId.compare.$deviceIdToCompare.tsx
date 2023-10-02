@@ -39,7 +39,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getDevice } from "~/models/device.server";
-import { getSensors } from "~/models/sensor.server";
+import { getSensorsFromDevice } from "~/models/sensor.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getGraphColor } from "~/lib/utils";
 import Graph from "~/components/device-detail/graph";
@@ -55,7 +55,7 @@ import addDays from "date-fns/addDays";
 
 function mergeSensors(
   sensorsFromDevice1: Sensor[],
-  sensorsFromDevice2: Sensor[]
+  sensorsFromDevice2: Sensor[],
 ) {
   // Combine both arrays
   const mergedArray = [...sensorsFromDevice1, ...sensorsFromDevice2];
@@ -67,7 +67,7 @@ function mergeSensors(
   mergedArray.forEach((sensor) => {
     // Check if there's an existing group for the title
     const groupIndex = sensorGroups.findIndex(
-      (group) => group[0].title === sensor.title
+      (group) => group[0].title === sensor.title,
     );
 
     if (groupIndex !== -1) {
@@ -104,9 +104,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const device1 = await getDevice({ id: params.deviceId });
-  const sensorsFromDevice1 = await getSensors(params.deviceId);
+  const sensorsFromDevice1 = await getSensorsFromDevice(params.deviceId);
   const device2 = await getDevice({ id: params.deviceIdToCompare });
-  const sensorsFromDevice2 = await getSensors(params.deviceIdToCompare);
+  const sensorsFromDevice2 = await getSensorsFromDevice(
+    params.deviceIdToCompare,
+  );
 
   if (!device1 || !device2) {
     throw new Response("Device not found", { status: 502 });
@@ -120,7 +122,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startDate = url.searchParams.get("date_from") || undefined;
   const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = [...sensorsFromDevice1, ...sensorsFromDevice2].filter(
-    (sensor: Sensor) => sensorIds.includes(sensor.id)
+    (sensor: Sensor) => sensorIds.includes(sensor.id),
   );
 
   if (!sensorsToQuery) {
@@ -139,7 +141,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           sensor.id,
           aggregation,
           new Date(startDate),
-          addDays(new Date(endDate), 1)
+          addDays(new Date(endDate), 1),
         );
         return {
           ...sensor,
@@ -152,7 +154,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           data: sensorData as any,
         };
       }
-    })
+    }),
   );
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
@@ -180,7 +182,7 @@ export default function CompareDevices() {
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const [open, setOpen] = useState(true);
   const [openGraph, setOpenGraph] = useState(
-    Boolean(data.selectedSensors.length > 0 ? true : false)
+    Boolean(data.selectedSensors.length > 0 ? true : false),
   );
   const { setCompareMode } = useSharedCompareMode();
   setCompareMode(false);
@@ -227,7 +229,7 @@ export default function CompareDevices() {
                 className="shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm sm:max-h-[calc(100vh-8rem)]"
               >
                 {navigation.state === "loading" && (
-                  <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                  <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                     <Spinner />
                   </div>
                 )}
@@ -364,7 +366,7 @@ export default function CompareDevices() {
                                                 className="peer hidden"
                                                 disabled={
                                                   !sensorIds.includes(
-                                                    sensorGroup[0].id
+                                                    sensorGroup[0].id,
                                                   ) &&
                                                   searchParams.getAll("sensor")
                                                     .length >= 2
@@ -376,14 +378,14 @@ export default function CompareDevices() {
                                                 id={sensorGroup[0].id}
                                                 value={sensorGroup[0].id}
                                                 defaultChecked={sensorIds.includes(
-                                                  sensorGroup[0].id
+                                                  sensorGroup[0].id,
                                                 )}
                                               />
                                               <p
                                                 className={
                                                   "cursor-pointer truncate text-sm font-medium leading-5" +
                                                   (sensorIds.includes(
-                                                    sensorGroup[0].id
+                                                    sensorGroup[0].id,
                                                   )
                                                     ? " text-green-100"
                                                     : "text-gray-900")
@@ -405,7 +407,7 @@ export default function CompareDevices() {
                                                 className="peer hidden"
                                                 disabled={
                                                   !sensorIds.includes(
-                                                    sensorGroup[1].id
+                                                    sensorGroup[1].id,
                                                   ) &&
                                                   searchParams.getAll("sensor")
                                                     .length >= 2
@@ -417,14 +419,14 @@ export default function CompareDevices() {
                                                 id={sensorGroup[1].id}
                                                 value={sensorGroup[1].id}
                                                 defaultChecked={sensorIds.includes(
-                                                  sensorGroup[1].id
+                                                  sensorGroup[1].id,
                                                 )}
                                               />
                                               <p
                                                 className={
                                                   "cursor-pointer truncate text-sm font-medium leading-5" +
                                                   (sensorIds.includes(
-                                                    sensorGroup[1].id
+                                                    sensorGroup[1].id,
                                                   )
                                                     ? " text-green-100"
                                                     : "text-gray-900")
@@ -441,7 +443,7 @@ export default function CompareDevices() {
                                         </TableCell>
                                       </TableRow>
                                     );
-                                  }
+                                  },
                                 )}
                               </TableBody>
                             </Table>

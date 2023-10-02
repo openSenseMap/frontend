@@ -13,14 +13,13 @@ import { getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source } from "react-map-gl";
 import { useState, useRef, useEffect, createContext } from "react";
-import { useHotkeys } from "@mantine/hooks";
 import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import Legend from "~/components/map/legend";
 import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
-import { Exposure, type Device, type Sensor } from "@prisma/client";
+import { type Device, type Sensor } from "@prisma/client";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser, getUserSession } from "~/session.server";
 import { useToast } from "~/components/ui/use-toast";
@@ -29,6 +28,7 @@ import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
+import ErrorMessage from "~/components/error-message";
 
 //* Used in filter-options component
 export const FilterOptionsContext = createContext({
@@ -109,7 +109,7 @@ export default function Explore() {
   const mapRef = useRef<MapRef | null>(null);
 
   // get map bounds
-  const [viewState, setViewState] = useState({
+  const [, setViewState] = useState({
     longitude: 52,
     latitude: 7,
     zoom: 2,
@@ -346,5 +346,13 @@ export default function Explore() {
         </MapProvider>
       </div>
     </FilterOptionsContext.Provider>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
+    </div>
   );
 }
