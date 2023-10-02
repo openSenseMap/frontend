@@ -58,24 +58,26 @@ export function PhenomenonSelect() {
 
           {loaderData.phenomena &&
             loaderData.phenomena.map(
+              (
                 p: { slug: string; label: { item: SensorWikiLabel[] } },
                 i: Key | null | undefined,
               ) => (
-              <SensorWikHoverCard
-                key={i}
-                slug={p.slug}
-                type="phenomena"
-                avoidCollisions={false}
-                side="right"
-                trigger={
-                  <SelectItem value={p.slug}>
-                    {sensorWikiLabel(p.label.item)}
-                  </SelectItem>
-                }
-                openDelay={0}
-                closeDelay={0}
-              />
-            ))}
+                <SensorWikHoverCard
+                  key={i}
+                  slug={p.slug}
+                  type="phenomena"
+                  avoidCollisions={false}
+                  side="right"
+                  trigger={
+                    <SelectItem value={p.slug}>
+                      {sensorWikiLabel(p.label.item)}
+                    </SelectItem>
+                  }
+                  openDelay={0}
+                  closeDelay={0}
+                />
+              ),
+            )}
         </SelectContent>
       </Select>
     </div>
