@@ -22,6 +22,7 @@
 
     "select_sensors": "Select sensors",
     "select_sensors_text": "Select the sensors you want to use by clicking on the cards. You can add the same sensor multiple times.",
+    "select_sensors_info_text": "Your sensor is not in the list? Add it to the <0>sensorWiki</0> to use it on the openSenseMap.",
     "your_added": "Your added",
     "sensors": "Sensors",
     "sensor": "Sensor",

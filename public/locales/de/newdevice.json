@@ -22,6 +22,7 @@
 
   "select_sensors": "Sensoren auswählen",
   "select_sensors_text": "Wähle die Sensoren aus die du benutzen willst. Du kannst einen Sensor mehrfach hinzufügen.",
+  "select_sensors_info_text": "Dein Sensor is nicht in der Liste? Füge ihn im <0>sensorWiki</0> hinzu, um ihn auf der openSenseMap zu benutzen.",
   "your_added": "Deine hinzugefügten",
   "sensors": "Sensoren",
   "sensor": "Sensor",
