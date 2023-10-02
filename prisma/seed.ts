@@ -145,17 +145,17 @@ async function seed() {
     }
   }
   let k = 0;
-  await jsonData.forEach((item: any) => {
+  for await (const item of jsonData) {
     k++;
-    item.sensors.forEach((sensor: any) => {
+    for await (const sensor of item.sensors) {
       if (sensor.lastMeasurement && sensor._id) {
-        updateSensor(sensor._id, sensor.lastMeasurement);
+        await updateSensor(sensor._id, sensor.lastMeasurement);
+        printProgress(
+          `ℹ️  Imported ${k} of ${jsonData.length} devices with lastMeasurements.`,
+        );
       }
-    });
-    printProgress(
-      `ℹ️  Imported ${k} of ${jsonData.length} devices with lastMeasurements.`,
-    );
-  });
+    }
+  }
   process.stdout.write("\n");
 
   try {
