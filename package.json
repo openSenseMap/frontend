@@ -172,7 +172,7 @@
     "typescript": "5.1.6",
     "vite": "^4.4.9",
     "vite-tsconfig-paths": "^3.6.0",
-    "vitest": "^0.32.2"
+    "vitest": "^0.34.6"
   },
   "engines": {
     "node": ">=18.0.0"
