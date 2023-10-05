@@ -251,7 +251,7 @@ export async function createDevicePostgres(
     },
   });
 
-  for await (let [i, sensor] of deviceData.sensors) {
+  for await (let [i, sensor] of deviceData.sensors.entries()) {
     await prisma.sensor.create({
       data: {
         id: sensor._id,
@@ -259,9 +259,9 @@ export async function createDevicePostgres(
         title: sensorArray[i].name,
         sensorType: sensor.sensorType,
         unit: sensor.unit,
-        sensorWikiType: sensor.title,
+        sensorWikiType: sensor.sensorType,
         sensorWikiUnit: sensor.unit,
-        sensorWikiPhenomenon: sensor.sensorType,
+        sensorWikiPhenomenon: sensor.title,
       },
     });
   }

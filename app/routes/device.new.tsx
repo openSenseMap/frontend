@@ -262,12 +262,11 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
   // use qs.parse to support multi-value values (by email checkbox list)
   const { page, action, ...data } = qs.parse(text);
 
-  console.log(typeof Number(action));
-
   if (
-    action === "next" ||
-    action === "previous" ||
-    typeof Number(action) === "number"
+    (action === "next" ||
+      action === "previous" ||
+      typeof Number(action) === "number") &&
+    action != "submit"
   ) {
     const session = await getUserSession(request);
     session.set(`form-data-page-${page}`, data);

@@ -42,7 +42,7 @@ export default function Legend({ title, values }: LegendProps) {
       defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
       onDrag={handleDrag}
       bounds="#osem"
-      handle="#test"
+      handle="#legendHandle"
       disabled={!isBrowser && !isTablet}
     >
       <Accordion
@@ -54,7 +54,10 @@ export default function Legend({ title, values }: LegendProps) {
         className="absolute bottom-[15%] right-4 z-10 w-1/5 rounded-lg bg-white shadow"
       >
         <AccordionItem value="item-1">
-          <AccordionTrigger id="test" className="font-bold capitalize p-4">
+          <AccordionTrigger
+            id="legendHandle"
+            className="font-bold capitalize p-4"
+          >
             {isOpen ? title : "Legende"}
           </AccordionTrigger>
           <AccordionContent>
