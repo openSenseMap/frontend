@@ -4,8 +4,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { MutableRefObject, useRef, useState } from "react";
-import Draggable, { DraggableData } from "react-draggable";
+import { useRef, useState } from "react";
+import type { DraggableData } from "react-draggable";
+import Draggable from "react-draggable";
 import { isTablet, isBrowser } from "react-device-detect";
 
 export type LegendValue = {
