@@ -103,7 +103,7 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
       - name: 🛠 Setup Database
-        uses: nick-fields/retry@v2.8.3
+        uses: nick-fields/retry@v2.9.0
         with:
           timeout_minutes: 10
           max_attempts: 5
