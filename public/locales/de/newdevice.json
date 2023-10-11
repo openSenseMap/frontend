@@ -1,7 +1,7 @@
 {
   "add_device": "Gerät hinzugfügen",
-  "prev": "Weiter",
-  "next": "Vor",
+  "prev": "Zurück",
+  "next": "Weiter",
   "submit": "Abschicken",
 
   "select_device": "Gerät auswählen",
