@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData, useOutletContext } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,7 +27,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { enableMQTTcb, mqqtURL, mqqtTopic } = Object.fromEntries(formData);
 
-  //* ToDo: if mqtt checkbox is not enabled, reset mqtt to default 
+  //* ToDo: if mqtt checkbox is not enabled, reset mqtt to default
   if (!enableMQTTcb) {
     return json({
       errors: {
@@ -61,6 +61,9 @@ export default function EditBoxMQTT() {
   const mqqtURLRef = React.useRef<HTMLInputElement>(null);
   const mqqtTopicRef = React.useRef<HTMLInputElement>(null);
 
+  //* to view toast on edit page
+  const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>();
+
   React.useEffect(() => {
     if (actionData) {
       const hasErrors = Object.values(actionData?.errors).some(
@@ -72,7 +75,9 @@ export default function EditBoxMQTT() {
         // Do nothing for now
       } else if (!hasErrors) {
         let isValidURL = false;
-        const client = mqtt
+
+        //* check mqtt url connection
+        mqtt
           .connectAsync(mqttURL)
           // .connectAsync("wss://broker.emqx.io:8084/mqtt")
           .then((e) => {
@@ -82,6 +87,9 @@ export default function EditBoxMQTT() {
         setTimeout(() => {
           if (isValidURL) {
             console.log("🚀 MQTT URL is valid");
+            setMqttValid(true);
+            //* if qmtt url is valid, show success msg
+            setToastOpen(true);
           } else {
             console.log("🚀 MQTT URL is not valid");
             setMqttValid(false);
@@ -94,7 +102,7 @@ export default function EditBoxMQTT() {
         mqqtTopicRef.current?.focus();
       }
     }
-  }, [actionData]);
+  }, [actionData, mqttURL, setToastOpen]);
 
   return (
     <div className="grid grid-rows-1">
@@ -191,7 +199,8 @@ export default function EditBoxMQTT() {
 
                 {!mqttValid && (
                   <div className="pt-1 text-[#FF0000]" id="mqqtURL-error">
-                    Entered mqtt url is not valid, please try again with a valid one.
+                    Entered mqtt url is not valid, please try again with a valid
+                    one.
                   </div>
                 )}
               </div>
