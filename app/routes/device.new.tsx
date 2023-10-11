@@ -8,7 +8,6 @@ import { useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
 import { getUserSession, sessionStorage, getUserId } from "~/session.server";
 import qs from "qs";
 import { useSpinDelay } from "spin-delay";
-import clsx from "clsx";
 import { getPhenomena } from "~/models/phenomena.server";
 
 import * as z from "zod";
