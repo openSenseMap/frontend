@@ -265,7 +265,9 @@ export default function DeviceDetailBox() {
                               // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                               const lastMeasurement =
                                 sensor.lastMeasurement as Prisma.JsonObject;
-                              const value = lastMeasurement.value as string;
+                              const value = lastMeasurement
+                                ? (lastMeasurement.value as string)
+                                : undefined;
                               return (
                                 <li key={sensor.id}>
                                   <div className="group relative flex items-center px-2 py-3">
@@ -303,10 +305,16 @@ export default function DeviceDetailBox() {
                                                 : "text-gray-900")
                                             }
                                           >
-                                            {sensor.title}
+                                            {sensor.sensorWikiPhenomenon ??
+                                              sensor.title}
                                           </p>
                                           <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
-                                            {value + sensor.unit}
+                                            {value
+                                              ? value +
+                                                (sensor.sensorWikiUnit ??
+                                                  sensor.unit)
+                                              : sensor.sensorWikiUnit ??
+                                                sensor.unit}
                                           </p>
                                         </div>
                                       </div>

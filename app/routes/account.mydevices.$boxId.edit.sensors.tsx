@@ -21,7 +21,7 @@ import {
 import {
   addNewSensor,
   deleteSensor,
-  getSensors,
+  getSensorsFromDevice,
   updateSensor,
 } from "~/models/sensor.server";
 import invariant from "tiny-invariant";
@@ -45,7 +45,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
   }
-  const rawSensorsData = await getSensors(deviceID);
+  const rawSensorsData = await getSensorsFromDevice(deviceID);
 
   return json(rawSensorsData as any);
 }

@@ -42,7 +42,11 @@
   --color-green-100: #69ac54;
   --color-green-300: #709f61;
   --color-red-500: #f10000;
+  --color-red-700: #B91C1C;
   --color-orange-500: #f97316;
+  --color-violet-500: #7f00ff;
+  --color-yellow-500: #eab308;
+  --color-yellow-sensorWiki: #ffdd57;
   --color-headerBorder: #e3e3e3;
 
   /* shadcn color definitions */
@@ -130,4 +134,8 @@ kbd {
   margin-bottom: 4px;
   vertical-align: middle;
   white-space: nowrap;
+}
+
+.mapboxgl-ctrl-geocoder {
+  width: 500px!important;
 }

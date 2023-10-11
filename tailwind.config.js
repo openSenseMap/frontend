@@ -2,8 +2,13 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{ts,tsx,jsx,js}", "components/**/*.{ts,tsx}"],
-  darkMode: "class",
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   theme: {
     // shadcn container
     container: {
@@ -71,6 +76,7 @@ module.exports = {
       },
       red: {
         500: "var(--color-red-500)",
+        700: "var(--color-red-700)",
       },
       orange: {
         500: "var(--color-orange-500)",
@@ -78,7 +84,11 @@ module.exports = {
       violet: {
         500: "var(--color-violet-500)",
       },
-      headerBorder: "var(--color-headerBorder)"
+      yellow: {
+        500: "var(--color-yellow-500)",
+      },
+      sensorWiki: "var(--color-yellow-sensorWiki)",
+      headerBorder: "var(--color-headerBorder)",
     },
     extend: {
       colors: {
@@ -119,8 +129,8 @@ module.exports = {
       },
       // shadcn brder radius
       borderRadius: {
-        lg: `var(--radius)`,
-        md: `calc(var(--radius) - 2px)`,
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
@@ -130,30 +140,30 @@ module.exports = {
         helvetica: ["Helvetica","Arial","sans-serif"],
       },
       keyframes: {
-        'sidebarOpen': {
-          'from': { transform: "translateX(100%)" },
-          'to': { transform: "translateX(O)" },
+        sidebarOpen: {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(O)" },
         },
-        'sidebarClose': {
-          'from': { transform: "translateX(0)" },
-          'to': { transform: "translateX(100%)" },
+        sidebarClose: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(100%)" },
         },
-        'contentShow': {
-          'from': { opacity: 0, transform: 'translate(-50%, 0%) scale(0.5)' },
-          'to': { opacity: 1, transform: 'translate(-50%, 0%) scale(1)' },
+        contentShow: {
+          from: { opacity: 0, transform: "translate(-50%, 0%) scale(0.5)" },
+          to: { opacity: 1, transform: "translate(-50%, 0%) scale(1)" },
         },
-        'contentClose': {
-          'from': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
-          'to': { opacity: 0, transform: 'translate(-50%, -48%) scale(0.5)' },
+        contentClose: {
+          from: { opacity: 1, transform: "translate(-50%, -50%) scale(1)" },
+          to: { opacity: 0, transform: "translate(-50%, -48%) scale(0.5)" },
         },
-        'fade-in-up': {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(10px)'
+        "fade-in-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
           },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)'
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
           },
         },
         'pulse': {
