@@ -24,13 +24,13 @@ export default function SearchList(props: SearchListProps) {
   const { cursor, setCursor, enterPress, controlPress } = useKeyboardNav(
     0,
     0,
-    props.searchResultsDevice.length + props.searchResultsLocation.length
+    props.searchResultsDevice.length + props.searchResultsLocation.length,
   );
 
   const length =
     props.searchResultsDevice.length + props.searchResultsLocation.length;
   const searchResultsAll = props.searchResultsDevice.concat(
-    props.searchResultsLocation
+    props.searchResultsLocation,
   );
   const [selected, setSelected] = useState(searchResultsAll[cursor]);
   const [searchParams] = useSearchParams();
@@ -39,7 +39,7 @@ export default function SearchList(props: SearchListProps) {
       ? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
       : selected.type === "device"
       ? `/explore/${selected.deviceId}`
-      : `/explore${searchParams.size > 0 ? "?" + searchParams.toString() : ""}`
+      : `/explore${searchParams.size > 0 ? "?" + searchParams.toString() : ""}`,
   );
 
   const handleNavigate = useCallback(
@@ -52,14 +52,14 @@ export default function SearchList(props: SearchListProps) {
             searchParams.size > 0 ? "?" + searchParams.toString() : ""
           }`;
     },
-    [searchParams, compareMode, matches, selected]
+    [searchParams, compareMode, matches, selected],
   );
 
   const setShowSearchCallback = useCallback(
     (state: boolean) => {
       setOpen(state);
     },
-    [setOpen]
+    [setOpen],
   );
 
   const handleDigitPress = useCallback(
@@ -87,7 +87,7 @@ export default function SearchList(props: SearchListProps) {
       setCursor,
       setShowSearchCallback,
       handleNavigate,
-    ]
+    ],
   );
 
   useEffect(() => {

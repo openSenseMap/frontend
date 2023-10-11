@@ -8,6 +8,7 @@ export function getEnv() {
     NOVU_API_URL: process.env.NOVU_API_URL,
     NOVU_WEBSOCKET_URL: process.env.NOVU_WEBSOCKET_URL,
     NOVU_APPLICATION_IDENTIFIER: process.env.NOVU_APPLICATION_IDENTIFIER,
+    SENSORWIKI_API_URL: process.env.SENSORWIKI_API_URL,
   };
 }
 

@@ -7,7 +7,7 @@ import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getGraphColor } from "~/lib/utils";
-import { getSensors } from "~/models/sensor.server";
+import { getSensorsFromDevice } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
 import ErrorMessage from "~/components/error-message";
@@ -24,7 +24,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const device = await getDevice({ id: params.deviceId });
-  const sensors = await getSensors(params.deviceId);
+  const sensors = await getSensorsFromDevice(params.deviceId);
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");

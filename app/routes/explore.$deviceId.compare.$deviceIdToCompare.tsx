@@ -39,7 +39,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getDevice } from "~/models/device.server";
-import { getSensors } from "~/models/sensor.server";
+import { getSensorsFromDevice } from "~/models/sensor.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getGraphColor } from "~/lib/utils";
 import Graph from "~/components/device-detail/graph";
@@ -104,9 +104,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const device1 = await getDevice({ id: params.deviceId });
-  const sensorsFromDevice1 = await getSensors(params.deviceId);
+  const sensorsFromDevice1 = await getSensorsFromDevice(params.deviceId);
   const device2 = await getDevice({ id: params.deviceIdToCompare });
-  const sensorsFromDevice2 = await getSensors(params.deviceIdToCompare);
+  const sensorsFromDevice2 = await getSensorsFromDevice(
+    params.deviceIdToCompare,
+  );
 
   if (!device1 || !device2) {
     throw new Response("Device not found", { status: 502 });
