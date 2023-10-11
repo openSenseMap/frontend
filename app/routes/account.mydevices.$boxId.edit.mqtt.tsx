@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useOutletContext } from "@remix-run/react";
+import { Form, useActionData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import ErrorMessage from "~/components/error-message";
 
 import * as mqtt from "mqtt/dist/mqtt.min";
+import { toast } from "~/components/ui/use-toast";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -61,9 +62,6 @@ export default function EditBoxMQTT() {
   const mqqtURLRef = React.useRef<HTMLInputElement>(null);
   const mqqtTopicRef = React.useRef<HTMLInputElement>(null);
 
-  //* to view toast on edit page
-  const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>();
-
   React.useEffect(() => {
     if (actionData) {
       const hasErrors = Object.values(actionData?.errors).some(
@@ -88,8 +86,10 @@ export default function EditBoxMQTT() {
           if (isValidURL) {
             console.log("🚀 MQTT URL is valid");
             setMqttValid(true);
-            //* if qmtt url is valid, show success msg
-            setToastOpen(true);
+            //* if qmtt url is valid, show conn. success msg
+            toast({
+              description: "Successfully connected to mqtt url!",
+            });
           } else {
             console.log("🚀 MQTT URL is not valid");
             setMqttValid(false);
@@ -102,7 +102,7 @@ export default function EditBoxMQTT() {
         mqqtTopicRef.current?.focus();
       }
     }
-  }, [actionData, mqttURL, setToastOpen]);
+  }, [actionData, mqttURL]);
 
   return (
     <div className="grid grid-rows-1">
