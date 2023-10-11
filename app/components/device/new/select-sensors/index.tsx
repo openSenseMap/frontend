@@ -85,7 +85,9 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
 
       <div>
         {Object.entries(data.groupedSensors).map(([key, value]) => {
-          const phenomenonSlug: string = data.phenomena.find((pheno: any) => pheno.id == key).slug;
+          const phenomenonSlug: string = data.phenomena.find(
+            (pheno: any) => pheno.id == key,
+          ).slug;
           return (
             <div key={key} className="border-b-2 border-gray-600 pb-6 pt-10">
               <SensorWikHoverCard
@@ -172,7 +174,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                         {addedSensors["p-" + key].map(
                           (sensorItem: any, index: number) => {
                             return (
-                              <TableRow key={sensorItem.id}>
+                              <TableRow key={sensorItem.id + "" + index}>
                                 <TableCell>
                                   <input
                                     type="text"

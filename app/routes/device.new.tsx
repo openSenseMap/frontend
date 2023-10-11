@@ -30,6 +30,7 @@ import { createDevice } from "~/models/device.server";
 import { useTranslation } from "react-i18next";
 import Stepper from "~/components/stepper";
 import { useEffect, useState } from "react";
+import Spinner from "~/components/spinner";
 
 // validator for the form
 export const validator: any = {
@@ -404,9 +405,13 @@ export default function NewDevice() {
         <div className="flex justify-between pt-5">
           <div className="flex items-center gap-1">
             <h1 className="text-2xl font-bold">{t("add_device")}</h1>
-            <Spinner visible={showSpinner} />
+            {showSpinner && (
+              <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                <Spinner />
+              </div>
+            )}
           </div>
-          <div className="flex justify-end">
+          {/* <div className="flex justify-end">
             {page > 1 && (
               <button
                 name="action"
@@ -442,7 +447,7 @@ export default function NewDevice() {
                 {t("submit")}
               </button>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
           {page === 1 && <SelectDevice data={loaderData} />}
@@ -459,14 +464,14 @@ export default function NewDevice() {
             <Summary data={data} phenomena={loaderData.phenomena}></Summary>
           )}
         </div>
-        <div className="flex justify-end py-6">
+        <div className="flex justify-between py-8">
+          {/* fake Element to not break layout */}
+          {page === 1 && <div className="opacity-0"></div>}
           {page > 1 && (
             <button
               name="action"
-              // type="button"
               value="previous"
               onClick={(e) => {
-                console.log(e);
                 const previousPage = Number(page) - 1;
                 navigate(`?page=${previousPage}`);
               }}
@@ -478,7 +483,6 @@ export default function NewDevice() {
           {page < 6 && (
             <button
               name="action"
-              // type="button"
               value="next"
               className="ml-3 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
@@ -498,30 +502,5 @@ export default function NewDevice() {
         </div>
       </ValidatedForm>
     </div>
-  );
-}
-
-function Spinner({ visible }: { visible: boolean }) {
-  return (
-    <SpinnerIcon
-      className={clsx("animate-spin transition-opacity", {
-        "opacity-0": !visible,
-        "opacity-100": visible,
-      })}
-    />
-  );
-}
-
-export function SpinnerIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width={24} height={24} fill="none" {...props}>
-      <path
-        d="M12 4.75v1.5M17.127 6.873l-1.061 1.061M19.25 12h-1.5M17.127 17.127l-1.061-1.061M12 17.75v1.5M7.934 16.066l-1.06 1.06M6.25 12h-1.5M7.934 7.934l-1.06-1.06"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
