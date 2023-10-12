@@ -36,6 +36,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         mqqtTopic: null,
         reset: true,
       },
+      mqttURL: mqqtURL,
       status: 200,
     });
   }
@@ -48,6 +49,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   return json({
     errors,
+    mqttURL: mqqtURL,
     status: 200,
   });
 }
@@ -55,7 +57,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 //**********************************
 export default function EditBoxMQTT() {
   const [mqttEnabled, setMqttEnabled] = useState(false);
-  const [mqttURL, setMqttURL] = useState("");
   const [mqttValid, setMqttValid] = useState(true);
   const actionData = useActionData<typeof action>();
 
@@ -76,7 +77,7 @@ export default function EditBoxMQTT() {
 
         //* check mqtt url connection
         mqtt
-          .connectAsync(mqttURL)
+          .connectAsync(actionData.mqttURL.toString())
           // .connectAsync("wss://broker.emqx.io:8084/mqtt")
           .then((e) => {
             isValidURL = true;
@@ -102,7 +103,7 @@ export default function EditBoxMQTT() {
         mqqtTopicRef.current?.focus();
       }
     }
-  }, [actionData, mqttURL]);
+  }, [actionData]);
 
   return (
     <div className="grid grid-rows-1">
@@ -188,8 +189,6 @@ export default function EditBoxMQTT() {
                   ref={mqqtURLRef}
                   className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
                   disabled={!mqttEnabled}
-                  value={mqttURL}
-                  onChange={(e) => setMqttURL(e.target.value)}
                 />
                 {actionData?.errors?.mqqtURL && (
                   <div className="pt-1 text-[#FF0000]" id="mqqtURL-error">
