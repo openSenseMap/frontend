@@ -107,7 +107,6 @@
     "react-draggable": "^4.4.5",
     "react-hook-form": "^7.45.0",
     "react-i18next": "^12.2.2",
-    "react-lottie": "^1.2.3",
     "react-map-gl": "^7.0.21",
     "react-map-gl-geocoder": "^2.2.0",
     "react-spring": "^9.7.1",

@@ -1,7 +1,5 @@
 import { X } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
-import Lottie from "react-lottie";
-import * as animationData from "../../public/animations/error_animation.json";
 import { useNavigate } from "@remix-run/react";
 
 export default function ErrorMessage() {
@@ -22,18 +20,8 @@ export default function ErrorMessage() {
         Oh no, this shouldn't happen, but don't worry, our team is on the case!
       </p>
       <AlertDescription>
-        <Lottie
-          options={{
-            animationData: animationData,
-            autoplay: true,
-            loop: true,
-          }}
-          height={200}
-          width={200}
-        />
         <p className="p-2 text-md text-center">
-          And just to lighten the mood, here's an animation of a dog with a
-          lifebuoy to keep you company
+          Add some info here.
         </p>
       </AlertDescription>
     </Alert>
