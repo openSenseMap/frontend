@@ -92,7 +92,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         // <div className="text-right font-medium">
         <div className=" text-right">
           <a
-            href={`mydevices/${senseBox.id}/overview`}
+            href={`/device/${senseBox.id}/overview`}
             className="btn btn-default rounded-br-none rounded-tr-none border-r-0 text-[#000] hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Overview
@@ -104,13 +104,13 @@ export const columns: ColumnDef<SenseBox>[] = [
             Show on map
           </a>
           <a
-            href={`mydevices/${senseBox.id}/edit`}
+            href={`/device/${senseBox.id}/edit`}
             className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none border-r-0 text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Edit
           </a>
           <a
-            href={`mydevices/${senseBox.id}/dataupload`}
+            href={`/device/${senseBox.id}/dataupload`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-default rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none border-r-0 text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"

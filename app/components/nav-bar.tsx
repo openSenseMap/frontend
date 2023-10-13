@@ -8,7 +8,7 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { LogOut, Mailbox, Plus, Settings, UserIcon } from "lucide-react";
+import { Globe, LogOut, Mailbox, Plus, Puzzle, Settings, UserIcon } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
 import { UserAvatar } from "~/routes/resources.user-avatar";
@@ -23,6 +23,18 @@ const sidebarNavItems = [
     title: "Settings",
     href: "/settings",
     icon: <Settings size={24} />,
+    separator: true,
+  },
+  {
+    title: "Forum",
+    href: "https://docs.sensebox.de/",
+    icon: <Puzzle size={24} />,
+  },
+  {
+    title: "API Docs",
+    href: "https://docs.opensensemap.org/",
+    icon: <Globe size={24} />,
+    separator: true,
   },
 ];
 

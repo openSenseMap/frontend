@@ -31,7 +31,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
@@ -59,7 +59,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { latitude, longitude } = Object.fromEntries(formData);
 
-  const id = params.boxId;
+  const id = params.deviceId;
   invariant(id, `deviceID not found!`);
 
   await updateDeviceLocation({

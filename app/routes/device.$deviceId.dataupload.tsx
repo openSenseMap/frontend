@@ -23,7 +23,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 //**********************************
-export default function DataUpload() {
+export default function DataUpload2() {
   const [measurementData, setMeasurementData] = useState("");
   const [dataFormat, setDataFormat] = useState("CSV");
 
@@ -39,7 +39,7 @@ export default function DataUpload() {
             <ul>
               <li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
                 <ArrowLeft className=" mr-2 inline h-5 w-5" />
-                <Link to="/account/mydevices">Back to Dashboard</Link>
+                <Link to="/profile/me">Back to Dashboard</Link>
               </li>
             </ul>
           </nav>

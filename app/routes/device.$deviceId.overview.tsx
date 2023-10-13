@@ -16,13 +16,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  if (!params.boxId) {
+  if (!params.deviceId) {
     throw new Response("Device not found", { status: 502 });
   }
   //* get device data
-  const deviceData = await getDeviceWithoutSensors({ id: params.boxId });
+  const deviceData = await getDeviceWithoutSensors({ id: params.deviceId });
   //* get sensors data
-  const sensorsData = await getSensorsFromDevice(params.boxId);
+  const sensorsData = await getSensorsFromDevice(params.deviceId);
 
   return json({ deviceData, sensorsData });
 }
@@ -45,7 +45,7 @@ export default function DeviceOnverview() {
       <div className="mx-auto max-w-5xl space-y-6 p-10 pb-14 font-helvetica">
         <div className="rounded text-[#676767]">
           <ArrowLeft className=" mr-2 inline h-5 w-5" />
-          <Link to="/account/mydevices">Back to Dashboard</Link>
+          <Link to="/profile/me">Back to Dashboard</Link>
         </div>
 
         <div className="space-y-0.5">
