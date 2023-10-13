@@ -8,9 +8,8 @@ import React, { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import ErrorMessage from "~/components/error-message";
-
-import * as mqtt from "mqtt/dist/mqtt.min";
 import { toast } from "~/components/ui/use-toast";
+import { checkMqttValidaty } from "~/models/mqtt.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -34,9 +33,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
       errors: {
         mqttURL: null,
         mqttTopic: null,
-        reset: true,
       },
-      mqttURL: mqttURL,
+      reset: true,
+      isMqttValid: null,
       status: 200,
     });
   }
@@ -44,12 +43,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const errors = {
     mqttURL: mqttURL ? null : "Invalid URL (please use ws or wss URL)",
     mqttTopic: mqttTopic ? null : "Invalid mqtt topic",
-    reset: false,
   };
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+
+  if (hasErrors) {
+    return json({
+      errors: errors,
+      reset: false,
+      isMqttValid: null,
+      status: 400,
+    });
+  }
+
+  //* check mqtt connection validity
+  const isMqttValid = await checkMqttValidaty(mqttURL.toString());
 
   return json({
-    errors,
-    mqttURL: mqttURL,
+    errors: errors,
+    reset: false,
+    isMqttValid: isMqttValid,
     status: 200,
   });
 }
@@ -70,33 +82,19 @@ export default function EditBoxMQTT() {
       );
 
       // ToDo
-      if (actionData.errors.reset) {
+      if (actionData.reset) {
         // Do nothing for now
       } else if (!hasErrors) {
-        let isValidURL = false;
-
-        //* check mqtt url connection
-        mqtt
-          .connectAsync(actionData.mqttURL.toString())
-          // .connectAsync("wss://broker.emqx.io:8084/mqtt")
-          .then((e) => {
-            isValidURL = true;
+        if (actionData.isMqttValid) {
+          setMqttValid(true);
+          //* show conn. success msg
+          toast({
+            description: "Successfully connected to mqtt url!",
           });
-
-        setTimeout(() => {
-          if (isValidURL) {
-            console.log("🚀 MQTT URL is valid");
-            setMqttValid(true);
-            //* if qmtt url is valid, show conn. success msg
-            toast({
-              description: "Successfully connected to mqtt url!",
-            });
-          } else {
-            console.log("🚀 MQTT URL is not valid");
-            setMqttValid(false);
-            mqttURLRef.current?.focus();
-          }
-        }, 1000);
+        } else {
+          setMqttValid(false);
+          mqttURLRef.current?.focus();
+        }
       } else if (hasErrors && actionData?.errors?.mqttURL) {
         mqttURLRef.current?.focus();
       } else if (hasErrors && actionData?.errors?.mqttTopic) {
