@@ -1,4 +1,4 @@
-import { Exposure, Status } from "@prisma/client";
+import { type Exposure, type Status } from "@prisma/client";
 
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";

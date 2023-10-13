@@ -3,7 +3,6 @@ import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { ArrowLeft } from "lucide-react";
-import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { getDeviceWithoutSensors } from "~/models/device.server";

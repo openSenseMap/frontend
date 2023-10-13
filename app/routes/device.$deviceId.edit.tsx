@@ -18,7 +18,6 @@ import {
   ArrowLeft,
   UploadCloud,
 } from "lucide-react";
-import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
 import ErrorMessage from "~/components/error-message";
