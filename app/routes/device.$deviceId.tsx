@@ -113,7 +113,7 @@ export default function DeviceDashboard() {
       <NavBar />
 
       {/* Left side - device info */}
-      <div className="grid h-[85vh] grid-cols-1 gap-x-4 md:grid-cols-4">
+      <div className="grid grid-cols-4 h-[85vh] gap-x-4">
         <Card className="col-span-1">
           <CardHeader className="space-y-0 p-4 pb-0">
             <CardTitle className="text-[18px]">{deviceData.name}</CardTitle>
