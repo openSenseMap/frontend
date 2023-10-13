@@ -9,7 +9,6 @@ import {
 } from "~/components/ui/card";
 import { Map, MapProvider, Marker } from "react-map-gl";
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
-import { Cloudy, Droplets, Thermometer } from "lucide-react";
 import { diffFromCreateDate, getMinuteFormattedString } from "~/utils";
 import { Badge } from "~/components/ui/badge";
 import moment from "moment";
