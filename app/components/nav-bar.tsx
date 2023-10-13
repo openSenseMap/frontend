@@ -8,10 +8,26 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { Globe, LogOut, Mailbox, Plus, Puzzle, Settings, UserIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Globe,
+  LogOut,
+  Mailbox,
+  Plus,
+  Puzzle,
+  Settings,
+  UserIcon,
+} from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
 import { UserAvatar } from "~/routes/resources.user-avatar";
+import {
+  DropdownMenu,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const sidebarNavItems = [
   {
@@ -63,9 +79,32 @@ export function NavBar() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              <Button variant="outline" size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
+              {/* down arrow icon */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Plus className="h-4 w-4" />
+                    <ChevronDownIcon className=" m-0 inline h-4  w-4 p-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" forceMount>
+                  <DropdownMenuGroup>
+                    <Link to="#">
+                      <DropdownMenuItem>
+                        <span>New device</span>
+                      </DropdownMenuItem>
+                    </Link>
+
+                    <Link to="/device/transfer">
+                      <DropdownMenuItem>
+                        <span>Transfer device</span>
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button variant="outline" size="icon" disabled>
                 <Mailbox className="h-4 w-4" />
               </Button>

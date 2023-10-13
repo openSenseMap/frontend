@@ -20,7 +20,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 //**********************************
-export default function EditBoxTTN() {
+export default function EditBoxTransfer() {
   return (
     <div className="grid grid-rows-1">
       <div className="flex min-h-full items-center justify-center">

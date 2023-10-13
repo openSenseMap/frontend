@@ -222,7 +222,7 @@ export default function EditBoxSensors() {
                                     <ChevronDownIcon className=" m-0 inline h-6  w-6 p-0" />
                                   </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className=" min-w-fit max-w-[150px]">
+                                <DropdownMenuContent align="end" className="min-w-fit max-w-[150px]">
                                   <DropdownMenuGroup className=" flex h-fit flex-wrap">
                                     {iconsList?.map((icon: any) => {
                                       const Icon = icon.name;
