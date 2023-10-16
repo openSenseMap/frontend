@@ -166,7 +166,7 @@
     "csvtojson": "^2.0.10",
     "cypress": "12.17.3",
     "dotenv": "^16.3.1",
-    "esbuild": "^0.19.2",
+    "esbuild": "^0.19.4",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-cypress": "^2.14.0",
