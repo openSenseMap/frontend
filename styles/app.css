@@ -5,6 +5,24 @@
 :root {
   --color-black: #121212;
   --color-white: #ffffff;
+  /* Logo Colors */
+  --logo-green: #4fae48;
+  --logo-blue: #00b4e4;
+
+  /* Light Theme Colors */
+  --light-menu: #727373;
+  --light-text: #363636;
+  --light-green: #3d843f;
+  --light-blue: #037ea1;
+
+  /* Dark Theme Colors */
+  --dark-menu: #d2d1d0;
+  --dark-text: #d2d1d0;
+  --dark-green: #6fa161;
+  --dark-blue: #0386aa;
+  --dark-background: #242424;
+  --dark-boxes: #3b3a3a;
+
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -42,7 +60,7 @@
   --color-green-100: #69ac54;
   --color-green-300: #709f61;
   --color-red-500: #f10000;
-  --color-red-700: #B91C1C;
+  --color-red-700: #b91c1c;
   --color-orange-500: #f97316;
   --color-violet-500: #7f00ff;
   --color-yellow-500: #eab308;
@@ -50,7 +68,7 @@
   --color-headerBorder: #e3e3e3;
 
   /* shadcn color definitions */
-  --background: 0 0% 100%;
+  --background: "#242424";
   --foreground: 222.2 47.4% 11.2%;
 
   --muted: 210 40% 96.1%;
@@ -85,16 +103,16 @@
 
 .dark {
   /* shadcn dark mode color definitions */
-  --background: 224 71% 4%;
+  --background: "#242424";
   --foreground: 213 31% 91%;
 
-  --muted: 223 47% 11%;
+  --muted: "#3B3A3A";
   --muted-foreground: 215.4 16.3% 56.9%;
 
   --popover: 224 71% 4%;
   --popover-foreground: 215 20.2% 65.1%;
 
-  --card: 0 0% 100%;
+  --card: "#242424";
   --card-foreground: 222.2 47.4% 11.2%;
 
   --border: 216 34% 17%;
@@ -122,7 +140,8 @@ kbd {
   background-color: #eee;
   border-radius: 3px;
   border: 1px solid #b4b4b4;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2),
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.2),
     0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
   color: #333;
   display: inline-block;
@@ -137,5 +156,5 @@ kbd {
 }
 
 .mapboxgl-ctrl-geocoder {
-  width: 500px!important;
+  width: 500px !important;
 }
