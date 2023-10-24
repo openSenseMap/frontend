@@ -92,6 +92,25 @@ module.exports = {
     },
     extend: {
       colors: {
+        //osem color scheme
+        logo: {
+          green: "#4fae48",
+          blue: "#00b4e4"
+        },
+        light: {
+          menu: "#727373",
+          text: "#363636",
+          green: "#3D843F",
+          blue: "#037EA1"
+        },
+        dark: {
+          menu: "#D2D1D0",
+          text: "#D2D1D0",
+          green: "#6FA161",
+          blue: "#0386AA",
+          background: "#242424",
+          boxes: "#3B3A3A"
+        },
         // shadcn colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -137,7 +156,7 @@ module.exports = {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
         monospace: ["Courier New", "Courier", "monospace"],
-        helvetica: ["Helvetica","Arial","sans-serif"],
+        helvetica: ["Helvetica", "Arial", "sans-serif"],
       },
       keyframes: {
         sidebarOpen: {
