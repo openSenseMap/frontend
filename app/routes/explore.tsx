@@ -12,7 +12,7 @@ import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source } from "react-map-gl";
-import { useState, useRef, useEffect, createContext } from "react";
+import { useState, useRef, useEffect } from "react";
 import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import Legend from "~/components/map/legend";
 import type { LegendValue } from "~/components/map/legend";
@@ -29,16 +29,6 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
-
-//* Used in filter-options component
-export const FilterOptionsContext = createContext({
-  // globalFilterParams: new URLSearchParams(""),
-  filterOptionsOn: false,
-  setFilterOptionsOn: (_filterOptionsOn: boolean) => {},
-  // setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
-  GlobalFilteredDevices: {},
-  setGlobalFilteredDevices: (_GlobalFilteredDevices: {}) => {},
-});
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -60,14 +50,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
-  var filteredDevices = null;
-  if (
-    urlFilterParams.has("exposure") ||
-    urlFilterParams.has("status") ||
-    urlFilterParams.has("phenomenon")
-  ) {
-    filteredDevices = getFilteredDevices(devices, urlFilterParams);
-  }
+  var filteredDevices = getFilteredDevices(devices, urlFilterParams);
 
   const user = await getUser(request);
   const phenomena = await getPhenomena();
@@ -258,13 +241,6 @@ export default function Explore() {
       mapRef!.current!.getCanvas().style.cursor = "";
     }
   };
-  //* initialize filtered devices if any
-  const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    data.filteredDevices ? data.filteredDevices : {},
-  );
-  const [filterOptionsOn, setFilterOptionsOn] = useState(
-    data.filteredDevices ? true : false,
-  );
 
   //* fly to sensebox location when url inludes deviceId
   const { deviceId } = useParams();
@@ -289,63 +265,50 @@ export default function Explore() {
   }, [data.message, toast]);
 
   return (
-    <FilterOptionsContext.Provider
-      value={{
-        filterOptionsOn,
-        setFilterOptionsOn,
-        GlobalFilteredDevices,
-        setGlobalFilteredDevices,
-      }}
-    >
-      <div className="h-full w-full">
-        <MapProvider>
-          <Header devices={data.devices} />
+    <div className="h-full w-full">
+      <MapProvider>
+        <Header devices={data.devices} />
+        {selectedPheno && (
+          <Legend
+            title={selectedPheno.label.item[0].text}
+            values={legendLabels()}
+          />
+        )}
+        <Map
+          onMove={(evt) => setViewState(evt.viewState)}
+          interactiveLayerIds={selectedPheno ? ["phenomenon-layer"] : []}
+          onClick={onMapClick}
+          onMouseMove={handleMouseMove}
+          ref={mapRef}
+          initialViewState={
+            deviceId
+              ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
+              : { latitude: 7, longitude: 52, zoom: 2 }
+          }
+        >
+          {!selectedPheno && <ClusterLayer devices={data.filteredDevices} />}
           {selectedPheno && (
-            <Legend
-              title={selectedPheno.label.item[0].text}
-              values={legendLabels()}
-            />
-          )}
-          <Map
-            onMove={(evt) => setViewState(evt.viewState)}
-            interactiveLayerIds={selectedPheno ? ["phenomenon-layer"] : []}
-            onClick={onMapClick}
-            onMouseMove={handleMouseMove}
-            ref={mapRef}
-            initialViewState={
-              deviceId
-                ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
-                : { latitude: 7, longitude: 52, zoom: 2 }
-            }
-          >
-            {!selectedPheno && (
-              <ClusterLayer
-                devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
+            <Source
+              id="osem-data"
+              type="geojson"
+              data={filteredData as FeatureCollection<Point, Device>}
+              cluster={false}
+            >
+              <Layer
+                {...(phenomenonLayers[selectedPheno.slug] ??
+                  buildLayerFromPheno(selectedPheno))}
               />
-            )}
-            {selectedPheno && (
-              <Source
-                id="osem-data"
-                type="geojson"
-                data={filteredData as FeatureCollection<Point, Device>}
-                cluster={false}
-              >
-                <Layer
-                  {...(phenomenonLayers[selectedPheno.slug] ??
-                    buildLayerFromPheno(selectedPheno))}
-                />
-              </Source>
-            )}
+            </Source>
+          )}
 
-            {/* <ClusterLayer
+          {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-            <Toaster />
-            <Outlet />
-          </Map>
-        </MapProvider>
-      </div>
-    </FilterOptionsContext.Provider>
+          <Toaster />
+          <Outlet />
+        </Map>
+      </MapProvider>
+    </div>
   );
 }
 
