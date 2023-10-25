@@ -30,7 +30,7 @@ export function UserAvatar() {
   return (
     <Avatar className="h-8 w-8">
       <AvatarImage
-        src={getUserImgSrc(fetcher.data?.profile.imageId)}
+        src={getUserImgSrc(fetcher.data?.profile.profileImage.id)}
         alt={fetcher.data?.profile.username}
       />
       <AvatarFallback>

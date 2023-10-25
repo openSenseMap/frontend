@@ -5,6 +5,9 @@ import { drizzleClient } from "~/db.server";
 export async function getProfileByUserId(id: Profile["id"]) {
   return drizzleClient.query.profile.findFirst({
     where: (profile, { eq }) => eq(profile.userId, id),
+    with: {
+      profileImage: true,
+    },
   });
 }
 

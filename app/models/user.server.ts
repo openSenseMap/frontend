@@ -109,7 +109,7 @@ export async function createUser(
 
   await createProfile(newUser[0].id, name);
 
-  return user;
+  return newUser;
 }
 
 export async function verifyLogin(

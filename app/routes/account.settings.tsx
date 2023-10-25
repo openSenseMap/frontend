@@ -328,7 +328,7 @@ export default function Settings() {
                       <select
                         id="language"
                         name="language"
-                        defaultValue={userData?.language}
+                        defaultValue={userData?.language || ""}
                         onChange={(e) => setLang(e.target.value)}
                         className="appearance-auto w-full rounded border border-gray-200 px-2 py-1.5 text-base"
                       >
