@@ -53,11 +53,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
   invariant(typeof name === "string", "Device name is required.");
   invariant(typeof exposure === "string", "Device name is required.");
 
+  // TODO: check if we can use the enum type from drizzle
   if (
-    exposure !== "INDOOR" &&
-    exposure !== "OUTDOOR" &&
-    exposure !== "MOBILE" &&
-    exposure !== "UNKNOWN"
+    exposure !== "indoor" &&
+    exposure !== "outdoor" &&
+    exposure !== "mobile" &&
+    exposure !== "unknown"
   ) {
     return json({
       errors: {

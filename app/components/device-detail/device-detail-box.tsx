@@ -262,8 +262,11 @@ export default function DeviceDetailBox() {
                           <ul className="no-scrollbar z-0 flex-1 divide-y divide-gray-200 overflow-y-scroll">
                             {data.sensors.map((sensor: Sensor) => {
                               // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-                              const lastMeasurement =
-                                sensor.lastMeasurement as Prisma.JsonObject;
+                              const lastMeasurement = {
+                                value: "5.5",
+                              };
+                              // FIXME: let´s remove this lastMeasurement thing. Guess best is to get it from the measurement table
+                              // sensor.lastMeasurement as Prisma.JsonObject;
                               const value = lastMeasurement
                                 ? (lastMeasurement.value as string)
                                 : undefined;
