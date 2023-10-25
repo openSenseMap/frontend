@@ -19,7 +19,6 @@ import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
-import { type Device, type Sensor } from "@prisma/client";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser, getUserSession } from "~/session.server";
 import { useToast } from "~/components/ui/use-toast";
@@ -29,6 +28,7 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
+import type { Device, Sensor } from "db/schema";
 
 //* Used in filter-options component
 export const FilterOptionsContext = createContext({

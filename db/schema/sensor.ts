@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, json } from "drizzle-orm/pg-core";
 import { statusEnum } from "./enum";
 import {
   relations,
@@ -26,6 +26,8 @@ export const sensor = pgTable("sensor", {
   sensorWikiType: text("sensorWikiType"),
   sensorWikiPhenomenon: text("sensorWikiPhenomenon"),
   sensorWikiUnit: text("sensorWikiUnit"),
+  lastMeasurement: json("lastMeasurement"),
+  data: json("data"),
 });
 
 /**

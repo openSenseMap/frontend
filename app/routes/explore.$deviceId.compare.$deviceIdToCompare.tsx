@@ -52,6 +52,7 @@ import { Separator } from "~/components/ui/separator";
 import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 import addDays from "date-fns/addDays";
 import type { Sensor } from "db/schema";
+import type { LastMeasurement } from "types";
 
 function mergeSensors(
   sensorsFromDevice1: Sensor[],
@@ -345,11 +346,11 @@ export default function CompareDevices() {
                                   (sensorGroup: Sensor[], index) => {
                                     // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                                     const lastMeasurement0 = sensorGroup[0]
-                                      ?.lastMeasurement as Prisma.JsonObject;
+                                      ?.lastMeasurement as LastMeasurement;
                                     const value0 =
                                       lastMeasurement0?.value as string;
                                     const lastMeasurement1 = sensorGroup[1]
-                                      ?.lastMeasurement as Prisma.JsonObject;
+                                      ?.lastMeasurement as LastMeasurement;
                                     const value1 =
                                       lastMeasurement1?.value as string;
 
