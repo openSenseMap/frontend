@@ -1,6 +1,6 @@
 export const hasObjPropMatchWithPrefixKey = (
   object: Object,
-  prefixes: string[]
+  prefixes: string[],
 ) => {
   const keys = Object.keys(object);
   for (const key of keys) {
@@ -13,6 +13,8 @@ export const hasObjPropMatchWithPrefixKey = (
   return false;
 };
 
+// TODO: can be removed after switching to drizzle
+// enums will be named lower case
 export const exposureHelper = (exposure: string) => {
   switch (exposure) {
     case "mobile":

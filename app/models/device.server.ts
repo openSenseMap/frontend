@@ -3,8 +3,8 @@ import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
 import { eq } from "drizzle-orm";
-import { device, type Device } from "db/schema";
-import { exposureHelper } from "~/lib/helpers";
+import { device } from "db/schema";
+import type { Device } from "db/schema";
 
 // TODO not sure why the replacer is not working!
 // const geoJsonStringifyReplacer = function geoJsonStringifyReplacer(
@@ -143,16 +143,30 @@ export async function getDevices() {
 
 export async function getDevicesWithSensors() {
   // TODO: use drizzle
-  const devices = await prisma.device.findMany({
-    select: {
+  // const devices = await prisma.device.findMany({
+  //   select: {
+  //     id: true,
+  //     name: true,
+  //     latitude: true,
+  //     longitude: true,
+  //     exposure: true,
+  //     createdAt: true,
+  //     sensors: true,
+  //     status: true,
+  //   },
+  // });
+  const devices = await drizzleClient.query.device.findMany({
+    columns: {
       id: true,
       name: true,
       latitude: true,
       longitude: true,
       exposure: true,
       createdAt: true,
-      sensors: true,
       status: true,
+    },
+    with: {
+      sensors: true,
     },
   });
   const geojson: GeoJSON.FeatureCollection<Point, any> = {
@@ -241,32 +255,43 @@ export async function createDevicePostgres(
   formDeviceData: any,
 ) {
   // TODO: use drizzle
-  const newDevice = await prisma.device.create({
-    data: {
+  // const newDevice = await prisma.device.create({
+  //   data: {
+  //     id: deviceData._id,
+  //     sensorWikiModel: formDeviceData.type,
+  //     userId: userId ?? "unknown",
+  //     name: deviceData.name,
+  //     exposure: exposureHelper(deviceData.exposure),
+  //     useAuth: deviceData.useAuth,
+  //     latitude: Number(deviceData.currentLocation.coordinates[1]),
+  //     longitude: Number(deviceData.currentLocation.coordinates[0]),
+  //   },
+  // });
+  const newDevice = await drizzleClient
+    .insert(device)
+    .values({
       id: deviceData._id,
       sensorWikiModel: formDeviceData.type,
       userId: userId ?? "unknown",
       name: deviceData.name,
-      exposure: exposureHelper(deviceData.exposure),
+      exposure: deviceData.exposure,
       useAuth: deviceData.useAuth,
       latitude: Number(deviceData.currentLocation.coordinates[1]),
       longitude: Number(deviceData.currentLocation.coordinates[0]),
-    },
-  });
+    })
+    .returning();
 
   for await (let [i, sensor] of deviceData.sensors.entries()) {
-    // TODO: use drizzle
-    await prisma.sensor.create({
-      data: {
-        id: sensor._id,
-        deviceId: newDevice.id,
-        title: sensorArray[i].name,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-        sensorWikiType: sensor.sensorType,
-        sensorWikiUnit: sensor.unit,
-        sensorWikiPhenomenon: sensor.title,
-      },
+    // TODO: Why don´t we use the registerSensor funciton in sensor.server.ts
+    await drizzleClient.insert(sensor).values({
+      id: sensor._id,
+      deviceId: newDevice[0].id,
+      title: sensorArray[i].name,
+      sensorType: sensor.sensorType,
+      unit: sensor.unit,
+      sensorWikiType: sensor.sensorType,
+      sensorWikiUnit: sensor.unit,
+      sensorWikiPhenomenon: sensor.title,
     });
   }
 
