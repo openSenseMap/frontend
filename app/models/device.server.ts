@@ -3,9 +3,9 @@ import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
 import { eq } from "drizzle-orm";
-import { device, type SelectDevice } from "db/schema";
+import { device, type Device } from "db/schema";
 
-export function getDevice({ id }: Pick<SelectDevice, "id">) {
+export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
     where: (device, { eq }) => eq(device.id, id),
     columns: {
@@ -28,7 +28,7 @@ export function getDevice({ id }: Pick<SelectDevice, "id">) {
   });
 }
 
-export function getDeviceWithoutSensors({ id }: Pick<SelectDevice, "id">) {
+export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
     where: (device, { eq }) => eq(device.id, id),
     columns: {
@@ -46,7 +46,7 @@ export function updateDeviceInfo({
   id,
   name,
   exposure,
-}: Pick<SelectDevice, "id" | "name" | "exposure">) {
+}: Pick<Device, "id" | "name" | "exposure">) {
   return drizzleClient
     .update(device)
     .set({
@@ -60,7 +60,7 @@ export function updateDeviceLocation({
   id,
   latitude,
   longitude,
-}: Pick<SelectDevice, "id" | "latitude" | "longitude">) {
+}: Pick<Device, "id" | "latitude" | "longitude">) {
   return drizzleClient
     .update(device)
     .set({
@@ -70,11 +70,11 @@ export function updateDeviceLocation({
     .where(eq(device.id, id));
 }
 
-export function deleteDevice({ id }: Pick<SelectDevice, "id">) {
+export function deleteDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.delete(device).where(eq(device.id, id));
 }
 
-export function getUserDevices(userId: SelectDevice["userId"]) {
+export function getUserDevices(userId: Device["userId"]) {
   // TODO: where clause
   return drizzleClient.query.device.findMany({
     where: (device, { eq }) => eq(device.userId, userId),

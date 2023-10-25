@@ -7,7 +7,6 @@ import crypto from "node:crypto";
 import csvtojson from "csvtojson";
 import { sensor } from "./schema/sensor";
 import { device } from "./schema/device";
-import type { InsertUser } from "./schema/user";
 import { user } from "./schema/user";
 import { measurement } from "./schema/measurement";
 import { password } from "./schema/password";
@@ -45,7 +44,7 @@ async function seed() {
     preparePasswordHash("osemrocks"),
     13,
   ); // make salt_factor configurable oSeM API uses 13 by default
-  const dummyUser: InsertUser = {
+  const dummyUser = {
     id: "cleqyv5pi00003uxdszv4mdnk", //* to connect it to imported data
     name: "sensei",
     email: email,
@@ -61,7 +60,14 @@ async function seed() {
   await client.delete(measurement).catch(() => {});
 
   //* create intial user
-  await client.insert(user).values(dummyUser);
+  await client.insert(user).values({
+    id: dummyUser.id,
+    name: dummyUser.name,
+    email: dummyUser.email,
+    role: "user",
+    language: dummyUser.language,
+    emailIsConfirmed: dummyUser.emailIsConfirmed,
+  });
   await client.insert(password).values({
     hash: hashedPassword,
     userId: dummyUser.id,
