@@ -23,6 +23,9 @@ export const sensor = pgTable("sensor", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   deviceId: text("device_id").notNull(),
+  sensorWikiType: text("sensorWikiType"),
+  sensorWikiPhenomenon: text("sensorWikiPhenomenon"),
+  sensorWikiUnit: text("sensorWikiUnit"),
 });
 
 /**
