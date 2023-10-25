@@ -1,4 +1,5 @@
-import { profile, type Profile, type User } from "db/schema";
+import { profile } from "db/schema";
+import type { User, Profile } from "db/schema";
 import { eq } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 
