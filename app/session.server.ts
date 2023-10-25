@@ -1,7 +1,7 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import type { User } from "db/schema";
 import invariant from "tiny-invariant";
 
-import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
@@ -25,7 +25,7 @@ export async function getUserSession(request: Request) {
 }
 
 export async function getUserId(
-  request: Request
+  request: Request,
 ): Promise<User["id"] | undefined> {
   const session = await getUserSession(request);
   const userId = session.get(USER_SESSION_KEY);
@@ -64,7 +64,7 @@ export async function getUser(request: Request) {
 
 export async function requireUserId(
   request: Request,
-  redirectTo: string = new URL(request.url).pathname
+  redirectTo: string = new URL(request.url).pathname,
 ) {
   const userId = await getUserId(request);
   if (!userId) {
@@ -96,7 +96,7 @@ export async function createUserSession({
 }) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
-  session.flash("global_message", "You successfully logged in.")
+  session.flash("global_message", "You successfully logged in.");
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -117,7 +117,7 @@ export async function logout({
 }) {
   const session = await getUserSession(request);
   session.unset(USER_SESSION_KEY);
-  session.flash("global_message", "You successfully logged out.")
+  session.flash("global_message", "You successfully logged out.");
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session),

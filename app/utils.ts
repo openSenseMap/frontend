@@ -1,7 +1,6 @@
 import { useMatches } from "@remix-run/react";
+import type { User } from "db/schema";
 import { useMemo } from "react";
-
-import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -14,7 +13,7 @@ const DEFAULT_REDIRECT = "/";
  */
 export function safeRedirect(
   to: FormDataEntryValue | string | null | undefined,
-  defaultRedirect: string = DEFAULT_REDIRECT
+  defaultRedirect: string = DEFAULT_REDIRECT,
 ) {
   if (!to || typeof to !== "string") {
     return defaultRedirect;
@@ -34,12 +33,12 @@ export function safeRedirect(
  * @returns {JSON|undefined} The router data or undefined if not found
  */
 export function useMatchesData(
-  id: string
+  id: string,
 ): Record<string, unknown> | undefined {
   const matchingRoutes = useMatches();
   const route = useMemo(
     () => matchingRoutes.find((route) => route.id === id),
-    [matchingRoutes, id]
+    [matchingRoutes, id],
   );
 
   return route?.data as Record<string, unknown>;
@@ -61,7 +60,7 @@ export function useUser(): User {
   const maybeUser = useOptionalUser();
   if (!maybeUser) {
     throw new Error(
-      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
+      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead.",
     );
   }
   return maybeUser;
@@ -90,7 +89,7 @@ export function validateName(name: string) {
 //* validate passwords type (changePassword page)
 export function validatePassType(passwords: any) {
   const index = passwords.findIndex(
-    (password: any) => typeof password !== "string" || password.length === 0
+    (password: any) => typeof password !== "string" || password.length === 0,
   );
   return { isValid: index == -1 ? true : false, index: index };
 }
@@ -107,11 +106,16 @@ export function validatePassLength(passwords: any) {
  * @param devices all devices data
  * @param filterParams attributes and selected values
  */
-export function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
+export function getFilteredDevices(
+  devices: any,
+  filterParams: URLSearchParams,
+) {
   // if a param is missing/undefined set it as ALL
-  const { exposure= "ALL", status= "ALL", phenomenon= "ALL" } = Object.fromEntries(
-    filterParams.entries()
-  );
+  const {
+    exposure = "ALL",
+    status = "ALL",
+    phenomenon = "ALL",
+  } = Object.fromEntries(filterParams.entries());
 
   let results: any = [];
 
