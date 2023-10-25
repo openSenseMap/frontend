@@ -28,6 +28,7 @@ import { LabelButton } from "~/components/label-button";
 import { getUserImgSrc } from "~/utils/misc";
 import { profileImage } from "db/schema";
 import { eq } from "drizzle-orm";
+import ErrorMessage from "~/components/error-message";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
@@ -185,5 +186,13 @@ export default function PhotoChooserModal() {
         </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
+    </div>
   );
 }

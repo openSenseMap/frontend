@@ -22,6 +22,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { profile } from "db/schema";
 import { eq } from "drizzle-orm";
+import ErrorMessage from "~/components/error-message";
 
 const profileFormSchema = z.object({
   username: nameSchema.optional(),
@@ -185,6 +186,14 @@ export default function EditUserProfilePage() {
         </div>
       </div>
       <Outlet />
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

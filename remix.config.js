@@ -4,6 +4,7 @@
 module.exports = {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
-  serverDependenciesToBundle: ["chartjs-adapter-date-fns", "maplibre-gl", "postgres"],
+  serverDependenciesToBundle: ["chartjs-adapter-date-fns", "maplibre-gl", "postgres", "supercluster", "use-supercluster", "kdbush"],
   serverModuleFormat: "cjs",
+  browserNodeBuiltinsPolyfill: { modules: { events: true } }
 };

@@ -2,8 +2,13 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{ts,tsx,jsx,js}", "components/**/*.{ts,tsx}"],
-  darkMode: "class",
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   theme: {
     // shadcn container
     container: {
@@ -71,6 +76,7 @@ module.exports = {
       },
       red: {
         500: "var(--color-red-500)",
+        700: "var(--color-red-700)",
       },
       orange: {
         500: "var(--color-orange-500)",
@@ -78,10 +84,33 @@ module.exports = {
       violet: {
         500: "var(--color-violet-500)",
       },
-      headerBorder: "var(--color-headerBorder)"
+      yellow: {
+        500: "var(--color-yellow-500)",
+      },
+      sensorWiki: "var(--color-yellow-sensorWiki)",
+      headerBorder: "var(--color-headerBorder)",
     },
     extend: {
       colors: {
+        //osem color scheme
+        logo: {
+          green: "#4fae48",
+          blue: "#00b4e4"
+        },
+        light: {
+          menu: "#727373",
+          text: "#363636",
+          green: "#3D843F",
+          blue: "#037EA1"
+        },
+        dark: {
+          menu: "#D2D1D0",
+          text: "#D2D1D0",
+          green: "#6FA161",
+          blue: "#0386AA",
+          background: "#242424",
+          boxes: "#3B3A3A"
+        },
         // shadcn colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -119,41 +148,41 @@ module.exports = {
       },
       // shadcn brder radius
       borderRadius: {
-        lg: `var(--radius)`,
-        md: `calc(var(--radius) - 2px)`,
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
         sans: ["Urbanist", ...defaultTheme.fontFamily.sans],
         serif: ["RobotoSlab", ...defaultTheme.fontFamily.serif],
         monospace: ["Courier New", "Courier", "monospace"],
-        helvetica: ["Helvetica","Arial","sans-serif"],
+        helvetica: ["Helvetica", "Arial", "sans-serif"],
       },
       keyframes: {
-        'sidebarOpen': {
-          'from': { transform: "translateX(100%)" },
-          'to': { transform: "translateX(O)" },
+        sidebarOpen: {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(O)" },
         },
-        'sidebarClose': {
-          'from': { transform: "translateX(0)" },
-          'to': { transform: "translateX(100%)" },
+        sidebarClose: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(100%)" },
         },
-        'contentShow': {
-          'from': { opacity: 0, transform: 'translate(-50%, 0%) scale(0.5)' },
-          'to': { opacity: 1, transform: 'translate(-50%, 0%) scale(1)' },
+        contentShow: {
+          from: { opacity: 0, transform: "translate(-50%, 0%) scale(0.5)" },
+          to: { opacity: 1, transform: "translate(-50%, 0%) scale(1)" },
         },
-        'contentClose': {
-          'from': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
-          'to': { opacity: 0, transform: 'translate(-50%, -48%) scale(0.5)' },
+        contentClose: {
+          from: { opacity: 1, transform: "translate(-50%, -50%) scale(1)" },
+          to: { opacity: 0, transform: "translate(-50%, -48%) scale(0.5)" },
         },
-        'fade-in-up': {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(10px)'
+        "fade-in-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
           },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)'
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
           },
         },
         'pulse': {

@@ -26,6 +26,8 @@ import {
   Thermometer,
   X,
   XSquare,
+  RefreshCcw,
+  RefreshCwOff,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -51,6 +53,7 @@ import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isMobile, isTablet, isBrowser } from "react-device-detect";
 import type { Device, Sensor } from "db/schema";
+import { Label } from "../ui/label";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -81,7 +84,8 @@ export default function DeviceDetailBox() {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const { compareMode, setCompareMode } = useSharedCompareMode();
-
+  const [refreshOn, SetRefreshOn] = useState(false);
+  const [refreshSecond, setRefreshSecond] = useState(59);
   useEffect(() => {
     setOpenGraph(Boolean(data.selectedSensors.length));
   }, [data.selectedSensors]);
@@ -94,6 +98,7 @@ export default function DeviceDetailBox() {
     searchParams.delete("sensor");
     searchParams.delete("date_from");
     searchParams.delete("date_to");
+    searchParams.delete("aggregation");
     navigate({ pathname: newPath, search: searchParams.toString() });
   };
 
@@ -113,6 +118,21 @@ export default function DeviceDetailBox() {
     setOpenGraph(false);
     setOpen(false);
   }
+
+  useEffect(() => {
+    let interval: any = null;
+    if (refreshOn) {
+      if (refreshSecond == 0) {
+        setRefreshSecond(59);
+      }
+      interval = setInterval(() => {
+        setRefreshSecond((refreshSecond) => refreshSecond - 1);
+      }, 1000);
+    } else if (!refreshOn) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [refreshOn, refreshSecond]);
 
   return (
     <>
@@ -151,7 +171,7 @@ export default function DeviceDetailBox() {
               }
             >
               {navigation.state === "loading" && (
-                <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                   <Spinner />
                 </div>
               )}
@@ -244,7 +264,9 @@ export default function DeviceDetailBox() {
                               // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                               const lastMeasurement =
                                 sensor.lastMeasurement as Prisma.JsonObject;
-                              const value = lastMeasurement.value as string;
+                              const value = lastMeasurement
+                                ? (lastMeasurement.value as string)
+                                : undefined;
                               return (
                                 <li key={sensor.id}>
                                   <div className="group relative flex items-center px-2 py-3">
@@ -282,10 +304,16 @@ export default function DeviceDetailBox() {
                                                 : "text-gray-900")
                                             }
                                           >
-                                            {sensor.title}
+                                            {sensor.sensorWikiPhenomenon ??
+                                              sensor.title}
                                           </p>
                                           <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
-                                            {value + sensor.unit}
+                                            {value
+                                              ? value +
+                                                (sensor.sensorWikiUnit ??
+                                                  sensor.unit)
+                                              : sensor.sensorWikiUnit ??
+                                                sensor.unit}
                                           </p>
                                         </div>
                                       </div>
@@ -365,6 +393,25 @@ export default function DeviceDetailBox() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      SetRefreshOn(!refreshOn);
+                      setRefreshSecond(59);
+                    }}
+                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 flex items-center justify-center"
+                  >
+                    {refreshOn ? (
+                      <>
+                        <Label className=" absolute text-xs m-0 p-0 cursor-pointer ">
+                          {refreshSecond}
+                        </Label>
+                        <RefreshCcw className="m-0 p-0 inline h-9  w-9"></RefreshCcw>
+                      </>
+                    ) : (
+                      <RefreshCwOff className="m-0 p-0 inline h-9  w-9" />
+                    )}
                   </div>
                 </div>
               </div>

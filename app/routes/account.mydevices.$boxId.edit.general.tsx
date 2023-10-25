@@ -10,6 +10,7 @@ import { Save } from "lucide-react";
 import React, { useState } from "react";
 import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
+import ErrorMessage from "~/components/error-message";
 import {
   deleteDevice,
   getDeviceWithoutSensors,
@@ -91,7 +92,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       invariant(typeof userEmail === "string", "email not found");
       invariant(
         typeof passwordDelete === "string",
-        "password must be a string"
+        "password must be a string",
       );
       //* 2. check entered password
       const user = await verifyLogin(userEmail, passwordDelete);
@@ -104,7 +105,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
               passwordDelete: "Invalid password",
             },
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
       //* 4. delete device
@@ -133,7 +134,7 @@ export default function () {
   React.useEffect(() => {
     if (actionData) {
       const hasErrors = Object.values(actionData?.errors).some(
-        (errorMessage) => errorMessage
+        (errorMessage) => errorMessage,
       );
 
       //* when device data updated successfully
@@ -285,6 +286,14 @@ export default function () {
           </Form>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

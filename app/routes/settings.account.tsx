@@ -13,6 +13,7 @@ import {
 import { getUserEmail, getUserId } from "~/session.server";
 import { Separator } from "~/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
+import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -82,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
             },
             intent: intent,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -102,7 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
           },
           intent: intent,
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -121,7 +122,7 @@ export async function action({ request }: ActionFunctionArgs) {
             },
             intent: intent,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -397,6 +398,14 @@ export default function AccountPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

@@ -1,26 +1,42 @@
-import { Outlet, useLoaderData, useParams } from "@remix-run/react";
+import {
+  Outlet,
+  useNavigate,
+  useSearchParams,
+  useLoaderData,
+  useParams,
+} from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
-import { getDevices } from "~/models/device.server";
-import type { MapRef } from "react-map-gl";
-import { MapProvider } from "react-map-gl";
-import { useRef, useState, createContext } from "react";
-import { getUser } from "~/session.server";
+import { getDevicesWithSensors } from "~/models/device.server";
+import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
+import { MapProvider, Layer, Source } from "react-map-gl";
+import { useState, useRef, useEffect, createContext } from "react";
+import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
+import Legend from "~/components/map/legend";
+import type { LegendValue } from "~/components/map/legend";
+import { getPhenomena } from "~/models/phenomena.server";
+import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
+import { type Device, type Sensor } from "@prisma/client";
+import { Toaster } from "~/components/ui//toaster";
+import { getUser, getUserSession } from "~/session.server";
+import { useToast } from "~/components/ui/use-toast";
+
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
-import { Toaster } from "~/components/ui/toaster";
 import { getFilteredDevices } from "~/utils";
+import ErrorMessage from "~/components/error-message";
 
 //* Used in filter-options component
 export const FilterOptionsContext = createContext({
-  globalFilterParams: new URLSearchParams(""),
+  // globalFilterParams: new URLSearchParams(""),
   filterOptionsOn: false,
   setFilterOptionsOn: (_filterOptionsOn: boolean) => {},
-  setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  // setGlobalFilterParams: (_urlFilter: URLSearchParams) => {},
+  GlobalFilteredDevices: {},
   setGlobalFilteredDevices: (_GlobalFilteredDevices: {}) => {},
 });
 
@@ -35,22 +51,30 @@ export type DeviceClusterProperties =
     >;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const devices = await getDevices();
+  const devices = await getDevicesWithSensors();
+
+  const session = await getUserSession(request);
+  const message = session.get("global_message") || null;
 
   //* Get filtered devices if filter params exist in url
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
-  var filteredDevices = {};
-  if (urlFilterParams.size == 3 && urlFilterParams.has("exposure")) {
+  var filteredDevices = null;
+  if (
+    urlFilterParams.has("exposure") ||
+    urlFilterParams.has("status") ||
+    urlFilterParams.has("phenomenon")
+  ) {
     filteredDevices = getFilteredDevices(devices, urlFilterParams);
   }
 
   const user = await getUser(request);
+  const phenomena = await getPhenomena();
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({ devices, user, profile, filterParams, filteredDevices });
+    return typedjson({ devices, user, profile, filteredDevices, phenomena });
   }
   return typedjson({
     devices,
@@ -58,6 +82,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     profile: null,
     filterParams,
     filteredDevices,
+    message,
+    phenomena,
   });
 }
 
@@ -70,28 +96,174 @@ export const links: LinksFunction = () => {
   ];
 };
 
+// This is for the live data display. The 21-06-2023 works with the seed Data, for Production take now minus 10 minutes
+let currentDate = new Date("2023-06-21T14:13:11.024Z");
+if (process.env.NODE_ENV === "production") {
+  currentDate = new Date(Date.now() - 1000 * 600);
+}
+
 export default function Explore() {
   // data from our loader
   const data = useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
 
-  //* Used in filter-options component
-
-  const [globalFilterParams, setGlobalFilterParams] = useState(
-    new URLSearchParams(data.filterParams)
+  // get map bounds
+  const [, setViewState] = useState({
+    longitude: 52,
+    latitude: 7,
+    zoom: 2,
+  });
+  const navigate = useNavigate();
+  // const [showSearch, setShowSearch] = useState<boolean>(false);
+  const [selectedPheno, setSelectedPheno] = useState<any | undefined>(
+    undefined,
   );
+  const [searchParams] = useSearchParams();
+  const [filteredData, setFilteredData] = useState<
+    GeoJSON.FeatureCollection<Point, any>
+  >({
+    type: "FeatureCollection",
+    features: [],
+  });
 
-  //* Check if params belongs to filter options then assign filterd data
+  //listen to search params change
+  useEffect(() => {
+    //filters devices for pheno
+    if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
+      let sensorsFiltered: any = [];
+      let currentParam = searchParams.get("mapPheno");
+      //check if pheno exists in sensor-wiki data
+      let pheno = data.phenomena.filter(
+        (pheno: any) => pheno.slug == currentParam?.toString(),
+      );
+      if (pheno[0]) {
+        setSelectedPheno(pheno[0]);
+        data.devices.features.forEach((device: any) => {
+          device.properties.sensors.forEach((sensor: Sensor) => {
+            if (
+              sensor.sensorWikiPhenomenon == currentParam &&
+              sensor.lastMeasurement
+            ) {
+              const lastMeasurementDate = new Date(
+                //@ts-ignore
+                sensor.lastMeasurement.createdAt,
+              );
+              //take only measurements in the last 10mins
+              //@ts-ignore
+              if (currentDate < lastMeasurementDate) {
+                sensorsFiltered.push({
+                  ...device,
+                  properties: {
+                    ...device.properties,
+                    sensor: {
+                      ...sensor,
+                      lastMeasurement: {
+                        //@ts-ignore
+                        value: parseFloat(sensor.lastMeasurement.value),
+                        //@ts-ignore
+                        createdAt: sensor.lastMeasurement.createdAt,
+                      },
+                    },
+                  },
+                });
+              }
+            }
+          });
+          return false;
+        });
+        setFilteredData({
+          type: "FeatureCollection",
+          features: sensorsFiltered,
+        });
+      }
+    } else {
+      setSelectedPheno(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  function calculateLabelPositions(length: number): string[] {
+    const positions: string[] = [];
+    for (let i = length - 1; i >= 0; i--) {
+      const position =
+        i === length - 1 ? "95%" : `${((i / (length - 1)) * 100).toFixed(0)}%`;
+      positions.push(position);
+    }
+    return positions;
+  }
+
+  const legendLabels = () => {
+    const values =
+      //@ts-ignore
+      phenomenonLayers[selectedPheno.slug].paint["circle-color"].slice(3);
+    const numbers = values.filter(
+      (v: number | string) => typeof v === "number",
+    );
+    const colors = values.filter((v: number | string) => typeof v === "string");
+    const positions = calculateLabelPositions(numbers.length);
+
+    const legend: LegendValue[] = [];
+    const length = numbers.length;
+    for (let i = 0; i < length; i++) {
+      const legendObj: LegendValue = {
+        value: numbers[i],
+        color: colors[i],
+        position: positions[i],
+      };
+      legend.push(legendObj);
+    }
+    return legend;
+  };
+  const { toast } = useToast();
+
+  // // /**
+  // //  * Focus the search input when the search overlay is displayed
+  // //  */
+  // // const focusSearchInput = () => {
+  // //   searchRef.current?.focus();
+  // // };
+
+  // /**
+  //  * Display the search overlay when the ctrl + k key combination is pressed
+  //  */
+  // useHotkeys([
+  //   [
+  //     "ctrl+K",
+  //     () => {
+  //       setShowSearch(!showSearch);
+  //       setTimeout(() => {
+  //         focusSearchInput();
+  //       }, 100);
+  //     },
+  //   ],
+  // ]);
+
+  const onMapClick = (e: MapLayerMouseEvent) => {
+    if (e.features && e.features.length > 0) {
+      const feature = e.features[0];
+
+      if (feature.layer.id === "phenomenon-layer") {
+        navigate(
+          `/explore/${feature.properties?.id}?${searchParams.toString()}`,
+        );
+      }
+    }
+  };
+
+  const handleMouseMove = (e: mapboxgl.MapLayerMouseEvent) => {
+    if (e.features && e.features.length > 0) {
+      mapRef!.current!.getCanvas().style.cursor = "pointer";
+    } else {
+      mapRef!.current!.getCanvas().style.cursor = "";
+    }
+  };
+  //* initialize filtered devices if any
   const [GlobalFilteredDevices, setGlobalFilteredDevices] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
-      ? data.filteredDevices
-      : {}
+    data.filteredDevices ? data.filteredDevices : {},
   );
   const [filterOptionsOn, setFilterOptionsOn] = useState(
-    globalFilterParams.size == 3 && globalFilterParams.has("exposure")
-      ? true
-      : false
+    data.filteredDevices ? true : false,
   );
 
   //* fly to sensebox location when url inludes deviceId
@@ -99,25 +271,46 @@ export default function Explore() {
   var deviceLoc: any;
   if (deviceId) {
     const device = data.devices.features.find(
-      (device: any) => device.properties.id === deviceId
+      (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [device?.properties.latitude, device?.properties.longitude];
   }
 
+  const buildLayerFromPheno = (selectedPheno: any) => {
+    //TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
+    return defaultLayer;
+  };
+  useEffect(() => {
+    if (data.message !== null) {
+      toast({
+        description: data.message,
+      });
+    }
+  }, [data.message, toast]);
+
   return (
     <FilterOptionsContext.Provider
       value={{
-        globalFilterParams,
         filterOptionsOn,
         setFilterOptionsOn,
-        setGlobalFilterParams,
+        GlobalFilteredDevices,
         setGlobalFilteredDevices,
       }}
     >
       <div className="h-full w-full">
         <MapProvider>
           <Header devices={data.devices} />
+          {selectedPheno && (
+            <Legend
+              title={selectedPheno.label.item[0].text}
+              values={legendLabels()}
+            />
+          )}
           <Map
+            onMove={(evt) => setViewState(evt.viewState)}
+            interactiveLayerIds={selectedPheno ? ["phenomenon-layer"] : []}
+            onClick={onMapClick}
+            onMouseMove={handleMouseMove}
             ref={mapRef}
             initialViewState={
               deviceId
@@ -125,14 +318,41 @@ export default function Explore() {
                 : { latitude: 7, longitude: 52, zoom: 2 }
             }
           >
-            <ClusterLayer
-              devices={!filterOptionsOn ? data.devices : GlobalFilteredDevices}
-            />
+            {!selectedPheno && (
+              <ClusterLayer
+                devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
+              />
+            )}
+            {selectedPheno && (
+              <Source
+                id="osem-data"
+                type="geojson"
+                data={filteredData as FeatureCollection<Point, Device>}
+                cluster={false}
+              >
+                <Layer
+                  {...(phenomenonLayers[selectedPheno.slug] ??
+                    buildLayerFromPheno(selectedPheno))}
+                />
+              </Source>
+            )}
+
+            {/* <ClusterLayer
+              devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
+            /> */}
             <Toaster />
             <Outlet />
           </Map>
         </MapProvider>
       </div>
     </FilterOptionsContext.Provider>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
+    </div>
   );
 }

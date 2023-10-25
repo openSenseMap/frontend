@@ -1,21 +1,19 @@
 // Importing dependencies
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import {
-  //isRouteErrorResponse,
-  useLoaderData,
-  //useRouteError,
-} from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getGraphColor } from "~/lib/utils";
-import { getSensors } from "~/models/sensor.server";
+import { getSensorsFromDevice } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import { addDays } from "date-fns";
-import { GeneralErrorBoundary } from "~/components/error-boundary";
 import type { Sensor } from "db/schema";
+import ErrorMessage from "~/components/error-message";
+import { useMap } from "react-map-gl";
+import { zoomOut } from "~/lib/search-map-helper";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -31,8 +29,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // TODO: do we really have to query the sensors here?
   // They are included in the device array
-  const sensors = await getSensors(params.deviceId);
-  console.log(sensors);
+  // TODO: which function is the correct one?
+  // const sensors = await getSensors(params.deviceId);
+  // console.log(sensors);
+  const sensors = await getSensorsFromDevice(params.deviceId);
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
@@ -115,18 +115,12 @@ export default function DeviceId() {
 }
 
 export function ErrorBoundary() {
-  //const error = useRouteError();
-
+  const { osem } = useMap();
+  // zoom out to world map when error occurs
+  zoomOut(osem);
   return (
-    <div className="absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-row px-4 py-2 md:bottom-[30px] md:left-[10px] md:top-auto md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0">
-      <div
-        id="deviceDetailBox"
-        className={
-          "shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 md:max-h-[calc(100vh-8rem)]"
-        }
-      >
-        <GeneralErrorBoundary />
-      </div>
+    <div className="w-screen h-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

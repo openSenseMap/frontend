@@ -126,6 +126,7 @@ model Device {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
+  sensorWikiModel String?
 
   // the index for that column
   @@index([id], name: "device_id_idx", type: Hash)
@@ -149,6 +150,9 @@ model Sensor {
 
   device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deviceId String
+  sensorWikiType String?
+  sensorWikiPhenomenon String?
+  sensorWikiUnit String?
 }
 
 // Will be a timescaledb hypertable

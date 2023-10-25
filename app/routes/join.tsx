@@ -12,6 +12,7 @@ import { createUserSession, getUserId } from "~/session.server";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
+import ErrorMessage from "~/components/error-message";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -30,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!name || typeof name !== "string") {
     return json(
       { errors: { name: "Name is required", email: null, password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -45,21 +46,21 @@ export async function action({ request }: ActionFunctionArgs) {
           email: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!validateEmail(email)) {
     return json(
       { errors: { name: null, email: "Email is invalid", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
       { errors: { name: null, email: null, password: "Password is required" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -72,7 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
           password: "Please use at least 8 characters.",
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -103,7 +104,7 @@ export async function action({ request }: ActionFunctionArgs) {
           password: null,
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -251,6 +252,14 @@ export default function Join() {
           </div>
         </Form>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="h-screen w-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

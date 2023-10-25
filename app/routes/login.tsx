@@ -6,6 +6,7 @@ import type {
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
+import ErrorMessage from "~/components/error-message";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
@@ -29,7 +30,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!validateEmail(email)) {
     return json(
       { errors: { email: "Email is invalid", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -37,7 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (typeof password !== "string" || password.length === 0) {
     return json(
       { errors: { password: "Password is required", email: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -46,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: { password: "Please use at least 8 characters.", email: null },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -55,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!user) {
     return json(
       { errors: { email: "Invalid email or password", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -183,6 +184,14 @@ export default function LoginPage() {
           </div>
         </Form>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="h-screen w-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }
