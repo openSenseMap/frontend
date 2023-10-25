@@ -5,11 +5,12 @@ import { ArrowUpDown, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Device } from "db/schema";
 
+// TODO: maybe it´s possible to use the drizzle Device type
 export type SenseBox = {
   id: string;
   name: string;
   exposure: Device["exposure"];
-  model: string;
+  model: Device["model"];
 };
 
 export const columns: ColumnDef<SenseBox>[] = [

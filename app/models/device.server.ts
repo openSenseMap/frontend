@@ -98,6 +98,7 @@ export function getUserDevices(userId: Device["userId"]) {
       exposure: true,
       createdAt: true,
       updatedAt: true,
+      model: true,
       // userId: true,
     },
   });

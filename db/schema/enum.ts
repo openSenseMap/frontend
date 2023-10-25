@@ -9,4 +9,4 @@ export const exposureEnum = pgEnum("exposure", [
 
 export const statusEnum = pgEnum("status", ["active", "inactive", "old"]);
 
-export const deviceModelEnum = pgEnum("model", ["HOME_V2_LORA"]);
+export const deviceModelEnum = pgEnum("model", ["HOME_V2_LORA", "custom"]);
