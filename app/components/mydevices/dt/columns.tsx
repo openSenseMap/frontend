@@ -123,7 +123,7 @@ export const columns: ColumnDef<SenseBox>[] = [
             rel="noopener noreferrer"
             className="btn btn-default text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
           >
-            support
+            Support
           </a>
         </div>
       );
