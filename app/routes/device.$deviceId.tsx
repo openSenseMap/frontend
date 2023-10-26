@@ -16,7 +16,7 @@ import moment from "moment";
 let deviceData = {
   _id: "5b411d0e5dc1ec001b4f11c8",
   createdAt: "2022-03-30T11:25:43.557Z",
-  updatedAt: "2023-10-13T06:28:23.033Z",
+  updatedAt: "2023-10-26T06:28:23.033Z",
   name: "Bahnhofstraße",
   currentLocation: {
     timestamp: "2018-07-07T20:05:34.723Z",
@@ -138,7 +138,7 @@ export default function DeviceDashboard() {
               {moment().diff(moment(deviceData.updatedAt), "days") > 3 ? (
                 <Badge
                   variant="outline"
-                  className="rounded-sm border-[#343e34] bg-[#343e34] text-[#fff]"
+                  className="rounded-sm bg-red-500 text-white "
                 >
                   INACTIVE
                 </Badge>
@@ -146,7 +146,7 @@ export default function DeviceDashboard() {
                 <Badge
                   variant="outline"
                   className={
-                    "rounded-sm border-[#4eaf47] bg-[#4eaf47] text-[#fff]"
+                    "rounded-sm border-[#4eaf47] bg-[#4eaf47] text-white"
                   }
                 >
                   ACTIVE
