@@ -113,7 +113,7 @@ export default function DeviceDashboard() {
 
       {/* Left side - device info */}
       <div className="grid grid-cols-4 h-[85vh] gap-x-4">
-        <Card className="col-span-1">
+        <Card className="col-span-1 dark:bg-black dark:border-[#ffffff]">
           <CardHeader className="space-y-0 p-4 pb-0">
             <CardTitle className="text-[18px]">{deviceData.name}</CardTitle>
             <CardDescription>{deviceData._id}</CardDescription>
@@ -201,27 +201,27 @@ export default function DeviceDashboard() {
         </Card>
 
         {/* Right side - measurements */}
-        <Card className="col-span-3 ">
+        <Card className="col-span-3 dark:bg-black dark:border-[#ffffff] ">
           <CardContent>
             <div className="mt-4 flex flex-wrap gap-3">
               {deviceData.sensors.map((sensor: any) => (
-                <Card key={sensor._id} className=" rounded-3xl">
+                <Card key={sensor._id} className=" rounded-3xl dark:bg-black dark:border-[#ffffff]">
                   <CardHeader>
                     <CardTitle className="mb-2">
                       <sensor.icon className=" h-5.5 w-5.5 mr-2 inline align-bottom" />
                       {sensor.lastMeasurement.value} {sensor.unit}
                     </CardTitle>
                     <CardDescription>
-                      <span className=" align-bottom text-[18px] text-[#000]">
+                      <span className=" align-bottom text-[18px] ">
                         {sensor.title}{" "}
                       </span>
-                      <span className="rounded border px-[2px] py-[1px] text-xs ">
+                      <span className="rounded border px-[2px] py-[1px] text-xs">
                         {sensor.sensorType}
                       </span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="m-0 p-0">
-                    <hr className="h-px w-full border-0 bg-[#dcdada] dark:bg-gray-700" />
+                    <hr className="h-px w-full border-0  bg-[#dcdada] dark:bg-gray-700 dark:border-[#ffffff]" />
                     {/* <p className="py-2 px-6 text-[#fa5252] text-xs">5 minutes ago</p> */}
                     {sensor.lastMeasurement?.createdAt === undefined ||
                     moment().diff(
