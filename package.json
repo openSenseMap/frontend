@@ -85,7 +85,7 @@
     "express": "^4.18.2",
     "express-prometheus-middleware": "^1.2.0",
     "file-saver": "^2.0.5",
-    "framer-motion": "^10.12.4",
+    "framer-motion": "^10.16.4",
     "get-user-locale": "^2.2.1",
     "i18next": "^22.4.15",
     "i18next-browser-languagedetector": "^7.0.1",
