@@ -5,8 +5,8 @@ import { useState } from "react";
 import { getUserId } from "~/session.server";
 import { ArrowLeft, Upload } from "lucide-react";
 import { Input } from "~/components/ui/input";
-import Home from "~/components/header/home";
 import ErrorMessage from "~/components/error-message";
+import { NavBar } from "~/components/nav-bar";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -28,12 +28,10 @@ export default function DataUpload2() {
   const [dataFormat, setDataFormat] = useState("CSV");
 
   return (
-    <div>
-      <div className="pointer-events-none z-10 mb-10 flex h-14 w-full p-2">
-        <Home />
-      </div>
+    <div className="space-y-6 px-10 pb-16  font-helvetica">
+      <NavBar />
 
-      <div className="mx-8 mr-20 mt-14">
+      <div>
         <div className="grid grid-cols-8 gap-10 font-helvetica text-[15px] tracking-wide max-md:grid-cols-2 lg:grid-rows-1">
           <nav className="col-span-2 md:col-span-2">
             <ul>
