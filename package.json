@@ -14,6 +14,7 @@
     "docker": "docker compose up -d",
     "format": "prettier --write .",
     "drizzle:generate": "drizzle-kit generate:pg",
+    "drizzle:generate-custom": "drizzle-kit generate:pg --custom",
     "drizzle:migrate": "ts-node ./db/migrate.ts",
     "drizzle:drop": "drizzle-kit drop",
     "drizzle:seed": "ts-node ./db/seed.ts",
