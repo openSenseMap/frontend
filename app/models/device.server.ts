@@ -87,9 +87,6 @@ export async function getDevices() {
       exposure: true,
       status: true,
       createdAt: true,
-    },
-    with: {
-      sensors: true
     }
   });
   const geojson: GeoJSON.FeatureCollection<Point> = {
