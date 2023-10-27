@@ -78,7 +78,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         title: sensor.title,
         unit: sensor.unit,
         sensorType: sensor.sensorType,
-        icon: sensor.icon,
+        // icon: sensor.icon,
       });
     } else if (sensor?.deleted === true) {
       await deleteSensor(sensor.id);

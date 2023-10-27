@@ -1,4 +1,4 @@
-import type { Sensor } from "@prisma/client";
+import type { Sensor } from "~/schema";
 import {
   featureCollection,
   lineString,

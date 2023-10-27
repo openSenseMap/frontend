@@ -1,8 +1,7 @@
 import { useMatches } from "@remix-run/react";
+import { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
-
-import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
 

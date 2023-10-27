@@ -1,20 +1,27 @@
-import type { Profile, User } from "@prisma/client";
-import { prisma } from "~/db.server";
+import type { User, Profile } from "~/schema";
+import { profile } from "~/schema";
+import { drizzleClient } from "~/db.server";
 
 export async function getProfileByUserId(id: Profile["id"]) {
-  return prisma.profile.findUnique({ where: { userId: id } });
+  return drizzleClient.query.profile.findFirst({
+    where: (profile, {eq}) => eq(profile.userId, id),
+    with: {
+      profileImage: true,
+    },
+  });
 }
 
 export async function getProfileByUsername(username: Profile["username"]) {
-  return prisma.profile.findUnique({
-    where: { username },
-    include: {
+  return drizzleClient.query.profile.findFirst({
+    where: (profile, {eq}) => eq(profile.username, username),
+    with: {
       user: {
-        include: {
-          devices: true,
-        },
+        with: {
+          devices: true
+        }
       },
-    },
+      profileImage: true
+    }
   });
 }
 
@@ -22,21 +29,19 @@ export default function changeProfileVisibility(
   id: Profile["id"],
   visibility: Profile["public"]
 ) {
-  return prisma.profile.update({
-    where: { userId: id },
-    data: { public: visibility },
-  });
+  // return prisma.profile.update({
+  //   where: { userId: id },
+  //   data: { public: visibility },
+  // });
 }
 
 export async function createProfile(
   userId: User["id"],
   username: Profile["username"]
 ) {
-  return prisma.profile.create({
-    data: {
-      username,
-      public: false,
-      userId,
-    },
+  return drizzleClient.insert(profile).values({
+    username,
+    public: false,
+    userId
   });
 }

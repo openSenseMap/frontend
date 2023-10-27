@@ -300,7 +300,7 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
     const newDevice = await createDevice(finalData, userId);
 
     session.flash("global_message", "You successfully added your device!");
-    return redirect(`/explore/${newDevice.id}`, {
+    return redirect(`/explore/${newDevice[0].id}`, {
       headers: {
         "set-cookie": await sessionStorage.commitSession(session),
       },

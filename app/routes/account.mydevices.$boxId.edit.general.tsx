@@ -54,10 +54,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   invariant(typeof exposure === "string", "Device name is required.");
 
   if (
-    exposure !== "INDOOR" &&
-    exposure !== "OUTDOOR" &&
-    exposure !== "MOBILE" &&
-    exposure !== "UNKNOWN"
+    exposure !== "indoor" &&
+    exposure !== "outdoor" &&
+    exposure !== "mobile" &&
+    exposure !== "unknown"
   ) {
     return json({
       errors: {

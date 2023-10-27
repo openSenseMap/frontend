@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device } from "~/schema";
 import Search from "~/components/search";
 import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";

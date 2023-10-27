@@ -12,7 +12,7 @@ import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
-import { prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 import { getUserImgSrc } from "~/utils/misc";
 import { z } from "zod";
 import { nameSchema } from "~/utils/user-validation";
@@ -21,6 +21,8 @@ import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import ErrorMessage from "~/components/error-message";
+import { profile } from "~/schema";
+import { eq } from "drizzle-orm";
 
 const profileFormSchema = z.object({
   username: nameSchema.optional(),
@@ -29,15 +31,17 @@ const profileFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const profile = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: {
+  const profile = await drizzleClient.query.profile.findFirst({
+    where: (profile, {eq}) => eq(profile.userId,userId),
+    columns: {
       id: true,
       username: true,
       public: true,
-      imageId: true,
     },
-  });
+    with: {
+      profileImage: true,
+    },
+  })
   if (!profile) {
     // throw await authenticator.logout(request, { redirectTo: "/" });
     throw new Error();
@@ -86,14 +90,13 @@ export async function action({ request }: ActionFunctionArgs) {
   }
   const { username, visibility } = submission.value;
 
-  await prisma.profile.update({
-    select: { userId: true, username: true },
-    where: { userId: userId },
-    data: {
+  await drizzleClient
+    .update(profile)
+    .set({
       username,
       public: visibility,
-    },
-  });
+    })
+    .where(eq(profile.userId, userId));
 
   return redirect(`/settings/profile`);
 }
@@ -165,7 +168,7 @@ export default function EditUserProfilePage() {
         <div className="flex w-1/2 justify-center">
           <div className="relative h-52 w-52">
             <img
-              src={getUserImgSrc(data.profile.imageId)}
+              src={getUserImgSrc(data.profile.profileImage.id)}
               alt={data.profile.username}
               className="h-full w-full rounded-full object-cover"
             />

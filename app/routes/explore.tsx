@@ -19,7 +19,7 @@ import type { LegendValue } from "~/components/map/legend";
 import { getPhenomena } from "~/models/phenomena.server";
 import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
-import { type Device, type Sensor } from "@prisma/client";
+import { type Device, type Sensor } from "~/schema";
 import { Toaster } from "~/components/ui//toaster";
 import { getUser, getUserSession } from "~/session.server";
 import { useToast } from "~/components/ui/use-toast";
