@@ -1,5 +1,4 @@
 import { Link, Outlet } from "@remix-run/react";
-import { SidebarNav } from "~/components/sidebar-nav";
 import { Separator } from "~/components/ui/separator";
 
 import type { LoaderFunctionArgs } from "@remix-run/node";
@@ -8,6 +7,7 @@ import { requireUserId } from "~/session.server";
 import { Button } from "~/components/ui/button";
 import { NavBar } from "~/components/nav-bar";
 import ErrorMessage from "~/components/error-message";
+import { SidebarSettingsNav } from "~/components/sidebar-settings-nav";
 
 const sidebarNavItems = [
   {
@@ -49,7 +49,7 @@ export default function SettingsLayoutPage() {
           <Separator className="my-6" />
           <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
             <aside className="lg:w-1/5">
-              <SidebarNav items={sidebarNavItems} />
+              <SidebarSettingsNav items={sidebarNavItems}/>
             </aside>
             <div className="flex-1 pt-4">
               <Outlet />
