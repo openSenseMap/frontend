@@ -10,9 +10,15 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
     icon?: any;
     separator?: boolean;
   }[];
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
+export function SidebarNav({
+  className,
+  items,
+  setOpen,
+  ...props
+}: SidebarNavProps) {
   return (
     <nav
       className={cn(
@@ -26,6 +32,9 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
           <NavLink
             key={item.href}
             to={item.href}
+            onClick={() => {
+              setOpen(false);
+            }}
             className={({ isActive, isPending }) =>
               isPending
                 ? ""
@@ -35,7 +44,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
             }
           >
             <div className="flex my-1">
-              {item.icon && item.icon}
+              {item.icon && item.icon} &nbsp;
               {item.title}
             </div>
           </NavLink>

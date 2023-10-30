@@ -2,7 +2,6 @@ import { Form, Link, useLocation } from "@remix-run/react";
 import { Button } from "./ui/button";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -28,6 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 const sidebarNavItems = [
   {
@@ -60,6 +60,9 @@ export function NavBar() {
     .split("/")
     .slice(1)
     .map((item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase());
+
+  // To be able to close nested sheet component.
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // User is optional
   // If no user render Login button
@@ -108,7 +111,7 @@ export function NavBar() {
               <Button variant="outline" size="icon" disabled>
                 <Mailbox className="h-4 w-4" />
               </Button>
-              <Sheet>
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="ghost"
@@ -134,20 +137,23 @@ export function NavBar() {
                     </SheetDescription>
                   </SheetHeader>
                   <div className="grid gap-4 py-4">
-                    <SheetClose asChild>
-                      <>
-                        <SidebarNav items={sidebarNavItems} />
-                        <Form action="/logout" method="post">
-                          <button
-                            type="submit"
-                            className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <LogOut className="mr-2 h-5 w-5" />
-                            <span className="text-red-500">Sign out</span>
-                          </button>
-                        </Form>
-                      </>
-                    </SheetClose>
+                    <>
+                      <SidebarNav
+                        items={sidebarNavItems}
+                        setOpen={setSheetOpen}
+                      />
+                      <Form action="/logout" method="post">
+                        <button
+                          type="submit"
+                          className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
+                        >
+                          <LogOut className="mr-2 h-5 w-5" />
+                          <span className="text-red-500 hover:bg-transparent hover:underline">
+                            Sign out
+                          </span>
+                        </button>
+                      </Form>
+                    </>
                   </div>
                 </SheetContent>
               </Sheet>
