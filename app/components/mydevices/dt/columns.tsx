@@ -93,19 +93,19 @@ export const columns: ColumnDef<SenseBox>[] = [
         <div className="text-right grid space-y-1">
           <a
             href={`/device/${senseBox.id}/overview`}
-            className="btn btn-default text-[#000] hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Overview
           </a>
           <a
             href={`/explore/${senseBox.id}`}
-            className="btn btn-default text-[#000] hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Show on map
           </a>
           <a
             href={`/device/${senseBox.id}/edit`}
-            className="btn btn-default text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Edit
           </a>
@@ -113,7 +113,7 @@ export const columns: ColumnDef<SenseBox>[] = [
             href={`/device/${senseBox.id}/dataupload`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-default text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Data upload
           </a>
@@ -121,7 +121,7 @@ export const columns: ColumnDef<SenseBox>[] = [
             href="https://sensebox.de/de/go-home"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-default text-[#000]  hover:border-[#adadad] hover:bg-[#e6e6e6] hover:text-[#333]"
+            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
           >
             Support
           </a>
