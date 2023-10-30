@@ -12,6 +12,8 @@ export type SenseBox = {
   // model: string;
 };
 
+const colStyle = "pl-0 dark:text-white";
+
 export const columns: ColumnDef<SenseBox>[] = [
   {
     accessorKey: "name",
@@ -20,7 +22,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="pl-0"
+          className={colStyle}
         >
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -35,7 +37,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="pl-0"
+          className={colStyle}
         >
           Exposure
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -50,7 +52,7 @@ export const columns: ColumnDef<SenseBox>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="pl-0"
+          className={styleVal}
         >
           Model
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -84,7 +86,7 @@ export const columns: ColumnDef<SenseBox>[] = [
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Action</div>,
+    header: () => <div className="text-center dark:text-white">Action</div>,
     cell: ({ row }) => {
       const senseBox = row.original;
 
