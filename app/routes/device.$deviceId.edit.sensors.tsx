@@ -41,7 +41,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
   }
@@ -63,7 +63,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   for (const sensor of updatedSensorsDataJson) {
     if (sensor?.new === true && sensor?.edited === true) {
-      const deviceID = params.boxId;
+      const deviceID = params.deviceId;
       invariant(deviceID, `deviceID not found!`);
 
       await addNewSensor({
@@ -222,7 +222,7 @@ export default function EditBoxSensors() {
                                     <ChevronDownIcon className=" m-0 inline h-6  w-6 p-0" />
                                   </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className=" min-w-fit max-w-[150px]">
+                                <DropdownMenuContent align="end" className="min-w-fit max-w-[150px]">
                                   <DropdownMenuGroup className=" flex h-fit flex-wrap">
                                     {iconsList?.map((icon: any) => {
                                       const Icon = icon.name;

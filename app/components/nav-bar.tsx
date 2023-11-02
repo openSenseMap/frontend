@@ -2,16 +2,32 @@ import { Form, Link, useLocation } from "@remix-run/react";
 import { Button } from "./ui/button";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTrigger,
 } from "./ui/sheet";
-import { LogOut, Mailbox, Plus, Settings, UserIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Globe,
+  LogOut,
+  Mailbox,
+  Plus,
+  Puzzle,
+  Settings,
+  UserIcon,
+} from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { useOptionalUser } from "~/utils";
 import { UserAvatar } from "~/routes/resources.user-avatar";
+import {
+  DropdownMenu,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 const sidebarNavItems = [
   {
@@ -23,6 +39,18 @@ const sidebarNavItems = [
     title: "Settings",
     href: "/settings",
     icon: <Settings size={24} />,
+    separator: true,
+  },
+  {
+    title: "Forum",
+    href: "https://docs.sensebox.de/",
+    icon: <Puzzle size={24} />,
+  },
+  {
+    title: "API Docs",
+    href: "https://docs.opensensemap.org/",
+    icon: <Globe size={24} />,
+    separator: true,
   },
 ];
 
@@ -32,6 +60,9 @@ export function NavBar() {
     .split("/")
     .slice(1)
     .map((item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase());
+
+  // To be able to close nested sheet component.
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // User is optional
   // If no user render Login button
@@ -51,13 +82,36 @@ export function NavBar() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              <Button variant="outline" size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
+              {/* down arrow icon */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Plus className="h-4 w-4" />
+                    <ChevronDownIcon className=" m-0 inline h-4  w-4 p-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" forceMount>
+                  <DropdownMenuGroup>
+                    <Link to="/device/new">
+                      <DropdownMenuItem>
+                        <span>New device</span>
+                      </DropdownMenuItem>
+                    </Link>
+
+                    <Link to="/device/transfer">
+                      <DropdownMenuItem>
+                        <span>Transfer device</span>
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button variant="outline" size="icon" disabled>
                 <Mailbox className="h-4 w-4" />
               </Button>
-              <Sheet>
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="ghost"
@@ -66,7 +120,7 @@ export function NavBar() {
                     <UserAvatar />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right">
+                <SheetContent side="right" className=" dark:bg-black">
                   <SheetHeader>
                     <SheetDescription>
                       <div className="flex gap-4">
@@ -83,20 +137,23 @@ export function NavBar() {
                     </SheetDescription>
                   </SheetHeader>
                   <div className="grid gap-4 py-4">
-                    <SheetClose asChild>
-                      <>
-                        <SidebarNav items={sidebarNavItems} />
-                        <Form action="/logout" method="post">
-                          <button
-                            type="submit"
-                            className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <LogOut className="mr-2 h-5 w-5" />
-                            <span className="text-red-500">Sign out</span>
-                          </button>
-                        </Form>
-                      </>
-                    </SheetClose>
+                    <>
+                      <SidebarNav
+                        items={sidebarNavItems}
+                        setOpen={setSheetOpen}
+                      />
+                      <Form action="/logout" method="post">
+                        <button
+                          type="submit"
+                          className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
+                        >
+                          <LogOut className="mr-2 h-5 w-5" />
+                          <span className="text-red-500 hover:bg-transparent hover:underline">
+                            Sign out
+                          </span>
+                        </button>
+                      </Form>
+                    </>
                   </div>
                 </SheetContent>
               </Sheet>
