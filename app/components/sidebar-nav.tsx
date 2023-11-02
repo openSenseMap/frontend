@@ -38,8 +38,6 @@ export function SidebarNav({
             className={({ isActive, isPending }) =>
               isPending
                 ? ""
-                : isActive
-                ? "bg-muted hover:bg-muted"
                 : "hover:bg-transparent hover:underline"
             }
           >
@@ -49,7 +47,7 @@ export function SidebarNav({
             </div>
           </NavLink>
           {item?.separator && (
-            <hr className="my-4 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+            <hr className="my-4 mt-6 h-px border-0 bg-[#dcdada]" />
           )}
         </>
       ))}

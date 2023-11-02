@@ -93,7 +93,7 @@ export function NavBar() {
 
                 <DropdownMenuContent align="end" forceMount>
                   <DropdownMenuGroup>
-                    <Link to="#">
+                    <Link to="/device/new">
                       <DropdownMenuItem>
                         <span>New device</span>
                       </DropdownMenuItem>
@@ -120,7 +120,7 @@ export function NavBar() {
                     <UserAvatar />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right">
+                <SheetContent side="right" className=" dark:bg-black">
                   <SheetHeader>
                     <SheetDescription>
                       <div className="flex gap-4">
