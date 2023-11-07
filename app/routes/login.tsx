@@ -1,43 +1,53 @@
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
+import ErrorMessage from "~/components/error-message";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
+  //* check session if a user is already logged in
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
-  return json({});
+  if (userId) return redirect("/"); //* redirect to home page
+  return json({}); //* remain in login page
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
   const remember = formData.get("remember");
 
+  //* validate email
   if (!validateEmail(email)) {
     return json(
       { errors: { email: "Email is invalid", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
+  //* validate password
   if (typeof password !== "string" || password.length === 0) {
     return json(
       { errors: { password: "Password is required", email: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { password: "Password is too short", email: null } },
-      { status: 400 }
+      {
+        errors: { password: "Please use at least 8 characters.", email: null },
+      },
+      { status: 400 },
     );
   }
 
@@ -46,7 +56,7 @@ export async function action({ request }: ActionArgs) {
   if (!user) {
     return json(
       { errors: { email: "Invalid email or password", password: null } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -59,14 +69,13 @@ export async function action({ request }: ActionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return {
-    title: "Login",
-  };
+  return [{ title: "Login" }];
 };
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/notes";
+  //* Redirect to main page after login
+  const redirectTo = searchParams.get("redirectTo") || "/";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
@@ -80,7 +89,7 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex h-screen min-h-full flex-col items-center justify-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
@@ -104,7 +113,7 @@ export default function LoginPage() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.email && (
-                <div className="text-red-700 pt-1" id="email-error">
+                <div className="pt-1 text-[#FF0000]" id="email-error">
                   {actionData.errors.email}
                 </div>
               )}
@@ -130,7 +139,7 @@ export default function LoginPage() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.password && (
-                <div className="text-red-700 pt-1" id="password-error">
+                <div className="pt-1 text-[#FF0000]" id="password-error">
                   {actionData.errors.password}
                 </div>
               )}
@@ -140,10 +149,11 @@ export default function LoginPage() {
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <button
             type="submit"
-            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
+            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
           >
             Log in
           </button>
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -174,6 +184,14 @@ export default function LoginPage() {
           </div>
         </Form>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="h-screen w-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

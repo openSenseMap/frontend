@@ -1,0 +1,18 @@
+{
+  "date_picker_label": "Select a date",
+  "date_range_picker_label": "Select a time period",
+  "search_label": "Search",
+  "temperature_label": "Temperature",
+  "all_stations": "All devices",
+  "phenomenons": "Phenomena",
+  "choose_phenomenon": "Choose phenomenon",
+  "date_label": "Time period",
+  "ctrl": "Ctrl",
+  "button": "Show",
+  "live_label": "Live",
+  "live_description": "Show live data on the map. This data is updated every 5 minutes. If you click on a station, you can view the last measurements.",
+  "pointintime_label": "Point in time",
+  "pointintime_description": "Show a historical point in time on the map.",
+  "timeperiod_label": "Time period",
+  "timeperiod_description": "Explore the development of the phenomena in a specific time window."
+}

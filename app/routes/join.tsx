@@ -1,4 +1,8 @@
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
@@ -6,55 +10,109 @@ import * as React from "react";
 import { createUserSession, getUserId } from "~/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { safeRedirect, validateEmail, validateName } from "~/utils";
+import i18next from "app/i18next.server";
+import ErrorMessage from "~/components/error-message";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
+  const name = formData.get("name");
+
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
+
+  if (!name || typeof name !== "string") {
+    return json(
+      { errors: { name: "Name is required", email: null, password: null } },
+      { status: 400 },
+    );
+  }
+
+  //* Validate userName
+  const validateUserName = validateName(name?.toString());
+  if (!validateUserName.isValid) {
+    return json(
+      {
+        errors: {
+          name: validateUserName.errorMsg,
+          password: null,
+          email: null,
+        },
+      },
+      { status: 400 },
+    );
+  }
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Email is invalid", password: null } },
-      { status: 400 }
+      { errors: { name: null, email: "Email is invalid", password: null } },
+      { status: 400 },
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
-      { errors: { email: null, password: "Password is required" } },
-      { status: 400 }
+      { errors: { name: null, email: null, password: "Password is required" } },
+      { status: 400 },
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { email: null, password: "Password is too short" } },
-      { status: 400 }
+      {
+        errors: {
+          name: null,
+          email: null,
+          password: "Please use at least 8 characters.",
+        },
+      },
+      { status: 400 },
     );
   }
 
-  const existingUser = await getUserByEmail(email);
-  if (existingUser) {
+  //* user name shouldn't be unique
+  //* check if user exists by name
+  /* const existingUserByName = await getUserByName(name);
+  if (existingUserByName) {
     return json(
       {
         errors: {
-          email: "A user already exists with this email",
-          password: null,
+          name: null,
+          email: null,
+          password: "Please use at least 8 characters.",
         },
       },
       { status: 400 }
     );
+  } */
+
+  //* check if user exists by email
+  const existingUserByEmail = await getUserByEmail(email);
+  if (existingUserByEmail) {
+    return json(
+      {
+        errors: {
+          name: null,
+          email: "A user already exists with this email",
+          password: null,
+        },
+      },
+      { status: 400 },
+    );
   }
 
-  const user = await createUser(email, password);
+  //* get current locale
+  const locale = await i18next.getLocale(request);
+  const language = locale === "de" ? "de_DE" : "en_US";
+
+  const user = await createUser(name, email, language, password);
 
   return createUserSession({
     request,
@@ -65,9 +123,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return {
-    title: "Sign Up",
-  };
+  return [{ title: "Sign Up" }];
 };
 
 export default function Join() {
@@ -76,6 +132,7 @@ export default function Join() {
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
+  const nameRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (actionData?.errors?.email) {
@@ -86,9 +143,38 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex h-screen min-h-full flex-col items-center justify-center">
+      {/* Form */}
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Name
+            </label>
+            <div className="mt-1">
+              <input
+                ref={nameRef}
+                id="name"
+                required
+                autoFocus={true}
+                name="name"
+                type="text"
+                autoComplete="name"
+                aria-invalid={actionData?.errors?.name ? true : undefined}
+                aria-describedby="name-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.errors?.name && (
+                <div className="pt-1 text-[#FF0000]" id="email-error">
+                  {actionData.errors.name}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div>
             <label
               htmlFor="email"
@@ -110,7 +196,7 @@ export default function Join() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.email && (
-                <div className="text-red-700 pt-1" id="email-error">
+                <div className="pt-1 text-[#FF0000]" id="email-error">
                   {actionData.errors.email}
                 </div>
               )}
@@ -136,7 +222,7 @@ export default function Join() {
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
               {actionData?.errors?.password && (
-                <div className="text-red-700 pt-1" id="password-error">
+                <div className="pt-1 text-[#FF0000]" id="password-error">
                   {actionData.errors.password}
                 </div>
               )}
@@ -146,7 +232,7 @@ export default function Join() {
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <button
             type="submit"
-            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 py-2 px-4 text-white"
+            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
           >
             Create Account
           </button>
@@ -154,7 +240,7 @@ export default function Join() {
             <div className="text-center text-sm text-gray-500">
               Already have an account?{" "}
               <Link
-                className="text-blue-500 underline"
+                className="text-[#FF0000] underline"
                 to={{
                   pathname: "/login",
                   search: searchParams.toString(),
@@ -166,6 +252,14 @@ export default function Join() {
           </div>
         </Form>
       </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="h-screen w-screen flex items-center justify-center">
+      <ErrorMessage />
     </div>
   );
 }

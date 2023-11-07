@@ -1,4 +1,5 @@
 import { useMatches } from "@remix-run/react";
+import moment from "moment";
 import { useMemo } from "react";
 
 import type { User } from "~/models/user.server";
@@ -41,7 +42,8 @@ export function useMatchesData(
     () => matchingRoutes.find((route) => route.id === id),
     [matchingRoutes, id]
   );
-  return route?.data;
+
+  return route?.data as Record<string, unknown>;
 }
 
 function isUser(user: any): user is User {
@@ -68,4 +70,102 @@ export function useUser(): User {
 
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
+}
+
+//* validate user name in join page
+export function validateName(name: string) {
+  if (name.length === 0) {
+    return { isValid: false, errorMsg: "Name is required" };
+  } else if (name.length < 4) {
+    return { isValid: false, errorMsg: "Please use at least 4 characters." };
+  } else if (
+    name &&
+    !/^[a-zA-Z0-9][a-zA-Z0-9\s._-]+[a-zA-Z0-9-_.]$/.test(name.toString())
+  ) {
+    return { isValid: false, errorMsg: "Name is invalid" };
+  }
+
+  return { isValid: true };
+}
+
+//* validate passwords type (changePassword page)
+export function validatePassType(passwords: any) {
+  const index = passwords.findIndex(
+    (password: any) => typeof password !== "string" || password.length === 0
+  );
+  return { isValid: index == -1 ? true : false, index: index };
+}
+
+//* validate passwords length (changePassword page)
+export function validatePassLength(passwords: any) {
+  const index = passwords.findIndex((password: any) => password.length < 8);
+  return { isValid: index == -1 ? true : false, index: index };
+}
+
+/**
+ * This function  is called when the user make a change on filter tab. It reaturns list of devices based on user selected filters.
+
+ * @param devices all devices data
+ * @param filterParams attributes and selected values
+ */
+export function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
+  // if a param is missing/undefined set it as ALL
+  const { exposure= "ALL", status= "ALL", phenomenon= "ALL" } = Object.fromEntries(
+    filterParams.entries()
+  );
+
+  let results: any = [];
+
+  if (exposure === "ALL" && status === "ALL" && phenomenon === "ALL") {
+    return devices;
+  } else {
+    for (let index = 0; index < devices.features.length; index++) {
+      const device = devices.features[index];
+      //* extract list of sensors titles
+      const sensorsList = device.properties.sensors.map((s: any) => {
+        return s.title;
+      });
+
+      if (
+        (exposure === "ALL" || exposure === device.properties.exposure) &&
+        (status === "ALL" || status === device.properties.status) &&
+        (phenomenon === "ALL" || sensorsList.includes(phenomenon))
+      ) {
+        results.push(device);
+      }
+
+      if (index === devices.features.length - 1) {
+        return {
+          type: "FeatureCollection",
+          features: results,
+        };
+      }
+    }
+  }
+}
+
+//* Get Minute Formatted String - last sensor measurement update
+export function getMinuteFormattedString(lastMeasurementAt: string) {
+  const secondsAgo = moment().diff(
+    moment(lastMeasurementAt),
+    "seconds");
+
+  if (secondsAgo === null || secondsAgo === undefined) {
+    return "-";
+  } else {
+    if (secondsAgo < 120) {
+      return "now";
+    }
+    return `${Math.floor(secondsAgo / 60)} minutes ago`;
+  }
+}
+
+export function diffFromCreateDate(DeviceCreatedAt: string) {
+  const createDate = moment(DeviceCreatedAt);
+  const yearsFromCreate = moment().diff(createDate, "years");
+  return `Created ${
+    yearsFromCreate === 0
+      ? `${moment().diff(createDate, "days")} day(s)`
+      : `${yearsFromCreate} year` + (yearsFromCreate > 1 ? "s" : "")
+  } ago`;
 }

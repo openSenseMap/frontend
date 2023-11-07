@@ -1,7 +1,13 @@
 version: "3.7"
 services:
   postgres:
-    image: postgres:latest
+    # image: timescale/timescaledb:2.10.2-pg14
+    image: timescale/timescaledb-ha:pg14-latest
+    # Preload pg_cron extension
+    # https://github.com/timescale/timescaledb-docker-ha/issues/293
+    # Extension is created with prisma
+    command:
+      - -cshared_preload_libraries=timescaledb,pg_cron
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -10,9 +16,4 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-
-  adminer:
-    image: adminer
-    ports:
-      - 8080:8080
+      - ./pgdata:/home/postgres/pgdata

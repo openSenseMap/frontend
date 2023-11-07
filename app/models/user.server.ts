@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
 import { prisma } from "~/db.server";
+import { createProfile } from "./profile.server";
 
 export type { User } from "@prisma/client";
 
@@ -12,6 +13,72 @@ export async function getUserById(id: User["id"]) {
 
 export async function getUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { email } });
+}
+
+// export async function getUserWithDevicesByName(name: User["name"]) {
+//   return prisma.user.findUnique({
+//     where: { name },
+//     include: { devices: true },
+//   });
+// }
+
+// export async function getUserWithDevicesByNameOrId(
+//   name: User["name"],
+//   id: User["id"]
+// ) {
+//   return prisma.user.findUnique({
+//     where: {
+//       OR: [],
+//     },
+//     include: { devices: true },
+//   });
+// }
+
+export async function deleteUserByEmail(email: User["email"]) {
+  return prisma.user.delete({ where: { email } });
+}
+
+//* user name shouldn't be unique
+/* export async function getUserByName(name: User["name"]) {
+  return prisma.user.findUnique({ where: { name } });
+} */
+
+export async function updateUserName(email: User["email"], newUserName: string){
+  return prisma.user.update({
+    where: { email },
+    data: {
+      name: newUserName,
+    },
+  })
+}
+
+export async function updateUserPassword(
+  userId: Password["userId"],
+  password: string
+) {
+  const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13);
+  return prisma.password.update({
+    where: { userId },
+    data: {
+      hash: hashedPassword,
+    },
+  });
+}
+
+export async function updateUserlocale(
+  email: User["email"],
+  language: User["language"]
+) {
+  return prisma.user.update({
+    where: { email },
+    data: {
+      language: language,
+    },
+  });
+}
+
+export async function getUsers() {
+  return prisma.user.findMany();
 }
 
 const preparePasswordHash = function preparePasswordHash(
@@ -25,12 +92,20 @@ const preparePasswordHash = function preparePasswordHash(
   return hashed;
 };
 
-export async function createUser(email: User["email"], password: string) {
+export async function createUser(
+  name: User["name"],
+  email: User["email"],
+  language: User["language"],
+  password: string
+) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
+      name,
       email,
+      language,
+      boxes: [],
       password: {
         create: {
           hash: hashedPassword,
@@ -38,10 +113,10 @@ export async function createUser(email: User["email"], password: string) {
       },
     },
   });
-}
 
-export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+  await createProfile(user.id, name);
+
+  return user;
 }
 
 export async function verifyLogin(
@@ -51,6 +126,7 @@ export async function verifyLogin(
   const userWithPassword = await prisma.user.findUnique({
     where: { email },
     include: {
+      profile: true,
       password: true,
     },
   });
@@ -59,6 +135,7 @@ export async function verifyLogin(
     return null;
   }
 
+  //* compare stored password with entered one
   const isValid = await bcrypt.compare(
     preparePasswordHash(password),
     userWithPassword.password.hash
@@ -68,6 +145,8 @@ export async function verifyLogin(
     return null;
   }
 
+  //* exclude password property (using spread operator)
+  //* const userWithoutPassword: {id: string; email: string;createdAt: Date; updatedAt: Date;}
   const { password: _password, ...userWithoutPassword } = userWithPassword;
 
   return userWithoutPassword;

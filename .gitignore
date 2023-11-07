@@ -1,3 +1,7 @@
+# ignore VS Code json files
+.vscode
+
+.DS_Store
 node_modules
 
 /build
@@ -7,5 +11,6 @@ node_modules
 /cypress/screenshots
 /cypress/videos
 /postgres-data
+/pgdata
 
 /app/styles/**/*.css
