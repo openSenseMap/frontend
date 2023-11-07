@@ -23,7 +23,7 @@ function getSections(devices: Device[]) {
       title: "Filter",
       icon: Filter,
       color: "bg-gray-300",
-      component: <FilterOptions devices={devices}></FilterOptions>,
+      component: <FilterOptions></FilterOptions>,
     },
     {
       title: "Phänomen",

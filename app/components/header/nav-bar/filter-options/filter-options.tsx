@@ -5,15 +5,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams, useNavigation } from "@remix-run/react";
+import {
+  useSearchParams,
+  useNavigation,
+  useLoaderData,
+} from "@remix-run/react";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
 import { Separator } from "~/components/ui/separator";
+import type { loader } from "~/routes/explore";
 
 export default function FilterOptions() {
+  const data = useLoaderData<typeof loader>();
   //* searchParams hook
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
@@ -99,7 +105,7 @@ export default function FilterOptions() {
           </Select>
         </div>
         <div className="space-y-[2px]">
-          <Label className="text-base">Phenomenon: </Label>
+          <Label className=" text-base">Phenomenon: </Label>
           &nbsp;
           <Select
             value={phenomenonVal ?? undefined}
@@ -117,7 +123,7 @@ export default function FilterOptions() {
                 {phenomenonVal ?? "---"}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="overflow-y-auto max-h-[4rem]">
+            <SelectContent className="">
               <SelectItem value="all">all</SelectItem>
               <SelectItem value="Temperatur">Temperatur</SelectItem>
               <SelectItem value="Helligkeit">Helligkeit</SelectItem>
@@ -169,7 +175,7 @@ export default function FilterOptions() {
       </div>
       <div className="flex justify-between">
         <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
-          Results ({"need to get this from somewhere"})
+          Results {data.filteredDevices.features.length}
         </Label>
         <Button
           variant="outline"
