@@ -31,7 +31,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
@@ -59,7 +59,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { latitude, longitude } = Object.fromEntries(formData);
 
-  const id = params.boxId;
+  const id = params.deviceId;
   invariant(id, `deviceID not found!`);
 
   await updateDeviceLocation({
@@ -136,14 +136,14 @@ export default function EditLocation() {
                   initialViewState={{
                     latitude: marker.latitude,
                     longitude: marker.longitude,
-                    zoom: 7,
+                    zoom: 10,
                   }}
                   mapStyle="mapbox://styles/mapbox/streets-v12"
                   mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
                   style={{
-                    width: "69%",
+                    width: "100%",
                     height: "500px",
-                    position: "absolute",
+                    borderRadius: "6px"
                   }}
                 >
                   <Marker
@@ -159,7 +159,7 @@ export default function EditLocation() {
             </div>
 
             {/* Latitude, Longitude btns */}
-            <div className="mx-5 mt-[560px]">
+            <div className="mx-5 mt-[20px]">
               <div className=" grid gap-5 md:grid-cols-2">
                 <div>
                   <label

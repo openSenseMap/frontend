@@ -3,7 +3,8 @@
 import type {
   ColumnDef,
   ColumnFiltersState,
-  SortingState} from "@tanstack/react-table";
+  SortingState,
+} from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
@@ -23,13 +24,19 @@ import {
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react"
+} from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -42,7 +49,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -58,13 +65,13 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
     },
-    /* initialState: {
+    initialState: {
       pagination: {
-        pageSize: 4,
+        pageSize: 5,
       },
-    }, */
+    },
   });
-  const tableColsWidth = [20, 10, 10, 20, 40];
+  const tableColsWidth = [30, 30, 40];
 
   return (
     <div>
@@ -75,23 +82,23 @@ export function DataTable<TData, TValue>({
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm dark:text-white dark:border-white"
         />
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border dark:border-white">
         <Table>
-          <TableHeader >
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} >
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} >
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -107,10 +114,13 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell, index) => (
-                    <TableCell key={cell.id} className={"w-["+ tableColsWidth[index] +"%]"}>
+                    <TableCell
+                      key={cell.id}
+                      className={"w-[" + tableColsWidth[index] + "%]"}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -130,7 +140,6 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-
       <div className="flex justify-center py-4">
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
           <div className="flex flex-wrap items-center space-x-2">
@@ -146,7 +155,7 @@ export function DataTable<TData, TValue>({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[10, 20, 30, 40, 50].map((item) => (
+                {[5, 10, 20, 30, 40, 50].map((item) => (
                   <SelectItem key={item} value={item.toString()}>
                     {item}
                   </SelectItem>
@@ -194,9 +203,7 @@ export function DataTable<TData, TValue>({
               variant="outline"
               size="sm"
               className="h-8 w-8 px-0"
-              onClick={() =>
-                table.setPageIndex(table.getPageCount() - 1)
-              }
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
               <ChevronsRight className="h-5 w-5" aria-hidden="true" />
