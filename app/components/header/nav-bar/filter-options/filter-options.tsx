@@ -5,31 +5,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams, useNavigation } from "@remix-run/react";
+import {
+  useSearchParams,
+  useNavigation,
+  useLoaderData,
+} from "@remix-run/react";
 import { X } from "lucide-react";
-import { useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import { getFilteredDevices } from "~/utils";
 import Spinner from "../../../spinner";
 import { Separator } from "~/components/ui/separator";
-import invariant from "tiny-invariant";
-import { FilterOptionsContext } from "~/routes/explore";
+import type { loader } from "~/routes/explore";
 
-interface FilterOptionsProps {
-  devices: any;
-}
-
-//*************************************
-export default function FilterOptions({ devices }: FilterOptionsProps) {
-  //* Use  filtered devices in parent page (explore)
-  const {
-    filterOptionsOn,
-    setFilterOptionsOn,
-    GlobalFilteredDevices,
-    setGlobalFilteredDevices,
-  } = useContext(FilterOptionsContext);
-
+export default function FilterOptions() {
+  const data = useLoaderData<typeof loader>();
   //* searchParams hook
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
@@ -38,52 +28,22 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
 
   //* Set initial filter params based on url Search Params
   const [exposureVal, setExposureVal] = useState(
-    searchParams.has("exposure")
-      ? searchParams.get("exposure") || undefined
-      : "ALL",
+    searchParams.get("exposure") ?? null,
   );
   const [statusVal, setStatusVal] = useState(
-    searchParams.has("status")
-      ? searchParams.get("status") || undefined
-      : "ALL",
+    searchParams.get("status") ?? null,
   );
   const [phenomenonVal, setPhenomenonVal] = useState(
-    searchParams.has("phenomenon")
-      ? searchParams.get("phenomenon") || undefined
-      : "ALL",
-  );
-  invariant(
-    typeof phenomenonVal === "string",
-    "phenomenonVal must be a string",
+    searchParams.get("phenomenon") ?? null,
   );
 
-  //* To show total number of shown devices
-  const [totalDevices, setTotalDevices] = useState(
-    filterOptionsOn
-      ? (GlobalFilteredDevices as any).features.length
-      : devices.features.length,
-  );
-
-  //*************************
-  //* Triggered when filter param is changed
-  function filterDevices() {
-    // setGlobalFilterParams(searchParams);
-    const filteredDevices = getFilteredDevices(devices, searchParams);
-    setFilterOptionsOn(true);
-    setGlobalFilteredDevices(filteredDevices);
-    setTotalDevices(filteredDevices.features.length);
-  }
-
-  //*************************
-  //* To reset search params to default (show all devices)
-  function onFilterOptionsReset() {
-    setTotalDevices(devices.features.length);
-    setGlobalFilteredDevices(devices);
-
-    setExposureVal("ALL");
-    setStatusVal("ALL");
-    setPhenomenonVal("ALL");
-  }
+  //* Update filter params based on url Search Params
+  useEffect(() => {
+    setExposureVal(searchParams.get("exposure") ?? null);
+    setStatusVal(searchParams.get("status") ?? null);
+    setPhenomenonVal(searchParams.get("phenomenon") ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   return (
     <div className="mt-[8px] space-y-3 px-3 py-[3px] dark:text-zinc-200">
@@ -94,48 +54,53 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
       )}
       <div className="space-y-2">
         <div className="space-y-[2px]">
-          <Label className=" text-base">Exposure: </Label>
+          <Label className="text-base">Exposure: </Label>
           &nbsp;
           <Select
-            value={exposureVal}
+            value={exposureVal ?? undefined}
             onValueChange={(value) => {
-              setExposureVal(value);
-              searchParams.set("exposure", value);
-              filterDevices();
+              if (value === "all") {
+                searchParams.delete("exposure");
+              } else {
+                searchParams.set("exposure", value);
+              }
               setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full border-4 text-base dark:border-zinc-800">
-              <SelectValue className="h-6" placeholder="ALL" />
+              <SelectValue className="h-6">{exposureVal ?? "---"}</SelectValue>
             </SelectTrigger>
-            <SelectContent className="">
-              <SelectItem value="ALL">all</SelectItem>
-              <SelectItem value="INDOOR">indoor</SelectItem>
-              <SelectItem value="OUTDOOR">outdoor</SelectItem>
-              <SelectItem value="MOBILE">mobile</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">all</SelectItem>
+              <SelectItem value="indoor">indoor</SelectItem>
+              <SelectItem value="outdoor">outdoor</SelectItem>
+              <SelectItem value="mobile">mobile</SelectItem>
+              <SelectItem value="unknown">unknown</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-[2px]">
-          <Label className=" text-base">Status: </Label>
+          <Label className="text-base">Status: </Label>
           &nbsp;
           <Select
-            value={statusVal}
+            value={statusVal ?? undefined}
             onValueChange={(value) => {
-              setStatusVal(value);
-              searchParams.set("status", value);
-              filterDevices();
+              if (value === "all") {
+                searchParams.delete("status");
+              } else {
+                searchParams.set("status", value);
+              }
               setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ALL" />
+              <SelectValue className="h-6">{statusVal ?? "---"}</SelectValue>
             </SelectTrigger>
-            <SelectContent className="">
-              <SelectItem value="ALL">all</SelectItem>
-              <SelectItem value="ACTIVE">active</SelectItem>
-              <SelectItem value="INACTIVE">inactive</SelectItem>
-              <SelectItem value="OLD">old</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">all</SelectItem>
+              <SelectItem value="active">active</SelectItem>
+              <SelectItem value="inactive">inactive</SelectItem>
+              <SelectItem value="old">old</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -143,19 +108,23 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Label className=" text-base">Phenomenon: </Label>
           &nbsp;
           <Select
-            value={phenomenonVal}
+            value={phenomenonVal ?? undefined}
             onValueChange={(value) => {
-              setPhenomenonVal(value);
-              searchParams.set("phenomenon", value);
-              filterDevices();
+              if (value === "all") {
+                searchParams.delete("phenomenon");
+              } else {
+                searchParams.set("phenomenon", value);
+              }
               setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ALL" />
+              <SelectValue className="h-6">
+                {phenomenonVal ?? "---"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ALL">all</SelectItem>
+              <SelectItem value="all">all</SelectItem>
               <SelectItem value="Temperatur">Temperatur</SelectItem>
               <SelectItem value="Helligkeit">Helligkeit</SelectItem>
               <SelectItem value="PM10">PM10</SelectItem>
@@ -167,7 +136,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
                   "Radioactivity",
                   "08A Pressure BME680",
                   "08A Temperature SHT31 flex",
-                ].includes(phenomenonVal) && (
+                ].includes(phenomenonVal ?? "") && (
                   <>
                     <Separator />
                     <button
@@ -186,7 +155,7 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
                   "Radioactivity",
                   "08A Pressure BME680",
                   "08A Temperature SHT31 flex",
-                ].includes(phenomenonVal)) && (
+                ].includes(phenomenonVal ?? "")) && (
                 <>
                   <SelectItem value="Radioactivity">Radioactivity</SelectItem>
                   <SelectItem value="08A Pressure BME680">
@@ -204,22 +173,18 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           </Select>
         </div>
       </div>
-
       <div className="flex justify-between">
         <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
-          Results ({totalDevices})
+          Results {data.filteredDevices.features.length}
         </Label>
-
         <Button
           variant="outline"
           className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
           onClick={() => {
-            onFilterOptionsReset();
-            searchParams.set("exposure", "ALL");
-            searchParams.set("status", "ALL");
-            searchParams.set("phenomenon", "ALL");
+            searchParams.delete("exposure");
+            searchParams.delete("status");
+            searchParams.delete("phenomenon");
             setSearchParams(searchParams);
-            setFilterOptionsOn(false);
           }}
         >
           <span>
