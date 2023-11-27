@@ -97,6 +97,7 @@
     "mapbox-gl": "^2.14.1",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
+    "mqtt": "^5.1.2",
     "node-fetch": "^3.3.1",
     "postcss-import": "^15.1.0",
     "prom-client": "^15.0.0",

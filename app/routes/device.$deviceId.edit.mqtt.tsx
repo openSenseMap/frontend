@@ -1,13 +1,15 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
-import { Form } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
+import { Form, useActionData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import React, { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import ErrorMessage from "~/components/error-message";
+import { toast } from "~/components/ui/use-toast";
+import { checkMqttValidaty } from "~/models/mqtt.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -20,12 +22,86 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
-  return "";
+  console.log("actions");
+
+  const formData = await request.formData();
+  const { enableMQTTcb, mqttURL, mqttTopic } = Object.fromEntries(formData);
+
+  //* ToDo: if mqtt checkbox is not enabled, reset mqtt to default
+  if (!enableMQTTcb) {
+    return json({
+      errors: {
+        mqttURL: null,
+        mqttTopic: null,
+      },
+      reset: true,
+      isMqttValid: null,
+      status: 200,
+    });
+  }
+
+  const errors = {
+    mqttURL: mqttURL ? null : "Invalid URL (please use ws or wss URL)",
+    mqttTopic: mqttTopic ? null : "Invalid mqtt topic",
+  };
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+
+  if (hasErrors) {
+    return json({
+      errors: errors,
+      reset: false,
+      isMqttValid: null,
+      status: 400,
+    });
+  }
+
+  //* check mqtt connection validity
+  const isMqttValid = await checkMqttValidaty(mqttURL.toString());
+
+  return json({
+    errors: errors,
+    reset: false,
+    isMqttValid: isMqttValid,
+    status: 200,
+  });
 }
 
 //**********************************
 export default function EditBoxMQTT() {
-  const [mqttVal, setMqttVal] = useState(false);
+  const [mqttEnabled, setMqttEnabled] = useState(false);
+  const [mqttValid, setMqttValid] = useState(true);
+  const actionData = useActionData<typeof action>();
+
+  const mqttURLRef = React.useRef<HTMLInputElement>(null);
+  const mqttTopicRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (actionData) {
+      const hasErrors = Object.values(actionData?.errors).some(
+        (errorMessage) => errorMessage,
+      );
+
+      // ToDo
+      if (actionData.reset) {
+        // Do nothing for now
+      } else if (!hasErrors) {
+        if (actionData.isMqttValid) {
+          setMqttValid(true);
+          //* show conn. success msg
+          toast({
+            description: "Successfully connected to mqtt url!",
+          });
+        } else {
+          setMqttValid(false);
+          mqttURLRef.current?.focus();
+        }
+      } else if (hasErrors && actionData?.errors?.mqttURL) {
+        mqttURLRef.current?.focus();
+      } else if (hasErrors && actionData?.errors?.mqttTopic) {
+        mqttTopicRef.current?.focus();
+      }
+    }
+  }, [actionData]);
 
   return (
     <div className="grid grid-rows-1">
@@ -43,6 +119,7 @@ export default function EditBoxMQTT() {
                 <div>
                   {/* Save button */}
                   <button
+                    type="submit"
                     name="intent"
                     value="save"
                     className=" h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
@@ -79,7 +156,10 @@ export default function EditBoxMQTT() {
             </div>
 
             <div className="my-6 flex items-center space-x-2">
-              <Checkbox onCheckedChange={() => setMqttVal(!mqttVal)} />
+              <Checkbox
+                name="enableMQTTcb"
+                onCheckedChange={() => setMqttEnabled(!mqttEnabled)}
+              />
               <label
                 htmlFor="terms"
                 className="cursor-pointer text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -99,21 +179,34 @@ export default function EditBoxMQTT() {
 
               <div className="mt-1">
                 <input
-                  id="mqqtURL"
+                  id="mqttURL"
                   required
                   autoFocus={true}
-                  name="mqqtURL"
+                  name="mqttURL"
                   type="text"
+                  ref={mqttURLRef}
                   className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttVal}
+                  disabled={!mqttEnabled}
                 />
+                {actionData?.errors?.mqttURL && (
+                  <div className="pt-1 text-[#FF0000]" id="mqttURL-error">
+                    {actionData.errors.mqttURL}
+                  </div>
+                )}
+
+                {!mqttValid && (
+                  <div className="pt-1 text-[#FF0000]" id="mqttURL-error">
+                    Entered mqtt url is not valid, please try again with a valid
+                    one.
+                  </div>
+                )}
               </div>
             </div>
 
             {/* MQTT Topic */}
             <div className="my-2">
               <label
-                htmlFor="mqqtTopic"
+                htmlFor="mqttTopic"
                 className="txt-base block font-bold tracking-normal"
               >
                 Topic*
@@ -121,20 +214,27 @@ export default function EditBoxMQTT() {
 
               <div className="mt-1">
                 <input
-                  id="mqqtTopic"
+                  id="mqttTopic"
                   required
                   autoFocus={true}
-                  name="mqqtTopic"
+                  name="mqttTopic"
                   type="text"
+                  ref={mqttTopicRef}
                   className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
+                  disabled={!mqttEnabled}
                 />
+                {actionData?.errors?.mqttTopic && (
+                  <div className="pt-1 text-[#FF0000]" id="mqttTopic-error">
+                    {actionData.errors.mqttTopic}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* MQTT Message format */}
             <div className="my-4">
               <label
-                htmlFor="mqqtTopic"
+                htmlFor="mqttTopic"
                 className="txt-base block font-bold tracking-normal"
               >
                 Message format*
@@ -142,7 +242,7 @@ export default function EditBoxMQTT() {
               <div className="mt-1">
                 <RadioGroup
                   defaultValue="json"
-                  disabled={!mqttVal}
+                  disabled={!mqttEnabled}
                   className="disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center space-x-2">
@@ -160,7 +260,7 @@ export default function EditBoxMQTT() {
             {/* MQTT Decoding options */}
             <div className="my-2">
               <label
-                htmlFor="mqqtDecode"
+                htmlFor="mqttDecode"
                 className="txt-base block font-bold tracking-normal"
               >
                 Decoding options
@@ -168,12 +268,12 @@ export default function EditBoxMQTT() {
 
               <div className="mt-1">
                 <input
-                  id="mqqtDecode"
+                  id="mqttDecode"
                   autoFocus={true}
-                  name="mqqtDecode"
+                  name="mqttDecode"
                   type="text"
                   className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttVal}
+                  disabled={!mqttEnabled}
                 />
               </div>
             </div>
@@ -181,7 +281,7 @@ export default function EditBoxMQTT() {
             {/* MQTT Decoding options */}
             <div>
               <label
-                htmlFor="mqqtConn"
+                htmlFor="mqttConn"
                 className="txt-base block font-bold tracking-normal"
               >
                 Connection options
@@ -189,11 +289,11 @@ export default function EditBoxMQTT() {
 
               <div className="mt-1">
                 <input
-                  id="mqqtConn"
-                  name="mqqtConn"
+                  id="mqttConn"
+                  name="mqttConn"
                   type="text"
                   className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttVal}
+                  disabled={!mqttEnabled}
                 />
               </div>
             </div>
@@ -211,4 +311,3 @@ export function ErrorBoundary() {
     </div>
   );
 }
-
