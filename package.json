@@ -78,7 +78,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chroma-js": "^2.4.2",
     "class-variance-authority": "^0.7.0",
-    "clsx": "^1.2.1",
+    "clsx": "^2.0.0",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "date-fns": "^2.29.3",
