@@ -29,6 +29,7 @@ export function updateDeviceInfo({
   name,
   exposure,
 }: Pick<Device, "id" | "name" | "exposure">) {
+  return drizzleClient.update(device).set({name: name, exposure: exposure}).where(eq(device.id, id))
   // return prisma.device.update({
   //   where: { id },
   //   data: {
@@ -43,6 +44,7 @@ export function updateDeviceLocation({
   latitude,
   longitude,
 }: Pick<Device, "id" | "latitude" | "longitude">) {
+  return drizzleClient.update(device).set({latitude: latitude, longitude: longitude}).where(eq(device.id, id))
   // return prisma.device.update({
   //   where: { id },
   //   data: {

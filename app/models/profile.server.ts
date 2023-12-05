@@ -1,6 +1,8 @@
 import type { User, Profile } from "~/schema";
 import { profile } from "~/schema";
 import { drizzleClient } from "~/db.server";
+import { eq } from "drizzle-orm";
+
 
 export async function getProfileByUserId(id: Profile["id"]) {
   return drizzleClient.query.profile.findFirst({
@@ -29,6 +31,7 @@ export default function changeProfileVisibility(
   id: Profile["id"],
   visibility: Profile["public"]
 ) {
+  return drizzleClient.update(profile).set({public: visibility}).where(eq(profile.id, id))
   // return prisma.profile.update({
   //   where: { userId: id },
   //   data: { public: visibility },
