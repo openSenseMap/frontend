@@ -9,7 +9,7 @@ import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
-import { getDevices } from "~/models/device.server";
+import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source } from "react-map-gl";
 import { useState, useRef, useEffect, createContext } from "react";
@@ -51,8 +51,8 @@ export type DeviceClusterProperties =
     >;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // const devices = await getDevicesWithSensors();
-  const devices = await getDevices();
+  const devices = await getDevicesWithSensors();
+  // const devices = await getDevices();
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;
