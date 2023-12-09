@@ -40,17 +40,17 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
   const [exposureVal, setExposureVal] = useState(
     searchParams.has("exposure")
       ? searchParams.get("exposure") || undefined
-      : "ALL",
+      : "all",
   );
   const [statusVal, setStatusVal] = useState(
     searchParams.has("status")
       ? searchParams.get("status") || undefined
-      : "ALL",
+      : "all",
   );
   const [phenomenonVal, setPhenomenonVal] = useState(
     searchParams.has("phenomenon")
       ? searchParams.get("phenomenon") || undefined
-      : "ALL",
+      : "all",
   );
   invariant(
     typeof phenomenonVal === "string",
@@ -80,9 +80,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
     setTotalDevices(devices.features.length);
     setGlobalFilteredDevices(devices);
 
-    setExposureVal("ALL");
-    setStatusVal("ALL");
-    setPhenomenonVal("ALL");
+    setExposureVal("all");
+    setStatusVal("all");
+    setPhenomenonVal("all");
   }
 
   return (
@@ -99,20 +99,20 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Select
             value={exposureVal}
             onValueChange={(value) => {
-              setExposureVal(value);
-              searchParams.set("exposure", value);
+              setExposureVal(value.toLocaleLowerCase());
+              searchParams.set("exposure", value.toLocaleLowerCase());
               filterDevices();
               setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full border-4 text-base dark:border-zinc-800">
-              <SelectValue className="h-6" placeholder="ALL" />
+              <SelectValue className="h-6" placeholder="all" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ALL">all</SelectItem>
-              <SelectItem value="INDOOR">indoor</SelectItem>
-              <SelectItem value="OUTDOOR">outdoor</SelectItem>
-              <SelectItem value="MOBILE">mobile</SelectItem>
+              <SelectItem value="all">all</SelectItem>
+              <SelectItem value="indoor">indoor</SelectItem>
+              <SelectItem value="outdoor">outdoor</SelectItem>
+              <SelectItem value="mobile">mobile</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -122,20 +122,20 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Select
             value={statusVal}
             onValueChange={(value) => {
-              setStatusVal(value);
-              searchParams.set("status", value);
+              setStatusVal(value.toLocaleLowerCase());
+              searchParams.set("status", value.toLocaleLowerCase());
               filterDevices();
               setSearchParams(searchParams);
             }}
           >
             <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ALL" />
+              <SelectValue className="h-6" placeholder="all" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ALL">all</SelectItem>
-              <SelectItem value="ACTIVE">active</SelectItem>
-              <SelectItem value="INACTIVE">inactive</SelectItem>
-              <SelectItem value="OLD">old</SelectItem>
+              <SelectItem value="all">all</SelectItem>
+              <SelectItem value="active">active</SelectItem>
+              <SelectItem value="inactive">inactive</SelectItem>
+              <SelectItem value="old">old</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -145,17 +145,17 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           <Select
             value={phenomenonVal}
             onValueChange={(value) => {
-              setPhenomenonVal(value);
-              searchParams.set("phenomenon", value);
+              setPhenomenonVal(value.toLocaleLowerCase());
+              searchParams.set("phenomenon", value.toLocaleLowerCase());
               filterDevices();
               setSearchParams(searchParams);
             }}
           >
-            <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6" placeholder="ALL" />
+            <SelectTrigger className="h-6 wg-full text-base">
+              <SelectValue className="h-6" placeholder="all" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="ALL">all</SelectItem>
+              <SelectItem value="all">all</SelectItem>
               <SelectItem value="Temperatur">Temperatur</SelectItem>
               <SelectItem value="Helligkeit">Helligkeit</SelectItem>
               <SelectItem value="PM10">PM10</SelectItem>
@@ -215,9 +215,9 @@ export default function FilterOptions({ devices }: FilterOptionsProps) {
           className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
           onClick={() => {
             onFilterOptionsReset();
-            searchParams.set("exposure", "ALL");
-            searchParams.set("status", "ALL");
-            searchParams.set("phenomenon", "ALL");
+            searchParams.set("exposure", "all");
+            searchParams.set("status", "all");
+            searchParams.set("phenomenon", "all");
             setSearchParams(searchParams);
             setFilterOptionsOn(false);
           }}

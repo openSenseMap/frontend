@@ -109,13 +109,14 @@ export function validatePassLength(passwords: any) {
  */
 export function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
   // if a param is missing/undefined set it as ALL
-  const { exposure= "ALL", status= "ALL", phenomenon= "ALL" } = Object.fromEntries(
+  const { exposure= "all", status= "all", phenomenon= "all" } = Object.fromEntries(
     filterParams.entries()
   );
 
+
   let results: any = [];
 
-  if (exposure === "ALL" && status === "ALL" && phenomenon === "ALL") {
+  if (exposure === "all" && status === "all" && phenomenon === "all") {
     return devices;
   } else {
     for (let index = 0; index < devices.features.length; index++) {
@@ -126,9 +127,9 @@ export function getFilteredDevices(devices: any, filterParams: URLSearchParams) 
       });
 
       if (
-        (exposure === "ALL" || exposure === device.properties.exposure) &&
-        (status === "ALL" || status === device.properties.status) &&
-        (phenomenon === "ALL" || sensorsList.includes(phenomenon))
+        (exposure === "all" || exposure === device.properties.exposure) &&
+        (status === "all" || status === device.properties.status) &&
+        (phenomenon === "all" || sensorsList.includes(phenomenon))
       ) {
         results.push(device);
       }
