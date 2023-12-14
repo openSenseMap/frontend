@@ -25,7 +25,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
     return json("deviceID not found");
@@ -48,7 +48,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     passwordDelete: passwordDelete ? null : "Password is required.",
   };
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
   invariant(typeof deviceID === "string", " Device id not found.");
   invariant(typeof name === "string", "Device name is required.");
   invariant(typeof exposure === "string", "Device name is required.");
@@ -111,7 +111,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       //* 4. delete device
       await deleteDevice({ id: deviceID });
 
-      return redirect("/account/mydevices");
+      return redirect("/profile/me");
     }
   }
 

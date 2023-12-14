@@ -1,8 +1,10 @@
 import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
-import { device, type Device } from "~/schema";
-import { eq } from "drizzle-orm";
+import { device, sensor, type Device, Sensor } from "~/schema";
+import { eq, sql } from "drizzle-orm";
+import { QueryBuilder } from "drizzle-orm/pg-core";
+
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
@@ -108,30 +110,125 @@ export async function getDevices() {
 }
 
 export async function getDevicesWithSensors() {
-  const devices = await drizzleClient.query.device.findMany({
-    columns: {
-      id: true,
-      name: true,
-      latitude: true,
-      longitude: true,
-      exposure: true,
-      createdAt: true,
-      status: true,
-    },
-    with: {
-      sensors: true
+  // const devices = await drizzleClient.select({
+  //   id: device.id,
+  //   name: device.name,
+  //   latitude: device.latitude,
+  //   longitude: device.longitude,
+  //   exposure: device.exposure,
+  //   createdAt: device.createdAt,
+  //   status: device.status,
+  //   sensor_id: sensor.id
+  // }).from(device).leftJoin(sensor, eq(device.id, sensor.deviceId))
+  
+  const rows = await drizzleClient
+  .select({
+    device: device,
+    sensor: {
+      id: sensor.id,
+      title: sensor.title,
+      sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
+      lastMeasurement: sensor.lastMeasurement
     }
   })
+  .from(device)
+  .leftJoin(sensor, eq(sensor.deviceId, device.id));
+  // const devices = await drizzleClient.query.device.findMany({
+  //   columns: {
+  //     id: true,
+  //     name: true,
+  //     latitude: true,
+  //     longitude: true,
+  //     exposure: true,
+  //     createdAt: true,
+  //     status: true,
+  //   },
+  //   with: {
+  //     sensors: true
+  //   }
+  // })
   const geojson: GeoJSON.FeatureCollection<Point, any> = {
     type: "FeatureCollection",
     features: [],
   };
 
-  for (const device of devices) {
-    const coordinates = [device.longitude, device.latitude];
-    const feature = point(coordinates, device);
-    geojson.features.push(feature);
+  // const result = rows.reduce<Record<string, { device: Device; sensors: Sensor[] }>>(
+  //   (acc, row) => {
+  //     const device = row.device;
+  //     const sensor = row.sensor;
+  
+  //     if (!acc[device.id]) {
+  //       acc[device.id] = { device, sensors: [] };
+  //     }
+  
+  //     if (sensor) {
+  //       acc[device.id].sensors.push(sensor);
+  //     }
+  
+  //     return acc;
+  //   },
+  //   {},
+  // );
+
+  // const result = rows.reduce<Record<string, { device: Device & { sensors: Sensor[] } }>>(
+  //   (acc, row) => {
+  //     const device = row.device;
+  //     const sensor = row.sensor;
+  
+  //     if (!acc[device.id]) {
+  //       acc[device.id] = { device: { ...device, sensors: [] } };
+  //     }
+  
+  //     if (sensor) {
+  //       acc[device.id].device.sensors.push(sensor);
+  //     }
+  
+  //     return acc;
+  //   },
+  //   {},
+  // );
+
+  type PartialSensor = Pick<Sensor, "id" | "title" | "sensorWikiPhenomenon" | "lastMeasurement">;
+  const deviceMap = new Map<string, { device: Device & { sensors: PartialSensor[] } }>();
+
+  
+      const resultArray: Array<{ device: Device & { sensors: PartialSensor[] } }> = rows.reduce(
+        (acc, row) => {
+          const device = row.device;
+          const sensor = row.sensor;
+
+          if (!deviceMap.has(device.id)) {
+            const newDevice = { device: { ...device, sensors: sensor ? [sensor] : [] } };
+            deviceMap.set(device.id, newDevice);
+            acc.push(newDevice);
+          } else if (sensor) {
+            deviceMap.get(device.id)!.device.sensors.push(sensor);
+          }
+           
+      
+          return acc;
+        },
+        [] as Array<{ device: Device & { sensors: PartialSensor[] } }>
+      );
+        
+  
+
+  // const resultObj = Object.entries(result)
+
+  // console.log(resultObj)
+
+  // for (const [, value] of resultObj) {
+  //   const coordinates = [value.device.longitude, value.device.latitude];
+  //   const feature = point(coordinates, value);
+  //   geojson.features.push(feature);
+  // }
+
+  for (const device of resultArray){
+    const coordinates = [device.device.longitude ,device.device.latitude]
+    const feature = point(coordinates, device.device)
+    geojson.features.push(feature)
   }
+
 
   return geojson;
 }
