@@ -15,6 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
+import { requestReceived, supportRequested } from "~/novu.server";
+import { getUserById } from "~/models/user.server";
 
 type FileTypes = {
   [key: string]: string[];
@@ -22,17 +24,44 @@ type FileTypes = {
 
 export async function action({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
+  const user = await getUserById(ownerId);
+  const username = user?.name;
   const formData = await request.formData();
   console.log(formData);
   const description = formData.get("description");
+
   const detailed_description = formData.get("detailed_description");
   const email = formData.get("email");
   const files = formData.get("files");
   const campaignId = formData.get("campaignId");
-  const edge = formData.get("edge");
-  console.log(edge);
 
-  return redirect("/campaigns/overview");
+  const browserFieldNames = [
+    "edge",
+    "explorer",
+    "chrome",
+    "firefox",
+    "safari",
+    "opera",
+    "other",
+  ];
+
+  const browsers = browserFieldNames.filter(
+    (browser) => formData.get(browser) === "on"
+  );
+
+  const request_Received = await requestReceived(ownerId);
+
+  const requestSupport = await supportRequested(
+    "64ac170290b5785d47096d3c",
+    username as string,
+    description as string,
+    "put detailed description here",
+    browsers
+  );
+
+  // console.log(requestSupport);
+
+  return redirect("/campaigns/explore");
 }
 
 export default function Support() {
@@ -60,7 +89,7 @@ export default function Support() {
 
   return (
     <div className="flex min-h-full flex-col justify-center">
-      <div className="w-full text-center">
+      <div className="w-full text-center font-bold">
         <p>
           {t("use this form to receive technical support")} <br />{" "}
           {t("for issues that arise while creating or managing campaigns.")}

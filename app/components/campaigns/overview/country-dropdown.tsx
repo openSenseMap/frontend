@@ -50,24 +50,34 @@ export function CountryDropdown({ setCountry }: CountryDropdownProps) {
           <CommandGroup>
             <ScrollArea className="h-24">
               {Object.entries(countryListAlpha2).map(
-                ([countryCode, countryName], index: number) => (
-                  <CommandItem
-                    id="country"
-                    key={index}
-                    onSelect={(currentValue) => {
-                      setValue(countryName);
-                      if (setCountry) {
-                        setCountry(countryCode);
-                      }
-                      setOpen(false);
-                    }}
-                  >
-                    <CountryFlagIcon
-                      country={String(countryCode).toUpperCase()}
-                    />
-                    {countryName}
-                  </CommandItem>
-                )
+                ([countryCode, countryName], index: number) => {
+                  const flagIcon = CountryFlagIcon({
+                    country: String(countryCode).toUpperCase(),
+                  });
+
+                  return (
+                    <CommandItem
+                      id="country"
+                      key={index}
+                      onSelect={(currentValue) => {
+                        setValue(countryName);
+                        if (setCountry) {
+                          setCountry(countryCode);
+                        }
+                        setOpen(false);
+                      }}
+                    >
+                      {flagIcon !== undefined ? (
+                        <>
+                          {flagIcon}
+                          {countryName}
+                        </>
+                      ) : (
+                        <>Flag not available for {countryName}</>
+                      )}
+                    </CommandItem>
+                  );
+                }
               )}
             </ScrollArea>
           </CommandGroup>

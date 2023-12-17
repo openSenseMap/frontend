@@ -17,6 +17,7 @@ type CommentInputProps = {
   comment: string | undefined;
   setComment: any;
   setCommentEditMode: (editMode: boolean) => void;
+  mentions?: string[];
 };
 
 export default function CommentInput({
@@ -24,6 +25,7 @@ export default function CommentInput({
   comment,
   setComment,
   setCommentEditMode,
+  mentions,
 }: CommentInputProps) {
   const navigate = useNavigate();
 
@@ -65,6 +67,12 @@ export default function CommentInput({
               name="comment"
               id="comment"
             ></textarea>
+            <input
+              className="hidden"
+              value={JSON.stringify(mentions)}
+              name="mentions"
+              id="mentions"
+            />
             <Button
               className="float-right mt-2"
               onClick={() => {

@@ -35,6 +35,9 @@ export default function OverviewTable({
     ""
   );
   const descriptionRef = useRef();
+  const instructions = campaign.instructions
+    ? campaign.instructions.toString()
+    : "";
   return (
     <div>
       {userId === campaign.ownerId && !editMode && (
@@ -65,11 +68,11 @@ export default function OverviewTable({
                   </div>
                 </HoverCardContent>
               </HoverCard>
-              <Avatar>
-                <AvatarImage src="" alt="avatar" />
-                <AvatarFallback>JO</AvatarFallback>
-              </Avatar>
             </div>
+          </div>
+          <div className="mt-4">
+            <h2 className="font-bold">Instructions</h2>
+            <Markdown>{instructions}</Markdown>
           </div>
           <Table className="mt-4">
             <TableHeader>
@@ -107,10 +110,14 @@ export default function OverviewTable({
               <TableRow>
                 <TableCell>Location</TableCell>
                 <TableCell className="flex">
-                  <CountryFlagIcon
-                    country={String(campaign.country).toUpperCase()}
-                  />{" "}
-                  {campaign.country?.toUpperCase()}
+                  {campaign.countries.map((country: string, index: number) => {
+                    const flagIcon = CountryFlagIcon({
+                      country: String(country).toUpperCase(),
+                    });
+                    if (!flagIcon) return null;
+
+                    return <div key={index}>{flagIcon}</div>;
+                  })}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -124,7 +131,7 @@ export default function OverviewTable({
               <TableRow>
                 <TableCell>Hardware verfügbar</TableCell>
                 <TableCell>
-                  {campaign.hardware_available ? "Ja" : "Nein"}
+                  {campaign.hardwareAvailable ? "Ja" : "Nein"}
                 </TableCell>
               </TableRow>
             </TableBody>

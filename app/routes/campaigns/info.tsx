@@ -15,7 +15,7 @@ export default function Info() {
         fellow citizen scientists to unite efforts for a shared goal!
       </p>
       <a
-        href="./"
+        href="./explore"
         className="rounded-full bg-blue-700 px-6 py-2 text-lg text-white "
       >
         Explore Campaigns

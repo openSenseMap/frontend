@@ -62,6 +62,9 @@ export default function EditTable({
   const [priority, setPriority] = useState(campaign.priority);
   const [startDate, setStartDate] = useState(campaign.startDate);
   const [endDate, setEndDate] = useState(campaign.endDate);
+  const [minimumParticipants, setMinimumParticipants] = useState(
+    campaign.minimumParticipants
+  );
   const [openDropdown, setDropdownOpen] = useState(false);
   const [phenomenaState, setPhenomenaState] = useState(
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
@@ -204,6 +207,12 @@ export default function EditTable({
               <CountryDropdown setCountry={setCountry} />
             </TableCell>
           </TableRow>
+          <input
+            className="hidden"
+            value={minimumParticipants}
+            name="minimumParticipants"
+            id="minimumParticipants"
+          />
           <TableRow>
             <TableCell>{t("phenomena")}</TableCell>
             <TableCell>

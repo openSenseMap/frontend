@@ -74,9 +74,9 @@ export default function FiltersBar({
   setShowMap,
   resetFilters,
 }: FiltersBarProps) {
-  const { t } = useTranslation("overview");
+  const { t } = useTranslation("explore-campaigns");
   return (
-    <div className="my-4 flex flex-row justify-between gap-20">
+    <div className="my-4 flex flex-col gap-2 md:flex-row md:justify-between md:gap-20">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className="flex w-fit gap-2 " variant="outline" size={"lg"}>

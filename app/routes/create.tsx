@@ -3,11 +3,15 @@ import { createContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface FeaturesContextType {
+  countries: string[];
+  setCountries: (string: []) => void;
   features: any;
   setFeatures: (features: any) => void;
 }
 
 export const FeatureContext = createContext<FeaturesContextType>({
+  countries: [],
+  setCountries: () => {},
   features: {},
   setFeatures: () => {},
 });
@@ -25,6 +29,7 @@ export default function CreateCampaignPage() {
     },
   ];
   const [features, setFeatures] = useState({});
+  const [countries, setCountries] = useState([]);
   return (
     <div className="h-full w-full">
       <main>
@@ -52,7 +57,9 @@ export default function CreateCampaignPage() {
           </ul>
         </div>
 
-        <FeatureContext.Provider value={{ features, setFeatures }}>
+        <FeatureContext.Provider
+          value={{ countries, setCountries, features, setFeatures }}
+        >
           <Outlet />
         </FeatureContext.Provider>
       </main>

@@ -5,7 +5,9 @@ import {
   deleteComment,
   updateComment,
 } from "~/models/comment.server";
-import { requireUserId } from "~/session.server";
+import { getUserByName } from "~/models/user.server";
+import { mentionedUser } from "~/novu.server";
+import { requireUser, requireUserId } from "~/session.server";
 
 export async function updateCommentAction({ request }: ActionArgs) {
   const formData = await request.formData();
@@ -34,6 +36,7 @@ export async function updateCommentAction({ request }: ActionArgs) {
 
 export async function publishCommentAction({ request, params }: ActionArgs) {
   const ownerId = await requireUserId(request);
+  const username = (await requireUser(request)).name;
   const formData = await request.formData();
   const content = formData.get("comment");
   if (typeof content !== "string" || content.length === 0) {
@@ -42,6 +45,14 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
       { status: 400 }
     );
   }
+  let mentions = formData.get("mentions");
+  if (typeof mentions !== "string" || mentions.length === 0) {
+    return json(
+      { errors: { mentions: "mentions is required", body: null } },
+      { status: 400 }
+    );
+  }
+  mentions = JSON.parse(mentions);
   const campaignSlug = params.slug;
   if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
     return json(
@@ -51,6 +62,10 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
   }
   try {
     const comment = await createComment({ content, campaignSlug, ownerId });
+    if (mentions) {
+      const user = await getUserByName(mentions);
+      if (user?.id) mentionedUser(user?.id, username, campaignSlug);
+    }
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);

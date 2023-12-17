@@ -3,6 +3,7 @@ import {
   deleteCampaignAction,
   updateCampaignAction,
   bookmark,
+  messageAllUsers,
 } from "./actions/campaign";
 import {
   updateCampaignEvent,
@@ -23,6 +24,7 @@ export {
   updateCampaignEvent,
   createCampaignEvent,
   deleteCampaignEvent,
+  messageAllUsers,
   publishCommentAction,
   deleteCommentAction,
   updateCommentAction,

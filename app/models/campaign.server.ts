@@ -14,8 +14,8 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
       },
       events: true,
       participants: true,
-      bookmarkedByUsers: {
-        where: { id: userId },
+      bookmarks: {
+        where: { userId: userId },
       },
     },
   });
@@ -48,9 +48,9 @@ export async function getCampaigns(
           id: true,
         },
       },
-      bookmarkedByUsers: {
+      bookmarks: {
         where: {
-          id: userId,
+          userId: userId,
         },
       },
     },
@@ -91,42 +91,88 @@ export async function getFilteredCampaigns(title: string) {
   });
 }
 
+export async function getBookmark({
+  id,
+  userId,
+}: Pick<Campaign, "id"> & { userId: User["id"] }) {
+  const bookmark = await prisma.campaignBookmark.findUnique({
+    where: {
+      userId_campaignId: { userId, campaignId: id },
+    },
+  });
+  return bookmark;
+}
+
+export async function getBookmarks({ userId }: { userId: User["id"] }) {
+  const bookmarks = await prisma.campaignBookmark.findMany({
+    where: {
+      userId: userId,
+    },
+  });
+  return bookmarks;
+}
+
 export async function bookmarkCampaign({
   id,
-  ownerId,
-}: Pick<Campaign, "id"> & { ownerId: User["id"] }) {
+  userId,
+}: Pick<Campaign, "id"> & { userId: User["id"] }) {
   const user = await prisma.user.findUnique({
-    where: { id: ownerId },
-    include: { bookmarkedCampaigns: true },
+    where: { id: userId },
   });
 
-  if (!user) {
+  const campaign = await prisma.campaign.findUnique({
+    where: { id: id },
+    include: {
+      bookmarks: true,
+    },
+  });
+
+  if (!user || !campaign) {
     return;
   }
 
-  const isBookmarked = user.bookmarkedCampaigns.some(
-    (bookmark) => bookmark.id === id
-  );
+  const isBookmarked = campaign.bookmarks.some((b) => b.userId === userId);
 
   if (isBookmarked) {
-    const unbookmark = await prisma.user.update({
-      where: { id: ownerId },
-      data: { bookmarkedCampaigns: { disconnect: { id: id } } },
-    });
-    if (unbookmark) {
-      return json({ unbookmarked: true });
-    }
-    return unbookmark;
+    const unbookmarked = await deleteCampaignBookmark({ id, userId });
+    if (unbookmarked) return json({ unbookmarked: true });
+    return unbookmarked;
   } else {
-    const bookmark = await prisma.user.update({
-      where: { id: ownerId },
-      data: { bookmarkedCampaigns: { connect: { id: id } } },
+    const bookmark = await prisma.campaignBookmark.create({
+      data: {
+        userId: userId,
+        campaignId: id,
+      },
     });
     if (bookmark) {
       return json({ bookmarked: true });
     }
     return bookmark;
   }
+
+  // const isBookmarked = user.bookmarkedCampaigns.some(
+  //   (bookmark) => bookmark.id === id
+  // );
+
+  // if (isBookmarked) {
+  //   const unbookmark = await prisma.user.update({
+  //     where: { id: ownerId },
+  //     data: { bookmarkedCampaigns: { disconnect: { id: id } } },
+  //   });
+  //   if (unbookmark) {
+  //     return json({ unbookmarked: true });
+  //   }
+  //   return unbookmark;
+  // } else {
+  //   const bookmark = await prisma.user.update({
+  //     where: { id: ownerId },
+  //     data: { bookmarkedCampaigns: { connect: { id: id } } },
+  //   });
+  //   if (bookmark) {
+  //     return json({ bookmarked: true });
+  //   }
+  //   return bookmark;
+  // }
 }
 
 export async function createCampaign({
@@ -136,7 +182,7 @@ export async function createCampaign({
   description,
   instructions,
   priority,
-  country,
+  countries,
   minimumParticipants,
   startDate,
   endDate,
@@ -153,7 +199,7 @@ export async function createCampaign({
   | "description"
   | "instructions"
   | "priority"
-  | "country"
+  | "countries"
   | "minimumParticipants"
   | "startDate"
   | "endDate"
@@ -175,7 +221,7 @@ export async function createCampaign({
       description,
       instructions,
       priority,
-      country,
+      countries,
       minimumParticipants,
       startDate,
       endDate,
@@ -213,7 +259,7 @@ export async function update(
     | "priority"
     | "startDate"
     | "endDate"
-    | "country"
+    | "countries"
     | "updatedAt"
     | "phenomena"
     | "exposure"
@@ -242,6 +288,15 @@ export async function updateCampaign(
       },
       updatedAt: new Date(),
     },
+  });
+}
+
+export function deleteCampaignBookmark({
+  id,
+  userId,
+}: Pick<Campaign, "id"> & { userId: User["id"] }) {
+  return prisma.campaignBookmark.delete({
+    where: { userId_campaignId: { userId, campaignId: id } },
   });
 }
 

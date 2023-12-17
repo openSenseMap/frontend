@@ -1,8 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
+import type { DataItem } from "../ui/multi-select";
 import { MultiSelect } from "../ui/multi-select";
 
 type PhenomenaSelectProps = {
   phenomena: string[];
+  setSelected: React.Dispatch<React.SetStateAction<DataItem[]>>;
   localFilterObject?: {
     country: string;
     exposure: string;
@@ -28,9 +30,7 @@ type PhenomenaSelectProps = {
 
 export default function PhenomenaSelect({
   phenomena,
-  setLocalFilterObject,
-  localFilterObject,
-  setSelectedPhenomena,
+  setSelected,
 }: PhenomenaSelectProps) {
   const data = phenomena.map((str) => {
     return {
@@ -43,9 +43,7 @@ export default function PhenomenaSelect({
       //   label="Select phenomena"
       placeholder="Select phenomena"
       data={data}
-      setLocalFilterObject={setLocalFilterObject}
-      localFilterObject={localFilterObject}
-      setSelectedPhenomena={setSelectedPhenomena}
+      setSelectedItems={setSelected}
     />
   );
 }

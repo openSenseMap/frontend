@@ -10,7 +10,14 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RefObject, useContext, useEffect, useRef, useState } from "react";
+import {
+  RefObject,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronDown, InfoIcon } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
@@ -41,6 +48,8 @@ import { MarkdownEditor } from "~/markdown.client";
 import { getPhenomena } from "~/models/phenomena.server";
 import PhenomenaSelect from "~/components/campaigns/phenomena-select";
 import YouTube, { YouTubeProps } from "react-youtube";
+import SelectCountries from "~/components/campaigns/select-countries";
+import type { DataItem } from "~/components/ui/multi-select";
 
 // import h337, { Heatmap } from "heatmap.js";
 
@@ -79,20 +88,6 @@ export async function action({ request }: ActionArgs) {
   //   centerpoint = turf_points ? center(turf_points) : {};
   // }
 
-  let country = "";
-  if (centerpoint) {
-    //@ts-ignore
-    const lat = centerpoint.geometry.coordinates[0];
-    //@ts-ignore
-    const lng = centerpoint.geometry.coordinates[1];
-
-    const country_code = await reverseGeocode(lng, lat);
-    console.log(country_code);
-    if (country_code) {
-      country = country_code as string;
-    }
-  }
-
   const title = formData.get("title");
   const description = formData.get("description");
   const instructions = formData.get("instructions");
@@ -106,7 +101,17 @@ export async function action({ request }: ActionArgs) {
   const phenomenaString = formData.get("phenomena");
   let phenomena: string[] = [];
   if (typeof phenomenaString === "string") {
-    phenomena = JSON.parse(phenomenaString);
+    const phenomena_obj: DataItem[] = JSON.parse(phenomenaString);
+    const phenomena_set = new Set(phenomena_obj.map((p) => p.value));
+    phenomena = Array.from(phenomena_set);
+  }
+  const countriesString = formData.get("countries");
+
+  let countries: string[] = [];
+  if (typeof countriesString === "string") {
+    const countries_obj: DataItem[] = JSON.parse(countriesString);
+    const countries_set = new Set(countries_obj.map((c) => c.value));
+    countries = Array.from(countries_set);
   }
 
   const priority = formData.get("priority") as PriorityType;
@@ -126,7 +131,7 @@ export async function action({ request }: ActionArgs) {
     instructions,
     feature,
     priority,
-    country,
+    countries,
     minimumParticipants: minimumParticipants,
     createdAt,
     updatedAt,
@@ -149,11 +154,11 @@ export async function action({ request }: ActionArgs) {
       feature: newCampaign.feature ?? {},
       endDate: newCampaign.endDate ?? null,
       centerpoint: newCampaign.centerpoint ?? {},
-      country: newCampaign.country ?? null,
+      countries: newCampaign.countries ?? [],
       ownerId,
     });
 
-    return redirect("/campaigns/overview");
+    return redirect("/campaigns/explore");
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });
@@ -176,11 +181,12 @@ export default function CreateCampaign() {
   const navigate = useNavigate();
   const phenomena = useLoaderData<typeof loader>();
   const { features } = useContext(FeatureContext);
-  console.log(features);
+
   const textAreaRef = useRef();
   const [instructions, setInstructions] = useState<string | undefined>("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [selectedPhenomena, setSelectedPhenomena] = useState<string[]>([]);
+  const [selectedPhenomena, setSelectedPhenomena] = useState<DataItem[]>([]);
+  const [countries, setCountries] = useState<DataItem[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
   const instructionsRef = useRef<HTMLDivElement>(null);
@@ -189,6 +195,7 @@ export default function CreateCampaign() {
   const requiredSensorsRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
+  const countriesRef = useRef<HTMLInputElement>(null);
   const phenomenaRef = useRef<HTMLInputElement>(null);
   const exposureRef = useRef<HTMLInputElement>(null);
   const hardwareAvailableRef = useRef<HTMLButtonElement>(null);
@@ -204,79 +211,6 @@ export default function CreateCampaign() {
     const match = url.match(videoIdRegex);
     return match ? match[1] : undefined;
   };
-
-  // const [container, setContainer] = useState<HTMLElement | undefined>(
-  //   undefined
-  // );
-  // const [containerWrapper, setContainerWrapper] = useState<
-  //   HTMLElement | undefined
-  // >(undefined);
-
-  // const heatMap = useRef<Heatmap<"value", "x", "y"> | null>(null);
-
-  // useEffect(() => {
-  //   if (typeof window != "undefined") {
-  //     const container = document.getElementById("view")!;
-  //     setContainer(container);
-  //     const wrapper = document.getElementById("view-wrapper")!;
-  //     setContainerWrapper(wrapper);
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   if (typeof window != "undefined") {
-  //     var legendCanvas = document.createElement("canvas");
-  //     legendCanvas.width = 100;
-  //     legendCanvas.height = 10;
-  //     var min = document.querySelector("#min");
-  //     var max = document.querySelector("#max");
-  //     var gradientImg = document.querySelector("#gradient");
-  //     var legendCtx = legendCanvas.getContext("2d");
-  //     var gradientCfg = {};
-
-  //     function updateLegend(data: any) {
-  //       // the onExtremaChange callback gives us min, max, and the gradientConfig
-  //       // so we can update the legend
-  //       min.innerHTML = data.min;
-  //       max.innerHTML = data.max;
-  //       // regenerate gradient image
-  //       if (data.gradient != gradientCfg) {
-  //         gradientCfg = data.gradient;
-  //         var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
-  //         for (var key in gradientCfg) {
-  //           gradient.addColorStop(key, gradientCfg[key]);
-  //         }
-  //         legendCtx.fillStyle = gradient;
-  //         legendCtx.fillRect(0, 0, 100, 10);
-  //         gradientImg.src = legendCanvas.toDataURL();
-  //       }
-  //     }
-
-  //     if (container) {
-  //       heatMap.current = h337.create({
-  //         container: container,
-  //         onExtremaChange: function (data) {
-  //           updateLegend(data);
-  //         },
-  //         radius: 15,
-  //         maxOpacity: 0.5,
-  //         minOpacity: 0.25,
-  //         blur: 0.75,
-  //       });
-  //     }
-  //     if (containerWrapper) {
-  //       containerWrapper.onclick = function (ev: any) {
-  //         if (heatMap.current) {
-  //           heatMap.current.addData({
-  //             x: ev.layerX,
-  //             y: ev.layerY,
-  //             value: 1,
-  //           });
-  //         }
-  //       };
-  //     }
-  //   }
-  // }, [container, containerWrapper]);
 
   // function to scroll to any field of the form
   const scrollToRef = (
@@ -370,45 +304,51 @@ export default function CreateCampaign() {
         description: "Please specify area of interest first",
       });
     }
-  }, []);
+    const area = features as any;
+    const feature = area ? JSON.parse(JSON.stringify(area)) : null;
+
+    const turf_points = feature
+      ? turf.points(feature.features[0]?.geometry?.coordinates[0])
+      : null;
+    const centerpoint = turf_points ? center(turf_points) : {};
+    if (centerpoint) {
+      //@ts-ignore
+      const lat = centerpoint.geometry.coordinates[0];
+      //@ts-ignore
+      const lng = centerpoint.geometry.coordinates[1];
+
+      let country_code: string = "";
+      let country: string = "";
+
+      const findCountry = async () => {
+        const response = await reverseGeocode(lng, lat);
+        country_code = response?.country_code;
+        country = response?.country;
+
+        if (country_code) {
+          setCountries((prev) => [
+            ...prev,
+            {
+              label: country,
+              value: country_code,
+            },
+          ]);
+        }
+      };
+      findCountry();
+    }
+  }, [setCountries, features, navigate, toast]);
+
   const [phenomenaState, setPhenomenaState] = useState(
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
   const [priority, setPriority] = useState("MEDIUM");
   const [exposure, setExposure] = useState("UNKNOWN");
   const [openDropdown, setDropdownOpen] = useState(false);
-  const mouseData: any[][] = [];
-  // useEffect(() => {
-  //   if (container) {
-  //     heatMap.current = h337.create({
-  //       container: container,
-  //       maxOpacity: 0.6,
-  //       radius: 50,
-  //       blur: 0.9,
-  //     });
-  //     heatMap.current.setData({
-  //       min: 0,
-  //       max: 100,
-  //       data: convertedData,
-  //     });
-  //   }
-  // }, [container, convertedData]);
+
   return (
-    <div
-      id="view-wrapper"
-      className="flex min-h-full flex-col justify-center"
-      onClick={(e: any) => {
-        mouseData.push([e.clientX, e.clientY, 30]);
-        localStorage.setItem("form", JSON.stringify(mouseData));
-      }}
-    >
-      {/* <div id="heatmapLegend" className="absolute top-10 right-0 bg-white p-4">
-        <h2>Legend</h2>
-        <span className="float-left" id="min"></span>
-        <span className="float-right" id="max"></span>
-        <img className="w-full" id="gradient" src="" alt="legend-gradient" />
-      </div> */}
-      <div id="view" className="mx-auto w-full max-w-md px-8">
+    <div className="flex min-h-full flex-col justify-center">
+      <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
             <label htmlFor="title">
@@ -691,6 +631,25 @@ export default function CreateCampaign() {
           </div>
           <div>
             <label
+              htmlFor="countries"
+              className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
+            >
+              countries
+            </label>
+            <input
+              id="countries"
+              type="hidden"
+              ref={countriesRef}
+              name="countries"
+              value={JSON.stringify(countries)}
+            />
+            <SelectCountries
+              selectedCountry={countries[0]}
+              setSelected={setCountries}
+            />
+          </div>
+          <div>
+            <label
               htmlFor="phenomena"
               className="block text-sm font-medium text-gray-700 after:text-red-500 after:content-['_*']"
             >
@@ -705,7 +664,8 @@ export default function CreateCampaign() {
             />
             <PhenomenaSelect
               phenomena={phenomena}
-              setSelectedPhenomena={setSelectedPhenomena}
+              setSelected={setSelectedPhenomena}
+              // setSelectedPhenomena={setSelectedPhenomena}
             />
             {/* <DropdownMenu
               open={openDropdown}
@@ -841,7 +801,7 @@ export default function CreateCampaign() {
             <Link
               className="text-blue-500 underline"
               to={{
-                pathname: "../../campaigns/overview",
+                pathname: "../../campaigns/explore",
               }}
             >
               Kampagnen Übersicht

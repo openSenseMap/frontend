@@ -9,48 +9,39 @@ import { Badge } from "./badge";
 import { Command, CommandGroup, CommandItem } from "./command";
 import { Label } from "./label";
 import { ScrollArea } from "./scroll-area";
+import { useEffect } from "react";
 
-type DataItem = Record<"value" | "label", string>;
+export type DataItem = Record<"value" | "label", string>;
 
 export function MultiSelect({
   label,
   placeholder = "Select an item",
   parentClassName,
   data,
-  setLocalFilterObject,
-  localFilterObject,
-  setSelectedPhenomena,
+  preselected,
+  setSelectedItems,
 }: {
   label?: string;
   placeholder?: string;
   parentClassName?: string;
   data: DataItem[];
-  setSelectedPhenomena: any;
-  localFilterObject?: {
-    country: string;
-    exposure: string;
-    phenomena: string[];
-    time_range: {
-      startDate: string;
-      endDate: string;
-    };
-  };
-  setLocalFilterObject?: React.Dispatch<
-    React.SetStateAction<{
-      country: string;
-      exposure: string;
-      phenomena: string[];
-      time_range: {
-        startDate: string;
-        endDate: string;
-      };
-    }>
-  >;
+  preselected?: DataItem;
+  setSelectedItems: React.Dispatch<React.SetStateAction<DataItem[]>>;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<DataItem[]>([]);
+
+  useEffect(() => {
+    if (preselected) setSelected([preselected]);
+  }, [preselected]);
   const [inputValue, setInputValue] = React.useState("");
+
+  useEffect(() => {
+    if (setSelectedItems) {
+      setSelectedItems(selected);
+    }
+  }, [selected, setSelectedItems]);
 
   const handleUnselect = React.useCallback((item: DataItem) => {
     setSelected((prev) => prev.filter((s) => s.value !== item.value));
@@ -135,7 +126,7 @@ export function MultiSelect({
         </div>
         <div className="relative mt-2">
           {open && selectables.length > 0 ? (
-            <div className="absolute top-0 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
+            <div className=" absolute top-0 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
               <CommandGroup>
                 <ScrollArea className="h-24">
                   {selectables.map((framework) => {
@@ -149,21 +140,6 @@ export function MultiSelect({
                         onSelect={(value) => {
                           setInputValue("");
                           setSelected((prev) => [...prev, framework]);
-                          if (localFilterObject && setLocalFilterObject) {
-                            setLocalFilterObject({
-                              ...localFilterObject,
-                              phenomena: [
-                                ...localFilterObject.phenomena,
-                                framework.value,
-                              ],
-                            });
-                          }
-                          if (setSelectedPhenomena) {
-                            setSelectedPhenomena((selected: any) => [
-                              ...selected,
-                              framework.value,
-                            ]);
-                          }
                         }}
                       >
                         {framework.label}

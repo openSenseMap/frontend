@@ -10,11 +10,6 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "views"]
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "../ERD.svg"
-}
-
 model File {
   id   String @id @unique @default(cuid())
   blob Bytes
@@ -55,11 +50,11 @@ model User {
   devices                Device[]
   ownedCampaigns         Campaign[]      @relation("OwnedCampaigns")
   participatingCampaigns Campaign[]      @relation("CampaignParticipant")
-  bookmarkedCampaigns    Campaign[]      @relation("UserBookmarkedCampaigns")
   comments               Comment[]
   events                 CampaignEvent[]
 
-  profile Profile?
+  profile           Profile?
+  campaignBookmarks CampaignBookmark[]
 }
 
 model Profile {
@@ -170,17 +165,17 @@ model Measurement {
 }
 
 model Campaign {
-  id                  String          @id @default(uuid())
+  id                  String             @id @default(uuid())
   title               String
-  slug                String          @unique
+  slug                String             @unique
   feature             Json
-  owner               User            @relation("OwnedCampaigns", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  owner               User               @relation("OwnedCampaigns", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId             String
-  instructions        String?
+  instructions        String?            @db.VarChar(10000)
   description         String
   priority            Priority
-  country             String?
-  participants        User[]          @relation("CampaignParticipant")
+  countries           String[]
+  participants        User[]             @relation("CampaignParticipant")
   minimumParticipants Int?
   createdAt           DateTime
   updatedAt           DateTime
@@ -193,18 +188,31 @@ model Campaign {
   hardwareAvailable   Boolean
   comments            Comment[]
   devices             Device[]
-  bookmarkedByUsers   User[]          @relation("UserBookmarkedCampaigns")
+  bookmarks           CampaignBookmark[]
+}
+
+model CampaignBookmark {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  campaignId String
+  // active     Boolean  @default(true)
+
+  @@unique([userId, campaignId])
 }
 
 model Comment {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   content      String
-  campaign     Campaign @relation(fields: [campaignSlug], references: [slug], onDelete: Cascade)
+  campaign     Campaign  @relation(fields: [campaignSlug], references: [slug], onDelete: Cascade)
   campaignSlug String
   createdAt    DateTime
   updatedAt    DateTime
-  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId      String
+  Children     Comment[] @relation("Comment_Children")
+  parent       Comment?  @relation("Comment_Children", fields: [parent_id], references: [id])
+  parent_id    String?
 }
 
 model CampaignEvent {

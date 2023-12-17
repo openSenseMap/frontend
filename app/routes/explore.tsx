@@ -51,6 +51,7 @@ export default function Explore() {
   const data = useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
+
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [showSearch, setShowSearch] = useState<boolean>(false);

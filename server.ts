@@ -4,6 +4,9 @@ import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import prom from "express-prometheus-middleware";
+import { Novu } from "@novu/node";
+
+const novu = new Novu("cf5112fd46673c4928c48bc3d8915b64");
 
 const app = express();
 const metricsApp = express();
@@ -17,6 +20,7 @@ app.use(
 
 app.use((req, res, next) => {
   // helpful headers:
+  res.set("x-fly-region", process.env.FLY_REGION ?? "unknown");
   res.set("Strict-Transport-Security", `max-age=${60 * 60 * 24 * 365 * 100}`);
 
   // /clean-urls/ -> /clean-urls
@@ -38,8 +42,12 @@ app.all("*", function getReplayResponse(req, res, next) {
   const { method, path: pathname } = req;
 
   const isMethodReplayable = !["GET", "OPTIONS", "HEAD"].includes(method);
+  const { PRIMARY_REGION, FLY_REGION } = process.env;
 
-  const shouldReplay = isMethodReplayable;
+  const isReadOnlyRegion =
+    FLY_REGION && PRIMARY_REGION && FLY_REGION !== PRIMARY_REGION;
+
+  const shouldReplay = isMethodReplayable && isReadOnlyRegion;
 
   if (!shouldReplay) return next();
 
@@ -91,6 +99,24 @@ app.listen(port, () => {
   // require the built app so we're ready when the first request comes in
   require(BUILD_DIR);
   console.log(`✅ app ready: http://localhost:${port}`);
+});
+
+app.post("/sent", async (req, res) => {
+  console.log("HELLO");
+
+  await novu.trigger("untitled-crmbk88zt", {
+    to: {
+      subscriberId: "64ac170290b5785d47096d3c",
+    },
+    payload: {
+      hello: "hello",
+    },
+  });
+  //   .then(data => {
+  //     console.log(data)
+  //   }).catch(err => console.error(err))
+  // res.sendFile(path.join(__dirname, "/sent.html"));
+  res.send("HELLO");
 });
 
 const metricsPort = process.env.METRICS_PORT || 3001;

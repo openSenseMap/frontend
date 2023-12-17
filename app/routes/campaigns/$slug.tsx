@@ -8,7 +8,7 @@ import { json } from "@remix-run/node";
 import { Form, useCatch, useLoaderData, useActionData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getCampaign } from "~/models/campaign.server";
-import { requireUserId } from "~/session.server";
+import { getUserId, requireUserId } from "~/session.server";
 import {
   Dialog,
   DialogClose,
@@ -31,6 +31,7 @@ import {
   DownloadIcon,
   TrashIcon,
   StarIcon,
+  MailIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
@@ -48,6 +49,7 @@ import {
   updateCampaignEvent,
   deleteCampaignAction,
   updateCommentAction,
+  messageAllUsers,
   participate,
   bookmark,
   updateCampaignAction,
@@ -67,6 +69,7 @@ import {
   ExposureBadge,
   PriorityBadge,
 } from "~/components/campaigns/overview/campaign-badges";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 export const links: LinksFunction = () => {
   return [
@@ -106,6 +109,8 @@ export async function action(args: ActionArgs) {
       return deleteCampaignAction(args);
     case "BOOKMARK":
       return bookmark(args);
+    case "MESSAGE_ALL":
+      return messageAllUsers(args);
 
     default:
       throw new Error(`Unknown action: ${_action}`);
@@ -125,19 +130,20 @@ export const meta: MetaFunction<typeof loader> = ({ params }) => ({
 });
 
 export async function loader({ request, params }: LoaderArgs) {
-  const userId = await requireUserId(request);
+  // const userId = await requireUserId(request);
+  const userId = await getUserId(request);
 
-  const campaign = await getCampaign({ slug: params.slug ?? "" }, userId);
+  const campaign = await getCampaign({ slug: params.slug ?? "" }, userId ?? "");
   if (!campaign) {
     throw new Response("Campaign not found", { status: 502 });
   }
-  const isBookmarked = !!campaign?.bookmarkedByUsers.length;
+  // const isBookmarked = !!campaign?.bookmarkedByUsers.length;
   const response = await getPhenomena();
   if (response.code === "UnprocessableEntity") {
     throw new Response("Phenomena not found", { status: 502 });
   }
   const phenomena = response.map((p: { slug: string }) => p.slug);
-  return json({ campaign, userId, phenomena, isBookmarked });
+  return json({ campaign, userId, phenomena });
 }
 
 const layer: LayerProps = {
@@ -159,7 +165,7 @@ export default function CampaignId() {
     return { key: participant.name, value: participant.name };
   });
   const userId = data.userId;
-  const bookmarked = data.isBookmarked;
+  // const bookmarked = data.isBookmarked;
   const [commentEditMode, setCommentEditMode] = useState(false);
   const [eventEditMode, setEventEditMode] = useState(false);
   const [editEventTitle, setEditEventTitle] = useState<string | undefined>("");
@@ -171,13 +177,17 @@ export default function CampaignId() {
   >();
   const [editEventEndDate, setEditEventEndDate] = useState<Date | undefined>();
   const [comment, setComment] = useState<string | undefined>("");
+  const [mentions, setMentions] = useState<string[] | undefined>();
   const [editComment, setEditComment] = useState<string | undefined>("");
   const [editCommentId, setEditCommentId] = useState<string | undefined>("");
   const [eventDescription, setEventDescription] = useState<string | undefined>(
     ""
   );
+  const [messageForParticipants, setMessageForParticipants] = useState<
+    string | undefined
+  >("");
 
-  const [showMap, setShowMap] = useState(true);
+  const [showMap, setShowMap] = useState(false);
   const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
     "overview"
   );
@@ -190,6 +200,9 @@ export default function CampaignId() {
     trigger: "@",
     values: participants,
     itemClass: "bg-blue-700 text-black",
+    selectTemplate(participant) {
+      return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
+    },
   });
 
   useEffect(() => {
@@ -201,7 +214,7 @@ export default function CampaignId() {
       }
       if (actionData.unbookmarked) {
         toast({
-          description: <span>{t("campaign successfully uookmarked")}</span>,
+          description: <span>{t("campaign successfully un-bookmarked")}</span>,
         });
       }
     }
@@ -219,6 +232,7 @@ export default function CampaignId() {
       //@ts-ignore
       textAreaRef.current.textarea.addEventListener("tribute-replaced", (e) => {
         setComment(e.target.value);
+        setMentions(e.detail.item.original.value);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -226,8 +240,7 @@ export default function CampaignId() {
 
   return (
     <div className="h-full w-full">
-      <hr className="my-2 w-full bg-gray-700" />
-      <div className="flex w-full justify-between">
+      <header className="dark:border-green-200 mb-4 flex w-full justify-between rounded-lg border-2 border-green-100 p-4 shadow-md shadow-green-100">
         <div className="flex items-center">
           <h1 className="text-lg font-bold capitalize">
             <b>{campaign.title}</b>
@@ -237,7 +250,7 @@ export default function CampaignId() {
             <PriorityBadge priority={campaign.priority} />
           </div>
         </div>
-        <div className="flex gap-6">
+        <div className="hidden gap-6 sm:flex md:flex">
           <Form method="post">
             <input
               className="hidden"
@@ -254,12 +267,50 @@ export default function CampaignId() {
             >
               {t("bookmark")}{" "}
               <StarIcon
-                className={`h-4 w-4 ${
-                  bookmarked ? "fill-yellow-300 text-yellow-300" : ""
-                }`}
+              // className={`h-4 w-4 ${
+              //   // bookmarked ? "fill-yellow-300 text-yellow-300" : ""
+              // }`}
               />
             </Button>
           </Form>
+          {/* <Dialog>
+            <DialogTrigger asChild>
+              <Button className="flex w-fit gap-2" variant="outline">
+                {t("contributors")} <UsersIcon className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="h-90 overflow-y-scroll">
+              <DialogHeader>
+                <DialogTitle>{t("contributors")}</DialogTitle>
+                <DialogDescription>
+                  <Form method="post" className="flex flex-col gap-2">
+                    <span className="mx-auto">Message all Participants</span>
+                    <textarea id="messageForAll"></textarea>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="MESSAGE_ALL"
+                      className="mx-auto w-fit"
+                    >
+                      Send
+                    </Button>
+                  </Form>
+                </DialogDescription>
+              </DialogHeader>
+              {participants.map((p, i) => {
+                return (
+                  <div
+                    key={i}
+                    className="flex w-full flex-wrap justify-between"
+                  >
+                    <span>{p.value}</span>;
+                    <MailIcon className="h-4 w-4" />
+                  </div>
+                );
+              })}
+            </DialogContent>
+          </Dialog> */}
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex w-fit gap-2 " variant="outline">
@@ -289,6 +340,18 @@ export default function CampaignId() {
                   name="campaignId"
                   id="campaignId"
                 />
+                <input
+                  className="hidden"
+                  value={campaign.title}
+                  name="title"
+                  id="title"
+                />
+                <input
+                  className="hidden"
+                  value={campaign.ownerId}
+                  name="owner"
+                  id="owner"
+                />
                 <div className="flex flex-col gap-4 py-4">
                   <div className="flex flex-row flex-wrap justify-between">
                     <label htmlFor="email" className="text-right">
@@ -313,9 +376,27 @@ export default function CampaignId() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button name="_action" value="PARTICIPATE" type="submit">
-                    {t("contribute")}
-                  </Button>
+                  <DialogClose>
+                    <Button
+                      name="_action"
+                      value="PARTICIPATE"
+                      type="submit"
+                      onClick={() =>
+                        toast({
+                          title:
+                            "Thank you for your interest in contributing to this campaign!",
+                          description: (
+                            <span>
+                              The project owner was notified. Please wait for
+                              his instructions
+                            </span>
+                          ),
+                        })
+                      }
+                    >
+                      {t("contribute")}
+                    </Button>
+                  </DialogClose>
                 </DialogFooter>
               </Form>
             </DialogContent>
@@ -378,6 +459,18 @@ export default function CampaignId() {
                   type="text"
                   value={campaign.id}
                 />
+                <input
+                  className="hidden"
+                  id="title"
+                  name="title"
+                  value={campaign.title}
+                />
+                <input
+                  className="hidden"
+                  id="participants"
+                  name="participants"
+                  value={JSON.stringify(campaign.participants)}
+                />
                 <div className="flex justify-between">
                   <DialogClose>
                     <Button variant="outline">{t("cancel")}</Button>
@@ -397,15 +490,15 @@ export default function CampaignId() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
-      <hr className="my-4 w-full bg-gray-700" />
+      </header>
 
-      <div
-        className={`${
-          showMap ? "grid grid-cols-2" : "mx-auto flex w-full justify-center"
-        }`}
-      >
-        <Tabs
+      <div className="mx-auto flex w-full justify-center">
+        <OverviewTable
+          campaign={campaign as unknown as Campaign}
+          userId={userId ?? ""}
+          phenomena={data.phenomena}
+        />
+        {/* <Tabs
           defaultValue={tabView}
           className={`${showMap ? "w-full" : "mt-2 w-1/2"}`}
         >
@@ -437,11 +530,10 @@ export default function CampaignId() {
               </TabsTrigger>
             </TabsList>
           </div>
-          {/* <div className="h-screen w-full rounded border border-gray-100"> */}
           <TabsContent value="overview">
             <OverviewTable
               campaign={campaign as unknown as Campaign}
-              userId={userId}
+              userId={userId ?? ""}
               phenomena={data.phenomena}
             />
           </TabsContent>
@@ -463,7 +555,7 @@ export default function CampaignId() {
                 setEditEventStartDate={setEditEventStartDate}
                 setEditEventTitle={setEditEventTitle}
                 setEventEditMode={setEventEditMode}
-                userId={userId}
+                userId={userId ?? ""}
               />
             )}
           </TabsContent>
@@ -476,7 +568,7 @@ export default function CampaignId() {
               setEditComment={setEditComment}
               setEditCommentId={setEditCommentId}
               textAreaRef={textAreaRef}
-              userId={userId}
+              userId={userId ?? ""}
             />
             {!editComment && (
               <CommentInput
@@ -484,11 +576,11 @@ export default function CampaignId() {
                 setCommentEditMode={setCommentEditMode}
                 setComment={setComment}
                 textAreaRef={textAreaRef}
+                mentions={mentions}
               />
             )}
           </TabsContent>
-          {/* </div> */}
-        </Tabs>
+        </Tabs> */}
         <div>
           {showMap && (
             <MapProvider>
@@ -501,8 +593,8 @@ export default function CampaignId() {
                   zoom: 4,
                 }}
                 style={{
-                  height: "60vh",
-                  width: "45vw",
+                  height: "35vh",
+                  width: "25vw",
                   position: "sticky",
                   top: 0,
                   marginLeft: "auto",

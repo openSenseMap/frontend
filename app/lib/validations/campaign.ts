@@ -19,7 +19,7 @@ export const campaignSchema = z
     instructions: z.string(),
     feature: z.any(),
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
-    country: z.string().optional(),
+    countries: z.array(z.string()).optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
     startDate: z
@@ -57,7 +57,7 @@ export const campaignUpdateSchema = z
     instructions: z.string().optional(),
     feature: z.any().optional(),
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
-    country: z.string(),
+    countries: z.array(z.string()).optional(),
     createdAt: z.date().optional(),
     updatedAt: z.date(),
     startDate: z.date(),

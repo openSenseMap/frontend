@@ -1,4 +1,4 @@
-import { requireUserId } from "~/session.server";
+import { requireUserId, requireUser } from "~/session.server";
 import {
   updateCampaign,
   deleteCampaign,
@@ -10,15 +10,33 @@ import type { Exposure, Priority } from "@prisma/client";
 import type { ActionArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { campaignUpdateSchema } from "../validations/campaign";
-import { triggerNotification } from "~/novu.server";
+import {
+  campaignCancelled,
+  triggerNotificationNewParticipant,
+} from "~/novu.server";
 
 export async function participate({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
+  const user = await requireUser(request);
   const formData = await request.formData();
   const campaignId = formData.get("campaignId");
   if (typeof campaignId !== "string" || campaignId.length === 0) {
     return json(
       { errors: { campaignId: "campaignId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const campaignTitle = formData.get("title");
+  if (typeof campaignTitle !== "string" || campaignTitle.length === 0) {
+    return json(
+      { errors: { campaignTitle: "campaignTitle is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const campaignOwner = formData.get("owner");
+  if (typeof campaignOwner !== "string" || campaignOwner.length === 0) {
+    return json(
+      { errors: { campaignOwner: "campaignOwner is required", body: null } },
       { status: 400 }
     );
   }
@@ -32,7 +50,13 @@ export async function participate({ request }: ActionArgs) {
   // }
   try {
     const updated = await updateCampaign(campaignId, ownerId);
-    await triggerNotification();
+    console.log(campaignOwner);
+    await triggerNotificationNewParticipant(
+      campaignOwner,
+      user.email,
+      user.name,
+      campaignTitle
+    );
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
@@ -46,6 +70,13 @@ interface PhenomenaState {
 
 type PriorityType = keyof typeof Priority;
 type ExposureType = keyof typeof Exposure;
+
+export async function messageAllUsers({ request }: ActionArgs) {
+  const formData = await request.formData();
+  const message = formData.get("messageForAll");
+  console.log(message);
+  return json({ message });
+}
 
 export async function updateCampaignAction({ request }: ActionArgs) {
   const formData = await request.formData();
@@ -92,6 +123,8 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       { status: 400 }
     );
   }
+  const minimumParticipants = formData.get("minimumParticipants");
+  const minParticipants = parseInt(minimumParticipants);
   const updatedAt = new Date();
   const exposure = formData.get("exposure") as ExposureType;
   const hardwareAvailable =
@@ -117,13 +150,14 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       phenomena: phenomena,
       startDate: startDate,
       endDate: endDate,
+      minimumParticipants: minParticipants,
       updatedAt: updatedAt,
       exposure: exposure,
       hardwareAvailable: hardwareAvailable,
     });
     const updated = await update(campaignId, updatedCampaign);
     console.log(updated);
-    return redirect("../overview");
+    return redirect("../explore");
     // return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
@@ -141,9 +175,27 @@ export async function deleteCampaignAction({ request }: ActionArgs) {
       { status: 400 }
     );
   }
+  const campaignTitle = formData.get("title");
+  if (typeof campaignTitle !== "string" || campaignTitle.length === 0) {
+    return json(
+      { errors: { campaignTitle: "campaignTitle is required", body: null } },
+      { status: 400 }
+    );
+  }
+  let participants = formData.get("participants");
+  if (typeof participants !== "string" || participants.length === 0) {
+    return json(
+      { errors: { participants: "participants is required", body: null } },
+      { status: 400 }
+    );
+  }
+  participants = JSON.parse(participants);
   try {
     const deleted = await deleteCampaign({ id: campaignId, ownerId });
-    return redirect("../overview");
+    if (Array.isArray(participants)) {
+      participants.map((p) => campaignCancelled(p.id, campaignTitle));
+    }
+    return redirect("../explore");
     // return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);
@@ -153,7 +205,7 @@ export async function deleteCampaignAction({ request }: ActionArgs) {
 
 export async function bookmark({ request }: ActionArgs) {
   const formData = await request.formData();
-  const ownerId = await requireUserId(request);
+  const userId = await requireUserId(request);
   const campaignId = formData.get("campaignId");
   if (typeof campaignId !== "string" || campaignId.length === 0) {
     return json(
@@ -162,7 +214,7 @@ export async function bookmark({ request }: ActionArgs) {
     );
   }
   try {
-    const bookmarked = await bookmarkCampaign({ id: campaignId, ownerId });
+    const bookmarked = await bookmarkCampaign({ id: campaignId, userId });
     return bookmarked;
   } catch (error) {
     console.error(`form not submitted ${error}`);

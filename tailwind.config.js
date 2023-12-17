@@ -174,4 +174,7 @@ module.exports = {
     },
   },
   plugins: [require("@tailwindcss/forms"), require("tailwindcss-animate")],
+  variants: {
+    borderWidth: ["responsive", "last", "hover", "focus"],
+  },
 };

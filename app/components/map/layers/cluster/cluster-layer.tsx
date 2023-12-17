@@ -81,6 +81,7 @@ export default function ClusterLayer({
     mapRef?.getMap().on("zoom", debouncedChangeHandler);
     mapRef?.getMap().on("move", debouncedChangeHandler);
     mapRef?.getMap().on("resize", debouncedChangeHandler);
+    console.log(mapRef?.getLayer("inactive-cluster"));
   }, [debouncedChangeHandler, mapRef]);
 
   const { clusters, supercluster } = useSupercluster({
