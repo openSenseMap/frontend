@@ -19,7 +19,6 @@ import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
 import ErrorMessage from "~/components/error-message";
-import DevicesDashboard from "./device._index";
 
 
 export async function loader({ params, request }: LoaderFunctionArgs) {

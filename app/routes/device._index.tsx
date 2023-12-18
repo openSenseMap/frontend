@@ -1,4 +1,3 @@
-import z from "zod/lib";
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import {type zodExposureEnum, zodStatusEnum} from "~/schema";
