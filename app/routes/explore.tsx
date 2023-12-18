@@ -9,7 +9,7 @@ import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
-import { getDevices, getDevicesWithSensors } from "~/models/device.server";
+import { getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source } from "react-map-gl";
 import { useState, useRef, useEffect } from "react";
@@ -29,7 +29,6 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
-import { getSensorsWithDevices } from "~/models/sensor.server";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -44,7 +43,6 @@ export type DeviceClusterProperties =
 export async function loader({ request }: LoaderFunctionArgs) {
   const devices = await getDevicesWithSensors();
   // const devices = await getDevices();
-  // const items = getSensorsWithDevices()
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;

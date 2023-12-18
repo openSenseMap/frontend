@@ -2,8 +2,7 @@ import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
 import { device, sensor, type Device, Sensor } from "~/schema";
-import { eq, sql } from "drizzle-orm";
-import { QueryBuilder } from "drizzle-orm/pg-core";
+import { eq} from "drizzle-orm";
 
 
 export function getDevice({ id }: Pick<Device, "id">) {
@@ -110,29 +109,7 @@ export async function getDevices() {
 }
 
 export async function getDevicesWithSensors() {
-  // const devices = await drizzleClient.select({
-  //   id: device.id,
-  //   name: device.name,
-  //   latitude: device.latitude,
-  //   longitude: device.longitude,
-  //   exposure: device.exposure,
-  //   createdAt: device.createdAt,
-  //   status: device.status,
-  //   sensor_id: sensor.id
-  // }).from(device).leftJoin(sensor, eq(device.id, sensor.deviceId))
   
-  const rows = await drizzleClient
-  .select({
-    device: device,
-    sensor: {
-      id: sensor.id,
-      title: sensor.title,
-      sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
-      lastMeasurement: sensor.lastMeasurement
-    }
-  })
-  .from(device)
-  .leftJoin(sensor, eq(sensor.deviceId, device.id));
   // const devices = await drizzleClient.query.device.findMany({
   //   columns: {
   //     id: true,
@@ -147,6 +124,19 @@ export async function getDevicesWithSensors() {
   //     sensors: true
   //   }
   // })
+
+  const rows = await drizzleClient
+  .select({
+    device: device,
+    sensor: {
+      id: sensor.id,
+      title: sensor.title,
+      sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
+      lastMeasurement: sensor.lastMeasurement
+    }
+  })
+  .from(device)
+  .leftJoin(sensor, eq(sensor.deviceId, device.id));
   const geojson: GeoJSON.FeatureCollection<Point, any> = {
     type: "FeatureCollection",
     features: [],
