@@ -129,6 +129,8 @@ export default function () {
     }
   });
 
+
+
   return (
     <div className="grid grid-cols-3 gap-8">
       <div className="">
@@ -240,9 +242,9 @@ export default function () {
             </div>
           )} */}
 
-          {user?.devices && (
+          {/* {user && user.devices && (
             <DevicesDashboard devices={user.devices}></DevicesDashboard>
-          )}
+          )} */}
         </div>
       </div>
     </div>

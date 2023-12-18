@@ -1,7 +1,7 @@
-import { type Exposure, type Status } from "@prisma/client";
-
+import z from "zod/lib";
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
+import {type zodExposureEnum, zodStatusEnum} from "~/schema";
 
 /* export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
@@ -17,11 +17,11 @@ interface UserDevices {
     id: string;
     name: string;
     description: string | null;
-    exposure: Exposure;
+    exposure: zodExposureEnum;
     useAuth: boolean | null;
     model: string | null;
     public: boolean;
-    status: Status;
+    status: zodStatusEnum;
     createdAt: string;
     updatedAt: string;
     latitude: number;
