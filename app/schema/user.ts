@@ -5,6 +5,7 @@ import { pgTable, boolean, text, timestamp } from "drizzle-orm/pg-core";
 import { password } from "./password";
 import { profile } from "./profile";
 import { device } from "./device";
+import { bookmarks } from "./bookmarks";
 
 /**
  * Table
@@ -35,6 +36,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     fields: [user.id],
     references: [profile.userId],
   }),
+  bookmarks: many(bookmarks),
   devices: many(device),
 }));
 
