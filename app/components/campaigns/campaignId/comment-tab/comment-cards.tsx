@@ -13,7 +13,8 @@ import { TrashIcon, EditIcon } from "lucide-react";
 import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
 import Markdown from "markdown-to-jsx";
-import type { Comment } from "@prisma/client";
+// import type { Comment } from "@prisma/client";
+import type { Comment } from "~/schema";
 
 type CommentCardsProps = {
   comments: any;
@@ -55,7 +56,7 @@ export default function CommentCards({
                     {/* @ts-ignore */}
                     {c.owner.name}
                   </div>
-                  {userId === c.ownerId && (
+                  {userId === c.userId && (
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"

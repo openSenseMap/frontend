@@ -1,22 +1,22 @@
-import type { Password, User } from "@prisma/client";
+import { type Password, type User } from "~/schema";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
-import { prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
+import { password as passwordTable, user } from "~/schema";
 import { createProfile } from "./profile.server";
-
-export type { User } from "@prisma/client";
+import { eq } from "drizzle-orm";
 
 export async function getUserById(id: User["id"]) {
-  return prisma.user.findUnique({ where: { id } });
-}
-
-export async function getUserByName(name: User["name"]) {
-  return prisma.user.findFirst({ where: { name } });
+  return drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.id, id),
+  });
 }
 
 export async function getUserByEmail(email: User["email"]) {
-  return prisma.user.findUnique({ where: { email } });
+  return drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email),
+  });
 }
 
 // export async function getUserWithDevicesByName(name: User["name"]) {
@@ -39,36 +39,53 @@ export async function getUserByEmail(email: User["email"]) {
 // }
 
 export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+  return drizzleClient.delete(user).where(eq(user.email, email));
+}
+
+//* user name shouldn't be unique
+/* export async function getUserByName(name: User["name"]) {
+  return prisma.user.findUnique({ where: { name } });
+} */
+
+export async function updateUserName(email: User["email"], newUserName: string){
+  return drizzleClient
+    .update(user)
+    .set({
+      name: newUserName,
+    })
+    .where(eq(user.email, email));
 }
 
 export async function updateUserPassword(
   userId: Password["userId"],
-  password: string
+  newPassword: string
 ) {
-  const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13);
-  return prisma.password.update({
-    where: { userId },
-    data: {
+  const hashedPassword = await bcrypt.hash(
+    preparePasswordHash(newPassword),
+    13,
+  );
+  return drizzleClient
+    .update(passwordTable)
+    .set({
       hash: hashedPassword,
-    },
-  });
+    })
+    .where(eq(passwordTable.userId, userId));
 }
 
 export async function updateUserlocale(
   email: User["email"],
   language: User["language"]
 ) {
-  return prisma.user.update({
-    where: { email },
-    data: {
+  return drizzleClient
+    .update(user)
+    .set({
       language: language,
-    },
-  });
+    })
+    .where(eq(user.email, email));
 }
 
 export async function getUsers() {
-  return prisma.user.findMany();
+  return drizzleClient.query.user.findMany();
 }
 
 const preparePasswordHash = function preparePasswordHash(
@@ -90,36 +107,39 @@ export async function createUser(
 ) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
-  const user = await prisma.user.create({
-    data: {
+  // Maybe wrap in a transaction
+  // https://stackoverflow.com/questions/76082778/drizzle-orm-how-do-you-insert-in-a-parent-and-child-table
+  const newUser = await drizzleClient
+    .insert(user)
+    .values({
       name,
       email,
       language,
-      boxes: [],
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
-      },
-    },
+    })
+    .returning();
+
+  await drizzleClient.insert(passwordTable).values({
+    hash: hashedPassword,
+    userId: newUser[0].id,
   });
 
-  await createProfile(user.id, name);
+  await createProfile(newUser[0].id, name);
 
-  return user;
+  return newUser;
 }
 
 export async function verifyLogin(
   email: User["email"],
   password: Password["hash"]
 ) {
-  const userWithPassword = await prisma.user.findUnique({
-    where: { email },
-    include: {
+  const userWithPassword = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email),
+    with: {
       profile: true,
       password: true,
     },
   });
+  console.log(userWithPassword);
 
   if (!userWithPassword || !userWithPassword.password) {
     return null;

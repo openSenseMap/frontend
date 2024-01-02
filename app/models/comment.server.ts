@@ -1,5 +1,6 @@
-import type { User, Comment, Prisma } from "@prisma/client";
-import { prisma } from "~/db.server";
+import { eq } from "drizzle-orm";
+import { drizzleClient } from "~/db.server";
+import { type Comment, User, comment } from "~/schema";
 
 export function createComment({
   content,
@@ -8,39 +9,26 @@ export function createComment({
 }: Pick<Comment, "content" | "campaignSlug"> & {
   ownerId: User["id"];
 }) {
-  return prisma.comment.create({
-    data: {
-      content,
+  return drizzleClient.insert(comment).values({
+      content: content,
       createdAt: new Date(),
       updatedAt: new Date(),
-      owner: {
-        connect: {
-          id: ownerId,
-        },
-      },
-      campaign: {
-        connect: {
-          slug: campaignSlug,
-        },
-      },
-    },
-  });
+      userId: ownerId,
+      campaignSlug: campaignSlug
+      // campaign: {
+      //   connect: {
+      //     slug: campaignSlug,
+      //   },
+      // },
+  }).returning()
 }
 
 export function deleteComment({ id }: Pick<Comment, "id">) {
-  return prisma.comment.deleteMany({
-    where: { id },
-  });
+  return drizzleClient.delete(comment).where(eq(comment.id, id))
 }
 
 export async function updateComment(commentId: string, content: string) {
-  return prisma.comment.update({
-    where: {
-      id: commentId,
-    },
-    data: {
-      content: content,
-      updatedAt: new Date(),
-    },
-  });
+  return drizzleClient.update(comment).set({
+    content: content
+  }).where(eq(comment.id, commentId));
 }

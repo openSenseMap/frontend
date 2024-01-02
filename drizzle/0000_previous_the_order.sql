@@ -1,0 +1,147 @@
+DO $$ BEGIN
+ CREATE TYPE "model" AS ENUM('HOME_V2_LORA');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "exposure" AS ENUM('indoor', 'outdoor', 'mobile', 'unknown');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "priority" AS ENUM('urgent', 'high', 'medium', 'low');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "status" AS ENUM('active', 'inactive', 'old');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "comment" (
+	"id" text PRIMARY KEY NOT NULL,
+	"content" text NOT NULL,
+	"campaignSlug" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"user_id" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "campaign" (
+	"id" text PRIMARY KEY NOT NULL,
+	"title" text NOT NULL,
+	"slug" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"owner_id" text NOT NULL,
+	"feature" json,
+	"description" text NOT NULL,
+	"instructions" text NOT NULL,
+	"countries" text[],
+	"priority" "priority",
+	"minimumParticipants" integer DEFAULT 1,
+	"startDate" timestamp DEFAULT now() NOT NULL,
+	"endDate" timestamp DEFAULT now() NOT NULL,
+	"phenomena" text[],
+	"centerpoint" json,
+	"exposure" "exposure",
+	"hardwareAvailable" boolean,
+	CONSTRAINT "campaign_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "device" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"description" text,
+	"useAuth" boolean,
+	"exposure" "exposure",
+	"status" "status" DEFAULT 'inactive',
+	"model" "model",
+	"public" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"latitude" double precision NOT NULL,
+	"longitude" double precision NOT NULL,
+	"user_id" text NOT NULL,
+	"sensorWikiModel" text
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "measurement" (
+	"sensorId" text NOT NULL,
+	"time" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"value" double precision,
+	CONSTRAINT "measurement_sensorId_time_unique" UNIQUE("sensorId","time")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "password" (
+	"hash" text NOT NULL,
+	"user_id" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "profile" (
+	"id" text PRIMARY KEY NOT NULL,
+	"username" text NOT NULL,
+	"public" boolean DEFAULT false,
+	"user_id" text,
+	CONSTRAINT "profile_username_unique" UNIQUE("username")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "profile_image" (
+	"id" text PRIMARY KEY NOT NULL,
+	"alt_text" text,
+	"content_type" text NOT NULL,
+	"blob" "bytea" NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"profile_id" text
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "sensor" (
+	"id" text PRIMARY KEY NOT NULL,
+	"title" text,
+	"unit" text,
+	"sensorType" text,
+	"status" "status" DEFAULT 'inactive',
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"device_id" text NOT NULL,
+	"sensorWikiType" text,
+	"sensorWikiPhenomenon" text,
+	"sensorWikiUnit" text,
+	"lastMeasurement" json,
+	"data" json
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "user" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"email" text NOT NULL,
+	"role" text DEFAULT 'user',
+	"language" text DEFAULT 'en_US',
+	"emailIsConfirmed" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "user_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "password" ADD CONSTRAINT "password_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE cascade ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "profile" ADD CONSTRAINT "profile_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE cascade ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "profile_image" ADD CONSTRAINT "profile_image_profile_id_profile_id_fk" FOREIGN KEY ("profile_id") REFERENCES "profile"("id") ON DELETE cascade ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;

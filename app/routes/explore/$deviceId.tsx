@@ -1,5 +1,6 @@
 // Importing dependencies
-import { Exposure, type Sensor } from "@prisma/client";
+// import { Exposure, type Sensor } from "@prisma/client";
+import { exposureEnum, Sensor } from "~/schema";
 import type { LoaderArgs } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";

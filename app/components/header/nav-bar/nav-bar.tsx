@@ -6,7 +6,7 @@ import type { DateRange } from "react-day-picker";
 import getUserLocale from "get-user-locale";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import type { Device } from "@prisma/client";
+import type { Device } from "~/schema";
 
 interface NavBarProps {
   devices: Device[];

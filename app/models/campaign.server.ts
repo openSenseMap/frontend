@@ -1,31 +1,33 @@
-import type { Campaign, User, Prisma } from "@prisma/client";
+import { campaign, type Campaign } from "~/schema/campaign";
+import type { User } from "~/schema";
 import { generateSlug } from "~/lib/slug";
-import { prisma } from "~/db.server";
 import { json } from "@remix-run/node";
+import { drizzleClient } from "~/db.server";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { count, eq } from "drizzle-orm";
 
 export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
-  return prisma.campaign.findFirst({
-    where: { slug },
-    include: {
-      comments: {
-        include: {
-          owner: true,
-        },
-      },
-      events: true,
-      participants: true,
-      bookmarks: {
-        where: { userId: userId },
-      },
-    },
+  return drizzleClient.query.campaign.findFirst({
+    // where: { slug },
+    // include: {
+    //   comments: {
+    //     include: {
+    //       owner: true,
+    //     },
+    //   },
+    //   events: true,
+    //   participants: true,
+    //   bookmarks: {
+    //     where: { userId: userId },
+    //   },
+    // },
+    where: (campaign, {eq}) => eq(campaign.slug, slug)
   });
 }
 
 export async function getOwnCampaigns(userId: string) {
-  return await prisma.campaign.findMany({
-    where: {
-      ownerId: userId,
-    },
+  return drizzleClient.query.campaign.findMany({
+    where: (campaign, {eq}) => eq(campaign.ownerId, userId)
   });
 }
 
@@ -41,19 +43,19 @@ export async function getCampaigns(
   userId?: string,
   sortBy?: string
 ) {
-  const campaigns = await prisma.campaign.findMany({
-    include: {
-      participants: {
-        select: {
-          id: true,
-        },
-      },
-      bookmarks: {
-        where: {
-          userId: userId,
-        },
-      },
-    },
+  const campaigns = await drizzleClient.query.campaign.findMany({
+    // include: {
+    //   participants: {
+    //     select: {
+    //       id: true,
+    //     },
+    //   },
+    //   bookmarks: {
+    //     where: {
+    //       userId: userId,
+    //     },
+    //   },
+    // },
     // orderBy: [
     //   {
     //     bookmarkedByUsers: {
@@ -64,7 +66,7 @@ export async function getCampaigns(
     //     updatedAt: "desc",
     //   },
     // ],
-    ...options,
+    // ...options,
   });
   if (sortBy === "priority") {
     return campaigns
@@ -82,73 +84,73 @@ export async function getCampaigns(
 }
 
 export async function getCampaignCount() {
-  return await prisma.campaign.count();
+  return await drizzleClient.select({value: count()}).from(campaign);
 }
 
 export async function getFilteredCampaigns(title: string) {
-  return prisma.campaign.findMany({
-    where: { title },
+  return drizzleClient.query.campaign.findMany({
+    where: (campaign, {eq}) => eq(campaign.title, title)
   });
 }
 
-export async function getBookmark({
-  id,
-  userId,
-}: Pick<Campaign, "id"> & { userId: User["id"] }) {
-  const bookmark = await prisma.campaignBookmark.findUnique({
-    where: {
-      userId_campaignId: { userId, campaignId: id },
-    },
-  });
-  return bookmark;
-}
+// export async function getBookmark({
+//   id,
+//   userId,
+// }: Pick<Campaign, "id"> & { userId: User["id"] }) {
+//   const bookmark = await prisma.campaignBookmark.findUnique({
+//     where: {
+//       userId_campaignId: { userId, campaignId: id },
+//     },
+//   });
+//   return bookmark;
+// }
 
-export async function getBookmarks({ userId }: { userId: User["id"] }) {
-  const bookmarks = await prisma.campaignBookmark.findMany({
-    where: {
-      userId: userId,
-    },
-  });
-  return bookmarks;
-}
+// export async function getBookmarks({ userId }: { userId: User["id"] }) {
+//   const bookmarks = await prisma.campaignBookmark.findMany({
+//     where: {
+//       userId: userId,
+//     },
+//   });
+//   return bookmarks;
+// }
 
-export async function bookmarkCampaign({
-  id,
-  userId,
-}: Pick<Campaign, "id"> & { userId: User["id"] }) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+// export async function bookmarkCampaign({
+//   id,
+//   userId,
+// }: Pick<Campaign, "id"> & { userId: User["id"] }) {
+//   const user = await prisma.user.findUnique({
+//     where: { id: userId },
+//   });
 
-  const campaign = await prisma.campaign.findUnique({
-    where: { id: id },
-    include: {
-      bookmarks: true,
-    },
-  });
+//   const campaign = await prisma.campaign.findUnique({
+//     where: { id: id },
+//     include: {
+//       bookmarks: true,
+//     },
+//   });
 
-  if (!user || !campaign) {
-    return;
-  }
+//   if (!user || !campaign) {
+//     return;
+//   }
 
-  const isBookmarked = campaign.bookmarks.some((b) => b.userId === userId);
+//   const isBookmarked = campaign.bookmarks.some((b) => b.userId === userId);
 
-  if (isBookmarked) {
-    const unbookmarked = await deleteCampaignBookmark({ id, userId });
-    if (unbookmarked) return json({ unbookmarked: true });
-    return unbookmarked;
-  } else {
-    const bookmark = await prisma.campaignBookmark.create({
-      data: {
-        userId: userId,
-        campaignId: id,
-      },
-    });
-    if (bookmark) {
-      return json({ bookmarked: true });
-    }
-    return bookmark;
-  }
+//   if (isBookmarked) {
+//     const unbookmarked = await deleteCampaignBookmark({ id, userId });
+//     if (unbookmarked) return json({ unbookmarked: true });
+//     return unbookmarked;
+//   } else {
+//     const bookmark = await prisma.campaignBookmark.create({
+//       data: {
+//         userId: userId,
+//         campaignId: id,
+//       },
+//     });
+//     if (bookmark) {
+//       return json({ bookmarked: true });
+//     }
+//     return bookmark;
+//   }
 
   // const isBookmarked = user.bookmarkedCampaigns.some(
   //   (bookmark) => bookmark.id === id
@@ -173,7 +175,7 @@ export async function bookmarkCampaign({
   //   }
   //   return bookmark;
   // }
-}
+// }
 
 export async function createCampaign({
   title,
@@ -213,30 +215,24 @@ export async function createCampaign({
   ownerId: User["id"];
 }) {
   const slug = await generateSlug(title);
-  return prisma.campaign.create({
-    data: {
-      title,
-      slug,
+  return drizzleClient.insert(campaign).values({
+      title: title,
+      slug: slug,
       feature: feature === null ? {} : feature,
-      description,
-      instructions,
-      priority,
-      countries,
-      minimumParticipants,
-      startDate,
-      endDate,
-      createdAt,
-      updatedAt,
-      phenomena,
-      exposure,
-      hardwareAvailable,
+      description: description,
+      instructions: instructions,
+      priority: priority,
+      countries: countries,
+      minimumParticipants: minimumParticipants,
+      startDate: startDate,
+      endDate: endDate,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      phenomena: phenomena,
+      exposure: exposure,
+      hardwareAvailable: hardwareAvailable,
       centerpoint: centerpoint === null ? {} : centerpoint,
-      owner: {
-        connect: {
-          id: ownerId,
-        },
-      },
-    },
+      ownerId: ownerId
   });
 }
 
@@ -266,45 +262,41 @@ export async function update(
     | "hardwareAvailable"
   >
 ) {
-  return prisma.campaign.update({
-    data: update,
-    where: {
-      id: id,
-    },
-  });
+  return drizzleClient.update(campaign).set({
+    title: update.title,
+
+  }).where(eq(campaign.id, id));
 }
 
-export async function updateCampaign(
-  campaignId: string,
-  participantId: string
-) {
-  return prisma.campaign.update({
-    where: {
-      id: campaignId,
-    },
-    data: {
-      participants: {
-        connect: { id: participantId },
-      },
-      updatedAt: new Date(),
-    },
-  });
-}
+// export async function updateCampaign(
+//   campaignId: string,
+//   participantId: string
+// ) {
+//   return prisma.campaign.update({
+//     where: {
+//       id: campaignId,
+//     },
+//     data: {
+//       participants: {
+//         connect: { id: participantId },
+//       },
+//       updatedAt: new Date(),
+//     },
+//   });
+// }
 
-export function deleteCampaignBookmark({
-  id,
-  userId,
-}: Pick<Campaign, "id"> & { userId: User["id"] }) {
-  return prisma.campaignBookmark.delete({
-    where: { userId_campaignId: { userId, campaignId: id } },
-  });
-}
+// export function deleteCampaignBookmark({
+//   id,
+//   userId,
+// }: Pick<Campaign, "id"> & { userId: User["id"] }) {
+//   return prisma.campaignBookmark.delete({
+//     where: { userId_campaignId: { userId, campaignId: id } },
+//   });
+// }
 
 export function deleteCampaign({
   id,
   ownerId,
 }: Pick<Campaign, "id"> & { ownerId: User["id"] }) {
-  return prisma.campaign.deleteMany({
-    where: { id, ownerId },
-  });
+  return drizzleClient.delete(campaign).where(eq(campaign.id, id))
 }

@@ -1,4 +1,5 @@
-import type { Campaign, CampaignBookmark, User } from "@prisma/client";
+// import type { Campaign, CampaignBookmark, User } from "@prisma/client";
+import type { Campaign } from "~/schema";
 import {
   Card,
   CardContent,
@@ -28,7 +29,7 @@ type CampaignGridProps = {
   userId: string;
   campaignCount: number;
   totalPages: number;
-  bookmarks: CampaignBookmark[];
+  // bookmarks: CampaignBookmark[];
 };
 
 export default function CampaignGrid({
@@ -37,7 +38,7 @@ export default function CampaignGrid({
   userId,
   campaignCount,
   totalPages,
-  bookmarks,
+  // bookmarks,
 }: CampaignGridProps) {
   const { t } = useTranslation("explore-campaigns");
 
@@ -69,12 +70,12 @@ export default function CampaignGrid({
     >
       <CampaignInfo />
       {campaigns.map((item: Campaign, index: number) => {
-        const isBookmarked =
-          userId &&
-          bookmarks.find(
-            (bookmark: CampaignBookmark) =>
-              bookmark.userId === userId && bookmark.campaignId === item.id
-          );
+        // const isBookmarked =
+        //   userId &&
+        //   bookmarks.find(
+        //     (bookmark: CampaignBookmark) =>
+        //       bookmark.userId === userId && bookmark.campaignId === item.id
+        //   );
         return (
           <Link to={`../${item.slug}`} key={item.id}>
             <Card key={item.id} className="col-span-1">
@@ -97,22 +98,22 @@ export default function CampaignGrid({
                         >
                           <StarIcon
                             className={`h-4 w-4 ${
-                              isBookmarked && "fill-yellow-300 text-yellow-300"
-                            }`}
+                              // isBookmarked && "fill-yellow-300 text-yellow-300"
+                            ""}`}
                           />
                         </button>
                       </Form>
                     </div>
                     <div className="flex gap-2">
-                      <ExposureBadge exposure={item.exposure} />
-                      <PriorityBadge priority={item.priority} />
+                      {/* <ExposureBadge exposure={item.exposure} /> */}
+                      {/* <PriorityBadge priority={item.priority} /> */}
                     </div>
                   </div>
                   <div className="w-full">
                     <div className="flex items-center justify-between gap-2 truncate">
                       <span>{item.title} </span>
                       <div className="flex">
-                        {item.countries.map(
+                        {item.countries && item.countries.map(
                           (country: string, index: number) => {
                             if (index === 2) {
                               return (
@@ -144,7 +145,7 @@ export default function CampaignGrid({
               <CardContent className="mt-2">
                 <Progress
                   max={item.minimumParticipants ?? 0}
-                  value={item.participants.length}
+                  // value={item.participants.length}
                   // onMouseEnter={}
                 />
                 <span>

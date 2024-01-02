@@ -7,9 +7,8 @@ import {
   useActionData,
 } from "@remix-run/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Map } from "~/components/Map";
 import {
-  getBookmarks,
+  // getBookmarks,
   getCampaignCount,
   getCampaigns,
 } from "~/models/campaign.server";
@@ -30,7 +29,8 @@ import { useTranslation } from "react-i18next";
 import PointLayer from "~/components/campaigns/overview/map/point-layer";
 import { getPhenomena } from "~/models/phenomena.server";
 // import FiltersBar from "~/components/campaigns/overview/filters-bar";
-import type { Campaign, CampaignBookmark, Prisma } from "@prisma/client";
+// import type { Campaign, CampaignBookmark, Prisma } from "@prisma/client";
+import type { Campaign } from "~/schema";
 import Pagination from "~/components/campaigns/overview/pagination";
 import { Button } from "~/components/ui/button";
 import Filter from "~/components/campaigns/overview/campaign-filter";
@@ -51,9 +51,9 @@ export async function action(args: ActionArgs) {
 
 export async function loader({ params, request }: LoaderArgs) {
   const userId = await getUserId(request);
-  let bookmarks: CampaignBookmark[] = [];
+  let bookmarks: any[] = [];
   if (userId) {
-    bookmarks = await getBookmarks({ userId });
+    // bookmarks = await getBookmarks({ userId });
   }
   const allCampaigns = await getCampaigns({});
   const url = new URL(request.url);
@@ -133,7 +133,8 @@ export default function Campaigns() {
   const phenomena = data.phenomena;
   const campaignCount = data.campaignCount;
   const userId = data.userId;
-  const totalPages = Math.ceil(campaignCount / PER_PAGE);
+  // const totalPages = Math.ceil(campaignCount / PER_PAGE);
+  const totalPages = 0
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
@@ -444,9 +445,9 @@ export default function Campaigns() {
             campaigns={campaigns}
             showMap={showMap}
             userId={userId ?? ""}
-            campaignCount={campaignCount}
+            campaignCount={0}
             totalPages={totalPages}
-            bookmarks={bookmarks}
+            // bookmarks={}
           />
         ) : (
           <CampaignMap campaigns={allCampaigns} phenomena={phenomena} />

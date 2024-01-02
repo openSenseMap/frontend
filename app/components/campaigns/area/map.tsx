@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MapLayerMouseEvent, PopupProps } from "react-map-gl";
 import { MapProvider, Source, Layer, Popup } from "react-map-gl";
-import { Map } from "~/components/Map";
+import { Map } from "~/components/map";
 import DrawControl from "~/components/Map/draw-control";
 import GeocoderControl from "~/components/Map/geocoder-control";
 import { Button } from "~/components/ui/button";

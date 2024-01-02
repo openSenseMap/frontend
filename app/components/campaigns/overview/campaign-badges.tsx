@@ -1,14 +1,15 @@
-import type { Exposure, Priority } from "@prisma/client";
+// import type { Exposure, Priority } from "@prisma/client";
+import { priorityEnum, exposureEnum } from "~/schema";
 import clsx from "clsx";
 import { ClockIcon } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 
 type PriorityBadgeProps = {
-  priority: keyof typeof Priority;
+  priority: keyof typeof priorityEnum;
 };
 
 type ExposureBadgeProps = {
-  exposure: keyof typeof Exposure;
+  exposure: keyof typeof exposureEnum;
 };
 
 export function PriorityBadge({ priority }: PriorityBadgeProps) {

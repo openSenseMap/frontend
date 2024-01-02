@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "~/components/ui/use-toast";
 import { useEffect, useRef, useState } from "react";
-import { Map } from "~/components/Map";
+import { Map } from "~/components/map";
 import type { LayerProps } from "react-map-gl";
 import { MapProvider, Source, Layer } from "react-map-gl";
 import {
@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
-import { updateCampaign } from "~/models/campaign.server";
+// import { updateCampaign } from "~/models/campaign.server";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
@@ -63,7 +63,8 @@ import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
 import { getPhenomena } from "~/models/phenomena.server";
 import { useTranslation } from "react-i18next";
-import type { Campaign } from "@prisma/client";
+// import type { Campaign } from "@prisma/client";
+import type { Campaign } from "~/schema";
 import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 import {
   ExposureBadge,
@@ -161,9 +162,10 @@ export default function CampaignId() {
   const actionData = useActionData();
   const { t } = useTranslation("campaign-slug");
   const campaign = data.campaign;
-  const participants = campaign.participants.map(function (participant) {
-    return { key: participant.name, value: participant.name };
-  });
+  // const participants = campaign.participants.map(function (participant) {
+  //   return { key: participant.name, value: participant.name };
+  // });
+  const participants = [{key: 'Joe', value: 'Joe'}]
   const userId = data.userId;
   // const bookmarked = data.isBookmarked;
   const [commentEditMode, setCommentEditMode] = useState(false);
@@ -246,8 +248,8 @@ export default function CampaignId() {
             <b>{campaign.title}</b>
           </h1>
           <div className="ml-2 flex gap-2">
-            <ExposureBadge exposure={campaign.exposure} />
-            <PriorityBadge priority={campaign.priority} />
+            {/* <ExposureBadge exposure={campaign.exposure} /> */}
+            {/* <PriorityBadge priority={campaign.priority} /> */}
           </div>
         </div>
         <div className="hidden gap-6 sm:flex md:flex">

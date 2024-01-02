@@ -14,8 +14,9 @@ import {
 import Graph from "./graph";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";
-import type { Prisma, Sensor } from "@prisma/client";
-import type { DeviceWithSensors } from "types";
+// import type { Prisma, Sensor } from "@prisma/client";
+import type { Sensor } from "~/schema";
+// import type { DeviceWithSensors } from "types";
 import Spinner from "../spinner";
 import { Card, CardContent } from "../ui/card";
 
@@ -25,7 +26,7 @@ export interface LastMeasurementProps {
 }
 
 export interface DeviceAndSelectedSensors {
-  device: DeviceWithSensors;
+  device: any;
   selectedSensors: Sensor[];
 }
 
@@ -110,7 +111,7 @@ export default function BottomBar(data: DeviceAndSelectedSensors) {
                   {data.device.sensors.map((sensor: Sensor) => {
                     // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                     const lastMeasurement =
-                      sensor.lastMeasurement as Prisma.JsonObject;
+                      sensor.lastMeasurement as any;
                     const value = lastMeasurement.value as string;
                     return (
                       <div

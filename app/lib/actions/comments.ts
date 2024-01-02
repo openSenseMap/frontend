@@ -5,8 +5,9 @@ import {
   deleteComment,
   updateComment,
 } from "~/models/comment.server";
-import { getUserByName } from "~/models/user.server";
+// import { getUserByName } from "~/models/user.server";
 import { mentionedUser } from "~/novu.server";
+import { User } from "~/schema";
 import { requireUser, requireUserId } from "~/session.server";
 
 export async function updateCommentAction({ request }: ActionArgs) {
@@ -63,7 +64,8 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
   try {
     const comment = await createComment({ content, campaignSlug, ownerId });
     if (mentions) {
-      const user = await getUserByName(mentions);
+      // const user = await getUserByName(mentions);
+      const user = {} as User
       if (user?.id) mentionedUser(user?.id, username, campaignSlug);
     }
     return json({ ok: true });

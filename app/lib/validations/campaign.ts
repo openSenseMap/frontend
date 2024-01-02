@@ -18,7 +18,7 @@ export const campaignSchema = z
       .min(5, "Die Beschreibung muss mindestens 5 Zeichen lang sein!"),
     instructions: z.string(),
     feature: z.any(),
-    priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
+    priority: z.enum(["low", "medium", "high", "urgent"]),
     countries: z.array(z.string()).optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -29,7 +29,7 @@ export const campaignSchema = z
       }),
     endDate: z.date().optional(),
     phenomena: z.array(z.string()),
-    exposure: z.enum(["UNKNOWN", "INDOOR", "MOBILE", "OUTDOOR"]),
+    exposure: z.enum(["unknown", "indoor", "mobile", "outdoor"]),
     hardwareAvailable: z.boolean(),
     centerpoint: z.any(),
     minimumParticipants: z

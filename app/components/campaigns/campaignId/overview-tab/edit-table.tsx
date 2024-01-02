@@ -7,7 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Campaign } from "@prisma/client";
+import type { Campaign } from "~/schema";
+// import type { Campaign } from "@prisma/client";
 import { Form } from "@remix-run/react";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -27,7 +28,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Priority, Exposure } from "@prisma/client";
+import { priorityEnum, exposureEnum } from "~/schema";
+// import { Priority, Exposure } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -159,7 +161,7 @@ export default function EditTable({
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Priorities</SelectLabel>
-                    {Object.keys(Priority).map((key: string) => {
+                    {Object.keys(priorityEnum).map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
@@ -282,7 +284,7 @@ export default function EditTable({
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Exposures</SelectLabel>
-                    {Object.keys(Exposure).map((key: string) => {
+                    {Object.keys(exposureEnum).map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}

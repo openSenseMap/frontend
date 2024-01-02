@@ -7,7 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Campaign } from "@prisma/client";
+import type { Campaign } from "~/schema";
+// import type { Campaign } from "@prisma/client";
 import { Form } from "@remix-run/react";
 import { EditIcon, SaveIcon, TrashIcon, XIcon } from "lucide-react";
 import Markdown from "markdown-to-jsx";
@@ -95,7 +96,7 @@ export default function OverviewTable({
               <TableRow>
                 <TableCell>Teilnehmer</TableCell>
                 <TableCell>
-                  {campaign.participants.length} /{" "}
+                  {/* {campaign.participants.length} /{" "} */}
                   {campaign.minimumParticipants}
                 </TableCell>
               </TableRow>
@@ -110,7 +111,8 @@ export default function OverviewTable({
               <TableRow>
                 <TableCell>Location</TableCell>
                 <TableCell className="flex">
-                  {campaign.countries.map((country: string, index: number) => {
+                  
+                  {campaign.countries && campaign.countries.map((country: string, index: number) => {
                     const flagIcon = CountryFlagIcon({
                       country: String(country).toUpperCase(),
                     });

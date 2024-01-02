@@ -10,7 +10,7 @@ import {
   Marker,
   Source,
 } from "react-map-gl";
-import { Map } from "~/components/Map";
+import { Map } from "~/components/map";
 import {
   ChangeEvent,
   Dispatch,
@@ -22,7 +22,8 @@ import {
 } from "react";
 import type { BBox } from "geojson";
 import PointLayer from "~/components/campaigns/overview/map/point-layer";
-import { Campaign, Exposure, Priority, Prisma } from "@prisma/client";
+// import { Campaign, Exposure, Priority, Prisma } from "@prisma/client";
+import { Campaign, exposureEnum, priorityEnum } from "~/schema";
 import { Link } from "@remix-run/react";
 import {
   Accordion,
@@ -55,8 +56,8 @@ export default function CampaignMap({
   // setDisplayedCampaigns: Dispatch<SetStateAction<Campaign[]>>;
   phenomena: string[];
 }) {
-  type PriorityType = keyof typeof Priority;
-  type ExposureType = keyof typeof Exposure;
+  type PriorityType = keyof typeof priorityEnum;
+  type ExposureType = keyof typeof exposureEnum;
 
   const mapRef = useRef<MapRef>(null);
   const [mapBounds, setMapBounds] = useState<BBox>();
@@ -100,8 +101,8 @@ export default function CampaignMap({
         const bounds = map.getBounds();
         const visibleCampaigns: Campaign[] = campaigns.filter(
           (campaign: Campaign) => {
-            const centerObject = campaign.centerpoint as Prisma.JsonObject;
-            const geometryObject = centerObject.geometry as Prisma.JsonObject;
+            const centerObject = campaign.centerpoint as any;
+            const geometryObject = centerObject.geometry as any;
             const coordinates = geometryObject.coordinates;
             if (coordinates && Array.isArray(coordinates))
               return bounds.contains([
@@ -233,14 +234,14 @@ export default function CampaignMap({
   useEffect(() => {
     console.log(filterObject);
     const filteredCampaigns = campaigns.slice().filter((campaign: Campaign) => {
-      const priorityMatches = checkPriorityMatch(campaign.priority);
+      const priorityMatches = checkPriorityMatch(campaign.priority ?? '');
       const countryMatches = checkCountryMatch(campaign.countries);
-      const exposureMatches = checkExposureMatch(campaign.exposure);
+      const exposureMatches = checkExposureMatch(campaign.exposure ?? '');
       const timeRangeMatches = checkTimeRangeMatches(
         campaign.startDate,
         campaign.endDate
       );
-      const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena);
+      const phenomenaMatches = checkPhenomenaMatch(campaign.phenomena ?? []);
       return (
         priorityMatches &&
         countryMatches &&
@@ -480,7 +481,7 @@ export default function CampaignMap({
             // margin: "auto",
           }}
         >
-          <PointLayer campaigns={filteredCampaigns} />
+          <PointLayer campaigns={filteredCampaigns as any} />
         </Map>
       </MapProvider>
     </>

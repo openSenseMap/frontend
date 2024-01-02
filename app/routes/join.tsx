@@ -95,7 +95,7 @@ export async function action({ request }: ActionArgs) {
 
   return createUserSession({
     request,
-    userId: user.id,
+    userId: user[0].id,
     remember: false,
     redirectTo,
   });

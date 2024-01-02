@@ -1,5 +1,6 @@
 import slugify from "slugify";
-import { prisma } from "~/db.server";
+// import { prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 
 /**
  * Generates a slug for a campaign title. Throws error if no slug was found
@@ -36,8 +37,8 @@ const uniqueSlug = async (slug: string, maxSuffix = 1000) => {
   for (let suffix = 0; suffix < maxSuffix; suffix++) {
     const slugToCheck = suffix === 0 ? slug : `${slug}-${suffix}`;
     // Check if the current slug with the current suffix exists
-    const existingSlug = await prisma.campaign.findUnique({
-      where: { slug: slugToCheck },
+    const existingSlug = await drizzleClient.query.campaign.findFirst({
+      where: (campaign, {eq}) => eq(campaign.slug, slug)
     });
     if (!existingSlug) {
       return slugToCheck;

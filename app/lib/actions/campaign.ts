@@ -1,9 +1,9 @@
 import { requireUserId, requireUser } from "~/session.server";
 import {
-  updateCampaign,
+  // updateCampaign,
   deleteCampaign,
   update,
-  bookmarkCampaign,
+  // bookmarkCampaign,
 } from "~/models/campaign.server";
 import { redirect } from "@remix-run/server-runtime";
 import type { Exposure, Priority } from "@prisma/client";
@@ -49,7 +49,7 @@ export async function participate({ request }: ActionArgs) {
   //   );
   // }
   try {
-    const updated = await updateCampaign(campaignId, ownerId);
+    // const updated = await updateCampaign(campaignId, ownerId);
     console.log(campaignOwner);
     await triggerNotificationNewParticipant(
       campaignOwner,
@@ -155,8 +155,8 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       exposure: exposure,
       hardwareAvailable: hardwareAvailable,
     });
-    const updated = await update(campaignId, updatedCampaign);
-    console.log(updated);
+    // const updated = await update(campaignId, updatedCampaign);
+    // console.log(updated);
     return redirect("../explore");
     // return json({ ok: true });
   } catch (error) {
@@ -214,8 +214,9 @@ export async function bookmark({ request }: ActionArgs) {
     );
   }
   try {
-    const bookmarked = await bookmarkCampaign({ id: campaignId, userId });
-    return bookmarked;
+    // const bookmarked = await bookmarkCampaign({ id: campaignId, userId });
+    // return bookmarked;
+    return null
   } catch (error) {
     console.error(`form not submitted ${error}`);
     return json({ error });

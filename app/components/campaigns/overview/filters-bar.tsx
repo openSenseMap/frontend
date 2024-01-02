@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
-import { Priority } from "@prisma/client";
+// import { Priority } from "@prisma/client";
+import { priorityEnum } from "~/schema";
 import clsx from "clsx";
 
 type FiltersBarProps = {
@@ -106,7 +107,7 @@ export default function FiltersBar({
               setFilterObject({ ...filterObject, priority: e })
             }
           >
-            {Object.keys(Priority).map((priority: string, index: number) => {
+            {Object.keys(priorityEnum).map((priority: string, index: number) => {
               return (
                 <DropdownMenuRadioItem key={index} value={priority}>
                   {priority}

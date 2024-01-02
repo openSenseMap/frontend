@@ -23,8 +23,9 @@ import { ChevronDown, InfoIcon } from "lucide-react";
 import { createCampaign } from "~/models/campaign.server";
 import { requireUserId } from "~/session.server";
 import { FeatureContext } from "../create";
-import { Exposure } from "@prisma/client";
-import { Priority } from "@prisma/client";
+// import { Exposure } from "@prisma/client";
+// import { Priority } from "@prisma/client";
+import { exposureEnum, priorityEnum, zodExposureEnum, zodPriorityEnum } from "~/schema";
 import * as turf from "@turf/helpers";
 import center from "@turf/center";
 import { campaignSchema } from "~/lib/validations/campaign";
@@ -51,14 +52,10 @@ import YouTube, { YouTubeProps } from "react-youtube";
 import SelectCountries from "~/components/campaigns/select-countries";
 import type { DataItem } from "~/components/ui/multi-select";
 
-// import h337, { Heatmap } from "heatmap.js";
-
 interface PhenomenaState {
   [phenomena: string]: boolean;
 }
 
-type PriorityType = keyof typeof Priority;
-type ExposureType = keyof typeof Exposure;
 // type FormData = z.infer<typeof campaignSchema>;
 
 export async function action({ request }: ActionArgs) {
@@ -66,12 +63,13 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   console.log(formData);
   const area = formData.get("feature") as any;
-  const feature = area ? JSON.parse(area) : null;
+  const feature = area ? JSON.parse(area) : null;  
 
   const turf_points = feature
     ? turf.points(feature.features[0]?.geometry?.coordinates[0])
     : null;
   const centerpoint = turf_points ? center(turf_points) : {};
+  console.log(centerpoint)
 
   // if (feature?.properties?.centerpoint) {
   //   centerpoint = {
@@ -114,8 +112,8 @@ export async function action({ request }: ActionArgs) {
     countries = Array.from(countries_set);
   }
 
-  const priority = formData.get("priority") as PriorityType;
-  const exposure = formData.get("exposure") as ExposureType;
+  const priority: zodPriorityEnum = formData.get("priority") ?? 'medium';
+  const exposure: zodExposureEnum = formData.get("exposure") ?? 'unknown';
   const hardwareAvailable =
     formData.get("hardware_available") === "on" ? true : false;
   let minimumParticipants: FormDataEntryValue | number =
@@ -147,12 +145,13 @@ export async function action({ request }: ActionArgs) {
     ownerId,
   };
 
+
   try {
     const newCampaign = campaignSchema.parse(campaignData);
     const campaign = await createCampaign({
       ...newCampaign,
       feature: newCampaign.feature ?? {},
-      endDate: newCampaign.endDate ?? null,
+      endDate: newCampaign.endDate ?? new Date(),
       centerpoint: newCampaign.centerpoint ?? {},
       countries: newCampaign.countries ?? [],
       ownerId,
@@ -342,8 +341,8 @@ export default function CreateCampaign() {
   const [phenomenaState, setPhenomenaState] = useState(
     Object.fromEntries(phenomena.map((p: string) => [p, false]))
   );
-  const [priority, setPriority] = useState("MEDIUM");
-  const [exposure, setExposure] = useState("UNKNOWN");
+  const [priority, setPriority] = useState<zodPriorityEnum>("medium");
+  const [exposure, setExposure] = useState<zodExposureEnum>("unknown");
   const [openDropdown, setDropdownOpen] = useState(false);
 
   return (
@@ -502,7 +501,7 @@ export default function CreateCampaign() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Priorities</SelectLabel>
-                    {Object.keys(Priority).map((key: string) => {
+                    {Object.values(priorityEnum.enumValues).map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
@@ -731,7 +730,7 @@ export default function CreateCampaign() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Exposures</SelectLabel>
-                    {Object.keys(Exposure).map((key: string) => {
+                    {Object.values(exposureEnum.enumValues).map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}

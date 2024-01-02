@@ -11,7 +11,8 @@ import { Layer, Marker, Popup, Source, useMap } from "react-map-gl";
 import type { PointFeature } from "supercluster";
 import useSupercluster from "use-supercluster";
 import debounce from "lodash.debounce";
-import type { Campaign, Prisma } from "@prisma/client";
+// import type { Campaign, Prisma } from "@prisma/client";
+import type { Campaign } from "~/schema";
 import type { DeviceClusterProperties } from "~/routes/explore";
 import { useSearchParams } from "@remix-run/react";
 import { FeatureCollection, Properties } from "@turf/helpers";
@@ -64,8 +65,8 @@ export default function PointLayer({
         campaign.centerpoint !== null &&
         "geometry" in campaign.centerpoint
       ) {
-        const centerObject = campaign.centerpoint as Prisma.JsonObject;
-        const geometryObject = centerObject.geometry as Prisma.JsonObject;
+        const centerObject = campaign.centerpoint as any;
+        const geometryObject = centerObject.geometry as any;
         if (centerObject && geometryObject) {
           return {
             coordinates: geometryObject.coordinates,

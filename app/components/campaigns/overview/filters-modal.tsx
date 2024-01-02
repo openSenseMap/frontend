@@ -34,7 +34,8 @@ import { ChevronDown, FilterIcon } from "lucide-react";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
-import { Exposure } from "@prisma/client";
+import { exposureEnum } from "~/schema";
+// import { Exposure } from "@prisma/client";
 import { useTranslation } from "react-i18next";
 import PhenomenaSelect from "../phenomena-select";
 
@@ -123,7 +124,7 @@ export default function FiltersModal({
           <SelectContent>
             <SelectGroup>
               <SelectLabel>{t("exposures")}</SelectLabel>
-              {Object.keys(Exposure).map((key: string) => {
+              {Object.keys(exposureEnum).map((key: string) => {
                 return (
                   <SelectItem key={key} value={key}>
                     {key}

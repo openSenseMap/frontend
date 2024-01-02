@@ -15,7 +15,8 @@ import {
   ChevronUp,
   FilterXIcon,
 } from "lucide-react";
-import { Priority } from "@prisma/client";
+// import { Priority } from "@prisma/client";
+import { priorityEnum } from "~/schema";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import clsx from "clsx";
@@ -166,7 +167,7 @@ value={filterObject.searchTerm}
                     setFilterObject({ ...filterObject, priority: e })
                   }
                 >
-                  {Object.keys(Priority).map(
+                  {Object.keys(priorityEnum).map(
                     (priority: string, index: number) => {
                       return (
                         <DropdownMenuRadioItem key={index} value={priority}>

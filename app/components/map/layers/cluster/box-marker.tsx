@@ -1,5 +1,5 @@
-import type { Device } from "@prisma/client";
-import { Exposure } from "@prisma/client";
+import type { Device } from "~/schema";
+import { exposureEnum } from "~/schema";
 import { useNavigate } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, Rocket } from "lucide-react";
