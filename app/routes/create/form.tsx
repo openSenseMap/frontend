@@ -51,12 +51,13 @@ import PhenomenaSelect from "~/components/campaigns/phenomena-select";
 import YouTube, { YouTubeProps } from "react-youtube";
 import SelectCountries from "~/components/campaigns/select-countries";
 import type { DataItem } from "~/components/ui/multi-select";
+import { z } from "zod";
 
 interface PhenomenaState {
   [phenomena: string]: boolean;
 }
 
-// type FormData = z.infer<typeof campaignSchema>;
+type FormData = z.infer<typeof campaignSchema>;
 
 export async function action({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
@@ -730,7 +731,7 @@ export default function CreateCampaign() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Exposures</SelectLabel>
-                    {Object.values(exposureEnum.enumValues).map((key: string) => {
+                    {Object.values(exposureEnum.enumValues).map((key: zodExposureEnum) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
