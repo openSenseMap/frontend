@@ -13,7 +13,7 @@ import {
     type InferSelectModel,
   } from "drizzle-orm";
 import { user } from "./user";
-import { comment } from "./campaign-comment";
+import { comment, post } from "./campaign-comment";
 import { json } from "drizzle-orm/pg-core";
 import { exposureEnum, priorityEnum } from "./enum";
 // model Campaign {
@@ -72,6 +72,8 @@ export const campaignRelations = relations(campaign, ({one, many}) => ({
         fields: [campaign.ownerId],
         references: [user.id]
     }),
+    comments: many(comment),
+    posts: many(post)
     // participants: many(user),
     // comments: many(comment)    
 }))

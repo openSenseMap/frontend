@@ -6,6 +6,7 @@ import { password } from "./password";
 import { profile } from "./profile";
 import { device } from "./device";
 import { campaign } from "./campaign";
+import { comment, post } from "./campaign-comment";
 
 /**
  * Table
@@ -37,7 +38,9 @@ export const userRelations = relations(user, ({ one, many }) => ({
     references: [profile.userId],
   }),
   devices: many(device),
-  campaigns: many(campaign)
+  campaigns: many(campaign),
+  comment: many(comment),
+  post: many(post)
 }));
 
 /**
