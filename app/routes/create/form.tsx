@@ -113,8 +113,10 @@ export async function action({ request }: ActionArgs) {
     countries = Array.from(countries_set);
   }
 
-  const priority: zodPriorityEnum = formData.get("priority") ?? 'medium';
-  const exposure: zodExposureEnum = formData.get("exposure") ?? 'unknown';
+  
+
+  const priority: zodPriorityEnum = formData.get("priority") as zodPriorityEnum ?? 'medium';
+  const exposure: zodExposureEnum = formData.get("exposure") as zodExposureEnum ?? 'unknown';
   const hardwareAvailable =
     formData.get("hardware_available") === "on" ? true : false;
   let minimumParticipants: FormDataEntryValue | number =
