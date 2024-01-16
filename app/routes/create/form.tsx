@@ -25,7 +25,12 @@ import { requireUserId } from "~/session.server";
 import { FeatureContext } from "../create";
 // import { Exposure } from "@prisma/client";
 // import { Priority } from "@prisma/client";
-import { exposureEnum, priorityEnum, zodExposureEnum, zodPriorityEnum } from "~/schema";
+import {
+  exposureEnum,
+  priorityEnum,
+  zodExposureEnum,
+  zodPriorityEnum,
+} from "~/schema";
 import * as turf from "@turf/helpers";
 import center from "@turf/center";
 import { campaignSchema } from "~/lib/validations/campaign";
@@ -64,13 +69,13 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   console.log(formData);
   const area = formData.get("feature") as any;
-  const feature = area ? JSON.parse(area) : null;  
+  const feature = area ? JSON.parse(area) : null;
 
   const turf_points = feature
     ? turf.points(feature.features[0]?.geometry?.coordinates[0])
     : null;
   const centerpoint = turf_points ? center(turf_points) : {};
-  console.log(centerpoint)
+  console.log(centerpoint);
 
   // if (feature?.properties?.centerpoint) {
   //   centerpoint = {
@@ -113,10 +118,10 @@ export async function action({ request }: ActionArgs) {
     countries = Array.from(countries_set);
   }
 
-  
-
-  const priority: zodPriorityEnum = formData.get("priority") as zodPriorityEnum ?? 'medium';
-  const exposure: zodExposureEnum = formData.get("exposure") as zodExposureEnum ?? 'unknown';
+  const priority: zodPriorityEnum =
+    (formData.get("priority") as zodPriorityEnum) ?? "medium";
+  const exposure: zodExposureEnum =
+    (formData.get("exposure") as zodExposureEnum) ?? "unknown";
   const hardwareAvailable =
     formData.get("hardware_available") === "on" ? true : false;
   let minimumParticipants: FormDataEntryValue | number =
@@ -147,7 +152,6 @@ export async function action({ request }: ActionArgs) {
     },
     ownerId,
   };
-
 
   try {
     const newCampaign = campaignSchema.parse(campaignData);
@@ -504,7 +508,7 @@ export default function CreateCampaign() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Priorities</SelectLabel>
-                    {Object.values(priorityEnum.enumValues).map((key: string) => {
+                    {priorityEnum.enumValues.map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
@@ -733,7 +737,7 @@ export default function CreateCampaign() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Exposures</SelectLabel>
-                    {Object.values(exposureEnum.enumValues).map((key: zodExposureEnum) => {
+                    {exposureEnum.enumValues.map((key: zodExposureEnum) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
