@@ -116,13 +116,8 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     begin && typeof begin === "string" ? new Date(begin) : new Date();
   const end = formData.get("endDate");
   const endDate = end && typeof end === "string" ? new Date(end) : new Date();
-  const country = formData.get("country");
-  if (typeof country !== "string" || country.length === 0) {
-    return json(
-      { errors: { country: "country is required", body: null } },
-      { status: 400 }
-    );
-  }
+  const location = formData.get("countries");
+  let countries: string[] = ['dz']
   const minimumParticipants = formData.get("minimumParticipants");
   const minParticipants = parseInt(minimumParticipants);
   const updatedAt = new Date();
@@ -137,7 +132,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
     priority,
     startDate,
     endDate,
-    country,
+    countries,
     exposure,
     hardwareAvailable
   );
@@ -146,7 +141,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       title: title,
       description: description,
       priority: priority,
-      country: country,
+      country: countries,
       phenomena: phenomena,
       startDate: startDate,
       endDate: endDate,
@@ -155,7 +150,7 @@ export async function updateCampaignAction({ request }: ActionArgs) {
       exposure: exposure,
       hardwareAvailable: hardwareAvailable,
     });
-    // const updated = await update(campaignId, updatedCampaign);
+    const updated = await update(campaignId, updatedCampaign);
     // console.log(updated);
     return redirect("../explore");
     // return json({ ok: true });
