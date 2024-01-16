@@ -32,6 +32,7 @@ import {
   TrashIcon,
   StarIcon,
   MailIcon,
+  EditIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
@@ -43,6 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Markdown from "markdown-to-jsx";
 import {
   publishCommentAction,
+  publishPostAction,
   createCampaignEvent,
   deleteCampaignEvent,
   deleteCommentAction,
@@ -71,6 +73,7 @@ import {
   PriorityBadge,
 } from "~/components/campaigns/overview/campaign-badges";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import CampaignTable from "~/components/campaigns/campaignId/table";
 
 export const links: LinksFunction = () => {
   return [
@@ -92,6 +95,8 @@ export async function action(args: ActionArgs) {
   switch (_action) {
     case "PUBLISH":
       return publishCommentAction(args);
+    case "CREATE_POST":
+      return publishPostAction(args);
     case "DELETE":
       return deleteCommentAction(args);
     case "EDIT":
@@ -165,9 +170,10 @@ export default function CampaignId() {
   // const participants = campaign.participants.map(function (participant) {
   //   return { key: participant.name, value: participant.name };
   // });
-  const participants = [{key: 'Joe', value: 'Joe'}]
+  const participants = [{ key: "Joe", value: "Joe" }];
   const userId = data.userId;
   // const bookmarked = data.isBookmarked;
+  const [editMode, setEditMode] = useState(false);
   const [commentEditMode, setCommentEditMode] = useState(false);
   const [eventEditMode, setEventEditMode] = useState(false);
   const [editEventTitle, setEditEventTitle] = useState<string | undefined>("");
@@ -494,12 +500,18 @@ export default function CampaignId() {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full justify-center">
-        <OverviewTable
+      <div className="flex w-full justify-center">
+        {/* <OverviewTable
           campaign={campaign as unknown as Campaign}
           userId={userId ?? ""}
           phenomena={data.phenomena}
+        /> */}
+        <CampaignTable
+          owner={userId === campaign.ownerId}
+          campaign={campaign as unknown as Campaign}
+          phenomena={data.phenomena}
         />
+
         {/* <Tabs
           defaultValue={tabView}
           className={`${showMap ? "w-full" : "mt-2 w-1/2"}`}
@@ -509,7 +521,7 @@ export default function CampaignId() {
               <TabsTrigger
                 value="overview"
                 className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
-              >
+              >useState
                 <Button className="bg-muted" variant="outline">
                   {t("overview")}
                 </Button>
@@ -622,6 +634,22 @@ export default function CampaignId() {
         </div>
         {/* </Form> */}
       </div>
+      <Form method="post" className="mt-8 w-full">
+        <span>Create new Thread</span>
+        <div className="flex w-full justify-between">
+          <input type="text" name="title" id="title"></input>
+          <input type="text" name="content" id="content"></input>
+          <Button
+            className="bg-blue-700 text-white"
+            variant="outline"
+            type="submit"
+            name="_action"
+            value="CREATE_POST"
+          >
+            Create
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 }

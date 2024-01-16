@@ -5,6 +5,7 @@ import {
   deleteComment,
   updateComment,
 } from "~/models/comment.server";
+import { createPost } from "~/models/post.server";
 // import { getUserByName } from "~/models/user.server";
 import { mentionedUser } from "~/novu.server";
 import { User } from "~/schema";
@@ -73,6 +74,34 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
     console.error(`form not submitted ${error}`);
     return json({ error });
   }
+}
+
+export async function publishPostAction({ request, params }: ActionArgs) {
+  const ownerId = await requireUserId(request);
+  const formData = await request.formData();
+  const title = formData.get("title")
+  if (typeof title !== "string" || title.length === 0) {
+    return json(
+      { errors: { title: "title is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const content = formData.get("content");
+  if (typeof content !== "string" || content.length === 0) {
+    return json(
+      { errors: { content: "content is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const campaignSlug = params.slug;
+  if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
+    return json(
+      { errors: { campaignSlug: "campaignSlug is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const post = await createPost({ campaignSlug, title, content, ownerId });
+  return post
 }
 
 export async function deleteCommentAction({ request }: ActionArgs) {
