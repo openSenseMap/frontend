@@ -21,7 +21,10 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
     //     where: { userId: userId },
     //   },
     // },
-    where: (campaign, {eq}) => eq(campaign.slug, slug)
+    where: (campaign, {eq}) => eq(campaign.slug, slug),
+    with: {
+      posts: true
+    }
   });
 }
 
