@@ -34,3 +34,9 @@ export async function updateComment(commentId: string, content: string) {
     content: content
   }).where(eq(comment.id, commentId));
 }
+
+export async function getComments(postId: string){
+  return drizzleClient.query.comment.findMany({
+    where: (eq(comment.postId, postId))
+  })
+}
