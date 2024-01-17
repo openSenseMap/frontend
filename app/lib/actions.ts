@@ -14,7 +14,8 @@ import {
   publishCommentAction,
   deleteCommentAction,
   updateCommentAction,
-  publishPostAction
+  publishPostAction,
+  getCommentsAction
 } from "./actions/comments";
 
 export {
@@ -29,5 +30,6 @@ export {
   publishCommentAction,
   deleteCommentAction,
   updateCommentAction,
+  getCommentsAction,
   publishPostAction
 };

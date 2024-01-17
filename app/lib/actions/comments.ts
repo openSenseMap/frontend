@@ -3,6 +3,7 @@ import { json } from "@remix-run/server-runtime";
 import {
   createComment,
   deleteComment,
+  getComments,
   updateComment,
 } from "~/models/comment.server";
 import { createPost } from "~/models/post.server";
@@ -81,6 +82,19 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
     console.error(`form not submitted ${error}`);
     return json({ error });
   }
+}
+
+export async function getCommentsAction({request, params}: ActionArgs){
+  const formData = await request.formData()
+  const postId = formData.get("postId")
+  if (typeof postId !== "string" || postId.length === 0) {
+    return json(
+      { errors: { postId: "postId is required", body: null } },
+      { status: 400 }
+    );
+  }
+  const comments = await getComments(postId)
+  return comments
 }
 
 export async function publishPostAction({ request, params }: ActionArgs) {
