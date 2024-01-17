@@ -6,7 +6,8 @@ export function createComment({
   content,
   campaignSlug,
   ownerId,
-}: Pick<Comment, "content" | "campaignSlug"> & {
+  postId
+}: Pick<Comment, "content" | "campaignSlug" | "postId"> & {
   ownerId: User["id"];
 }) {
   return drizzleClient.insert(comment).values({
@@ -14,7 +15,8 @@ export function createComment({
       createdAt: new Date(),
       updatedAt: new Date(),
       userId: ownerId,
-      campaignSlug: campaignSlug
+      campaignSlug: campaignSlug,
+      postId: postId
       // campaign: {
       //   connect: {
       //     slug: campaignSlug,

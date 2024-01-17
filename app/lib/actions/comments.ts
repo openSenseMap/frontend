@@ -40,21 +40,28 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
   const ownerId = await requireUserId(request);
   const username = (await requireUser(request)).name;
   const formData = await request.formData();
-  const content = formData.get("comment");
+  const content = formData.get("content");
   if (typeof content !== "string" || content.length === 0) {
     return json(
       { errors: { content: "content is required", body: null } },
       { status: 400 }
     );
   }
-  let mentions = formData.get("mentions");
-  if (typeof mentions !== "string" || mentions.length === 0) {
+  const postId = formData.get("postId")
+  if (typeof postId !== "string" || postId.length === 0) {
     return json(
-      { errors: { mentions: "mentions is required", body: null } },
+      { errors: { postId: "postId is required", body: null } },
       { status: 400 }
     );
   }
-  mentions = JSON.parse(mentions);
+  // let mentions = formData.get("mentions");
+  // if (typeof mentions !== "string" || mentions.length === 0) {
+  //   return json(
+  //     { errors: { mentions: "mentions is required", body: null } },
+  //     { status: 400 }
+  //   );
+  // }
+  // mentions = JSON.parse(mentions);
   const campaignSlug = params.slug;
   if (typeof campaignSlug !== "string" || campaignSlug.length === 0) {
     return json(
@@ -63,12 +70,12 @@ export async function publishCommentAction({ request, params }: ActionArgs) {
     );
   }
   try {
-    const comment = await createComment({ content, campaignSlug, ownerId });
-    if (mentions) {
-      // const user = await getUserByName(mentions);
-      const user = {} as User
-      if (user?.id) mentionedUser(user?.id, username, campaignSlug);
-    }
+    const comment = await createComment({ content, campaignSlug, ownerId, postId });
+    // if (mentions) {
+    //   // const user = await getUserByName(mentions);
+    //   const user = {} as User
+    //   if (user?.id) mentionedUser(user?.id, username, campaignSlug);
+    // }
     return json({ ok: true });
   } catch (error) {
     console.error(`form not submitted ${error}`);

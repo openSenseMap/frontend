@@ -74,6 +74,8 @@ import {
 } from "~/components/campaigns/overview/campaign-badges";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import CampaignTable from "~/components/campaigns/campaignId/table";
+import CreateThread from "~/components/campaigns/campaignId/posts/create";
+import ListPosts from "~/components/campaigns/campaignId/posts";
 
 export const links: LinksFunction = () => {
   return [
@@ -139,7 +141,9 @@ export async function loader({ request, params }: LoaderArgs) {
   // const userId = await requireUserId(request);
   const userId = await getUserId(request);
 
-  const campaign = await getCampaign({ slug: params.slug ?? "" }, userId ?? "");
+  const slug = params.slug ?? "";
+
+  const campaign = await getCampaign({ slug }, userId ?? "");
   if (!campaign) {
     throw new Response("Campaign not found", { status: 502 });
   }
@@ -501,100 +505,12 @@ export default function CampaignId() {
       </header>
 
       <div className="flex w-full justify-center">
-        {/* <OverviewTable
-          campaign={campaign as unknown as Campaign}
-          userId={userId ?? ""}
-          phenomena={data.phenomena}
-        /> */}
         <CampaignTable
           owner={userId === campaign.ownerId}
           campaign={campaign as unknown as Campaign}
           phenomena={data.phenomena}
         />
 
-        {/* <Tabs
-          defaultValue={tabView}
-          className={`${showMap ? "w-full" : "mt-2 w-1/2"}`}
-        >
-          <div className="flex items-center justify-center">
-            <TabsList className="mb-4 p-2">
-              <TabsTrigger
-                value="overview"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
-              >useState
-                <Button className="bg-muted" variant="outline">
-                  {t("overview")}
-                </Button>
-              </TabsTrigger>
-              <TabsTrigger
-                value="calendar"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
-              >
-                <Button className="bg-muted" variant="outline">
-                  {t("calender")}
-                </Button>
-              </TabsTrigger>
-              <TabsTrigger
-                value="comments"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:shadow-none"
-              >
-                <Button className="bg-muted" variant="outline">
-                  {t("questions and comments")}
-                </Button>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="overview">
-            <OverviewTable
-              campaign={campaign as unknown as Campaign}
-              userId={userId ?? ""}
-              phenomena={data.phenomena}
-            />
-          </TabsContent>
-          <TabsContent value="calendar">
-            {campaign.events.length === 0 ? (
-              <EventForm
-                eventDescription={eventDescription || ""}
-                setEventDescription={setEventDescription}
-                eventTextAreaRef={eventTextAreaRef}
-              />
-            ) : (
-              <EventCards
-                events={campaign.events}
-                editEventDescription={editEventDescription || ""}
-                editEventTitle={editEventTitle || ""}
-                eventEditMode={eventEditMode}
-                eventTextAreaRef={eventTextAreaRef}
-                setEditEventDescription={setEditEventDescription}
-                setEditEventStartDate={setEditEventStartDate}
-                setEditEventTitle={setEditEventTitle}
-                setEventEditMode={setEventEditMode}
-                userId={userId ?? ""}
-              />
-            )}
-          </TabsContent>
-          <TabsContent value="comments">
-            <CommentCards
-              commentEditMode={commentEditMode}
-              comments={campaign.comments}
-              editComment={editComment || ""}
-              setCommentEditMode={setCommentEditMode}
-              setEditComment={setEditComment}
-              setEditCommentId={setEditCommentId}
-              textAreaRef={textAreaRef}
-              userId={userId ?? ""}
-            />
-            {!editComment && (
-              <CommentInput
-                comment={comment}
-                setCommentEditMode={setCommentEditMode}
-                setComment={setComment}
-                textAreaRef={textAreaRef}
-                mentions={mentions}
-              />
-            )}
-          </TabsContent>
-        </Tabs> */}
         <div>
           {showMap && (
             <MapProvider>
@@ -634,22 +550,9 @@ export default function CampaignId() {
         </div>
         {/* </Form> */}
       </div>
-      <Form method="post" className="mt-8 w-full">
-        <span>Create new Thread</span>
-        <div className="flex w-full justify-between">
-          <input type="text" name="title" id="title"></input>
-          <input type="text" name="content" id="content"></input>
-          <Button
-            className="bg-blue-700 text-white"
-            variant="outline"
-            type="submit"
-            name="_action"
-            value="CREATE_POST"
-          >
-            Create
-          </Button>
-        </div>
-      </Form>
+      <ListPosts posts={campaign.posts as any} />
+
+      <CreateThread loggedIn={userId != undefined} />
     </div>
   );
 }
