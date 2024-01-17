@@ -17,7 +17,7 @@ import {
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 // import { Priority } from "@prisma/client";
-import { priorityEnum } from "~/schema";
+import { priorityEnum, zodPriorityEnum } from "~/schema";
 import clsx from "clsx";
 
 type FiltersBarProps = {
@@ -102,12 +102,12 @@ export default function FiltersBar({
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40">
           <DropdownMenuRadioGroup
-            value={filterObject.priority}
-            onValueChange={(e) =>
-              setFilterObject({ ...filterObject, priority: e })
+            value={filterObject.priority as zodPriorityEnum}
+            onValueChange={(e: zodPriorityEnum) =>
+              setFilterObject({ ...filterObject, priority: e  })
             }
           >
-            {Object.keys(priorityEnum).map((priority: string, index: number) => {
+            {Object.values(priorityEnum.enumValues).map((priority: zodPriorityEnum, index: number) => {
               return (
                 <DropdownMenuRadioItem key={index} value={priority}>
                   {priority}
