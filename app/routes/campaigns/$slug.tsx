@@ -55,6 +55,7 @@ import {
   participate,
   bookmark,
   updateCampaignAction,
+  getCommentsAction,
 } from "~/lib/actions";
 import OverviewTable from "~/components/campaigns/campaignId/overview-tab/overview-table";
 import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
@@ -97,6 +98,8 @@ export async function action(args: ActionArgs) {
   switch (_action) {
     case "PUBLISH":
       return publishCommentAction(args);
+    case "GET_COMMENTS":
+      return getCommentsAction(args);
     case "CREATE_POST":
       return publishPostAction(args);
     case "DELETE":
