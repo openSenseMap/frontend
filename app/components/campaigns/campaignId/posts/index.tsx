@@ -1,4 +1,5 @@
 import { Form, useActionData } from "@remix-run/react";
+import { ReplyIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { action } from "~/routes/campaigns/$slug";
@@ -57,6 +58,28 @@ export default function ListPosts({ posts }: Props) {
                 </Button>
               </Form>
             </li>
+            {p.comment && p.comment.length > 0 && (
+              <Form method="post">
+                <input
+                  className="hidden"
+                  value={p.id}
+                  name="postId"
+                  id="postId"
+                />
+                <Button
+                  variant="ghost"
+                  className="flex gap-2"
+                  type="submit"
+                  name="_action"
+                  value="GET_COMMENTS"
+                  onClick={() => handleReplyClick(p.id)}
+                >
+                  <ReplyIcon className="h-4 w-4" />
+                  {p.comment.length} Replies
+                </Button>
+              </Form>
+            )}
+
             {comments &&
               Array.isArray(comments) &&
               comments.map((c) => {
