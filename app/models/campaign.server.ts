@@ -1,5 +1,5 @@
 import { campaign, type Campaign } from "~/schema/campaign";
-import type { User } from "~/schema";
+import { usersToCampaigns, type User, user } from "~/schema";
 import { generateSlug } from "~/lib/slug";
 import { json } from "@remix-run/node";
 import { drizzleClient } from "~/db.server";
@@ -27,7 +27,9 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
         with: {
           comment: true
         }
-      }
+      },
+      participants: true,
+      bookmarks: true
     }
   });
 }
@@ -88,6 +90,13 @@ export async function getCampaigns(
       });
   }
   return campaigns;
+}
+
+export async function addParticipant(campaignId: string, userId: string){
+  return await drizzleClient.insert(usersToCampaigns).values({
+    campaignId: campaignId,
+    userId: userId
+  })
 }
 
 export async function getCampaignCount() {

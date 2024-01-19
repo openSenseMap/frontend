@@ -40,6 +40,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   devices: many(device),
   campaigns: many(campaign),
   participating: many(usersToCampaigns),
+  campaignBookmarks: many(bookmarkedCampaigns),
   comment: many(comment),
   post: many(post)
 }));
@@ -63,6 +64,27 @@ export const usersToCampaignsRelations = relations(usersToCampaigns, ({ one }) =
     references: [user.id],
   }),
 }));
+
+export const bookmarkedCampaigns = pgTable('bookmarkedCampaigns', {
+  userId: text('user_id').notNull().references(() => user.id),
+  campaignId: text('campaign_id').notNull().references(() => campaign.id),
+}, (t) => ({
+  pk: primaryKey({columns: [t.userId, t.campaignId]}),
+}),
+);
+
+export const bookmarkedCampaignsRelations = relations(bookmarkedCampaigns, ({ one }) => ({
+  campaign: one(campaign, {
+    fields: [bookmarkedCampaigns.campaignId],
+    references: [campaign.id],
+  }),
+  user: one(user, {
+    fields: [bookmarkedCampaigns.userId],
+    references: [user.id],
+  }),
+}));
+
+
 /**
  * Types
  */

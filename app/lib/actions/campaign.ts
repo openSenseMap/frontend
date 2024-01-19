@@ -1,5 +1,6 @@
 import { requireUserId, requireUser } from "~/session.server";
 import {
+  addParticipant,
   // updateCampaign,
   deleteCampaign,
   update,
@@ -14,6 +15,7 @@ import {
   campaignCancelled,
   triggerNotificationNewParticipant,
 } from "~/novu.server";
+import { bookmarkCampaign } from "~/models/user.server";
 
 export async function participate({ request }: ActionArgs) {
   const ownerId = await requireUserId(request);
@@ -40,17 +42,17 @@ export async function participate({ request }: ActionArgs) {
       { status: 400 }
     );
   }
-  // const email = formData.get("email");
+  const email = formData.get("email");
   // const hardware = formData.get("hardware");
-  // if (typeof email !== "string" || email.length === 0) {
-  //   return json(
-  //     { errors: { email: "email is required", body: null } },
-  //     { status: 400 }
-  //   );
-  // }
+  if (typeof email !== "string" || email.length === 0) {
+    return json(
+      { errors: { email: "email is required", body: null } },
+      { status: 400 }
+    );
+  }
   try {
+    const participant = await addParticipant(campaignId, ownerId)
     // const updated = await updateCampaign(campaignId, ownerId);
-    console.log(campaignOwner);
     await triggerNotificationNewParticipant(
       campaignOwner,
       user.email,
@@ -209,8 +211,8 @@ export async function bookmark({ request }: ActionArgs) {
     );
   }
   try {
-    // const bookmarked = await bookmarkCampaign({ id: campaignId, userId });
-    // return bookmarked;
+    const bookmarked = await bookmarkCampaign(userId, campaignId);
+    return bookmarked;
     return null
   } catch (error) {
     console.error(`form not submitted ${error}`);

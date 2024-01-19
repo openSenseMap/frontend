@@ -391,27 +391,27 @@ export default function CampaignId() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <DialogClose>
-                    <Button
-                      name="_action"
-                      value="PARTICIPATE"
-                      type="submit"
-                      onClick={() =>
-                        toast({
-                          title:
-                            "Thank you for your interest in contributing to this campaign!",
-                          description: (
-                            <span>
-                              The project owner was notified. Please wait for
-                              his instructions
-                            </span>
-                          ),
-                        })
-                      }
-                    >
-                      {t("contribute")}
-                    </Button>
-                  </DialogClose>
+                  {/* <DialogClose> */}
+                  <Button
+                    name="_action"
+                    value="PARTICIPATE"
+                    type="submit"
+                    onClick={() =>
+                      toast({
+                        title:
+                          "Thank you for your interest in contributing to this campaign!",
+                        description: (
+                          <span>
+                            The project owner was notified. Please wait for his
+                            instructions
+                          </span>
+                        ),
+                      })
+                    }
+                  >
+                    {t("contribute")}
+                  </Button>
+                  {/* </DialogClose> */}
                 </DialogFooter>
               </Form>
             </DialogContent>
