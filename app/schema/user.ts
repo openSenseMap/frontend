@@ -1,7 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { relations } from "drizzle-orm";
-import { pgTable, boolean, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, boolean, text, timestamp, primaryKey } from "drizzle-orm/pg-core";
 import { password } from "./password";
 import { profile } from "./profile";
 import { device } from "./device";
@@ -39,10 +39,30 @@ export const userRelations = relations(user, ({ one, many }) => ({
   }),
   devices: many(device),
   campaigns: many(campaign),
+  participating: many(usersToCampaigns),
   comment: many(comment),
   post: many(post)
 }));
 
+
+export const usersToCampaigns = pgTable('users_to_campaigns', {
+  userId: text('user_id').notNull().references(() => user.id),
+  campaignId: text('campaign_id').notNull().references(() => campaign.id),
+}, (t) => ({
+  pk: primaryKey({columns: [t.userId, t.campaignId]}),
+}),
+);
+
+export const usersToCampaignsRelations = relations(usersToCampaigns, ({ one }) => ({
+  campaign: one(campaign, {
+    fields: [usersToCampaigns.campaignId],
+    references: [campaign.id],
+  }),
+  user: one(user, {
+    fields: [usersToCampaigns.userId],
+    references: [user.id],
+  }),
+}));
 /**
  * Types
  */
