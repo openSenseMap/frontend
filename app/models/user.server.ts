@@ -1,4 +1,4 @@
-import { type Password, type User } from "~/schema";
+import { Campaign, bookmarkedCampaigns, type Password, type User } from "~/schema";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
@@ -41,6 +41,14 @@ export async function getUserByEmail(email: User["email"]) {
 export async function deleteUserByEmail(email: User["email"]) {
   return drizzleClient.delete(user).where(eq(user.email, email));
 }
+
+export async function bookmarkCampaign(userId: User["id"], campaignId: Campaign["id"]){
+  return drizzleClient.insert(bookmarkedCampaigns).values({
+    userId,
+    campaignId
+  })
+}
+
 
 //* user name shouldn't be unique
 /* export async function getUserByName(name: User["name"]) {
