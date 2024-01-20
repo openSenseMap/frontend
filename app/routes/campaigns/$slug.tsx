@@ -25,14 +25,11 @@ import { Map } from "~/components/map";
 import type { LayerProps } from "react-map-gl";
 import { MapProvider, Source, Layer } from "react-map-gl";
 import {
-  ClockIcon,
   UsersIcon,
   Share2Icon,
   DownloadIcon,
   TrashIcon,
   StarIcon,
-  MailIcon,
-  EditIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import ShareLink from "~/components/bottom-bar/share-link";
@@ -40,8 +37,6 @@ import ShareLink from "~/components/bottom-bar/share-link";
 import maplibregl from "maplibre-gl/dist/maplibre-gl.css";
 import { Switch } from "~/components/ui/switch";
 import { downloadGeojSON } from "~/lib/download-geojson";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Markdown from "markdown-to-jsx";
 import {
   publishCommentAction,
   publishPostAction,
@@ -57,23 +52,11 @@ import {
   updateCampaignAction,
   // getCommentsAction,
 } from "~/lib/actions";
-import OverviewTable from "~/components/campaigns/campaignId/overview-tab/overview-table";
-import EventForm from "~/components/campaigns/campaignId/event-tab/create-form";
-import EventCards from "~/components/campaigns/campaignId/event-tab/event-cards";
-import CommentInput from "~/components/campaigns/campaignId/comment-tab/comment-input";
-import CommentCards from "~/components/campaigns/campaignId/comment-tab/comment-cards";
-import Tribute from "tributejs";
 import tributeStyles from "tributejs/tribute.css";
 import { getPhenomena } from "~/models/phenomena.server";
 import { useTranslation } from "react-i18next";
-// import type { Campaign } from "@prisma/client";
 import type { Campaign } from "~/schema";
 import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
-import {
-  ExposureBadge,
-  PriorityBadge,
-} from "~/components/campaigns/overview/campaign-badges";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import CampaignTable from "~/components/campaigns/campaignId/table";
 import CreateThread from "~/components/campaigns/campaignId/posts/create";
 import ListPosts from "~/components/campaigns/campaignId/posts";
@@ -174,51 +157,14 @@ export default function CampaignId() {
   const actionData = useActionData();
   const { t } = useTranslation("campaign-slug");
   const campaign = data.campaign;
-  // const participants = campaign.participants.map(function (participant) {
-  //   return { key: participant.name, value: participant.name };
-  // });
-  const participants = [{ key: "Joe", value: "Joe" }];
   const userId = data.userId;
   // const bookmarked = data.isBookmarked;
-  const [editMode, setEditMode] = useState(false);
-  const [commentEditMode, setCommentEditMode] = useState(false);
-  const [eventEditMode, setEventEditMode] = useState(false);
-  const [editEventTitle, setEditEventTitle] = useState<string | undefined>("");
-  const [editEventDescription, setEditEventDescription] = useState<
-    string | undefined
-  >("");
-  const [editEventStartDate, setEditEventStartDate] = useState<
-    Date | undefined
-  >();
-  const [editEventEndDate, setEditEventEndDate] = useState<Date | undefined>();
-  const [comment, setComment] = useState<string | undefined>("");
-  // const [mentions, setMentions] = useState<string[] | undefined>();
-  const [editComment, setEditComment] = useState<string | undefined>("");
-  const [editCommentId, setEditCommentId] = useState<string | undefined>("");
-  const [eventDescription, setEventDescription] = useState<string | undefined>(
-    ""
-  );
   const [messageForParticipants, setMessageForParticipants] = useState<
     string | undefined
   >("");
 
   const [showMap, setShowMap] = useState(false);
-  const [tabView, setTabView] = useState<"overview" | "calendar" | "comments">(
-    "overview"
-  );
-  const textAreaRef = useRef();
-  const isBundle = useRef(false);
-  const eventTextAreaRef = useRef();
   const { toast } = useToast();
-
-  // const tribute = new Tribute({
-  //   trigger: "@",
-  //   values: participants,
-  //   itemClass: "bg-blue-700 text-black",
-  //   selectTemplate(participant) {
-  //     return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
-  //   },
-  // });
 
   useEffect(() => {
     if (actionData) {
@@ -234,25 +180,6 @@ export default function CampaignId() {
       }
     }
   }, [actionData, t, toast]);
-
-  // useEffect(() => {
-  //   console.log(textAreaRef.current);
-  //   if (
-  //     textAreaRef.current &&
-  //     !isBundle.current &&
-  //     Array.isArray(participants)
-  //   ) {
-  //     isBundle.current = true;
-  //     //@ts-ignore
-  //     tribute.attach(textAreaRef.current.textarea);
-  //     //@ts-ignore
-  //     textAreaRef.current.textarea.addEventListener("tribute-replaced", (e) => {
-  //       setComment(e.target.value);
-  //       setMentions(e.detail.item.original.value);
-  //     });
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [textAreaRef.current]);
 
   return (
     <div className="h-full w-full">
