@@ -16,23 +16,22 @@ export default function CreateThread({ loggedIn, participants }: Props) {
   const textAreaRef = useRef();
   const isBundle = useRef(false);
 
-  const tribute = new Tribute({
-    trigger: "@",
-    values: participants.map((p) => {
-      return { key: p.user.name, value: p.user.name };
-    }),
-    itemClass: "bg-blue-700 text-black",
-    selectTemplate(participant) {
-      return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
-    },
-  });
-
   useEffect(() => {
     if (
       textAreaRef.current &&
       !isBundle.current &&
       Array.isArray(participants)
     ) {
+      const tribute = new Tribute({
+        trigger: "@",
+        values: participants.map((p) => {
+          return { key: p.user.name, value: p.user.name };
+        }),
+        itemClass: "bg-blue-700 text-black",
+        selectTemplate(participant) {
+          return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
+        },
+      });
       isBundle.current = true;
       //@ts-ignore
       tribute.attach(textAreaRef.current.textarea);
