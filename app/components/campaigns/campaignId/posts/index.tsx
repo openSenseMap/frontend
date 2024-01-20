@@ -63,13 +63,6 @@ export default function ListPosts({ posts }: Props) {
                           p.comment.map((c: Comment) => {
                             return <Markdown>{c.content}</Markdown>;
                           })}
-                        {/* <Form method="post" className="w-full">
-                          <input
-                            className="hidden"
-                            id="postId"
-                            name="postId"
-                            value={p.id}
-                          /> */}
                         <ClientOnly>
                           {() => (
                             <div className="container mt-4 overflow-auto">
@@ -111,24 +104,11 @@ export default function ListPosts({ posts }: Props) {
                             </div>
                           )}
                         </ClientOnly>
-                        {/* <textarea name="content" id="content"></textarea>
-                          <Button
-                            className="bg-blue-700 text-white"
-                            variant="outline"
-                            type="submit"
-                            name="_action"
-                            value="PUBLISH"
-                          >
-                            Submit
-                          </Button>
-                        </Form> */}
                       </>
                     )}
                   </div>
                 </div>
               </li>
-
-              {/* {p.comment.length > 0 && <div>{p.comment.length} Replies</div>} */}
             </>
           );
         })}
