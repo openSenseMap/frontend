@@ -40,6 +40,12 @@ import CreateThread from "~/components/campaigns/campaignId/posts/create";
 import ListPosts from "~/components/campaigns/campaignId/posts";
 import CampaignIdHeader from "~/components/campaigns/campaignId/header";
 import Markdown from "markdown-to-jsx";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "~/components/ui/hover-card";
 
 export const links: LinksFunction = () => {
   return [
@@ -177,7 +183,19 @@ export default function CampaignId() {
       <h1 className="m-6 font-bold">Contributors</h1>
       <div className="flex">
         {campaign.participants.map((p) => {
-          return <span>{p.user.name}</span>;
+          return (
+            <HoverCard>
+              <HoverCardTrigger>
+                <Avatar className="hover:cursor-pointer">
+                  <AvatarImage src="" alt="avatar" />
+                  <AvatarFallback>
+                    {p.user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </HoverCardTrigger>
+              <HoverCardContent>{p.user.name}</HoverCardContent>
+            </HoverCard>
+          );
         })}
       </div>
 
