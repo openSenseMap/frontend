@@ -168,6 +168,13 @@ export default function CampaignId() {
         setShowMap={setShowMap}
       />
 
+      <h1 className="m-6 font-bold">Contributors</h1>
+      <div className="flex">
+        {campaign.participants.map((p) => {
+          return <span>{p.user.name}</span>;
+        })}
+      </div>
+
       <div className="flex w-full justify-center">
         <CampaignTable
           owner={userId === campaign.ownerId}
