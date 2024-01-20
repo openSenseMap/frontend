@@ -6,6 +6,9 @@ import { ClientOnly } from "remix-utils";
 import { Button } from "~/components/ui/button";
 import { MarkdownEditor } from "~/markdown.client";
 import { Comment, Post } from "~/schema";
+import { Separator } from "~/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { format } from "date-fns";
 
 type Props = {
   posts: Post[];
@@ -18,6 +21,14 @@ interface ShowComments {
 export default function ListPosts({ posts }: Props) {
   const replyRef = useRef();
   const [reply, setReply] = useState<string | undefined>("");
+
+  function formatDate(date: Date): string {
+    return format(new Date(date), "dd/MM/yyyy");
+  }
+
+  function formatTime(date: Date): string {
+    return format(new Date(date), "HH:mm");
+  }
 
   const initialState: ShowComments = posts.reduce((acc: ShowComments, post) => {
     acc[post.id] = false;
@@ -32,22 +43,46 @@ export default function ListPosts({ posts }: Props) {
       [postId]: !prevShowComments[postId],
     }));
   };
+
+  let prevCreatedAt: undefined | string = undefined;
   return (
     <>
-      <h1 className="mt-6 font-bold">Discussion</h1>
+      <h1 className="mb-4 mt-6 font-bold">Discussion</h1>
       <ul className="w-full">
         {posts.map((p) => {
+          const { createdAt } = p;
+          const date = formatDate(createdAt);
+          const showPostDate = date !== prevCreatedAt;
+          prevCreatedAt = date;
           const number_of_comments = p.comment.length;
           return (
             <>
+              {showPostDate && (
+                <div className="mt-2 w-full">
+                  <span>{date}</span>
+                  <Separator className=" my-2 p-0.5" />
+                </div>
+              )}
+
               <li
-                className="border-gray mt-2 flex w-full flex-col border-2 p-2"
+                className="border-gray m-2 flex w-full flex-col border-2 p-2"
                 key={p.id}
               >
                 <div className="mb-4 flex w-3/4 items-center justify-between p-2">
                   <div className="flex flex-col">
-                    <span>{p.createdAt?.toString().split("T")[0]}</span>
-                    <span>{p.content}</span>
+                    <div className="flex">
+                      <Avatar className="hover:cursor-pointer">
+                        <AvatarImage src="" alt="avatar" />
+                        <AvatarFallback>
+                          {p.author.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="ml-6 flex flex-col">
+                        <span>{p.author.name}</span>
+                        <span>{formatTime(p.createdAt)}</span>
+                      </div>
+                    </div>
+                    <Markdown>{p.content}</Markdown>
 
                     {p.comment && number_of_comments > 0 && (
                       <div className="flex gap-2">
@@ -62,9 +97,9 @@ export default function ListPosts({ posts }: Props) {
                         <span className="px-4 py-2 text-sm">
                           Last Reply:
                           {" " +
-                            p.comment[number_of_comments - 1].createdAt
-                              .toString()
-                              .split("T")[0]}
+                            formatDate(
+                              p.comment[number_of_comments - 1].createdAt
+                            )}
                         </span>
                       </div>
                     )}

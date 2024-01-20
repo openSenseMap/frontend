@@ -20,7 +20,7 @@ export const post = pgTable("post", {
   .$defaultFn(() => createId()),
   userId: text("userId").notNull(),
   content: text("content").notNull(),
-  createdAt: timestamp("createdAt").defaultNow(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
   campaignSlug: text("campaignSlug").notNull()
 });
 

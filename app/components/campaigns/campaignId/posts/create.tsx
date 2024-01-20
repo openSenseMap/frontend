@@ -48,7 +48,7 @@ export default function CreateThread({ loggedIn, participants }: Props) {
   if (loggedIn) {
     return (
       <Form method="post" className="mt-8 w-full">
-        <span>Create new Thread</span>
+        <h1 className="font-bold">Create new Thread</h1>
         <div className="flex w-full justify-between">
           <ClientOnly>
             {() => (
