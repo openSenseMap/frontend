@@ -6,15 +6,13 @@ export function createPost({
     content,
     campaignSlug,
     ownerId,
-    title,
-  }: Pick<Post,  "title" | "content" | "campaignSlug"> & {
+  }: Pick<Post,  "content" | "campaignSlug"> & {
     ownerId: User["id"];
   }) {
     return drizzleClient.insert(post).values({
         content: content,
         userId: ownerId,
         campaignSlug: campaignSlug,
-        title: title
     }).returning()
   }
 

@@ -11,7 +11,6 @@ export default function CreateThread({ loggedIn }: Props) {
       <Form method="post" className="mt-8 w-full">
         <span>Create new Thread</span>
         <div className="flex w-full justify-between">
-          <input type="text" name="title" id="title"></input>
           <input type="text" name="content" id="content"></input>
           <Button
             className="bg-blue-700 text-white"

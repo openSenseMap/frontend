@@ -19,7 +19,6 @@ export const post = pgTable("post", {
   id: text("id").primaryKey().notNull()
   .$defaultFn(() => createId()),
   userId: text("userId").notNull(),
-  title: varchar("name", { length: 191 }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
   campaignSlug: text("campaignSlug").notNull()

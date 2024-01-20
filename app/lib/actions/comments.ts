@@ -100,13 +100,6 @@ export async function getCommentsAction({request, params}: ActionArgs){
 export async function publishPostAction({ request, params }: ActionArgs) {
   const ownerId = await requireUserId(request);
   const formData = await request.formData();
-  const title = formData.get("title")
-  if (typeof title !== "string" || title.length === 0) {
-    return json(
-      { errors: { title: "title is required", body: null } },
-      { status: 400 }
-    );
-  }
   const content = formData.get("content");
   if (typeof content !== "string" || content.length === 0) {
     return json(
@@ -121,7 +114,7 @@ export async function publishPostAction({ request, params }: ActionArgs) {
       { status: 400 }
     );
   }
-  const post = await createPost({ campaignSlug, title, content, ownerId });
+  const post = await createPost({ campaignSlug, content, ownerId });
   return post
 }
 
