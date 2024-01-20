@@ -41,10 +41,10 @@ export default function ListPosts({ posts }: Props) {
           return (
             <>
               <li
-                className="justify-conter flex w-full flex-col items-center p-4"
+                className="border-gray mt-2 flex w-full flex-col border-2 p-2"
                 key={p.id}
               >
-                <div className="mb-4 flex w-3/4 items-center justify-between p-4">
+                <div className="mb-4 flex w-3/4 items-center justify-between p-2">
                   <div className="flex flex-col">
                     <span>{p.createdAt?.toString().split("T")[0]}</span>
                     <span>{p.content}</span>
