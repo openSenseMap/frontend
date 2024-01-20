@@ -28,7 +28,15 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
           comment: true
         }
       },
-      participants: true,
+      participants: {
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          }
+        }
+      },
       bookmarks: true
     }
   });

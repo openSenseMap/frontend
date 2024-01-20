@@ -192,7 +192,7 @@ export default function CampaignId() {
   >();
   const [editEventEndDate, setEditEventEndDate] = useState<Date | undefined>();
   const [comment, setComment] = useState<string | undefined>("");
-  const [mentions, setMentions] = useState<string[] | undefined>();
+  // const [mentions, setMentions] = useState<string[] | undefined>();
   const [editComment, setEditComment] = useState<string | undefined>("");
   const [editCommentId, setEditCommentId] = useState<string | undefined>("");
   const [eventDescription, setEventDescription] = useState<string | undefined>(
@@ -211,14 +211,14 @@ export default function CampaignId() {
   const eventTextAreaRef = useRef();
   const { toast } = useToast();
 
-  const tribute = new Tribute({
-    trigger: "@",
-    values: participants,
-    itemClass: "bg-blue-700 text-black",
-    selectTemplate(participant) {
-      return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
-    },
-  });
+  // const tribute = new Tribute({
+  //   trigger: "@",
+  //   values: participants,
+  //   itemClass: "bg-blue-700 text-black",
+  //   selectTemplate(participant) {
+  //     return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
+  //   },
+  // });
 
   useEffect(() => {
     if (actionData) {
@@ -235,23 +235,24 @@ export default function CampaignId() {
     }
   }, [actionData, t, toast]);
 
-  useEffect(() => {
-    if (
-      textAreaRef.current &&
-      !isBundle.current &&
-      Array.isArray(participants)
-    ) {
-      isBundle.current = true;
-      //@ts-ignore
-      tribute.attach(textAreaRef.current.textarea);
-      //@ts-ignore
-      textAreaRef.current.textarea.addEventListener("tribute-replaced", (e) => {
-        setComment(e.target.value);
-        setMentions(e.detail.item.original.value);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textAreaRef.current]);
+  // useEffect(() => {
+  //   console.log(textAreaRef.current);
+  //   if (
+  //     textAreaRef.current &&
+  //     !isBundle.current &&
+  //     Array.isArray(participants)
+  //   ) {
+  //     isBundle.current = true;
+  //     //@ts-ignore
+  //     tribute.attach(textAreaRef.current.textarea);
+  //     //@ts-ignore
+  //     textAreaRef.current.textarea.addEventListener("tribute-replaced", (e) => {
+  //       setComment(e.target.value);
+  //       setMentions(e.detail.item.original.value);
+  //     });
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [textAreaRef.current]);
 
   return (
     <div className="h-full w-full">
@@ -555,7 +556,10 @@ export default function CampaignId() {
       </div>
       <ListPosts posts={campaign.posts as any} />
 
-      <CreateThread loggedIn={userId != undefined} />
+      <CreateThread
+        loggedIn={userId != undefined}
+        participants={campaign.participants}
+      />
     </div>
   );
 }
