@@ -1,5 +1,6 @@
 import { Form } from "@remix-run/react";
 import { ReplyIcon } from "lucide-react";
+import Markdown from "markdown-to-jsx";
 import { useRef, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { Button } from "~/components/ui/button";
@@ -60,7 +61,7 @@ export default function ListPosts({ posts }: Props) {
                       <>
                         {p.comment &&
                           p.comment.map((c: Comment) => {
-                            return <span>{c.content}</span>;
+                            return <Markdown>{c.content}</Markdown>;
                           })}
                         {/* <Form method="post" className="w-full">
                           <input
