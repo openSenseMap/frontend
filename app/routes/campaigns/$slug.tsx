@@ -39,6 +39,7 @@ import CampaignTable from "~/components/campaigns/campaignId/table";
 import CreateThread from "~/components/campaigns/campaignId/posts/create";
 import ListPosts from "~/components/campaigns/campaignId/posts";
 import CampaignIdHeader from "~/components/campaigns/campaignId/header";
+import Markdown from "markdown-to-jsx";
 
 export const links: LinksFunction = () => {
   return [
@@ -167,6 +168,11 @@ export default function CampaignId() {
         showMap={showMap}
         setShowMap={setShowMap}
       />
+
+      <h1 className="m-6 font-bold">Instructions</h1>
+      <div>
+        <Markdown>{campaign.instructions}</Markdown>
+      </div>
 
       <h1 className="m-6 font-bold">Contributors</h1>
       <div className="flex">
