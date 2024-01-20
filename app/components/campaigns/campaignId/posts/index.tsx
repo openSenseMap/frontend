@@ -37,6 +37,7 @@ export default function ListPosts({ posts }: Props) {
       <h1 className="mt-6 font-bold">Discussion</h1>
       <ul className="w-full">
         {posts.map((p) => {
+          const number_of_comments = p.comment.length;
           return (
             <>
               <li
@@ -45,17 +46,27 @@ export default function ListPosts({ posts }: Props) {
               >
                 <div className="mb-4 flex w-3/4 items-center justify-between p-4">
                   <div className="flex flex-col">
+                    <span>{p.createdAt?.toString().split("T")[0]}</span>
                     <span>{p.content}</span>
 
-                    {p.comment && p.comment.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        className="flex gap-2"
-                        onClick={() => handleReplyClick(p.id)}
-                      >
-                        <ReplyIcon className="h-4 w-4" />
-                        {p.comment.length} Replies
-                      </Button>
+                    {p.comment && number_of_comments > 0 && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          className="flex gap-2"
+                          onClick={() => handleReplyClick(p.id)}
+                        >
+                          <ReplyIcon className="h-4 w-4" />
+                          {number_of_comments} Replies
+                        </Button>
+                        <span className="px-4 py-2 text-sm">
+                          Last Reply:
+                          {" " +
+                            p.comment[number_of_comments - 1].createdAt
+                              .toString()
+                              .split("T")[0]}
+                        </span>
+                      </div>
                     )}
                     {showComments[p.id] && (
                       <>
