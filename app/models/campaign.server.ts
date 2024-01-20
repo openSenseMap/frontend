@@ -12,7 +12,15 @@ export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
     with: {
       posts: {
         with: {
-          comment: true,
+          comment: {
+            with: {
+              user: {
+                columns: {
+                  name: true
+                }
+              }
+            }
+          },
           author: true
         },
         orderBy: (posts, { desc }) => [desc(posts.createdAt)],

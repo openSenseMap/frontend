@@ -7,12 +7,14 @@ type MDEditorProps = {
   comment: string | undefined;
   setComment: (comment: string | undefined) => void;
   textAreaRef: any;
+  placeholder?: string;
 };
 
 export const MarkdownEditor = ({
   comment,
   setComment,
   textAreaRef,
+  placeholder,
 }: MDEditorProps) => {
   return (
     <MDEditor
@@ -28,7 +30,7 @@ export const MarkdownEditor = ({
       }}
       textareaProps={{
         spellCheck: "true",
-        placeholder: "Leave a comment...",
+        placeholder: placeholder || "Leave a comment...",
       }}
     />
   );
