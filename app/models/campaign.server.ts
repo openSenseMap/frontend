@@ -8,25 +8,13 @@ import { count, eq } from "drizzle-orm";
 
 export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
   return drizzleClient.query.campaign.findFirst({
-    // where: { slug },
-    // include: {
-    //   comments: {
-    //     include: {
-    //       owner: true,
-    //     },
-    //   },
-    //   events: true,
-    //   participants: true,
-    //   bookmarks: {
-    //     where: { userId: userId },
-    //   },
-    // },
     where: (campaign, {eq}) => eq(campaign.slug, slug),
     with: {
       posts: {
         with: {
           comment: true
-        }
+        },
+        orderBy: (posts, { desc }) => [desc(posts.createdAt)],
       },
       participants: {
         with: {
