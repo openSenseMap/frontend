@@ -245,7 +245,10 @@ export default function CampaignId() {
         </div>
         {/* </Form> */}
       </div>
-      <ListPosts posts={campaign.posts as any} />
+      <ListPosts
+        posts={campaign.posts as any}
+        participants={campaign.participants}
+      />
 
       <CreateThread
         loggedIn={userId != undefined}

@@ -1,7 +1,7 @@
 import { Form } from "@remix-run/react";
 import { ReplyIcon } from "lucide-react";
 import Markdown from "markdown-to-jsx";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { Button } from "~/components/ui/button";
 import { MarkdownEditor } from "~/markdown.client";
@@ -9,18 +9,50 @@ import { Comment, Post } from "~/schema";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { format } from "date-fns";
+import Tribute from "tributejs";
 
 type Props = {
   posts: Post[];
+  participants: any[];
 };
 
 interface ShowComments {
   [postId: string]: boolean;
 }
 
-export default function ListPosts({ posts }: Props) {
+export default function ListPosts({ posts, participants }: Props) {
   const replyRef = useRef();
+  const isBundle = useRef(false);
   const [reply, setReply] = useState<string | undefined>("");
+  const initialState: ShowComments = posts.reduce((acc: ShowComments, post) => {
+    acc[post.id] = false;
+    return acc;
+  }, {});
+  const [showComments, setShowComments] = useState<ShowComments>(initialState);
+
+  useEffect(() => {
+    if (replyRef.current && !isBundle.current && Array.isArray(participants)) {
+      const tribute = new Tribute({
+        trigger: "@",
+        values: participants.map((p) => {
+          return { key: p.user.name, value: p.user.name };
+        }),
+        itemClass: "bg-blue-700 text-black",
+        selectTemplate(participant) {
+          return `<span data-insight-id="${participant.original.key}" contenteditable="false">@${participant.original.value}</span>`;
+        },
+      });
+      isBundle.current = true;
+      //@ts-ignore
+      tribute.attach(replyRef.current.textarea);
+      //@ts-ignore
+      replyRef.current.textarea.addEventListener("tribute-replaced", (e) => {
+        setReply(e.target.value);
+        // setMentions(e.detail.item.original.value);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replyRef.current]);
 
   function formatDate(date: Date): string {
     return format(new Date(date), "dd/MM/yyyy");
@@ -29,13 +61,6 @@ export default function ListPosts({ posts }: Props) {
   function formatTime(date: Date): string {
     return format(new Date(date), "HH:mm");
   }
-
-  const initialState: ShowComments = posts.reduce((acc: ShowComments, post) => {
-    acc[post.id] = false;
-    return acc;
-  }, {});
-
-  const [showComments, setShowComments] = useState<ShowComments>(initialState);
 
   const handleReplyClick = (postId: string) => {
     setShowComments((prevShowComments) => ({
