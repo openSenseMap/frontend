@@ -80,7 +80,7 @@ export async function getCampaigns(
     //     updatedAt: "desc",
     //   },
     // ],
-    // ...options,
+    ...options,
   });
   if (sortBy === "priority") {
     return campaigns
@@ -105,7 +105,8 @@ export async function addParticipant(campaignId: string, userId: string){
 }
 
 export async function getCampaignCount() {
-  return await drizzleClient.select({value: count()}).from(campaign);
+   const counted = await drizzleClient.select({value: count(campaign.id)}).from(campaign);
+   return counted[0].value
 }
 
 export async function getFilteredCampaigns(title: string) {

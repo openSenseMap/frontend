@@ -60,27 +60,34 @@ export async function loader({ params, request }: LoaderArgs) {
   const query = url.searchParams;
   const currentPage = Math.max(Number(query.get("page") || 1), 1);
   const options: {
-    take: number;
-    skip: number;
-    orderBy: [{}, {}];
-    where?: {};
+    limit: number;
+    offset: number;
   } = {
-    take: PER_PAGE,
-    skip: (currentPage - 1) * PER_PAGE,
-    orderBy: [
-      {
-        bookmarks: {
-          _count: "desc",
-        },
-      },
-      {
-        updatedAt: "desc",
-      },
-    ],
-    where: generateWhereObject(query),
+    limit: PER_PAGE,
+    offset: (currentPage - 1) * PER_PAGE,
   };
+  // const options: {
+  //   take: number;
+  //   skip: number;
+  //   orderBy: [{}, {}];
+  //   where?: {};
+  // } = {
+  //   take: PER_PAGE,
+  //   skip: (currentPage - 1) * PER_PAGE,
+  //   orderBy: [
+  //     {
+  //       bookmarks: {
+  //         _count: "desc",
+  //       },
+  //     },
+  //     {
+  //       updatedAt: "desc",
+  //     },
+  //   ],
+  //   where: generateWhereObject(query),
+  // };
 
-  const countOptions = options.where;
+  // const countOptions = options.where;
   let sort = "";
 
   if (query.get("sortBy")) {
@@ -88,9 +95,9 @@ export async function loader({ params, request }: LoaderArgs) {
     if (sortBy === "priority") {
       sort = "priority";
     }
-    options.orderBy.push({
-      [sortBy]: "desc",
-    });
+    // options.orderBy.push({
+    //   [sortBy]: "desc",
+    // });
   }
 
   const campaignsOnPage = await getCampaigns(options, userId, sort);
@@ -133,8 +140,7 @@ export default function Campaigns() {
   const phenomena = data.phenomena;
   const campaignCount = data.campaignCount;
   const userId = data.userId;
-  // const totalPages = Math.ceil(campaignCount / PER_PAGE);
-  const totalPages = 0
+  const totalPages = Math.ceil(campaignCount / PER_PAGE);
   // const [mapLoaded, setMapLoaded] = useState(false);
   // const [markers, setMarkers] = useState<Array<PointFeature<PointProperties>>>(
   //   []
@@ -445,7 +451,7 @@ export default function Campaigns() {
             campaigns={campaigns}
             showMap={showMap}
             userId={userId ?? ""}
-            campaignCount={0}
+            campaignCount={campaignCount}
             totalPages={totalPages}
             // bookmarks={}
           />
