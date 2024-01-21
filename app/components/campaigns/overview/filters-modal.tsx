@@ -124,7 +124,7 @@ export default function FiltersModal({
           <SelectContent>
             <SelectGroup>
               <SelectLabel>{t("exposures")}</SelectLabel>
-              {Object.keys(exposureEnum).map((key: string) => {
+              {exposureEnum.enumValues.map((key: string) => {
                 return (
                   <SelectItem key={key} value={key}>
                     {key}

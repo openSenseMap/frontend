@@ -8,6 +8,7 @@ import {
 } from "@remix-run/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  // TWhereInput,
   // getBookmarks,
   getCampaignCount,
   getCampaigns,
@@ -36,7 +37,7 @@ import { Button } from "~/components/ui/button";
 import Filter from "~/components/campaigns/overview/campaign-filter";
 import { getUserId, requireUserId } from "~/session.server";
 import { bookmark } from "~/lib/actions";
-import { generateWhereObject } from "~/components/campaigns/overview/where-query";
+import { generateWhereObject } from "~/components/campaigns/overview/filter-campaign-query.server";
 import { useToast } from "~/components/ui/use-toast";
 import CampaignGrid from "~/components/campaigns/overview/grid";
 import { triggerNotificationNewParticipant } from "~/novu.server";
@@ -55,39 +56,19 @@ export async function loader({ params, request }: LoaderArgs) {
   if (userId) {
     // bookmarks = await getBookmarks({ userId });
   }
-  const allCampaigns = await getCampaigns({});
   const url = new URL(request.url);
   const query = url.searchParams;
+  const allCampaigns = await getCampaigns({}, query);
   const currentPage = Math.max(Number(query.get("page") || 1), 1);
   const options: {
     limit: number;
     offset: number;
+    // where?: TWhereInput;
   } = {
     limit: PER_PAGE,
     offset: (currentPage - 1) * PER_PAGE,
   };
-  // const options: {
-  //   take: number;
-  //   skip: number;
-  //   orderBy: [{}, {}];
-  //   where?: {};
-  // } = {
-  //   take: PER_PAGE,
-  //   skip: (currentPage - 1) * PER_PAGE,
-  //   orderBy: [
-  //     {
-  //       bookmarks: {
-  //         _count: "desc",
-  //       },
-  //     },
-  //     {
-  //       updatedAt: "desc",
-  //     },
-  //   ],
-  //   where: generateWhereObject(query),
-  // };
 
-  // const countOptions = options.where;
   let sort = "";
 
   if (query.get("sortBy")) {
@@ -100,7 +81,7 @@ export async function loader({ params, request }: LoaderArgs) {
     // });
   }
 
-  const campaignsOnPage = await getCampaigns(options, userId, sort);
+  const campaignsOnPage = await getCampaigns(options, query, userId, sort);
   const campaignCount = await getCampaignCount();
   const phenos = await getPhenomena();
   if (phenos.code === "UnprocessableEntity") {

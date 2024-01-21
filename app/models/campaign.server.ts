@@ -4,7 +4,7 @@ import { generateSlug } from "~/lib/slug";
 import { json } from "@remix-run/node";
 import { drizzleClient } from "~/db.server";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { count, eq } from "drizzle-orm";
+import { and, arrayContained, count, DBQueryConfig, eq, ExtractTablesWithRelations, gt, gte, inArray, lt, lte } from "drizzle-orm";
 
 export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
   return drizzleClient.query.campaign.findFirst({
@@ -52,34 +52,57 @@ const priorityOrder = {
   LOW: 3,
 };
 
+// type TWhereInput = NonNullable<Parameters<typeof drizzleClient['query']['campaign']['findMany']>[0]>['where']
+// const schema = { campaign }
+// export type TWhereInput = DBQueryConfig<'many', true, ExtractTablesWithRelations<typeof schema>, ExtractTablesWithRelations<typeof schema>['campaign']>['where']
+
 export async function getCampaigns(
   options = {},
+  query: URLSearchParams,
+  // whereInput: undefined | TWhere = undefined,
   userId?: string,
   sortBy?: string
 ) {
+  const title = query.get("search")
+  const priority = query.get("priority")
+  const country = query.get("country")?.toLowerCase()
+  console.log(country)
+  const exposure = query.get("exposure")
+  const phenomena = query.get("phenomena")
+  let startDate : Date | null
+  let endDate : Date | null
+
+  const startDateParam = query.get("startDate");
+  const endDateParam = query.get("endDate");
+
+
+  if(startDateParam){
+    startDate = new Date(startDateParam)
+  }
+  
+  if(endDateParam){
+    endDate = new Date(endDateParam)
+  }
+
+
+  
+  
   const campaigns = await drizzleClient.query.campaign.findMany({
-    // include: {
-    //   participants: {
-    //     select: {
-    //       id: true,
-    //     },
-    //   },
-    //   bookmarks: {
-    //     where: {
-    //       userId: userId,
-    //     },
-    //   },
-    // },
-    // orderBy: [
-    //   {
-    //     bookmarkedByUsers: {
-    //       _count: "desc",
-    //     },
-    //   },
-    //   {
-    //     updatedAt: "desc",
-    //   },
-    // ],
+    
+    where: (campaign, { eq, and }) => 
+    (and(
+      title ? eq(campaign.title, title) : undefined,
+      //@ts-ignore
+      priority ? eq(campaign.priority, priority) : undefined,
+      // country ? arrayContained(country, campaign.countries): undefined,
+      //@ts-ignore
+      exposure ? eq(campaign.exposure, exposure): undefined,
+      // phenomena ? eq(campaign.phenomena, phenomena) : undefined,
+      // TODO: find better way than cast to any
+      startDate && endDate ? and(gte(campaign.startDate, startDate), lte(endDate as any, campaign.endDate)) : undefined,
+
+
+    )),
     ...options,
   });
   if (sortBy === "priority") {
