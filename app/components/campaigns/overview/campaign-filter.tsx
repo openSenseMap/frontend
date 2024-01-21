@@ -167,7 +167,7 @@ value={filterObject.searchTerm}
                     setFilterObject({ ...filterObject, priority: e })
                   }
                 >
-                  {Object.keys(priorityEnum).map(
+                  {priorityEnum.enumValues.map(
                     (priority: string, index: number) => {
                       return (
                         <DropdownMenuRadioItem key={index} value={priority}>
