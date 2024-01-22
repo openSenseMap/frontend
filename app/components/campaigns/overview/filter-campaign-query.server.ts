@@ -1,41 +1,39 @@
-export const generateWhereObject = (query: URLSearchParams) => {
-  const where: {
-    title?: {
-      contains: string;
-      mode: "insensitive";
-    };
-    priority?: string;
-    country?: {
-      contains: string;
-      mode: "insensitive";
-    };
-    exposure?: string;
-    startDate?: {
-      gte: Date;
-    };
-    endDate?: {
-      lte: Date;
-    };
-    phenomena?: any;
-  } = {};
+// import { TWhereInput } from "~/models/campaign.server";
+
+export const generateWhereObject = (query: URLSearchParams): TWhereInput => {
+  let where: any = {}
+  // const where: {
+  //   title?: {
+  //     contains: string;
+  //     mode: "insensitive";
+  //   };
+  //   priority?: string;
+  //   country?: {
+  //     contains: string;
+  //     mode: "insensitive";
+  //   };
+  //   exposure?: string;
+  //   startDate?: {
+  //     gte: Date;
+  //   };
+  //   endDate?: {
+  //     lte: Date;
+  //   };
+  //   phenomena?: any;
+  // } = {};
 
   if (query.get("search")) {
-    where.title = {
-      contains: query.get("search") || "",
-      mode: "insensitive",
-    };
+    const title = query.get("search") || ""
+    // where.title = query.get("search") || ""
+    // where.title = (campaign, { eq }) => eq(campaign.title, title)
   }
 
   if (query.get("priority")) {
-    const priority = query.get("priority") || "";
-    where.priority = priority;
+    where.priority = query.get("priority") || "";
   }
 
   if (query.get("country")) {
-    where.country = {
-      contains: query.get("country") || "",
-      mode: "insensitive",
-    };
+    where.country =  query.get("country") || ""
   }
 
   if (query.get("exposure")) {

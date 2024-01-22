@@ -43,6 +43,13 @@
       "when": 1705738795322,
       "tag": "0005_deep_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1705922779970,
+      "tag": "0006_peaceful_lizard",
+      "breakpoints": true
     }
   ]
 }

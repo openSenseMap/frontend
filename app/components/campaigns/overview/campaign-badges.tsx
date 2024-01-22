@@ -1,4 +1,3 @@
-// import type { Exposure, Priority } from "@prisma/client";
 import { zodPriorityEnum, zodExposureEnum } from "~/schema";
 import clsx from "clsx";
 import { ClockIcon } from "lucide-react";

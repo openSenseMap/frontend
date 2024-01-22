@@ -1,11 +1,10 @@
 import { Form } from "@remix-run/react";
-import { MessageSquareIcon, ReplyIcon } from "lucide-react";
+import { MessageSquareIcon, ReplyIcon, ThumbsUpIcon } from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import { useEffect, useRef, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { Button } from "~/components/ui/button";
 import { MarkdownEditor } from "~/markdown.client";
-import { Comment, Post } from "~/schema";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { format } from "date-fns";
@@ -132,6 +131,7 @@ export default function ListPosts({ posts, participants }: Props) {
                             p.comment[number_of_comments - 1].createdAt
                           )}
                       </span>
+                      <ThumbsUpIcon className="h-6 w-6" />
                     </div>
                   )}
                 </div>
