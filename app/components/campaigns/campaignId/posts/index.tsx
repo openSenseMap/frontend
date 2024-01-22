@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import { ReplyIcon } from "lucide-react";
+import { MessageSquareIcon, ReplyIcon } from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import { useEffect, useRef, useState } from "react";
 import { ClientOnly } from "remix-utils";
@@ -94,7 +94,7 @@ export default function ListPosts({ posts, participants }: Props) {
               )}
 
               <li
-                className="border-gray m-2 flex w-full flex-col border-2 p-2"
+                className="border-gray group m-2 flex w-full flex-col border-2 p-2"
                 key={p.id}
               >
                 <div className="mb-4 flex w-3/4 items-center justify-between p-2">
@@ -114,25 +114,29 @@ export default function ListPosts({ posts, participants }: Props) {
                     </div>
                     <Markdown>{p.content}</Markdown>
                   </div>
+                  {p.comment && number_of_comments > 0 && (
+                    <div className="flex flex-col gap-2">
+                      <MessageSquareIcon className="mx-auto h-6 w-6" />
+                      <Button
+                        variant="ghost"
+                        className="flex gap-2"
+                        onClick={() => handleReplyClick(p.id)}
+                      >
+                        <ReplyIcon className="h-4 w-4" />
+                        {number_of_comments} Replies
+                      </Button>
+                      <span className="hidden text-sm group-hover:block">
+                        Last Reply:
+                        {" " +
+                          formatDate(
+                            p.comment[number_of_comments - 1].createdAt
+                          )}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </li>
-              {p.comment && number_of_comments > 0 && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    className="flex gap-2"
-                    onClick={() => handleReplyClick(p.id)}
-                  >
-                    <ReplyIcon className="h-4 w-4" />
-                    {number_of_comments} Replies
-                  </Button>
-                  <span className="px-4 py-2 text-sm">
-                    Last Reply:
-                    {" " +
-                      formatDate(p.comment[number_of_comments - 1].createdAt)}
-                  </span>
-                </div>
-              )}
+
               {showComments[p.id] && (
                 <>
                   <ul>
