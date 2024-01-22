@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import clsx from "clsx";
 
 export async function loader({ request }: LoaderArgs) {
   return json({
@@ -110,12 +111,19 @@ export default function CampaignsPage() {
                 {links.map((item, index) => {
                   return (
                     <li key={index}>
-                      <Link
+                      <NavLink
                         to={item.link}
-                        className="dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-green-100"
+                        className={({ isActive }) =>
+                          clsx(
+                            "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4  md:p-0 md:font-thin md:hover:text-green-100",
+                            {
+                              underline: isActive,
+                            }
+                          )
+                        }
                       >
                         {item.name}
-                      </Link>
+                      </NavLink>
                     </li>
                   );
                 })}
@@ -166,7 +174,7 @@ export default function CampaignsPage() {
     //                   className={({ isActive }) =>
     //                     isActive
     //                       ? "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 underline md:p-0 md:font-thin md:hover:text-green-100"
-    //                       : "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-green-100"
+    //                       : "dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-green-100 "
     //                   }
     //                 >
     //                   {item.name}
