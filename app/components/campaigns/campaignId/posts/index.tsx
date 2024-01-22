@@ -1,10 +1,11 @@
 import { Form } from "@remix-run/react";
-import { MessageSquareIcon, ReplyIcon, ThumbsUpIcon } from "lucide-react";
+import { MessageSquareIcon, ReplyIcon } from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import { useEffect, useRef, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { Button } from "~/components/ui/button";
 import { MarkdownEditor } from "~/markdown.client";
+import { Comment, Post } from "~/schema";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { format } from "date-fns";
@@ -93,7 +94,7 @@ export default function ListPosts({ posts, participants }: Props) {
               )}
 
               <li
-                className="border-gray group m-2 flex w-full flex-col border-2 p-2"
+                className="border-gray group m-2 flex w-full flex-col border-2 bg-slate-200 p-2"
                 key={p.id}
               >
                 <div className="mb-4 flex w-3/4 items-center justify-between p-2">
@@ -131,7 +132,6 @@ export default function ListPosts({ posts, participants }: Props) {
                             p.comment[number_of_comments - 1].createdAt
                           )}
                       </span>
-                      <ThumbsUpIcon className="h-6 w-6" />
                     </div>
                   )}
                 </div>
@@ -144,7 +144,7 @@ export default function ListPosts({ posts, participants }: Props) {
                       p.comment.map((c: CommentWithUser) => {
                         return (
                           <li
-                            className="border-gray m-2 flex w-full flex-col border-2 p-2"
+                            className="border-gray m-2 flex w-full flex-col border-2 bg-blue-100 p-2"
                             key={c.id}
                           >
                             <div className="mb-4 flex w-3/4 items-center justify-between p-2">
