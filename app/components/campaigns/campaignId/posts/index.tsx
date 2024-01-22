@@ -103,7 +103,8 @@ export default function ListPosts({ posts, participants }: Props) {
                       <Avatar className="hover:cursor-pointer">
                         <AvatarImage src="" alt="avatar" />
                         <AvatarFallback>
-                          {p.author.name.charAt(0).toUpperCase()}
+                          {/* TODO create better type with inference */}
+                          {(p.author.name as string).charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="ml-6 flex flex-col">
@@ -148,7 +149,9 @@ export default function ListPosts({ posts, participants }: Props) {
                                   <Avatar className="hover:cursor-pointer">
                                     <AvatarImage src="" alt="avatar" />
                                     <AvatarFallback>
-                                      {c.user.name.charAt(0).toUpperCase()}
+                                      {(c.user.name as string)
+                                        .charAt(0)
+                                        .toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="ml-6 flex flex-col">
