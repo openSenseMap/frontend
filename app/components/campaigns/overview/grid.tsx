@@ -38,8 +38,8 @@ export default function CampaignGrid({
   userId,
   campaignCount,
   totalPages,
-  // bookmarks,
-}: CampaignGridProps) {
+}: // bookmarks,
+CampaignGridProps) {
   const { t } = useTranslation("explore-campaigns");
 
   const CampaignInfo = () => (
@@ -99,44 +99,50 @@ export default function CampaignGrid({
                           <StarIcon
                             className={`h-4 w-4 ${
                               // isBookmarked && "fill-yellow-300 text-yellow-300"
-                            ""}`}
+                              ""
+                            }`}
                           />
                         </button>
                       </Form>
                     </div>
                     <div className="flex gap-2">
-                      {/* <ExposureBadge exposure={item.exposure} /> */}
-                      {/* <PriorityBadge priority={item.priority} /> */}
+                      {item.exposure && (
+                        <ExposureBadge exposure={item.exposure} />
+                      )}
+                      {item.priority && (
+                        <PriorityBadge priority={item.priority} />
+                      )}
                     </div>
                   </div>
                   <div className="w-full">
                     <div className="flex items-center justify-between gap-2 truncate">
                       <span>{item.title} </span>
                       <div className="flex">
-                        {item.countries && item.countries.map(
-                          (country: string, index: number) => {
-                            if (index === 2) {
+                        {item.countries &&
+                          item.countries.map(
+                            (country: string, index: number) => {
+                              if (index === 2) {
+                                return (
+                                  <PlusIcon
+                                    key={index}
+                                    className="h-6 w-6 border-2 border-black"
+                                  />
+                                );
+                              }
+                              const flagIcon = CountryFlagIcon({
+                                country: String(country).toUpperCase(),
+                              });
+                              if (!flagIcon) return null;
                               return (
-                                <PlusIcon
+                                <div
                                   key={index}
-                                  className="h-6 w-6 border-2 border-black"
-                                />
+                                  // className="overflow-hidden hover:overflow-visible"
+                                >
+                                  <div className="">{flagIcon}</div>
+                                </div>
                               );
                             }
-                            const flagIcon = CountryFlagIcon({
-                              country: String(country).toUpperCase(),
-                            });
-                            if (!flagIcon) return null;
-                            return (
-                              <div
-                                key={index}
-                                // className="overflow-hidden hover:overflow-visible"
-                              >
-                                <div className="">{flagIcon}</div>
-                              </div>
-                            );
-                          }
-                        )}
+                          )}
                       </div>
                     </div>
                   </div>

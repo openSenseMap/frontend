@@ -1,15 +1,15 @@
 // import type { Exposure, Priority } from "@prisma/client";
-import { priorityEnum, exposureEnum } from "~/schema";
+import { zodPriorityEnum, zodExposureEnum } from "~/schema";
 import clsx from "clsx";
 import { ClockIcon } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 
 type PriorityBadgeProps = {
-  priority: keyof typeof priorityEnum;
+  priority: zodPriorityEnum;
 };
 
 type ExposureBadgeProps = {
-  exposure: keyof typeof exposureEnum;
+  exposure: zodExposureEnum;
 };
 
 export function PriorityBadge({ priority }: PriorityBadgeProps) {
@@ -39,9 +39,9 @@ export function ExposureBadge({ exposure }: ExposureBadgeProps) {
       className={clsx(
         "h-8 w-fit rounded bg-muted px-2 py-1 text-sm text-black ",
         {
-          // "bg-blue-200": exposed === "indoor",
-          // "bg-orange-500": exposed === "mobile",
-          // "bg-emerald-500": exposed === "outdoor",
+          "bg-blue-200": exposed === "indoor",
+          "bg-orange-500": exposed === "mobile",
+          "bg-emerald-500": exposed === "outdoor",
         }
       )}
     >
