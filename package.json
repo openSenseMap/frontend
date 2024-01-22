@@ -54,6 +54,7 @@
     "@novu/node": "^0.17.1",
     "@novu/notification-center": "^0.15.0",
     "@paralleldrive/cuid2": "^2.2.2",
+    "@prisma/client": "^4.11.0",
     "@radix-ui/react-accordion": "^1.1.1",
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-avatar": "^1.0.2",
@@ -202,6 +203,7 @@
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.8.3",
     "prettier-plugin-tailwindcss": "^0.2.1",
+    "prisma": "^4.9.0",
     "shadcn-ui": "^0.2.2",
     "start-server-and-test": "^1.15.2",
     "tailwindcss": "^3.2.4",
@@ -214,5 +216,8 @@
   },
   "engines": {
     "node": ">=14"
+  },
+  "prisma": {
+    "seed": "ts-node --require tsconfig-paths/register prisma/seed.ts"
   }
 }
