@@ -26,15 +26,9 @@ import { downloadGeojSON } from "~/lib/download-geojson";
 
 type Props = {
   campaign: Campaign;
-  showMap: boolean;
-  setShowMap: (e: any) => void;
 };
 
-export default function CampaignIdHeader({
-  campaign,
-  showMap,
-  setShowMap,
-}: Props) {
+export default function CampaignIdHeader({ campaign }: Props) {
   return (
     <header className="dark:border-green-200 mb-4 flex w-full justify-between rounded-lg border-2 border-green-100 p-4 shadow-md shadow-green-100">
       <div className="flex items-center">
@@ -221,14 +215,14 @@ export default function CampaignIdHeader({
           {t("download GeoJSON")}
           <DownloadIcon className="h-4 w-4" />
         </Button>
-        <div className="flex flex-col items-center justify-center">
+        {/* <div className="flex flex-col items-center justify-center">
           <span>{t("show map")}</span>
           <Switch
             id="showMapSwitch"
             checked={showMap}
             onCheckedChange={() => setShowMap(!showMap)}
           />
-        </div>
+        </div> */}
         <Dialog>
           <DialogTrigger>
             <Button variant="destructive">

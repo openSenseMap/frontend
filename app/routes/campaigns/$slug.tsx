@@ -169,21 +169,51 @@ export default function CampaignId() {
 
   return (
     <div className="h-full w-full">
-      <CampaignIdHeader
-        campaign={campaign as any}
-        showMap={showMap}
-        setShowMap={setShowMap}
-      />
-
-      <section id="instructions">
-        <h1 className="m-6 font-bold">Instructions</h1>
-        <div>
-          <Markdown>{campaign.instructions}</Markdown>
-        </div>
-      </section>
+      <CampaignIdHeader campaign={campaign as any} />
+      <div className="flex w-full justify-between">
+        <section id="instructions" className="w-1/2">
+          <h1 className="my-6 font-bold">Instructions</h1>
+          <div>
+            <Markdown>{campaign.instructions}</Markdown>
+          </div>
+        </section>
+        <MapProvider>
+          <Map
+            initialViewState={{
+              // @ts-ignore
+              latitude: campaign.centerpoint.geometry.coordinates[1],
+              // @ts-ignore
+              longitude: campaign.centerpoint.geometry.coordinates[0],
+              zoom: 4,
+            }}
+            style={{
+              height: "35vh",
+              width: "25vw",
+              position: "sticky",
+              top: 0,
+              marginLeft: "auto",
+            }}
+          >
+            {campaign.feature && (
+              <Source
+                id="polygon"
+                type="geojson"
+                data={
+                  campaign.feature as unknown as FeatureCollection<
+                    Geometry,
+                    GeoJsonProperties
+                  >
+                }
+              >
+                <Layer {...layer} />
+              </Source>
+            )}
+          </Map>
+        </MapProvider>
+      </div>
 
       <section id="contributors">
-        <h1 className="m-6 flex font-bold">
+        <h1 className="my-6 flex font-bold">
           Contributors
           <span className="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-sm">
             {campaign.participants.length}
@@ -208,52 +238,11 @@ export default function CampaignId() {
         </div>
       </section>
 
-      <div className="flex w-full justify-center">
-        <CampaignTable
-          owner={userId === campaign.ownerId}
-          campaign={campaign as unknown as Campaign}
-          phenomena={data.phenomena}
-        />
-
-        <div>
-          {showMap && (
-            <MapProvider>
-              <Map
-                initialViewState={{
-                  // @ts-ignore
-                  latitude: campaign.centerpoint.geometry.coordinates[1],
-                  // @ts-ignore
-                  longitude: campaign.centerpoint.geometry.coordinates[0],
-                  zoom: 4,
-                }}
-                style={{
-                  height: "35vh",
-                  width: "25vw",
-                  position: "sticky",
-                  top: 0,
-                  marginLeft: "auto",
-                }}
-              >
-                {campaign.feature && (
-                  <Source
-                    id="polygon"
-                    type="geojson"
-                    data={
-                      campaign.feature as unknown as FeatureCollection<
-                        Geometry,
-                        GeoJsonProperties
-                      >
-                    }
-                  >
-                    <Layer {...layer} />
-                  </Source>
-                )}
-              </Map>
-            </MapProvider>
-          )}
-        </div>
-        {/* </Form> */}
-      </div>
+      <CampaignTable
+        owner={userId === campaign.ownerId}
+        campaign={campaign as unknown as Campaign}
+        phenomena={data.phenomena}
+      />
       <ListPosts
         posts={campaign.posts as any}
         participants={campaign.participants}
