@@ -10,7 +10,10 @@ import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { format } from "date-fns";
 import Tribute from "tributejs";
-import { PostWithAuthorAndComments } from "~/schema/drizzle-helper";
+import {
+  CommentWithUser,
+  PostWithAuthorAndComments,
+} from "~/schema/drizzle-helper";
 
 type Props = {
   posts: PostWithAuthorAndComments[];
@@ -133,7 +136,7 @@ export default function ListPosts({ posts, participants }: Props) {
                 <>
                   <ul>
                     {p.comment &&
-                      p.comment.map((c: Comment) => {
+                      p.comment.map((c: CommentWithUser) => {
                         return (
                           <li
                             className="border-gray m-2 flex w-full flex-col border-2 p-2"

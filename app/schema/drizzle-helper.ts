@@ -23,4 +23,4 @@ export type InferResultType<
 >;
 
 export type CommentWithUser = InferResultType<'comment', { user: true }>
-export type PostWithAuthorAndComments = InferResultType<'post', { author: true, comment: true }>
+export type PostWithAuthorAndComments = InferResultType<'post', { author: true, comment: {with: {user: { with: {name: true}}}}}>
