@@ -10,9 +10,10 @@ import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { format } from "date-fns";
 import Tribute from "tributejs";
+import { PostWithAuthorAndComments } from "~/schema/drizzle-helper";
 
 type Props = {
-  posts: Post[];
+  posts: PostWithAuthorAndComments[];
   participants: any[];
 };
 
