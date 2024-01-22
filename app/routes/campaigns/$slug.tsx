@@ -175,29 +175,38 @@ export default function CampaignId() {
         setShowMap={setShowMap}
       />
 
-      <h1 className="m-6 font-bold">Instructions</h1>
-      <div>
-        <Markdown>{campaign.instructions}</Markdown>
-      </div>
+      <section id="instructions">
+        <h1 className="m-6 font-bold">Instructions</h1>
+        <div>
+          <Markdown>{campaign.instructions}</Markdown>
+        </div>
+      </section>
 
-      <h1 className="m-6 font-bold">Contributors</h1>
-      <div className="flex">
-        {campaign.participants.map((p) => {
-          return (
-            <HoverCard>
-              <HoverCardTrigger>
-                <Avatar className="hover:cursor-pointer">
-                  <AvatarImage src="" alt="avatar" />
-                  <AvatarFallback>
-                    {p.user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </HoverCardTrigger>
-              <HoverCardContent>{p.user.name}</HoverCardContent>
-            </HoverCard>
-          );
-        })}
-      </div>
+      <section id="contributors">
+        <h1 className="m-6 flex font-bold">
+          Contributors
+          <span className="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-sm">
+            {campaign.participants.length}
+          </span>
+        </h1>
+        <div className="flex">
+          {campaign.participants.map((p) => {
+            return (
+              <HoverCard>
+                <HoverCardTrigger>
+                  <Avatar className="hover:cursor-pointer">
+                    <AvatarImage src="" alt="avatar" />
+                    <AvatarFallback>
+                      {p.user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </HoverCardTrigger>
+                <HoverCardContent>{p.user.name}</HoverCardContent>
+              </HoverCard>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="flex w-full justify-center">
         <CampaignTable
