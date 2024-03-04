@@ -59,9 +59,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({ devices, user, profile, filteredDevices, phenomena });
+    return typedjson({  devices, user, profile, filteredDevices, phenomena });
   }
   return typedjson({
+    
     devices,
     user,
     profile: null,

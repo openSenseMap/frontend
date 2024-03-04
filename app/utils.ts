@@ -1,5 +1,5 @@
 import { useMatches } from "@remix-run/react";
-import { User } from "~/schema";
+import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
 
