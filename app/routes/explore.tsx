@@ -9,7 +9,7 @@ import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
-import { getDevicesWithSensors } from "~/models/device.server";
+import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source } from "react-map-gl";
 import { useState, useRef, useEffect } from "react";
@@ -41,16 +41,17 @@ export type DeviceClusterProperties =
     >;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const devices = await getDevicesWithSensors();
-  // const devices = await getDevices();
+  //* Get filter params
+  const url = new URL(request.url);
+  const filterParams = url.search;
+  const urlFilterParams = new URLSearchParams(url.search);
+
+  // check if sensors are queried - if not get devices only to reduce load
+  const devices = !urlFilterParams.get("phenomenon") ? await getDevices() : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;
 
-  //* Get filtered devices if filter params exist in url
-  const url = new URL(request.url);
-  const filterParams = url.search;
-  const urlFilterParams = new URLSearchParams(url.search);
   var filteredDevices = getFilteredDevices(devices, urlFilterParams);
 
   const user = await getUser(request);
@@ -58,10 +59,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({  devices, user, profile, filteredDevices, phenomena });
+    return typedjson({ devices, user, profile, filteredDevices, phenomena });
   }
   return typedjson({
-    
     devices,
     user,
     profile: null,
@@ -90,7 +90,6 @@ if (process.env.NODE_ENV === "production") {
 export default function Explore() {
   // data from our loader
   const data = useLoaderData<typeof loader>();
-  console.log(data.devices)
 
   const mapRef = useRef<MapRef | null>(null);
 
