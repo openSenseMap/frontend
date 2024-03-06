@@ -32,7 +32,9 @@ WORKDIR /myapp
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 ADD . .
 
-RUN npm run setup
+RUN npm run drizzle:generate
+RUN npm run drizzle:migrate
+RUN npm run drizzle:seed
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
