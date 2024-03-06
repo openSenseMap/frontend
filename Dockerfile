@@ -34,7 +34,6 @@ ADD . .
 
 RUN npm run drizzle:generate
 RUN npm run drizzle:migrate
-RUN npm run drizzle:seed
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
