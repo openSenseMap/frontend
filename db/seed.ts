@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import bcrypt from "bcryptjs";
@@ -11,12 +9,14 @@ import { user } from "../app/schema/user";
 import { measurement } from "../app/schema/measurement";
 import { password } from "../app/schema/password";
 import { profile } from "../app/schema/profile";
+import { envDBSchema } from "./env-schema";
 
-const connectionString = process.env.DATABASE_URL!;
+console.log(`🔌 setting up drizzle client to ${envDBSchema.DATABASE_URL}`);
 
-console.log(`🔌 setting up drizzle client to ${connectionString}`);
-
-const queryClient = postgres(connectionString);
+const queryClient = postgres(envDBSchema.DATABASE_URL, {
+  max: 1,
+  ssl: envDBSchema.PG_CLIENT_SSL,
+});
 const client = drizzle(queryClient);
 
 function printProgress(text: string) {
