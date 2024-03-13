@@ -1,10 +1,12 @@
-import "dotenv/config";
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
+import { envDBSchema } from "./env-schema";
 
-const migrationConnection = postgres(process.env.DATABASE_URL!, { max: 1 });
+const migrationConnection = postgres(envDBSchema.DATABASE_URL, {
+  max: 1,
+  ssl: envDBSchema.PG_CLIENT_SSL === "true" ? true : false,
+});
 
 async function main() {
   console.log("Migrations started...");
