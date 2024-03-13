@@ -15,7 +15,7 @@ console.log(`🔌 setting up drizzle client to ${envDBSchema.DATABASE_URL}`);
 
 const queryClient = postgres(envDBSchema.DATABASE_URL, {
   max: 1,
-  ssl: envDBSchema.PG_CLIENT_SSL,
+  ssl: envDBSchema.PG_CLIENT_SSL === "true" ? true : false,
 });
 const client = drizzle(queryClient);
 
