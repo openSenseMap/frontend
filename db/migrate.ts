@@ -5,7 +5,7 @@ import { envDBSchema } from "./env-schema";
 
 const migrationConnection = postgres(envDBSchema.DATABASE_URL, {
   max: 1,
-  ssl: envDBSchema.PG_CLIENT_SSL,
+  ssl: envDBSchema.PG_CLIENT_SSL === "true" ? true : false,
 });
 
 async function main() {
