@@ -121,8 +121,6 @@ export function getFilteredDevices(
     let results = devices.features.filter((device: any) => {
       // get list of sensors for device
       const sensorsList = device.properties.sensors?.map((s: any) => s.title);
-      console.log("🚀 ~ results ~ sensorsList:", sensorsList);
-      console.log("🚀 ~ results ~ filterParams.get(phenomenon):", filterParams.get("phenomenon"))
       return (
         // check if selected values match device attributes
         (!filterParams.get("exposure") ||

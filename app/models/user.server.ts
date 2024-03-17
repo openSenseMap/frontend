@@ -139,7 +139,6 @@ export async function verifyLogin(
       password: true,
     },
   });
-  console.log(userWithPassword);
 
   if (!userWithPassword || !userWithPassword.password) {
     return null;
