@@ -234,7 +234,6 @@ export default function () {
                   List of my Devices
                 </h2>
               </div>
-
               <div className="mx-auto py-3">
                 <DataTable columns={columns} data={user.devices} />
               </div>
