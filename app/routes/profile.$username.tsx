@@ -19,6 +19,8 @@ import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
 import ErrorMessage from "~/components/error-message";
+import { DataTable } from "~/components/mydevices/dt/data-table";
+import { columns } from "~/components/mydevices/dt/columns";
 
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -227,7 +229,7 @@ export default function () {
         ) : null}
         <div className="col-span-2">
           {/* show devices dashboard */}
-          {/* {user?.devices && (
+          {user?.devices && (
             <div className="py-8">
               <div>
                 <h2 className="text-2xl font-semibold leading-tight">
@@ -239,11 +241,11 @@ export default function () {
                 <DataTable columns={columns} data={user.devices} />
               </div>
             </div>
-          )} */}
-
+          )}
+          {/* do we still need this??? */}
           {/* {user && user.devices && (
             <DevicesDashboard devices={user.devices}></DevicesDashboard>
-          )} */}
+          )}  */}
         </div>
       </div>
     </div>

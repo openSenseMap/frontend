@@ -1,9 +1,18 @@
+/* eslint-disable react/jsx-no-undef */
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, ClipboardCopy } from "lucide-react";
+import { ArrowUpDown, ClipboardCopy, Ellipsis } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Device } from "~/schema";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 export type SenseBox = {
   id: string;
@@ -62,13 +71,13 @@ export const columns: ColumnDef<SenseBox>[] = [
   }, */
   {
     accessorKey: "id",
-    header: () => <div className="hidden">Sensebox ID</div>,
+    header: () => <div className="dark:text-white pl-0">Sensebox ID</div>,
     cell: ({ row }) => {
       const senseBox = row.original;
 
       return (
         // <div className="text-right font-medium">
-        <div className="hidden">
+        <div className="flex items-center">
           <code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
             {senseBox?.id}
             <button
@@ -76,57 +85,59 @@ export const columns: ColumnDef<SenseBox>[] = [
               onClick={() => {
                 navigator.clipboard.writeText(senseBox?.id);
               }}
-            >
-              <ClipboardCopy className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
-            </button>
+            ></button>
           </code>
+          <ClipboardCopy className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91] dark:text-white cursor-pointer" />
         </div>
       );
     },
   },
   {
     id: "actions",
-    header: () => <div className="text-center dark:text-white">Action</div>,
+    header: () => <div className="text-center dark:text-white">Actions</div>,
     cell: ({ row }) => {
       const senseBox = row.original;
 
       return (
-        // <div className="text-right font-medium">
-        <div className="text-right grid space-y-1">
-          <a
-            href={`/device/${senseBox.id}/overview`}
-            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
-          >
-            Overview
-          </a>
-          <a
-            href={`/explore/${senseBox.id}`}
-            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
-          >
-            Show on map
-          </a>
-          <a
-            href={`/device/${senseBox.id}/edit`}
-            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
-          >
-            Edit
-          </a>
-          <a
-            href={`/device/${senseBox.id}/dataupload`}
-            rel="noopener noreferrer"
-            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
-          >
-            Data upload
-          </a>
-          <a
-            href="https://sensebox.de/de/go-home"
-            target="_blank"
-            rel="noopener noreferrer"
-            className=" text-[15px] text-center border-[1px] rounded-sm p-1  hover:bg-[#e6e6e6] hover:text-[#333]"
-          >
-            Support
-          </a>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <Ellipsis className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <a href={`/device/${senseBox.id}/overview`}>Overview</a>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <a href={`/explore/${senseBox.id}`}>Show on map</a>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <a href={`/device/${senseBox.id}/edit`}>Edit</a>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <a href={`/device/${senseBox.id}/dataupload`}>Data upload</a>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <a
+                href="https://sensebox.de/de/go-home"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Support
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+              className="cursor-pointer"
+            >
+              Copy ID
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },
