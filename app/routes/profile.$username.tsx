@@ -22,7 +22,6 @@ import ErrorMessage from "~/components/error-message";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import { columns } from "~/components/mydevices/dt/columns";
 
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
 
@@ -63,21 +62,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         );
       }
 
+      const allBadges = await getAllBadges(authToken).then((allBadges) => {
+        return allBadges.result;
+      });
+
       if (!backpackData) {
         return json({
           success: false,
           userBackpack: [],
-          allBadges: [],
+          allBadges: allBadges,
           user: profile.user,
           profile: profile,
           requestingUserId: requestingUserId,
         });
       }
-
-      const allBadges = await getAllBadges(authToken).then((allBadges) => {
-        return allBadges.result;
-      });
-
       // Return the fetched data as JSON
       return json({
         success: true,
@@ -130,8 +128,6 @@ export default function () {
     }
   });
 
-
-
   return (
     <div className="grid grid-cols-3 gap-8">
       <div className="">
@@ -151,7 +147,7 @@ export default function () {
         <Separator className="my-6" />
         <div className="flex flex-col space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">Badges</h1>
-          <div className="grid grid-cols-4 gap-4 bg-white">
+          <div className="grid grid-cols-4 gap-4">
             {sortedBadges.map((badge: MyBadge, index: number) => {
               return (
                 <div key={index} className="col-span-1">
@@ -160,7 +156,7 @@ export default function () {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100">
+                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100 dark:bg-zinc-800">
                       <CardContent className="flex items-center justify-center p-0">
                         <img
                           src={badge.image}
@@ -236,7 +232,7 @@ export default function () {
                   List of my Devices
                 </h2>
               </div>
-              
+
               <div className="mx-auto py-3">
                 <DataTable columns={columns} data={user.devices} />
               </div>
