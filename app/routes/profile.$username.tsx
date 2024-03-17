@@ -13,7 +13,7 @@ import {
   getUserBackpack,
 } from "~/models/badge.server";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import { getInitials, getUserImgSrc } from "~/utils/misc";
+import { getInitials } from "~/utils/misc";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -134,10 +134,12 @@ export default function () {
         <div className="flex flex-col space-y-2">
           <Avatar className="h-64 w-64">
             <AvatarImage
-              src={getUserImgSrc(profile?.profileImage?.id)}
-              alt={profile?.username}
+              className="aspect-auto w-full h-full rounded-full object-cover"
+              src={"/resources/file/" + profile?.profileImage?.id}
             />
-            <AvatarFallback>{getInitials(user?.name || "")}</AvatarFallback>
+            <AvatarFallback>
+              {getInitials(profile?.username ?? "")}
+            </AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-semibold tracking-tight">
             {user?.name}

@@ -25,10 +25,13 @@ import { requireUserId } from "~/session.server";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";
-import { getUserImgSrc } from "~/utils/misc";
+import { getInitials } from "~/utils/misc";
 import ErrorMessage from "~/components/error-message";
 import { profileImage } from "~/schema";
 import { eq } from "drizzle-orm";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { getUserById } from "~/models/user.server";
+import { getProfileByUserId } from "~/models/profile.server";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
@@ -54,18 +57,14 @@ const PhotoFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const user = await drizzleClient.query.profile.findFirst({
-    where: (profile, { eq }) => eq(profile.userId, userId),
-    with: {
-      profileImage: true,
-    },
-  });
+  const user = await getUserById(userId);
+  const profile = await getProfileByUserId(userId);
   if (!user) {
     console.log("User not found");
     throw new Error();
     // throw await authenticator.logout(request, { redirectTo: "/" });
   }
-  return json({ user });
+  return json({ user, profile });
 }
 
 export async function action({ request }: DataFunctionArgs) {
@@ -149,11 +148,15 @@ export default function PhotoChooserModal() {
           onReset={() => setNewImageSrc(null)}
           {...form.props}
         >
-          <img
-            src={newImageSrc ?? getUserImgSrc(data.user.profileImage?.id)}
-            className="h-64 w-64 rounded-full"
-            alt={"test"}
-          />
+          <Avatar className="h-64 w-64">
+            <AvatarImage
+              className="aspect-auto w-full h-full rounded-full object-cover"
+              src={"/resources/file/" + data.profile?.profileImage?.id}
+            />
+            <AvatarFallback>
+              {getInitials(data.profile?.username ?? "")}
+            </AvatarFallback>
+          </Avatar>
           {/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
           <input
             {...conform.input(photoFile, { type: "file" })}
