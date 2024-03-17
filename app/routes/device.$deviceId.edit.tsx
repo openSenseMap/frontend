@@ -18,10 +18,10 @@ import {
   ArrowLeft,
   UploadCloud,
 } from "lucide-react";
-import Home from "~/components/header/home";
 import { Separator } from "~/components/ui/separator";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
 import ErrorMessage from "~/components/error-message";
+import { NavBar } from "~/components/nav-bar";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -29,7 +29,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
 
-  const deviceID = params.boxId;
+  const deviceID = params.deviceId;
 
   return json({ DevieID: deviceID });
 }
@@ -40,63 +40,60 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 //**********************************
-export default function EditBox2() {
+export default function EditBox() {
   //* Toast notification when device info is updated
   const [toastOpen, setToastOpen] = useState(false);
 
   // Get deviceId from route path
-  const { boxId } = useParams();
+  const { deviceId } = useParams();
 
   const sidebarNavItems = [
     {
       title: "General",
-      href: `/account/mydevices/${boxId}/edit/general`,
+      href: `/device/${deviceId}/edit/general`,
       icon: Sheet,
     },
     {
       title: "Sensors",
-      href: `/account/mydevices/${boxId}/edit/sensors`,
+      href: `/device/${deviceId}/edit/sensors`,
       icon: Cpu,
     },
     {
       title: "location",
-      href: `/account/mydevices/${boxId}/edit/location`,
+      href: `/device/${deviceId}/edit/location`,
       icon: MapPin,
     },
     {
       title: "security",
-      href: `/account/mydevices/${boxId}/edit/security`,
+      href: `/device/${deviceId}/edit/security`,
       icon: Lock,
     },
     {
       title: "script",
-      href: `/account/mydevices/${boxId}/edit/script`,
+      href: `/device/${deviceId}/edit/script`,
       icon: FileText,
     },
     {
       title: "mqtt",
-      href: `/account/mydevices/${boxId}/edit/mqtt`,
+      href: `/device/${deviceId}/edit/mqtt`,
       icon: Wifi,
     },
     {
       title: "ttn",
-      href: `/account/mydevices/${boxId}/edit/ttn`,
+      href: `/device/${deviceId}/edit/ttn`,
       icon: UploadCloud,
     },
     {
       title: "transfer",
-      href: `/account/mydevices/${boxId}/edit/transfer`,
+      href: `/device/${deviceId}/edit/transfer`,
       icon: ArrowRightLeft,
     },
   ];
 
   return (
-    <>
-      <div className="pointer-events-none z-10 flex h-14 w-full p-2">
-        <Home />
-      </div>
+    <div className="space-y-6 px-10 pb-16  font-helvetica">
+      <NavBar />
 
-      <div className="space-y-6 p-10 pb-14">
         {/*Toast notification */}
         <div className={toastOpen ? "mb-2" : ""}>
           <ToastPrimitive.Provider>
@@ -124,7 +121,7 @@ export default function EditBox2() {
                       {/* Account successfully deleted. */}
                       <div>
                         senseBox succesfully updated -
-                        <Link to={`/explore/${boxId}`}>
+                        <Link to={`/explore/${deviceId}`}>
                           {" "}
                           <span className="text-[#4eaf47] hover:underline">
                             view
@@ -146,7 +143,7 @@ export default function EditBox2() {
 
         <div className="rounded text-[#676767]">
           <ArrowLeft className=" mr-2 inline h-5 w-5" />
-          <Link to="/account/mydevices">Back to Dashboard</Link>
+          <Link to="/profile/me">Back to Dashboard</Link>
         </div>
 
         <div className="space-y-0.5">
@@ -164,7 +161,6 @@ export default function EditBox2() {
           </div>
         </div>
       </div>
-    </>
   );
 }
 

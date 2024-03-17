@@ -1,5 +1,5 @@
 import { useMatches } from "@remix-run/react";
-import { User } from "~/schema";
+import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
 
@@ -14,7 +14,7 @@ const DEFAULT_REDIRECT = "/";
  */
 export function safeRedirect(
   to: FormDataEntryValue | string | null | undefined,
-  defaultRedirect: string = DEFAULT_REDIRECT
+  defaultRedirect: string = DEFAULT_REDIRECT,
 ) {
   if (!to || typeof to !== "string") {
     return defaultRedirect;
@@ -34,12 +34,12 @@ export function safeRedirect(
  * @returns {JSON|undefined} The router data or undefined if not found
  */
 export function useMatchesData(
-  id: string
+  id: string,
 ): Record<string, unknown> | undefined {
   const matchingRoutes = useMatches();
   const route = useMemo(
     () => matchingRoutes.find((route) => route.id === id),
-    [matchingRoutes, id]
+    [matchingRoutes, id],
   );
 
   return route?.data as Record<string, unknown>;
@@ -61,7 +61,7 @@ export function useUser(): User {
   const maybeUser = useOptionalUser();
   if (!maybeUser) {
     throw new Error(
-      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
+      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead.",
     );
   }
   return maybeUser;
@@ -90,7 +90,7 @@ export function validateName(name: string) {
 //* validate passwords type (changePassword page)
 export function validatePassType(passwords: any) {
   const index = passwords.findIndex(
-    (password: any) => typeof password !== "string" || password.length === 0
+    (password: any) => typeof password !== "string" || password.length === 0,
   );
   return { isValid: index == -1 ? true : false, index: index };
 }
@@ -102,53 +102,54 @@ export function validatePassLength(passwords: any) {
 }
 
 /**
- * This function  is called when the user make a change on filter tab. It reaturns list of devices based on user selected filters.
+ * This function is called in the loader of /explore route. It return list of devices based on user selected filters.
 
  * @param devices all devices data
  * @param filterParams attributes and selected values
  */
-export function getFilteredDevices(devices: any, filterParams: URLSearchParams) {
-  // if a param is missing/undefined set it as ALL
-  const { exposure= "all", status= "all", phenomenon= "all" } = Object.fromEntries(
-    filterParams.entries()
-  );
-
-
-  let results: any = [];
-
-  if (exposure === "all" && status === "all" && phenomenon === "all") {
-    return devices;
+export function getFilteredDevices(
+  devices: any,
+  filterParams: URLSearchParams,
+) {
+  // check if any filter is selected
+  if (
+    filterParams.has("exposure") ||
+    filterParams.has("status") ||
+    filterParams.has("phenomenon")
+  ) {
+    // map through all devices and filter based on selected values
+    let results = devices.features.filter((device: any) => {
+      // get list of sensors for device
+      const sensorsList = device.properties.sensors?.map((s: any) => s.title);
+      return (
+        // check if selected values match device attributes
+        (!filterParams.get("exposure") ||
+          filterParams.get("exposure")?.toLowerCase() ===
+            device.properties.exposure.toLowerCase()) &&
+        (!filterParams.get("status") ||
+          filterParams.get("status")?.toLowerCase() ===
+            device.properties.status.toLowerCase()) &&
+        (!filterParams.get("phenomenon") ||
+          sensorsList.includes(filterParams.get("phenomenon")))
+      );
+    });
+    // return filtered devices
+    return {
+      type: "FeatureCollection",
+      features: results,
+    };
   } else {
-    for (let index = 0; index < devices.features.length; index++) {
-      const device = devices.features[index];
-      //* extract list of sensors titles
-      const sensorsList = device.properties.sensors.map((s: any) => {
-        return s.title;
-      });
-
-      if (
-        (exposure === "all" || exposure === device.properties.exposure) &&
-        (status === "all" || status === device.properties.status) &&
-        (phenomenon === "all" || sensorsList.includes(phenomenon))
-      ) {
-        results.push(device);
-      }
-
-      if (index === devices.features.length - 1) {
-        return {
-          type: "FeatureCollection",
-          features: results,
-        };
-      }
-    }
+    // return all devices
+    return {
+      type: "FeatureCollection",
+      features: devices.features,
+    };
   }
 }
 
 //* Get Minute Formatted String - last sensor measurement update
 export function getMinuteFormattedString(lastMeasurementAt: string) {
-  const secondsAgo = moment().diff(
-    moment(lastMeasurementAt),
-    "seconds");
+  const secondsAgo = moment().diff(moment(lastMeasurementAt), "seconds");
 
   if (secondsAgo === null || secondsAgo === undefined) {
     return "-";

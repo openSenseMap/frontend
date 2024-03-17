@@ -28,8 +28,8 @@ export function PhenomenonSelect() {
   // const [phenomenon, setPhenomenon] = useState<string | undefined>("all");
   const [searchParams, setSearchParams] = useSearchParams();
   const [phenomenonVal, setPhenomenonVal] = useState(
-    searchParams.has("mapPheno")
-      ? searchParams.get("mapPheno") || undefined
+    searchParams.has("phenomenon")
+      ? searchParams.get("phenomenon") || undefined
       : "all",
   );
   // const [seeMorePhenomena, setSeeMorePhenomena] = useState(false);
@@ -46,7 +46,7 @@ export function PhenomenonSelect() {
         value={phenomenonVal}
         onValueChange={(value) => {
           setPhenomenonVal(value);
-          searchParams.set("mapPheno", value);
+          searchParams.set("phenomenon", value);
           setSearchParams(searchParams);
         }}
       >
