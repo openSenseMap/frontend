@@ -1,10 +1,10 @@
-import type { Device } from "@prisma/client";
 import { useState, useEffect, useRef, createContext } from "react";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { SearchIcon, XIcon } from "lucide-react";
+import type { Device } from "~/schema";
 
 interface NavBarProps {
   devices: Device[];

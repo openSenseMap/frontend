@@ -8,8 +8,7 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import Graph from "./graph";
-import type { Prisma, Sensor } from "@prisma/client";
-import type { DeviceWithSensors } from "types";
+import type { LastMeasurement } from "types";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -55,6 +54,7 @@ import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isMobile, isTablet, isBrowser } from "react-device-detect";
 import { Label } from "../ui/label";
+import type { Device, Sensor } from "~/schema";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -62,7 +62,7 @@ export interface LastMeasurementProps {
 }
 
 export interface DeviceAndSelectedSensors {
-  device: DeviceWithSensors;
+  device: Device;
   selectedSensors: Sensor[];
 }
 
@@ -264,7 +264,7 @@ export default function DeviceDetailBox() {
                             {data.sensors.map((sensor: Sensor) => {
                               // dont really know why this is necessary - some kind of TypeScript/i18n bug?
                               const lastMeasurement =
-                                sensor.lastMeasurement as Prisma.JsonObject;
+                                sensor.lastMeasurement as LastMeasurement;
                               const value = lastMeasurement
                                 ? (lastMeasurement.value as string)
                                 : undefined;

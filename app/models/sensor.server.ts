@@ -1,70 +1,93 @@
-import type { Sensor } from "@prisma/client";
-import { prisma } from "~/db.server";
+import { eq } from "drizzle-orm";
+import { sensor, type Sensor } from "~/schema";
+import { drizzleClient } from "~/db.server";
+// import { point } from "@turf/helpers";
+// import type { Point } from "geojson";
 
-import { point } from "@turf/helpers";
-// import jsonstringify from "stringify-stream";
-// import streamify from "stream-array";
-import type { Point } from "geojson";
+export function getSensors(deviceId: Sensor["deviceId"]) {
+  return drizzleClient.query.sensor.findMany({
+    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
+  });
 
-export async function getSensors() {
-  // const opts = {
-  //   open: '{"type":"FeatureCollection","features":[',
-  //   close: "]}",
-  //   geoJsonStringifyReplacer,
+  // const geojson: GeoJSON.FeatureCollection<Point, any> = {
+  //   type: "FeatureCollection",
+  //   features: [],
   // };
 
-  const sensors = await prisma.sensor.findMany({
-    include: {
-      device: {
-        select: {
-          latitude: true,
-          longitude: true,
-        },
-      },
-    },
-  });
-  const geojson: GeoJSON.FeatureCollection<Point, any> = {
-    type: "FeatureCollection",
-    features: [],
-  };
+  // // return streamify(devices).pipe(jsonstringify(opts));
+  // for (const sensor of sensors) {
+  //   const coordinates = [sensor.device.longitude, sensor.device.latitude];
+  //   const feature = point(coordinates, sensor);
+  //   geojson.features.push(feature);
+  // }
 
-  // return streamify(devices).pipe(jsonstringify(opts));
-  for (const sensor of sensors) {
-    const coordinates = [sensor.device.longitude, sensor.device.latitude];
-    const feature = point(coordinates, sensor);
-    geojson.features.push(feature);
-  }
-
-  return sensors;
+  // return sensors;
 }
 
+// import jsonstringify from "stringify-stream";
+// import streamify from "stream-array";
+
+// export async function getSensors() {
+//   // const opts = {
+//   //   open: '{"type":"FeatureCollection","features":[',
+//   //   close: "]}",
+//   //   geoJsonStringifyReplacer,
+//   // };
+
+//   const sensors = await prisma.sensor.findMany({
+//     include: {
+//       device: {
+//         select: {
+//           latitude: true,
+//           longitude: true,
+//         },
+//       },
+//     },
+//   });
+//   const geojson: GeoJSON.FeatureCollection<Point, any> = {
+//     type: "FeatureCollection",
+//     features: [],
+//   };
+
+//   // return streamify(devices).pipe(jsonstringify(opts));
+//   for (const sensor of sensors) {
+//     const coordinates = [sensor.device.longitude, sensor.device.latitude];
+//     const feature = point(coordinates, sensor);
+//     geojson.features.push(feature);
+//   }
+
+//   return sensors;
+// }
+
+// FIXME: This is exactly the same as getSensorsForDevice!!!
 export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
-  return prisma.sensor.findMany({
-    where: { deviceId },
+  return drizzleClient.query.sensor.findMany({
+    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
   });
 }
 
 //if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
-export async function registerSensor(sensor: Sensor) {
-  const sensors = await prisma.sensor.create({
-    data: {
-      id: sensor.id,
-      deviceId: sensor.deviceId,
-      title: sensor.title,
-      sensorType: sensor.sensorType,
-      unit: sensor.unit,
-      sensorWikiType: sensor.sensorType,
-      sensorWikiUnit: sensor.unit,
-      sensorWikiPhenomenon: sensor.title,
-    },
-  });
+export async function registerSensor(newSensor: Sensor) {
+  const insertedSensor = await drizzleClient
+    .insert(sensor)
+    .values({
+      id: newSensor.id,
+      deviceId: newSensor.deviceId,
+      title: newSensor.title,
+      sensorType: newSensor.sensorType,
+      unit: newSensor.unit,
+      sensorWikiType: newSensor.sensorType,
+      sensorWikiUnit: newSensor.unit,
+      sensorWikiPhenomenon: newSensor.title,
+    })
+    .returning();
 
-  return sensors;
+  return insertedSensor;
 }
 
 export function getSensorsForDevice(deviceId: Sensor["deviceId"]) {
-  return prisma.sensor.findMany({
-    where: { deviceId },
+  return drizzleClient.query.sensor.findMany({
+    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
   });
 }
 
@@ -74,13 +97,11 @@ export function addNewSensor({
   sensorType,
   deviceId,
 }: Pick<Sensor, "title" | "unit" | "sensorType" | "deviceId">) {
-  return prisma.sensor.create({
-    data: {
-      title: title,
-      unit: unit,
-      sensorType: sensorType,
-      deviceId: deviceId,
-    },
+  return drizzleClient.insert(sensor).values({
+    title,
+    unit,
+    sensorType,
+    deviceId,
   });
 }
 
@@ -89,19 +110,18 @@ export function updateSensor({
   title,
   unit,
   sensorType,
-  icon,
-}: Pick<Sensor, "id" | "title" | "unit" | "sensorType" | "icon">) {
-  return prisma.sensor.update({
-    data: {
-      title: title,
-      unit: unit,
-      sensorType: sensorType,
-      icon: icon,
-    },
-    where: { id },
-  });
+} // icon,
+: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
+  return drizzleClient
+    .update(sensor)
+    .set({
+      title,
+      unit,
+      sensorType,
+    })
+    .where(eq(sensor.id, id));
 }
 
 export function deleteSensor(id: Sensor["id"]) {
-  return prisma.sensor.delete({ where: { id } });
+  return drizzleClient.delete(sensor).where(eq(sensor.id, id));
 }

@@ -12,8 +12,8 @@ import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
-import { prisma } from "~/db.server";
-import { getUserImgSrc } from "~/utils/misc";
+import { drizzleClient } from "~/db.server";
+import { getInitials } from "~/utils/misc";
 import { z } from "zod";
 import { nameSchema } from "~/utils/user-validation";
 import { getFieldsetConstraint, parse } from "@conform-to/zod";
@@ -21,6 +21,10 @@ import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import ErrorMessage from "~/components/error-message";
+import { profile } from "~/schema";
+import { eq } from "drizzle-orm";
+import { getProfileByUserId } from "~/models/profile.server";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 const profileFormSchema = z.object({
   username: nameSchema.optional(),
@@ -29,15 +33,7 @@ const profileFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const profile = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: {
-      id: true,
-      username: true,
-      public: true,
-      imageId: true,
-    },
-  });
+  const profile = await getProfileByUserId(userId);
   if (!profile) {
     // throw await authenticator.logout(request, { redirectTo: "/" });
     throw new Error();
@@ -86,14 +82,13 @@ export async function action({ request }: ActionFunctionArgs) {
   }
   const { username, visibility } = submission.value;
 
-  await prisma.profile.update({
-    select: { userId: true, username: true },
-    where: { userId: userId },
-    data: {
+  await drizzleClient
+    .update(profile)
+    .set({
       username,
       public: visibility,
-    },
-  });
+    })
+    .where(eq(profile.userId, userId));
 
   return redirect(`/settings/profile`);
 }
@@ -164,11 +159,15 @@ export default function EditUserProfilePage() {
         </Form>
         <div className="flex w-1/2 justify-center">
           <div className="relative h-52 w-52">
-            <img
-              src={getUserImgSrc(data.profile.imageId)}
-              alt={data.profile.username}
-              className="h-full w-full rounded-full object-cover"
-            />
+            <Avatar className="h-full w-full">
+              <AvatarImage
+                className="aspect-auto w-full h-full rounded-full object-cover"
+                src={"/resources/file/" + data.profile.profileImage?.id}
+              />
+              <AvatarFallback>
+                {getInitials(data.profile?.username ?? "")}
+              </AvatarFallback>
+            </Avatar>
             <Link
               preventScrollReset
               to="photo"
@@ -176,7 +175,9 @@ export default function EditUserProfilePage() {
               title="Change profile photo"
               aria-label="Change profile photo"
             >
-              📷
+              {/* TODO: Make this lucide pencil icon work */}
+              {/* <Pencil /> */}
+              &#x270E;
             </Link>
           </div>
         </div>

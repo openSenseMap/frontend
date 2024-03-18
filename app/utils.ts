@@ -1,8 +1,7 @@
 import { useMatches } from "@remix-run/react";
+import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
-
-import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -121,7 +120,7 @@ export function getFilteredDevices(
     // map through all devices and filter based on selected values
     let results = devices.features.filter((device: any) => {
       // get list of sensors for device
-      const sensorsList = device.properties.sensors.map((s: any) => s.title);
+      const sensorsList = device.properties.sensors?.map((s: any) => s.title);
       return (
         // check if selected values match device attributes
         (!filterParams.get("exposure") ||
@@ -150,9 +149,7 @@ export function getFilteredDevices(
 
 //* Get Minute Formatted String - last sensor measurement update
 export function getMinuteFormattedString(lastMeasurementAt: string) {
-  const secondsAgo = moment().diff(
-    moment(lastMeasurementAt),
-    "seconds");
+  const secondsAgo = moment().diff(moment(lastMeasurementAt), "seconds");
 
   if (secondsAgo === null || secondsAgo === undefined) {
     return "-";

@@ -22,7 +22,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
-  console.log("actions");
 
   const formData = await request.formData();
   const { enableMQTTcb, mqttURL, mqttTopic } = Object.fromEntries(formData);

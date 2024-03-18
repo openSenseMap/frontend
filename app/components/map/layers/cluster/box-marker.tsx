@@ -1,5 +1,4 @@
-import type { Device } from "@prisma/client";
-import { Exposure } from "@prisma/client";
+import type { Device } from "~/schema";
 import { useMatches, useNavigate } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, Rocket } from "lucide-react";
@@ -14,12 +13,12 @@ interface BoxMarkerProps extends MarkerProps {
 }
 
 const getStatusColor = (device: Device) => {
-  if (device.status === "ACTIVE") {
-    if (device.exposure === Exposure.MOBILE) {
+  if (device.status === "active") {
+    if (device.exposure === "mobile") {
       return "bg-blue-100";
     }
     return "bg-green-100";
-  } else if (device.status === "INACTIVE") {
+  } else if (device.status === "inactive") {
     return "bg-gray-100";
   } else {
     return "bg-gray-100 opacity-50";
@@ -42,10 +41,10 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
       return 30;
     }
     // priority to active devices
-    if (device.status === "ACTIVE") {
+    if (device.status === "active") {
       return 20;
     }
-    if (device.status === "INACTIVE") {
+    if (device.status === "inactive") {
       return 10;
     }
 
@@ -84,12 +83,12 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
               isFullZoom && `${getStatusColor(device)} p-1`
             )}
           >
-            {device.exposure === Exposure.MOBILE ? (
+            {device.exposure === "mobile" ? (
               <Rocket className="text-black h-4 w-4" />
             ) : (
               <Box className="text-black h-4 w-4" />
             )}
-            {isFullZoom && device.status === "ACTIVE" ? (
+            {isFullZoom && device.status === "active" ? (
               <div
                 className={cn(
                   "absolute left-0 top-0 h-full w-full animate-ping rounded-full opacity-50",

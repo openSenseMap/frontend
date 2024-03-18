@@ -1,4 +1,4 @@
-import { Exposure, type Sensor } from "@prisma/client";
+import { type Sensor } from "~/schema";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
@@ -98,7 +98,7 @@ export default function DeviceId() {
   return (
     <>
       {/* If the box is mobile, iterate over selected sensors and show trajectory */}
-      {data.device.exposure === Exposure.MOBILE ? (
+      {data.device.exposure === "mobile" ? (
         <MobileBoxView sensors={data.selectedSensors} />
       ) : null}
       <DeviceDetailBox />
