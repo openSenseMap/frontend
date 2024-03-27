@@ -6,7 +6,7 @@ import Features from "~/components/landing/features";
 import Footer from "~/components/landing/footer";
 import Header from "~/components/landing/header";
 import Partners from "~/components/landing/partners";
-import Stats from "~/components/landing/stats";
+import Stats, { type StatsProps } from "~/components/landing/stats";
 import Tools from "~/components/landing/tools";
 import UseCases from "~/components/landing/use-cases";
 import i18next from "~/i18next.server";
@@ -16,6 +16,9 @@ import { getUserId, getUserName } from "~/session.server";
 import { useTranslation } from "react-i18next";
 import Donate from "~/components/landing/donate";
 import PricingPlans from "~/components/landing/pricing-plans";
+import { countDevices } from "~/models/device.server";
+import { countMeasurements } from "~/models/measurement.server";
+import { countSensors } from "~/models/sensor.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   let locale = await i18next.getLocale(request);
@@ -42,6 +45,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   //* Get user Id from session
   const userId = await getUserId(request);
   const userName = await getUserName(request);
+  // get stats
+  const deviceCount = await countDevices();
+  const measurementCount = await countMeasurements();
+  const sensorCount = await countSensors();
+
+  const stats: StatsProps["stats"] = [
+    {
+      id: 1,
+      name: "devices",
+      value: deviceCount,
+      unit: "",
+    },
+    {
+      id: 2,
+      name: "measurements_total",
+      value: measurementCount,
+      unit: "",
+    },
+    {
+      id: 3,
+      name: "Sensors",
+      value: sensorCount,
+      unit: "",
+    },
+  ];
 
   return json({
     useCases: useCasesResponse.data,
@@ -49,14 +77,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     partners: partnersResponse.data,
     header: { userId: userId, userName: userName },
     locale: locale,
+    stats: stats,
   });
 };
 
 export default function Index() {
-  const { useCases, features, partners } = useLoaderData<{
+  const { useCases, features, partners, stats } = useLoaderData<{
     useCases: UseCase[];
     features: Feature[];
     partners: Partner[];
+    stats: {
+      id: number;
+      name: string;
+      value: number;
+      unit: string;
+    }[];
   }>();
 
   const { t } = useTranslation("landing");
@@ -152,7 +187,7 @@ export default function Index() {
                 <div className="-mx-4 h-[448px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:-bottom-20 lg:-top-10 lg:h-auto lg:px-0 lg:pt-10 xl:-bottom-32"></div>
               </div>
               <div className="relative -mt-4 lg:col-span-7 lg:mt-0 xl:col-span-6">
-                <Stats />
+                <Stats stats={stats} />
               </div>
             </div>
           </div>

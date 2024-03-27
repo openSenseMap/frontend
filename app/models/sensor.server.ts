@@ -1,8 +1,15 @@
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { sensor, type Sensor } from "~/schema";
 import { drizzleClient } from "~/db.server";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
+
+export async function countSensors() {
+  const sensorCount = await drizzleClient
+    .select({ count: count() })
+    .from(sensor);
+  return sensorCount[0].count;
+}
 
 export function getSensors(deviceId: Sensor["deviceId"]) {
   return drizzleClient.query.sensor.findMany({
@@ -109,9 +116,8 @@ export function updateSensor({
   id,
   title,
   unit,
-  sensorType,
-} // icon,
-: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
+  sensorType, // icon,
+}: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
   return drizzleClient
     .update(sensor)
     .set({
