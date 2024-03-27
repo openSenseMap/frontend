@@ -1,5 +1,4 @@
 import { Link } from "@remix-run/react";
-import Stats from "./stats";
 
 export default function Preview() {
   return (
@@ -35,9 +34,6 @@ export default function Preview() {
           alt="osem_screenshot"
           className="h-full rounded-l-full"
         />
-      </div>
-      <div className="flex">
-        <Stats></Stats>
       </div>
     </div>
   );
