@@ -162,7 +162,7 @@
     "@types/geojson": "^7946.0.12",
     "@types/lodash.debounce": "^4.0.7",
     "@types/mapbox__mapbox-gl-geocoder": "^4.7.4",
-    "@types/morgan": "^1.9.4",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^18.17.6",
     "@types/node-fetch": "^2.6.4",
     "@types/react": "^18.2.20",
