@@ -126,11 +126,11 @@ export function App() {
         <Toaster />
         <ScrollRestoration />
         <Scripts />
-        {/* <script
+        <script
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
           }}
-        /> */}
+        />
         <LiveReload />
       </body>
     </html>

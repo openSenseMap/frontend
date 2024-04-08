@@ -37,7 +37,7 @@ export default function Partners({ data }: PartnersProps) {
                 className="p-8 w-48 md:w-64"
               >
                 <img
-                  src={`https://coelho.opensensemap.org/assets/${partner.logo}`}
+                  src={`${ENV.DIRECTUS_URL}/assets/${partner.logo}`}
                   alt={partner.name}
                 ></img>
               </motion.div>
