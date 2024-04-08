@@ -2,34 +2,34 @@ import { motion } from "framer-motion";
 import AnimatedCounter from "../ui/animated-counter";
 import { useTranslation } from "react-i18next";
 
-const stats = [
-  {
-    id: 1,
-    name: "devices",
-    value: 11,
-    unit: "K",
-  },
-  {
-    id: 2,
-    name: "measurements_total",
-    value: 1148,
-    unit: "Mio.",
-  },
-  {
-    id: 3,
-    name: "measurements_per_minute",
-    value: 9,
-    unit: "K",
-  },
-];
-
-export default function Stats() {
+export default function Stats(stats: number[]) {
   const { t } = useTranslation("stats");
+
+  const osemStats = [
+    {
+      id: 1,
+      name: "devices",
+      value: stats[0] / 1000,
+      unit: "K",
+    },
+    {
+      id: 2,
+      name: "measurements_total",
+      value: stats[1] / 1000000,
+      unit: "Mio.",
+    },
+    {
+      id: 3,
+      name: "measurements_per_minute",
+      value: stats[2] / 1000,
+      unit: "K",
+    },
+  ];
 
   return (
     <div className="mx-auto px-4 py-16 sm:max-w-xl md:max-w-full md:px-24 lg:max-w-screen-xl lg:px-8 lg:py-24">
       <div className="row-gap-8 grid gap-10 lg:grid-cols-3">
-        {stats.map((stat) => (
+        {osemStats.map((stat) => (
           <div key={stat.id}>
             <motion.div
               initial="hidden"

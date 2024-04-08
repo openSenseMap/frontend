@@ -43,20 +43,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
   const userName = await getUserName(request);
 
+  const stats = await fetch("https://api.opensensemap.org/stats").then(
+    (res) => {
+      return res.json();
+    },
+  );
+
   return json({
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
     partners: partnersResponse.data,
+    stats: stats,
     header: { userId: userId, userName: userName },
     locale: locale,
   });
 };
 
 export default function Index() {
-  const { useCases, features, partners } = useLoaderData<{
+  const { useCases, features, partners, stats } = useLoaderData<{
     useCases: UseCase[];
     features: Feature[];
     partners: Partner[];
+    stats: number[];
   }>();
 
   const { t } = useTranslation("landing");
@@ -152,7 +160,7 @@ export default function Index() {
                 <div className="-mx-4 h-[448px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:-bottom-20 lg:-top-10 lg:h-auto lg:px-0 lg:pt-10 xl:-bottom-32"></div>
               </div>
               <div className="relative -mt-4 lg:col-span-7 lg:mt-0 xl:col-span-6">
-                <Stats />
+                <Stats {...stats} />
               </div>
             </div>
           </div>
