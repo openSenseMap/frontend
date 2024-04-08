@@ -5,8 +5,8 @@ import {
 } from "@novu/notification-center";
 import type { IMessage } from "@novu/notification-center";
 import { useLoaderData } from "@remix-run/react";
+import { useTheme } from "remix-themes";
 import type { loader } from "~/root";
-import { useTheme } from "~/utils/theme-provider";
 
 function onNotificationClick(message: IMessage) {
   if (message?.cta?.data?.url) {

@@ -3,6 +3,7 @@ import type { User } from "~/schema";
 import invariant from "tiny-invariant";
 
 import { getUserById } from "~/models/user.server";
+import { createThemeSessionResolver } from "remix-themes";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -16,6 +17,25 @@ export const sessionStorage = createCookieSessionStorage({
     secure: process.env.NODE_ENV === "production",
   },
 });
+
+// You can default to 'development' if process.env.NODE_ENV is not set
+const isProduction = process.env.NODE_ENV === "production"
+ 
+const themeSessionStorage = createCookieSessionStorage({
+  cookie: {
+    name: "theme",
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secrets: ["s3cr3t"],
+    // Set domain and secure only if in production
+    ...(isProduction
+      ? { domain: "magellan.testing.opensensemap.org", secure: true }
+      : {}),
+  },
+})
+ 
+export const themeSessionResolver = createThemeSessionResolver(themeSessionStorage)
 
 const USER_SESSION_KEY = "userId";
 

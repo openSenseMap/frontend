@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { useState } from "react";
 import LanguageSelector from "./language-selector";
-import ThemeSelector from "./theme-selector";
+import { ThemeSelector } from "./theme-selector";
 
 const links = [
   {
@@ -69,7 +69,7 @@ export default function Header() {
           </div>
         </div>
         <div>
-          <div className="flex items-center justify-center md:order-2">
+          <div className="flex items-center justify-center md:order-2 gap-2">
             {/* Theme */}
             <ThemeSelector />
             {/* Language */}
