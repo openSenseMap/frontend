@@ -14,7 +14,7 @@ import type { Feature, Partner, UseCase } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 import { getUserId, getUserName } from "~/session.server";
 import { useTranslation } from "react-i18next";
-import Donate from "~/components/landing/donate";
+// import Donate from "~/components/landing/donate";
 import PricingPlans from "~/components/landing/pricing-plans";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -191,11 +191,11 @@ export default function Index() {
           <Partners data={partners} />
         </div>
       </section>
-      <section className="py-20 sm:py-20">
+      {/* <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Donate />
         </div>
-      </section>
+      </section> */}
       <footer className="">
         <Footer />
       </footer>
