@@ -130,7 +130,7 @@
     "remix-validated-form": "^5.0.2",
     "shadcn-ui": "^0.4.0",
     "source-map-support": "^0.5.21",
-    "spin-delay": "^1.2.0",
+    "spin-delay": "^2.0.0",
     "stream-array": "^1.1.2",
     "stringify-stream": "^1.0.5",
     "supercluster": "^8.0.1",
