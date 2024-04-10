@@ -7,6 +7,8 @@ import { createThemeSessionResolver } from "remix-themes";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "__session",
@@ -14,13 +16,10 @@ export const sessionStorage = createCookieSessionStorage({
     path: "/",
     sameSite: "lax",
     secrets: [process.env.SESSION_SECRET],
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
   },
 });
 
-// You can default to 'development' if process.env.NODE_ENV is not set
-const isProduction = process.env.NODE_ENV === "production"
- 
 const themeSessionStorage = createCookieSessionStorage({
   cookie: {
     name: "theme",
@@ -28,14 +27,12 @@ const themeSessionStorage = createCookieSessionStorage({
     httpOnly: true,
     sameSite: "lax",
     secrets: ["s3cr3t"],
-    // Set domain and secure only if in production
-    ...(isProduction
-      ? { domain: "magellan.testing.opensensemap.org", secure: true }
-      : {}),
+    secure: isProduction,
   },
-})
- 
-export const themeSessionResolver = createThemeSessionResolver(themeSessionStorage)
+});
+
+export const themeSessionResolver =
+  createThemeSessionResolver(themeSessionStorage);
 
 const USER_SESSION_KEY = "userId";
 
@@ -45,7 +42,7 @@ export async function getUserSession(request: Request) {
 }
 
 export async function getUserId(
-  request: Request
+  request: Request,
 ): Promise<User["id"] | undefined> {
   const session = await getUserSession(request);
   const userId = session.get(USER_SESSION_KEY);
@@ -84,7 +81,7 @@ export async function getUser(request: Request) {
 
 export async function requireUserId(
   request: Request,
-  redirectTo: string = new URL(request.url).pathname
+  redirectTo: string = new URL(request.url).pathname,
 ) {
   const userId = await getUserId(request);
   if (!userId) {
@@ -116,7 +113,7 @@ export async function createUserSession({
 }) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
-  session.flash("global_message", "You successfully logged in.")
+  session.flash("global_message", "You successfully logged in.");
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -137,7 +134,7 @@ export async function logout({
 }) {
   const session = await getUserSession(request);
   session.unset(USER_SESSION_KEY);
-  session.flash("global_message", "You successfully logged out.")
+  session.flash("global_message", "You successfully logged out.");
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session),
