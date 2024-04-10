@@ -15,18 +15,22 @@ export const sessionStorage = createCookieSessionStorage({
     httpOnly: true,
     path: "/",
     sameSite: "lax",
-    secrets: [process.env.SESSION_SECRET],
+    secrets: process.env.SESSION_SECRET
+      ? [process.env.SESSION_SECRET]
+      : ["s3cr3t"],
     secure: isProduction,
   },
 });
 
-const themeSessionStorage = createCookieSessionStorage({
+export const themeSessionStorage = createCookieSessionStorage({
   cookie: {
     name: "theme",
     path: "/",
     httpOnly: true,
     sameSite: "lax",
-    secrets: ["s3cr3t"],
+    secrets: process.env.SESSION_SECRET
+      ? [process.env.SESSION_SECRET]
+      : ["s3cr3t"],
     secure: isProduction,
   },
 });
