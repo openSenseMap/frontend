@@ -1,7 +1,7 @@
 import type { MapProps, MapRef } from "react-map-gl";
 import { NavigationControl, Map as ReactMap } from "react-map-gl";
 import { forwardRef } from "react";
-import { useTheme } from "~/utils/theme-provider";
+import { useTheme } from "remix-themes";
 
 const Map = forwardRef<MapRef, MapProps>(
   (

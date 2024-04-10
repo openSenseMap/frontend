@@ -36,7 +36,6 @@ import {
 import { datesHave48HourRange } from "~/lib/utils";
 import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 import { isBrowser, isTablet } from "react-device-detect";
-import { useTheme } from "~/utils/theme-provider";
 import {
   Select,
   SelectContent,
@@ -45,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useTheme } from "remix-themes";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(

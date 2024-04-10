@@ -1,30 +1,33 @@
-import { Theme, useTheme } from "~/utils/theme-provider";
 import { Moon, Sun } from "lucide-react";
+import { Theme, useTheme } from "remix-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 
-export default function ThemeSelector() {
-  // Get the current theme from the `ThemeProvider` component.
-  // This will be used to determine which icon to render.
-  const [theme, setTheme] = useTheme();
+export function ThemeSelector() {
+  const [, setTheme] = useTheme();
 
-  // Create a function to toggle the theme.
-  // This function will set the theme to the opposite of the current theme.
-  const toggleTheme = () => {
-    setTheme((prevTheme) =>
-      prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
-    );
-  };
-
-  // Return a `div` element with a button that toggles the theme.
-  // The button will render the `MoonIcon` or the `SunIcon` depending on the current theme.
   return (
-    <div className="flex items-center justify-center pr-8">
-      <button onClick={toggleTheme}>
-        {theme === "light" ? (
-          <Moon className="h-6 w-6 text-gray-300 lg:h-8 lg:w-8" />
-        ) : (
-          <Sun className="h-6 w-6 text-white lg:h-8 lg:w-8" />
-        )}
-      </button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 dark:text-white dark:hover:text-black" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 dark:text-white dark:hover:text-black" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme(Theme.LIGHT)}>
+          Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme(Theme.DARK)}>
+          Dark
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

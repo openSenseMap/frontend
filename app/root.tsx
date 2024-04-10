@@ -14,21 +14,16 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
-import { getUser } from "./session.server";
+import { getUser, themeSessionResolver } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import appStylesheetUrl from "./styles/app.css";
-import {
-  NonFlashOfWrongThemeEls,
-  ThemeProvider,
-  useTheme,
-} from "./utils/theme-provider";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
-import { getThemeSession } from "./utils/theme.server";
+import { ThemeProvider, useTheme } from "remix-themes";
 
 export const links: LinksFunction = () => {
   return [
@@ -75,17 +70,18 @@ export const meta: MetaFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
   const user = await getUser(request);
-  const themeSession = await getThemeSession(request);
+  // const themeSession = await getThemeSession(request);
+  const { getTheme } = await themeSessionResolver(request);
   return json(
     {
       user: user,
       locale: locale,
       ENV: getEnv(),
-      theme: themeSession.getTheme(),
+      theme: getTheme(),
     },
     {
       headers: { "Set-Cookie": await i18nCookie.serialize(locale) },
-    }
+    },
   );
 }
 
@@ -97,7 +93,17 @@ export let handle = {
   i18n: "common",
 };
 
-function App() {
+export default function AppWithProviders() {
+  const data = useLoaderData<typeof loader>();
+
+  return (
+    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
+      <App />
+    </ThemeProvider>
+  );
+}
+
+export function App() {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
 
@@ -114,7 +120,6 @@ function App() {
       <head>
         <Meta />
         <Links />
-        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body className="flex h-full flex-col">
         <Outlet />
@@ -129,15 +134,5 @@ function App() {
         <LiveReload />
       </body>
     </html>
-  );
-}
-
-export default function AppWithProviders() {
-  const data = useLoaderData<typeof loader>();
-
-  return (
-    <ThemeProvider specifiedTheme={data.theme}>
-      <App />
-    </ThemeProvider>
   );
 }

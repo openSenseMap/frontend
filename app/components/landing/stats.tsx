@@ -50,7 +50,7 @@ export default function Stats(stats: number[]) {
                     {stat.unit}
                   </h6>
                 </div>
-                <p className="font-bold">{t(stat.name)}</p>
+                <p className="font-bold dark:text-white">{t(stat.name)}</p>
               </div>
             </motion.div>
           </div>
