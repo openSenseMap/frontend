@@ -28,6 +28,7 @@ const Map = forwardRef<MapRef, MapProps>(
         mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
         pitchWithRotate={false}
         preserveDrawingBuffer
+        hash={true}
         ref={ref}
         style={{
           width: "100%",
