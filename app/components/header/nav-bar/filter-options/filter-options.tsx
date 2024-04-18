@@ -1,11 +1,4 @@
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   useSearchParams,
   useNavigation,
   useLoaderData,
@@ -16,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
 import type { loader } from "~/routes/explore";
+import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 
 export default function FilterOptions() {
   const data = useLoaderData<typeof loader>();
@@ -30,9 +24,7 @@ export default function FilterOptions() {
   const [statusVal, setStatusVal] = useState(
     searchParams.get("status") ?? null,
   );
-  const [, setPhenomenonVal] = useState(
-    searchParams.get("phenomenon") ?? null,
-  );
+  const [, setPhenomenonVal] = useState(searchParams.get("phenomenon") ?? null);
 
   //* Update filter params based on url Search Params
   useEffect(() => {
@@ -49,12 +41,15 @@ export default function FilterOptions() {
           <Spinner />
         </div>
       )}
-      <div className="space-y-2">
-        <div className="space-y-[2px]">
+      <div className="space-y-4">
+        <div className="space-y-[2px] flex items-center justify-between">
           <Label className="text-base">Exposure: </Label>
-          &nbsp;
-          <Select
-            value={exposureVal ?? undefined}
+          <ToggleGroup
+            className="w-full"
+            type="single"
+            variant="outline"
+            defaultValue="all"
+            value={exposureVal ?? "all"}
             onValueChange={(value) => {
               if (value === "all") {
                 searchParams.delete("exposure");
@@ -64,23 +59,28 @@ export default function FilterOptions() {
               setSearchParams(searchParams);
             }}
           >
-            <SelectTrigger className="h-6 w-full border-4 text-base dark:border-zinc-800">
-              <SelectValue className="h-6">{exposureVal ?? "---"}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">all</SelectItem>
-              <SelectItem value="indoor">indoor</SelectItem>
-              <SelectItem value="outdoor">outdoor</SelectItem>
-              <SelectItem value="mobile">mobile</SelectItem>
-              <SelectItem value="unknown">unknown</SelectItem>
-            </SelectContent>
-          </Select>
+            <ToggleGroupItem value="all" aria-label="Toggle all">
+              all
+            </ToggleGroupItem>
+            <ToggleGroupItem value="indoor" aria-label="Toggle indoor">
+              indoor
+            </ToggleGroupItem>
+            <ToggleGroupItem value="outdoor" aria-label="Toggle outdoor">
+              outdoor
+            </ToggleGroupItem>
+            <ToggleGroupItem value="mobile" aria-label="Toggle mobile">
+              mobile
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        <div className="space-y-[2px]">
+        <div className="space-y-[2px] flex items-center justify-between">
           <Label className="text-base">Status: </Label>
-          &nbsp;
-          <Select
-            value={statusVal ?? undefined}
+          <ToggleGroup
+            className="w-full"
+            type="single"
+            variant="outline"
+            defaultValue="all"
+            value={statusVal ?? "all"}
             onValueChange={(value) => {
               if (value === "all") {
                 searchParams.delete("status");
@@ -90,16 +90,19 @@ export default function FilterOptions() {
               setSearchParams(searchParams);
             }}
           >
-            <SelectTrigger className="h-6 w-full text-base">
-              <SelectValue className="h-6">{statusVal ?? "---"}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">all</SelectItem>
-              <SelectItem value="active">active</SelectItem>
-              <SelectItem value="inactive">inactive</SelectItem>
-              <SelectItem value="old">old</SelectItem>
-            </SelectContent>
-          </Select>
+            <ToggleGroupItem value="all" aria-label="Toggle all">
+              all
+            </ToggleGroupItem>
+            <ToggleGroupItem value="active" aria-label="Toggle indoor">
+              active
+            </ToggleGroupItem>
+            <ToggleGroupItem value="inactive" aria-label="Toggle outdoor">
+              inactive
+            </ToggleGroupItem>
+            <ToggleGroupItem value="old" aria-label="Toggle mobile">
+              old
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
       </div>
       <div className="flex justify-between">
