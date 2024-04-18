@@ -90,6 +90,8 @@
     "date-fns": "^2.29.3",
     "drizzle-kit": "^0.20.14",
     "drizzle-orm": "^0.29.4",
+    "embla-carousel-autoplay": "^8.0.2",
+    "embla-carousel-react": "^8.0.2",
     "express": "^4.18.2",
     "express-prometheus-middleware": "^1.2.0",
     "file-saver": "^2.0.5",
