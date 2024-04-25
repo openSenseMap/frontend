@@ -50,8 +50,10 @@ export default function FilterOptions() {
             variant="outline"
             defaultValue="all"
             value={exposureVal ?? "all"}
-            onValueChange={(value) => {
+            onValueChange={(value: string) => {
               if (value === "all") {
+                searchParams.delete("exposure");
+              } else if (value === "") {
                 searchParams.delete("exposure");
               } else {
                 searchParams.set("exposure", value);
@@ -81,8 +83,10 @@ export default function FilterOptions() {
             variant="outline"
             defaultValue="all"
             value={statusVal ?? "all"}
-            onValueChange={(value) => {
+            onValueChange={(value: string) => {
               if (value === "all") {
+                searchParams.delete("status");
+              } else if (value === "") {
                 searchParams.delete("status");
               } else {
                 searchParams.set("status", value);
