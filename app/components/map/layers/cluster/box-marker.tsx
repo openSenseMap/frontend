@@ -1,5 +1,5 @@
 import type { Device } from "~/schema";
-import { useMatches, useNavigate } from "@remix-run/react";
+import { useMatches, useNavigate, useSearchParams } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, Rocket } from "lucide-react";
 import { useState } from "react";
@@ -34,6 +34,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
   const isFullZoom = osem && osem?.getZoom() >= 14;
 
   const [isHovered, setIsHovered] = useState(false);
+  const [searchParams] = useSearchParams();
 
   // calculate zIndex based on device status and hover
   const getZIndex = () => {
@@ -62,17 +63,20 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
         <motion.div
           className={cn(
             "group absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow hover:z-10 hover:shadow-lg",
-            isFullZoom ? "-left-4 -top-4" : "-left-[10px] -top-[10px]"
+            isFullZoom ? "-left-4 -top-4" : "-left-[10px] -top-[10px]",
           )}
           onClick={() => {
             if (compareMode) {
               navigate(
-                `/explore/${matches[2].params.deviceId}/compare/${device.id}`
+                `/explore/${matches[2].params.deviceId}/compare/${device.id}`,
               );
               setCompareMode(false);
               return;
             }
-            navigate(`${device.id}`);
+            navigate({
+              pathname: `${device.id}`,
+              search: searchParams.toString(),
+            });
           }}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
@@ -80,7 +84,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           <span
             className={cn(
               "relative rounded-full transition-colors",
-              isFullZoom && `${getStatusColor(device)} p-1`
+              isFullZoom && `${getStatusColor(device)} p-1`,
             )}
           >
             {device.exposure === "mobile" ? (
@@ -92,7 +96,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
               <div
                 className={cn(
                   "absolute left-0 top-0 h-full w-full animate-ping rounded-full opacity-50",
-                  getStatusColor(device)
+                  getStatusColor(device),
                 )}
               />
             ) : null}

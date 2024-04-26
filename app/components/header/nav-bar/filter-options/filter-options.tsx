@@ -35,7 +35,7 @@ export default function FilterOptions() {
   }, [searchParams]);
 
   return (
-    <div className="mt-[8px] space-y-3 px-3 py-1 dark:text-zinc-200 flex flex-col justify-around h-full">
+    <div className="dark:text-zinc-200 flex-col h-full flex-1 gap-2 flex justify-around">
       {navigation.state === "loading" && (
         <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <Spinner />
@@ -46,6 +46,7 @@ export default function FilterOptions() {
           <Label className="text-base">Exposure: </Label>
           <ToggleGroup
             className="w-full"
+            rovingFocus={false}
             type="single"
             variant="outline"
             defaultValue="all"
@@ -109,7 +110,7 @@ export default function FilterOptions() {
           </ToggleGroup>
         </div>
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between align-bottom">
         <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
           Results {data.filteredDevices.features.length}
         </Label>
@@ -123,7 +124,7 @@ export default function FilterOptions() {
             setSearchParams(searchParams);
           }}
         >
-          <span>
+          <span className="flex items-center">
             <X className=" m-0 inline h-3.5 w-3.5 p-0 align-sub" /> Reset
             filters
           </span>
