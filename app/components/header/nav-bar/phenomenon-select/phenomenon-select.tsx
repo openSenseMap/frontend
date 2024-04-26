@@ -3,33 +3,50 @@ import {
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
-import { useTranslation } from "react-i18next";
+// import { useTranslation } from "react-i18next";
 import type { SensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import type { Key } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Changed import
 import { Label } from "~/components/ui/label";
 import Spinner from "~/components/spinner";
-import type { loader } from "~/routes/explore";
-// import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
-import { Button } from "~/components/ui/button";
 import { X } from "lucide-react";
 import { Checkbox } from "~/components/ui/checkbox";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { Button } from "~/components/ui/button";
+import type { loader } from "~/routes/explore";
 
 export function PhenomenonSelect() {
   const data = useLoaderData<typeof loader>();
-  const { t } = useTranslation("navbar");
+  // const { t } = useTranslation("navbar");
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  // const [phenomenon, setPhenomenon] = useState<string | undefined>("all");
   const [searchParams, setSearchParams] = useSearchParams();
-  const [phenomenonVal, setPhenomenonVal] = useState(
-    searchParams.has("phenomenon")
-      ? searchParams.get("phenomenon") || undefined
-      : "all",
-  );
-  // const [seeMorePhenomena, setSeeMorePhenomena] = useState(false);
+  const [selectedCheckboxes, setSelectedCheckboxes] = useState<string[]>([]); // Added state for selected checkboxes
+
+  useEffect(() => {
+    // When URL parameters change, update selected checkboxes accordingly
+    const phenomenonParam = searchParams.get("phenomenon") || "all";
+    const phenomenonArray =
+      phenomenonParam === "all" ? [] : phenomenonParam.split(",");
+    setSelectedCheckboxes(phenomenonArray);
+  }, [searchParams]);
+
+  const handleCheckboxChange = (slug: string) => {
+    const updatedCheckboxes = selectedCheckboxes.includes(slug)
+      ? selectedCheckboxes.filter((checkbox) => checkbox !== slug)
+      : [...selectedCheckboxes, slug];
+
+    setSelectedCheckboxes(updatedCheckboxes);
+
+    // Update URL search parameters
+    if (updatedCheckboxes.length === 0) {
+      searchParams.delete("phenomenon");
+    } else {
+      searchParams.set("phenomenon", updatedCheckboxes.join(","));
+    }
+    setSearchParams(searchParams);
+  };
 
   return (
     <div className="dark:text-zinc-200 flex-col h-full flex-1 gap-2 flex justify-around">
@@ -49,52 +66,17 @@ export function PhenomenonSelect() {
                 key={i}
                 className="flex items-center justify-start space-x-2"
               >
-                <Checkbox />
+                <Checkbox
+                  checked={selectedCheckboxes.includes(p.slug)}
+                  onCheckedChange={() => handleCheckboxChange(p.slug)}
+                />
                 <Label>{sensorWikiLabel(p.label.item)}</Label>
               </div>
             ),
           )}
         </div>
       </ScrollArea>
-      {/* <Select
-        value={phenomenonVal}
-        onValueChange={(value) => {
-          setPhenomenonVal(value);
-          searchParams.set("phenomenon", value);
-          setSearchParams(searchParams);
-        }}
-      >
-        <SelectTrigger className="h-6 w-full text-base">
-          <SelectValue className="h-6" placeholder="ALL" />
-        </SelectTrigger>
-        <SelectContent className="overflow-visible">
-          <SelectItem value={"all"}>{t("all_stations")}</SelectItem>
-
-          {loaderData.phenomena &&
-            loaderData.phenomena.map(
-              (
-                p: { slug: string; label: { item: SensorWikiLabel[] } },
-                i: Key | null | undefined,
-              ) => (
-                <SensorWikHoverCard
-                  key={i}
-                  slug={p.slug}
-                  type="phenomena"
-                  avoidCollisions={false}
-                  side="right"
-                  trigger={
-                    <SelectItem value={p.slug}>
-                      {sensorWikiLabel(p.label.item)}
-                    </SelectItem>
-                  }
-                  openDelay={0}
-                  closeDelay={0}
-                />
-              ),
-            )}
-        </SelectContent>
-      </Select> */}
-      <div className="flex justify-between py-1" >
+      <div className="flex justify-between py-1">
         <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
           Results {data.filteredDevices.features.length}
         </Label>

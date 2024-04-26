@@ -117,6 +117,8 @@ export function getFilteredDevices(
     filterParams.has("status") ||
     filterParams.has("phenomenon")
   ) {
+    // set list here for computational efficiency
+    const phenomenonList = filterParams.get("phenomenon")?.split(",");
     // map through all devices and filter based on selected values
     let results = devices.features.filter((device: any) => {
       // get list of sensors for device
@@ -130,7 +132,9 @@ export function getFilteredDevices(
           filterParams.get("status")?.toLowerCase() ===
             device.properties.status.toLowerCase()) &&
         (!filterParams.get("phenomenon") ||
-          sensorsList.includes(filterParams.get("phenomenon")))
+          sensorsList.some((s: any) =>
+            phenomenonList?.includes(s.toLowerCase()),
+          ))
       );
     });
     // return filtered devices
