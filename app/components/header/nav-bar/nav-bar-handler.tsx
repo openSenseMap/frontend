@@ -62,7 +62,8 @@ export default function NavbarHandler({
               `flex cursor-pointer items-center gap-4 rounded-full px-4 py-1 text-white hover:shadow-lg`,
               section.color,
               // disabled for now because ring looked weird
-              // cursor === index && "ring-2 ring-slate-200 ring-offset-2"
+              // cursor === index && "ring-2 ring-slate-200 ring-offset-2",
+              cursor !== index && "opacity-50",
             )}
             onClick={() => {
               setCursor(index);

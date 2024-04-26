@@ -46,6 +46,7 @@ export default function FilterOptions() {
           <Label className="text-base">Exposure: </Label>
           <ToggleGroup
             className="w-full"
+            rovingFocus={false}
             type="single"
             variant="outline"
             defaultValue="all"
