@@ -78,7 +78,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         title: sensor.title,
         unit: sensor.unit,
         sensorType: sensor.sensorType,
-        icon: sensor.icon,
+        // icon: sensor.icon,
       });
     } else if (sensor?.deleted === true) {
       await deleteSensor(sensor.id);
@@ -403,7 +403,6 @@ export default function EditBoxSensors() {
                                 onClick={() => {
                                   setTepmState(!tepmState);
                                   sensor.editing = true;
-                                  // console.log("🚀 ~ file: sensors.tsx:248 ~ {sensorsData?.map ~ sensorsData:", sensorsData);
                                 }}
                                 className="mb-1 mt-2 block rounded-[3px]
                                 border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1

@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1698357577921,
+      "tag": "0000_glorious_azazel",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1698414557888,
+      "tag": "0001_rare_junta",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1698415481710,
+      "tag": "0002_needy_the_liberteens",
+      "breakpoints": true
+    }
+  ]
+}

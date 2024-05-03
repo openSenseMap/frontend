@@ -103,13 +103,13 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
       - name: 🛠 Setup Database
-        uses: nick-fields/retry@v2.9.0
+        uses: nick-fields/retry@v3.0.0
         with:
           timeout_minutes: 10
           max_attempts: 5
           retry_wait_seconds: 45
           retry_on: error
-          command: npx prisma migrate reset --force
+          command: npm run drizzle:migrate
 
       - name: ⚙️ Build
         run: npm run build
@@ -125,7 +125,7 @@ jobs:
   build:
     name: 🐳 Build
     # only build/deploy main branch on pushes
-    if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push' }}
+    # if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo

@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device } from "~/schema";
 
 /**
  * Replace german s (ß) with two s

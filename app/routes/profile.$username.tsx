@@ -13,14 +13,14 @@ import {
   getUserBackpack,
 } from "~/models/badge.server";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import { getInitials, getUserImgSrc } from "~/utils/misc";
+import { getInitials } from "~/utils/misc";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Info, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "~/utils";
 import ErrorMessage from "~/components/error-message";
-import DevicesDashboard from "./device._index";
-
+import { DataTable } from "~/components/mydevices/dt/data-table";
+import { columns } from "~/components/mydevices/dt/columns";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
@@ -37,12 +37,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // 2. Get profile and if it is private or not me -> throw an error
     // const profile = await getProfileByUserId(user.id);
-    if (!profile.public && profile.user.id !== requestingUserId) {
+    if (!profile.public && profile.userId !== requestingUserId) {
       throw new Response("not found", { status: 404 });
     }
 
     // 3. If profile is public or logged in user -> return data for profile
-    const profileMail = profile.user.email;
+    const profileMail = profile.user?.email;
     // Get the access token using the getMyBadgesAccessToken function
     const authToken = await getMyBadgesAccessToken().then((authData) => {
       return authData.access_token;
@@ -56,27 +56,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         },
       );
 
-      if (profile.user.id !== requestingUserId) {
+      if (profile.user && profile.user.id !== requestingUserId) {
         profile.user.devices = profile.user.devices.filter(
           (device) => device.public === true,
         );
-      }
-
-      if (!backpackData) {
-        return json({
-          success: false,
-          userBackpack: [],
-          allBadges: [],
-          user: profile.user,
-          profile: profile,
-          requestingUserId: requestingUserId,
-        });
       }
 
       const allBadges = await getAllBadges(authToken).then((allBadges) => {
         return allBadges.result;
       });
 
+      if (!backpackData) {
+        return json({
+          success: false,
+          userBackpack: [],
+          allBadges: allBadges,
+          user: profile.user,
+          profile: profile,
+          requestingUserId: requestingUserId,
+        });
+      }
       // Return the fetched data as JSON
       return json({
         success: true,
@@ -135,10 +134,12 @@ export default function () {
         <div className="flex flex-col space-y-2">
           <Avatar className="h-64 w-64">
             <AvatarImage
-              src={getUserImgSrc(profile?.imageId)}
-              alt={profile?.username}
+              className="aspect-auto w-full h-full rounded-full object-cover"
+              src={"/resources/file/" + profile?.profileImage?.id}
             />
-            <AvatarFallback>{getInitials(user?.name || "")}</AvatarFallback>
+            <AvatarFallback>
+              {getInitials(profile?.username ?? "")}
+            </AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-semibold tracking-tight">
             {user?.name}
@@ -148,7 +149,7 @@ export default function () {
         <Separator className="my-6" />
         <div className="flex flex-col space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">Badges</h1>
-          <div className="grid grid-cols-4 gap-4 bg-white">
+          <div className="grid grid-cols-4 gap-4">
             {sortedBadges.map((badge: MyBadge, index: number) => {
               return (
                 <div key={index} className="col-span-1">
@@ -157,7 +158,7 @@ export default function () {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100">
+                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100 dark:bg-zinc-800">
                       <CardContent className="flex items-center justify-center p-0">
                         <img
                           src={badge.image}
@@ -226,23 +227,22 @@ export default function () {
         ) : null}
         <div className="col-span-2">
           {/* show devices dashboard */}
-          {/* {user?.devices && (
+          {user?.devices && (
             <div className="py-8">
               <div>
                 <h2 className="text-2xl font-semibold leading-tight">
                   List of my Devices
                 </h2>
               </div>
-              
               <div className="mx-auto py-3">
                 <DataTable columns={columns} data={user.devices} />
               </div>
             </div>
-          )} */}
-
-          {user?.devices && (
-            <DevicesDashboard devices={user.devices}></DevicesDashboard>
           )}
+          {/* do we still need this??? */}
+          {/* {user && user.devices && (
+            <DevicesDashboard devices={user.devices}></DevicesDashboard>
+          )}  */}
         </div>
       </div>
     </div>

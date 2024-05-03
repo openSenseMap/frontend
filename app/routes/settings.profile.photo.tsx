@@ -20,13 +20,18 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { z } from "zod";
-import { prisma } from "~/db.server";
+import { drizzleClient } from "~/db.server";
 import { requireUserId } from "~/session.server";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";
-import { getUserImgSrc } from "~/utils/misc";
+import { getInitials } from "~/utils/misc";
 import ErrorMessage from "~/components/error-message";
+import { profileImage } from "~/schema";
+import { eq } from "drizzle-orm";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { getUserById } from "~/models/user.server";
+import { getProfileByUserId } from "~/models/profile.server";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 
@@ -52,16 +57,14 @@ const PhotoFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
-  const user = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: { imageId: true, username: true },
-  });
+  const user = await getUserById(userId);
+  const profile = await getProfileByUserId(userId);
   if (!user) {
     console.log("User not found");
     throw new Error();
     // throw await authenticator.logout(request, { redirectTo: "/" });
   }
-  return json({ user });
+  return json({ user, profile });
 }
 
 export async function action({ request }: DataFunctionArgs) {
@@ -88,39 +91,26 @@ export async function action({ request }: DataFunctionArgs) {
 
   const { photoFile } = submission.value;
 
-  const newPrismaPhoto = {
+  // Query user profile
+  const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
+    where: (profile, { eq }) => eq(profile.userId, userId),
+    with: {
+      profileImage: true,
+    },
+  });
+
+  // Insert new profile image
+  await drizzleClient.insert(profileImage).values({
+    blob: Buffer.from(await photoFile.arrayBuffer()),
     contentType: photoFile.type,
-    file: {
-      create: {
-        blob: Buffer.from(await photoFile.arrayBuffer()),
-      },
-    },
-  };
-
-  const previousUserPhoto = await prisma.profile.findUnique({
-    where: { userId: userId },
-    select: { imageId: true },
+    profileId: previousProfileWithImage?.id,
   });
 
-  await prisma.profile.update({
-    select: { id: true },
-    where: { userId: userId },
-    data: {
-      image: {
-        upsert: {
-          update: newPrismaPhoto,
-          create: newPrismaPhoto,
-        },
-      },
-    },
-  });
-
-  if (previousUserPhoto?.imageId) {
-    void prisma.image
-      .delete({
-        where: { fileId: previousUserPhoto.imageId },
-      })
-      .catch(() => {}); // ignore the error, maybe it never existed?
+  // If an old profile image exists, delete it
+  if (previousProfileWithImage?.profileImage?.id) {
+    await drizzleClient
+      .delete(profileImage)
+      .where(eq(profileImage.id, previousProfileWithImage.profileImage.id));
   }
 
   return redirect("/settings/profile");
@@ -158,11 +148,15 @@ export default function PhotoChooserModal() {
           onReset={() => setNewImageSrc(null)}
           {...form.props}
         >
-          <img
-            src={newImageSrc ?? getUserImgSrc(data.user.imageId)}
-            className="h-64 w-64 rounded-full"
-            alt={"test"}
-          />
+          <Avatar className="h-64 w-64">
+            <AvatarImage
+              className="aspect-auto w-full h-full rounded-full object-cover"
+              src={"/resources/file/" + data.profile?.profileImage?.id}
+            />
+            <AvatarFallback>
+              {getInitials(data.profile?.username ?? "")}
+            </AvatarFallback>
+          </Avatar>
           {/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
           <input
             {...conform.input(photoFile, { type: "file" })}

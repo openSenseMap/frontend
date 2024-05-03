@@ -116,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return createUserSession({
     request,
-    userId: user.id,
+    userId: user[0].id,
     remember: false,
     redirectTo,
   });

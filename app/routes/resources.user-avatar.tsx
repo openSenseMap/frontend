@@ -4,7 +4,7 @@ import { getProfileByUserId } from "~/models/profile.server";
 import { requireUser } from "~/session.server";
 import { useFetcher } from "@remix-run/react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { getInitials, getUserImgSrc } from "~/utils/misc";
+import { getInitials } from "~/utils/misc";
 import { useEffect } from "react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -30,11 +30,12 @@ export function UserAvatar() {
   return (
     <Avatar className="h-8 w-8">
       <AvatarImage
-        src={getUserImgSrc(fetcher.data?.profile.imageId)}
+        className="aspect-auto w-full h-full rounded-full object-cover"
+        src={"/resources/file/" + fetcher.data?.profile?.profileImage?.id}
         alt={fetcher.data?.profile.username}
       />
       <AvatarFallback>
-        {getInitials(fetcher.data?.user.name ?? "")}
+        {getInitials(fetcher.data?.profile?.username ?? "")}
       </AvatarFallback>
     </Avatar>
   );

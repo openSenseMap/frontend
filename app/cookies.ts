@@ -1,10 +1,12 @@
 import { createCookie } from "@remix-run/node";
 
-const sessionSecret = process.env.SESSION_SECRET ?? "P0JPnyms9A";
+const isProduction = process.env.NODE_ENV === "production";
 
 export let i18nCookie = createCookie("i18n", {
   sameSite: "lax",
   path: "/",
-  secrets: [sessionSecret],
-  secure: true,
+  secrets: process.env.SESSION_SECRET
+    ? [process.env.SESSION_SECRET]
+    : ["s3cr3t"],
+  secure: isProduction,
 });

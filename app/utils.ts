@@ -1,8 +1,7 @@
 import { useMatches } from "@remix-run/react";
+import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
-
-import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -118,10 +117,12 @@ export function getFilteredDevices(
     filterParams.has("status") ||
     filterParams.has("phenomenon")
   ) {
+    // set list here for computational efficiency
+    const phenomenonList = filterParams.get("phenomenon")?.split(",");
     // map through all devices and filter based on selected values
     let results = devices.features.filter((device: any) => {
       // get list of sensors for device
-      const sensorsList = device.properties.sensors.map((s: any) => s.title);
+      const sensorsList = device.properties.sensors?.map((s: any) => s.title);
       return (
         // check if selected values match device attributes
         (!filterParams.get("exposure") ||
@@ -131,7 +132,9 @@ export function getFilteredDevices(
           filterParams.get("status")?.toLowerCase() ===
             device.properties.status.toLowerCase()) &&
         (!filterParams.get("phenomenon") ||
-          sensorsList.includes(filterParams.get("phenomenon")))
+          sensorsList.some((s: any) =>
+            phenomenonList?.includes(s.toLowerCase()),
+          ))
       );
     });
     // return filtered devices
@@ -150,9 +153,7 @@ export function getFilteredDevices(
 
 //* Get Minute Formatted String - last sensor measurement update
 export function getMinuteFormattedString(lastMeasurementAt: string) {
-  const secondsAgo = moment().diff(
-    moment(lastMeasurementAt),
-    "seconds");
+  const secondsAgo = moment().diff(moment(lastMeasurementAt), "seconds");
 
   if (secondsAgo === null || secondsAgo === undefined) {
     return "-";

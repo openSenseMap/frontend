@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device } from "~/schema";
 import Search from "~/components/search";
 import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";
@@ -62,7 +62,8 @@ export default function NavbarHandler({
               `flex cursor-pointer items-center gap-4 rounded-full px-4 py-1 text-white hover:shadow-lg`,
               section.color,
               // disabled for now because ring looked weird
-              // cursor === index && "ring-2 ring-slate-200 ring-offset-2"
+              // cursor === index && "ring-2 ring-slate-200 ring-offset-2",
+              cursor !== index && "opacity-50",
             )}
             onClick={() => {
               setCursor(index);
