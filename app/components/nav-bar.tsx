@@ -69,7 +69,7 @@ export function NavBar() {
   const user = useOptionalUser();
 
   return (
-    <div className="border-b">
+    <div className="border-b dark:bg-dark-background dark:text-dark-text">
       <div className="flex h-16 items-center justify-between">
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center md:pr-4">
@@ -91,7 +91,11 @@ export function NavBar() {
                   </Button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" forceMount>
+                <DropdownMenuContent
+                  align="end"
+                  forceMount
+                  className="dark:bg-dark-background dark:text-dark-text"
+                >
                   <DropdownMenuGroup>
                     <Link to="/device/new">
                       <DropdownMenuItem>
@@ -120,7 +124,7 @@ export function NavBar() {
                     <UserAvatar />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className=" dark:bg-black">
+                <SheetContent side="right" className="dark:bg-dark-background dark:text-dark-text">
                   <SheetHeader>
                     <SheetDescription>
                       <div className="flex gap-4">
@@ -141,6 +145,7 @@ export function NavBar() {
                       <SidebarNav
                         items={sidebarNavItems}
                         setOpen={setSheetOpen}
+                        className="dark:bg-dark-background dark:text-dark-text"
                       />
                       <Form action="/logout" method="post">
                         <button

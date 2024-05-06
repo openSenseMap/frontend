@@ -132,15 +132,17 @@ export default function () {
     <div className="grid grid-cols-3 gap-8">
       <div className="">
         <div className="flex flex-col space-y-2">
-          <Avatar className="h-64 w-64">
-            <AvatarImage
-              className="aspect-auto w-full h-full rounded-full object-cover"
-              src={"/resources/file/" + profile?.profileImage?.id}
-            />
-            <AvatarFallback>
-              {getInitials(profile?.username ?? "")}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center justify-center">
+            <Avatar className="h-64 w-64">
+              <AvatarImage
+                className="aspect-auto w-full h-full rounded-full object-cover"
+                src={"/resources/file/" + profile?.profileImage?.id}
+              />
+              <AvatarFallback>
+                {getInitials(profile?.username ?? "")}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight">
             {user?.name}
           </h1>
@@ -148,7 +150,9 @@ export default function () {
         </div>
         <Separator className="my-6" />
         <div className="flex flex-col space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Badges</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-light-green dark:text-dark-green">
+            Badges
+          </h1>
           <div className="grid grid-cols-4 gap-4">
             {sortedBadges.map((badge: MyBadge, index: number) => {
               return (
@@ -158,7 +162,7 @@ export default function () {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100 dark:bg-zinc-800">
+                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100 dark:bg-dark-boxes">
                       <CardContent className="flex items-center justify-center p-0">
                         <img
                           src={badge.image}
@@ -180,7 +184,7 @@ export default function () {
                           }
                         />
                       </CardContent>
-                      <CardFooter className="flex items-center justify-center p-0">
+                      <CardFooter className="flex items-center justify-center p-0 text-center">
                         <p>{badge.name}</p>
                       </CardFooter>
                     </Card>
@@ -189,11 +193,6 @@ export default function () {
               );
             })}
           </div>
-        </div>
-        <Separator className="my-6" />
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Campaigns</h1>
-          <div></div>
         </div>
       </div>
       <div className="col-span-2 space-y-4">
@@ -208,7 +207,7 @@ export default function () {
                   </AlertTitle>
                 </div>
                 <AlertDescription>
-                  You can add up to 3 devices to your account.
+                  You can add up to 3 devices to your free account.
                 </AlertDescription>
               </div>
               <Button variant="outline" size="icon">
@@ -226,11 +225,10 @@ export default function () {
           </Alert>
         ) : null}
         <div className="col-span-2">
-          {/* show devices dashboard */}
           {user?.devices && (
             <div className="py-8">
               <div>
-                <h2 className="text-2xl font-semibold leading-tight">
+                <h2 className="text-2xl font-semibold leading-tight text-light-green dark:text-dark-green">
                   List of my Devices
                 </h2>
               </div>
@@ -239,10 +237,6 @@ export default function () {
               </div>
             </div>
           )}
-          {/* do we still need this??? */}
-          {/* {user && user.devices && (
-            <DevicesDashboard devices={user.devices}></DevicesDashboard>
-          )}  */}
         </div>
       </div>
     </div>

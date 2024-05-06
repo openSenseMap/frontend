@@ -89,6 +89,25 @@ module.exports = {
       },
       sensorWiki: "var(--color-yellow-sensorWiki)",
       headerBorder: "var(--color-headerBorder)",
+      logo: {
+        green: "#4fae48",
+        blue: "#00b4e4"
+      },
+      light: {
+        menu: "#727373",
+        text: "#363636",
+        green: "#3D843F",
+        blue: "#037EA1"
+      },
+      dark: {
+        title: "FFFFFF",
+        menu: "#D2D1D0",
+        text: "#D2D1D0",
+        green: "#6FA161",
+        blue: "#0386AA",
+        background: "#242424",
+        boxes: "#3B3A3A"
+      },
     },
     extend: {
       colors: {

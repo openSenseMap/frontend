@@ -106,7 +106,10 @@ export const columns: ColumnDef<SenseBox>[] = [
               <Ellipsis className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            className="dark:bg-dark-background dark:text-dark-text"
+          >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
