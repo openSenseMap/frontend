@@ -197,7 +197,7 @@ export default function () {
       </div>
       <div className="col-span-2 space-y-4">
         {userOptional?.id === user?.id && user?.devices?.length === 0 ? (
-          <Alert>
+          <Alert className="dark:bg-dark-background dark:text-dark-text">
             <div className="flex justify-between">
               <div className="flex flex-col">
                 <div className="flex">
@@ -217,27 +217,28 @@ export default function () {
           </Alert>
         ) : null}
         {(userOptional?.id === user?.id || user?.devices?.length) === 0 ? (
-          <Alert>
+          <Alert className="dark:bg-dark-background dark:text-dark-text">
             <Info className="h-4 w-4" />
             <AlertTitle className="ml-6">
               This user has no public devices.
             </AlertTitle>
           </Alert>
-        ) : null}
-        <div className="col-span-2">
-          {user?.devices && (
-            <div className="py-8">
-              <div>
-                <h2 className="text-2xl font-semibold leading-tight text-light-green dark:text-dark-green">
-                  List of my Devices
-                </h2>
+        ) : (
+          <div className="col-span-2">
+            {user?.devices && (
+              <div className="py-8">
+                <div>
+                  <h2 className="text-2xl font-semibold leading-tight text-light-green dark:text-dark-green">
+                    List of my Devices
+                  </h2>
+                </div>
+                <div className="mx-auto py-3">
+                  <DataTable columns={columns} data={user.devices} />
+                </div>
               </div>
-              <div className="mx-auto py-3">
-                <DataTable columns={columns} data={user.devices} />
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
