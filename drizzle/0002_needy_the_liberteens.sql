@@ -16,7 +16,8 @@ SELECT add_retention_policy('measurement', INTERVAL '1 year');
 CREATE MATERIALIZED VIEW measurement_15min WITH (timescaledb.continuous) AS
 SELECT measurement."sensorId",
        time_bucket('15 min', measurement.time) AS time,
-       AVG(measurement.value) AS value_avg
+       AVG(measurement.value) AS value_avg,
+       percentile_agg(measurement.value) as percentile_15min
 FROM measurement
 GROUP BY 1, 2
 WITH NO DATA;
@@ -30,10 +31,12 @@ SELECT add_continuous_aggregate_policy('measurement_15min', start_offset => INTE
 -- SELECT add_retention_policy('measurement_15min', INTERVAL '5 years');
 
 -- Continuous aggregate (CAGG) on top of another CAGG / Hierarchical Continuous Aggregates , new in Timescale 2.9, issue with TZ as of https://github.com/timescale/timescaledb/pull/5195
+-- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/hierarchical-continuous-aggregates/
 CREATE MATERIALIZED VIEW measurement_1day WITH (timescaledb.continuous) AS
 SELECT "sensorId",
        time_bucket('1 day', time) AS time,
-       AVG(value_avg) AS value_avg
+       mean(rollup(percentile_15min)) as mean
+       rollup(percentile_15min) as percentile_daily
 FROM measurement_15min
 GROUP BY 1, 2
 WITH NO DATA;
