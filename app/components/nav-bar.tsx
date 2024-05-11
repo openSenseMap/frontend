@@ -69,20 +69,19 @@ export function NavBar() {
   const user = useOptionalUser();
 
   return (
-    <div className="border-b dark:bg-dark-background dark:text-dark-text">
+    <div className="border-b dark:bg-dark-background dark:text-dark-text p-4">
       <div className="flex h-16 items-center justify-between">
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center md:pr-4">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
           </Link>
-          <span className="dark:text-green-200 hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
+          <span className="dark:text-dark-green text-light-green hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
             {parts.join(" / ")}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              {/* down arrow icon */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -115,6 +114,7 @@ export function NavBar() {
               <Button variant="outline" size="icon" disabled>
                 <Mailbox className="h-4 w-4" />
               </Button>
+
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -124,7 +124,10 @@ export function NavBar() {
                     <UserAvatar />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="dark:bg-dark-background dark:text-dark-text">
+                <SheetContent
+                  side="right"
+                  className="dark:bg-dark-background dark:text-dark-text"
+                >
                   <SheetHeader>
                     <SheetDescription>
                       <div className="flex gap-4">

@@ -35,6 +35,7 @@ module.exports = {
         700: "var(--color-gray-700)",
         800: "var(--color-gray-800)",
         900: "var(--color-gray-900)",
+        950: "var(--color-gray-950)",
       },
       zinc: {
         50: "var(--color-zinc-50)",
@@ -61,11 +62,15 @@ module.exports = {
         900: "var(--color-slate-900)",
       },
       green: {
+        50: "var(--color-green-50)",
         100: "var(--color-green-100)",
+        200: "var(--color-green-200)",
         300: "var(--color-green-300)",
+        400: "var(--color-green-400)",
         500: "var(--color-green-500)",
         700: "var(--color-green-700)",
         900: "var(--color-green-900)",
+        950: "var(--color-green-950)",
       },
       blue: {
         100: "var(--color-blue-100)",

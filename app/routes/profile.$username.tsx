@@ -1,8 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Separator } from "~/components/ui/separator";
 
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getUserId } from "~/session.server";
 import { getProfileByUsername } from "~/models/profile.server";
@@ -12,15 +11,11 @@ import {
   getMyBadgesAccessToken,
   getUserBackpack,
 } from "~/models/badge.server";
-import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { getInitials } from "~/utils/misc";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Info, Plus } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { useOptionalUser } from "~/utils";
 import ErrorMessage from "~/components/error-message";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import { columns } from "~/components/mydevices/dt/columns";
+import { Badge } from "~/components/ui/badge";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
@@ -31,55 +26,31 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (username) {
     // 1. Check if user exists
     const profile = await getProfileByUsername(username);
-    if (!profile) {
-      throw new Response("not found", { status: 404 });
-    }
 
-    // 2. Get profile and if it is private or not me -> throw an error
-    // const profile = await getProfileByUserId(user.id);
-    if (!profile.public && profile.userId !== requestingUserId) {
-      throw new Response("not found", { status: 404 });
-    }
+    if (!profile || !profile.public) {
+      redirect("/explore");
+    } else {
+      const profileMail = profile.user?.email || "";
+      // Get the access token using the getMyBadgesAccessToken function
+      const authToken = await getMyBadgesAccessToken().then((authData) => {
+        return authData.access_token;
+      });
 
-    // 3. If profile is public or logged in user -> return data for profile
-    const profileMail = profile.user?.email;
-    // Get the access token using the getMyBadgesAccessToken function
-    const authToken = await getMyBadgesAccessToken().then((authData) => {
-      return authData.access_token;
-    });
-
-    // Retrieve the user's backpack data and all available badges from the server
-    if (profileMail && authToken) {
+      // Retrieve the user's backpack data and all available badges from the server
       const backpackData = await getUserBackpack(profileMail, authToken).then(
         (backpackData) => {
           return backpackData;
         },
       );
 
-      if (profile.user && profile.user.id !== requestingUserId) {
-        profile.user.devices = profile.user.devices.filter(
-          (device) => device.public === true,
-        );
-      }
-
       const allBadges = await getAllBadges(authToken).then((allBadges) => {
         return allBadges.result;
       });
 
-      if (!backpackData) {
-        return json({
-          success: false,
-          userBackpack: [],
-          allBadges: allBadges,
-          user: profile.user,
-          profile: profile,
-          requestingUserId: requestingUserId,
-        });
-      }
       // Return the fetched data as JSON
       return json({
         success: true,
-        userBackpack: backpackData,
+        userBackpack: backpackData ? backpackData : [],
         allBadges: allBadges,
         user: profile.user,
         profile: profile,
@@ -103,9 +74,7 @@ export default function () {
   // Get the data from the loader function using the useLoaderData hook
   const { allBadges, userBackpack, user, profile } =
     useLoaderData<typeof loader>();
-
-  // User is optional
-  const userOptional = useOptionalUser();
+  console.log("🚀 ~ user:", user);
 
   const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
     // Determine if badgeA and badgeB are owned by the user and not revoked
@@ -129,11 +98,11 @@ export default function () {
   });
 
   return (
-    <div className="grid grid-cols-3 gap-8">
-      <div className="">
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center justify-center">
-            <Avatar className="h-64 w-64">
+    <>
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full bg-white dark:bg-dark-background md_pt-4">
+        <div className="bg-white dark:bg-dark-background shadow-sm p-6 flex flex-col gap-6 w-full md:w-1/3">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
               <AvatarImage
                 className="aspect-auto w-full h-full rounded-full object-cover"
                 src={"/resources/file/" + profile?.profileImage?.id}
@@ -142,105 +111,101 @@ export default function () {
                 {getInitials(profile?.username ?? "")}
               </AvatarFallback>
             </Avatar>
+            <div>
+              <h3 className="text-lg font-semibold dark:text-dark-text">
+                {user?.name || ""}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                User since{" "}
+                {new Date(user?.createdAt || "").toLocaleDateString()}
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {user?.name}
-          </h1>
-          <p className="text-sm text-muted-foreground">{profile?.username}</p>
+          <div className="grid grid-cols-2 gap-4 md:pt-6">
+            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
+              <span className="text-2xl font-bold dark:text-dark-green">
+                {user?.devices.length}
+              </span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                Devices
+              </span>
+            </div>
+            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
+              <span className="text-2xl font-bold dark:text-dark-green">
+                38
+              </span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                Sensors
+              </span>
+            </div>
+            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
+              <span className="text-2xl font-bold dark:text-dark-green">
+                120k
+              </span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                Measurements
+              </span>
+            </div>
+            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
+              <span className="text-2xl font-bold dark:text-dark-green">
+                {userBackpack.length}
+              </span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                Badges
+              </span>
+            </div>
+          </div>
         </div>
-        <Separator className="my-6" />
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-light-green dark:text-dark-green">
-            Badges
-          </h1>
-          <div className="grid grid-cols-4 gap-4">
-            {sortedBadges.map((badge: MyBadge, index: number) => {
-              return (
-                <div key={index} className="col-span-1">
+        <div className="flex flex-col gap-6 w-full md:w-2/3">
+          <div className="bg-white dark:bg-dark-background shadow-sm p-6">
+            <h3 className="text-lg font-semibold mb-4 text-light-green dark:text-dark-green">
+              Badges
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {sortedBadges.map((badge: MyBadge) => {
+                return (
                   <Link
                     to={badge.openBadgeId}
                     target="_blank"
                     rel="noopener noreferrer"
+                    key={badge.entityId}
                   >
-                    <Card className="h-full p-2 transition-colors duration-300 ease-in-out hover:bg-slate-100 dark:bg-dark-boxes">
-                      <CardContent className="flex items-center justify-center p-0">
-                        <img
-                          src={badge.image}
-                          alt={badge.name}
-                          title={badge.name}
-                          className={
-                            "h-10 w-10 lg:h-20 lg:w-20" +
-                            // check if the badge is owned by the user
-                            // if so, remove the grayscale filter
-                            // if not, add the grayscale filter
-                            (userBackpack.some((obj: MyBadge) => {
-                              return (
-                                obj.badgeclass === badge.entityId &&
-                                !obj.revoked
-                              );
-                            })
-                              ? ""
-                              : " grayscale")
-                          }
-                        />
-                      </CardContent>
-                      <CardFooter className="flex items-center justify-center p-0 text-center">
-                        <p>{badge.name}</p>
-                      </CardFooter>
-                    </Card>
+                    <Badge
+                      variant="secondary"
+                      className={
+                        // check if the badge is owned by the user
+                        // if so, remove the grayscale filter
+                        // if not, add the grayscale filter
+                        userBackpack.some((obj: MyBadge) => {
+                          return (
+                            obj.badgeclass === badge.entityId && !obj.revoked
+                          );
+                        })
+                          ? "border-transparent dark:border-transparent bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
+                          : "border-transparent dark:border-transparent bg-gray-100 dark:bg-dark-boxes"
+                      }
+                    >
+                      {badge.name}
+                    </Badge>
                   </Link>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-dark-background shadow-sm p-6">
+            {user?.devices ? (
+              <>
+                <h3 className="text-lg font-semibold mb-4 text-light-green dark:text-dark-green">
+                  Devices
+                </h3>
+                <DataTable columns={columns} data={user.devices} />
+              </>
+            ) : // TODO: empty and private profiles
+            null}
           </div>
         </div>
       </div>
-      <div className="col-span-2 space-y-4">
-        {userOptional?.id === user?.id && user?.devices?.length === 0 ? (
-          <Alert className="dark:bg-dark-background dark:text-dark-text">
-            <div className="flex justify-between">
-              <div className="flex flex-col">
-                <div className="flex">
-                  <Info className="h-4 w-4" />
-                  <AlertTitle className="ml-4">
-                    You have no device registered
-                  </AlertTitle>
-                </div>
-                <AlertDescription>
-                  You can add up to 3 devices to your free account.
-                </AlertDescription>
-              </div>
-              <Button variant="outline" size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </Alert>
-        ) : null}
-        {(userOptional?.id === user?.id || user?.devices?.length) === 0 ? (
-          <Alert className="dark:bg-dark-background dark:text-dark-text">
-            <Info className="h-4 w-4" />
-            <AlertTitle className="ml-6">
-              This user has no public devices.
-            </AlertTitle>
-          </Alert>
-        ) : (
-          <div className="col-span-2">
-            {user?.devices && (
-              <div className="py-8">
-                <div>
-                  <h2 className="text-2xl font-semibold leading-tight text-light-green dark:text-dark-green">
-                    List of my Devices
-                  </h2>
-                </div>
-                <div className="mx-auto py-3">
-                  <DataTable columns={columns} data={user.devices} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
 
