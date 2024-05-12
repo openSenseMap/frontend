@@ -69,7 +69,7 @@ export function NavBar() {
   const user = useOptionalUser();
 
   return (
-    <div className="border-b dark:bg-dark-background dark:text-dark-text p-4">
+    <div className="border-b bg-white dark:bg-dark-background dark:text-dark-text p-4">
       <div className="flex h-16 items-center justify-between">
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center md:pr-4">

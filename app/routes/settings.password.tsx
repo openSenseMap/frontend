@@ -4,11 +4,21 @@ import { Form, useActionData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/session.server";
-import { Separator } from "~/components/ui/separator";
 import { validatePassLength, validatePassType } from "~/utils";
 import { useToast } from "@/components/ui/use-toast";
-import React from "react";
+import { useEffect, useRef } from "react";
 import ErrorMessage from "~/components/error-message";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -26,6 +36,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const newPass = formData.get("newPassword");
   const confirmPass = formData.get("newPasswordConfirm");
   const passwordsList = [currPass, newPass, confirmPass];
+  console.log("🚀 ~ action ~ passwordsList:", passwordsList)
 
   //* when cancel button is clicked
   if (intent === "cancel") {
@@ -161,14 +172,14 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function ChangePaasswordPage() {
   const actionData = useActionData<typeof action>();
 
-  const currPassRef = React.useRef<HTMLInputElement>(null);
-  const newPassRef = React.useRef<HTMLInputElement>(null);
-  const confirmPassRef = React.useRef<HTMLInputElement>(null);
+  const currPassRef = useRef<HTMLInputElement>(null);
+  const newPassRef = useRef<HTMLInputElement>(null);
+  const confirmPassRef = useRef<HTMLInputElement>(null);
 
   //* toast
   const { toast } = useToast();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (actionData?.errors?.currPass) {
       currPassRef.current?.focus();
     } else if (actionData?.errors?.newPass) {
@@ -186,131 +197,54 @@ export default function ChangePaasswordPage() {
   }, [actionData, toast]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Account - Change password</h3>
-        <p className="text-sm text-muted-foreground">Update your password.</p>
-      </div>
-      <Separator />
-      <div className="grid grid-rows-1">
-        <div className="flex min-h-full items-center justify-center">
-          <div className="mx-auto w-full font-helvetica">
-            {/* Form */}
-            <Form method="post" className="space-y-6" noValidate>
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="currentPassword"
-                  className="block text-base  tracking-normal"
-                >
-                  Current password
-                </label>
-
-                <div className="mt-1">
-                  <input
-                    ref={currPassRef}
-                    id="currentPassword"
-                    name="currentPassword"
-                    type="password"
-                    placeholder="Current Password"
-                    // defaultValue={123}
-                    className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                  />
-                  {actionData?.errors?.currPass && (
-                    <div className="pt-1 text-[#FF0000]" id="currPass-error">
-                      {actionData.errors.currPass}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="newPassword"
-                  className="txt-base block  tracking-normal"
-                >
-                  New password
-                </label>
-
-                <div className="mt-1">
-                  <input
-                    ref={newPassRef}
-                    id="newPassword"
-                    name="newPassword"
-                    type="password"
-                    placeholder="New Password"
-                    // defaultValue={123}
-                    className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                  />
-                  {actionData?.errors?.newPass && (
-                    <div className="pt-1 text-[#FF0000]" id="newPass-error">
-                      {actionData.errors.newPass}
-                    </div>
-                  )}
-                  {actionData?.errors?.passMatch && (
-                    <div className="pt-1 text-[#FF0000]" id="confirmPass-error">
-                      {actionData.errors.passMatch}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="newPasswordConfirm"
-                  className="txt-base block  tracking-normal"
-                >
-                  Confirm new password
-                </label>
-
-                <div className="mt-1">
-                  <input
-                    ref={confirmPassRef}
-                    id="newPasswordConfirm"
-                    name="newPasswordConfirm"
-                    type="password"
-                    placeholder="New Password Confirm"
-                    // defaultValue={123}
-                    className="w-full rounded border border-gray-200 px-2 py-1 text-base placeholder-[#999]"
-                  />
-                  {actionData?.errors?.confirmPass && (
-                    <div className="pt-1 text-[#FF0000]" id="confirmPass-error">
-                      {actionData.errors.confirmPass}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* divider */}
-              <hr className="my-2 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
-
-              {/* Cancel and Update buttons */}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  name="intent"
-                  value="cancel"
-                  disabled={false}
-                  className="rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc] disabled:text-[#8a8989]"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  name="intent"
-                  value="update"
-                  disabled={false}
-                  className="ml-3 rounded border border-gray-200 px-4 py-2 text-black disabled:border-[#ccc]  disabled:text-[#8a8989]"
-                >
-                  Update
-                </button>
-              </div>
-            </Form>
+    <Form method="post" className="space-y-6" noValidate>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Update Password</CardTitle>
+          <CardDescription>
+            Enter your current password and a new password to update your
+            account password.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">Current Password</Label>
+            <Input
+              ref={currPassRef}
+              id="currentPassword"
+              name="currentPassword"
+              placeholder="Enter your current password"
+              type="password"
+            />
           </div>
-        </div>
-      </div>
-    </div>
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New Password</Label>
+            <Input
+              ref={newPassRef}
+              id="newPassword"
+              name="newPassword"
+              placeholder="Enter your new password"
+              type="password"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newPasswordConfirm">Confirm Password</Label>
+            <Input
+              ref={confirmPassRef}
+              id="newPasswordConfirm"
+              name="newPasswordConfirm"
+              placeholder="Confirm your new password"
+              type="password"
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" name="intent" value="update">
+            Save Changes
+          </Button>
+        </CardFooter>
+      </Card>
+    </Form>
   );
 }
 

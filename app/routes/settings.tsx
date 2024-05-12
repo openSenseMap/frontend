@@ -1,28 +1,12 @@
-import { Link, Outlet } from "@remix-run/react";
-import { Separator } from "~/components/ui/separator";
+import { Outlet, useLocation, useNavigate } from "@remix-run/react";
 
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
-import { Button } from "~/components/ui/button";
 import { NavBar } from "~/components/nav-bar";
 import ErrorMessage from "~/components/error-message";
-import { SidebarSettingsNav } from "~/components/sidebar-settings-nav";
 
-const sidebarNavItems = [
-  {
-    title: "Profile",
-    href: "profile",
-  },
-  {
-    title: "Account",
-    href: "account",
-  },
-  {
-    title: "Notifications",
-    href: "notifications",
-  },
-];
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -30,34 +14,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SettingsLayoutPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // get current tab from the URL
+  const currentTab = location.pathname.split("/")[2];
   return (
-    <>
-      <div className="hidden space-y-6 px-10 pb-16 md:block">
-        <NavBar />
-        <div className="mx-auto max-w-screen-2xl space-y-4">
-          <div className="flex justify-between">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-              <p className="text-muted-foreground">
-                Manage your account settings and set e-mail preferences.
-              </p>
-            </div>
-            <Button>
-              <Link to="/profile/me">Go to your personal profile</Link>
-            </Button>
-          </div>
-          <Separator className="my-6" />
-          <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-            <aside className="lg:w-1/5">
-              <SidebarSettingsNav items={sidebarNavItems}/>
-            </aside>
-            <div className="flex-1 pt-4">
+    <div className="bg-gray-100 dark:bg-gray-950">
+      <NavBar />
+      <div className="flex w-full items-start justify-center py-10">
+        <div className="w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+          <Tabs
+            className="w-full"
+            defaultValue="account"
+            value={currentTab}
+            onValueChange={(value) => {
+              navigate(`/settings/${value}`);
+            }}
+          >
+            <TabsList className="border-b border-gray-200 dark:border-gray-800">
+              <TabsTrigger value="account">Account Information</TabsTrigger>
+              <TabsTrigger value="password">Password</TabsTrigger>
+              <TabsTrigger value="profile">Profile Information</TabsTrigger>
+            </TabsList>
+            <TabsContent className="mt-6" value={currentTab}>
               <Outlet />
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
