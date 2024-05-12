@@ -9,7 +9,6 @@ import {
 } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { Separator } from "~/components/ui/separator";
 import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
 import { drizzleClient } from "~/db.server";
@@ -25,6 +24,14 @@ import { profile } from "~/schema";
 import { eq } from "drizzle-orm";
 import { getProfileByUserId } from "~/models/profile.server";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
 const profileFormSchema = z.object({
   username: nameSchema.optional(),
@@ -121,69 +128,69 @@ export default function EditUserProfilePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Profile</h3>
-        <p className="text-sm text-muted-foreground">
+    <Card className="space-y-6 dark:bg-dark-boxes dark:border-white">
+      <CardHeader>
+        <CardTitle>Profile Information</CardTitle>
+        <CardDescription>
+          {" "}
           This is how others will see you on the site.
-        </p>
-      </div>
-      <Separator />
-      <div className="mt-16 flex gap-12">
-        <Form method="post" className="w-1/2" {...form.props}>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor={fields.username.id}>Username</Label>
-            <Input type="text" {...conform.input(fields.username)} />
-            <div>{fields.username.error}</div>
-          </div>
-          <div>
-            <h3 className="mb-4 text-lg font-medium">Visibility</h3>
-            <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <div className="flex items-center space-y-0.5">
-                <Input
-                  className="flex h-6 w-6 items-center justify-center rounded border"
-                  {...conform.input(fields.visibility, {
-                    type: "checkbox",
-                    value: "true",
-                  })}
-                />
-                <Label htmlFor={fields.visibility.id} className="ml-4">
-                  Public
-                </Label>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-6">
+        <div className="mt-16 flex gap-12">
+          <Form method="post" className="w-1/2" {...form.props}>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor={fields.username.id}>Username</Label>
+              <Input type="text" {...conform.input(fields.username)} />
+              <div>{fields.username.error}</div>
+            </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Visibility</h3>
+              <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <div className="flex items-center space-y-0.5">
+                  <Input
+                    className="flex h-6 w-6 items-center justify-center rounded border"
+                    {...conform.input(fields.visibility, {
+                      type: "checkbox",
+                      value: "true",
+                    })}
+                  />
+                  <Label htmlFor={fields.visibility.id} className="ml-4">
+                    Public
+                  </Label>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="mt-8 flex">
-            <Button type="submit">Save changes</Button>
-          </div>
-        </Form>
-        <div className="flex w-1/2 justify-center">
-          <div className="relative h-52 w-52">
-            <Avatar className="h-full w-full">
-              <AvatarImage
-                className="aspect-auto w-full h-full rounded-full object-cover"
-                src={"/resources/file/" + data.profile.profileImage?.id}
-              />
-              <AvatarFallback>
-                {getInitials(data.profile?.username ?? "")}
-              </AvatarFallback>
-            </Avatar>
-            <Link
-              preventScrollReset
-              to="photo"
-              className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
-              title="Change profile photo"
-              aria-label="Change profile photo"
-            >
-              {/* TODO: Make this lucide pencil icon work */}
-              {/* <Pencil /> */}
-              &#x270E;
-            </Link>
+          </Form>
+          <div className="flex w-1/2 justify-center">
+            <div className="relative h-52 w-52">
+              <Avatar className="h-full w-full">
+                <AvatarImage
+                  className="aspect-auto w-full h-full rounded-full object-cover"
+                  src={"/resources/file/" + data.profile.profileImage?.id}
+                />
+                <AvatarFallback>
+                  {getInitials(data.profile?.username ?? "")}
+                </AvatarFallback>
+              </Avatar>
+              <Link
+                preventScrollReset
+                to="photo"
+                className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
+                title="Change profile photo"
+                aria-label="Change profile photo"
+              >
+                &#x270E;
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </CardContent>
+      <CardFooter>
+        <Button type="submit">Save changes</Button>
+      </CardFooter>
       <Outlet />
-    </div>
+    </Card>
   );
 }
 

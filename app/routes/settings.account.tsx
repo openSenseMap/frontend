@@ -191,7 +191,7 @@ export default function EditUserProfilePage() {
 
   return (
     <Form method="post" className="space-y-6" noValidate>
-      <Card>
+      <Card className="dark:bg-dark-boxes dark:border-white">
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
           <CardDescription>Update your basic account details.</CardDescription>
@@ -227,7 +227,7 @@ export default function EditUserProfilePage() {
               onValueChange={(value) => setLang(value)}
               name="language"
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:border-white">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
@@ -253,7 +253,7 @@ export default function EditUserProfilePage() {
           </Button>
         </CardFooter>
       </Card>
-      <Card>
+      <Card className="dark:bg-dark-boxes dark:border-white">
         <CardHeader>
           <CardTitle>Delete Account</CardTitle>
           <CardDescription>

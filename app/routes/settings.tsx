@@ -1,17 +1,7 @@
 import { Outlet, useLocation, useNavigate } from "@remix-run/react";
-
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { requireUserId } from "~/session.server";
 import { NavBar } from "~/components/nav-bar";
 import ErrorMessage from "~/components/error-message";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  await requireUserId(request);
-  return json({});
-}
 
 export default function SettingsLayoutPage() {
   const navigate = useNavigate();
@@ -19,24 +9,24 @@ export default function SettingsLayoutPage() {
   // get current tab from the URL
   const currentTab = location.pathname.split("/")[2];
   return (
-    <div className="bg-gray-100 dark:bg-gray-950">
+    <div className="h-screen bg-gray-100 dark:bg-dark-background dark:text-dark-text">
       <NavBar />
-      <div className="flex w-full items-start justify-center py-10">
-        <div className="w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+      <div className="flex w-full items-start justify-center py-10 bg-gray-100 dark:bg-dark-background">
+        <div className="w-full max-w-3xl rounded-lg bg-transparent p-6 dark:shadow-none dark:bg-transparent dark:text-dark-text">
           <Tabs
             className="w-full"
             defaultValue="account"
-            value={currentTab}
+            value={currentTab || "account"}
             onValueChange={(value) => {
               navigate(`/settings/${value}`);
             }}
           >
-            <TabsList className="border-b border-gray-200 dark:border-gray-800">
+            <TabsList>
               <TabsTrigger value="account">Account Information</TabsTrigger>
               <TabsTrigger value="password">Password</TabsTrigger>
               <TabsTrigger value="profile">Profile Information</TabsTrigger>
             </TabsList>
-            <TabsContent className="mt-6" value={currentTab}>
+            <TabsContent className="mt-6" value={currentTab || "account"}>
               <Outlet />
             </TabsContent>
           </Tabs>

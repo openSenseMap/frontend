@@ -115,56 +115,58 @@ export function NavBar() {
                 <Mailbox className="h-4 w-4" />
               </Button>
 
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
+              <div className="px-8">
+                <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
+                      <UserAvatar />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="dark:bg-dark-background dark:text-dark-text"
                   >
-                    <UserAvatar />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="dark:bg-dark-background dark:text-dark-text"
-                >
-                  <SheetHeader>
-                    <SheetDescription>
-                      <div className="flex gap-4">
-                        <UserAvatar />
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">
-                            {user.name}
-                          </p>
-                          <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                          </p>
+                    <SheetHeader>
+                      <SheetDescription>
+                        <div className="flex gap-4">
+                          <UserAvatar />
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {user.name}
+                            </p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {user.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="grid gap-4 py-4">
-                    <>
-                      <SidebarNav
-                        items={sidebarNavItems}
-                        setOpen={setSheetOpen}
-                        className="dark:bg-dark-background dark:text-dark-text"
-                      />
-                      <Form action="/logout" method="post">
-                        <button
-                          type="submit"
-                          className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
-                        >
-                          <LogOut className="mr-2 h-5 w-5" />
-                          <span className="text-red-500 hover:bg-transparent hover:underline">
-                            Sign out
-                          </span>
-                        </button>
-                      </Form>
-                    </>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                      <>
+                        <SidebarNav
+                          items={sidebarNavItems}
+                          setOpen={setSheetOpen}
+                          className="dark:bg-dark-background dark:text-dark-text"
+                        />
+                        <Form action="/logout" method="post">
+                          <button
+                            type="submit"
+                            className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
+                          >
+                            <LogOut className="mr-2 h-5 w-5" />
+                            <span className="text-red-500 hover:bg-transparent hover:underline">
+                              Sign out
+                            </span>
+                          </button>
+                        </Form>
+                      </>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </>
           ) : (
             <>

@@ -36,7 +36,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const newPass = formData.get("newPassword");
   const confirmPass = formData.get("newPasswordConfirm");
   const passwordsList = [currPass, newPass, confirmPass];
-  console.log("🚀 ~ action ~ passwordsList:", passwordsList)
 
   //* when cancel button is clicked
   if (intent === "cancel") {
@@ -198,7 +197,7 @@ export default function ChangePaasswordPage() {
 
   return (
     <Form method="post" className="space-y-6" noValidate>
-      <Card className="w-full">
+      <Card className="w-full dark:bg-dark-boxes dark:border-white">
         <CardHeader>
           <CardTitle>Update Password</CardTitle>
           <CardDescription>
