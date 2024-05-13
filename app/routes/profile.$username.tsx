@@ -15,7 +15,7 @@ import { getInitials } from "~/utils/misc";
 import ErrorMessage from "~/components/error-message";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import { columns } from "~/components/mydevices/dt/columns";
-import { Badge } from "~/components/ui/badge";
+import { cn } from "~/lib/utils";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
@@ -28,7 +28,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const profile = await getProfileByUsername(username);
 
     if (!profile || !profile.public) {
-      redirect("/explore");
+      return redirect("/explore");
     } else {
       const profileMail = profile.user?.email || "";
       // Get the access token using the getMyBadgesAccessToken function
@@ -50,7 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       // Return the fetched data as JSON
       return json({
         success: true,
-        userBackpack: backpackData ? backpackData : [],
+        userBackpack: backpackData || [],
         allBadges: allBadges,
         user: profile.user,
         profile: profile,
@@ -74,7 +74,6 @@ export default function () {
   // Get the data from the loader function using the useLoaderData hook
   const { allBadges, userBackpack, user, profile } =
     useLoaderData<typeof loader>();
-  console.log("🚀 ~ user:", user);
 
   const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
     // Determine if badgeA and badgeB are owned by the user and not revoked
@@ -161,36 +160,51 @@ export default function () {
             <h3 className="text-lg font-semibold mb-4 text-light-green dark:text-dark-green">
               Badges
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {sortedBadges.map((badge: MyBadge) => {
-                return (
-                  <Link
-                    to={badge.openBadgeId}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    key={badge.entityId}
-                  >
-                    <Badge
-                      variant="secondary"
-                      className={
-                        // check if the badge is owned by the user
-                        // if so, remove the grayscale filter
-                        // if not, add the grayscale filter
-                        userBackpack.some((obj: MyBadge) => {
-                          return (
-                            obj.badgeclass === badge.entityId && !obj.revoked
-                          );
-                        })
-                          ? "border-transparent dark:border-transparent bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-                          : "border-transparent dark:border-transparent bg-gray-100 dark:bg-dark-boxes"
-                      }
-                    >
-                      {badge.name}
-                    </Badge>
-                  </Link>
-                );
-              })}
-            </div>
+            <section className="w-full py-12 md:py-16 lg:py-20">
+              <div className="container grid gap-8 px-4 md:px-6 lg:grid-cols-2 lg:gap-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {sortedBadges.map((badge: MyBadge) => {
+                    return (
+                      <Link
+                        to={badge.openBadgeId}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        key={badge.entityId}
+                      >
+                        <div
+                          className={cn(
+                            "flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 dark:border-gray-800 dark:text-dark-text",
+                            userBackpack.some((obj: MyBadge) => {
+                              return (
+                                obj.badgeclass === badge.entityId &&
+                                !obj.revoked
+                              );
+                            })
+                              ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
+                              : "bg-gray-100 dark:bg-dark-boxes",
+                          )}
+                        >
+                          <img
+                            alt="Design"
+                            className="h-6 w-6 rounded-full"
+                            height={24}
+                            src={badge.image}
+                            style={{
+                              aspectRatio: "24/24",
+                              objectFit: "cover",
+                            }}
+                            width={24}
+                          />
+                          <span className="text-sm font-medium">
+                            {badge.name}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
           </div>
           <div className="bg-white dark:bg-dark-background shadow-sm p-6">
             {user?.devices ? (
