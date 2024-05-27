@@ -16,21 +16,26 @@ import ErrorMessage from "~/components/error-message";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import { columns } from "~/components/mydevices/dt/columns";
 import { cn } from "~/lib/utils";
+import { useToast } from "~/components/ui/use-toast";
+import type { BadgeClass } from "~/utils";
+import { getUniqueActiveBadges, sortBadges } from "~/utils";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);
-
   // Get username or userid from URL params
   const username = params.username;
 
   if (username) {
-    // 1. Check if user exists
+    // Check if user exists
     const profile = await getProfileByUsername(username);
-
-    if (!profile || !profile.public) {
+    // If the user exists and their profile is public, fetch their data or
+    if (
+      (!profile || !profile.public) &&
+      requestingUserId !== profile?.user?.id
+    ) {
       return redirect("/explore");
     } else {
-      const profileMail = profile.user?.email || "";
+      const profileMail = profile?.user?.email || "";
       // Get the access token using the getMyBadgesAccessToken function
       const authToken = await getMyBadgesAccessToken().then((authData) => {
         return authData.access_token;
@@ -38,13 +43,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       // Retrieve the user's backpack data and all available badges from the server
       const backpackData = await getUserBackpack(profileMail, authToken).then(
-        (backpackData) => {
-          return backpackData;
+        (backpackData: MyBadge[]) => {
+          return getUniqueActiveBadges(backpackData);
         },
       );
 
       const allBadges = await getAllBadges(authToken).then((allBadges) => {
-        return allBadges.result;
+        return allBadges.result as BadgeClass[];
       });
 
       // Return the fetched data as JSON
@@ -52,7 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         success: true,
         userBackpack: backpackData || [],
         allBadges: allBadges,
-        user: profile.user,
+        user: profile?.user,
         profile: profile,
         requestingUserId: requestingUserId,
       });
@@ -72,35 +77,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function () {
   // Get the data from the loader function using the useLoaderData hook
-  const { allBadges, userBackpack, user, profile } =
+  const { allBadges, userBackpack, user, profile, success } =
     useLoaderData<typeof loader>();
 
-  const sortedBadges = allBadges.sort((badgeA: MyBadge, badgeB: MyBadge) => {
-    // Determine if badgeA and badgeB are owned by the user and not revoked
-    const badgeAOwned = userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeA.entityId && !obj.revoked,
-    );
-    const badgeBOwned = userBackpack.some(
-      (obj: MyBadge) => obj.badgeclass === badgeB.entityId && !obj.revoked,
-    );
-    // Sort badges based on ownership:
-    // Owned badges come first, followed by non-owned badges
-    if (badgeAOwned && !badgeBOwned) {
-      return -1;
-    } else if (!badgeAOwned && badgeBOwned) {
-      return 1;
-    } else {
-      // If both badges are owned or both are non-owned,
-      // maintain their original order
-      return 0;
-    }
-  });
+  const sortedBadges = sortBadges(allBadges, userBackpack);
+
+  const { toast } = useToast();
+
+  if (!success) {
+    toast({
+      variant: "destructive",
+      title: "No user with this username found.",
+      description: "Is the profile public?",
+    });
+  }
 
   return (
     <>
       <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full bg-white dark:bg-dark-background md:pt-4">
         <div className="bg-white dark:bg-dark-background shadow-sm p-6 flex flex-col gap-6 w-full md:w-1/3">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 dark:text-dark-text">
             <Avatar className="h-16 w-16">
               <AvatarImage
                 className="aspect-auto w-full h-full rounded-full object-cover"
@@ -111,7 +107,7 @@ export default function () {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-lg font-semibold dark:text-dark-text">
+              <h3 className="text-2xl font-semibold dark:text-dark-text">
                 {user?.name || ""}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -157,65 +153,63 @@ export default function () {
         </div>
         <div className="flex flex-col gap-6 w-full md:w-2/3">
           <div className="bg-white dark:bg-dark-background shadow-sm p-6">
-            <h3 className="text-lg font-semibold mb-4 text-light-green dark:text-dark-green">
+            <div className="text-3xl font-semibold mb-4 text-light-green dark:text-dark-green">
               Badges
-            </h3>
+            </div>
             <section className="w-full py-12 md:py-16 lg:py-20">
-              <div className="container grid gap-8 px-4 md:px-6 lg:grid-cols-2 lg:gap-12">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {sortedBadges.map((badge: MyBadge) => {
-                    return (
-                      <Link
-                        to={badge.openBadgeId}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        key={badge.entityId}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {sortedBadges.map((badge: BadgeClass) => {
+                  return (
+                    <Link
+                      to={badge.openBadgeId}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      key={badge.entityId}
+                    >
+                      <div
+                        className={cn(
+                          "flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 dark:border-gray-800 dark:text-dark-text",
+                          userBackpack.some((obj: MyBadge | null) => {
+                            return (
+                              obj !== null &&
+                              obj.badgeclass === badge.entityId &&
+                              !obj.revoked
+                            );
+                          })
+                            ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
+                            : "bg-gray-100 dark:bg-dark-boxes",
+                        )}
                       >
-                        <div
-                          className={cn(
-                            "flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 dark:border-gray-800 dark:text-dark-text",
-                            userBackpack.some((obj: MyBadge) => {
-                              return (
-                                obj.badgeclass === badge.entityId &&
-                                !obj.revoked
-                              );
-                            })
-                              ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-                              : "bg-gray-100 dark:bg-dark-boxes",
-                          )}
-                        >
-                          <img
-                            alt="Design"
-                            className="h-6 w-6 rounded-full"
-                            height={24}
-                            src={badge.image}
-                            style={{
-                              aspectRatio: "24/24",
-                              objectFit: "cover",
-                            }}
-                            width={24}
-                          />
-                          <span className="text-sm font-medium">
-                            {badge.name}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                        <img
+                          alt="Design"
+                          className="h-6 w-6 rounded-full"
+                          height={24}
+                          src={badge.image}
+                          style={{
+                            aspectRatio: "24/24",
+                            objectFit: "cover",
+                          }}
+                          width={24}
+                        />
+                        <span className="text-sm font-medium">
+                          {badge.name}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           </div>
           <div className="bg-white dark:bg-dark-background shadow-sm p-6">
-            {user?.devices ? (
+            {user?.devices && (
               <>
-                <h3 className="text-lg font-semibold mb-4 text-light-green dark:text-dark-green">
+                <div className="text-3xl font-semibold mb-4 text-light-green dark:text-dark-green">
                   Devices
-                </h3>
+                </div>
                 <DataTable columns={columns} data={user.devices} />
               </>
-            ) : // TODO: empty and private profiles
-            null}
+            )}
           </div>
         </div>
       </div>
