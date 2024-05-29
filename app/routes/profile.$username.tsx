@@ -16,7 +16,6 @@ import ErrorMessage from "~/components/error-message";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import { columns } from "~/components/mydevices/dt/columns";
 import { cn } from "~/lib/utils";
-import { useToast } from "~/components/ui/use-toast";
 import type { BadgeClass } from "~/utils";
 import { getUniqueActiveBadges, sortBadges } from "~/utils";
 
@@ -54,10 +53,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       // Return the fetched data as JSON
       return json({
-        success: true,
         userBackpack: backpackData || [],
         allBadges: allBadges,
-        user: profile?.user,
         profile: profile,
         requestingUserId: requestingUserId,
       });
@@ -66,10 +63,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // If the user data couldn't be fetched, return an empty JSON response
   return json({
-    success: false,
     userBackpack: [],
     allBadges: [],
-    user: null,
     profile: null,
     requestingUserId: requestingUserId,
   });
@@ -77,20 +72,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function () {
   // Get the data from the loader function using the useLoaderData hook
-  const { allBadges, userBackpack, user, profile, success } =
-    useLoaderData<typeof loader>();
+  const { allBadges, userBackpack, profile } = useLoaderData<typeof loader>();
 
   const sortedBadges = sortBadges(allBadges, userBackpack);
-
-  const { toast } = useToast();
-
-  if (!success) {
-    toast({
-      variant: "destructive",
-      title: "No user with this username found.",
-      description: "Is the profile public?",
-    });
-  }
 
   return (
     <>
@@ -108,18 +92,18 @@ export default function () {
             </Avatar>
             <div>
               <h3 className="text-2xl font-semibold dark:text-dark-text">
-                {user?.name || ""}
+                {profile?.user?.name || ""}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
                 User since{" "}
-                {new Date(user?.createdAt || "").toLocaleDateString()}
+                {new Date(profile?.user?.createdAt || "").toLocaleDateString()}
               </p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 md:pt-6">
             <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
               <span className="text-2xl font-bold dark:text-dark-green">
-                {user?.devices.length}
+                {profile?.user?.devices.length}
               </span>
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 Devices
@@ -127,7 +111,7 @@ export default function () {
             </div>
             <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
               <span className="text-2xl font-bold dark:text-dark-green">
-                38
+                coming soon
               </span>
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 Sensors
@@ -135,7 +119,7 @@ export default function () {
             </div>
             <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
               <span className="text-2xl font-bold dark:text-dark-green">
-                120k
+                coming soon
               </span>
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 Measurements
@@ -202,12 +186,12 @@ export default function () {
             </section>
           </div>
           <div className="bg-white dark:bg-dark-background shadow-sm p-6">
-            {user?.devices && (
+            {profile?.user?.devices && (
               <>
                 <div className="text-3xl font-semibold mb-4 text-light-green dark:text-dark-green">
                   Devices
                 </div>
-                <DataTable columns={columns} data={user.devices} />
+                <DataTable columns={columns} data={profile?.user.devices} />
               </>
             )}
           </div>

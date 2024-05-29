@@ -201,6 +201,8 @@ export function diffFromCreateDate(DeviceCreatedAt: string) {
  * @returns {MyBadge[]} - Array of unique, non-revoked badges.
  */
 export function getUniqueActiveBadges(badges: MyBadge[]): MyBadge[] {
+  // Check if the badges array is empty
+  if (!badges) return [];
   // Create a set to track unique badge class IDs
   const uniqueBadgeClassIds = new Set<string>();
 
