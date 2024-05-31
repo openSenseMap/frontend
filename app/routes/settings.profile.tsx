@@ -97,8 +97,8 @@ export default function EditUserProfilePage() {
     <Form method="post">
       <Card className="space-y-6 dark:bg-dark-boxes dark:border-white">
         <CardHeader>
-          <CardTitle>Account Settings</CardTitle>
-          <CardDescription>Update your profile information.</CardDescription>
+          <CardTitle>Profile Settings</CardTitle>
+          <CardDescription>This is how others see your profile.</CardDescription>
         </CardHeader>
         <CardContent className="flex">
           <div className="space-y-6 w-1/2 justify-center">
