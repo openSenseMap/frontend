@@ -47,19 +47,8 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!checkPasswordsType.isValid) {
     return json(
       {
-        errors: {
-          currPass:
-            checkPasswordsType.index == 0
-              ? "Current password is required."
-              : null,
-          newPass:
-            checkPasswordsType.index == 1 ? "New password is required." : null,
-          confirmPass:
-            checkPasswordsType.index == 2
-              ? "Password confirmation is required."
-              : null,
-          passMatch: null,
-        },
+        success: false,
+        message: "Password is required.",
       },
       { status: 400 },
     );
@@ -70,21 +59,8 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!validatePasswordsLength.isValid) {
     return json(
       {
-        errors: {
-          currPass:
-            validatePasswordsLength.index == 0
-              ? "Please use at least 8 characters."
-              : null,
-          newPass:
-            validatePasswordsLength.index == 1
-              ? "Please use at least 8 characters."
-              : null,
-          confirmPass:
-            validatePasswordsLength.index == 2
-              ? "Please use at least 8 characters."
-              : null,
-          passMatch: null,
-        },
+        success: false,
+        message: "Password must be at least 8 characters long.",
       },
       { status: 400 },
     );
@@ -98,12 +74,8 @@ export async function action({ request }: ActionFunctionArgs) {
   if (typeof currPass !== "string" || currPass.length === 0) {
     return json(
       {
-        errors: {
-          currPass: "Password is required.",
-          newPass: null,
-          confirmPass: null,
-          passMatch: null,
-        },
+        success: false,
+        message: "Current password is required.",
       },
       { status: 400 },
     );
@@ -113,12 +85,8 @@ export async function action({ request }: ActionFunctionArgs) {
   if (newPass !== confirmPass) {
     return json(
       {
-        errors: {
-          currPass: null,
-          newPass: null,
-          confirmPass: null,
-          passMatch: "Please make sure your passwords match.",
-        },
+        success: false,
+        message: "New passwords do not match.",
       },
       { status: 400 },
     );
@@ -129,14 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!user) {
     return json(
-      {
-        errors: {
-          currPass: "Incorrect password.",
-          newPass: null,
-          confirmPass: null,
-          passMatch: null,
-        },
-      },
+      { success: false, message: "Current password is incorrect." },
       { status: 400 },
     );
   }
@@ -147,14 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (typeof newPass !== "string" || newPass.length === 0) {
     return json(
-      {
-        errors: {
-          currPass: "Password is required.",
-          newPass: null,
-          confirmPass: null,
-          passMatch: null,
-        },
-      },
+      { success: false, message: "Password is required." },
       { status: 400 },
     );
   }
@@ -162,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
   //* update user password
   await updateUserPassword(userId, newPass);
 
-  return redirect("");
+  return json({ success: true, message: "Password updated successfully." });
   //* logout
   // return logout({ request: request, redirectTo: "/explore" });
 }
@@ -171,6 +125,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function ChangePaasswordPage() {
   const actionData = useActionData<typeof action>();
 
+  let $form = useRef<HTMLFormElement>(null);
   const currPassRef = useRef<HTMLInputElement>(null);
   const newPassRef = useRef<HTMLInputElement>(null);
   const confirmPassRef = useRef<HTMLInputElement>(null);
@@ -179,24 +134,23 @@ export default function ChangePaasswordPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (actionData?.errors?.currPass) {
-      currPassRef.current?.focus();
-    } else if (actionData?.errors?.newPass) {
-      newPassRef.current?.focus();
-    } else if (actionData?.errors?.confirmPass) {
-      confirmPassRef.current?.focus();
-    } else if (actionData?.errors?.passMatch) {
-      newPassRef.current?.focus();
-    } else {
-      toast({
-        title: "Password sucessfully updated.",
-        // description: "",
-      });
+    if (actionData) {
+      if (actionData.success) {
+        toast({ title: actionData.message, variant: "success" });
+        currPassRef.current?.focus();
+        $form.current?.reset();
+      } else {
+        toast({
+          title: actionData.message,
+          variant: "destructive",
+          description: "Please try again.",
+        });
+      }
     }
   }, [actionData, toast]);
 
   return (
-    <Form method="post" className="space-y-6" noValidate>
+    <Form method="post" className="space-y-6" noValidate ref={$form}>
       <Card className="w-full dark:bg-dark-boxes dark:border-white">
         <CardHeader>
           <CardTitle>Update Password</CardTitle>
