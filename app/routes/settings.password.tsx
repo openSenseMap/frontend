@@ -135,10 +135,10 @@ export default function ChangePaasswordPage() {
 
   useEffect(() => {
     if (actionData) {
+      $form.current?.reset();
       if (actionData.success) {
         toast({ title: actionData.message, variant: "success" });
         currPassRef.current?.focus();
-        $form.current?.reset();
       } else {
         toast({
           title: actionData.message,

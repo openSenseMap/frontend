@@ -172,8 +172,16 @@ export default function EditUserProfilePage() {
   useEffect(() => {
     //* when password is not correct
     if (actionData && actionData?.errors?.passwordDelete) {
+      toast({
+        title: "Invalid password",
+        variant: "destructive",
+      });
       passwordDelRef.current?.focus();
     } else if (actionData && actionData?.errors?.passwordUpdate) {
+      toast({
+        title: "Invalid password",
+        variant: "destructive",
+      });
       passwordUpdRef.current?.focus();
     }
     //* when passwordUpdate is correct
@@ -184,7 +192,7 @@ export default function EditUserProfilePage() {
     ) {
       toast({
         title: "Profile succesfully updated.",
-        // description: "",
+        variant: "success",
       });
     }
   }, [actionData, toast]);
@@ -239,6 +247,7 @@ export default function EditUserProfilePage() {
           <div className="grid gap-2">
             <Label htmlFor="passwordUpdate">Confirm password</Label>
             <Input
+              autoComplete="current-password"
               ref={passwordUpdRef}
               id="passwordUpdate"
               placeholder="Enter your current password"
@@ -248,7 +257,13 @@ export default function EditUserProfilePage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" name="intent" value="update">
+          <Button
+            type="submit"
+            name="intent"
+            value="update"
+            // disable button when values havent changed
+            disabled={name === userData?.name && lang === userData?.language}
+          >
             Save Changes
           </Button>
         </CardFooter>
@@ -280,6 +295,7 @@ export default function EditUserProfilePage() {
             name="intent"
             value="delete"
             variant="destructive"
+            disabled={!passwordDelVal}
           >
             Delete Account
           </Button>
