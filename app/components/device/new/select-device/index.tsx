@@ -22,13 +22,10 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
   return (
     <div className="space-y-4 pt-4">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          {t("select_device")}
-        </h3>
         {deviceTypeField.error && (
           <span className="text-red-500">{deviceTypeField.error}</span>
         )}
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+        <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-dark-text">
           {t("select_device_text")}
         </p>
       </div>
@@ -49,7 +46,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
                     setDeviceType(device.slug);
                     deviceTypeField.validate();
                   }}
-                  className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300 cursor-pointer"
+                  className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-light-green dark:data-[checked=true]:ring-dark-green cursor-pointer dark:bg-dark-boxes dark:text-dark-text"
                 >
                   <CardContent className="flex justify-center pt-2">
                     <AspectRatio ratio={4 / 3}>
@@ -63,7 +60,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
                   <CardFooter className="flex justify-center">
                     <CardTitle>{sensorWikiLabel(device.label.item)}</CardTitle>
                     {deviceType === device.slug && (
-                      <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
+                      <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-light-green dark:text-dark-green" />
                     )}
                   </CardFooter>
                 </Card>
@@ -76,7 +73,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           key={4}
           data-checked={deviceType === "own_device"}
           onClick={() => setDeviceType("own_device")}
-          className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-green-300 cursor-pointer"
+          className="relative data-[checked=true]:ring-2 data-[checked=true]:ring-light-green dark:data-[checked=true]:ring-dark-green cursor-pointer dark:bg-dark-boxes dark:text-dark-text"
         >
           <CardContent className="flex justify-center pt-2">
             <AspectRatio ratio={4 / 3}>
@@ -90,7 +87,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
           <CardFooter className="flex justify-center">
             <CardTitle>{t("own_device")}</CardTitle>
             {deviceType === "own_device" && (
-              <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-green-300" />
+              <CheckCircleIcon className="absolute bottom-0 right-0 h-8 w-8 text-light-green dark:text-dark-green" />
             )}
           </CardFooter>
         </Card>
@@ -145,7 +142,7 @@ export default function SelectDevice({ data }: SelectDeviceProps) {
       </div>
 
       <div className="py-2">
-        <Alert>
+        <Alert className="bg-white dark:bg-dark-boxes dark:text-dark-text">
           <InfoIcon className="h-4 w-4" />
           <AlertTitle>Info</AlertTitle>
           <AlertDescription>

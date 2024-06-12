@@ -17,8 +17,9 @@ export default function General({ data }: GeneralProps) {
   const exposureField = useField("exposure");
   const groupIdField = useField("groupId");
 
-
-  const [tags, setTags] = useState(data.groupId ? data.groupId.split(", ") : []);
+  const [tags, setTags] = useState(
+    data.groupId ? data.groupId.split(", ") : [],
+  );
 
   const handleChange = (tags: any) => {
     setTags(tags);
@@ -27,10 +28,7 @@ export default function General({ data }: GeneralProps) {
   return (
     <div className="space-y-4 pt-4">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          {t("general")}
-        </h3>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+        <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-dark-text">
           {t("general_text")}
         </p>
       </div>
@@ -47,7 +45,7 @@ export default function General({ data }: GeneralProps) {
         <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
           <label
             htmlFor="username"
-            className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+            className="block text-sm font-medium text-gray-700 dark:text-dark-text sm:mt-px sm:pt-2"
           >
             {t("station_name")}
           </label>
@@ -61,7 +59,7 @@ export default function General({ data }: GeneralProps) {
                 required
                 defaultValue={data.name}
                 autoComplete="name"
-                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 sm:text-sm"
+                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 sm:text-sm dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
               />
             </div>
             {nameField.error && (
@@ -78,7 +76,7 @@ export default function General({ data }: GeneralProps) {
         >
           <div>
             <div
-              className="text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
+              className="text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700 dark:text-dark-text"
               id="device-exposure"
             >
               {t("exposure")}
@@ -86,7 +84,7 @@ export default function General({ data }: GeneralProps) {
           </div>
           <div className="sm:col-span-2">
             <div className="max-w-lg">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-dark-text">
                 {t("exposure_explaination")}
               </p>
               <div className="mt-4 space-y-4">
@@ -99,11 +97,11 @@ export default function General({ data }: GeneralProps) {
                     defaultChecked={data.exposure === "INDOOR"}
                     type="radio"
                     required
-                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
+                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                   />
                   <label
                     htmlFor="exposure-indoor"
-                    className="ml-3 block text-sm font-medium text-gray-700"
+                    className="ml-3 block text-sm font-medium text-gray-700 dark:text-dark-text"
                   >
                     {t("indoor")}
                   </label>
@@ -117,11 +115,11 @@ export default function General({ data }: GeneralProps) {
                     defaultChecked={data.exposure === "OUTDOOR"}
                     type="radio"
                     required
-                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
+                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                   />
                   <label
                     htmlFor="exposure-outdoor"
-                    className="ml-3 block text-sm font-medium text-gray-700"
+                    className="ml-3 block text-sm font-medium text-gray-700 dark:text-dark-text"
                   >
                     {t("outdoor")}
                   </label>
@@ -135,11 +133,11 @@ export default function General({ data }: GeneralProps) {
                     defaultChecked={data.exposure === "MOBILE"}
                     type="radio"
                     required
-                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300"
+                    className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                   />
                   <label
                     htmlFor="exposure-mobile"
-                    className="ml-3 block text-sm font-medium text-gray-700"
+                    className="ml-3 block text-sm font-medium text-gray-700 dark:text-dark-text"
                   >
                     {t("mobile")}
                   </label>
@@ -161,7 +159,7 @@ export default function General({ data }: GeneralProps) {
         >
           <label
             htmlFor="groupId"
-            className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+            className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
           >
             Group ID ({t("optional")})
           </label>
@@ -183,11 +181,14 @@ export default function General({ data }: GeneralProps) {
                 className="block w-full flex-1 rounded-md sm:text-sm"
                 focusedClassName=""
                 tagProps={{
-                  className: "bg-blue-700 inline-block m-1 p-1 rounded-md inline-flex items-center text-white",
-                  classNameRemove: "h-5 w-5 text-black ml-1 bg-white cursor-pointer rounded-full after:content-['_×'] text-center",
+                  className:
+                    "bg-blue-700 inline-block m-1 p-1 rounded-md inline-flex items-center text-white",
+                  classNameRemove:
+                    "h-5 w-5 text-black ml-1 bg-white cursor-pointer rounded-full after:content-['_×'] text-center",
                 }}
                 inputProps={{
-                  className: "border-0 rounded-md focus:ring-0 focus:border-0 w-fit m-1 p-1",
+                  className:
+                    "border-0 rounded-md focus:ring-0 focus:border-0 w-fit m-1 p-1 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
                   placeholder: "Add a Group ID",
                 }}
               />

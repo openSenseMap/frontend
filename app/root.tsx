@@ -121,7 +121,7 @@ export function App() {
         <Meta />
         <Links />
       </head>
-      <body className="flex h-full flex-col">
+      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text">
         <Outlet />
         <Toaster />
         <ScrollRestoration />

@@ -50,16 +50,17 @@ module.exports = {
         900: "var(--color-zinc-900)",
       },
       slate: {
-        50: "var(--color-slate-50)",
-        100: "var(--color-slate-100)",
-        200: "var(--color-slate-200)",
-        300: "var(--color-slate-300)",
-        400: "var(--color-slate-400)",
-        500: "var(--color-slate-500)",
-        600: "var(--color-slate-600)",
-        700: "var(--color-slate-700)",
-        800: "var(--color-slate-800)",
-        900: "var(--color-slate-900)",
+        50: "#f8fafc",
+        100: "#f1f5f9",
+        200: "#e2e8f0",
+        300: "#cbd5e1",
+        400: "#94a3b8",
+        500: "#64748b",
+        600: "#475569",
+        700: "#334155",
+        800: "#1e293b",
+        900: "#0f172a",
+        950: "#020617",
       },
       green: {
         50: "var(--color-green-50)",
@@ -96,13 +97,13 @@ module.exports = {
       headerBorder: "var(--color-headerBorder)",
       logo: {
         green: "#4fae48",
-        blue: "#00b4e4"
+        blue: "#00b4e4",
       },
       light: {
         menu: "#727373",
         text: "#363636",
         green: "#3D843F",
-        blue: "#037EA1"
+        blue: "#037EA1",
       },
       dark: {
         title: "FFFFFF",
@@ -111,7 +112,7 @@ module.exports = {
         green: "#6FA161",
         blue: "#0386AA",
         background: "#242424",
-        boxes: "#3B3A3A"
+        boxes: "#3B3A3A",
       },
     },
     extend: {
@@ -119,13 +120,13 @@ module.exports = {
         //osem color scheme
         logo: {
           green: "#4fae48",
-          blue: "#00b4e4"
+          blue: "#00b4e4",
         },
         light: {
           menu: "#727373",
           text: "#363636",
           green: "#3D843F",
-          blue: "#037EA1"
+          blue: "#037EA1",
         },
         dark: {
           menu: "#D2D1D0",
@@ -133,7 +134,7 @@ module.exports = {
           green: "#6FA161",
           blue: "#0386AA",
           background: "#242424",
-          boxes: "#3B3A3A"
+          boxes: "#3B3A3A",
         },
         // shadcn colors
         border: "hsl(var(--border))",
@@ -209,12 +210,12 @@ module.exports = {
             transform: "translateY(0)",
           },
         },
-        'pulse': {
-          '0%, 100%': {
-            opacity: '1',
+        pulse: {
+          "0%, 100%": {
+            opacity: "1",
           },
-          '50%': {
-            opacity: '.5',
+          "50%": {
+            opacity: ".5",
           },
         },
 
@@ -229,12 +230,12 @@ module.exports = {
         },
       },
       animation: {
-        'fade-in-up': 'fade-in-up 1s ease-out',
-        'sidebarOpen': 'sidebarOpen 300ms ease-out',
-        'sidebarClose': 'sidebarClose 300ms ease-out',
-        'contentShow': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
-        'contentClose': 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        "fade-in-up": "fade-in-up 1s ease-out",
+        sidebarOpen: "sidebarOpen 300ms ease-out",
+        sidebarClose: "sidebarClose 300ms ease-out",
+        contentShow: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        contentClose: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         // shadcn accordion animation
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
