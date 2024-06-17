@@ -153,7 +153,7 @@
     "@tailwindcss/forms": "^0.5.3",
     "@testing-library/cypress": "^10.0.1",
     "@testing-library/dom": "^10.0.0",
-    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/bcryptjs": "^2.4.2",
