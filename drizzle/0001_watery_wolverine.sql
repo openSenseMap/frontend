@@ -9,8 +9,8 @@ LANGUAGE SQL
 AS $$
 	UPDATE sensor
 	SET status = CASE
-		WHEN (SELECT max(time) FROM measurement WHERE sensor.id = measurement."sensorId") > now() - interval '7 days' THEN 'active'::status
-		WHEN (SELECT max(time) FROM measurement WHERE sensor.id = measurement."sensorId") > now() - interval '30 days' AND (SELECT max(time) FROM measurement WHERE sensor.id = measurement."sensorId") < now() - interval '8 days' THEN 'inactive'::"status"
+		WHEN (SELECT max(time) FROM measurement WHERE sensor.id = measurement.sensor_id) > now() - interval '7 days' THEN 'active'::status
+		WHEN (SELECT max(time) FROM measurement WHERE sensor.id = measurement.sensor_id) > now() - interval '30 days' AND (SELECT max(time) FROM measurement WHERE sensor.id = measurement.sensor_id) < now() - interval '8 days' THEN 'inactive'::"status"
 		ELSE 'old'::"status"
 	END;
 $$;

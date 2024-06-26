@@ -8,7 +8,7 @@ SELECT create_hypertable('measurement', 'time');
 
 -- Continuous aggregate (CAGG) of the hypertable
 CREATE MATERIALIZED VIEW measurement_15min WITH (timescaledb.continuous) AS
-SELECT measurement."sensorId",
+SELECT measurement.sensor_id,
        time_bucket('15 min', measurement.time) AS time,
        AVG(measurement.value) AS value_avg
 FROM measurement
@@ -20,7 +20,7 @@ SELECT add_continuous_aggregate_policy('measurement_15min', start_offset => INTE
 
 -- Continuous aggregate (CAGG) on top of another CAGG / Hierarchical Continuous Aggregates , new in Timescale 2.9, issue with TZ as of https://github.com/timescale/timescaledb/pull/5195
 CREATE MATERIALIZED VIEW measurement_1day WITH (timescaledb.continuous) AS
-SELECT "sensorId",
+SELECT sensor_id,
        time_bucket('1 day', time) AS time,
        AVG(value_avg) AS value_avg
 FROM measurement_15min

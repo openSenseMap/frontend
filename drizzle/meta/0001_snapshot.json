@@ -1,6 +1,6 @@
 {
-  "id": "ebb3bfd7-36ef-4666-8047-9509bbf59a95",
-  "prevId": "3e144641-949c-46e8-95a0-bce06c3ff0ea",
+  "id": "67d8dfcf-df55-49e7-8ab7-eadb52bb1772",
+  "prevId": "b24d2bce-0eeb-4d58-a082-5a6b1e4af4b2",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -26,8 +26,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "useAuth": {
-          "name": "useAuth",
+        "use_auth": {
+          "name": "use_auth",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
@@ -88,7 +88,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "sensorWikiModel": {
           "name": "sensorWikiModel",
@@ -106,8 +106,8 @@
       "name": "measurement",
       "schema": "",
       "columns": {
-        "sensorId": {
-          "name": "sensorId",
+        "sensor_id": {
+          "name": "sensor_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -130,10 +130,10 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "measurement_sensorId_time_unique": {
-          "name": "measurement_sensorId_time_unique",
+        "measurement_sensor_id_time_unique": {
+          "name": "measurement_sensor_id_time_unique",
           "columns": [
-            "sensorId",
+            "sensor_id",
             "time"
           ],
           "nullsNotDistinct": false
@@ -323,8 +323,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "sensorType": {
-          "name": "sensorType",
+        "sensor_type": {
+          "name": "sensor_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
