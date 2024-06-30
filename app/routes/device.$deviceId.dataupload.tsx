@@ -7,6 +7,16 @@ import { ArrowLeft, Upload } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
+import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Textarea } from "~/components/ui/textarea";
+import { Label } from "~/components/ui/label";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -23,7 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 //**********************************
-export default function DataUpload2() {
+export default function DataUpload() {
   const [measurementData, setMeasurementData] = useState("");
   const [dataFormat, setDataFormat] = useState("CSV");
 
@@ -43,55 +53,43 @@ export default function DataUpload2() {
           </nav>
 
           <main className="col-span-6 md:col-span-6">
-            <div className="grid grid-rows-1">
-              <div className="flex min-h-full items-center justify-center">
-                <div className="mx-auto w-full font-helvetica text-[14px]">
-                  {/* Form */}
-                  <Form method="post" noValidate>
-                    {/* Heading */}
-                    <div>
-                      {/* Title */}
-                      <div className="mt-2 flex justify-between">
-                        <div>
-                          <h1 className=" text-4xl">Manual Data Upload</h1>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* divider */}
-                    <hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
-
-                    <div className="my-5 rounded border border-[#bce8f1] bg-[#d9edf7] p-4 text-[#31708f]">
-                      <p>
-                        Here you can upload measurements for this senseBox. This
-                        can be of use for senseBoxes that log their measurements
-                        to a SD-card when no means of direct communication to
-                        opensensemap are available. Either select a file, or
-                        copy the data into the textfield. Accepted data formats
-                        are described{" "}
-                        <a
-                          href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
-                          className="cursor-pointer text-[#4eaf47]"
-                        >
-                          here
-                        </a>
-                        .
-                      </p>
-                    </div>
-
-                    {/* select file button */}
-                    <div className="mb-4 mt-6">
-                      <label
+            <Form method="post" noValidate>
+              <div className="container mx-auto max-w-3xl px-4 py-12">
+                <h1 className="mb-6 text-3xl font-bold">Manual Data Upload</h1>
+                <div className="mb-8 rounded-md bg-muted p-4 text-muted-foreground">
+                  <p>
+                    Here you can upload measurements for this senseBox. This can
+                    be of use for senseBoxes that log their measurements to an
+                    SD card when no means of direct communication to
+                    openSenseMap are available. Either select a file, or copy
+                    the data into the text field. Accepted data formats are
+                    described{" "}
+                    <a
+                      href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
+                      className="underline"
+                    >
+                      here
+                    </a>
+                    .
+                  </p>
+                </div>
+                <div className="mb-8 grid grid-cols-2 gap-4">
+                  <div>
+                    <Button
+                      variant="outline"
+                      className="w-full relative dark:bg-dark-boxes"
+                    >
+                      <Label
                         htmlFor="fileInput"
-                        className=" cursor-pointer rounded border border-gray-200 px-4 py-2 text-black hover:bg-[#e6e6e6] disabled:border-[#ccc] disabled:text-[#8a8989]"
+                        className="cursor-pointer w-full h-full flex items-center justify-center"
                       >
-                        Select a file
-                      </label>
+                        Upload File
+                      </Label>
                       <Input
                         type="file"
                         id="fileInput"
                         accept="text/csv,application/json,application/vnd.ms-excel"
-                        className="invisible absolute"
+                        className="absolute inset-0 opacity-0 cursor-pointer dark:bg-dark-boxes"
                         onChange={(e) => {
                           const file = e.currentTarget.files?.[0];
                           if (file) {
@@ -105,68 +103,43 @@ export default function DataUpload2() {
                             reader.readAsText(file);
                           }
                         }}
-                      ></Input>
-                    </div>
-
-                    {/* data format */}
-                    <div>
-                      <label
-                        htmlFor="exposure"
-                        className="txt-base block font-bold tracking-normal"
-                      >
-                        Data format
-                      </label>
-
-                      <div className="mt-1">
-                        <select
-                          id="exposure"
-                          name="exposure"
-                          value={
-                            dataFormat === "application/json" ? "JSON" : "CSV"
-                          }
-                          onChange={(e) => setDataFormat(e.target.value)}
-                          className="appearance-auto w-full rounded border border-gray-200 px-2 py-1.5 text-base"
-                        >
-                          <option value="CSV">CSV</option>
-                          <option value="JSON">JSON</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Measurement data */}
-                    <div className="mt-3">
-                      <label
-                        htmlFor="exposure"
-                        className="txt-base block font-bold tracking-normal"
-                      >
-                        Measurement data
-                      </label>
-
-                      <div className="mt-1">
-                        <textarea
-                          placeholder="sensorID,value,timestamp,longitude,latitude,height"
-                          className=" h-[350px] w-full rounded-[1px] border-[#ccc] text-[90%]"
-                          defaultValue={measurementData}
-                        ></textarea>
-                      </div>
-                    </div>
-
-                    {/* upload button */}
-                    <div className="mt-3">
-                      <button
-                        type="submit"
-                        name="intent"
-                        value="delete"
-                        className="mb-5 rounded border border-gray-200 px-4 py-2 text-[18px] text-black hover:bg-[#e6e6e6] disabled:border-[#ccc] disabled:text-[#8a8989]"
-                      >
-                        <Upload className=" mr-1 inline-block h-[20px] w-[19px] align-sub" />{" "}
-                        UPLOAD
-                      </button>
-                    </div>
-                  </Form>
+                      />
+                    </Button>
+                  </div>
+                  <div>
+                    <Select
+                      onValueChange={(value) => setDataFormat(value as string)}
+                      defaultValue={dataFormat ?? "CSV"}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="JSON">JSON</SelectItem>
+                        <SelectItem value="CSV">CSV</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+                <div className="mb-8">
+                  <Textarea
+                    id="measurement-data"
+                    placeholder="Paste measurement data here..."
+                    className="h-[300px]"
+                    defaultValue={measurementData.slice(0, 3000)} // Displaying only the first 3000 characters
+                  />
+                  {measurementData.length > 1000 && (
+                    <div className="text-sm text-gray-500 mt-2">
+                      {`Showing first 1000 characters of ${measurementData.length}`}
+                    </div>
+                  )}
+                </div>
+                <Button type="submit" className="w-full">
+                  Upload
+                  <Upload className="ml-2 inline h-5 w-5" />
+                </Button>
               </div>
-            </div>
+            </Form>
           </main>
         </div>
       </div>
