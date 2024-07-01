@@ -23,7 +23,7 @@ WITH NO DATA;
 -- Automatically keep downsampled data up to date with new data from 20 minutes to 6 hours ago.
 -- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/drop-data/
 SELECT add_continuous_aggregate_policy('measurement_15min',
-  start_offset => INTERVAL '6 hours',
+  start_offset => INTERVAL '2 days',
   end_offset => INTERVAL '20 minutes',
   schedule_interval => INTERVAL '15 minutes'
 );
@@ -39,10 +39,10 @@ GROUP BY 1, 2
 WITH NO DATA;
 
 -- Add a CAGG policy in order to refresh it automatically
--- Automatically keep downsampled data up to date with new data from 2 days to 3 days ago.
+-- Automatically keep downsampled data up to date with new data from 2 days to 4 days ago.
 -- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/drop-data/
 SELECT add_continuous_aggregate_policy('measurement_1day',
-  start_offset => INTERVAL '3 days',
+  start_offset => INTERVAL '4 days',
   end_offset => INTERVAL '2 days',
   schedule_interval => INTERVAL '1 day'
 );
