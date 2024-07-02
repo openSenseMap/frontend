@@ -34,7 +34,7 @@ export const device = pgTable("device", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
-  userId: text("user_id"),
+  userId: text("user_id").notNull(),
   sensorWikiModel: text("sensorWikiModel"),
 });
 

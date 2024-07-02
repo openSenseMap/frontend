@@ -22,6 +22,20 @@
       "when": 1718182367858,
       "tag": "0002_exotic_morbius",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1719827481306,
+      "tag": "0003_plain_la_nuit",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1719832678388,
+      "tag": "0004_warm_triathlon",
+      "breakpoints": true
     }
   ]
 }
