@@ -18,7 +18,7 @@ export const user = pgTable("user", {
   email: text("email").unique().notNull(),
   role: text("role").$type<"admin" | "user">().default("user"),
   language: text("language").default("en_US"),
-  emailIsConfirmed: boolean("emailIsConfirmed").default(false),
+  emailIsConfirmed: boolean("email_is_confirmed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
