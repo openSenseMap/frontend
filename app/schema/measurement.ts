@@ -15,7 +15,7 @@ import {
 export const measurement = pgTable(
   "measurement",
   {
-    sensorId: text("sensorId").notNull(),
+    sensorId: text("sensor_id").notNull(),
     time: timestamp("time", { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -34,24 +34,24 @@ export const measurement = pgTable(
  * Views
  */
 export const measurements15minView = pgMaterializedView("measurement_15min", {
-  sensorId: text("sensorId").notNull(),
+  sensorId: text("sensor_id").notNull(),
   time: timestamp("time", { precision: 3, withTimezone: true })
     .defaultNow()
     .notNull(),
-  value: doublePrecision("value"),
+  value: doublePrecision("value_avg"),
 }).as(
   sql`select ${measurement.sensorId}, time_bucket('15 min', ${measurement.time}) AS time, AVG(value) AS value from ${measurement} GROUP BY 1, 2 WITH NO DATA`,
 );
 
 export const measurements1dayView = pgMaterializedView("measurement_1day", {
-  sensorId: text("sensorId").notNull(),
+  sensorId: text("sensor_id").notNull(),
   time: timestamp("time", { precision: 3, withTimezone: true })
     .defaultNow()
     .notNull(),
-  value: doublePrecision("value"),
+  value: doublePrecision("value_avg"),
 }).as(
   sql`select ${measurements15minView.sensorId}, time_bucket('1 day', ${measurements15minView.time}) AS time, AVG(value) AS value from ${measurements15minView} GROUP BY 1, 2 WITH NO DATA`,
-)
+);
 
 /**
  * Types

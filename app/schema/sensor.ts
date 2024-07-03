@@ -18,7 +18,7 @@ export const sensor = pgTable("sensor", {
     .$defaultFn(() => createId()),
   title: text("title"),
   unit: text("unit"),
-  sensorType: text("sensorType"),
+  sensorType: text("sensor_type"),
   status: statusEnum("status").default("inactive"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

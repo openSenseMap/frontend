@@ -15,4 +15,5 @@ node_modules
 
 /app/styles/**/*.css
 
+/db/imports/*.csv
 measurements.csv

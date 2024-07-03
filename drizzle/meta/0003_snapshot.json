@@ -1,6 +1,6 @@
 {
-  "id": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
-  "prevId": "67d8dfcf-df55-49e7-8ab7-eadb52bb1772",
+  "id": "dca7d463-f950-4c72-bf96-1a6eaae5cf8b",
+  "prevId": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -88,7 +88,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "sensorWikiModel": {
           "name": "sensorWikiModel",
@@ -132,11 +132,11 @@
       "uniqueConstraints": {
         "measurement_sensor_id_time_unique": {
           "name": "measurement_sensor_id_time_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "sensor_id",
             "time"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     },
@@ -162,15 +162,15 @@
         "password_user_id_user_id_fk": {
           "name": "password_user_id_user_id_fk",
           "tableFrom": "password",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -211,25 +211,25 @@
         "profile_user_id_user_id_fk": {
           "name": "profile_user_id_user_id_fk",
           "tableFrom": "profile",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_username_unique": {
           "name": "profile_username_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     },
@@ -287,15 +287,15 @@
         "profile_image_profile_id_profile_id_fk": {
           "name": "profile_image_profile_id_profile_id_fk",
           "tableFrom": "profile_image",
+          "tableTo": "profile",
           "columnsFrom": [
             "profile_id"
           ],
-          "tableTo": "profile",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -456,10 +456,10 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     }
