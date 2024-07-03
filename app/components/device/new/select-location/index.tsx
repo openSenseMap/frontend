@@ -53,7 +53,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
 
   //* location height
   const [height, setHeight] = useState(
-    data.data.height ? data.data.height : ""
+    data.data.height ? data.data.height : "",
   );
 
   //* height derivation helper function
@@ -63,7 +63,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       setHeight(elevation ? Math.round(elevation * 100) / 100 : "");
       setTimeout(() => heightField.validate(), 0);
     },
-    [heightField]
+    [heightField],
   );
 
   //* on-marker-drag event
@@ -76,7 +76,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
       });
       heightDerivation(event.lngLat.lng, event.lngLat.lat);
     },
-    [heightDerivation]
+    [heightDerivation],
   );
 
   //* on-geolocate event
@@ -91,7 +91,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
         heightDerivation(event.coords.longitude, event.coords.latitude);
       });
     },
-    [heightDerivation]
+    [heightDerivation],
   );
 
   //* on-geocoder-result event
@@ -106,7 +106,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
     mapRef.current?.on("moveend", () => {
       heightDerivation(
         event.result.geometry.coordinates[0],
-        event.result.geometry.coordinates[1]
+        event.result.geometry.coordinates[1],
       );
     });
   };
@@ -124,10 +124,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
   return (
     <div className="space-y-4 pt-4">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          {t("location")}
-        </h3>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+        <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-dark-text">
           {t("location_text")}
         </p>
       </div>
@@ -223,7 +220,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
                 }}
                 aria-describedby="name-error"
                 className={
-                  "w-full rounded border border-gray-200 px-2 py-1 text-base" +
+                  "w-full rounded border border-gray-200 px-2 py-1 text-base dark:bg-dark-boxes" +
                   (!marker.latitude
                     ? " border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000] "
                     : "")
@@ -271,7 +268,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
                 }}
                 aria-describedby="name-error"
                 className={
-                  "w-full rounded border border-gray-200 px-2 py-1 text-base" +
+                  "w-full rounded border border-gray-200 px-2 py-1 text-base dark:bg-dark-boxes" +
                   (!marker.longitude
                     ? " border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000] "
                     : "")
@@ -322,7 +319,7 @@ export default function SelectLocation({ data }: SelectLocationProps) {
                   }
                 }}
                 aria-describedby="name-error"
-                className="w-full rounded border border-gray-200 px-2 py-1 text-base"
+                className="w-full rounded border border-gray-200 px-2 py-1 text-base dark:bg-dark-boxes"
               />
             </div>
           </div>
