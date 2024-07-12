@@ -12,7 +12,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
 
 export function getDeviceWithoutSensors({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
-    where: (device, { eq }) => eq(device.userId, id),
+    where: (device, { eq }) => eq(device.id, id),
     columns: {
       id: true,
       name: true,

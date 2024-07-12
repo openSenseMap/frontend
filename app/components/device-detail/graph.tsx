@@ -297,8 +297,11 @@ export default function Graph(props: any) {
                   <SelectContent>
                     <SelectGroup>
                       <SelectItem value="raw">Raw</SelectItem>
-                      <SelectItem value="15m">15 minutes</SelectItem>
-                      <SelectItem value="1d">1 day</SelectItem>
+                      <SelectItem value="10m">10 Minutes</SelectItem>
+                      <SelectItem value="1h">1 Hour</SelectItem>
+                      <SelectItem value="1d">1 Day</SelectItem>
+                      <SelectItem value="1m">1 Month</SelectItem>
+                      <SelectItem value="1y">1 Year</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>

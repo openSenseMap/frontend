@@ -15,6 +15,7 @@ import { useMap } from "react-map-gl";
 import { zoomOut } from "~/lib/search-map-helper";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
+  console.log(`[explore.$deviceId._index.tsx - loader]`);
   const locale = await i18next.getLocale(request);
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
@@ -53,6 +54,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           new Date(startDate),
           addDays(new Date(endDate), 1),
         );
+        
         return {
           ...sensor,
           data: sensorData as any,
@@ -83,6 +85,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     locale: locale,
   };
 
+  console.log(`[explore.$deviceId._index.tsx - loader]: ${selectedSensors}`);
+
   return typedjson(data);
 }
 
@@ -90,6 +94,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function DeviceId() {
   // Retrieving the data returned by the loader using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
+  console.log(data);
 
   if (!data?.device && !data.selectedSensors) {
     return null;
