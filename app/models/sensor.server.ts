@@ -1,5 +1,6 @@
-import { eq } from "drizzle-orm";
-import { sensor, type Sensor } from "~/schema";
+import { eq, sql } from "drizzle-orm";
+import { sensor } from "~/schema";
+import type { Sensor } from "~/schema";
 import { drizzleClient } from "~/db.server";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
@@ -66,6 +67,20 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
   });
 }
 
+// LATERAL JOIN to get latest measurement for sensors belonging to a specific device
+export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
+  return drizzleClient.execute(
+    sql`SELECT * FROM sensor s,
+    LATERAL (
+      SELECT * FROM measurement m
+      WHERE m.sensor_id = s.id
+      ORDER BY m.time DESC
+      LIMIT 1
+    ) AS measure
+    WHERE s.device_id=${deviceId};`,
+  );
+}
+
 //if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
 export async function registerSensor(newSensor: Sensor) {
   const insertedSensor = await drizzleClient
@@ -88,6 +103,7 @@ export async function registerSensor(newSensor: Sensor) {
 export function getSensorsForDevice(deviceId: Sensor["deviceId"]) {
   return drizzleClient.query.sensor.findMany({
     where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
+    with: {},
   });
 }
 
@@ -109,9 +125,8 @@ export function updateSensor({
   id,
   title,
   unit,
-  sensorType,
-} // icon,
-: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
+  sensorType, // icon,
+}: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
   return drizzleClient
     .update(sensor)
     .set({

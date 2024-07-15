@@ -54,7 +54,8 @@ import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isMobile, isTablet, isBrowser } from "react-device-detect";
 import { Label } from "../ui/label";
-import type { Device, Sensor } from "~/schema";
+import type { Device, Sensor, SensorWithMeasurement } from "~/schema";
+import { formatDistanceToNow } from "date-fns";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -90,6 +91,11 @@ export default function DeviceDetailBox() {
   useEffect(() => {
     setOpenGraph(Boolean(data.selectedSensors.length));
   }, [data.selectedSensors]);
+
+  const [sensors, setSensors] = useState<SensorWithMeasurement[]>();
+  useEffect(() => {
+    setSensors(data.sensors);
+  }, [data.sensors]);
 
   const [searchParams] = useSearchParams();
 
@@ -261,68 +267,75 @@ export default function DeviceDetailBox() {
                       >
                         <div>
                           <ul className="no-scrollbar z-0 flex-1 divide-y divide-gray-200 overflow-y-scroll">
-                            {data.sensors.map((sensor: Sensor) => {
-                              // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-                              const lastMeasurement =
-                                sensor.lastMeasurement as LastMeasurement;
-                              const value = lastMeasurement
-                                ? (lastMeasurement.value as string)
-                                : undefined;
-                              return (
-                                <li key={sensor.id}>
-                                  <div className="group relative flex items-center px-2 py-3">
-                                    <label htmlFor={sensor.id}>
-                                      <input
-                                        className="peer hidden"
-                                        disabled={
-                                          !sensorIds.includes(sensor.id) &&
-                                          searchParams.getAll("sensor")
-                                            .length >= 2
-                                            ? true
-                                            : false
-                                        } // check if there are already two selected and this one is not one of them
-                                        type="checkbox"
-                                        name="sensor"
-                                        id={sensor.id}
-                                        value={sensor.id}
-                                        defaultChecked={sensorIds.includes(
-                                          sensor.id,
-                                        )}
-                                      />
-                                      <div
-                                        className="absolute inset-0 cursor-pointer group-hover:bg-zinc-300 group-hover:opacity-30"
-                                        aria-hidden="true"
-                                      ></div>
-                                      <div className="relative flex min-w-0 flex-1 cursor-pointer items-center gap-4">
-                                        {/* add dynamic icons here */}
-                                        <Thermometer className="dark:text-zinc-200" />
-                                        <div className={"truncate"}>
-                                          <p
-                                            className={
-                                              "truncate text-sm font-medium leading-5 dark:text-zinc-200 " +
-                                              (sensorIds.includes(sensor.id)
-                                                ? "text-green-100"
-                                                : "text-gray-900")
-                                            }
-                                          >
-                                            {sensor.sensorWikiPhenomenon ??
-                                              sensor.title}
-                                          </p>
-                                          <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
-                                            {value
-                                              ? value +
-                                                (sensor.sensorWikiUnit ??
-                                                  sensor.unit)
-                                              : sensor.sensorWikiUnit ??
-                                                sensor.unit}
-                                          </p>
+                            {sensors &&
+                              sensors.map((sensor: SensorWithMeasurement) => {
+                                // dont really know why this is necessary - some kind of TypeScript/i18n bug?
+                                const lastMeasurement =
+                                  sensor.lastMeasurement as LastMeasurement;
+                                const value = lastMeasurement
+                                  ? (lastMeasurement.value as string)
+                                  : undefined;
+                                return (
+                                  <li key={sensor.id}>
+                                    <div className="group relative flex items-center px-2 py-3">
+                                      <label htmlFor={sensor.id}>
+                                        <input
+                                          className="peer hidden"
+                                          disabled={
+                                            !sensorIds.includes(sensor.id) &&
+                                            searchParams.getAll("sensor")
+                                              .length >= 2
+                                              ? true
+                                              : false
+                                          } // check if there are already two selected and this one is not one of them
+                                          type="checkbox"
+                                          name="sensor"
+                                          id={sensor.id}
+                                          value={sensor.id}
+                                          defaultChecked={sensorIds.includes(
+                                            sensor.id,
+                                          )}
+                                        />
+                                        <div
+                                          className="absolute inset-0 cursor-pointer group-hover:bg-zinc-300 group-hover:opacity-30"
+                                          aria-hidden="true"
+                                        ></div>
+                                        <div className="relative flex min-w-0 flex-1 cursor-pointer items-center gap-4">
+                                          {/* add dynamic icons here */}
+                                          <Thermometer className="dark:text-zinc-200" />
+                                          <div>
+                                            {sensor.value} {sensor.unit} -{" "}
+                                            {formatDistanceToNow(
+                                              new Date(sensor.time),
+                                            )}
+                                          </div>
+                                          <div className={"truncate"}>
+                                            <p
+                                              className={
+                                                "truncate text-sm font-medium leading-5 dark:text-zinc-200 " +
+                                                (sensorIds.includes(sensor.id)
+                                                  ? "text-green-100"
+                                                  : "text-gray-900")
+                                              }
+                                            >
+                                              {sensor.sensorWikiPhenomenon ??
+                                                sensor.title}
+                                            </p>
+                                            <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
+                                              {value
+                                                ? value +
+                                                  (sensor.sensorWikiUnit ??
+                                                    sensor.unit)
+                                                : sensor.sensorWikiUnit ??
+                                                  sensor.unit}
+                                            </p>
+                                          </div>
                                         </div>
-                                      </div>
-                                    </label>
-                                  </div>
-                                </li>
-                              );
-                            })}
+                                      </label>
+                                    </div>
+                                  </li>
+                                );
+                              })}
                           </ul>
                         </div>
                       </Form>
