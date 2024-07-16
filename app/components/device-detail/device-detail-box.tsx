@@ -8,7 +8,6 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import Graph from "./graph";
-import type { LastMeasurement } from "types";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -24,11 +23,11 @@ import {
   LineChart,
   Minus,
   Share2,
-  Thermometer,
   X,
   XSquare,
   RefreshCcw,
   RefreshCwOff,
+  LineChartIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -56,6 +55,16 @@ import { isMobile, isTablet, isBrowser } from "react-device-detect";
 import { Label } from "../ui/label";
 import type { Device, Sensor, SensorWithMeasurement } from "~/schema";
 import { formatDistanceToNow } from "date-fns";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import SensorIcon from "../sensor-icon";
+import { Toggle } from "../ui/toggle";
+import { Separator } from "../ui/separator";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -246,99 +255,60 @@ export default function DeviceDetailBox() {
                       Sensors
                     </AccordionTrigger>
                     <AccordionContent>
-                      <Form
-                        method="get"
-                        onChange={(e) => {
-                          // handle sensor selection and keep time/aggregation params if at least one sensor is selected
-                          const formData = new FormData(e.currentTarget);
-                          if (formData.getAll("sensor").length > 0) {
-                            searchParams.delete("sensor");
-                            searchParams.forEach((value, key) => {
-                              formData.append(key, value);
-                            });
-                          }
-                          submit(formData);
-                        }}
-                        className={
-                          navigation.state === "loading"
-                            ? "pointer-events-none"
-                            : ""
-                        }
-                      >
-                        <div>
-                          <ul className="no-scrollbar z-0 flex-1 divide-y divide-gray-200 overflow-y-scroll">
-                            {sensors &&
-                              sensors.map((sensor: SensorWithMeasurement) => {
-                                // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-                                const lastMeasurement =
-                                  sensor.lastMeasurement as LastMeasurement;
-                                const value = lastMeasurement
-                                  ? (lastMeasurement.value as string)
-                                  : undefined;
-                                return (
-                                  <li key={sensor.id}>
-                                    <div className="group relative flex items-center px-2 py-3">
-                                      <label htmlFor={sensor.id}>
-                                        <input
-                                          className="peer hidden"
-                                          disabled={
-                                            !sensorIds.includes(sensor.id) &&
-                                            searchParams.getAll("sensor")
-                                              .length >= 2
-                                              ? true
-                                              : false
-                                          } // check if there are already two selected and this one is not one of them
-                                          type="checkbox"
-                                          name="sensor"
-                                          id={sensor.id}
-                                          value={sensor.id}
-                                          defaultChecked={sensorIds.includes(
-                                            sensor.id,
-                                          )}
-                                        />
-                                        <div
-                                          className="absolute inset-0 cursor-pointer group-hover:bg-zinc-300 group-hover:opacity-30"
-                                          aria-hidden="true"
-                                        ></div>
-                                        <div className="relative flex min-w-0 flex-1 cursor-pointer items-center gap-4">
-                                          {/* add dynamic icons here */}
-                                          <Thermometer className="dark:text-zinc-200" />
-                                          <div>
-                                            {sensor.value} {sensor.unit} -{" "}
-                                            {formatDistanceToNow(
-                                              new Date(sensor.time),
-                                            )}
-                                          </div>
-                                          <div className={"truncate"}>
-                                            <p
-                                              className={
-                                                "truncate text-sm font-medium leading-5 dark:text-zinc-200 " +
-                                                (sensorIds.includes(sensor.id)
-                                                  ? "text-green-100"
-                                                  : "text-gray-900")
-                                              }
-                                            >
-                                              {sensor.sensorWikiPhenomenon ??
-                                                sensor.title}
-                                            </p>
-                                            <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
-                                              {value
-                                                ? value +
-                                                  (sensor.sensorWikiUnit ??
-                                                    sensor.unit)
-                                                : sensor.sensorWikiUnit ??
-                                                  sensor.unit}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      </label>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        {sensors
+                          ? sensors.map((sensor: SensorWithMeasurement) => {
+                              return (
+                                <Card key={sensor.id}>
+                                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">
+                                      {sensor.title}
+                                    </CardTitle>
+                                    <SensorIcon
+                                      title={sensor.title || ""}
+                                      className="h-4 w-4 text-muted-foreground"
+                                    />
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="flex flex-row items-center space-x-2">
+                                      <div className="text-2xl font-bold">
+                                        {sensor.value}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                        {sensor.unit}
+                                      </p>
                                     </div>
-                                  </li>
-                                );
-                              })}
-                          </ul>
-                        </div>
-                      </Form>
+                                  </CardContent>
+                                  <Separator />
+                                  <CardFooter className="justify-between px-6 py-3">
+                                    <div className="flex items-center gap-1">
+                                      <div
+                                        className={
+                                          sensor.status === "active"
+                                            ? "h-2 w-2 rounded-full bg-green-100"
+                                            : "h-2 w-2 rounded-full bg-red-500"
+                                        }
+                                      ></div>
+                                      <p className="text-xs text-muted-foreground">
+                                        {formatDistanceToNow(
+                                          new Date(sensor.time),
+                                        )}{" "}
+                                        ago
+                                      </p>
+                                    </div>
+                                    <Toggle
+                                      variant="outline"
+                                      size="sm"
+                                      aria-label="Toggle italic"
+                                    >
+                                      <LineChartIcon className="h-3 w-3" />
+                                    </Toggle>
+                                  </CardFooter>
+                                </Card>
+                              );
+                            })
+                          : null}
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
