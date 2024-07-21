@@ -7,6 +7,7 @@ import {
   type InferSelectModel,
 } from "drizzle-orm";
 import { device } from "./device";
+import type { Measurement } from "./measurement";
 
 /**
  * Table
@@ -45,3 +46,5 @@ export const sensorRelations = relations(sensor, ({ one }) => ({
  */
 export type Sensor = InferSelectModel<typeof sensor>;
 export type InsertSensor = InferInsertModel<typeof sensor>;
+
+export type SensorWithMeasurement = Sensor & Measurement;

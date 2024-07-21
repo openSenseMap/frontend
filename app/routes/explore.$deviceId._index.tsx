@@ -2,14 +2,17 @@ import { type Sensor } from "~/schema";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
+import { addDays } from "date-fns";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getGraphColor } from "~/lib/utils";
-import { getSensorsFromDevice } from "~/models/sensor.server";
+import {
+  getSensorsFromDevice,
+  getSensorsWithLastMeasurement,
+} from "~/models/sensor.server";
 import i18next from "~/i18next.server";
-import { addDays } from "date-fns";
 import ErrorMessage from "~/components/error-message";
 import { useMap } from "react-map-gl";
 import { zoomOut } from "~/lib/search-map-helper";
@@ -26,6 +29,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const device = await getDevice({ id: params.deviceId });
   const sensors = await getSensorsFromDevice(params.deviceId);
+
+  const sensorsWithLastestMeasurement = await getSensorsWithLastMeasurement(
+    params.deviceId,
+  );
 
   // Find all sensors from the device response that have the same id as one of the sensor array value
   const sensorIds = url.searchParams.getAll("sensor");
@@ -54,7 +61,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           new Date(startDate),
           addDays(new Date(endDate), 1),
         );
-        
+
         return {
           ...sensor,
           data: sensorData as any,
@@ -68,15 +75,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     }),
   );
+  
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
     sensor.color = color;
     return color;
   });
+
   // Combine the device data with the selected sensors and return the result as JSON + add env variable
   const data = {
     device: device,
-    sensors: sensors,
+    sensors: sensorsWithLastestMeasurement,
     selectedSensors: selectedSensors,
     aggregation: aggregation,
     fromDate: startDate,
@@ -85,8 +94,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     locale: locale,
   };
 
-  console.log(`[explore.$deviceId._index.tsx - loader]: ${selectedSensors}`);
-
   return typedjson(data);
 }
 
@@ -94,9 +101,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function DeviceId() {
   // Retrieving the data returned by the loader using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
-  console.log(data);
 
-  if (!data?.device && !data.selectedSensors) {
+  if (!data?.device && !data.sensors) {
     return null;
   }
 
@@ -104,7 +110,7 @@ export default function DeviceId() {
     <>
       {/* If the box is mobile, iterate over selected sensors and show trajectory */}
       {data.device.exposure === "mobile" ? (
-        <MobileBoxView sensors={data.selectedSensors} />
+        <MobileBoxView sensors={data.sensors} />
       ) : null}
       <DeviceDetailBox />
     </>
