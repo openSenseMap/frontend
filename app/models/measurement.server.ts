@@ -1,4 +1,11 @@
-import { measurement, measurements10minView } from "~/schema";
+import {
+  measurement,
+  measurements10minView,
+  measurements1dayView,
+  measurements1hourView,
+  measurements1monthView,
+  measurements1yearView,
+} from "~/schema";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 
@@ -28,18 +35,54 @@ export function getMeasurement(
           ),
         )
         .orderBy(desc(measurements10minView.time));
+    } else if (aggregation === "1h") {
+      return drizzleClient
+        .select()
+        .from(measurements1hourView)
+        .where(
+          and(
+            eq(measurements1hourView.sensorId, sensorId),
+            gte(measurements1hourView.time, startDate),
+            lte(measurements1hourView.time, endDate),
+          ),
+        )
+        .orderBy(desc(measurements1hourView.time));
     } else if (aggregation === "1d") {
       return drizzleClient
         .select()
-        .from(measurements10minView)
+        .from(measurements1dayView)
         .where(
           and(
-            eq(measurements10minView.sensorId, sensorId),
-            gte(measurements10minView.time, startDate),
-            lte(measurements10minView.time, endDate),
+            eq(measurements1dayView.sensorId, sensorId),
+            gte(measurements1dayView.time, startDate),
+            lte(measurements1dayView.time, endDate),
           ),
         )
-        .orderBy(desc(measurements10minView.time));
+        .orderBy(desc(measurements1dayView.time));
+    } else if (aggregation === "1m") {
+      return drizzleClient
+        .select()
+        .from(measurements1monthView)
+        .where(
+          and(
+            eq(measurements1monthView.sensorId, sensorId),
+            gte(measurements1monthView.time, startDate),
+            lte(measurements1monthView.time, endDate),
+          ),
+        )
+        .orderBy(desc(measurements1monthView.time));
+    } else if (aggregation === "1y") {
+      return drizzleClient
+        .select()
+        .from(measurements1yearView)
+        .where(
+          and(
+            eq(measurements1yearView.sensorId, sensorId),
+            gte(measurements1yearView.time, startDate),
+            lte(measurements1yearView.time, endDate),
+          ),
+        )
+        .orderBy(desc(measurements1yearView.time));
     }
     // If aggregation is not specified or different from "15m" and "1d", fetch default measurements.
     return drizzleClient.query.measurement.findMany({
@@ -58,12 +101,30 @@ export function getMeasurement(
       .from(measurements10minView)
       .where(eq(measurements10minView.sensorId, sensorId))
       .orderBy(desc(measurements10minView.time));
+  } else if (aggregation === "1h") {
+    return drizzleClient
+      .select()
+      .from(measurements1hourView)
+      .where(eq(measurements1hourView.sensorId, sensorId))
+      .orderBy(desc(measurements1hourView.time));
   } else if (aggregation === "1d") {
     return drizzleClient
       .select()
-      .from(measurements10minView)
-      .where(eq(measurements10minView.sensorId, sensorId))
-      .orderBy(desc(measurements10minView.time));
+      .from(measurements1dayView)
+      .where(eq(measurements1dayView.sensorId, sensorId))
+      .orderBy(desc(measurements1dayView.time));
+  } else if (aggregation === "1m") {
+    return drizzleClient
+      .select()
+      .from(measurements1monthView)
+      .where(eq(measurements1monthView.sensorId, sensorId))
+      .orderBy(desc(measurements1monthView.time));
+  } else if (aggregation === "1y") {
+    return drizzleClient
+      .select()
+      .from(measurements1yearView)
+      .where(eq(measurements1yearView.sensorId, sensorId))
+      .orderBy(desc(measurements1yearView.time));
   }
 
   // If neither start date nor aggregation are specified, fetch default measurements with a limit of 20000.
