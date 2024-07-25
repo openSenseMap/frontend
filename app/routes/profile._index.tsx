@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node"; // or cloudflare/deno
+import { redirect } from "@remix-run/node";
 import { getProfileByUserId } from "~/models/profile.server";
 import { getUser } from "~/session.server";
 

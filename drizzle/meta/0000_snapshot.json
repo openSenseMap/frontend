@@ -1,8 +1,8 @@
 {
+  "id": "b24d2bce-0eeb-4d58-a082-5a6b1e4af4b2",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
-  "id": "3e144641-949c-46e8-95a0-bce06c3ff0ea",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "device": {
       "name": "device",
@@ -26,8 +26,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "useAuth": {
-          "name": "useAuth",
+        "use_auth": {
+          "name": "use_auth",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
@@ -88,7 +88,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "sensorWikiModel": {
           "name": "sensorWikiModel",
@@ -106,8 +106,8 @@
       "name": "measurement",
       "schema": "",
       "columns": {
-        "sensorId": {
-          "name": "sensorId",
+        "sensor_id": {
+          "name": "sensor_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -130,11 +130,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "measurement_sensorId_time_unique": {
-          "name": "measurement_sensorId_time_unique",
+        "measurement_sensor_id_time_unique": {
+          "name": "measurement_sensor_id_time_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "sensorId",
+            "sensor_id",
             "time"
           ]
         }
@@ -323,8 +323,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "sensorType": {
-          "name": "sensorType",
+        "sensor_type": {
+          "name": "sensor_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -491,8 +491,8 @@
   },
   "schemas": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   }
 }

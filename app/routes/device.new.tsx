@@ -276,8 +276,8 @@ export const action = async ({ request }: LoaderFunctionArgs) => {
       action === "next"
         ? pageToNumber + 1
         : action === "previous"
-        ? pageToNumber - 1
-        : Number(action);
+          ? pageToNumber - 1
+          : Number(action);
     return redirect(`?page=${nextPage}`, {
       headers: {
         "set-cookie": await sessionStorage.commitSession(session),
@@ -403,50 +403,13 @@ export default function NewDevice() {
         />
         <div className="flex justify-between pt-5">
           <div className="flex items-center gap-1">
-            <h1 className="text-2xl font-bold">{t("add_device")}</h1>
+            <h1 className="text-2xl font-bold">{t("select_device")}</h1>
             {showSpinner && (
               <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                 <Spinner />
               </div>
             )}
           </div>
-          {/* <div className="flex justify-end">
-            {page > 1 && (
-              <button
-                name="action"
-                // type="button"
-                value="previous"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const previousPage = Number(page) - 1;
-                  navigate(`?page=${previousPage}`);
-                }}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                {t("prev")}
-              </button>
-            )}
-            {page < 6 && (
-              <button
-                name="action"
-                // type="button"
-                value="next"
-                className="ml-3 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                {t("next")}
-              </button>
-            )}
-            {page === 6 && (
-              <button
-                name="action"
-                type="submit"
-                value="submit"
-                className="ml-3 rounded-md border border-gray-300 bg-green-300 px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                {t("submit")}
-              </button>
-            )}
-          </div> */}
         </div>
         <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
           {page === 1 && <SelectDevice data={loaderData} />}
@@ -474,7 +437,7 @@ export default function NewDevice() {
                 const previousPage = Number(page) - 1;
                 navigate(`?page=${previousPage}`);
               }}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:text-dark-text"
             >
               {t("prev")}
             </button>
@@ -483,7 +446,7 @@ export default function NewDevice() {
             <button
               name="action"
               value="next"
-              className="ml-3 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+              className="ml-3 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:text-dark-text"
             >
               {t("next")}
             </button>
@@ -493,7 +456,7 @@ export default function NewDevice() {
               name="action"
               type="submit"
               value="submit"
-              className="ml-3 rounded-md border border-gray-300 bg-green-300 px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+              className="ml-3 rounded-md border border-gray-300 bg-light-green dark:bg-dark-green px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
               {t("submit")}
             </button>

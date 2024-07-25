@@ -7,29 +7,27 @@ import {
   useLoaderData,
   // useNavigation,
 } from "@remix-run/react";
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { Separator } from "~/components/ui/separator";
-import { conform, useForm } from "@conform-to/react";
 import { requireUserId } from "~/session.server";
-import { drizzleClient } from "~/db.server";
 import { getInitials } from "~/utils/misc";
-import { z } from "zod";
-import { nameSchema } from "~/utils/user-validation";
-import { getFieldsetConstraint, parse } from "@conform-to/zod";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import ErrorMessage from "~/components/error-message";
-import { profile } from "~/schema";
-import { eq } from "drizzle-orm";
-import { getProfileByUserId } from "~/models/profile.server";
+import { getProfileByUserId, updateProfile } from "~/models/profile.server";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-
-const profileFormSchema = z.object({
-  username: nameSchema.optional(),
-  visibility: z.preprocess((value) => value === "true", z.boolean().optional()),
-});
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Switch } from "~/components/ui/switch";
+import { useEffect, useState } from "react";
+import { useToast } from "~/components/ui/use-toast";
 
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request);
@@ -43,147 +41,127 @@ export async function loader({ request }: DataFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUserId(request);
+  const profile = await getProfileByUserId(userId);
   const formData = await request.formData();
-  const submission = await parse(formData, {
-    async: true,
-    schema: profileFormSchema.superRefine(
-      async ({ username, visibility }, ctx) => {
-        // if (newPassword && !currentPassword) {
-        //   ctx.addIssue({
-        //     path: ["newPassword"],
-        //     code: "custom",
-        //     message: "Must provide current password to change password.",
-        //   });
-        // }
-        // if (currentPassword && newPassword) {
-        //   const user = await verifyLogin(username, currentPassword);
-        //   if (!user) {
-        //     ctx.addIssue({
-        //       path: ["currentPassword"],
-        //       code: "custom",
-        //       message: "Incorrect password.",
-        //     });
-        //   }
-        // }
-      },
-    ),
+  const username = formData.get("username");
+  const isPublic = formData.get("isPublic");
+
+  if (!profile || !userId) {
+    return json({
+      success: false,
+      message: "Something went wrong.",
+    });
+  }
+
+  const updatedProfile = await updateProfile(
+    profile?.id as string,
+    username as string,
+    isPublic === "on",
+  );
+
+  return json({
+    success: true,
+    updatedProfile,
   });
-  if (submission.intent !== "submit") {
-    return json({ status: "idle", submission } as const);
-  }
-  if (!submission.value) {
-    return json(
-      {
-        status: "error",
-        submission,
-      } as const,
-      { status: 400 },
-    );
-  }
-  const { username, visibility } = submission.value;
-
-  await drizzleClient
-    .update(profile)
-    .set({
-      username,
-      public: visibility,
-    })
-    .where(eq(profile.userId, userId));
-
-  return redirect(`/settings/profile`);
 }
 
 export default function EditUserProfilePage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  // const navigation = useNavigation();
-  // const formAction = useFormAction();
 
-  // const isSubmitting =
-  //   navigation.state === "submitting" &&
-  //   navigation.formAction === formAction &&
-  //   navigation.formMethod === "post";
+  const [username, setUsername] = useState(data.profile.username);
+  const [isPublic, setIsPublic] = useState(data.profile.public || false);
 
-  // The `useForm` hook will return everything you need to setup a form
-  // including the error and config of each field
-  const [form, fields] = useForm({
-    id: "edit-profile",
-    constraint: getFieldsetConstraint(profileFormSchema),
-    lastSubmission: actionData?.submission,
-    onValidate({ formData }) {
-      return parse(formData, { schema: profileFormSchema });
-    },
-    defaultValue: {
-      username: data.profile.username,
-      visibility: data.profile.public ? "true" : "false",
-    },
-    shouldRevalidate: "onBlur",
-  });
+  //* toast
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been updated successfully.",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Something went wrong.",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [actionData, toast]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Profile</h3>
-        <p className="text-sm text-muted-foreground">
-          This is how others will see you on the site.
-        </p>
-      </div>
-      <Separator />
-      <div className="mt-16 flex gap-12">
-        <Form method="post" className="w-1/2" {...form.props}>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor={fields.username.id}>Username</Label>
-            <Input type="text" {...conform.input(fields.username)} />
-            <div>{fields.username.error}</div>
-          </div>
-          <div>
-            <h3 className="mb-4 text-lg font-medium">Visibility</h3>
-            <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <div className="flex items-center space-y-0.5">
-                <Input
-                  className="flex h-6 w-6 items-center justify-center rounded border"
-                  {...conform.input(fields.visibility, {
-                    type: "checkbox",
-                    value: "true",
-                  })}
-                />
-                <Label htmlFor={fields.visibility.id} className="ml-4">
-                  Public
-                </Label>
-              </div>
+    <Form method="post">
+      <Card className="space-y-6 dark:bg-dark-boxes dark:border-white">
+        <CardHeader>
+          <CardTitle>Profile Settings</CardTitle>
+          <CardDescription>This is how others see your profile.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex">
+          <div className="space-y-6 w-1/2 justify-center">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                min={3}
+                max={40}
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your new username"
+                defaultValue={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="isPublic"
+                name="isPublic"
+                defaultChecked={isPublic}
+                onCheckedChange={(e) => setIsPublic(e)}
+              />
+              <Label htmlFor="isPublic">Public Profile</Label>
             </div>
           </div>
-          <div className="mt-8 flex">
-            <Button type="submit">Save changes</Button>
+          <div className="flex w-1/2 justify-center">
+            <div className="relative h-52 w-52">
+              <Avatar className="h-full w-full">
+                <AvatarImage
+                  className="aspect-auto w-full h-full rounded-full object-cover"
+                  src={"/resources/file/" + data.profile.profileImage?.id}
+                />
+                <AvatarFallback>
+                  {getInitials(data.profile?.username ?? "")}
+                </AvatarFallback>
+              </Avatar>
+              <Link
+                preventScrollReset
+                to="photo"
+                className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
+                title="Change profile photo"
+                aria-label="Change profile photo"
+              >
+                &#x270E;
+              </Link>
+            </div>
           </div>
-        </Form>
-        <div className="flex w-1/2 justify-center">
-          <div className="relative h-52 w-52">
-            <Avatar className="h-full w-full">
-              <AvatarImage
-                className="aspect-auto w-full h-full rounded-full object-cover"
-                src={"/resources/file/" + data.profile.profileImage?.id}
-              />
-              <AvatarFallback>
-                {getInitials(data.profile?.username ?? "")}
-              </AvatarFallback>
-            </Avatar>
-            <Link
-              preventScrollReset
-              to="photo"
-              className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
-              title="Change profile photo"
-              aria-label="Change profile photo"
-            >
-              {/* TODO: Make this lucide pencil icon work */}
-              {/* <Pencil /> */}
-              &#x270E;
-            </Link>
-          </div>
-        </div>
-      </div>
-      <Outlet />
-    </div>
+        </CardContent>
+        <CardFooter>
+          <Button
+            type="submit"
+            disabled={
+              username === data.profile.username &&
+              isPublic === data.profile.public
+            }
+          >
+            Save changes
+          </Button>
+        </CardFooter>
+        <Outlet />
+      </Card>
+    </Form>
   );
 }
 

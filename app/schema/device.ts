@@ -25,7 +25,7 @@ export const device = pgTable("device", {
     .$defaultFn(() => createId()),
   name: text("name").notNull(),
   description: text("description"),
-  useAuth: boolean("useAuth"),
+  useAuth: boolean("use_auth"),
   exposure: exposureEnum("exposure"),
   status: statusEnum("status").default("inactive"),
   model: deviceModelEnum("model"),
@@ -35,7 +35,7 @@ export const device = pgTable("device", {
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
   userId: text("user_id").notNull(),
-  sensorWikiModel: text("sensorWikiModel"),
+  sensorWikiModel: text("sensor_wiki_model"),
 });
 
 /**

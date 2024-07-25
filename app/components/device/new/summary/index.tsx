@@ -20,10 +20,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
     <>
       <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
         <div>
-          <h3 className="text-lg font-medium leading-6 text-gray-900">
-            {t("summary")}
-          </h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-dark-text">
             {t("summary_text")}
           </p>
         </div>
@@ -84,7 +81,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
                     <TableCell className="font-medium">
                       {sensorWikiLabel(
                         phenomena.find((pheno: any) => pheno.slug == sensor[2])
-                          .label.item
+                          .label.item,
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{sensor[3]}</TableCell>
@@ -120,16 +117,17 @@ export default function Summary({ data, phenomena }: SummaryProps) {
                     {data["ttn.decodeProfile"]}
                   </TableCell>
                 </TableRow>
-                {!data["ttn.decodeOptions"] || data["ttn.decodeOptions"] !== "" && (
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      Decode Options
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {data["ttn.decodeOptions"]}
-                    </TableCell>
-                  </TableRow>
-                )}
+                {!data["ttn.decodeOptions"] ||
+                  (data["ttn.decodeOptions"] !== "" && (
+                    <TableRow>
+                      <TableCell className="font-medium">
+                        Decode Options
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {data["ttn.decodeOptions"]}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 {data["ttn.port"] !== "" && (
                   <TableRow>
                     <TableCell className="font-medium">Port</TableCell>
@@ -151,7 +149,9 @@ export default function Summary({ data, phenomena }: SummaryProps) {
               <TableBody>
                 <TableRow>
                   <TableCell className="font-medium">URL</TableCell>
-                  <TableCell className="font-medium">{data["mqtt.url"]}</TableCell>
+                  <TableCell className="font-medium">
+                    {data["mqtt.url"]}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Topic</TableCell>
@@ -166,9 +166,7 @@ export default function Summary({ data, phenomena }: SummaryProps) {
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">
-                    Decode Options
-                  </TableCell>
+                  <TableCell className="font-medium">Decode Options</TableCell>
                   <TableCell className="font-medium">
                     {data["mqtt.decodeOptions"]}
                   </TableCell>

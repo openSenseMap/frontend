@@ -20,20 +20,20 @@ export default function Advanced({ data }: AdvancedProps) {
 
   // ttn form fields
   const [ttnEnabled, setTtnEnabled] = useState<boolean | undefined>(
-    data["ttn.enabled"] === "on"
+    data["ttn.enabled"] === "on",
   );
   const ttnAppIdField = useField("ttn.appId");
   const ttnDeviceIdField = useField("ttn.devId");
   const ttnDecodeProfileField = useField("ttn.decodeProfile");
   const [ttnDecodeProfile, setTtnDecodeProfile] = useState<string | undefined>(
-    data["ttn.decodeProfile"] ? data["ttn.decodeProfile"] : undefined
+    data["ttn.decodeProfile"] ? data["ttn.decodeProfile"] : undefined,
   );
   const ttnDecodeOptionsField = useField("ttn.decodeOptions");
   const ttnPortField = useField("ttn.port");
 
   // mqtt form fields
   const [mqttEnabled, setMqttEnabled] = useState<boolean | undefined>(
-    data.mqttEnabled === "on"
+    data.mqttEnabled === "on",
   );
   const mqttUrlField = useField("mqtt.url");
   const mqttTopicField = useField("mqtt.topic");
@@ -44,10 +44,7 @@ export default function Advanced({ data }: AdvancedProps) {
   return (
     <div className=" pt-4">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          {t("advanced")}
-        </h3>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+        <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-dark-text">
           {t("advanced_text")}
         </p>
       </div>
@@ -99,6 +96,7 @@ export default function Advanced({ data }: AdvancedProps) {
           <Checkbox
             id="ttnEnabled"
             name="ttn.enabled"
+            className="dark:bg-dark-boxes"
             checked={ttnEnabled}
             onCheckedChange={(checked) => {
               checked === "indeterminate"
@@ -118,7 +116,7 @@ export default function Advanced({ data }: AdvancedProps) {
             <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="ttnAppId"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Application ID
                 <TooltipProvider>
@@ -144,7 +142,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data["ttn.appId"]}
                     autoComplete="mqttDecodeOptions"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!ttnEnabled}
                   />
                 </div>
@@ -162,7 +160,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="ttnDeviceId"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Device ID
                 <TooltipProvider>
@@ -188,7 +186,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data["ttn.devId"]}
                     autoComplete="ttnDeviceId"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!ttnEnabled}
                   />
                 </div>
@@ -206,7 +204,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="ttnDecodeProfile"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Decoding Profile
                 <TooltipProvider>
@@ -251,7 +249,7 @@ export default function Advanced({ data }: AdvancedProps) {
                       setTtnDecodeProfile(e.target.value);
                       ttnDecodeProfileField.validate();
                     }}
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!ttnEnabled}
                   >
                     <option value="" disabled selected hidden>
@@ -279,7 +277,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="ttnDecodeOptions"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Decoding Options
                 <TooltipProvider>
@@ -307,7 +305,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data["ttn.decodeOptions"]}
                     autoComplete="ttnDecodeOptions"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={
                       !ttnEnabled ||
                       ttnDecodeProfile === "sensebox/home" ||
@@ -330,7 +328,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="ttnPort"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Port (optional)
                 <TooltipProvider>
@@ -354,7 +352,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     name="ttn.port"
                     id="ttnPort"
                     value={data["ttn.port"]}
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!ttnEnabled}
                   />
                 </div>
@@ -416,6 +414,7 @@ export default function Advanced({ data }: AdvancedProps) {
           <Checkbox
             checked={mqttEnabled}
             name="mqttEnabled"
+            className="dark:bg-dark-boxes"
             id="mqttEnabled"
             onCheckedChange={(checked) => {
               checked === "indeterminate"
@@ -428,7 +427,7 @@ export default function Advanced({ data }: AdvancedProps) {
           />
           <label
             htmlFor="mqttEnabled"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-dark-text"
           >
             Enable MQTT
           </label>
@@ -438,7 +437,7 @@ export default function Advanced({ data }: AdvancedProps) {
             <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="mqttUrl"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 URL
                 <TooltipProvider>
@@ -462,7 +461,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data.mqttUrl}
                     autoComplete="mqttUrl"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!mqttEnabled}
                   />
                 </div>
@@ -480,7 +479,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="mqttTopic"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 "
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Topic
                 <TooltipProvider>
@@ -506,7 +505,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data.mqttTopic}
                     autoComplete="mqttTopic"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!mqttEnabled}
                   />
                 </div>
@@ -524,7 +523,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <div>
                 <label
-                  className="flex text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
+                  className="flex text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700 dark:text-dark-text"
                   id="label-notifications"
                   htmlFor="mqttFormat"
                 >
@@ -545,7 +544,7 @@ export default function Advanced({ data }: AdvancedProps) {
               </div>
               <div className="sm:col-span-2">
                 <div className="max-w-lg">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-dark-text">
                     The file format your data will be transferred in.
                   </p>
                   <div className="mt-4 space-y-4">
@@ -560,12 +559,12 @@ export default function Advanced({ data }: AdvancedProps) {
                         defaultChecked={data.mqttFormat === "json"}
                         type="radio"
                         required
-                        className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed"
+                        className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed dark:bg-dark-boxes"
                         disabled={!mqttEnabled}
                       />
                       <label
                         htmlFor="format-json"
-                        className="ml-3 block text-sm font-medium text-gray-700"
+                        className="ml-3 block text-sm font-medium text-gray-700 dark:text-dark-text"
                       >
                         json
                       </label>
@@ -579,12 +578,12 @@ export default function Advanced({ data }: AdvancedProps) {
                         defaultChecked={data.mqttFormat === "csv"}
                         type="radio"
                         required
-                        className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed"
+                        className="focus:ring-indigo-500 text-indigo-600 h-4 w-4 border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed dark:bg-dark-boxes"
                         disabled={!mqttEnabled}
                       />
                       <label
                         htmlFor="format-csv"
-                        className="ml-3 block text-sm font-medium text-gray-700"
+                        className="ml-3 block text-sm font-medium text-gray-700 dark:text-dark-text"
                       >
                         csv
                       </label>
@@ -605,7 +604,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="mqttDecodeOptions"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Decoding options
                 <TooltipProvider>
@@ -633,7 +632,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data.mqttDecodeOptions}
                     autoComplete="mqttDecodeOptions"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!mqttEnabled}
                   />
                 </div>
@@ -656,7 +655,7 @@ export default function Advanced({ data }: AdvancedProps) {
             >
               <label
                 htmlFor="mqttConnectOptions"
-                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                className="flex text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 dark:text-dark-text"
               >
                 Connect options
                 <TooltipProvider>
@@ -684,7 +683,7 @@ export default function Advanced({ data }: AdvancedProps) {
                     required
                     defaultValue={data.mqttConnectOptions}
                     autoComplete="mqttConnectOptions"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 flex-1 rounded-md border-gray-300 disabled:opacity-50 disabled:hover:cursor-not-allowed sm:text-sm dark:bg-dark-boxes"
                     disabled={!mqttEnabled}
                   />
                 </div>

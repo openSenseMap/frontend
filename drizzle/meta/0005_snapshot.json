@@ -1,6 +1,6 @@
 {
-  "id": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
-  "prevId": "67d8dfcf-df55-49e7-8ab7-eadb52bb1772",
+  "id": "66ddf798-abd6-4995-a84f-3387f98c7f1b",
+  "prevId": "de8c44e3-3ed9-4ae4-b6d7-c21287899766",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -88,10 +88,10 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "sensorWikiModel": {
-          "name": "sensorWikiModel",
+        "sensor_wiki_model": {
+          "name": "sensor_wiki_model",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -132,11 +132,11 @@
       "uniqueConstraints": {
         "measurement_sensor_id_time_unique": {
           "name": "measurement_sensor_id_time_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "sensor_id",
             "time"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     },
@@ -162,15 +162,15 @@
         "password_user_id_user_id_fk": {
           "name": "password_user_id_user_id_fk",
           "tableFrom": "password",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -211,25 +211,25 @@
         "profile_user_id_user_id_fk": {
           "name": "profile_user_id_user_id_fk",
           "tableFrom": "profile",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_username_unique": {
           "name": "profile_username_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     },
@@ -287,15 +287,15 @@
         "profile_image_profile_id_profile_id_fk": {
           "name": "profile_image_profile_id_profile_id_fk",
           "tableFrom": "profile_image",
+          "tableTo": "profile",
           "columnsFrom": [
             "profile_id"
           ],
-          "tableTo": "profile",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -356,20 +356,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "sensorWikiType": {
-          "name": "sensorWikiType",
+        "sensor_wiki_type": {
+          "name": "sensor_wiki_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "sensorWikiPhenomenon": {
-          "name": "sensorWikiPhenomenon",
+        "sensor_wiki_phenomenon": {
+          "name": "sensor_wiki_phenomenon",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "sensorWikiUnit": {
-          "name": "sensorWikiUnit",
+        "sensor_wiki_unit": {
+          "name": "sensor_wiki_unit",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -428,8 +428,8 @@
           "notNull": false,
           "default": "'en_US'"
         },
-        "emailIsConfirmed": {
-          "name": "emailIsConfirmed",
+        "email_is_confirmed": {
+          "name": "email_is_confirmed",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -456,10 +456,10 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     }
