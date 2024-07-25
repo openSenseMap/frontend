@@ -1,10 +1,8 @@
 {
-  "id": "dca7d463-f950-4c72-bf96-1a6eaae5cf8b",
-  "prevId": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "device": {
+    "public.device": {
       "name": "device",
       "schema": "",
       "columns": {
@@ -102,7 +100,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "measurement": {
+    "public.measurement": {
       "name": "measurement",
       "schema": "",
       "columns": {
@@ -132,15 +130,15 @@
       "uniqueConstraints": {
         "measurement_sensor_id_time_unique": {
           "name": "measurement_sensor_id_time_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "sensor_id",
             "time"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "password": {
+    "public.password": {
       "name": "password",
       "schema": "",
       "columns": {
@@ -162,21 +160,21 @@
         "password_user_id_user_id_fk": {
           "name": "password_user_id_user_id_fk",
           "tableFrom": "password",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile": {
+    "public.profile": {
       "name": "profile",
       "schema": "",
       "columns": {
@@ -211,29 +209,29 @@
         "profile_user_id_user_id_fk": {
           "name": "profile_user_id_user_id_fk",
           "tableFrom": "profile",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_username_unique": {
           "name": "profile_username_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "profile_image": {
+    "public.profile_image": {
       "name": "profile_image",
       "schema": "",
       "columns": {
@@ -287,21 +285,21 @@
         "profile_image_profile_id_profile_id_fk": {
           "name": "profile_image_profile_id_profile_id_fk",
           "tableFrom": "profile_image",
-          "tableTo": "profile",
           "columnsFrom": [
             "profile_id"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "sensor": {
+    "public.sensor": {
       "name": "sensor",
       "schema": "",
       "columns": {
@@ -392,7 +390,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -456,43 +454,48 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
   },
   "enums": {
-    "model": {
+    "public.model": {
       "name": "model",
-      "values": {
-        "HOME_V2_LORA": "HOME_V2_LORA"
-      }
+      "schema": "public",
+      "values": [
+        "HOME_V2_LORA"
+      ]
     },
-    "exposure": {
+    "public.exposure": {
       "name": "exposure",
-      "values": {
-        "indoor": "indoor",
-        "outdoor": "outdoor",
-        "mobile": "mobile",
-        "unknown": "unknown"
-      }
+      "schema": "public",
+      "values": [
+        "indoor",
+        "outdoor",
+        "mobile",
+        "unknown"
+      ]
     },
-    "status": {
+    "public.status": {
       "name": "status",
-      "values": {
-        "active": "active",
-        "inactive": "inactive",
-        "old": "old"
-      }
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "old"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "dca7d463-f950-4c72-bf96-1a6eaae5cf8b",
+  "prevId": "04d81e70-5422-45b0-9a9d-3a75736a2f43"
 }

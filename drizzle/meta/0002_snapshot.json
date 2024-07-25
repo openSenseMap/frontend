@@ -1,10 +1,8 @@
 {
-  "id": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
-  "prevId": "67d8dfcf-df55-49e7-8ab7-eadb52bb1772",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "device": {
+    "public.device": {
       "name": "device",
       "schema": "",
       "columns": {
@@ -102,7 +100,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "measurement": {
+    "public.measurement": {
       "name": "measurement",
       "schema": "",
       "columns": {
@@ -140,7 +138,7 @@
         }
       }
     },
-    "password": {
+    "public.password": {
       "name": "password",
       "schema": "",
       "columns": {
@@ -176,7 +174,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile": {
+    "public.profile": {
       "name": "profile",
       "schema": "",
       "columns": {
@@ -233,7 +231,7 @@
         }
       }
     },
-    "profile_image": {
+    "public.profile_image": {
       "name": "profile_image",
       "schema": "",
       "columns": {
@@ -301,7 +299,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "sensor": {
+    "public.sensor": {
       "name": "sensor",
       "schema": "",
       "columns": {
@@ -392,7 +390,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -465,34 +463,39 @@
     }
   },
   "enums": {
-    "model": {
+    "public.model": {
       "name": "model",
-      "values": {
-        "HOME_V2_LORA": "HOME_V2_LORA"
-      }
+      "schema": "public",
+      "values": [
+        "HOME_V2_LORA"
+      ]
     },
-    "exposure": {
+    "public.exposure": {
       "name": "exposure",
-      "values": {
-        "indoor": "indoor",
-        "outdoor": "outdoor",
-        "mobile": "mobile",
-        "unknown": "unknown"
-      }
+      "schema": "public",
+      "values": [
+        "indoor",
+        "outdoor",
+        "mobile",
+        "unknown"
+      ]
     },
-    "status": {
+    "public.status": {
       "name": "status",
-      "values": {
-        "active": "active",
-        "inactive": "inactive",
-        "old": "old"
-      }
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "old"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
+  "prevId": "67d8dfcf-df55-49e7-8ab7-eadb52bb1772"
 }
