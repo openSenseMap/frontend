@@ -79,7 +79,7 @@ export default function Index() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
               <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
-                <h1 className="text-5xl font-bold tracking-tight text-green-300 dark:text-white">
+                <h1 className="text-5xl font-bold tracking-tight text-light-green dark:text-dark-green">
                   openSenseMap
                 </h1>
                 <motion.div
@@ -116,7 +116,7 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-blue-200 dark:bg-blue-200 mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-blue-100 p-2 text-gray-300 transition-all hover:scale-105 hover:bg-blue-100 hover:text-white dark:bg-blue-100 dark:text-white">
+                        <button className="dark:border-light-blue dark:bg-dark-blue mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:bg-blue-100 dark:text-white">
                           {t("donate")}
                         </button>
                       </motion.div>
@@ -141,7 +141,7 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-green-200 dark:bg-green-200 mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-green-100 p-2 text-gray-300 transition-all hover:bg-green-100 hover:text-white dark:bg-green-100 dark:text-white">
+                        <button className="dark:border-dark-green mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-green p-2 text-light-green transition-all hover:bg-light-green hover:text-white dark:bg-light-green dark:text-white">
                           {t("explore")}
                         </button>
                       </motion.div>

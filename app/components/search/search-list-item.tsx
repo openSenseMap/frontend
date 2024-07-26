@@ -19,11 +19,11 @@ interface SearchListItemProps
 }
 
 const searchListItemStyle = cva(
-  "relative my-1 flex gap-2 h-8 px-2 items-center rounded-lg data-[active=true]:bg-green-100 data-[active=true]:text-white",
+  "relative my-1 flex gap-2 h-8 px-2 items-center rounded-lg data-[active=true]:bg-light-green data-[active=true]:text-white",
   {
     variants: {
       active: {
-        true: "bg-green-100 text-white",
+        true: "bg-light-green text-white",
       },
     },
   }

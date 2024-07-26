@@ -49,8 +49,8 @@ export function SensorFilter(props: SensorFilterProps, request: Request) {
               <li>
                 <button
                   className={
-                    "hover:text-green-100 " +
-                    (props.sensor === "all" ? "text-green-300" : "")
+                    "hover:text-light-green " +
+                    (props.sensor === "all" ? "text-light-green" : "")
                   }
                   onClick={() => props.setSensor("all")}
                 >
@@ -62,8 +62,8 @@ export function SensorFilter(props: SensorFilterProps, request: Request) {
                   <li className="py-1" key={p.id}>
                     <button
                       className={
-                        "flex items-center gap-2 hover:text-green-100 " +
-                        (props.sensor === p.slug ? "text-green-300" : "")
+                        "flex items-center gap-2 hover:text-light-green " +
+                        (props.sensor === p.slug ? "text-light-green" : "")
                       }
                       onClick={() => props.setSensor(p.slug)}
                     >
@@ -91,7 +91,7 @@ export function SensorFilter(props: SensorFilterProps, request: Request) {
                 className="hidden"
                 defaultChecked={true}
               />
-              <Button type="submit" className="bg-green-100">
+              <Button type="submit" className="bg-light-green">
                 {t("button")}
               </Button>
             </Form>

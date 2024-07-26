@@ -34,7 +34,7 @@ function getSections(devices: Device[]) {
     {
       title: "Einstellungen",
       icon: Cog,
-      color: "bg-green-100",
+      color: "bg-light-green",
       component: <div>Einstellungen</div>,
     },
   ];

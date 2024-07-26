@@ -41,7 +41,7 @@ export default function Header() {
           {/* Osem Logo*/}
           <Link to="/" className="flex items-center md:pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-            <span className="dark:text-green-200 hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
+            <span className="text-light-green dark:text-dark-green hidden self-center whitespace-nowrap text-xl font-semibold md:block">
               openSenseMap
             </span>
           </Link>
@@ -58,7 +58,7 @@ export default function Header() {
                   <li key={index}>
                     <Link
                       to={item.link}
-                      className="dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-green-100"
+                      className="dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-light-green"
                     >
                       {item.name}
                     </Link>
@@ -109,7 +109,7 @@ export default function Header() {
                   <Link
                     key={index}
                     to={item.link}
-                    className="dark:hover:text-green-200 block px-4 py-2 text-sm text-gray-700 hover:text-green-100"
+                    className="dark:hover:text-green-200 block px-4 py-2 text-sm text-gray-700 hover:text-light-green"
                     role="menuitem"
                   >
                     {item.name}

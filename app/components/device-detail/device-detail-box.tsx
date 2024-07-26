@@ -174,7 +174,7 @@ export default function DeviceDetailBox() {
                 <div
                   className={
                     data.device.status === "ACTIVE"
-                      ? "h-4 w-4 rounded-full bg-green-100"
+                      ? "h-4 w-4 rounded-full bg-light-green"
                       : "h-4 w-4 rounded-full bg-red-500"
                   }
                 ></div>
@@ -364,7 +364,7 @@ export default function DeviceDetailBox() {
                                           <div
                                             className={
                                               sensor.status === "active"
-                                                ? "h-2 w-2 rounded-full bg-green-100"
+                                                ? "h-2 w-2 rounded-full bg-light-green"
                                                 : "h-2 w-2 rounded-full bg-red-500"
                                             }
                                           ></div>

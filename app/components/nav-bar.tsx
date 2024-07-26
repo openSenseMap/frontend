@@ -75,7 +75,7 @@ export function NavBar() {
           <Link to="/" className="flex items-center md:pr-4">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
           </Link>
-          <span className="dark:text-dark-green text-light-green hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
+          <span className="dark:text-dark-green text-light-green hidden self-center whitespace-nowrap text-xl font-semibold text-light-green md:block">
             {parts.join(" / ")}
           </span>
         </div>
