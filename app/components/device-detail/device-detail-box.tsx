@@ -1,6 +1,7 @@
 import {
   Form,
   useLoaderData,
+  useNavigate,
   useNavigation,
   useSearchParams,
   useSubmit,
@@ -20,6 +21,7 @@ import {
   Share2,
   XSquare,
   EllipsisVertical,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -84,6 +86,7 @@ export const useSharedCompareMode = () => useBetween(useCompareMode);
 
 export default function DeviceDetailBox() {
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const data = useLoaderData<typeof loader>();
   const nodeRef = useRef(null);
   // state variables
@@ -171,7 +174,7 @@ export default function DeviceDetailBox() {
                 <div
                   className={
                     data.device.status === "ACTIVE"
-                      ? "h-4 w-4 rounded-full bg-green-100"
+                      ? "h-4 w-4 rounded-full bg-light-green"
                       : "h-4 w-4 rounded-full bg-red-500"
                   }
                 ></div>
@@ -227,6 +230,12 @@ export default function DeviceDetailBox() {
                 <Minus
                   className="cursor-pointer"
                   onClick={() => setOpen(false)}
+                />
+                <X
+                  className="cursor-pointer"
+                  onClick={() => {
+                    navigate("/explore");
+                  }}
                 />
               </div>
               <div className="no-scrollbar relative flex-1 overflow-y-scroll">
@@ -355,7 +364,7 @@ export default function DeviceDetailBox() {
                                           <div
                                             className={
                                               sensor.status === "active"
-                                                ? "h-2 w-2 rounded-full bg-green-100"
+                                                ? "h-2 w-2 rounded-full bg-light-green"
                                                 : "h-2 w-2 rounded-full bg-red-500"
                                             }
                                           ></div>

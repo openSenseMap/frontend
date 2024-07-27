@@ -11,7 +11,7 @@ export default function Features({ data }: FeaturesProps) {
     <div id="features" className="flex h-full items-center justify-center">
       <div className="w-full">
         <div className="flex items-center justify-center pb-10">
-          <p className="dark:text-green-200 font-serif text-6xl font-black text-green-100 subpixel-antialiased">
+          <p className="dark:text-green-200 font-serif text-6xl font-black text-light-green subpixel-antialiased">
             Features
           </p>
         </div>

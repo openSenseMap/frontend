@@ -119,7 +119,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                               sensorsField.validate();
                             }}
                             key={sensor.id}
-                            className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
+                            className="relative hover:cursor-pointer hover:ring-2 hover:ring-light-green data-[checked=true]:ring-4 data-[checked=true]:ring-light-green"
                           >
                             <CardContent className="flex justify-center pt-2">
                               <AspectRatio ratio={4 / 3}>
@@ -134,7 +134,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                               <CardTitle className="text-xl">
                                 {sensor.sensor.label.item[0].text}
                               </CardTitle>
-                              <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
+                              <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-light-green" />
                             </CardFooter>
                           </Card>
                         }

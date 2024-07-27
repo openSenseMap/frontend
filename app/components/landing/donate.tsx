@@ -9,7 +9,7 @@ export default function Donate() {
     >
       <div className="flex w-full flex-col">
         <div className="flex items-center justify-center pb-10">
-        <p className="dark:text-green-200 font-serif text-6xl font-black text-green-100 subpixel-antialiased">
+        <p className="dark:text-green-200 font-serif text-6xl font-black text-light-green subpixel-antialiased">
             Donate
           </p>
         </div>

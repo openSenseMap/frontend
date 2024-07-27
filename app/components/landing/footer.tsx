@@ -16,7 +16,7 @@ export default function Footer() {
               href="/imprint"
               target="_blank"
               rel="noopener noreferrer"
-              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+              className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
             >
               Impressum
             </a>
@@ -26,7 +26,7 @@ export default function Footer() {
               href="https://www.instagram.com/opensenselab/"
               target="_blank"
               rel="noopener noreferrer"
-              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+              className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
             >
               <svg
                 className="h-10 w-10"
@@ -48,7 +48,7 @@ export default function Footer() {
               href="https://twitter.com/openSenseLab"
               target="_blank"
               rel="noopener noreferrer"
-              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+              className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
             >
               <svg
                 className="h-10 w-10"
@@ -66,7 +66,7 @@ export default function Footer() {
               href="https://github.com/opensenselab"
               target="_blank"
               rel="noopener noreferrer"
-              className="dark:hover:text-green-200 px-2 hover:text-green-100 md:px-8"
+              className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
             >
               <svg
                 className="h-10 w-10"

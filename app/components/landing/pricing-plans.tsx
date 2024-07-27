@@ -4,7 +4,7 @@ export default function PricingPlans() {
       <section className="">
         <div className="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 lg:py-16">
           <div className="mx-auto mb-8 max-w-screen-md text-center lg:mb-12">
-            <h2 className="dark:text-green-200 mb-4 font-serif text-4xl font-black text-green-100 subpixel-antialiased dark:text-white">
+            <h2 className="dark:text-green-200 mb-4 font-serif text-4xl font-black text-light-green subpixel-antialiased dark:text-white">
               Designed for business teams like yours
             </h2>
             <p className="mb-5 font-light text-gray-500 dark:text-gray-400 sm:text-xl">
@@ -15,14 +15,14 @@ export default function PricingPlans() {
           <div className="space-y-8 sm:gap-6 lg:grid lg:grid-cols-3 lg:space-y-0 xl:gap-10">
             {/* <!-- Pricing Card --> */}
             <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow dark:border-gray-600 dark:bg-gray-800 dark:text-white xl:p-8">
-              <h3 className="mb-4 text-2xl font-semibold text-green-300">
+              <h3 className="mb-4 text-2xl font-semibold text-light-green">
                 Starter
               </h3>
               <p className="font-light text-gray-500 dark:text-gray-400 sm:text-lg">
                 Best option for personal use & for your next project.
               </p>
               <div className="my-8 flex items-baseline justify-center">
-                <span className="mr-2 text-5xl font-extrabold text-green-300">
+                <span className="mr-2 text-5xl font-extrabold text-light-green">
                   $29
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">/month</span>
@@ -32,7 +32,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +66,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -82,7 +82,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -120,21 +120,21 @@ export default function PricingPlans() {
               </ul>
               <a
                 href="/"
-                className="hover:bg-green-200 focus:ring-grey-200 dark:focus:ring-grey-900 rounded-lg bg-green-300 px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4  dark:text-white"
+                className="hover:bg-green-200 focus:ring-grey-200 dark:focus:ring-grey-900 rounded-lg bg-light-green px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4  dark:text-white"
               >
                 Get started
               </a>
             </div>
             {/* <!-- Pricing Card --> */}
             <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow dark:border-gray-600 dark:bg-gray-800 dark:text-white xl:p-8">
-              <h3 className="mb-4 text-2xl font-semibold text-green-300">
+              <h3 className="mb-4 text-2xl font-semibold text-light-green">
                 Company
               </h3>
               <p className="font-light text-gray-500 dark:text-gray-400 sm:text-lg">
                 Relevant for multiple users, extended & premium support.
               </p>
               <div className="my-8 flex items-baseline justify-center">
-                <span className="mr-2 text-5xl font-extrabold text-green-300">
+                <span className="mr-2 text-5xl font-extrabold text-light-green">
                   $99
                 </span>
                 <span
@@ -148,7 +148,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -164,7 +164,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -180,7 +180,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -199,7 +199,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -218,7 +218,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -237,21 +237,21 @@ export default function PricingPlans() {
               </ul>
               <a
                 href="/"
-                className="hover:bg-green-200 rounded-lg bg-green-300 px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:ring-gray-200 dark:text-white  dark:focus:ring-gray-900"
+                className="hover:bg-green-200 rounded-lg bg-light-green px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:ring-gray-200 dark:text-white  dark:focus:ring-gray-900"
               >
                 Get started
               </a>
             </div>
             {/* <!-- Pricing Card --> */}
             <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow dark:border-gray-600 dark:bg-gray-800 dark:text-white xl:p-8">
-              <h3 className="mb-4 text-2xl font-semibold text-green-300">
+              <h3 className="mb-4 text-2xl font-semibold text-light-green">
                 Enterprise
               </h3>
               <p className="font-light text-gray-500 dark:text-gray-400 sm:text-lg">
                 Best for large scale uses and extended redistribution rights.
               </p>
               <div className="my-8 flex items-baseline justify-center">
-                <span className="mr-2 text-5xl font-extrabold text-green-300">
+                <span className="mr-2 text-5xl font-extrabold text-light-green">
                   $499
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">/month</span>
@@ -261,7 +261,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -277,7 +277,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -293,7 +293,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -312,7 +312,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -331,7 +331,7 @@ export default function PricingPlans() {
                 <li className="flex items-center space-x-3">
                   {/* <!-- Icon --> */}
                   <svg
-                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-green-300"
+                    className="dark:text-green-400 h-5 w-5 flex-shrink-0 text-light-green"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -350,7 +350,7 @@ export default function PricingPlans() {
               </ul>
               <a
                 href="/"
-                className="hover:bg-green-200 rounded-lg bg-green-300 px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:ring-gray-200 dark:text-white  dark:focus:ring-gray-900"
+                className="hover:bg-green-200 rounded-lg bg-light-green px-5 py-2.5 text-center text-sm font-medium text-white focus:ring-4 focus:ring-gray-200 dark:text-white  dark:focus:ring-gray-900"
               >
                 Get started
               </a>

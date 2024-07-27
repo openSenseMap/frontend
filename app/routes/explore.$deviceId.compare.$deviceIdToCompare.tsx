@@ -388,7 +388,7 @@ export default function CompareDevices() {
                                                   (sensorIds.includes(
                                                     sensorGroup[0].id,
                                                   )
-                                                    ? " text-green-100"
+                                                    ? " text-light-green"
                                                     : "text-gray-900")
                                                 }
                                               >
@@ -429,7 +429,7 @@ export default function CompareDevices() {
                                                   (sensorIds.includes(
                                                     sensorGroup[1].id,
                                                   )
-                                                    ? " text-green-100"
+                                                    ? " text-light-green"
                                                     : "text-gray-900")
                                                 }
                                               >
