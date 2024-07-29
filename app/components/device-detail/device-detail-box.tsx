@@ -22,6 +22,9 @@ import {
   XSquare,
   EllipsisVertical,
   X,
+  ExternalLink,
+  Scale,
+  Archive,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -212,21 +215,40 @@ export default function DeviceDetailBox() {
                       className="cursor-pointer"
                       onClick={() => handleCompareClick()}
                     >
-                      Compare
+                      <Scale className="mr-2 h-4 w-4" />
+                      <span>Compare</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <a
-                        href={getArchiveLink(data.device)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Open archive"
-                        className="w-full cursor-pointer"
-                      >
-                        Archive
-                      </a>
+                      <Archive className="mr-2 h-4 w-4" />
+                      <span>
+                        <a
+                          href={getArchiveLink(data.device)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Open archive"
+                          className="w-full cursor-pointer"
+                        >
+                          Archive
+                        </a>
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      <span>
+                        <a
+                          href={data.device.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Open external link"
+                          className="w-full cursor-pointer"
+                        >
+                          External Link
+                        </a>
+                      </span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
                 <Minus
                   className="cursor-pointer"
                   onClick={() => setOpen(false)}
@@ -253,8 +275,8 @@ export default function DeviceDetailBox() {
                       <div className="flex w-full items-center justify-center p-4 opacity-100">
                         <img
                           className="rounded-lg"
-                          alt=""
-                          src={"/sensebox_outdoor.jpg"}
+                          alt="device_image"
+                          src={`https://opensensemap.org/userimages/${data.device.image}`}
                         ></img>
                       </div>
                     </AccordionContent>
