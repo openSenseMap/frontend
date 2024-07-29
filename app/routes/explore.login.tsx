@@ -113,7 +113,7 @@ export default function LoginPage() {
       >
         <div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
       </Link>
-      <Card className="w-full h-1/2 max-w-md z-50">
+      <Card className="w-full max-w-md z-50">
         {navigation.state === "loading" && (
           <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
             <Spinner />
