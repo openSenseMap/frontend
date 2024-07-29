@@ -12,22 +12,25 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import * as React from "react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { createUserSession, getUserId } from "~/session.server";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
-
-import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import i18next from "app/i18next.server";
 import invariant from "tiny-invariant";
 import Spinner from "~/components/spinner";
-import { useMap } from "react-map-gl";
-import { zoomOut } from "~/lib/search-map-helper";
 import ErrorMessage from "~/components/error-message";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -158,16 +161,12 @@ export const meta: MetaFunction = () => {
 
 export default function RegisterDialog() {
   const { t } = useTranslation("register");
+  const navigation = useNavigation();
   const [searchParams] = useSearchParams();
-  const redirectTo =
-    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const usernameRef = React.useRef<HTMLInputElement>(null);
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
-
-  const navigation = useNavigation();
-  const isCreating = Boolean(navigation.state === "submitting");
 
   React.useEffect(() => {
     if (actionData?.errors?.username) {
@@ -180,7 +179,7 @@ export default function RegisterDialog() {
   }, [actionData]);
 
   return (
-    <div className="flex h-full w-full justify-center">
+    <div className="flex justify-center items-center h-screen">
       <Link
         to={{
           pathname: "/explore",
@@ -189,148 +188,91 @@ export default function RegisterDialog() {
       >
         <div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
       </Link>
-      <div
-        id="signup-modal"
-        data-state="open"
-        className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
-      >
+      <Card className="w-full h-1/2 max-w-md z-50">
         {navigation.state === "loading" && (
           <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
             <Spinner />
           </div>
         )}
-        <span className="pl-5 text-4xl font-medium">{t("register_label")}</span>
-        <Link
-          to={{
-            pathname: "/explore",
-            search: searchParams.toString(),
-          }}
-        >
-          <button className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-        </Link>
-        <div className="mx-auto w-full max-w-md px-8">
-          <Form method="post" className="space-y-6" noValidate>
-            <div>
-              <Label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
-              >
-                {"Username"}
-              </Label>
-              <div className="mt-1">
-                <Input
-                  ref={usernameRef}
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoFocus={true}
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                  placeholder="Username"
-                />
-                {actionData?.errors?.username && (
-                  <div className="pt-1 text-red-500" id="password-error">
-                    {actionData.errors.username}
-                  </div>
-                )}
-              </div>
+        <Form method="post" className="space-y-6" noValidate>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Register</CardTitle>
+            <CardDescription>
+              Create a new account to get started.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                placeholder="Enter your username"
+                ref={usernameRef}
+                name="username"
+                type="text"
+                autoFocus={true}
+              />
+              {actionData?.errors?.username && (
+                <div className="text-sm text-red-500 mt-1" id="password-error">
+                  {actionData.errors.username}
+                </div>
+              )}
             </div>
-            <div>
-              <Label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
-              >
-                {t("email_label")}
-              </Label>
-              <div className="mt-1">
-                <Input
-                  ref={emailRef}
-                  id="email"
-                  required
-                  autoFocus={true}
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={actionData?.errors?.email ? true : undefined}
-                  aria-describedby="email-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                  placeholder="example@opensensemap.org"
-                />
-                {actionData?.errors?.email && (
-                  <div className="pt-1 text-red-500" id="email-error">
-                    {actionData.errors.email}
-                  </div>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">{t("email_label")}</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                ref={emailRef}
+                required
+                autoFocus={true}
+                name="email"
+                autoComplete="email"
+                aria-invalid={actionData?.errors?.email ? true : undefined}
+                aria-describedby="email-error"
+              />
+              {actionData?.errors?.email && (
+                <div className="text-sm text-red-500 mt-1" id="email-error">
+                  {actionData.errors.email}
+                </div>
+              )}
             </div>
-
-            <div>
-              <Label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
-              >
-                {t("password_label")}
-              </Label>
-              <div className="mt-1">
-                <Input
-                  id="password"
-                  ref={passwordRef}
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  aria-invalid={actionData?.errors?.password ? true : undefined}
-                  aria-describedby="password-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                  placeholder="********"
-                />
-                {actionData?.errors?.password && (
-                  <div className="pt-1 text-red-500" id="password-error">
-                    {actionData.errors.password}
-                  </div>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t("password_label")}</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                ref={passwordRef}
+                name="password"
+                autoComplete="new-password"
+                aria-invalid={actionData?.errors?.password ? true : undefined}
+                aria-describedby="password-error"
+              />
+              {actionData?.errors?.password && (
+                <div className="text-sm text-red-500 mt-1" id="password-error">
+                  {actionData.errors.password}
+                </div>
+              )}
             </div>
-
-            <Input type="hidden" name="redirectTo" value={redirectTo} />
-            <button
-              type="submit"
-              className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
-              // onClick={() => {
-              //   toast({
-              //     description: "Creating account ...",
-              //   });
-              // }}
-              disabled={isCreating}
-            >
-              {isCreating ? t("transition_label") : t("register_label")}
-            </button>
-            <div className="flex items-center justify-center">
-              <div className="text-center text-sm text-gray-500 dark:text-zinc-200">
-                {t("already_account_label")}{" "}
-                <Link
-                  className="text-blue-500 underline"
-                  to={{
-                    pathname: "/explore/login",
-                    search: searchParams.toString(),
-                  }}
-                >
-                  {t("login_label")}
-                </Link>
-              </div>
+          </CardContent>
+          <CardFooter className="flex flex-col items-center gap-2">
+            <Button className="w-full bg-light-blue">Register</Button>
+            <div className="text-sm text-muted-foreground">
+              {t("already_account_label")}{" "}
+              <Link to="/explore/login" className="underline">
+                {t("login_label")}
+              </Link>
             </div>
-          </Form>
-        </div>
-      </div>
+          </CardFooter>
+        </Form>
+      </Card>
     </div>
   );
 }
 
 export function ErrorBoundary() {
-  const { osem } = useMap();
-  // zoom out to world map when error occurs
-  zoomOut(osem);
   return (
     <div className="w-screen h-screen flex items-center justify-center">
       <ErrorMessage />

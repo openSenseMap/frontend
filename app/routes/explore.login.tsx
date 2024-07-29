@@ -12,23 +12,28 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import * as React from "react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
 import ErrorMessage from "~/components/error-message";
-import { useMap } from "react-map-gl";
-import { zoomOut } from "~/lib/search-map-helper";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Button } from "~/components/ui/button";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  if (userId) return redirect("/explore");
   return json({});
 }
 
@@ -36,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
+  const redirectTo = safeRedirect(formData.get("redirectTo"), "/explore");
   const remember = formData.get("remember");
 
   if (!validateEmail(email)) {
@@ -83,15 +88,12 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo =
-    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
   const { t } = useTranslation("login");
   const navigation = useNavigation();
-  const isLoggingIn = Boolean(navigation.state === "submitting");
 
   React.useEffect(() => {
     if (actionData?.errors?.email) {
@@ -102,7 +104,7 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex h-full w-full justify-center">
+    <div className="flex justify-center items-center h-screen">
       <Link
         to={{
           pathname: "/explore",
@@ -111,138 +113,92 @@ export default function LoginPage() {
       >
         <div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
       </Link>
-      <div
-        id="login-modal"
-        data-state="open"
-        className="fixed top-[20%] z-50 grid h-fit w-full gap-4 rounded-b-lg border bg-background dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 p-6 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
-      >
+      <Card className="w-full h-1/2 max-w-md z-50">
         {navigation.state === "loading" && (
           <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
             <Spinner />
           </div>
         )}
-        <span className="pl-5 text-4xl font-medium">{t("login_label")}</span>
-        <Link
-          to={{
-            pathname: "/explore",
-            search: searchParams.toString(),
-          }}
-        >
-          <button className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-        </Link>
-        <div className="mx-auto w-full max-w-md px-8">
-          <Form method="post" className="space-y-6" noValidate>
-            <div>
-              <Label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
-              >
-                {t("email_label")}
-              </Label>
-              <div className="mt-1">
-                <Input
-                  ref={emailRef}
-                  id="email"
-                  required
-                  autoFocus={true}
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={actionData?.errors?.email ? true : undefined}
-                  aria-describedby="email-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                  placeholder="example@opensensemap.org"
-                />
-                {actionData?.errors?.email && (
-                  <div className="pt-1 text-red-500" id="email-error">
-                    {actionData.errors.email}
-                  </div>
-                )}
-              </div>
+        <Form method="post" className="space-y-6" noValidate>
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardDescription>Sign in to your account</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">{t("email_label")}</Label>
+              <Input
+                ref={emailRef}
+                id="email"
+                required
+                autoFocus={true}
+                name="email"
+                type="email"
+                autoComplete="email"
+                aria-invalid={actionData?.errors?.email ? true : undefined}
+                aria-describedby="email-error"
+                placeholder="example@opensensemap.org"
+              />
+              {actionData?.errors?.email && (
+                <div className="text-sm text-red-500 mt-1" id="email-error">
+                  {actionData.errors.email}
+                </div>
+              )}
             </div>
-
-            <div>
-              <Label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-zinc-200"
-              >
-                {t("password_label")}
-              </Label>
-              <div className="mt-1">
-                <Input
-                  id="password"
-                  ref={passwordRef}
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  aria-invalid={actionData?.errors?.password ? true : undefined}
-                  aria-describedby="password-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                  placeholder="********"
-                />
-                {actionData?.errors?.password && (
-                  <div className="pt-1 text-red-500" id="password-error">
-                    {actionData.errors.password}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <Input type="hidden" name="redirectTo" value={redirectTo} />
-            <button
-              type="submit"
-              className="focus:bg-blue-200 w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-100"
-              // onClick={() => {
-              //   toast({
-              //     description: "Logging in ...",
-              //   });
-              // }}
-              disabled={isLoggingIn}
-            >
-              {isLoggingIn ? t("transition_label") : t("login_label")}
-            </button>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Input
-                  id="remember"
-                  name="remember"
-                  type="checkbox"
-                  className="text-blue-600 h-4 w-4 rounded border-gray-300 dark:border-zinc-200 px-1 py-1 focus:ring-blue-500"
-                />
-                <Label
-                  htmlFor="remember"
-                  className="ml-2 block text-sm text-gray-900 dark:text-zinc-200"
-                >
-                  {t("remember_label")}
-                </Label>
-              </div>
-              <div className="text-center text-sm text-gray-500">
-                {t("no_account_label")}{" "}
-                <Link
-                  className="text-blue-500 underline dark:text-zinc-200"
-                  to={{
-                    pathname: "/explore/register",
-                    search: searchParams.toString(),
-                  }}
-                >
-                  {t("register_label")}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password"> {t("password_label")}</Label>
+                <Link to="/forgot" className="text-sm underline">
+                  Forgot password?
                 </Link>
               </div>
+              <Input
+                id="password"
+                ref={passwordRef}
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                aria-invalid={actionData?.errors?.password ? true : undefined}
+                aria-describedby="password-error"
+                placeholder="********"
+              />
+              {actionData?.errors?.password && (
+                <div className="text-sm text-red-500 mt-1" id="password-error">
+                  {actionData.errors.password}
+                </div>
+              )}
             </div>
-          </Form>
-        </div>
-      </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="remember" name="remember" />
+              <Label htmlFor="remember" className="text-sm">
+                {t("remember_label")}
+              </Label>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col items-center gap-2">
+            <Button type="submit" className="w-full bg-light-blue">
+              Sign in
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              {t("no_account_label")}{" "}
+              <Link
+                className="font-medium underline"
+                to={{
+                  pathname: "/explore/register",
+                  search: searchParams.toString(),
+                }}
+              >
+                {t("register_label")}
+              </Link>
+            </p>
+          </CardFooter>
+        </Form>
+      </Card>
     </div>
   );
 }
 
 export function ErrorBoundary() {
-  const { osem } = useMap();
-  // zoom out to world map when error occurs
-  zoomOut(osem);
   return (
     <div className="w-screen h-screen flex items-center justify-center">
       <ErrorMessage />
