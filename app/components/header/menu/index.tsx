@@ -260,7 +260,7 @@ export default function Menu() {
               >
                 <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
                   <LogIn className="mr-2 h-5 w-5" />
-                  <span className="text-green-100">{t("login_label")}</span>
+                  <span className="text-light-green">{t("login_label")}</span>
                 </button>
               </Link>
             ) : (
