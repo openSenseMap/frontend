@@ -43,6 +43,13 @@
       "when": 1720775038176,
       "tag": "0005_lying_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1722275512453,
+      "tag": "0006_wealthy_fat_cobra",
+      "breakpoints": true
     }
   ]
 }

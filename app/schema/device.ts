@@ -24,7 +24,9 @@ export const device = pgTable("device", {
     .notNull()
     .$defaultFn(() => createId()),
   name: text("name").notNull(),
+  image: text("image"),
   description: text("description"),
+  link: text("link"),
   useAuth: boolean("use_auth"),
   exposure: exposureEnum("exposure"),
   status: statusEnum("status").default("inactive"),
