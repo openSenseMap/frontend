@@ -70,13 +70,13 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
 // LATERAL JOIN to get latest measurement for sensors belonging to a specific device
 export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
   return drizzleClient.execute(
-    sql`SELECT * FROM sensor s,
-    LATERAL (
+    sql`SELECT * FROM sensor s
+    LEFT JOIN LATERAL (
       SELECT * FROM measurement m
       WHERE m.sensor_id = s.id
       ORDER BY m.time DESC
       LIMIT 1
-    ) AS measure
+    ) AS last_measurement On true
     WHERE s.device_id=${deviceId};`,
   );
 }
