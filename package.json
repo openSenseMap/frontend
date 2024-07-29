@@ -104,6 +104,7 @@
     "i18next-http-backend": "^2.3.1",
     "isbot": "^3.6.12",
     "lodash.debounce": "^4.0.8",
+    "lottie-react": "^2.4.0",
     "lucide-react": "^0.358.0",
     "mapbox-gl": "^2.14.1",
     "moment": "^2.29.4",

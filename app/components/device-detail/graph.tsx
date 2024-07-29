@@ -22,7 +22,6 @@ import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore.$deviceId._index";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
-import Spinner from "../spinner";
 import { Download, X } from "lucide-react";
 import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
@@ -45,6 +44,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { useTheme } from "remix-themes";
+import Lottie from "lottie-react";
+import graphLoadingAnimation from "~/components/device-detail/graphLoadingAnimation.json";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -274,8 +275,12 @@ export default function Graph(props: any) {
             className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
           >
             {navigation.state === "loading" && (
-              <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                <Spinner />
+              <div className="bg-white/30 dark:bg-zinc-800/30 z-50 flex items-center justify-center backdrop-blur-sm">
+                <Lottie
+                  style={{ width: 600, height: 300 }}
+                  animationData={graphLoadingAnimation}
+                  loop={true}
+                />
               </div>
             )}
             <div
