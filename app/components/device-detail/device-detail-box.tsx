@@ -25,6 +25,9 @@ import {
   ExternalLink,
   Scale,
   Archive,
+  Cpu,
+  Rss,
+  CalendarPlus,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -50,7 +53,7 @@ import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isTablet, isBrowser } from "react-device-detect";
 import type { Device, Sensor, SensorWithMeasurement } from "~/schema";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Card,
   CardContent,
@@ -269,16 +272,54 @@ export default function DeviceDetailBox() {
                 >
                   <AccordionItem value="item-1" className="sticky top-0 z-10">
                     <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                      Image
+                      General
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="flex w-full items-center justify-center p-4 opacity-100">
+                      <div className="relative grid grid-cols-4 gap-x-4">
+                        <div className="col-span-2">
+                          <img
+                            className="aspect-[4/3] rounded-lg"
+                            alt="device_image"
+                            src={`https://opensensemap.org/userimages/${data.device.image}`}
+                          ></img>
+                        </div>
+                        <div className="col-span-2 col-start-3">
+                          <div className="flex flex-col gap-1">
+                            <a
+                              href={data.device.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Open external link"
+                              className="w-full cursor-pointer flex items-center space-y-1 text-sm"
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              External Link
+                            </a>
+                            <Separator className="my-4"></Separator>
+                            <div className="flex items-center space-y-1 text-sm">
+                              <Cpu className="mr-2 h-4 w-4" />{" "}
+                              {data.device.sensorWikiModel ?? "Not specified"}
+                            </div>
+                            <Separator className="my-4"></Separator>
+                            <div className="flex items-center space-y-1 text-sm">
+                              <Rss className="mr-2 h-4 w-4" />
+                              {format(new Date(data.device.updatedAt), "PPP")}
+                            </div>
+                            <Separator className="my-4"></Separator>
+                            <div className="flex items-center space-y-1 text-sm">
+                              <CalendarPlus className="mr-2 h-4 w-4" />
+                              {format(new Date(data.device.createdAt), "PPP")}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* <div className="flex h-auto w-auto items-center justify-center p-4 opacity-100">
                         <img
-                          className="rounded-lg"
+                          className="aspect-[4/3] rounded-lg"
                           alt="device_image"
                           src={`https://opensensemap.org/userimages/${data.device.image}`}
                         ></img>
-                      </div>
+                      </div> */}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
