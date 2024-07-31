@@ -155,6 +155,11 @@ export default function DeviceDetailBox() {
 
   const submit = useSubmit();
 
+  const getDeviceImage = (imageUri: string) =>
+    imageUri !== null
+      ? `https://opensensemap.org/userimages/${imageUri}`
+      : "https://images.placeholders.dev/?width=400&height=350&text=No%20image&bgColor=%234fae48&textColor=%23727373";
+
   return (
     <>
       {open && (
@@ -288,7 +293,7 @@ export default function DeviceDetailBox() {
                           <img
                             className="aspect-[4/3] rounded-lg"
                             alt="device_image"
-                            src={`https://opensensemap.org/userimages/${data.device.image}`}
+                            src={getDeviceImage(data.device.image)}
                           ></img>
                         </div>
                         <div className="col-span-2 col-start-3">
