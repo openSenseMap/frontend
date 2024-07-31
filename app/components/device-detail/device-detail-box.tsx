@@ -29,7 +29,7 @@ import {
   Rss,
   CalendarPlus,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -129,6 +129,14 @@ export default function DeviceDetailBox() {
     setOpenGraph(false);
     setOpen(false);
   }
+
+  const addLineBreaks = (text: string) =>
+    text.split("\\n").map((text, index) => (
+      <Fragment key={`${text}-${index}`}>
+        {text}
+        <br />
+      </Fragment>
+    ));
 
   useEffect(() => {
     let interval: any = null;
@@ -334,8 +342,7 @@ export default function DeviceDetailBox() {
                       Description
                     </AccordionTrigger>
                     <AccordionContent>
-                      {/* use device description */}
-                      {data.device.description}
+                      {addLineBreaks(data.device.description || "")}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
