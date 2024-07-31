@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:generate-custom": "drizzle-kit generate --custom",
-    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:migrate": "ts-node ./db/migrate.ts",
     "drizzle:drop": "drizzle-kit drop",
     "drizzle:seed": "ts-node ./db/seed.ts",
     "drizzle:studio": "drizzle-kit studio",
