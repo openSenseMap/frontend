@@ -87,9 +87,11 @@ export function getMeasurement(
     // If aggregation is not specified or different from "15m" and "1d", fetch default measurements.
     return drizzleClient.query.measurement.findMany({
       where: (measurement, { eq, gte, lte }) =>
-        eq(measurement.sensorId, sensorId) &&
-        gte(measurement.time, startDate) &&
-        lte(measurement.time, endDate),
+        and(
+          eq(measurement.sensorId, sensorId),
+          gte(measurement.time, startDate),
+          lte(measurement.time, endDate),
+        ),
       orderBy: [desc(measurement.time)],
     });
   }
