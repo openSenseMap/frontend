@@ -192,7 +192,7 @@ export default function DeviceDetailBox() {
               >
                 <div
                   className={
-                    data.device.status === "ACTIVE"
+                    data.device.status === "active"
                       ? "h-4 w-4 rounded-full bg-light-green"
                       : "h-4 w-4 rounded-full bg-red-500"
                   }
