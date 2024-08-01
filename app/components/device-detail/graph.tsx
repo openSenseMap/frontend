@@ -1,9 +1,4 @@
-import {
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-  useSubmit,
-} from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -24,7 +19,6 @@ import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
 import { Download, X } from "lucide-react";
-import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -34,17 +28,10 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { datesHave48HourRange } from "~/lib/utils";
-import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 import { isBrowser, isTablet } from "react-device-detect";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { useTheme } from "remix-themes";
+import { AggregationFilter } from "../aggregation-filter";
+import { DateRangeFilter } from "../daterange-filter";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -64,8 +51,8 @@ export default function Graph(props: any) {
   const [offsetPositionY, setOffsetPositionY] = useState(0);
 
   // form submission handler
-  const submit = useSubmit();
-  const [searchParams] = useSearchParams();
+  // const submit = useSubmit();
+  // const [searchParams] = useSearchParams();
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
@@ -283,29 +270,8 @@ export default function Graph(props: any) {
               id="graphTop"
             >
               <div className="flex items-center justify-center gap-4">
-                <DatePickerGraph />
-                <Select
-                  value={loaderData.aggregation}
-                  onValueChange={(value) => {
-                    searchParams.set("aggregation", value);
-                    submit(searchParams);
-                  }}
-                >
-                  <SelectTrigger className="w-[140px] dark:border-zinc-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="raw">Raw</SelectItem>
-                      <SelectItem value="10m">10 Minutes</SelectItem>
-                      <SelectItem value="1h">1 Hour</SelectItem>
-                      <SelectItem value="1d">1 Day</SelectItem>
-                      <SelectItem value="1m">1 Month</SelectItem>
-                      <SelectItem value="1y">1 Year</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <FixedTimeRangeButtons />
+                <DateRangeFilter />
+                <AggregationFilter />
               </div>
               <div className="flex items-center justify-end gap-4">
                 <DropdownMenu>
