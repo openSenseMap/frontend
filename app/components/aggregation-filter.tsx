@@ -76,13 +76,7 @@ export function AggregationFilter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h8 border-dashed"
-          role="combobox"
-          aria-expanded={open}
-        >
+        <Button variant="outline" size="sm" className="h8">
           <Clock className="mr-2 h-4 w-4" />
           Aggregation
           <>
@@ -93,7 +87,7 @@ export function AggregationFilter() {
           </>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-[200px] p-0" align="start" side="right">
         <Command>
           <CommandInput placeholder="Change aggregation" />
           <CommandList>
