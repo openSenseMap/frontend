@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
@@ -77,7 +77,7 @@ export function AggregationFilter() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h8">
-          <Clock className="mr-2 h-4 w-4" />
+          <Filter className="mr-2 h-4 w-4" />
           Aggregation
           <>
             <Separator orientation="vertical" className="mx-2 h4" />

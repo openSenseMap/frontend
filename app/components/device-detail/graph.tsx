@@ -19,7 +19,6 @@ import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import Spinner from "../spinner";
 import { Download, X } from "lucide-react";
-import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -32,6 +31,7 @@ import { datesHave48HourRange } from "~/lib/utils";
 import { isBrowser, isTablet } from "react-device-detect";
 import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
+import { DateRangeFilter } from "../daterange-filter";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -270,9 +270,8 @@ export default function Graph(props: any) {
               id="graphTop"
             >
               <div className="flex items-center justify-center gap-4">
-                <DatePickerGraph />
+                <DateRangeFilter />
                 <AggregationFilter />
-                {/* <FixedTimeRangeButtons /> */}
               </div>
               <div className="flex items-center justify-end gap-4">
                 <DropdownMenu>
