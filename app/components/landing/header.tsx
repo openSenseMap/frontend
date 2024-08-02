@@ -12,21 +12,21 @@ const links = [
     name: "Features",
     link: "#features",
   },
+  // {
+  //   name: "Tools",
+  //   link: "#tools",
+  // },
+  // {
+  //   name: "Use Cases",
+  //   link: "#useCases",
+  // },
+  // {
+  //   name: "Partners",
+  //   link: "#partners",
+  // },
   {
-    name: "Tools",
-    link: "#tools",
-  },
-  {
-    name: "Use Cases",
-    link: "#useCases",
-  },
-  {
-    name: "Partners",
-    link: "#partners",
-  },
-  {
-    name: "Donate",
-    link: "#donate",
+    name: "Sponsor",
+    link: "#pricing",
   },
 ];
 

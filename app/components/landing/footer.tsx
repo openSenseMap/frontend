@@ -63,7 +63,7 @@ export default function Footer() {
           </li>
           <li>
             <a
-              href="https://github.com/opensenselab"
+              href="https://github.com/opensensemap"
               target="_blank"
               rel="noopener noreferrer"
               className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"

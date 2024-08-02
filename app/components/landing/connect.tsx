@@ -1,14 +1,14 @@
 import { BookA, Wrench } from "lucide-react";
 
-export default function Features() {
+export default function Connect() {
   return (
     <section
-      id="features"
+      id="connect"
       className="flex justify-between mx-32 gap-10 border-t border-gray-200 py-20"
     >
       <div id="left" className="w-1/2">
         <div id="title" className="text-2xl font-semibold">
-          Features
+          Connect any device
         </div>
         <div id="description" className="text-lg font-medium">
           We support preconfigured devices by some vendors but you can always
