@@ -82,11 +82,11 @@ export function DateRangeFilter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h8">
+        <Button variant="outline" size="sm" className="h-8">
           <Clock className="mr-2 h-4 w-4" />
           Time Range
           <>
-            <Separator orientation="vertical" className="mx-2 h4" />
+            <Separator orientation="vertical" className="mx-2 h-4" />
             <Badge variant="secondary" className="rounded-sm px-1 font-normal">
               {date?.from ? (
                 date.to ? (
