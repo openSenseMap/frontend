@@ -1,4 +1,12 @@
-import { BookA, Wrench } from "lucide-react";
+import {
+  Copyleft,
+  Download,
+  GitFork,
+  Scale,
+  Telescope,
+  Terminal,
+  Trash,
+} from "lucide-react";
 
 export default function Features() {
   return (
@@ -6,60 +14,59 @@ export default function Features() {
       id="features"
       className="flex justify-between mx-32 gap-10 border-t border-gray-200 py-20"
     >
-      <div id="left" className="w-1/2">
+      <div id="left" className="w-1/2 flex flex-col gap-10">
         <div id="title" className="text-2xl font-semibold">
           Features
+          <div id="description" className="text-lg font-medium">
+            The openSenseMap platform has a lot to offer that makes
+            discoverability and sharing of environmental and sensor data easy.
+          </div>
         </div>
-        <div id="description" className="text-lg font-medium">
-          We support preconfigured devices by some vendors but you can always
-          registered your custom hardware and sensor setup.
-        </div>
+        <img src="/features.svg" alt="" className="w-1/2 h-1/2" />
       </div>
       <div id="right" className="w-1/2">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
-            <a
-              href="https://sensebox.de"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="flex items-center gap-3"
-            >
-              <BookA className="h-4 w-4 mr-2" />
-              senseBox
-            </a>
+            <div className="flex items-center gap-3">
+              <GitFork className="h-4 w-4 mr-2" />
+              Data aggregation
+            </div>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
-            <a
-              href="https://www.hackair.eu/"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="flex items-center gap-3"
-            >
-              <BookA className="h-4 w-4 mr-2" />
-              hackAIR
-            </a>
+            <div className="flex items-center gap-3">
+              <Trash className="h-4 w-4 mr-2" />
+              No data retention
+            </div>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
-            <a
-              href="https://sensor.community"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="flex items-center gap-3"
-            >
-              <BookA className="h-4 w-4 mr-2" />
-              Sensor.Community
-            </a>
+            <div className="flex items-center gap-3">
+              <Copyleft className="h-4 w-4 mr-2" />
+              Data published as ODbL
+            </div>
           </div>
           <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
-            <a
-              href="https://tutorials.opensensemap.org/category/devices/"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="flex items-center gap-3"
-            >
-              <Wrench className="h-4 w-4 mr-2" />
-              Custom
-            </a>
+            <div className="flex items-center gap-3">
+              <Telescope className="h-4 w-4 mr-2" />
+              Discover devices
+            </div>
+          </div>
+          <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
+            <div className="flex items-center gap-3">
+              <Scale className="h-4 w-4 mr-2" />
+              Compare devices
+            </div>
+          </div>
+          <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
+            <div className="flex items-center gap-3">
+              <Download className="h-4 w-4 mr-2" />
+              Download options
+            </div>
+          </div>
+          <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
+            <div className="flex items-center gap-3">
+              <Terminal className="h-4 w-4 mr-2" />
+              HTTP REST API
+            </div>
           </div>
         </div>
       </div>

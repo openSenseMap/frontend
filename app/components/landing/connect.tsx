@@ -4,16 +4,17 @@ export default function Connect() {
   return (
     <section
       id="connect"
-      className="flex justify-between mx-32 gap-10 border-t border-gray-200 py-20"
+      className="flex justify-between mx-32 gap-20 border-t border-gray-200 py-20"
     >
-      <div id="left" className="w-1/2">
+      <div id="left" className="w-1/2 flex flex-col gap-10">
         <div id="title" className="text-2xl font-semibold">
           Connect any device
+          <div id="description" className="text-lg font-medium">
+            We support preconfigured devices by some vendors but you can always
+            registered your custom hardware and sensor setup.
+          </div>
         </div>
-        <div id="description" className="text-lg font-medium">
-          We support preconfigured devices by some vendors but you can always
-          registered your custom hardware and sensor setup.
-        </div>
+        <img src="/connection.svg" alt="" className="w-1/2 h-1/2" />
       </div>
       <div id="right" className="w-1/2">
         <div className="grid grid-cols-2 gap-4">

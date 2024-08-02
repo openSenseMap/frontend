@@ -6,9 +6,7 @@ export default function PricingPlans() {
       <section id="pricing" className="border-t border-gray-200 py-20">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-medium tracking-light text-gray-900">
-              Pricing
-            </h2>
+            <h2 className="text-2xl font-semibold">Pricing</h2>
             <p className="mt-2 text-lg text-gray-600">
               Just kidding, openSenseMap is free and open-source. <br></br>
               You can still make your contribution.
