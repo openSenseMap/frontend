@@ -74,8 +74,19 @@ export default function Graph(props: any) {
   // get theme from tailwind
   const [theme] = useTheme();
 
-  // Formatting the data for the Line component
   const lineData = useMemo(() => {
+    // Helper function to construct the label with device name
+    const getLabel = (sensor: any, includeDeviceName: any) => {
+      return includeDeviceName
+        ? `${sensor.title} (${sensor.device_name})`
+        : sensor.title;
+    };
+
+    const includeDeviceName =
+      loaderData.selectedSensors.length === 2 &&
+      loaderData.selectedSensors[0].device_name !==
+        loaderData.selectedSensors[1].device_name;
+
     return {
       labels: loaderData.selectedSensors[0].data.map(
         (measurement: LastMeasurementProps) => measurement.time,
@@ -84,7 +95,10 @@ export default function Graph(props: any) {
         loaderData.selectedSensors.length === 2
           ? [
               {
-                label: loaderData.selectedSensors[0].title,
+                label: getLabel(
+                  loaderData.selectedSensors[0],
+                  includeDeviceName,
+                ),
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
                 borderColor: loaderData.selectedSensors[0].color,
@@ -92,7 +106,10 @@ export default function Graph(props: any) {
                 yAxisID: "y",
               },
               {
-                label: loaderData.selectedSensors[1].title,
+                label: getLabel(
+                  loaderData.selectedSensors[1],
+                  includeDeviceName,
+                ),
                 data: loaderData.selectedSensors[1].data,
                 pointRadius: 0,
                 borderColor: loaderData.selectedSensors[1].color,
@@ -102,7 +119,10 @@ export default function Graph(props: any) {
             ]
           : [
               {
-                label: loaderData.selectedSensors[0].title,
+                label: getLabel(
+                  loaderData.selectedSensors[0],
+                  includeDeviceName,
+                ),
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
                 borderColor: loaderData.selectedSensors[0].color,
