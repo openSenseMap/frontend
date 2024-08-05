@@ -47,7 +47,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const urlFilterParams = new URLSearchParams(url.search);
 
   // check if sensors are queried - if not get devices only to reduce load
-  const devices = !urlFilterParams.get("phenomenon") ? await getDevices() : await getDevicesWithSensors();
+  const devices = !urlFilterParams.get("phenomenon")
+    ? await getDevices()
+    : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;
@@ -59,10 +61,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({  devices, user, profile, filteredDevices, phenomena });
+    return typedjson({ devices, user, profile, filteredDevices, phenomena });
   }
   return typedjson({
-    
     devices,
     user,
     profile: null,

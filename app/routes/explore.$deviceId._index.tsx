@@ -73,7 +73,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     }),
   );
-  
+
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
     sensor.color = color;

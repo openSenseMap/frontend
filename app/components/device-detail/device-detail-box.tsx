@@ -28,6 +28,7 @@ import {
   Cpu,
   Rss,
   CalendarPlus,
+  Hash,
 } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -72,6 +73,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -298,6 +300,15 @@ export default function DeviceDetailBox() {
                         </div>
                         <div className="col-span-2 col-start-3">
                           <div className="flex flex-col gap-1">
+                            <div className="flex items-center space-y-1 text-sm">
+                              <Hash className="mr-2 h-4 w-4" />
+                              <div className="flex gap-2">
+                                {data.device.tags.map((tag: string) => (
+                                  <Badge key={tag}>{tag}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                            <Separator className="my-4"></Separator>
                             <a
                               href={data.device.link}
                               target="_blank"
