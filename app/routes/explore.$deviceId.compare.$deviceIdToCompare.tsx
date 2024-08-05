@@ -31,7 +31,7 @@ import {
 import { getDevice } from "~/models/device.server";
 import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
 import { getMeasurement } from "~/models/measurement.server";
-import { getGraphColor } from "~/lib/utils";
+import { adjustBrightness, getGraphColor } from "~/lib/utils";
 import Graph from "~/components/device-detail/graph";
 import {
   Tooltip,
@@ -42,6 +42,10 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 import addDays from "date-fns/addDays";
+
+interface ExtendedSensor extends Sensor {
+  device_name: string;
+}
 
 function mergeSensors(sensorsFromDevice1: any, sensorsFromDevice2: any) {
   // Combine both arrays
@@ -123,7 +127,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  const selectedSensors: Sensor[] = await Promise.all(
+  const selectedSensors: ExtendedSensor[] = await Promise.all(
     sensorsToQuery.map(async (sensor: any) => {
       if (startDate && endDate) {
         const sensorData = await getMeasurement(
@@ -146,7 +150,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
   );
   selectedSensors.map((sensor: any) => {
-    const color = getGraphColor(sensor.title);
+    let color = getGraphColor(sensor.title);
+
+    // Check if there is another sensor with the same title but from a different device
+    const matchingSensors = selectedSensors.filter(
+      (s) => s.title === sensor.title && s.device_name !== sensor.device_name,
+    );
+
+    if (matchingSensors.length > 0) {
+      // Determine if this sensor should be darker or brighter
+      const isPrimarySensor =
+        sensor.device_name < matchingSensors[0].device_name;
+
+      // Adjust brightness: one darker, the other brighter
+      color = adjustBrightness(color, isPrimarySensor ? -100 : 100);
+    }
+
     sensor.color = color;
     return color;
   });
@@ -391,9 +410,7 @@ export default function CompareDevices() {
                                               </p>
                                             </label>
                                           ) : (
-                                            <div className="flex items-center justify-center">
-                                              <Minus />
-                                            </div>
+                                            <Minus />
                                           )}
                                         </TableCell>
                                         <TableCell>
@@ -434,9 +451,7 @@ export default function CompareDevices() {
                                               </p>
                                             </label>
                                           ) : (
-                                            <div className="flex items-center justify-center">
-                                              <Minus />
-                                            </div>
+                                            <Minus />
                                           )}
                                         </TableCell>
                                       </TableRow>
