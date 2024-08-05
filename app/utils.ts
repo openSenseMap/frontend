@@ -2,7 +2,7 @@ import { useMatches } from "@remix-run/react";
 import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
-import { MyBadge } from "./models/badge.server";
+import type { MyBadge } from "./models/badge.server";
 
 const DEFAULT_REDIRECT = "/";
 
