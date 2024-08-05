@@ -17,7 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
@@ -30,17 +29,19 @@ import {
   Menu as MenuIcon,
   Cpu,
   Settings,
-  HelpCircle,
   Mail,
   Fingerprint,
   FileLock2,
   Coins,
-  Users2,
   User2,
   ExternalLink,
 } from "lucide-react";
-import DonationText from "~/components/landing/donate-text";
-import DonationiFrame from "~/components/landing/donate-iframe";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -156,10 +157,9 @@ export default function Menu() {
               {data.profile && (
                 <DropdownMenuItem>
                   <User2 className="mr-2 h-6 w-6" />
-                  <Link to="/profile/me"> Profile</Link>
+                  <Link to="/profile/me">Profile</Link>
                 </DropdownMenuItem>
               )}
-
 
               <Link to="/settings/account">
                 <DropdownMenuItem className=" cursor-pointer">
@@ -174,7 +174,7 @@ export default function Menu() {
                   <span>{t("my_devices_label")}</span>
                 </DropdownMenuItem>
               </Link>
-              
+
               <Link to="/device/new" target="_blank">
                 <DropdownMenuItem>
                   <PlusCircle className="mr-2 h-5 w-5" />
@@ -186,7 +186,7 @@ export default function Menu() {
           ) : null}
           <DropdownMenuGroup>
             <Link to="https://docs.sensebox.de/" target="_blank">
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Puzzle className="mr-2 h-5 w-5" />
                 <span>{t("tutorials_label")}</span>
                 <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
@@ -194,7 +194,7 @@ export default function Menu() {
             </Link>
 
             <Link to="https://docs.opensensemap.org/" target="_blank">
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Globe className="mr-2 h-5 w-5" />
                 <span>{t("api_docs_label")}</span>
                 <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
@@ -203,19 +203,17 @@ export default function Menu() {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <HelpCircle className="mr-2 h-5 w-5" />
-              <span>{t("faq_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Mail className="mr-2 h-5 w-5" />
-              <span>{t("contact_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
+            <Link to={"mailto:info@opensenselab.org"}>
+              <DropdownMenuItem className="cursor-pointer">
+                <Mail className="mr-2 h-5 w-5" />
+                <span>{t("contact_label")}</span>
+              </DropdownMenuItem>
+            </Link>
+            <DropdownMenuItem className="cursor-pointer">
               <Fingerprint className="mr-2 h-5 w-5" />
               <span>{t("imprint_label")}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <FileLock2 className="mr-2 h-5 w-5" />
               <span>{t("data_protection_label")}</span>
             </DropdownMenuItem>
@@ -223,68 +221,80 @@ export default function Menu() {
           <DropdownMenuSeparator />
 
           <DropdownMenuGroup>
-            <Dialog>
-              <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <Coins className="mr-2 inline h-5 w-5" />
-                  <span> {t("donate_label")}</span>
-                </DropdownMenuItem>
-              </DialogTrigger>
-              <DialogContent
-                className={"max-h-screen overflow-y-scroll !max-w-[60%]"}
+            <Link
+              to={
+                "https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
+              }
+              target="_blank"
+            >
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="cursor-pointer"
               >
-                {/* <Donate /> */}
-                <div className="grid grid-cols-2">
-                  <DonationText />
-                  <DonationiFrame />
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <DropdownMenuItem>
-              <Users2 className="mr-2 h-5 w-5" />
-              <span>{t("promotion_label")}</span>
-            </DropdownMenuItem>
+                <Coins className="mr-2 inline h-5 w-5" />
+                <span> {t("donate_label")}</span>
+                <ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator />
 
           <DropdownMenuGroup>
-            {data.user === null ? (
-              <Link
-                to={{
-                  pathname: "login",
-                  search: searchParams.toString(),
-                }}
-                onClick={() => setOpen(false)}
-              >
-                <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
-                  <LogIn className="mr-2 h-5 w-5" />
-                  <span className="text-light-green">{t("login_label")}</span>
-                </button>
-              </Link>
-            ) : (
-              <Form
-                action="/logout"
-                method="post"
-                onSubmit={() => {
-                  setOpen(false);
-                  // toast({
-                  //   description: "Logging out ...",
-                  // });
-                }}
-              >
-                <input type="hidden" name="redirectTo" value={redirectTo} />
-                <button
-                  type="submit"
-                  className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                  disabled={isLoggingOut}
-                >
-                  <LogOut className="mr-2 h-5 w-5" />
-                  <span className="text-red-500">{t("logout_label")}</span>
-                </button>
-              </Form>
-            )}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <DropdownMenuItem disabled>
+                    {data.user === null ? (
+                      <Link
+                        to={{
+                          pathname: "login",
+                          search: searchParams.toString(),
+                        }}
+                        onClick={() => setOpen(false)}
+                      >
+                        <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
+                          <LogIn className="mr-2 h-5 w-5" />
+                          <span className="text-light-green">
+                            {t("login_label")}
+                          </span>
+                        </button>
+                      </Link>
+                    ) : (
+                      <Form
+                        action="/logout"
+                        method="post"
+                        onSubmit={() => {
+                          setOpen(false);
+                          // toast({
+                          //   description: "Logging out ...",
+                          // });
+                        }}
+                      >
+                        <input
+                          type="hidden"
+                          name="redirectTo"
+                          value={redirectTo}
+                        />
+                        <button
+                          type="submit"
+                          className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+                          disabled={isLoggingOut}
+                        >
+                          <LogOut className="mr-2 h-5 w-5" />
+                          <span className="text-red-500">
+                            {t("logout_label")}
+                          </span>
+                        </button>
+                      </Form>
+                    )}
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Coming soon...</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </DropdownMenuGroup>
         </div>
       </DropdownMenuContent>

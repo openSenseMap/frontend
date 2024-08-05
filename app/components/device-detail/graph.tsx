@@ -33,10 +33,9 @@ import {
 import { datesHave48HourRange } from "~/lib/utils";
 import { isBrowser, isTablet } from "react-device-detect";
 import { useTheme } from "remix-themes";
-import Lottie from "lottie-react";
-import graphLoadingAnimation from "~/components/device-detail/graphLoadingAnimation.json";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
+import Spinner from "../spinner";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -285,14 +284,10 @@ export default function Graph(props: any) {
           <div
             ref={nodeRef}
             className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 right-4 top-14 z-40 flex flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:right-4 md:left-auto md:top-auto md:w-[60vw] md:h-[35%] md:max-h-[35%]"
-            >
+          >
             {navigation.state === "loading" && (
-              <div className="bg-white/30 dark:bg-zinc-800/30 z-50 flex items-center justify-center backdrop-blur-sm">
-                <Lottie
-                  style={{ width: 600, height: 300 }}
-                  animationData={graphLoadingAnimation}
-                  loop={true}
-                />
+              <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+                <Spinner />
               </div>
             )}
             <div
