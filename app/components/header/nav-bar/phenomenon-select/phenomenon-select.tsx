@@ -55,7 +55,7 @@ export function PhenomenonSelect() {
           <Spinner />
         </div>
       )}
-      <ScrollArea className="py-1">
+      {/* <ScrollArea className="py-1">
         <div className="grid grid-cols-2 gap-1 py-1">
           {loaderData.phenomena.map(
             (
@@ -95,7 +95,8 @@ export function PhenomenonSelect() {
             filters
           </span>
         </Button>
-      </div>
+      </div> */}
+      <div className="flex items-center justify-center">Coming soon</div>
     </div>
   );
 }
