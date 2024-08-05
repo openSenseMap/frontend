@@ -1,4 +1,8 @@
-import { useLoaderData, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -50,6 +54,7 @@ export default function Graph(props: any) {
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // form submission handler
   // const submit = useSubmit();
@@ -279,8 +284,8 @@ export default function Graph(props: any) {
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
-          >
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 right-4 top-14 z-40 flex flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:right-4 md:left-auto md:top-auto md:w-[60vw] md:h-[35%] md:max-h-[35%]"
+            >
             {navigation.state === "loading" && (
               <div className="bg-white/30 dark:bg-zinc-800/30 z-50 flex items-center justify-center backdrop-blur-sm">
                 <Lottie
@@ -316,7 +321,14 @@ export default function Graph(props: any) {
                 </DropdownMenu>
                 <X
                   className="cursor-pointer"
-                  onClick={() => props.setOpenGraph(false)}
+                  onClick={() => {
+                    searchParams.delete("sensor");
+                    searchParams.delete("date_to");
+                    searchParams.delete("date_from");
+                    searchParams.delete("aggregation");
+                    setSearchParams(searchParams);
+                    props.setOpenGraph(false);
+                  }}
                 />
               </div>
             </div>

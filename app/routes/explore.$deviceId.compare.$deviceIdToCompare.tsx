@@ -213,6 +213,11 @@ export default function CompareDevices() {
 
   let navigate = useNavigate();
 
+  const getDeviceImage = (imageUri: string | null) =>
+    imageUri !== null
+      ? `https://opensensemap.org/userimages/${imageUri}`
+      : "https://images.placeholders.dev/?width=400&height=350&text=No%20image&bgColor=%234fae48&textColor=%23727373";
+
   return (
     <>
       {open && (
@@ -286,14 +291,14 @@ export default function CompareDevices() {
                             <img
                               className="rounded-lg"
                               alt=""
-                              src={"/sensebox_outdoor.jpg"}
+                              src={getDeviceImage(data.device1.image)}
                             ></img>
                           </div>
                           <div className="flex w-full items-center justify-center p-4">
                             <img
                               className="rounded-lg"
                               alt=""
-                              src={"/sensebox_outdoor.jpg"}
+                              src={getDeviceImage(data.device2.image)}
                             ></img>
                           </div>
                         </div>
