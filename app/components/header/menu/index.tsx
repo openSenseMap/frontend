@@ -209,14 +209,18 @@ export default function Menu() {
                 <span>{t("contact_label")}</span>
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="cursor-pointer">
-              <Fingerprint className="mr-2 h-5 w-5" />
-              <span>{t("imprint_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              <FileLock2 className="mr-2 h-5 w-5" />
-              <span>{t("data_protection_label")}</span>
-            </DropdownMenuItem>
+            <Link to={"/imprint"}>
+              <DropdownMenuItem className="cursor-pointer">
+                <Fingerprint className="mr-2 h-5 w-5" />
+                <span>{t("imprint_label")}</span>
+              </DropdownMenuItem>
+            </Link>
+            <Link to={"/privacy"}>
+              <DropdownMenuItem className="cursor-pointer">
+                <FileLock2 className="mr-2 h-5 w-5" />
+                <span>{t("data_protection_label")}</span>
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
 

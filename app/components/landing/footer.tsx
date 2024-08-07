@@ -23,6 +23,16 @@ export default function Footer() {
           </li>
           <li>
             <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
+            >
+              Datenschutz
+            </a>
+          </li>
+          <li>
+            <a
               href="https://www.instagram.com/opensenselab/"
               target="_blank"
               rel="noopener noreferrer"

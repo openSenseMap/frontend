@@ -6,7 +6,7 @@ module.exports = {
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx,mdx,md}",
     "./src/**/*.{ts,tsx}",
   ],
   theme: {
@@ -242,5 +242,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
