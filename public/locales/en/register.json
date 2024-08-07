@@ -1,0 +1,9 @@
+{
+  "register_label": "Sign up",
+  "email_label": "Email",
+  "password_label": "Password",
+  "account_label": "Create account",
+  "transition_label": "Creating account...",
+  "already_account_label": "Already have an account?",
+  "login_label": "Log in"
+}

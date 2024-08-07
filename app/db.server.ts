@@ -1,10 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import invariant from "tiny-invariant";
+import * as schema from "./schema";
 
-let prisma: PrismaClient;
+let drizzleClient: PostgresJsDatabase<typeof schema>;
 
 declare global {
-  var __db__: PrismaClient;
+  var __db__: PostgresJsDatabase<typeof schema>;
 }
 
 // this is needed because in development we don't want to restart
@@ -12,12 +14,12 @@ declare global {
 // create a new connection to the DB with every change either.
 // in production we'll have a single connection to the DB.
 if (process.env.NODE_ENV === "production") {
-  prisma = getClient();
+  drizzleClient = getClient();
 } else {
   if (!global.__db__) {
     global.__db__ = getClient();
   }
-  prisma = global.__db__;
+  drizzleClient = global.__db__;
 }
 
 function getClient() {
@@ -26,37 +28,18 @@ function getClient() {
 
   const databaseUrl = new URL(DATABASE_URL);
 
-  const isLocalHost = databaseUrl.hostname === "localhost";
+  console.log(`🔌 setting up drizzle client to ${databaseUrl.host}`);
 
-  const PRIMARY_REGION = isLocalHost ? null : process.env.PRIMARY_REGION;
-  const FLY_REGION = isLocalHost ? null : process.env.FLY_REGION;
-
-  const isReadReplicaRegion = !PRIMARY_REGION || PRIMARY_REGION === FLY_REGION;
-
-  if (!isLocalHost) {
-    databaseUrl.host = `${FLY_REGION}.${databaseUrl.host}`;
-    if (!isReadReplicaRegion) {
-      // 5433 is the read-replica port
-      databaseUrl.port = "5433";
-    }
-  }
-
-  console.log(`🔌 setting up prisma client to ${databaseUrl.host}`);
   // NOTE: during development if you change anything in this function, remember
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is. So if you need to change
   // something in this file, you'll need to manually restart the server.
-  const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl.toString(),
-      },
-    },
+  const queryClient = postgres(DATABASE_URL, {
+    ssl: process.env.PG_CLIENT_SSL === "true" ? true : false,
   });
-  // connect eagerly
-  client.$connect();
+  const client = drizzle(queryClient, { schema });
 
   return client;
 }
 
-export { prisma };
+export { drizzleClient };

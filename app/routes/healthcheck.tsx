@@ -1,8 +1,8 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
-import type { LoaderArgs } from "@remix-run/server-runtime";
-import { prisma } from "~/db.server";
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import { drizzleClient } from "~/db.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const host =
     request.headers.get("X-Forwarded-Host") ?? request.headers.get("host");
 
@@ -11,7 +11,7 @@ export async function loader({ request }: LoaderArgs) {
     // if we can connect to the database and make a simple query
     // and make a HEAD request to ourselves, then we're good.
     await Promise.all([
-      prisma.user.count(),
+      drizzleClient.query.user.findFirst(),
       fetch(url.toString(), { method: "HEAD" }).then((r) => {
         if (!r.ok) return Promise.reject(r);
       }),
