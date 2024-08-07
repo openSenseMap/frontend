@@ -108,7 +108,7 @@ export function DateRangeFilter() {
         align="start"
         side="bottom"
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:bg-dark-background ring-1 dark:ring-white rounded">
           <div className="flex">
             <div className="flex flex-col">
               <div className="flex justify-around items-center h-11 border-b">
