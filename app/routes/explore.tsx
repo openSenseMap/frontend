@@ -21,9 +21,7 @@ import { getPhenomena } from "~/models/phenomena.server";
 import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
 import { type Device, type Sensor } from "~/schema";
-import { Toaster } from "~/components/ui//toaster";
 import { getUser, getUserSession } from "~/session.server";
-import { useToast } from "~/components/ui/use-toast";
 
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
@@ -62,9 +60,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({ devices, user, profile, filteredDevices, 
+    return typedjson({
+      devices,
+      user,
+      profile,
+      filteredDevices,
       //phenomena
-     });
+    });
   }
   return typedjson({
     devices,
@@ -205,7 +207,6 @@ export default function Explore() {
     }
     return legend;
   };
-  const { toast } = useToast();
 
   // // /**
   // //  * Focus the search input when the search overlay is displayed
@@ -263,13 +264,6 @@ export default function Explore() {
     //TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
     return defaultLayer;
   };
-  useEffect(() => {
-    if (data.message !== null) {
-      toast({
-        description: data.message,
-      });
-    }
-  }, [data.message, toast]);
 
   return (
     <div className="h-full w-full">
@@ -311,7 +305,6 @@ export default function Explore() {
           {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-          <Toaster />
           <Outlet />
         </Map>
       </MapProvider>
