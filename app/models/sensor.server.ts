@@ -60,7 +60,6 @@ export function getSensors(deviceId: Sensor["deviceId"]) {
 //   return sensors;
 // }
 
-// FIXME: This is exactly the same as getSensorsForDevice!!!
 export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
   return drizzleClient.query.sensor.findMany({
     where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
@@ -100,13 +99,6 @@ export async function registerSensor(newSensor: Sensor) {
     .returning();
 
   return insertedSensor;
-}
-
-export function getSensorsForDevice(deviceId: Sensor["deviceId"]) {
-  return drizzleClient.query.sensor.findMany({
-    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
-    with: {},
-  });
 }
 
 export function addNewSensor({
