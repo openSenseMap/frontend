@@ -87,7 +87,7 @@ export function AggregationFilter() {
           </>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start" side="right">
+      <PopoverContent className="w-[200px] p-0 dark:bg-dark-background ring-1 dark:ring-white rounded" align="start" side="right">
         <Command>
           <CommandInput placeholder="Change aggregation" />
           <CommandList>
