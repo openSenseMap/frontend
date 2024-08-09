@@ -37,6 +37,7 @@ import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
 import { ColorPicker } from "../color-picker";
+import { ClientOnly } from "../client-only";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -48,6 +49,24 @@ ChartJS.register(
   ChartTooltip,
   Legend,
 );
+
+// ClientOnly component to handle the plugin that needs window
+const LineWithZoom = (props: any) => {
+  useMemo(() => {
+    // Dynamically import the zoom plugin
+    import("chartjs-plugin-zoom").then(({ default: zoomPlugin }) => {
+      ChartJS.register(zoomPlugin);
+    });
+  }, []);
+
+  return (
+    <Line
+      data={props.lineData}
+      options={props.options}
+      ref={props.chartRef}
+    ></Line>
+  );
+};
 
 export default function Graph(props: any) {
   const loaderData = useLoaderData<typeof loader>();
@@ -62,7 +81,7 @@ export default function Graph(props: any) {
   });
 
   const nodeRef = useRef(null);
-  const chartRef = useRef<ChartJS<"line">>(null);
+  const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
 
   // get theme from tailwind
   const [theme] = useTheme();
@@ -236,6 +255,23 @@ export default function Graph(props: any) {
           },
         },
       },
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: "xy",
+          },
+          zoom: {
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true,
+            },
+            mode: "xy",
+          },
+        },
+      },
     };
   }, [
     loaderData.fromDate,
@@ -357,7 +393,15 @@ export default function Graph(props: any) {
                 loaderData.selectedSensors[1].data.length === 0) ? (
                 <div>There is no data for the selected time period.</div>
               ) : (
-                <Line data={lineData} options={options} ref={chartRef}></Line>
+                <ClientOnly fallback={<Spinner />}>
+                  {() => (
+                    <LineWithZoom
+                      lineData={lineData}
+                      options={options}
+                      chartRef={chartRef} // Pass chartRef as a prop
+                    />
+                  )}
+                </ClientOnly>
               )}
               {colorPickerState.open && (
                 <div
