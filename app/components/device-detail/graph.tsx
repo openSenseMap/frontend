@@ -153,23 +153,6 @@ export default function Graph(props: any) {
         mode: "index",
         intersect: false,
       },
-      plugins: {
-        legend: {
-          display: true,
-          position: "bottom",
-          onClick: (e, legendItem, legend) => {
-            const index = legendItem.datasetIndex ?? 0;
-            setColorPickerState({
-              open: !colorPickerState.open,
-              index,
-              color: lineData.datasets[index].borderColor as string,
-            });
-          },
-          labels: {
-            usePointStyle: true,
-          },
-        },
-      },
       parsing: {
         xAxisKey: "time",
         yAxisKey: "value",
@@ -269,6 +252,21 @@ export default function Graph(props: any) {
               enabled: true,
             },
             mode: "xy",
+          },
+        },
+        legend: {
+          display: true,
+          position: "bottom",
+          onClick: (e, legendItem, legend) => {
+            const index = legendItem.datasetIndex ?? 0;
+            setColorPickerState({
+              open: !colorPickerState.open,
+              index,
+              color: lineData.datasets[index].borderColor as string,
+            });
+          },
+          labels: {
+            usePointStyle: true,
           },
         },
       },
