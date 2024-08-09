@@ -16,10 +16,6 @@ export function getMeasurement(
   startDate?: Date,
   endDate?: Date,
 ) {
-  console.log(
-    `[measurement.server.ts]: ${sensorId} - ${aggregation} - ${startDate} - ${endDate}`,
-  );
-
   // If both start date and end date are provided, filter measurements within the specified time range.
   if (startDate && endDate) {
     // Check the aggregation level for measurements and fetch accordingly.

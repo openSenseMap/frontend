@@ -36,6 +36,7 @@ import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
+import { ColorPicker } from "../color-picker";
 import { ClientOnly } from "../client-only";
 
 // Registering Chart.js components that will be used in the graph
@@ -73,6 +74,11 @@ export default function Graph(props: any) {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [colorPickerState, setColorPickerState] = useState({
+    open: false,
+    index: 0,
+    color: "#000000",
+  });
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
@@ -80,8 +86,7 @@ export default function Graph(props: any) {
   // get theme from tailwind
   const [theme] = useTheme();
 
-  const lineData = useMemo(() => {
-    // Helper function to construct the label with device name
+  const [lineData, setLineData] = useState(() => {
     const getLabel = (sensor: any, includeDeviceName: any) => {
       return includeDeviceName
         ? `${sensor.title} (${sensor.device_name})`
@@ -137,7 +142,7 @@ export default function Graph(props: any) {
               },
             ],
     };
-  }, [loaderData.selectedSensors]);
+  });
 
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
@@ -147,6 +152,23 @@ export default function Graph(props: any) {
       interaction: {
         mode: "index",
         intersect: false,
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: "bottom",
+          onClick: (e, legendItem, legend) => {
+            const index = legendItem.datasetIndex ?? 0;
+            setColorPickerState({
+              open: !colorPickerState.open,
+              index,
+              color: lineData.datasets[index].borderColor as string,
+            });
+          },
+          labels: {
+            usePointStyle: true,
+          },
+        },
       },
       parsing: {
         xAxisKey: "time",
@@ -257,10 +279,26 @@ export default function Graph(props: any) {
     loaderData.locale,
     loaderData.selectedSensors,
     theme,
+    colorPickerState.open,
+    lineData.datasets,
   ]);
+
+  function handleColorChange(newColor: string) {
+    const updatedDatasets = [...lineData.datasets];
+    updatedDatasets[colorPickerState.index].borderColor = newColor;
+    updatedDatasets[colorPickerState.index].backgroundColor = newColor;
+
+    setLineData((prev) => ({
+      ...prev,
+      datasets: updatedDatasets,
+    }));
+
+    setColorPickerState((prev) => ({ ...prev, open: false }));
+  }
 
   function handlePngDownloadClick() {
     if (chartRef.current) {
+      if (chartRef.current === null) return;
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
@@ -270,27 +308,18 @@ export default function Graph(props: any) {
     const labels = lineData.labels;
     const dataset = lineData.datasets[0];
 
-    // header
     let csvContent = "timestamp,deviceId,sensorId,value,unit,phenomena";
     csvContent += "\n";
     for (let i = 0; i < labels.length; i++) {
-      // timestamp
       csvContent += `${labels[i]},`;
-      // deviceId
       csvContent += `${loaderData.selectedSensors[0].deviceId},`;
-      // sensorId
       csvContent += `${dataset?.data[i]?.sensorId},`;
-      // value
       csvContent += `${dataset?.data[i]?.value},`;
-      // unit
       csvContent += `${loaderData.selectedSensors[0].unit},`;
-      // phenomenon
       csvContent += `${loaderData.selectedSensors[0].title}`;
-      // new line
       csvContent += "\n";
     }
 
-    // Creating a Blob and saving it as a CSV file
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "chart_data.csv");
   }
@@ -373,6 +402,21 @@ export default function Graph(props: any) {
                     />
                   )}
                 </ClientOnly>
+              )}
+              {colorPickerState.open && (
+                <div
+                  className="absolute z-50 p-2 bg-white rounded dark:bg-zinc-800"
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)", // Centers the color picker
+                  }}
+                >
+                  <ColorPicker
+                    currentColor={colorPickerState.color}
+                    setColor={handleColorChange}
+                  />
+                </div>
               )}
             </div>
           </div>
