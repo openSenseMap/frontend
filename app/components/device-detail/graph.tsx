@@ -36,6 +36,7 @@ import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
+import { ClientOnly } from "../client-only";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -48,6 +49,24 @@ ChartJS.register(
   Legend,
 );
 
+// ClientOnly component to handle the plugin that needs window
+const LineWithZoom = (props: any) => {
+  useMemo(() => {
+    // Dynamically import the zoom plugin
+    import("chartjs-plugin-zoom").then(({ default: zoomPlugin }) => {
+      ChartJS.register(zoomPlugin);
+    });
+  }, []);
+
+  return (
+    <Line
+      data={props.lineData}
+      options={props.options}
+      ref={props.chartRef}
+    ></Line>
+  );
+};
+
 export default function Graph(props: any) {
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
@@ -55,12 +74,8 @@ export default function Graph(props: any) {
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // form submission handler
-  // const submit = useSubmit();
-  // const [searchParams] = useSearchParams();
-
   const nodeRef = useRef(null);
-  const chartRef = useRef<ChartJS<"line">>(null);
+  const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
 
   // get theme from tailwind
   const [theme] = useTheme();
@@ -218,6 +233,23 @@ export default function Graph(props: any) {
           },
         },
       },
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: "xy",
+          },
+          zoom: {
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true,
+            },
+            mode: "xy",
+          },
+        },
+      },
     };
   }, [
     loaderData.fromDate,
@@ -229,8 +261,6 @@ export default function Graph(props: any) {
 
   function handlePngDownloadClick() {
     if (chartRef.current) {
-      if (chartRef.current === null) return;
-      // why is chartRef.current always never???
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
@@ -334,7 +364,15 @@ export default function Graph(props: any) {
                 loaderData.selectedSensors[1].data.length === 0) ? (
                 <div>There is no data for the selected time period.</div>
               ) : (
-                <Line data={lineData} options={options} ref={chartRef}></Line>
+                <ClientOnly fallback={<Spinner />}>
+                  {() => (
+                    <LineWithZoom
+                      lineData={lineData}
+                      options={options}
+                      chartRef={chartRef} // Pass chartRef as a prop
+                    />
+                  )}
+                </ClientOnly>
               )}
             </div>
           </div>
