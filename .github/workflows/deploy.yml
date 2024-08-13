@@ -116,6 +116,13 @@ jobs:
         run: npm run build
 
       - name: 🌳 Cypress run
+        run: |
+          if [ -z "${{ secrets.MAPBOX_ACCESS_TOKEN }}" ]; then
+            echo "MAPBOX_ACCESS_TOKEN is not set!"
+            exit 1
+          else
+            echo "MAPBOX_ACCESS_TOKEN is set and has a non-empty value."
+          fi
         uses: cypress-io/github-action@v6
         with:
           start: npm run start:mocks
