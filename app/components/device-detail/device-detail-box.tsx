@@ -173,6 +173,7 @@ export default function DeviceDetailBox() {
         >
           <div
             ref={nodeRef}
+            id="componentToMove"
             className="absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-row px-4 py-2 md:bottom-[30px] md:left-[10px] md:top-auto md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0"
           >
             <div
