@@ -99,7 +99,7 @@ export default function Index() {
                       stiffness: 50,
                     }}
                   >
-                    <Link to="/explore" prefetch="intent">
+                    <Link to="/explore" prefetch="intent" data-cy="explore-button">
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         transition={{
@@ -108,7 +108,7 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-dark-green mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-green p-2 text-light-green transition-all hover:bg-light-green hover:text-white dark:bg-dark-green dark:text-white">
+                        <button className="visible dark:border-dark-green mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-green p-2 text-light-green transition-all hover:bg-light-green hover:text-white dark:bg-dark-green dark:text-white">
                           {t("explore")}
                         </button>
                       </motion.div>
@@ -129,6 +129,7 @@ export default function Index() {
                       target="_blank"
                       rel="noopener noreferrer"
                       prefetch="intent"
+                      data-cy="donate-button"
                     >
                       <motion.div
                         whileHover={{ scale: 1.1 }}
@@ -138,7 +139,7 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:bg-dark-blue dark:text-white">
+                        <button className="dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:text-white">
                           {t("donate")}
                         </button>
                       </motion.div>
