@@ -96,6 +96,17 @@ jobs:
       - name: 📥 Install deps
         run: npm install
 
+      - name: 🔍 Check MAPBOX_ACCESS_TOKEN
+        run: |
+          if [ -z "${{ secrets.MAPBOX_ACCESS_TOKEN }}" ]; then
+            echo "MAPBOX_ACCESS_TOKEN is not set!"
+            exit 1
+          else
+            echo "MAPBOX_ACCESS_TOKEN is set and has a non-empty value."
+          fi
+        env:
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+
       - name: 🐳 Docker compose
         # the sleep is just there to give time for postgres to get started
         run: docker compose -f docker-compose.ci.yml up -d && sleep 60
