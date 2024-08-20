@@ -18,9 +18,8 @@ import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de, enGB } from "date-fns/locale";
-import type { MeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore.$deviceId._index";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { saveAs } from "file-saver";
 import { Download, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
@@ -40,7 +39,6 @@ import Spinner from "../spinner";
 import { ColorPicker } from "../color-picker";
 import { ClientOnly } from "../client-only";
 
-// Registering Chart.js components that will be used in the graph
 ChartJS.register(
   LineElement,
   TimeScale,
@@ -81,7 +79,7 @@ export default function Graph(props: any) {
     index: 0,
     color: "#000000",
   });
-  const [isAggregated] = useState(loaderData.aggregation !== "raw");
+  const isAggregated = loaderData.aggregation !== "raw";
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
@@ -90,86 +88,142 @@ export default function Graph(props: any) {
   const [theme] = useTheme();
 
   const [lineData, setLineData] = useState(() => {
-    const getLabel = (sensor: any, includeDeviceName: any) => {
-      return includeDeviceName
-        ? `${sensor.title} (${sensor.device_name})`
-        : sensor.title;
-    };
-
     const includeDeviceName =
       loaderData.selectedSensors.length === 2 &&
       loaderData.selectedSensors[0].device_name !==
         loaderData.selectedSensors[1].device_name;
 
-    const datasets = loaderData.selectedSensors.map(
-      (sensor: any, index: number) => {
-        const baseDataset = {
-          label: getLabel(sensor, includeDeviceName),
-          data: sensor.data.map((measurement: MeasurementProps) => ({
-            x: measurement.time,
-            y: measurement.value,
-          })),
-          pointRadius: 0,
-          borderColor: sensor.color,
-          backgroundColor: sensor.color,
-          yAxisID: index === 0 ? "y" : "y1",
-          fill: false,
-          tension: 0.4, // Smooth line
-        };
-
-        // show ribbon for aggregated data if only one sensor is selected
-        if (isAggregated && loaderData.selectedSensors.length === 1) {
-          const baseDataset = {
-            label: getLabel(sensor, includeDeviceName),
-            data: sensor.data.map((measurement: MeasurementProps) => ({
-              x: measurement.time,
-              y: measurement.value,
-            })),
-            pointRadius: 0,
-            borderColor: sensor.color,
-            backgroundColor: sensor.color,
-            yAxisID: index === 0 ? "y" : "y1",
-            fill: false, // Base line should not fill anything
-            tension: 0.4, // Smooth line
-          };
-
-          const minDataset = {
-            label: `${getLabel(sensor, includeDeviceName)} (Min)`,
-            data: sensor.data.map((measurement: MeasurementProps) => ({
-              x: measurement.time,
-              y: measurement.min_value,
-            })),
-            borderColor: sensor.color + "33", // Use a visible color for the line
-            backgroundColor: sensor.color + "33", // Lighter version by adding opacity
-            pointRadius: 0,
-            fill: 1, // Fill area between this dataset and the baseDataset
-            tension: 0.4,
-          };
-
-          const maxDataset = {
-            label: `${getLabel(sensor, includeDeviceName)} (Max)`,
-            data: sensor.data.map((measurement: MeasurementProps) => ({
-              x: measurement.time,
-              y: measurement.max_value,
-            })),
-            borderColor: sensor.color + "33", // Use a visible color for the line
-            backgroundColor: sensor.color + "33", // Lighter version by adding opacity
-            pointRadius: 0,
-            fill: 1, // Fill area from this dataset to the baseDataset
-            tension: 0.4,
-          };
-
-          return [maxDataset, baseDataset, minDataset];
-        }
-
-        return [baseDataset];
-      },
-    );
-
     return {
-      datasets: datasets.flat(), // Flatten the array to avoid nested arrays
+      datasets: loaderData.selectedSensors
+        .map(
+          (
+            sensor: {
+              title: any;
+              device_name: any;
+              data: any[];
+              color: string;
+            },
+            index: number,
+          ) => {
+            const baseDataset = {
+              label: includeDeviceName
+                ? `${sensor.title} (${sensor.device_name})`
+                : sensor.title,
+              data: sensor.data.map((measurement) => ({
+                x: measurement.time,
+                y: measurement.value,
+              })),
+              pointRadius: 0,
+              borderColor: sensor.color,
+              backgroundColor: sensor.color,
+              yAxisID: index === 0 ? "y" : "y1",
+              fill: false,
+              tension: 0.4,
+            };
+
+            if (isAggregated && loaderData.selectedSensors.length === 1) {
+              const minDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Min)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.min_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              const maxDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Max)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.max_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              return [maxDataset, baseDataset, minDataset];
+            }
+
+            return [baseDataset];
+          },
+        )
+        .flat(),
     };
   });
+
+  useEffect(() => {
+    const includeDeviceName =
+      loaderData.selectedSensors.length === 2 &&
+      loaderData.selectedSensors[0].device_name !==
+        loaderData.selectedSensors[1].device_name;
+
+    setLineData({
+      datasets: loaderData.selectedSensors
+        .map(
+          (
+            sensor: {
+              title: any;
+              device_name: any;
+              data: any[];
+              color: string;
+            },
+            index: number,
+          ) => {
+            const baseDataset = {
+              label: includeDeviceName
+                ? `${sensor.title} (${sensor.device_name})`
+                : sensor.title,
+              data: sensor.data.map((measurement) => ({
+                x: measurement.time,
+                y: measurement.value,
+              })),
+              pointRadius: 0,
+              borderColor: sensor.color,
+              backgroundColor: sensor.color,
+              yAxisID: index === 0 ? "y" : "y1",
+              fill: false,
+              tension: 0.4,
+            };
+
+            if (isAggregated && loaderData.selectedSensors.length === 1) {
+              const minDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Min)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.min_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              const maxDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Max)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.max_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              return [maxDataset, baseDataset, minDataset];
+            }
+
+            return [baseDataset];
+          },
+        )
+        .flat(),
+    });
+  }, [loaderData, isAggregated]);
 
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
@@ -258,9 +312,8 @@ export default function Graph(props: any) {
           type: "linear",
           display: "auto",
           position: "right",
-          // grid line settings
           grid: {
-            drawOnChartArea: false, // only want the grid lines for one axis to show up
+            drawOnChartArea: false,
           },
         },
       },
@@ -312,8 +365,9 @@ export default function Graph(props: any) {
     updatedDatasets[colorPickerState.index].borderColor = newColor;
     updatedDatasets[colorPickerState.index].backgroundColor = newColor;
 
-    setLineData((prev) => ({
-      ...prev,
+    // Update the lineData state with the new dataset colors
+    setLineData((prevData) => ({
+      ...prevData,
       datasets: updatedDatasets,
     }));
 
@@ -322,7 +376,6 @@ export default function Graph(props: any) {
 
   function handlePngDownloadClick() {
     if (chartRef.current) {
-      if (chartRef.current === null) return;
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
@@ -336,17 +389,15 @@ export default function Graph(props: any) {
     // Loop through each timestamp and sensor data
     labels.forEach((timestamp: any, index: string | number) => {
       loaderData.selectedSensors.forEach((sensor: any) => {
-        // Find the corresponding dataset for this sensor
         const dataset = lineData.datasets.find(
           (ds: { label: string | any[] }) => ds.label.includes(sensor.title),
         );
         if (dataset) {
           const value = dataset.data[index]?.y ?? "";
 
-          // Since sensorId might not be directly in the dataset, ensure we use it from sensor
           csvContent += `${timestamp},`;
           csvContent += `${sensor.deviceId},`;
-          csvContent += `${sensor.id},`; // Accessing sensor.sensorId directly
+          csvContent += `${sensor.id},`;
           csvContent += `${value},`;
           csvContent += `${sensor.unit},`;
           csvContent += `${sensor.title}\n`;
