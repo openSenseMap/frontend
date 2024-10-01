@@ -99,7 +99,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^10.16.4",
     "get-user-locale": "^2.2.1",
-    "i18next": "^22.4.15",
+    "i18next": "^23.15.1",
     "i18next-browser-languagedetector": "^7.0.1",
     "i18next-fs-backend": "^2.1.1",
     "i18next-http-backend": "^2.3.1",
