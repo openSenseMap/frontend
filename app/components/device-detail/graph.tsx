@@ -21,7 +21,7 @@ import { de, enGB } from "date-fns/locale";
 import type { loader } from "~/routes/explore.$deviceId._index";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { saveAs } from "file-saver";
-import { Download, X } from "lucide-react";
+import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -38,6 +38,7 @@ import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
 import { ColorPicker } from "../color-picker";
 import { ClientOnly } from "../client-only";
+import { Button } from "../ui/button";
 
 ChartJS.register(
   LineElement,
@@ -73,6 +74,7 @@ export default function Graph(props: any) {
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
   const [searchParams, setSearchParams] = useSearchParams();
   const [colorPickerState, setColorPickerState] = useState({
     open: false,
@@ -322,6 +324,7 @@ export default function Graph(props: any) {
           pan: {
             enabled: true,
             mode: "xy",
+            onPan: () => setIsZoomed(true), // Mark zoom as active
           },
           zoom: {
             wheel: {
@@ -331,6 +334,7 @@ export default function Graph(props: any) {
               enabled: true,
             },
             mode: "xy",
+            onZoom: () => setIsZoomed(true), // Mark zoom as active
           },
         },
         legend: {
@@ -424,6 +428,13 @@ export default function Graph(props: any) {
     saveAs(blob, "chart_data.csv");
   }
 
+  function handleResetZoomClick() {
+    if (chartRef.current) {
+      chartRef.current.resetZoom(); // Use the resetZoom function from the zoom plugin
+      setIsZoomed(false); // Reset zoom state
+    }
+  }
+
   function handleDrag(_e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
@@ -456,6 +467,11 @@ export default function Graph(props: any) {
               <div className="flex items-center justify-center gap-4">
                 <DateRangeFilter />
                 <AggregationFilter />
+                {isZoomed && (
+                  <Button variant="outline" className="h-8" onClick={handleResetZoomClick}>
+                    <RefreshCcw className="mr-2 h-4 w-4" /> Reset Zoom
+                  </Button>
+                )}
               </div>
               <div className="flex items-center justify-end gap-4">
                 <DropdownMenu>
