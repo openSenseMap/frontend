@@ -1,4 +1,4 @@
-import { GithubPicker } from "react-color";
+import { TwitterPicker } from "react-color";
 
 // Accept currentColor and setColor as props
 export function ColorPicker({
@@ -14,7 +14,7 @@ export function ColorPicker({
   };
 
   return (
-    <GithubPicker
+    <TwitterPicker
       color={currentColor}
       onChangeComplete={handleChangeComplete}
       triangle="hide"
