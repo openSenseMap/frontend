@@ -336,6 +336,21 @@ export default function Graph(props: any) {
         legend: {
           display: true,
           position: "bottom",
+          onHover: (e, legendItem, legend) => {
+            const canvas = legend.chart.canvas; // Access the chart from the legend context
+
+            // Only change the cursor and add the tooltip when hovering over the color box
+            if (legendItem.fillStyle) {
+              canvas.style.cursor = "pointer";
+              canvas.title = "Click to change color"; // Tooltip on legend color box
+            }
+          },
+          onLeave: (e, legendItem, legend) => {
+            const canvas = legend.chart.canvas;
+            canvas.style.cursor = "default";
+            canvas.title = ""; // Remove tooltip on leave
+          },
+
           onClick: (e, legendItem, legend) => {
             const index = legendItem.datasetIndex ?? 0;
             setColorPickerState({
@@ -490,7 +505,7 @@ export default function Graph(props: any) {
               )}
               {colorPickerState.open && (
                 <div
-                  className="absolute z-50 p-2 bg-white rounded dark:bg-zinc-800"
+                  className="absolute z-50 bg-white rounded dark:bg-zinc-800"
                   style={{
                     left: "50%",
                     top: "50%",
