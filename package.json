@@ -134,7 +134,6 @@
     "remix-i18next": "^5.1.1",
     "remix-themes": "^1.3.1",
     "remix-typedjson": "^0.1.7",
-    "remix-utils": "^7.6.0",
     "remix-validated-form": "^5.0.2",
     "shadcn-ui": "^0.4.0",
     "source-map-support": "^0.5.21",
