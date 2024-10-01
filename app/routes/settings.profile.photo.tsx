@@ -60,7 +60,6 @@ export async function loader({ request }: DataFunctionArgs) {
   const user = await getUserById(userId);
   const profile = await getProfileByUserId(userId);
   if (!user) {
-    console.log("User not found");
     throw new Error();
     // throw await authenticator.logout(request, { redirectTo: "/" });
   }
@@ -137,6 +136,7 @@ export default function PhotoChooserModal() {
       <DialogContent
         onEscapeKeyDown={dismissModal}
         onPointerDownOutside={dismissModal}
+        className="dark:bg-dark-background dark:text-dark-text dark:border-dark-border"
       >
         <DialogHeader>
           <DialogTitle>Profile photo</DialogTitle>
@@ -151,7 +151,11 @@ export default function PhotoChooserModal() {
           <Avatar className="h-64 w-64">
             <AvatarImage
               className="aspect-auto w-full h-full rounded-full object-cover"
-              src={"/resources/file/" + data.profile?.profileImage?.id}
+              src={
+                newImageSrc
+                  ? newImageSrc
+                  : "/resources/file/" + data.profile?.profileImage?.id
+              }
             />
             <AvatarFallback>
               {getInitials(data.profile?.username ?? "")}
@@ -182,7 +186,7 @@ export default function PhotoChooserModal() {
             </div>
           ) : (
             <div className="flex gap-4">
-              <LabelButton htmlFor={photoFile.id}>✏️ Change</LabelButton>
+              <LabelButton htmlFor={photoFile.id}>Change</LabelButton>
             </div>
           )}
           {/* <ErrorList errors={form.errors} /> */}

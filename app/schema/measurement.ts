@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { sql } from "drizzle-orm";
 import {
   doublePrecision,
+  integer,
   pgMaterializedView,
   pgTable,
   text,
@@ -15,7 +15,7 @@ import {
 export const measurement = pgTable(
   "measurement",
   {
-    sensorId: text("sensorId").notNull(),
+    sensorId: text("sensor_id").notNull(),
     time: timestamp("time", { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -33,25 +33,50 @@ export const measurement = pgTable(
 /**
  * Views
  */
-export const measurements15minView = pgMaterializedView("measurement_15min", {
-  sensorId: text("sensorId").notNull(),
-  time: timestamp("time", { precision: 3, withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  value: doublePrecision("value"),
-}).as(
-  sql`select ${measurement.sensorId}, time_bucket('15 min', ${measurement.time}) AS time, AVG(value) AS value from ${measurement} GROUP BY 1, 2 WITH NO DATA`,
-);
+export const measurements10minView = pgMaterializedView("measurement_10min", {
+  sensorId: text("sensor_id"),
+  time: timestamp("time", { precision: 3, withTimezone: true }),
+  value: doublePrecision("avg_value"),
+  total_values: integer("total_values"),
+  min_value: doublePrecision("min_value"),
+  max_value: doublePrecision("max_value"),
+}).existing();
+
+export const measurements1hourView = pgMaterializedView("measurement_1hour", {
+  sensorId: text("sensor_id"),
+  time: timestamp("time", { precision: 3, withTimezone: true }),
+  value: doublePrecision("avg_value"),
+  total_values: integer("total_values"),
+  min_value: doublePrecision("min_value"),
+  max_value: doublePrecision("max_value"),
+}).existing();
 
 export const measurements1dayView = pgMaterializedView("measurement_1day", {
-  sensorId: text("sensorId").notNull(),
-  time: timestamp("time", { precision: 3, withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  value: doublePrecision("value"),
-}).as(
-  sql`select ${measurements15minView.sensorId}, time_bucket('1 day', ${measurements15minView.time}) AS time, AVG(value) AS value from ${measurements15minView} GROUP BY 1, 2 WITH NO DATA`,
-)
+  sensorId: text("sensor_id"),
+  time: timestamp("time", { precision: 3, withTimezone: true }),
+  value: doublePrecision("avg_value"),
+  total_values: integer("total_values"),
+  min_value: doublePrecision("min_value"),
+  max_value: doublePrecision("max_value"),
+}).existing();
+
+export const measurements1monthView = pgMaterializedView("measurement_1month", {
+  sensorId: text("sensor_id"),
+  time: timestamp("time", { precision: 3, withTimezone: true }),
+  value: doublePrecision("avg_value"),
+  total_values: integer("total_values"),
+  min_value: doublePrecision("min_value"),
+  max_value: doublePrecision("max_value"),
+}).existing();
+
+export const measurements1yearView = pgMaterializedView("measurement_1year", {
+  sensorId: text("sensor_id"),
+  time: timestamp("time", { precision: 3, withTimezone: true }),
+  value: doublePrecision("avg_value"),
+  total_values: integer("total_values"),
+  min_value: doublePrecision("min_value"),
+  max_value: doublePrecision("max_value"),
+}).existing();
 
 /**
  * Types

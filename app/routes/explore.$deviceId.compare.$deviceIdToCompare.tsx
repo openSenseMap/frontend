@@ -1,4 +1,4 @@
-import type { Sensor } from "~/schema";
+import type { Sensor, SensorWithMeasurement } from "~/schema";
 import { json, redirect } from "@remix-run/node";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -9,11 +9,10 @@ import {
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
-import { ChevronUp, LineChart, Minus, Share2, X } from "lucide-react";
+import { ChevronUp, Minus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
-import ShareLink from "~/components/device-detail/share-link";
 import Spinner from "~/components/spinner";
 import {
   Accordion,
@@ -21,15 +20,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -39,9 +29,9 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getDevice } from "~/models/device.server";
-import { getSensorsFromDevice } from "~/models/sensor.server";
+import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
 import { getMeasurement } from "~/models/measurement.server";
-import { getGraphColor } from "~/lib/utils";
+import { adjustBrightness, getGraphColor } from "~/lib/utils";
 import Graph from "~/components/device-detail/graph";
 import {
   Tooltip,
@@ -52,12 +42,12 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 import addDays from "date-fns/addDays";
-import type { LastMeasurement } from "types";
 
-function mergeSensors(
-  sensorsFromDevice1: Sensor[],
-  sensorsFromDevice2: Sensor[],
-) {
+interface ExtendedSensor extends Sensor {
+  device_name: string;
+}
+
+function mergeSensors(sensorsFromDevice1: any, sensorsFromDevice2: any) {
   // Combine both arrays
   const mergedArray = [...sensorsFromDevice1, ...sensorsFromDevice2];
 
@@ -105,9 +95,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const device1 = await getDevice({ id: params.deviceId });
-  const sensorsFromDevice1 = await getSensorsFromDevice(params.deviceId);
+  const sensorsFromDevice1 = await getSensorsWithLastMeasurement(
+    params.deviceId,
+  );
   const device2 = await getDevice({ id: params.deviceIdToCompare });
-  const sensorsFromDevice2 = await getSensorsFromDevice(
+  const sensorsFromDevice2 = await getSensorsWithLastMeasurement(
     params.deviceIdToCompare,
   );
 
@@ -123,7 +115,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startDate = url.searchParams.get("date_from") || undefined;
   const endDate = url.searchParams.get("date_to") || undefined;
   var sensorsToQuery = [...sensorsFromDevice1, ...sensorsFromDevice2].filter(
-    (sensor: Sensor) => sensorIds.includes(sensor.id),
+    (sensor: any) => sensorIds.includes(sensor.id),
   );
 
   if (!sensorsToQuery) {
@@ -135,8 +127,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  const selectedSensors: Sensor[] = await Promise.all(
-    sensorsToQuery.map(async (sensor: Sensor) => {
+  const selectedSensors: ExtendedSensor[] = await Promise.all(
+    sensorsToQuery.map(async (sensor: any) => {
       if (startDate && endDate) {
         const sensorData = await getMeasurement(
           sensor.id,
@@ -158,7 +150,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
   );
   selectedSensors.map((sensor: any) => {
-    const color = getGraphColor(sensor.title);
+    let color = getGraphColor(sensor.title);
+
+    // Check if there is another sensor with the same title but from a different device
+    const matchingSensors = selectedSensors.filter(
+      (s) => s.title === sensor.title && s.device_name !== sensor.device_name,
+    );
+
+    if (matchingSensors.length > 0) {
+      // Determine if this sensor should be darker or brighter
+      const isPrimarySensor =
+        sensor.device_name < matchingSensors[0].device_name;
+
+      // Adjust brightness: one darker, the other brighter
+      color = adjustBrightness(color, isPrimarySensor ? -100 : 100);
+    }
+
     sensor.color = color;
     return color;
   });
@@ -205,10 +212,11 @@ export default function CompareDevices() {
   }
 
   let navigate = useNavigate();
-  const routeChange = (newPath: string) => {
-    let path = newPath;
-    navigate(path);
-  };
+
+  const getDeviceImage = (imageUri: string | null) =>
+    imageUri !== null
+      ? `https://opensensemap.org/userimages/${imageUri}`
+      : "https://images.placeholders.dev/?width=400&height=350&text=No%20image&bgColor=%234fae48&textColor=%23727373";
 
   return (
     <>
@@ -234,17 +242,38 @@ export default function CompareDevices() {
                     <Spinner />
                   </div>
                 )}
+
                 <div
                   id="deviceDetailBoxTop"
-                  className="flex w-full cursor-move items-center px-4 pt-4 text-xl"
+                  className="flex cursor-move w-full items-center pt-4 text-xl"
                 >
-                  <p className="flex w-1/2 items-center justify-center text-center">
-                    {data.device1.name}
-                  </p>
-                  <p className="flex w-1/2 items-center justify-center text-center">
-                    {data.device2.name}
-                  </p>
+                  <div className="relative w-full flex flex-col">
+                    {/* Buttons Container */}
+                    <div className="absolute top-0 right-0 flex items-center gap-2 pr-2">
+                      <Minus
+                        className="cursor-pointer"
+                        onClick={() => setOpen(false)}
+                      />
+                      <X
+                        className="cursor-pointer"
+                        onClick={() => {
+                          navigate("/explore");
+                        }}
+                      />
+                    </div>
+
+                    {/* Names Container */}
+                    <div className="flex w-full justify-center mt-8">
+                      <p className="flex w-1/2 items-center justify-center text-center">
+                        {data.device1.name}
+                      </p>
+                      <p className="flex w-1/2 items-center justify-center text-center">
+                        {data.device2.name}
+                      </p>
+                    </div>
+                  </div>
                 </div>
+
                 <div className="no-scrollbar relative flex-1 overflow-y-scroll">
                   <Accordion
                     type="single"
@@ -262,46 +291,41 @@ export default function CompareDevices() {
                             <img
                               className="rounded-lg"
                               alt=""
-                              src={"/sensebox_outdoor.jpg"}
+                              src={getDeviceImage(data.device1.image)}
                             ></img>
                           </div>
                           <div className="flex w-full items-center justify-center p-4">
                             <img
                               className="rounded-lg"
                               alt=""
-                              src={"/sensebox_outdoor.jpg"}
+                              src={getDeviceImage(data.device2.image)}
                             ></img>
                           </div>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="w-full"
-                    // defaultValue="item-1"
-                  >
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger className="justify-start gap-2 font-bold">
-                        Description
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        {/* display single row table with both descriptions next to each other */}
-                        <div className="flex w-full items-center justify-center">
-                          <p className="p-4">
-                            {data.device1.description ||
-                              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam"}
-                          </p>
-                          <Separator orientation="vertical" />
-                          <p className="p-4">
-                            {data.device2.description ||
-                              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam"}
-                          </p>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                  {(data.device1.description || data.device2.description) && (
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="item-1">
+                        <AccordionTrigger className="justify-start gap-2 font-bold">
+                          Description
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          {/* Display single row table with both descriptions next to each other */}
+                          <div className="flex w-full items-center justify-center">
+                            <p className="p-4">
+                              {data.device1.description || <Minus />}
+                            </p>
+                            <Separator orientation="vertical" />
+                            <p className="p-4">
+                              {data.device2.description || <Minus />}
+                            </p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  )}
                   <Accordion
                     type="single"
                     collapsible
@@ -343,17 +367,10 @@ export default function CompareDevices() {
                               </TableHeader>
                               <TableBody>
                                 {data.sensorGroups.map(
-                                  (sensorGroup: Sensor[], index) => {
-                                    // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-                                    const lastMeasurement0 = sensorGroup[0]
-                                      ?.lastMeasurement as LastMeasurement;
-                                    const value0 =
-                                      lastMeasurement0?.value as string;
-                                    const lastMeasurement1 = sensorGroup[1]
-                                      ?.lastMeasurement as LastMeasurement;
-                                    const value1 =
-                                      lastMeasurement1?.value as string;
-
+                                  (
+                                    sensorGroup: SensorWithMeasurement[],
+                                    index,
+                                  ) => {
                                     return (
                                       <TableRow key={index}>
                                         <TableCell className="font-medium">
@@ -388,18 +405,18 @@ export default function CompareDevices() {
                                                   (sensorIds.includes(
                                                     sensorGroup[0].id,
                                                   )
-                                                    ? " text-green-100"
+                                                    ? " text-light-green"
                                                     : "text-gray-900")
                                                 }
                                               >
-                                                {sensorGroup[0]
-                                                  ? value0 +
-                                                    " " +
-                                                    sensorGroup[0]?.unit
-                                                  : "---"}
+                                                {sensorGroup[0].value +
+                                                  " " +
+                                                  sensorGroup[0].unit}
                                               </p>
                                             </label>
-                                          ) : null}
+                                          ) : (
+                                            <Minus />
+                                          )}
                                         </TableCell>
                                         <TableCell>
                                           {sensorGroup[1] ? (
@@ -429,18 +446,18 @@ export default function CompareDevices() {
                                                   (sensorIds.includes(
                                                     sensorGroup[1].id,
                                                   )
-                                                    ? " text-green-100"
+                                                    ? " text-light-green"
                                                     : "text-gray-900")
                                                 }
                                               >
-                                                {sensorGroup[1]
-                                                  ? value1 +
-                                                    " " +
-                                                    sensorGroup[1]?.unit
-                                                  : "---"}
+                                                {sensorGroup[1].value +
+                                                  " " +
+                                                  sensorGroup[1].unit}
                                               </p>
                                             </label>
-                                          ) : null}
+                                          ) : (
+                                            <Minus />
+                                          )}
                                         </TableCell>
                                       </TableRow>
                                     );
@@ -453,55 +470,6 @@ export default function CompareDevices() {
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
-                </div>
-              </div>
-              <div className="mx-1">
-                <div className="flex flex-col items-center gap-2">
-                  <div
-                    onClick={() => routeChange("/explore")}
-                    className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                  >
-                    <X />
-                  </div>
-                  <div
-                    onClick={() => setOpen(false)}
-                    className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                  >
-                    <Minus />
-                  </div>
-                  {sensorIds.length > 0 && !openGraph ? (
-                    <div
-                      onClick={() => setOpenGraph(true)}
-                      className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <LineChart />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Open line chart</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  ) : null}
-                  <div className="cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Share2 className="cursor-pointer" />
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Share this link</AlertDialogTitle>
-                          <ShareLink />
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Close</AlertDialogCancel>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
                 </div>
               </div>
             </div>

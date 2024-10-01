@@ -1,6 +1,6 @@
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
-import {type zodExposureEnum, zodStatusEnum} from "~/schema";
+import {type zodExposureEnum, type zodStatusEnum} from "~/schema";
 
 /* export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home

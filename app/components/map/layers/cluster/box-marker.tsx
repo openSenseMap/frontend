@@ -17,7 +17,7 @@ const getStatusColor = (device: Device) => {
     if (device.exposure === "mobile") {
       return "bg-blue-100";
     }
-    return "bg-green-100";
+    return "bg-green-300";
   } else if (device.status === "inactive") {
     return "bg-gray-100";
   } else {

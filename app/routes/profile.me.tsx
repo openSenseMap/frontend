@@ -8,7 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getUser(request);
 
   if (!user) {
-    return redirect("/explore/login");
+    return redirect("/login");
   } else {
     const profile = await getProfileByUserId(user.id);
     if (!profile) {

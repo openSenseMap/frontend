@@ -106,7 +106,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className="dark:text-dark-text">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
@@ -130,7 +130,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-centerdark:text-dark-text"
                 >
                   No results.
                 </TableCell>
@@ -140,7 +140,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      <div className="flex justify-center py-4">
+      <div className="flex justify-center py-4 dark:text-dark-text">
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
           <div className="flex flex-wrap items-center space-x-2">
             <span className="text-sm font-medium">Rows per page</span>
@@ -151,7 +151,7 @@ export function DataTable<TData, TValue>({
               }}
               // disabled={isPending}
             >
-              <SelectTrigger className="h-8 w-16">
+              <SelectTrigger className="h-8 w-16 dark:border-dark-text">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

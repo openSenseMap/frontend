@@ -7,6 +7,7 @@ import {
   type InferSelectModel,
 } from "drizzle-orm";
 import { device } from "./device";
+import type { Measurement } from "./measurement";
 
 /**
  * Table
@@ -18,14 +19,14 @@ export const sensor = pgTable("sensor", {
     .$defaultFn(() => createId()),
   title: text("title"),
   unit: text("unit"),
-  sensorType: text("sensorType"),
+  sensorType: text("sensor_type"),
   status: statusEnum("status").default("inactive"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   deviceId: text("device_id").notNull(),
-  sensorWikiType: text("sensorWikiType"),
-  sensorWikiPhenomenon: text("sensorWikiPhenomenon"),
-  sensorWikiUnit: text("sensorWikiUnit"),
+  sensorWikiType: text("sensor_wiki_type"),
+  sensorWikiPhenomenon: text("sensor_wiki_phenomenon"),
+  sensorWikiUnit: text("sensor_wiki_unit"),
   lastMeasurement: json("lastMeasurement"),
   data: json("data"),
 });
@@ -45,3 +46,5 @@ export const sensorRelations = relations(sensor, ({ one }) => ({
  */
 export type Sensor = InferSelectModel<typeof sensor>;
 export type InsertSensor = InferInsertModel<typeof sensor>;
+
+export type SensorWithMeasurement = Sensor & Measurement;

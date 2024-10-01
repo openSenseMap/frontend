@@ -48,13 +48,10 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
   return (
     <div className="space-y-4 pt-4">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          {t("select_sensors")}
-        </h3>
         {sensorsField.error && (
           <span className="text-red-500">{sensorsField.error}</span>
         )}
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+        <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-dark-text">
           {t("select_sensors_text")}
         </p>
       </div>
@@ -122,7 +119,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                               sensorsField.validate();
                             }}
                             key={sensor.id}
-                            className="relative hover:cursor-pointer hover:ring-2 hover:ring-green-100 data-[checked=true]:ring-4 data-[checked=true]:ring-green-300"
+                            className="relative hover:cursor-pointer hover:ring-2 hover:ring-light-green data-[checked=true]:ring-4 data-[checked=true]:ring-light-green"
                           >
                             <CardContent className="flex justify-center pt-2">
                               <AspectRatio ratio={4 / 3}>
@@ -137,7 +134,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                               <CardTitle className="text-xl">
                                 {sensor.sensor.label.item[0].text}
                               </CardTitle>
-                              <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-green-300" />
+                              <PlusCircleIcon className="absolute bottom-0 right-0 h-5 w-5 text-light-green" />
                             </CardFooter>
                           </Card>
                         }
@@ -150,7 +147,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
               {addedSensors["p-" + key] &&
                 addedSensors["p-" + key].length > 0 && (
                   <div className="py-4">
-                    <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900">
+                    <h3 className="pb-4 text-lg font-medium leading-6 text-gray-900 dark:text-dark-text">
                       {t("your_added")}{" "}
                       {sensorWikiLabel(
                         data.phenomena.find((pheno: any) => pheno.id == key)
@@ -160,7 +157,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                     </h3>
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <TableRow className="hover:bg-muted/0">
                           <TableHead>{t("title")}</TableHead>
                           <TableHead className="w-[100px]">
                             {t("sensor")}
@@ -174,11 +171,12 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                         {addedSensors["p-" + key].map(
                           (sensorItem: any, index: number) => {
                             return (
-                              <TableRow key={sensorItem.id + "" + index}>
+                              <TableRow key={sensorItem.id + "" + index} className="hover:bg-muted/0">
                                 <TableCell>
                                   <input
                                     type="text"
                                     name={`sensors[p-${key.toString()}][${index}]`}
+                                    className="dark:bg-dark-boxes"
                                     placeholder={
                                       sensorItem[0]
                                         ? sensorItem[0]
@@ -220,7 +218,7 @@ export default function SelectSensors({ data }: SelectSensorsProps) {
                                   <select
                                     name={`sensors[p-${key.toString()}][${index}]`}
                                     id="unit"
-                                    className="overflow-visible"
+                                    className="overflow-visible dark:bg-dark-boxes"
                                   >
                                     {data.phenomena
                                       .find((pheno: any) => pheno.id == key)

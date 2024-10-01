@@ -1,4 +1,3 @@
-// import { useState } from "react";
 import {
   Form,
   useLoaderData,
@@ -8,7 +7,6 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import Graph from "./graph";
-import type { LastMeasurement } from "types";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -18,19 +16,20 @@ import {
 } from "../ui/accordion";
 import type { loader } from "~/routes/explore.$deviceId._index";
 import {
-  Archive,
   ChevronUp,
-  Scale,
-  LineChart,
   Minus,
   Share2,
-  Thermometer,
-  X,
   XSquare,
-  RefreshCcw,
-  RefreshCwOff,
+  EllipsisVertical,
+  X,
+  ExternalLink,
+  Scale,
+  Archive,
+  Cpu,
+  Rss,
+  CalendarPlus,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -52,9 +51,27 @@ import ShareLink from "./share-link";
 import { getArchiveLink } from "~/utils/device";
 import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { isMobile, isTablet, isBrowser } from "react-device-detect";
-import { Label } from "../ui/label";
-import type { Device, Sensor } from "~/schema";
+import { isTablet, isBrowser } from "react-device-detect";
+import type { Device, Sensor, SensorWithMeasurement } from "~/schema";
+import { format, formatDistanceToNow } from "date-fns";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import SensorIcon from "../sensor-icon";
+import { Separator } from "../ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 
 export interface LastMeasurementProps {
   time: Date;
@@ -75,6 +92,7 @@ export const useSharedCompareMode = () => useBetween(useCompareMode);
 
 export default function DeviceDetailBox() {
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const data = useLoaderData<typeof loader>();
   const nodeRef = useRef(null);
   // state variables
@@ -85,29 +103,21 @@ export default function DeviceDetailBox() {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const { compareMode, setCompareMode } = useSharedCompareMode();
-  const [refreshOn, SetRefreshOn] = useState(false);
+  const [refreshOn] = useState(false);
   const [refreshSecond, setRefreshSecond] = useState(59);
   useEffect(() => {
     setOpenGraph(Boolean(data.selectedSensors.length));
   }, [data.selectedSensors]);
 
+  const [sensors, setSensors] = useState<SensorWithMeasurement[]>();
+  useEffect(() => {
+    setSensors(data.sensors);
+  }, [data.sensors]);
+
   const [searchParams] = useSearchParams();
 
-  let navigate = useNavigate();
-  const routeChange = (newPath: string) => {
-    // keep all params except sensor and date params
-    searchParams.delete("sensor");
-    searchParams.delete("date_from");
-    searchParams.delete("date_to");
-    searchParams.delete("aggregation");
-    navigate({ pathname: newPath, search: searchParams.toString() });
-  };
-
-  // form submission handler
-  const submit = useSubmit();
-
   // get list of selected sensor ids from URL search params
-  const sensorIds = searchParams.getAll("sensor");
+  const selectedSensorIds = searchParams.getAll("sensor");
 
   function handleDrag(_e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
@@ -119,6 +129,14 @@ export default function DeviceDetailBox() {
     setOpenGraph(false);
     setOpen(false);
   }
+
+  const addLineBreaks = (text: string) =>
+    text.split("\\n").map((text, index) => (
+      <Fragment key={`${text}-${index}`}>
+        {text}
+        <br />
+      </Fragment>
+    ));
 
   useEffect(() => {
     let interval: any = null;
@@ -135,23 +153,15 @@ export default function DeviceDetailBox() {
     return () => clearInterval(interval);
   }, [refreshOn, refreshSecond]);
 
+  const submit = useSubmit();
+
+  const getDeviceImage = (imageUri: string) =>
+    imageUri !== null
+      ? `https://opensensemap.org/userimages/${imageUri}`
+      : "https://images.placeholders.dev/?width=400&height=350&text=No%20image&bgColor=%234fae48&textColor=%23727373";
+
   return (
     <>
-      {compareMode && (
-        <Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
-          <XSquare
-            className="h-4 w-4 cursor-pointer"
-            onClick={() => {
-              setCompareMode(!compareMode);
-              setOpen(true);
-            }}
-          />
-          <AlertTitle>Compare devices</AlertTitle>
-          <AlertDescription className="inline">
-            Choose a device from the map to compare with.
-          </AlertDescription>
-        </Alert>
-      )}
       {open && (
         <Draggable
           nodeRef={nodeRef}
@@ -182,14 +192,89 @@ export default function DeviceDetailBox() {
               >
                 <div
                   className={
-                    data.device.status === "ACTIVE"
-                      ? "h-4 w-4 rounded-full bg-green-100"
+                    data.device.status === "active"
+                      ? "h-4 w-4 rounded-full bg-light-green"
                       : "h-4 w-4 rounded-full bg-red-500"
                   }
                 ></div>
                 <div className="flex flex-1 text-center text-xl text-zinc-600 dark:dark:text-zinc-100">
                   {data.device.name}
                 </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Share2 className="cursor-pointer" />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Share this link</AlertDialogTitle>
+                      <ShareLink />
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Close</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <EllipsisVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="dark:bg-dark-background dark:text-dark-text"
+                  >
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleCompareClick()}
+                    >
+                      <Scale className="mr-2 h-4 w-4" />
+                      <span>Compare</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Archive className="mr-2 h-4 w-4" />
+                      <span>
+                        <a
+                          href={getArchiveLink(data.device)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Open archive"
+                          className="w-full cursor-pointer"
+                        >
+                          Archive
+                        </a>
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      <span>
+                        <a
+                          href={data.device.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Open external link"
+                          className="w-full cursor-pointer"
+                        >
+                          External Link
+                        </a>
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Minus
+                  className="cursor-pointer"
+                  onClick={() => setOpen(false)}
+                />
+                <X
+                  className="cursor-pointer"
+                  onClick={() => {
+                    navigate("/explore");
+                  }}
+                />
               </div>
               <div className="no-scrollbar relative flex-1 overflow-y-scroll">
                 <Accordion
@@ -200,16 +285,54 @@ export default function DeviceDetailBox() {
                 >
                   <AccordionItem value="item-1" className="sticky top-0 z-10">
                     <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                      Image
+                      General
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="flex w-full items-center justify-center p-4 opacity-100">
-                        <img
-                          className="rounded-lg"
-                          alt=""
-                          src={"/sensebox_outdoor.jpg"}
-                        ></img>
+                      <div className="relative grid grid-cols-4 gap-x-4">
+                        <div className="col-span-2">
+                          <img
+                            className="aspect-[4/3] rounded-lg"
+                            alt="device_image"
+                            src={getDeviceImage(data.device.image)}
+                          ></img>
+                        </div>
+                        <div className="col-span-2 col-start-3">
+                          <div className="flex flex-col gap-1">
+                            <a
+                              href={data.device.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Open external link"
+                              className="w-full cursor-pointer flex items-center space-y-1 text-sm"
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              External Link
+                            </a>
+                            <Separator className="my-4"></Separator>
+                            <div className="flex items-center space-y-1 text-sm">
+                              <Cpu className="mr-2 h-4 w-4" />{" "}
+                              {data.device.sensorWikiModel ?? "Not specified"}
+                            </div>
+                            <Separator className="my-4"></Separator>
+                            <div className="flex items-center space-y-1 text-sm">
+                              <Rss className="mr-2 h-4 w-4" />
+                              {format(new Date(data.device.updatedAt), "PPP")}
+                            </div>
+                            <Separator className="my-4"></Separator>
+                            <div className="flex items-center space-y-1 text-sm">
+                              <CalendarPlus className="mr-2 h-4 w-4" />
+                              {format(new Date(data.device.createdAt), "PPP")}
+                            </div>
+                          </div>
+                        </div>
                       </div>
+                      {/* <div className="flex h-auto w-auto items-center justify-center p-4 opacity-100">
+                        <img
+                          className="aspect-[4/3] rounded-lg"
+                          alt="device_image"
+                          src={`https://opensensemap.org/userimages/${data.device.image}`}
+                        ></img>
+                      </div> */}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -224,8 +347,7 @@ export default function DeviceDetailBox() {
                       Description
                     </AccordionTrigger>
                     <AccordionContent>
-                      {/* use device description */}
-                      {data.device.description}
+                      {addLineBreaks(data.device.description || "")}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -259,23 +381,26 @@ export default function DeviceDetailBox() {
                             : ""
                         }
                       >
-                        <div>
-                          <ul className="no-scrollbar z-0 flex-1 divide-y divide-gray-200 overflow-y-scroll">
-                            {data.sensors.map((sensor: Sensor) => {
-                              // dont really know why this is necessary - some kind of TypeScript/i18n bug?
-                              const lastMeasurement =
-                                sensor.lastMeasurement as LastMeasurement;
-                              const value = lastMeasurement
-                                ? (lastMeasurement.value as string)
-                                : undefined;
-                              return (
-                                <li key={sensor.id}>
-                                  <div className="group relative flex items-center px-2 py-3">
+                        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+                          {sensors
+                            ? sensors.map((sensor: SensorWithMeasurement) => {
+                                return (
+                                  <Card
+                                    key={sensor.id}
+                                    className={
+                                      "hover:bg-muted " +
+                                      (selectedSensorIds.includes(sensor.id)
+                                        ? "bg-green-100 dark:bg-dark-green"
+                                        : "")
+                                    }
+                                  >
                                     <label htmlFor={sensor.id}>
                                       <input
                                         className="peer hidden"
                                         disabled={
-                                          !sensorIds.includes(sensor.id) &&
+                                          !selectedSensorIds.includes(
+                                            sensor.id,
+                                          ) &&
                                           searchParams.getAll("sensor")
                                             .length >= 2
                                             ? true
@@ -285,45 +410,52 @@ export default function DeviceDetailBox() {
                                         name="sensor"
                                         id={sensor.id}
                                         value={sensor.id}
-                                        defaultChecked={sensorIds.includes(
+                                        defaultChecked={selectedSensorIds.includes(
                                           sensor.id,
                                         )}
                                       />
-                                      <div
-                                        className="absolute inset-0 cursor-pointer group-hover:bg-zinc-300 group-hover:opacity-30"
-                                        aria-hidden="true"
-                                      ></div>
-                                      <div className="relative flex min-w-0 flex-1 cursor-pointer items-center gap-4">
-                                        {/* add dynamic icons here */}
-                                        <Thermometer className="dark:text-zinc-200" />
-                                        <div className={"truncate"}>
-                                          <p
-                                            className={
-                                              "truncate text-sm font-medium leading-5 dark:text-zinc-200 " +
-                                              (sensorIds.includes(sensor.id)
-                                                ? "text-green-100"
-                                                : "text-gray-900")
-                                            }
-                                          >
-                                            {sensor.sensorWikiPhenomenon ??
-                                              sensor.title}
-                                          </p>
-                                          <p className="truncate text-xs text-gray-600 dark:text-zinc-400">
-                                            {value
-                                              ? value +
-                                                (sensor.sensorWikiUnit ??
-                                                  sensor.unit)
-                                              : sensor.sensorWikiUnit ??
-                                                sensor.unit}
+                                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">
+                                          {sensor.title}
+                                        </CardTitle>
+                                        <SensorIcon
+                                          title={sensor.title || ""}
+                                          className="h-4 w-4 text-muted-foreground"
+                                        />
+                                      </CardHeader>
+                                      <CardContent>
+                                        <div className="flex flex-row items-center space-x-2">
+                                          <div className="text-2xl font-bold">
+                                            {sensor.value}
+                                          </div>
+                                          <p className="text-xs text-muted-foreground">
+                                            {sensor.unit}
                                           </p>
                                         </div>
-                                      </div>
+                                      </CardContent>
+                                      <Separator />
+                                      <CardFooter className="justify-between px-6 py-3">
+                                        <div className="flex items-center gap-1">
+                                          <div
+                                            className={
+                                              sensor.status === "active"
+                                                ? "h-2 w-2 rounded-full bg-light-green"
+                                                : "h-2 w-2 rounded-full bg-red-500"
+                                            }
+                                          ></div>
+                                          <p className="text-xs text-muted-foreground">
+                                            {formatDistanceToNow(
+                                              new Date(sensor.time),
+                                            )}{" "}
+                                            ago
+                                          </p>
+                                        </div>
+                                      </CardFooter>
                                     </label>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
+                                  </Card>
+                                );
+                              })
+                            : null}
                         </div>
                       </Form>
                     </AccordionContent>
@@ -331,94 +463,23 @@ export default function DeviceDetailBox() {
                 </Accordion>
               </div>
             </div>
-            {!isMobile && (
-              <div className="mx-1">
-                <div className="flex flex-col items-center gap-2">
-                  <div
-                    onClick={() => routeChange("/explore")}
-                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                  >
-                    <X />
-                  </div>
-                  <div
-                    onClick={() => setOpen(false)}
-                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                  >
-                    <Minus />
-                  </div>
-                  <div
-                    onClick={() => handleCompareClick()}
-                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                  >
-                    <Scale />
-                  </div>
-                  <div className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90">
-                    <a
-                      href={getArchiveLink(data.device)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Open archive"
-                    >
-                      <Archive />
-                    </a>
-                  </div>
-                  {sensorIds.length > 0 && !openGraph ? (
-                    <div
-                      onClick={() => setOpenGraph(true)}
-                      className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <LineChart />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Open line chart</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  ) : null}
-                  <div className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Share2 className="cursor-pointer" />
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Share this link</AlertDialogTitle>
-                          <ShareLink />
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Close</AlertDialogCancel>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      SetRefreshOn(!refreshOn);
-                      setRefreshSecond(59);
-                    }}
-                    className="shadow-zinc-800/5 cursor-pointer rounded-xl border border-gray-100 bg-white px-2.5 py-1.5 text-sm font-medium text-zinc-800 shadow-lg hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 flex items-center justify-center"
-                  >
-                    {refreshOn ? (
-                      <>
-                        <Label className=" absolute text-xs m-0 p-0 cursor-pointer ">
-                          {refreshSecond}
-                        </Label>
-                        <RefreshCcw className="m-0 p-0 inline h-9  w-9"></RefreshCcw>
-                      </>
-                    ) : (
-                      <RefreshCwOff className="m-0 p-0 inline h-9  w-9" />
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </Draggable>
+      )}
+      {compareMode && (
+        <Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
+          <XSquare
+            className="h-4 w-4 cursor-pointer"
+            onClick={() => {
+              setCompareMode(!compareMode);
+              setOpen(true);
+            }}
+          />
+          <AlertTitle>Compare devices</AlertTitle>
+          <AlertDescription className="inline">
+            Choose a device from the map to compare with.
+          </AlertDescription>
+        </Alert>
       )}
       {!open && (
         <div
@@ -441,7 +502,7 @@ export default function DeviceDetailBox() {
           </TooltipProvider>
         </div>
       )}
-      {sensorIds.length > 0 ? (
+      {selectedSensorIds.length > 0 ? (
         <Graph setOpenGraph={setOpenGraph} openGraph={openGraph} />
       ) : null}
     </>

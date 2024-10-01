@@ -1,10 +1,8 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "id": "3e144641-949c-46e8-95a0-bce06c3ff0ea",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "device": {
+    "public.device": {
       "name": "device",
       "schema": "",
       "columns": {
@@ -26,8 +24,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "useAuth": {
-          "name": "useAuth",
+        "use_auth": {
+          "name": "use_auth",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
@@ -88,7 +86,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "sensorWikiModel": {
           "name": "sensorWikiModel",
@@ -102,12 +100,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "measurement": {
+    "public.measurement": {
       "name": "measurement",
       "schema": "",
       "columns": {
-        "sensorId": {
-          "name": "sensorId",
+        "sensor_id": {
+          "name": "sensor_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -130,17 +128,17 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "measurement_sensorId_time_unique": {
-          "name": "measurement_sensorId_time_unique",
-          "nullsNotDistinct": false,
+        "measurement_sensor_id_time_unique": {
+          "name": "measurement_sensor_id_time_unique",
           "columns": [
-            "sensorId",
+            "sensor_id",
             "time"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "password": {
+    "public.password": {
       "name": "password",
       "schema": "",
       "columns": {
@@ -162,21 +160,21 @@
         "password_user_id_user_id_fk": {
           "name": "password_user_id_user_id_fk",
           "tableFrom": "password",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile": {
+    "public.profile": {
       "name": "profile",
       "schema": "",
       "columns": {
@@ -211,29 +209,29 @@
         "profile_user_id_user_id_fk": {
           "name": "profile_user_id_user_id_fk",
           "tableFrom": "profile",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_username_unique": {
           "name": "profile_username_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "profile_image": {
+    "public.profile_image": {
       "name": "profile_image",
       "schema": "",
       "columns": {
@@ -287,21 +285,21 @@
         "profile_image_profile_id_profile_id_fk": {
           "name": "profile_image_profile_id_profile_id_fk",
           "tableFrom": "profile_image",
-          "tableTo": "profile",
           "columnsFrom": [
             "profile_id"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "sensor": {
+    "public.sensor": {
       "name": "sensor",
       "schema": "",
       "columns": {
@@ -323,8 +321,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "sensorType": {
-          "name": "sensorType",
+        "sensor_type": {
+          "name": "sensor_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -392,7 +390,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -456,37 +454,40 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
   },
   "enums": {
-    "model": {
+    "public.model": {
       "name": "model",
-      "values": {
-        "HOME_V2_LORA": "HOME_V2_LORA"
-      }
+      "schema": "public",
+      "values": [
+        "HOME_V2_LORA"
+      ]
     },
-    "exposure": {
+    "public.exposure": {
       "name": "exposure",
-      "values": {
-        "indoor": "indoor",
-        "outdoor": "outdoor",
-        "mobile": "mobile",
-        "unknown": "unknown"
-      }
+      "schema": "public",
+      "values": [
+        "indoor",
+        "outdoor",
+        "mobile",
+        "unknown"
+      ]
     },
-    "status": {
+    "public.status": {
       "name": "status",
-      "values": {
-        "active": "active",
-        "inactive": "inactive",
-        "old": "old"
-      }
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "old"
+      ]
     }
   },
   "schemas": {},
@@ -494,5 +495,7 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "b24d2bce-0eeb-4d58-a082-5a6b1e4af4b2",
+  "prevId": "00000000-0000-0000-0000-000000000000"
 }

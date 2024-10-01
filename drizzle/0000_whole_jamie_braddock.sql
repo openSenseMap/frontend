@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS "device" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
-	"useAuth" boolean,
+	"use_auth" boolean,
 	"exposure" "exposure",
 	"status" "status" DEFAULT 'inactive',
 	"model" "model",
@@ -29,15 +29,15 @@ CREATE TABLE IF NOT EXISTS "device" (
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"latitude" double precision NOT NULL,
 	"longitude" double precision NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" text,
 	"sensorWikiModel" text
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "measurement" (
-	"sensorId" text NOT NULL,
+	"sensor_id" text NOT NULL,
 	"time" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"value" double precision,
-	CONSTRAINT "measurement_sensorId_time_unique" UNIQUE("sensorId","time")
+	CONSTRAINT "measurement_sensor_id_time_unique" UNIQUE("sensor_id","time")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "password" (
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS "sensor" (
 	"id" text PRIMARY KEY NOT NULL,
 	"title" text,
 	"unit" text,
-	"sensorType" text,
+	"sensor_type" text,
 	"status" "status" DEFAULT 'inactive',
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,

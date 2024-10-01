@@ -69,20 +69,19 @@ export function NavBar() {
   const user = useOptionalUser();
 
   return (
-    <div className="border-b">
+    <div className="border-b bg-white dark:bg-dark-background dark:text-dark-text p-4">
       <div className="flex h-16 items-center justify-between">
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center md:pr-4">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
           </Link>
-          <span className="dark:text-green-200 hidden self-center whitespace-nowrap text-xl font-semibold text-green-100 md:block">
+          <span className="dark:text-dark-green text-light-green hidden self-center whitespace-nowrap text-xl font-semibold text-light-green md:block">
             {parts.join(" / ")}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              {/* down arrow icon */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -91,7 +90,11 @@ export function NavBar() {
                   </Button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" forceMount>
+                <DropdownMenuContent
+                  align="end"
+                  forceMount
+                  className="dark:bg-dark-background dark:text-dark-text"
+                >
                   <DropdownMenuGroup>
                     <Link to="/device/new">
                       <DropdownMenuItem>
@@ -111,52 +114,59 @@ export function NavBar() {
               <Button variant="outline" size="icon" disabled>
                 <Mailbox className="h-4 w-4" />
               </Button>
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
+
+              <div className="px-8">
+                <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
+                      <UserAvatar />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="dark:bg-dark-background dark:text-dark-text"
                   >
-                    <UserAvatar />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className=" dark:bg-black">
-                  <SheetHeader>
-                    <SheetDescription>
-                      <div className="flex gap-4">
-                        <UserAvatar />
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">
-                            {user.name}
-                          </p>
-                          <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                          </p>
+                    <SheetHeader>
+                      <SheetDescription>
+                        <div className="flex gap-4">
+                          <UserAvatar />
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {user.name}
+                            </p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {user.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="grid gap-4 py-4">
-                    <>
-                      <SidebarNav
-                        items={sidebarNavItems}
-                        setOpen={setSheetOpen}
-                      />
-                      <Form action="/logout" method="post">
-                        <button
-                          type="submit"
-                          className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
-                        >
-                          <LogOut className="mr-2 h-5 w-5" />
-                          <span className="text-red-500 hover:bg-transparent hover:underline">
-                            Sign out
-                          </span>
-                        </button>
-                      </Form>
-                    </>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                      <>
+                        <SidebarNav
+                          items={sidebarNavItems}
+                          setOpen={setSheetOpen}
+                          className="dark:bg-dark-background dark:text-dark-text"
+                        />
+                        <Form action="/logout" method="post">
+                          <button
+                            type="submit"
+                            className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
+                          >
+                            <LogOut className="mr-2 h-5 w-5" />
+                            <span className="text-red-500 hover:bg-transparent hover:underline">
+                              Sign out
+                            </span>
+                          </button>
+                        </Form>
+                      </>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </>
           ) : (
             <>

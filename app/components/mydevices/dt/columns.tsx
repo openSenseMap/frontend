@@ -80,14 +80,11 @@ export const columns: ColumnDef<SenseBox>[] = [
         <div className="flex items-center">
           <code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
             {senseBox?.id}
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText(senseBox?.id);
-              }}
-            ></button>
           </code>
-          <ClipboardCopy className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91] dark:text-white cursor-pointer" />
+          <ClipboardCopy
+            onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+            className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91] dark:text-white cursor-pointer"
+          />
         </div>
       );
     },
@@ -106,7 +103,10 @@ export const columns: ColumnDef<SenseBox>[] = [
               <Ellipsis className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            className="dark:bg-dark-background dark:text-dark-text"
+          >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

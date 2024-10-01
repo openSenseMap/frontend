@@ -2,8 +2,28 @@ import { useMatches } from "@remix-run/react";
 import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
+import type { MyBadge } from "./models/badge.server";
 
 const DEFAULT_REDIRECT = "/";
+
+export interface BadgeClass {
+  entityType: string;
+  entityId: string;
+  openBadgeId: string;
+  createdAt: string;
+  createdBy: string;
+  issuer: string;
+  issuerOpenBadgeId: string;
+  name: string;
+  image: string;
+  description: string;
+  criteriaUrl: string | null;
+  criteriaNarrative: string;
+  alignments: any[];
+  tags: any[];
+  expires?: any;
+  extensions?: any;
+}
 
 /**
  * This should be used any time the redirect path is user-provided
@@ -173,4 +193,61 @@ export function diffFromCreateDate(DeviceCreatedAt: string) {
       ? `${moment().diff(createDate, "days")} day(s)`
       : `${yearsFromCreate} year` + (yearsFromCreate > 1 ? "s" : "")
   } ago`;
+}
+
+/**
+ * Returns only unique badges that have not been revoked.
+ * @param {MyBadge[]} badges - Array of badge objects.
+ * @returns {MyBadge[]} - Array of unique, non-revoked badges.
+ */
+export function getUniqueActiveBadges(badges: MyBadge[]): MyBadge[] {
+  // Check if the badges array is empty
+  if (!badges) return [];
+  // Create a set to track unique badge class IDs
+  const uniqueBadgeClassIds = new Set<string>();
+
+  // Filter the badges
+  return badges.filter((badge) => {
+    // Check if the badge is not revoked and has a unique badge class ID
+    if (
+      !badge.revoked &&
+      !uniqueBadgeClassIds.has(badge.badgeclassOpenBadgeId)
+    ) {
+      // Add the badge class ID to the set
+      uniqueBadgeClassIds.add(badge.badgeclassOpenBadgeId);
+      return true;
+    }
+    return false;
+  });
+}
+
+/**
+ * Sorts the badges so that the owned ones have the first positions in the array.
+ * @param {BadgeClass[] | (BadgeClass | null)[]} allBadges - Array of all existing badge class objects.
+ * @param {MyBadge[] | (MyBadge | null)[]} ownedBadges - Array of badges owned by the user.
+ * @returns {BadgeClass[]} - Sorted array of badge classes.
+ */
+export function sortBadges(
+  allBadges: (BadgeClass | null)[],
+  ownedBadges: (MyBadge | null)[],
+): BadgeClass[] {
+  // Filter out null values from allBadges and ownedBadges
+  const validAllBadges = allBadges.filter(
+    (badge): badge is BadgeClass => badge !== null,
+  );
+  const validOwnedBadges = ownedBadges.filter(
+    (badge): badge is MyBadge => badge !== null,
+  );
+
+  // Create a set of owned badge class IDs
+  const ownedBadgeClassIds = new Set<string>(
+    validOwnedBadges.map((badge) => badge.badgeclassOpenBadgeId),
+  );
+
+  // Sort the badges such that owned badges come first
+  return validAllBadges.sort((a, b) => {
+    const aOwned = ownedBadgeClassIds.has(a.openBadgeId);
+    const bOwned = ownedBadgeClassIds.has(b.openBadgeId);
+    return aOwned === bOwned ? 0 : aOwned ? -1 : 1;
+  });
 }

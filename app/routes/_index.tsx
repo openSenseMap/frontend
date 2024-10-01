@@ -7,15 +7,14 @@ import Footer from "~/components/landing/footer";
 import Header from "~/components/landing/header";
 import Partners from "~/components/landing/partners";
 import Stats from "~/components/landing/stats";
-import Tools from "~/components/landing/tools";
-import UseCases from "~/components/landing/use-cases";
 import i18next from "~/i18next.server";
-import type { Feature, Partner, UseCase } from "~/lib/directus";
+import type { Partner } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 import { getUserId, getUserName } from "~/session.server";
 import { useTranslation } from "react-i18next";
-// import Donate from "~/components/landing/donate";
 import PricingPlans from "~/components/landing/pricing-plans";
+import Integrations from "~/components/landing/integrations";
+import Connect from "~/components/landing/connect";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   let locale = await i18next.getLocale(request);
@@ -60,9 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function Index() {
-  const { useCases, features, partners, stats } = useLoaderData<{
-    useCases: UseCase[];
-    features: Feature[];
+  const { partners, stats } = useLoaderData<{
     partners: Partner[];
     stats: number[];
   }>();
@@ -79,7 +76,7 @@ export default function Index() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
               <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
-                <h1 className="text-5xl font-bold tracking-tight text-green-300 dark:text-white">
+                <h1 className="text-5xl font-bold tracking-tight text-light-green dark:text-dark-green">
                   openSenseMap
                 </h1>
                 <motion.div
@@ -102,12 +99,7 @@ export default function Index() {
                       stiffness: 50,
                     }}
                   >
-                    <Link
-                      to="https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      prefetch="intent"
-                    >
+                    <Link to="/explore" prefetch="intent">
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         transition={{
@@ -116,8 +108,8 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-blue-200 dark:bg-blue-200 mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-blue-100 p-2 text-gray-300 transition-all hover:scale-105 hover:bg-blue-100 hover:text-white dark:bg-blue-100 dark:text-white">
-                          {t("donate")}
+                        <button className="dark:border-dark-green mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-green p-2 text-light-green transition-all hover:bg-light-green hover:text-white dark:bg-dark-green dark:text-white">
+                          {t("explore")}
                         </button>
                       </motion.div>
                     </Link>
@@ -132,7 +124,12 @@ export default function Index() {
                       stiffness: 50,
                     }}
                   >
-                    <Link to="/explore" prefetch="intent">
+                    <Link
+                      to="https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      prefetch="intent"
+                    >
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         transition={{
@@ -141,8 +138,8 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-green-200 dark:bg-green-200 mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-green-100 p-2 text-gray-300 transition-all hover:bg-green-100 hover:text-white dark:bg-green-100 dark:text-white">
-                          {t("explore")}
+                        <button className="dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:bg-dark-blue dark:text-white">
+                          {t("donate")}
                         </button>
                       </motion.div>
                     </Link>
@@ -168,12 +165,17 @@ export default function Index() {
       </main>
       <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Features data={features} />
+          <Features />
         </div>
       </section>
       <section className="py-20 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Tools />
+          <Connect />
+        </div>
+      </section>
+      <section className="py-20 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Integrations />
         </div>
       </section>
       <section className="py-20 sm:py-20">
@@ -181,21 +183,11 @@ export default function Index() {
           <PricingPlans />
         </div>
       </section>
-      <section className="py-20 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <UseCases data={useCases} />
-        </div>
-      </section>
       <section className="pt-20 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Partners data={partners} />
         </div>
       </section>
-      {/* <section className="py-20 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Donate />
-        </div>
-      </section> */}
       <footer className="">
         <Footer />
       </footer>
