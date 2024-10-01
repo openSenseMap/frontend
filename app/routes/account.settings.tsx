@@ -302,7 +302,7 @@ export default function Settings() {
                   {/* Email confirmation status */}
                   <div className="mt-1 text-sm">
                     {userData?.emailIsConfirmed ? (
-                      <span className="mr-2 rounded-full bg-[#4eaf47] px-2.5 py-1 text-sm font-semibold text-white dark:bg-green-900 dark:text-green-300">
+                      <span className="mr-2 rounded-full bg-[#4eaf47] px-2.5 py-1 text-sm font-semibold text-white dark:bg-green-900 dark:text-light-green">
                         Email address is confirmed!
                       </span>
                     ) : (

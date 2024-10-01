@@ -14,11 +14,8 @@ import {
 } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import ErrorMessage from "~/components/error-message";
-import { useMap } from "react-map-gl";
-import { zoomOut } from "~/lib/search-map-helper";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  console.log(`[explore.$deviceId._index.tsx - loader]`);
   const locale = await i18next.getLocale(request);
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
@@ -118,9 +115,6 @@ export default function DeviceId() {
 }
 
 export function ErrorBoundary() {
-  const { osem } = useMap();
-  // zoom out to world map when error occurs
-  zoomOut(osem);
   return (
     <div className="w-screen h-screen flex items-center justify-center">
       <ErrorMessage />

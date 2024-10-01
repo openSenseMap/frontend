@@ -7,6 +7,21 @@ import { eq } from "drizzle-orm";
 export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
     where: (device, { eq }) => eq(device.id, id),
+    columns: {
+      createdAt: true,
+      description: true,
+      exposure: true,
+      id: true,
+      image: true,
+      latitude: true,
+      longitude: true,
+      link: true,
+      model: true,
+      name: true,
+      sensorWikiModel: true,
+      status: true,
+      updatedAt: true,
+    },
   });
 }
 

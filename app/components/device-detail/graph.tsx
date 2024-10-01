@@ -2,7 +2,6 @@ import {
   useLoaderData,
   useNavigation,
   useSearchParams,
-  useSubmit,
 } from "@remix-run/react";
 import {
   Chart as ChartJS,
@@ -22,9 +21,7 @@ import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore.$deviceId._index";
 import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
-import Spinner from "../spinner";
 import { Download, X } from "lucide-react";
-import DatePickerGraph from "./date-picker-graph";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -34,17 +31,11 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { datesHave48HourRange } from "~/lib/utils";
-import FixedTimeRangeButtons from "./fixed-time-range-buttons";
 import { isBrowser, isTablet } from "react-device-detect";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { useTheme } from "remix-themes";
+import { AggregationFilter } from "../aggregation-filter";
+import { DateRangeFilter } from "../daterange-filter";
+import Spinner from "../spinner";
 
 // Registering Chart.js components that will be used in the graph
 ChartJS.register(
@@ -62,10 +53,11 @@ export default function Graph(props: any) {
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // form submission handler
-  const submit = useSubmit();
-  const [searchParams] = useSearchParams();
+  // const submit = useSubmit();
+  // const [searchParams] = useSearchParams();
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null);
@@ -73,8 +65,19 @@ export default function Graph(props: any) {
   // get theme from tailwind
   const [theme] = useTheme();
 
-  // Formatting the data for the Line component
   const lineData = useMemo(() => {
+    // Helper function to construct the label with device name
+    const getLabel = (sensor: any, includeDeviceName: any) => {
+      return includeDeviceName
+        ? `${sensor.title} (${sensor.device_name})`
+        : sensor.title;
+    };
+
+    const includeDeviceName =
+      loaderData.selectedSensors.length === 2 &&
+      loaderData.selectedSensors[0].device_name !==
+        loaderData.selectedSensors[1].device_name;
+
     return {
       labels: loaderData.selectedSensors[0].data.map(
         (measurement: LastMeasurementProps) => measurement.time,
@@ -83,7 +86,10 @@ export default function Graph(props: any) {
         loaderData.selectedSensors.length === 2
           ? [
               {
-                label: loaderData.selectedSensors[0].title,
+                label: getLabel(
+                  loaderData.selectedSensors[0],
+                  includeDeviceName,
+                ),
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
                 borderColor: loaderData.selectedSensors[0].color,
@@ -91,7 +97,10 @@ export default function Graph(props: any) {
                 yAxisID: "y",
               },
               {
-                label: loaderData.selectedSensors[1].title,
+                label: getLabel(
+                  loaderData.selectedSensors[1],
+                  includeDeviceName,
+                ),
                 data: loaderData.selectedSensors[1].data,
                 pointRadius: 0,
                 borderColor: loaderData.selectedSensors[1].color,
@@ -101,7 +110,10 @@ export default function Graph(props: any) {
             ]
           : [
               {
-                label: loaderData.selectedSensors[0].title,
+                label: getLabel(
+                  loaderData.selectedSensors[0],
+                  includeDeviceName,
+                ),
                 data: loaderData.selectedSensors[0].data,
                 pointRadius: 0,
                 borderColor: loaderData.selectedSensors[0].color,
@@ -271,10 +283,10 @@ export default function Graph(props: any) {
         >
           <div
             ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex w-auto flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-[calc(33vw+20px)] md:right-auto md:top-auto md:h-[35%] md:max-h-[35%] md:w-[calc(100vw-(33vw+30px))]"
+            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 right-4 top-14 z-40 flex flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:right-4 md:left-auto md:top-auto md:w-[60vw] md:h-[35%] md:max-h-[35%]"
           >
             {navigation.state === "loading" && (
-              <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+              <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
                 <Spinner />
               </div>
             )}
@@ -283,29 +295,8 @@ export default function Graph(props: any) {
               id="graphTop"
             >
               <div className="flex items-center justify-center gap-4">
-                <DatePickerGraph />
-                <Select
-                  value={loaderData.aggregation}
-                  onValueChange={(value) => {
-                    searchParams.set("aggregation", value);
-                    submit(searchParams);
-                  }}
-                >
-                  <SelectTrigger className="w-[140px] dark:border-zinc-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="raw">Raw</SelectItem>
-                      <SelectItem value="10m">10 Minutes</SelectItem>
-                      <SelectItem value="1h">1 Hour</SelectItem>
-                      <SelectItem value="1d">1 Day</SelectItem>
-                      <SelectItem value="1m">1 Month</SelectItem>
-                      <SelectItem value="1y">1 Year</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <FixedTimeRangeButtons />
+                <DateRangeFilter />
+                <AggregationFilter />
               </div>
               <div className="flex items-center justify-end gap-4">
                 <DropdownMenu>
@@ -325,7 +316,14 @@ export default function Graph(props: any) {
                 </DropdownMenu>
                 <X
                   className="cursor-pointer"
-                  onClick={() => props.setOpenGraph(false)}
+                  onClick={() => {
+                    searchParams.delete("sensor");
+                    searchParams.delete("date_to");
+                    searchParams.delete("date_from");
+                    searchParams.delete("aggregation");
+                    setSearchParams(searchParams);
+                    props.setOpenGraph(false);
+                  }}
                 />
               </div>
             </div>
