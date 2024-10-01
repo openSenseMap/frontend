@@ -21,8 +21,8 @@ export interface BadgeClass {
   criteriaNarrative: string;
   alignments: any[];
   tags: any[];
-  expires: any;
-  extensions: any;
+  expires?: any;
+  extensions?: any;
 }
 
 /**
