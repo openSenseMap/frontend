@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@remix-run/react";
 import { Button } from "./ui/button";
 
-import { ChevronDownIcon, Mailbox, Plus } from "lucide-react";
+import { ChevronDownIcon, Mailbox, Plus, Settings } from "lucide-react";
 import { useOptionalUser } from "~/utils";
 import {
   DropdownMenu,
@@ -39,7 +39,7 @@ export function NavBar() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" disabled>
                     <Plus className="h-4 w-4" />
                     <ChevronDownIcon className=" m-0 inline h-4  w-4 p-0" />
                   </Button>
@@ -68,6 +68,12 @@ export function NavBar() {
 
               <Button variant="outline" size="icon" disabled>
                 <Mailbox className="h-4 w-4" />
+              </Button>
+
+              <Button variant={"ghost"} size={"icon"}>
+                <Link to={"/settings"}>
+                  <Settings className="h-4 w-4" />
+                </Link>
               </Button>
 
               <div className="px-8">
