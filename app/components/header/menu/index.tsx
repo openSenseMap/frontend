@@ -36,12 +36,6 @@ import {
   User2,
   ExternalLink,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
 
 export function useFirstRender() {
   const firstRender = useRef(true);
@@ -155,14 +149,16 @@ export default function Menu() {
                 </div>
               )}
               {data.profile && (
-                <DropdownMenuItem>
-                  <User2 className="mr-2 h-6 w-6" />
-                  <Link to="/profile/me">Profile</Link>
-                </DropdownMenuItem>
+                <Link to="/profile/me">
+                  <DropdownMenuItem className="cursor-pointer">
+                    <User2 className="mr-2 h-6 w-6" />
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
               )}
 
               <Link to="/settings/account">
-                <DropdownMenuItem className=" cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-5 w-5" />
                   <span>{t("settings_label")}</span>
                 </DropdownMenuItem>
@@ -176,7 +172,7 @@ export default function Menu() {
               </Link>
 
               <Link to="/device/new" target="_blank">
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <PlusCircle className="mr-2 h-5 w-5" />
                   <span>{t("add_device_label")}</span>
                 </DropdownMenuItem>
@@ -245,60 +241,45 @@ export default function Menu() {
           <DropdownMenuSeparator />
 
           <DropdownMenuGroup>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <DropdownMenuItem disabled>
-                    {data.user === null ? (
-                      <Link
-                        to={{
-                          pathname: "login",
-                          search: searchParams.toString(),
-                        }}
-                        onClick={() => setOpen(false)}
-                      >
-                        <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
-                          <LogIn className="mr-2 h-5 w-5" />
-                          <span className="text-light-green">
-                            {t("login_label")}
-                          </span>
-                        </button>
-                      </Link>
-                    ) : (
-                      <Form
-                        action="/logout"
-                        method="post"
-                        onSubmit={() => {
-                          setOpen(false);
-                          // toast({
-                          //   description: "Logging out ...",
-                          // });
-                        }}
-                      >
-                        <input
-                          type="hidden"
-                          name="redirectTo"
-                          value={redirectTo}
-                        />
-                        <button
-                          type="submit"
-                          className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                          disabled={isLoggingOut}
-                        >
-                          <LogOut className="mr-2 h-5 w-5" />
-                          <span className="text-red-500">
-                            {t("logout_label")}
-                          </span>
-                        </button>
-                      </Form>
-                    )}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Coming soon...</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <DropdownMenuItem>
+              {data.user === null ? (
+                <Link
+                  to={{
+                    pathname: "login",
+                    search: searchParams.toString(),
+                  }}
+                  onClick={() => setOpen(false)}
+                  className="cursor-pointer w-full"
+                >
+                  <button className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
+                    <LogIn className="mr-2 h-5 w-5" />
+                    <span className="text-light-green">{t("login_label")}</span>
+                  </button>
+                </Link>
+              ) : (
+                <Form
+                  action="/logout"
+                  method="post"
+                  onSubmit={() => {
+                    setOpen(false);
+                    // toast({
+                    //   description: "Logging out ...",
+                    // });
+                  }}
+                  className="cursor-pointer w-full"
+                >
+                  <input type="hidden" name="redirectTo" value={redirectTo} />
+                  <button
+                    type="submit"
+                    className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+                    disabled={isLoggingOut}
+                  >
+                    <LogOut className="mr-2 h-5 w-5" />
+                    <span className="text-red-500">{t("logout_label")}</span>
+                  </button>
+                </Form>
+              )}
+            </DropdownMenuItem>
           </DropdownMenuGroup>
         </div>
       </DropdownMenuContent>
