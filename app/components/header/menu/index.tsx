@@ -1,5 +1,4 @@
 import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +46,7 @@ export default function Menu() {
             type="button"
             className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
           >
-            {user === null ? (
+            {!user ? (
               <MenuIcon className="mx-auto h-6 w-6" />
             ) : (
               <User2 className="mx-auto h-6 w-6" />
@@ -66,7 +65,7 @@ export default function Menu() {
           }
         >
           <DropdownMenuLabel className="font-normal">
-            {user === null ? (
+            {!user ? (
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{t("title")}</p>
                 <p className="text-xs leading-none text-muted-foreground">
@@ -86,7 +85,7 @@ export default function Menu() {
             )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {user !== null ? (
+          {user && (
             <DropdownMenuGroup>
               {navigation.state === "loading" && (
                 <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -108,7 +107,7 @@ export default function Menu() {
                 <DropdownMenuSeparator />
               </Link>
             </DropdownMenuGroup>
-          ) : null}
+          )}
           <DropdownMenuGroup>
             <Link to="https://docs.sensebox.de/" target="_blank">
               <DropdownMenuItem className="cursor-pointer">
@@ -171,7 +170,7 @@ export default function Menu() {
 
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              {user === null ? (
+              {!user ? (
                 <Link
                   to={{
                     pathname: "login",
