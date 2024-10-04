@@ -148,7 +148,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password"> {t("password_label")}</Label>
-                <Link to="/forgot" className="text-sm underline">
+                <Link to="/explore/forgot" className="text-sm underline">
                   Forgot password?
                 </Link>
               </div>
