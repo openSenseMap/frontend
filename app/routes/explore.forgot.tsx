@@ -98,7 +98,6 @@ export default function LoginPage() {
 
   const { t } = useTranslation("login");
   const navigation = useNavigation();
-  console.log("🚀 ~ LoginPage ~ navigation:", navigation.state);
 
   React.useEffect(() => {
     if (actionData?.errors?.email) {
