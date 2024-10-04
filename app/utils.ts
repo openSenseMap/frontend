@@ -131,22 +131,20 @@ export function getFilteredDevices(
   devices: any,
   filterParams: URLSearchParams,
 ) {
-  // Use "active" as the default status if none is provided, and "all" should include every status and exposure.
-  const statusFilter = filterParams.get("status") || "active";
-  const exposureFilter = filterParams.get("exposure") || "all";
+  // Set default to "active" if no status is provided, and allow "all" to include every status and exposure.
+  const statusFilter = filterParams.get("status")?.split(",") || ["active"];
+  const exposureFilter = filterParams.get("exposure")?.split(",") || ["all"];
   const phenomenonList = filterParams.get("phenomenon")?.split(",");
 
   let results = devices.features.filter((device: any) => {
     const sensorsList = device.properties.sensors?.map((s: any) => s.title);
     return (
-      // If 'all' or no specific exposure, skip the exposure filter check
-      (exposureFilter === "all" ||
-        exposureFilter.toLowerCase() ===
-          device.properties.exposure.toLowerCase()) &&
-      // If 'all' or no specific status, skip the status filter check
-      (statusFilter === "all" ||
-        statusFilter.toLowerCase() ===
-          device.properties.status.toLowerCase()) &&
+      // If "all" is selected, include all exposures; otherwise, check for matches
+      (exposureFilter.includes("all") ||
+        exposureFilter.includes(device.properties.exposure.toLowerCase())) &&
+      // If "all" is selected, include all statuses; otherwise, check for matches
+      (statusFilter.includes("all") ||
+        statusFilter.includes(device.properties.status.toLowerCase())) &&
       (!filterParams.get("phenomenon") ||
         sensorsList.some((s: any) => phenomenonList?.includes(s.toLowerCase())))
     );

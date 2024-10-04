@@ -19,18 +19,16 @@ export default function FilterOptions() {
 
   //* Set initial filter params based on url Search Params
   const [exposureVal, setExposureVal] = useState(
-    searchParams.get("exposure") ?? null,
+    searchParams.get("exposure") ?? "all",
   );
   const [statusVal, setStatusVal] = useState(
-    searchParams.get("status") ?? null,
+    searchParams.get("status") ?? "active",
   );
-  const [, setPhenomenonVal] = useState(searchParams.get("phenomenon") ?? null);
 
   //* Update filter params based on url Search Params
   useEffect(() => {
-    setExposureVal(searchParams.get("exposure") ?? null);
-    setStatusVal(searchParams.get("status") ?? null);
-    setPhenomenonVal(searchParams.get("phenomenon") ?? null);
+    setExposureVal(searchParams.get("exposure") ?? "all");
+    setStatusVal(searchParams.get("status") ?? "active");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -47,12 +45,30 @@ export default function FilterOptions() {
           <ToggleGroup
             className="w-full"
             rovingFocus={false}
-            type="single"
+            type="multiple"
             variant="outline"
-            defaultValue="all"
-            value={exposureVal ?? "all"}
-            onValueChange={(value: string) => {
-              searchParams.set("exposure", value);
+            value={exposureVal ? exposureVal.split(",") : ["all"]}
+            onValueChange={(values: string[]) => {
+              // If "all" is at index 0, remove "all" and keep other selections
+              if (values.includes("all") && values.indexOf("all") === 0) {
+                const filteredValues = values.filter(
+                  (value) => value !== "all",
+                );
+                const valueString = filteredValues.join(",");
+                setExposureVal(valueString);
+                searchParams.set("exposure", valueString);
+
+                // If "all" is selected but not at index 0, deselect others and keep only "all"
+              } else if (values.includes("all")) {
+                setExposureVal("all");
+                searchParams.set("exposure", "all");
+              } else {
+                // Normal behavior if "all" is not selected
+                const valueString = values.join(",");
+                setExposureVal(valueString);
+                searchParams.set("exposure", valueString);
+              }
+
               setSearchParams(searchParams);
             }}
           >
@@ -74,12 +90,27 @@ export default function FilterOptions() {
           <Label className="text-base">Status: </Label>
           <ToggleGroup
             className="w-full"
-            type="single"
+            type="multiple"
             variant="outline"
-            defaultValue="all"
-            value={statusVal ?? "all"}
-            onValueChange={(value: string) => {
-              searchParams.set("status", value);
+            value={statusVal ? statusVal.split(",") : ["active"]}
+            onValueChange={(values: string[]) => {
+              // If "all" is at index 0, remove "all" and keep other selections
+              if (values.includes("all") && values.indexOf("all") === 0) {
+                const filteredValues = values.filter(
+                  (value) => value !== "all",
+                );
+                const valueString = filteredValues.join(",");
+                searchParams.set("status", valueString);
+
+                // If "all" is selected but not at index 0, deselect others and keep only "all"
+              } else if (values.includes("all")) {
+                searchParams.set("status", "all");
+              } else {
+                // Normal behavior if "all" is not selected
+                const valueString = values.join(",");
+                searchParams.set("status", valueString);
+              }
+
               setSearchParams(searchParams);
             }}
           >
@@ -106,8 +137,8 @@ export default function FilterOptions() {
           variant="outline"
           className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
           onClick={() => {
-            searchParams.delete("exposure");
-            searchParams.delete("status");
+            searchParams.set("exposure", "all");
+            searchParams.set("status", "all");
             searchParams.delete("phenomenon");
             setSearchParams(searchParams);
           }}
