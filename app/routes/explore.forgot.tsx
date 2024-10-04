@@ -168,6 +168,18 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full bg-light-blue">
                   Reset
                 </Button>
+                <p className="text-sm text-muted-foreground">
+                  {"Remember your password?"}{" "}
+                  <Link
+                    className="font-medium underline"
+                    to={{
+                      pathname: "/explore/login",
+                      search: searchParams.toString(),
+                    }}
+                  >
+                    {"Login"}
+                  </Link>
+                </p>
               </CardFooter>
             </Form>
           </>
