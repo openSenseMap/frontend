@@ -52,13 +52,7 @@ export default function FilterOptions() {
             defaultValue="all"
             value={exposureVal ?? "all"}
             onValueChange={(value: string) => {
-              if (value === "all") {
-                searchParams.delete("exposure");
-              } else if (value === "") {
-                searchParams.delete("exposure");
-              } else {
-                searchParams.set("exposure", value);
-              }
+              searchParams.set("exposure", value);
               setSearchParams(searchParams);
             }}
           >
@@ -85,13 +79,7 @@ export default function FilterOptions() {
             defaultValue="all"
             value={statusVal ?? "all"}
             onValueChange={(value: string) => {
-              if (value === "all") {
-                searchParams.delete("status");
-              } else if (value === "") {
-                searchParams.delete("status");
-              } else {
-                searchParams.set("status", value);
-              }
+              searchParams.set("status", value);
               setSearchParams(searchParams);
             }}
           >

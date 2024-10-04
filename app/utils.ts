@@ -131,44 +131,31 @@ export function getFilteredDevices(
   devices: any,
   filterParams: URLSearchParams,
 ) {
-  // check if any filter is selected
-  if (
-    filterParams.has("exposure") ||
-    filterParams.has("status") ||
-    filterParams.has("phenomenon")
-  ) {
-    // set list here for computational efficiency
-    const phenomenonList = filterParams.get("phenomenon")?.split(",");
-    // map through all devices and filter based on selected values
-    let results = devices.features.filter((device: any) => {
-      // get list of sensors for device
-      const sensorsList = device.properties.sensors?.map((s: any) => s.title);
-      return (
-        // check if selected values match device attributes
-        (!filterParams.get("exposure") ||
-          filterParams.get("exposure")?.toLowerCase() ===
-            device.properties.exposure.toLowerCase()) &&
-        (!filterParams.get("status") ||
-          filterParams.get("status")?.toLowerCase() ===
-            device.properties.status.toLowerCase()) &&
-        (!filterParams.get("phenomenon") ||
-          sensorsList.some((s: any) =>
-            phenomenonList?.includes(s.toLowerCase()),
-          ))
-      );
-    });
-    // return filtered devices
-    return {
-      type: "FeatureCollection",
-      features: results,
-    };
-  } else {
-    // return all devices
-    return {
-      type: "FeatureCollection",
-      features: devices.features,
-    };
-  }
+  // Use "active" as the default status if none is provided, and "all" should include every status and exposure.
+  const statusFilter = filterParams.get("status") || "active";
+  const exposureFilter = filterParams.get("exposure") || "all";
+  const phenomenonList = filterParams.get("phenomenon")?.split(",");
+
+  let results = devices.features.filter((device: any) => {
+    const sensorsList = device.properties.sensors?.map((s: any) => s.title);
+    return (
+      // If 'all' or no specific exposure, skip the exposure filter check
+      (exposureFilter === "all" ||
+        exposureFilter.toLowerCase() ===
+          device.properties.exposure.toLowerCase()) &&
+      // If 'all' or no specific status, skip the status filter check
+      (statusFilter === "all" ||
+        statusFilter.toLowerCase() ===
+          device.properties.status.toLowerCase()) &&
+      (!filterParams.get("phenomenon") ||
+        sensorsList.some((s: any) => phenomenonList?.includes(s.toLowerCase())))
+    );
+  });
+
+  return {
+    type: "FeatureCollection",
+    features: results,
+  };
 }
 
 //* Get Minute Formatted String - last sensor measurement update
