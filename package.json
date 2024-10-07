@@ -167,7 +167,7 @@
     "@types/express-prometheus-middleware": "^1.2.1",
     "@types/file-saver": "^2.0.5",
     "@types/geojson": "^7946.0.12",
-    "@types/lodash.debounce": "^4.0.7",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/mapbox__mapbox-gl-geocoder": "^4.7.4",
     "@types/morgan": "^1.9.9",
     "@types/node": "^18.17.6",
