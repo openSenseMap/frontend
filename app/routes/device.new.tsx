@@ -183,10 +183,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const session = await getUserSession(request);
 
   if (page === 1) {
-    const data =
-      {
-        ...session.get(`form-data-page-1`),
-      } ?? {};
+    const data = {
+      ...session.get(`form-data-page-1`),
+    };
 
     var getAllDevicesUrl: URL = new URL(
       process.env.SENSORWIKI_API_URL + "devices",
@@ -200,11 +199,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json({ page, data, devices, phenomena: null });
   } else if (page === 3) {
-    const data =
-      {
-        ...session.get(`form-data-page-1`),
-        ...session.get(`form-data-page-${page}`),
-      } ?? {};
+    const data = {
+      ...session.get(`form-data-page-1`),
+      ...session.get(`form-data-page-${page}`),
+    };
 
     const type = data.type;
 
