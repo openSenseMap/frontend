@@ -113,7 +113,7 @@
     "mqtt": "^5.1.2",
     "node-fetch": "^3.3.1",
     "pg": "^8.11.3",
-    "postcss-import": "^15.1.0",
+    "postcss-import": "^16.1.0",
     "postgres": "^3.4.1",
     "prom-client": "^15.0.0",
     "qs": "^6.11.2",
