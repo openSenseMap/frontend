@@ -1,6 +1,8 @@
 import type { InferSelectModel } from "drizzle-orm";
 import {
   doublePrecision,
+  geometry,
+  index,
   integer,
   pgMaterializedView,
   pgTable,
@@ -20,9 +22,11 @@ export const measurement = pgTable(
       .defaultNow()
       .notNull(),
     value: doublePrecision("value"),
+    location: geometry("location", { type: "point", mode: "xy", srid: 4326 }),
   },
   (t) => ({
     unq: unique().on(t.sensorId, t.time),
+    spatialIndex: index("measurement_location_index").using("gist", t.location),
   }),
 );
 
