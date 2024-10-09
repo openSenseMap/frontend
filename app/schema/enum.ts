@@ -8,7 +8,7 @@ export const exposureEnum = pgEnum("exposure", [
   "unknown",
 ]);
 
-const exposureZodEnum = z.enum(["all", ...exposureEnum.enumValues]);
+const exposureZodEnum = z.enum(exposureEnum.enumValues);
 
 export type zodExposureEnum = z.infer<typeof exposureZodEnum>;
 

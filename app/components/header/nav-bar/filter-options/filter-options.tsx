@@ -19,23 +19,19 @@ export default function FilterOptions() {
   const navigation = useNavigation();
 
   //* Set initial filter params based on url Search Params
-  const [exposureVal, setExposureVal] = useState<zodExposureEnum>(
-    (searchParams.get("exposure") as zodExposureEnum) ??
-      ("all" as zodExposureEnum),
+  const [exposureVal, setExposureVal] = useState<zodExposureEnum | "all">(
+    (searchParams.get("exposure") as zodExposureEnum) ?? "all",
   );
-  const [statusVal, setStatusVal] = useState<zodStatusEnum>(
-    (searchParams.get("status") as zodStatusEnum) ??
+  const [statusVal, setStatusVal] = useState<zodStatusEnum | "all">(
+    (searchParams.get("status") as zodStatusEnum | "all") ??
       ("active" as zodStatusEnum),
   );
 
   //* Update filter params based on url Search Params
   useEffect(() => {
-    setExposureVal(
-      (searchParams.get("exposure") as zodExposureEnum) ??
-        ("all" as zodExposureEnum),
-    );
+    setExposureVal((searchParams.get("exposure") as zodExposureEnum) ?? "all");
     setStatusVal(
-      (searchParams.get("status") as zodStatusEnum) ??
+      (searchParams.get("status") as zodStatusEnum | "all") ??
         ("active" as zodStatusEnum),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +60,7 @@ export default function FilterOptions() {
                   (value) => value !== "all",
                 );
                 const valueString = filteredValues.join(",");
-                setExposureVal(valueString as zodExposureEnum);
+                setExposureVal(valueString as zodExposureEnum | "all");
                 searchParams.set("exposure", valueString);
 
                 // If "all" is selected but not at index 0, deselect others and keep only "all"
@@ -74,7 +70,7 @@ export default function FilterOptions() {
               } else {
                 // Normal behavior if "all" is not selected
                 const valueString = values.join(",");
-                setExposureVal(valueString as zodExposureEnum);
+                setExposureVal(valueString as zodExposureEnum | "all");
                 searchParams.set("exposure", valueString);
               }
 
