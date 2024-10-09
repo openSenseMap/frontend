@@ -10,6 +10,7 @@ import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
 import type { loader } from "~/routes/explore";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
+import type { zodExposureEnum, zodStatusEnum } from "~/schema/enum";
 
 export default function FilterOptions() {
   const data = useLoaderData<typeof loader>();
@@ -18,17 +19,25 @@ export default function FilterOptions() {
   const navigation = useNavigation();
 
   //* Set initial filter params based on url Search Params
-  const [exposureVal, setExposureVal] = useState(
-    searchParams.get("exposure") ?? "all",
+  const [exposureVal, setExposureVal] = useState<zodExposureEnum>(
+    (searchParams.get("exposure") as zodExposureEnum) ??
+      ("all" as zodExposureEnum),
   );
-  const [statusVal, setStatusVal] = useState(
-    searchParams.get("status") ?? "active",
+  const [statusVal, setStatusVal] = useState<zodStatusEnum>(
+    (searchParams.get("status") as zodStatusEnum) ??
+      ("active" as zodStatusEnum),
   );
 
   //* Update filter params based on url Search Params
   useEffect(() => {
-    setExposureVal(searchParams.get("exposure") ?? "all");
-    setStatusVal(searchParams.get("status") ?? "active");
+    setExposureVal(
+      (searchParams.get("exposure") as zodExposureEnum) ??
+        ("all" as zodExposureEnum),
+    );
+    setStatusVal(
+      (searchParams.get("status") as zodStatusEnum) ??
+        ("active" as zodStatusEnum),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -55,7 +64,7 @@ export default function FilterOptions() {
                   (value) => value !== "all",
                 );
                 const valueString = filteredValues.join(",");
-                setExposureVal(valueString);
+                setExposureVal(valueString as zodExposureEnum);
                 searchParams.set("exposure", valueString);
 
                 // If "all" is selected but not at index 0, deselect others and keep only "all"
@@ -65,7 +74,7 @@ export default function FilterOptions() {
               } else {
                 // Normal behavior if "all" is not selected
                 const valueString = values.join(",");
-                setExposureVal(valueString);
+                setExposureVal(valueString as zodExposureEnum);
                 searchParams.set("exposure", valueString);
               }
 

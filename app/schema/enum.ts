@@ -1,7 +1,6 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-
 export const exposureEnum = pgEnum("exposure", [
   "indoor",
   "outdoor",
@@ -9,17 +8,14 @@ export const exposureEnum = pgEnum("exposure", [
   "unknown",
 ]);
 
-const exposureZodEnum = z.enum(exposureEnum.enumValues)
+const exposureZodEnum = z.enum(["all", ...exposureEnum.enumValues]);
 
-
-export type zodExposureEnum = z.infer<typeof exposureZodEnum>
+export type zodExposureEnum = z.infer<typeof exposureZodEnum>;
 
 export const statusEnum = pgEnum("status", ["active", "inactive", "old"]);
 
-const statusZodEnum = z.enum(statusEnum.enumValues)
+const statusZodEnum = z.enum(["all", ...statusEnum.enumValues]);
 
-export type zodStatusEnum = z.infer<typeof statusZodEnum>
-
-
+export type zodStatusEnum = z.infer<typeof statusZodEnum>;
 
 export const deviceModelEnum = pgEnum("model", ["HOME_V2_LORA"]);
