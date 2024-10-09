@@ -1,21 +1,32 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const exposureEnum = pgEnum("exposure", [
+// Enum for device exposure types
+export const DeviceExposureEnum = pgEnum("exposure", [
   "indoor",
   "outdoor",
   "mobile",
   "unknown",
 ]);
 
-const exposureZodEnum = z.enum(exposureEnum.enumValues);
+// Zod schema for validating device exposure types
+export const DeviceExposureZodEnum = z.enum(DeviceExposureEnum.enumValues);
 
-export type zodExposureEnum = z.infer<typeof exposureZodEnum>;
+// Type inferred from the Zod schema for device exposure types
+export type DeviceExposureType = z.infer<typeof DeviceExposureZodEnum>;
 
-export const statusEnum = pgEnum("status", ["active", "inactive", "old"]);
+// Enum for device status types
+export const DeviceStatusEnum = pgEnum("status", [
+  "active",
+  "inactive",
+  "old",
+]);
 
-const statusZodEnum = z.enum(["all", ...statusEnum.enumValues]);
+// Zod schema for validating device status types
+export const DeviceStatusZodEnum = z.enum(DeviceStatusEnum.enumValues);
 
-export type zodStatusEnum = z.infer<typeof statusZodEnum>;
+// Type inferred from the Zod schema for device status types
+export type DeviceStatusType = z.infer<typeof DeviceStatusZodEnum>;
 
-export const deviceModelEnum = pgEnum("model", ["HOME_V2_LORA"]);
+// Enum for device model types
+export const DeviceModelEnum = pgEnum("model", ["HOME_V2_LORA"]);
