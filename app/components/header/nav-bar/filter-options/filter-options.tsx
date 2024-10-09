@@ -10,7 +10,11 @@ import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
 import type { loader } from "~/routes/explore";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
-import type { zodExposureEnum, zodStatusEnum } from "~/schema/enum";
+import {
+  type DeviceExposureType,
+  type DeviceStatusType,
+  DeviceStatusZodEnum,
+} from "~/schema/enum";
 
 export default function FilterOptions() {
   const data = useLoaderData<typeof loader>();
@@ -19,20 +23,22 @@ export default function FilterOptions() {
   const navigation = useNavigation();
 
   //* Set initial filter params based on url Search Params
-  const [exposureVal, setExposureVal] = useState<zodExposureEnum | "all">(
-    (searchParams.get("exposure") as zodExposureEnum) ?? "all",
+  const [exposureVal, setExposureVal] = useState<DeviceExposureType | "all">(
+    (searchParams.get("exposure") as DeviceExposureType) ?? "all",
   );
-  const [statusVal, setStatusVal] = useState<zodStatusEnum | "all">(
-    (searchParams.get("status") as zodStatusEnum | "all") ??
-      ("active" as zodStatusEnum),
+  const [statusVal, setStatusVal] = useState<DeviceStatusType | "all">(
+    (searchParams.get("status") as DeviceStatusType | "all") ??
+      DeviceStatusZodEnum.Enum.active,
   );
 
   //* Update filter params based on url Search Params
   useEffect(() => {
-    setExposureVal((searchParams.get("exposure") as zodExposureEnum) ?? "all");
+    setExposureVal(
+      (searchParams.get("exposure") as DeviceExposureType) ?? "all",
+    );
     setStatusVal(
-      (searchParams.get("status") as zodStatusEnum | "all") ??
-        ("active" as zodStatusEnum),
+      (searchParams.get("status") as DeviceStatusType | "all") ??
+        DeviceStatusZodEnum.Enum.active,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -54,23 +60,26 @@ export default function FilterOptions() {
             variant="outline"
             value={exposureVal ? exposureVal.split(",") : ["all"]}
             onValueChange={(values: string[]) => {
-              // If "all" is at index 0, remove "all" and keep other selections
-              if (values.includes("all") && values.indexOf("all") === 0) {
+              // If no values are selected, set to "all"
+              if (values.length === 0) {
+                setExposureVal("all"); // Reset to "all"
+                searchParams.set("exposure", "all"); // Set exposure param to "all" in URL
+              } else if (
+                values.includes("all") &&
+                values.indexOf("all") === 0
+              ) {
                 const filteredValues = values.filter(
                   (value) => value !== "all",
                 );
                 const valueString = filteredValues.join(",");
-                setExposureVal(valueString as zodExposureEnum | "all");
+                setExposureVal(valueString as DeviceExposureType | "all");
                 searchParams.set("exposure", valueString);
-
-                // If "all" is selected but not at index 0, deselect others and keep only "all"
               } else if (values.includes("all")) {
                 setExposureVal("all");
                 searchParams.set("exposure", "all");
               } else {
-                // Normal behavior if "all" is not selected
                 const valueString = values.join(",");
-                setExposureVal(valueString as zodExposureEnum | "all");
+                setExposureVal(valueString as DeviceExposureType | "all");
                 searchParams.set("exposure", valueString);
               }
 
@@ -99,20 +108,25 @@ export default function FilterOptions() {
             variant="outline"
             value={statusVal ? statusVal.split(",") : ["active"]}
             onValueChange={(values: string[]) => {
-              // If "all" is at index 0, remove "all" and keep other selections
-              if (values.includes("all") && values.indexOf("all") === 0) {
+              // If no values are selected, set to "all"
+              if (values.length === 0) {
+                setStatusVal("all"); // Reset to default "all"
+                searchParams.set("status", "all"); // Set status param to "all" in URL
+              } else if (
+                values.includes("all") &&
+                values.indexOf("all") === 0
+              ) {
                 const filteredValues = values.filter(
                   (value) => value !== "all",
                 );
                 const valueString = filteredValues.join(",");
                 searchParams.set("status", valueString);
-
-                // If "all" is selected but not at index 0, deselect others and keep only "all"
               } else if (values.includes("all")) {
+                setStatusVal("all");
                 searchParams.set("status", "all");
               } else {
-                // Normal behavior if "all" is not selected
                 const valueString = values.join(",");
+                setStatusVal(valueString as DeviceStatusType | "all");
                 searchParams.set("status", valueString);
               }
 
