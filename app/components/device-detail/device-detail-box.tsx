@@ -73,9 +73,12 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 
-export interface LastMeasurementProps {
+export interface MeasurementProps {
+  sensorId: string;
   time: Date;
   value: string;
+  min_value: string;
+  max_value: string;
 }
 
 export interface DeviceAndSelectedSensors {
