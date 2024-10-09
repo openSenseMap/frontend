@@ -1,4 +1,4 @@
-![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/openSenseMapLogo.svg)
+![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/openSenseMap.png)
 
 This repository contains the code of the new *openSenseMap* frontend running at [https://beta.opensensemap.org](https://beta.opensensemap.org). To get more information about *openSenseMap* and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=I8ZeT6hzjKQ) or read the [openSenseMap](https://docs.sensebox.de/category/opensensemap/) chapter in our documentation.
 
