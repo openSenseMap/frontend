@@ -76,7 +76,7 @@ export function AggregationFilter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h8">
+        <Button variant="outline" size="sm" className="h-8">
           <Filter className="mr-2 h-4 w-4" />
           Aggregation
           <>
