@@ -56,9 +56,11 @@ export default function FilterVisualization() {
   // Clean search params when the component mounts
   useEffect(() => {
     cleanSearchParams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Group valid filters by key
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const groupedFilters: { [key: string]: string[] } = {};
 
   params.forEach((value, key) => {
