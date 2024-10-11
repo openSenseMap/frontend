@@ -3,7 +3,7 @@ import { NavBar } from "~/components/nav-bar";
 
 export default function ProfileLayoutPage() {
   return (
-    <div className="h-screen bg-slate-100">
+    <div className="h-full bg-slate-100">
       <NavBar />
       <Outlet />
     </div>

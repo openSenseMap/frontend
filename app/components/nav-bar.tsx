@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@remix-run/react";
 import { Button } from "./ui/button";
 
-import { ChevronDownIcon, Mailbox, Plus, Settings } from "lucide-react";
+import { ChevronDownIcon, LogIn, Mailbox, Plus } from "lucide-react";
 import { useOptionalUser } from "~/utils";
 import {
   DropdownMenu,
@@ -41,7 +41,7 @@ export function NavBar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" disabled>
                     <Plus className="h-4 w-4" />
-                    <ChevronDownIcon className=" m-0 inline h-4  w-4 p-0" />
+                    <ChevronDownIcon className="m-0 inline h-4  w-4 p-0" />
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -70,22 +70,23 @@ export function NavBar() {
                 <Mailbox className="h-4 w-4" />
               </Button>
 
-              <Button variant={"ghost"} size={"icon"}>
-                <Link to={"/settings"}>
-                  <Settings className="h-4 w-4" />
-                </Link>
-              </Button>
-
               <div className="px-8">
                 <Menu />
               </div>
             </>
           ) : (
-            <>
-              <Link to="/login">
-                <Button variant="outline">Login</Button>
-              </Link>
-            </>
+            <div className="px-8">
+              <div className="pointer-events-auto box-border h-10 w-10">
+                <button
+                  type="button"
+                  className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
+                >
+                  <Link to="/login">
+                    <LogIn className="mx-auto h-6 w-6" />
+                  </Link>
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

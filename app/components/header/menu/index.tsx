@@ -17,13 +17,11 @@ import {
   LogOut,
   Puzzle,
   Menu as MenuIcon,
-  Cpu,
-  Mail,
-  Fingerprint,
   FileLock2,
   Coins,
   User2,
   ExternalLink,
+  Settings,
 } from "lucide-react";
 import { useOptionalUser } from "~/utils";
 
@@ -99,10 +97,10 @@ export default function Menu() {
                 </DropdownMenuItem>
               </Link>
 
-              <Link to="/profile/me">
+              <Link to="/settings">
                 <DropdownMenuItem className=" cursor-pointer">
-                  <Cpu className="mr-2 h-5 w-5" />
-                  <span>{t("my_devices_label")}</span>
+                  <Settings className="mr-2 h-5 w-5" />
+                  <span>{"Settings"}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </Link>
@@ -127,18 +125,6 @@ export default function Menu() {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <Link to={"mailto:info@opensenselab.org"}>
-              <DropdownMenuItem className="cursor-pointer">
-                <Mail className="mr-2 h-5 w-5" />
-                <span>{t("contact_label")}</span>
-              </DropdownMenuItem>
-            </Link>
-            <Link to={"/imprint"}>
-              <DropdownMenuItem className="cursor-pointer">
-                <Fingerprint className="mr-2 h-5 w-5" />
-                <span>{t("imprint_label")}</span>
-              </DropdownMenuItem>
-            </Link>
             <Link to={"/privacy"}>
               <DropdownMenuItem className="cursor-pointer">
                 <FileLock2 className="mr-2 h-5 w-5" />
