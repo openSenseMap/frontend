@@ -15,5 +15,5 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./pgdata:/home/postgres/pgdata
+      # - ./pgdata:/home/postgres/pgdata
       - ./db/imports:/home/postgres/imports
