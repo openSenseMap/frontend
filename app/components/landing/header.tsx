@@ -41,7 +41,7 @@ export default function Header() {
           {/* Osem Logo*/}
           <Link to="/" className="flex items-center md:pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-            <span className="text-light-green dark:text-dark-green hidden self-center whitespace-nowrap text-xl font-semibold md:block">
+            <span className="text-light-green dark:text-dark-green hidden self-center whitespace-nowrap text-xl md:block">
               openSenseMap
             </span>
           </Link>

@@ -1,6 +1,6 @@
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
-import {type zodExposureEnum, type zodStatusEnum} from "~/schema";
+import type { DeviceExposureType, DeviceStatusType } from "~/schema";
 
 /* export async function loader({ request }: LoaderArgs) {
   //* if user is not logged in, redirect to home
@@ -16,11 +16,11 @@ interface UserDevices {
     id: string;
     name: string;
     description: string | null;
-    exposure: zodExposureEnum;
+    exposure: DeviceExposureType;
     useAuth: boolean | null;
     model: string | null;
     public: boolean;
-    status: zodStatusEnum;
+    status: DeviceStatusType;
     createdAt: string;
     updatedAt: string;
     latitude: number;

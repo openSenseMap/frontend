@@ -5,6 +5,7 @@ import {
   useSearchParams,
   useLoaderData,
   useParams,
+  redirect,
 } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
@@ -44,6 +45,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
+
+  // Check if the "status" parameter is missing
+  if (!urlFilterParams.has("status")) {
+    urlFilterParams.set("status", "active");
+    return redirect(`${url.pathname}?${urlFilterParams.toString()}`);
+  }
 
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
