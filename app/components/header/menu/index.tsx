@@ -1,13 +1,4 @@
-import {
-  Form,
-  Link,
-  useNavigation,
-  useSearchParams,
-  useLoaderData,
-} from "@remix-run/react";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/components/ui/use-toast";
-import type { loader } from "~/routes/explore";
+import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,88 +8,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";
 import {
   Globe,
   LogIn,
   LogOut,
-  PlusCircle,
   Puzzle,
   Menu as MenuIcon,
-  Cpu,
-  Settings,
-  Mail,
-  Fingerprint,
   FileLock2,
   Coins,
   User2,
   ExternalLink,
+  Settings,
+  Compass,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-
-export function useFirstRender() {
-  const firstRender = useRef(true);
-
-  useEffect(() => {
-    firstRender.current = false;
-  }, []);
-
-  return firstRender.current;
-}
+import { useOptionalUser } from "~/utils";
+import { toast } from "~/components/ui/use-toast";
 
 export default function Menu() {
   const [searchParams] = useSearchParams();
   const redirectTo =
     searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
-  const data = useLoaderData<typeof loader>();
   const [open, setOpen] = useState(false);
-  const { toast } = useToast();
   const navigation = useNavigation();
   const isLoggingOut = Boolean(navigation.state === "submitting");
-  const [timeToToast, setTimeToToast] = useState<Boolean>(false);
+  const user = useOptionalUser();
 
   const { t } = useTranslation("menu");
-
-  const firstRender = useFirstRender();
-
-  useEffect(() => {
-    if (!firstRender && !timeToToast) {
-      setTimeToToast(true);
-    } else if (!firstRender && timeToToast) {
-      if (data.user === null) {
-        toast({
-          description: t("toast_logout_success"),
-        });
-      }
-      if (data.user !== null) {
-        const creationDate = Date.parse(data.user.createdAt);
-        const now = Date.now();
-        const diff = now - creationDate;
-        if (diff < 10000) {
-          toast({
-            description: t("toast_user_creation_success"),
-          });
-          setTimeout(() => {
-            toast({
-              description: t("toast_login_success"),
-            });
-          }, 100);
-        } else {
-          toast({
-            description: t("toast_login_success"),
-          });
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.user, toast, firstRender]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
@@ -108,7 +46,7 @@ export default function Menu() {
             type="button"
             className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
           >
-            {data.user === null ? (
+            {!user ? (
               <MenuIcon className="mx-auto h-6 w-6" />
             ) : (
               <User2 className="mx-auto h-6 w-6" />
@@ -127,7 +65,7 @@ export default function Menu() {
           }
         >
           <DropdownMenuLabel className="font-normal">
-            {data.user === null ? (
+            {!user ? (
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{t("title")}</p>
                 <p className="text-xs leading-none text-muted-foreground">
@@ -135,55 +73,47 @@ export default function Menu() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col space-y-1">
+              <div className="flex flex-col space-y-1 p-2">
                 <p className="text-sm font-medium leading-none">
                   {/* Max Mustermann */}
-                  {data.user.name}
+                  {user?.name}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {data.user.email}
+                  {user?.email}
                 </p>
               </div>
             )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {data.user !== null ? (
+          {user && (
             <DropdownMenuGroup>
               {navigation.state === "loading" && (
                 <div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                   <Spinner />
                 </div>
               )}
-              {data.profile && (
-                <DropdownMenuItem>
-                  <User2 className="mr-2 h-6 w-6" />
-                  <Link to="/profile/me">Profile</Link>
+              <Link to="/explore">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Compass className="mr-2 h-5 w-5" />
+                  <span>{"Explore"}</span>
                 </DropdownMenuItem>
-              )}
+              </Link>
+              <Link to="/profile/me">
+                <DropdownMenuItem className="cursor-pointer">
+                  <User2 className="mr-2 h-5 w-5" />
+                  Profile
+                </DropdownMenuItem>
+              </Link>
 
-              <Link to="/settings/account">
+              <Link to="/settings">
                 <DropdownMenuItem className=" cursor-pointer">
                   <Settings className="mr-2 h-5 w-5" />
-                  <span>{t("settings_label")}</span>
-                </DropdownMenuItem>
-              </Link>
-
-              <Link to="/profile/me">
-                <DropdownMenuItem className=" cursor-pointer">
-                  <Cpu className="mr-2 h-5 w-5" />
-                  <span>{t("my_devices_label")}</span>
-                </DropdownMenuItem>
-              </Link>
-
-              <Link to="/device/new" target="_blank">
-                <DropdownMenuItem>
-                  <PlusCircle className="mr-2 h-5 w-5" />
-                  <span>{t("add_device_label")}</span>
+                  <span>{"Settings"}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </Link>
             </DropdownMenuGroup>
-          ) : null}
+          )}
           <DropdownMenuGroup>
             <Link to="https://docs.sensebox.de/" target="_blank">
               <DropdownMenuItem className="cursor-pointer">
@@ -203,18 +133,6 @@ export default function Menu() {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <Link to={"mailto:info@opensenselab.org"}>
-              <DropdownMenuItem className="cursor-pointer">
-                <Mail className="mr-2 h-5 w-5" />
-                <span>{t("contact_label")}</span>
-              </DropdownMenuItem>
-            </Link>
-            <Link to={"/imprint"}>
-              <DropdownMenuItem className="cursor-pointer">
-                <Fingerprint className="mr-2 h-5 w-5" />
-                <span>{t("imprint_label")}</span>
-              </DropdownMenuItem>
-            </Link>
             <Link to={"/privacy"}>
               <DropdownMenuItem className="cursor-pointer">
                 <FileLock2 className="mr-2 h-5 w-5" />
@@ -245,60 +163,50 @@ export default function Menu() {
           <DropdownMenuSeparator />
 
           <DropdownMenuGroup>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <DropdownMenuItem disabled>
-                    {data.user === null ? (
-                      <Link
-                        to={{
-                          pathname: "login",
-                          search: searchParams.toString(),
-                        }}
-                        onClick={() => setOpen(false)}
-                      >
-                        <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
-                          <LogIn className="mr-2 h-5 w-5" />
-                          <span className="text-light-green">
-                            {t("login_label")}
-                          </span>
-                        </button>
-                      </Link>
-                    ) : (
-                      <Form
-                        action="/logout"
-                        method="post"
-                        onSubmit={() => {
-                          setOpen(false);
-                          // toast({
-                          //   description: "Logging out ...",
-                          // });
-                        }}
-                      >
-                        <input
-                          type="hidden"
-                          name="redirectTo"
-                          value={redirectTo}
-                        />
-                        <button
-                          type="submit"
-                          className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                          disabled={isLoggingOut}
-                        >
-                          <LogOut className="mr-2 h-5 w-5" />
-                          <span className="text-red-500">
-                            {t("logout_label")}
-                          </span>
-                        </button>
-                      </Form>
-                    )}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Coming soon...</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                // Prevent dropdown from closing
+                e.preventDefault();
+              }}
+            >
+              {!user ? (
+                <Link
+                  to={{
+                    pathname: "login",
+                    search: searchParams.toString(),
+                  }}
+                  onClick={() => setOpen(false)}
+                  className="cursor-pointer w-full"
+                >
+                  <button className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
+                    <LogIn className="mr-2 h-5 w-5" />
+                    <span className="text-light-green">{t("login_label")}</span>
+                  </button>
+                </Link>
+              ) : (
+                <Form
+                  action="/logout"
+                  method="post"
+                  onSubmit={() => {
+                    setOpen(false);
+                    toast({
+                      description: "Successfully logged out.",
+                    });
+                  }}
+                  className="cursor-pointer w-full"
+                >
+                  <input type="hidden" name="redirectTo" value={redirectTo} />
+                  <button
+                    type="submit"
+                    className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+                    disabled={isLoggingOut}
+                  >
+                    <LogOut className="mr-2 h-5 w-5" />
+                    <span className="text-red-500">{t("logout_label")}</span>
+                  </button>
+                </Form>
+              )}
+            </DropdownMenuItem>
           </DropdownMenuGroup>
         </div>
       </DropdownMenuContent>
