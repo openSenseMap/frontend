@@ -22,8 +22,10 @@ import {
   User2,
   ExternalLink,
   Settings,
+  Compass,
 } from "lucide-react";
 import { useOptionalUser } from "~/utils";
+import { toast } from "~/components/ui/use-toast";
 
 export default function Menu() {
   const [searchParams] = useSearchParams();
@@ -90,9 +92,15 @@ export default function Menu() {
                   <Spinner />
                 </div>
               )}
+              <Link to="/explore">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Compass className="mr-2 h-5 w-5" />
+                  <span>{"Explore"}</span>
+                </DropdownMenuItem>
+              </Link>
               <Link to="/profile/me">
                 <DropdownMenuItem className="cursor-pointer">
-                  <User2 className="mr-2 h-6 w-6" />
+                  <User2 className="mr-2 h-5 w-5" />
                   Profile
                 </DropdownMenuItem>
               </Link>
@@ -155,7 +163,12 @@ export default function Menu() {
           <DropdownMenuSeparator />
 
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                // Prevent dropdown from closing
+                e.preventDefault();
+              }}
+            >
               {!user ? (
                 <Link
                   to={{
@@ -176,9 +189,9 @@ export default function Menu() {
                   method="post"
                   onSubmit={() => {
                     setOpen(false);
-                    // toast({
-                    //   description: "Logging out ...",
-                    // });
+                    toast({
+                      description: "Successfully logged out.",
+                    });
                   }}
                   className="cursor-pointer w-full"
                 >

@@ -8,7 +8,7 @@ import {
   // useNavigation,
 } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
 import { getInitials } from "~/utils/misc";
 import { Label } from "~/components/ui/label";
@@ -36,7 +36,7 @@ import {
 } from "~/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserId(request);
   const profile = await getProfileByUserId(userId);
   if (!profile) {
