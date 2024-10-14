@@ -12,16 +12,16 @@ import {
   PointElement,
   Legend,
   Tooltip as ChartTooltip,
+  Filler,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 import { de, enGB } from "date-fns/locale";
-import type { LastMeasurementProps } from "./device-detail-box";
 import type { loader } from "~/routes/explore.$deviceId._index";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { saveAs } from "file-saver";
-import { Download, X } from "lucide-react";
+import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
 import {
@@ -36,8 +36,10 @@ import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
+import { ColorPicker } from "../color-picker";
+import { ClientOnly } from "../client-only";
+import { Button } from "../ui/button";
 
-// Registering Chart.js components that will be used in the graph
 ChartJS.register(
   LineElement,
   TimeScale,
@@ -46,83 +48,184 @@ ChartJS.register(
   PointElement,
   ChartTooltip,
   Legend,
+  Filler,
 );
+
+// ClientOnly component to handle the plugin that needs window
+const LineWithZoom = (props: any) => {
+  useMemo(() => {
+    // Dynamically import the zoom plugin
+    import("chartjs-plugin-zoom").then(({ default: zoomPlugin }) => {
+      ChartJS.register(zoomPlugin);
+    });
+  }, []);
+
+  return (
+    <Line
+      data={props.lineData}
+      options={props.options}
+      ref={props.chartRef}
+    ></Line>
+  );
+};
 
 export default function Graph(props: any) {
   const loaderData = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // form submission handler
-  // const submit = useSubmit();
-  // const [searchParams] = useSearchParams();
+  const [colorPickerState, setColorPickerState] = useState({
+    open: false,
+    index: 0,
+    color: "#000000",
+  });
+  const isAggregated = loaderData.aggregation !== "raw";
 
   const nodeRef = useRef(null);
-  const chartRef = useRef<ChartJS<"line">>(null);
+  const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
 
   // get theme from tailwind
   const [theme] = useTheme();
 
-  const lineData = useMemo(() => {
-    // Helper function to construct the label with device name
-    const getLabel = (sensor: any, includeDeviceName: any) => {
-      return includeDeviceName
-        ? `${sensor.title} (${sensor.device_name})`
-        : sensor.title;
-    };
-
+  const [lineData, setLineData] = useState(() => {
     const includeDeviceName =
       loaderData.selectedSensors.length === 2 &&
       loaderData.selectedSensors[0].device_name !==
         loaderData.selectedSensors[1].device_name;
 
     return {
-      labels: loaderData.selectedSensors[0].data.map(
-        (measurement: LastMeasurementProps) => measurement.time,
-      ),
-      datasets:
-        loaderData.selectedSensors.length === 2
-          ? [
-              {
-                label: getLabel(
-                  loaderData.selectedSensors[0],
-                  includeDeviceName,
-                ),
-                data: loaderData.selectedSensors[0].data,
-                pointRadius: 0,
-                borderColor: loaderData.selectedSensors[0].color,
-                backgroundColor: loaderData.selectedSensors[0].color,
-                yAxisID: "y",
-              },
-              {
-                label: getLabel(
-                  loaderData.selectedSensors[1],
-                  includeDeviceName,
-                ),
-                data: loaderData.selectedSensors[1].data,
-                pointRadius: 0,
-                borderColor: loaderData.selectedSensors[1].color,
-                backgroundColor: loaderData.selectedSensors[1].color,
-                yAxisID: "y1",
-              },
-            ]
-          : [
-              {
-                label: getLabel(
-                  loaderData.selectedSensors[0],
-                  includeDeviceName,
-                ),
-                data: loaderData.selectedSensors[0].data,
-                pointRadius: 0,
-                borderColor: loaderData.selectedSensors[0].color,
-                backgroundColor: loaderData.selectedSensors[0].color,
-                yAxisID: "y",
-              },
-            ],
+      datasets: loaderData.selectedSensors
+        .map(
+          (
+            sensor: {
+              title: any;
+              device_name: any;
+              data: any[];
+              color: string;
+            },
+            index: number,
+          ) => {
+            const baseDataset = {
+              label: includeDeviceName
+                ? `${sensor.title} (${sensor.device_name})`
+                : sensor.title,
+              data: sensor.data.map((measurement) => ({
+                x: measurement.time,
+                y: measurement.value,
+              })),
+              pointRadius: 0,
+              borderColor: sensor.color,
+              backgroundColor: sensor.color,
+              yAxisID: index === 0 ? "y" : "y1",
+              fill: false,
+              tension: 0.4,
+            };
+
+            if (isAggregated && loaderData.selectedSensors.length === 1) {
+              const minDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Min)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.min_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              const maxDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Max)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.max_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              return [maxDataset, baseDataset, minDataset];
+            }
+
+            return [baseDataset];
+          },
+        )
+        .flat(),
     };
-  }, [loaderData.selectedSensors]);
+  });
+
+  useEffect(() => {
+    const includeDeviceName =
+      loaderData.selectedSensors.length === 2 &&
+      loaderData.selectedSensors[0].device_name !==
+        loaderData.selectedSensors[1].device_name;
+
+    setLineData({
+      datasets: loaderData.selectedSensors
+        .map(
+          (
+            sensor: {
+              title: any;
+              device_name: any;
+              data: any[];
+              color: string;
+            },
+            index: number,
+          ) => {
+            const baseDataset = {
+              label: includeDeviceName
+                ? `${sensor.title} (${sensor.device_name})`
+                : sensor.title,
+              data: sensor.data.map((measurement) => ({
+                x: measurement.time,
+                y: measurement.value,
+              })),
+              pointRadius: 0,
+              borderColor: sensor.color,
+              backgroundColor: sensor.color,
+              yAxisID: index === 0 ? "y" : "y1",
+              fill: false,
+              tension: 0.4,
+            };
+
+            if (isAggregated && loaderData.selectedSensors.length === 1) {
+              const minDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Min)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.min_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              const maxDataset = {
+                ...baseDataset,
+                label: `${baseDataset.label} (Max)`,
+                data: sensor.data.map((measurement) => ({
+                  x: measurement.time,
+                  y: measurement.max_value,
+                })),
+                borderColor: sensor.color + "33",
+                backgroundColor: sensor.color + "33",
+                fill: 1,
+              };
+
+              return [maxDataset, baseDataset, minDataset];
+            }
+
+            return [baseDataset];
+          },
+        )
+        .flat(),
+    });
+  }, [loaderData, isAggregated]);
 
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
@@ -134,14 +237,13 @@ export default function Graph(props: any) {
         intersect: false,
       },
       parsing: {
-        xAxisKey: "time",
-        yAxisKey: "value",
+        xAxisKey: "x",
+        yAxisKey: "y",
       },
       scales: {
         x: {
           type: "time",
           time: {
-            // display hour when timerange < 1 day and day when timerange > 1 day
             unit: datesHave48HourRange(
               new Date(loaderData.fromDate),
               new Date(loaderData.toDate),
@@ -212,9 +314,57 @@ export default function Graph(props: any) {
           type: "linear",
           display: "auto",
           position: "right",
-          // grid line settings
           grid: {
-            drawOnChartArea: false, // only want the grid lines for one axis to show up
+            drawOnChartArea: false,
+          },
+        },
+      },
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: "xy",
+            onPan: () => setIsZoomed(true), // Mark zoom as active
+          },
+          zoom: {
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true,
+            },
+            mode: "xy",
+            onZoom: () => setIsZoomed(true), // Mark zoom as active
+          },
+        },
+        legend: {
+          display: true,
+          position: "bottom",
+          onHover: (e, legendItem, legend) => {
+            const canvas = legend.chart.canvas; // Access the chart from the legend context
+
+            // Only change the cursor and add the tooltip when hovering over the color box
+            if (legendItem.fillStyle) {
+              canvas.style.cursor = "pointer";
+              canvas.title = "Click to change color"; // Tooltip on legend color box
+            }
+          },
+          onLeave: (e, legendItem, legend) => {
+            const canvas = legend.chart.canvas;
+            canvas.style.cursor = "default";
+            canvas.title = ""; // Remove tooltip on leave
+          },
+
+          onClick: (e, legendItem, legend) => {
+            const index = legendItem.datasetIndex ?? 0;
+            setColorPickerState({
+              open: !colorPickerState.open,
+              index,
+              color: lineData.datasets[index].borderColor as string,
+            });
+          },
+          labels: {
+            usePointStyle: true,
           },
         },
       },
@@ -225,44 +375,64 @@ export default function Graph(props: any) {
     loaderData.locale,
     loaderData.selectedSensors,
     theme,
+    colorPickerState.open,
+    lineData.datasets,
   ]);
+
+  function handleColorChange(newColor: string) {
+    const updatedDatasets = [...lineData.datasets];
+    updatedDatasets[colorPickerState.index].borderColor = newColor;
+    updatedDatasets[colorPickerState.index].backgroundColor = newColor;
+
+    // Update the lineData state with the new dataset colors
+    setLineData((prevData) => ({
+      ...prevData,
+      datasets: updatedDatasets,
+    }));
+
+    setColorPickerState((prev) => ({ ...prev, open: false }));
+  }
 
   function handlePngDownloadClick() {
     if (chartRef.current) {
-      if (chartRef.current === null) return;
-      // why is chartRef.current always never???
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
       saveAs(imageString, "chart.png");
     }
   }
 
   function handleCsvDownloadClick() {
-    const labels = lineData.labels;
-    const dataset = lineData.datasets[0];
+    const labels = lineData.datasets[0].data.map((point: any) => point.x);
 
-    // header
-    let csvContent = "timestamp,deviceId,sensorId,value,unit,phenomena";
-    csvContent += "\n";
-    for (let i = 0; i < labels.length; i++) {
-      // timestamp
-      csvContent += `${labels[i]},`;
-      // deviceId
-      csvContent += `${loaderData.selectedSensors[0].deviceId},`;
-      // sensorId
-      csvContent += `${dataset?.data[i]?.sensorId},`;
-      // value
-      csvContent += `${dataset?.data[i]?.value},`;
-      // unit
-      csvContent += `${loaderData.selectedSensors[0].unit},`;
-      // phenomenon
-      csvContent += `${loaderData.selectedSensors[0].title}`;
-      // new line
-      csvContent += "\n";
-    }
+    let csvContent = "timestamp,deviceId,sensorId,value,unit,phenomena\n";
 
-    // Creating a Blob and saving it as a CSV file
+    // Loop through each timestamp and sensor data
+    labels.forEach((timestamp: any, index: string | number) => {
+      loaderData.selectedSensors.forEach((sensor: any) => {
+        const dataset = lineData.datasets.find(
+          (ds: { label: string | any[] }) => ds.label.includes(sensor.title),
+        );
+        if (dataset) {
+          const value = dataset.data[index]?.y ?? "";
+
+          csvContent += `${timestamp},`;
+          csvContent += `${sensor.deviceId},`;
+          csvContent += `${sensor.id},`;
+          csvContent += `${value},`;
+          csvContent += `${sensor.unit},`;
+          csvContent += `${sensor.title}\n`;
+        }
+      });
+    });
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "chart_data.csv");
+  }
+
+  function handleResetZoomClick() {
+    if (chartRef.current) {
+      chartRef.current.resetZoom(); // Use the resetZoom function from the zoom plugin
+      setIsZoomed(false); // Reset zoom state
+    }
   }
 
   function handleDrag(_e: any, data: DraggableData) {
@@ -297,6 +467,11 @@ export default function Graph(props: any) {
               <div className="flex items-center justify-center gap-4">
                 <DateRangeFilter />
                 <AggregationFilter />
+                {isZoomed && (
+                  <Button variant="outline" className="h-8" onClick={handleResetZoomClick}>
+                    <RefreshCcw className="mr-2 h-4 w-4" /> Reset Zoom
+                  </Button>
+                )}
               </div>
               <div className="flex items-center justify-end gap-4">
                 <DropdownMenu>
@@ -334,7 +509,30 @@ export default function Graph(props: any) {
                 loaderData.selectedSensors[1].data.length === 0) ? (
                 <div>There is no data for the selected time period.</div>
               ) : (
-                <Line data={lineData} options={options} ref={chartRef}></Line>
+                <ClientOnly fallback={<Spinner />}>
+                  {() => (
+                    <LineWithZoom
+                      lineData={lineData}
+                      options={options}
+                      chartRef={chartRef} // Pass chartRef as a prop
+                    />
+                  )}
+                </ClientOnly>
+              )}
+              {colorPickerState.open && (
+                <div
+                  className="absolute z-50 bg-white rounded dark:bg-zinc-800"
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)", // Centers the color picker
+                  }}
+                >
+                  <ColorPicker
+                    currentColor={colorPickerState.color}
+                    setColor={handleColorChange}
+                  />
+                </div>
               )}
             </div>
           </div>
