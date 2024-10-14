@@ -129,7 +129,7 @@
     "react-i18next": "^15.0.2",
     "react-map-gl": "^7.0.21",
     "react-map-gl-geocoder": "^2.2.0",
-    "react-spring": "^9.7.1",
+    "react-spring": "^9.7.4",
     "react-stepper-horizontal": "^1.0.11",
     "react-tagsinput": "^3.20.3",
     "remix-i18next": "^5.1.1",
