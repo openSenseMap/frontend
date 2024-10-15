@@ -4,7 +4,7 @@ import {
   logEntry,
   type InsertLogEntry,
 } from "~/schema/log-entry";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 /**
  * Create a new log entry for a device
@@ -33,7 +33,8 @@ export async function getLogEntriesByDeviceId(deviceId: LogEntry["deviceId"]) {
   const logEntries = await drizzleClient
     .select()
     .from(logEntry)
-    .where(eq(logEntry.deviceId, deviceId));
+    .where(eq(logEntry.deviceId, deviceId))
+    .orderBy(desc(logEntry.createdAt));
 
   return logEntries;
 }
@@ -52,9 +53,26 @@ export async function getPublicLogEntriesByDeviceId(
         eq(logEntry.deviceId, deviceId),
         eq(logEntry.public, true), // Combine conditions using `and`
       ),
-    );
+    )
+    .orderBy(desc(logEntry.createdAt));
 
   return publicLogEntries;
+}
+
+/**
+ * Update the visibility of a log entry by its ID
+ */
+export async function updateLogEntryVisibility(
+  logEntryId: string,
+  isPublic: boolean,
+) {
+  const updatedLogEntry = await drizzleClient
+    .update(logEntry)
+    .set({ public: isPublic }) // Set the new visibility status
+    .where(eq(logEntry.id, logEntryId)) // Filter by log entry ID
+    .returning(); // Return the updated entry
+
+  return updatedLogEntry[0]; // Return the updated log entry
 }
 
 /**
