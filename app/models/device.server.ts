@@ -22,6 +22,17 @@ export function getDevice({ id }: Pick<Device, "id">) {
       status: true,
       updatedAt: true,
     },
+    with: {
+      logEntries: {
+        where: (entry, { eq }) => eq(entry.public, true),
+        columns: {
+          id: true,
+          content: true,
+          createdAt: true,
+          public: true,
+        },
+      },
+    },
   });
 }
 

@@ -330,10 +330,10 @@ export default function DeviceDetailBox() {
                           </div>
                         </div>
                       </div>
-                      {data.deviceLogs.length > 0 && (
+                      {data.device.logEntries.length > 0 && (
                         <>
                           <Separator className="my-4"></Separator>
-                          <EntryLogs entryLogs={data.deviceLogs} />
+                          <EntryLogs entryLogs={data.device.logEntries} />
                         </>
                       )}
                     </AccordionContent>
