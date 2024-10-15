@@ -1,8 +1,6 @@
-import type { InferSelectModel } from "drizzle-orm";
+import { relations, type InferSelectModel } from "drizzle-orm";
 import {
   doublePrecision,
-  geometry,
-  index,
   integer,
   pgMaterializedView,
   pgTable,
@@ -10,6 +8,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+import { location } from "./location";
 
 /**
  * Table
@@ -22,17 +21,23 @@ export const measurement = pgTable(
       .defaultNow()
       .notNull(),
     value: doublePrecision("value"),
-    location: geometry("location", { type: "point", mode: "xy", srid: 4326 }),
+    locationId: integer("location_id").references(() => location.id),
   },
   (t) => ({
-    unq: unique().on(t.sensorId, t.time),
-    spatialIndex: index("measurement_location_index").using("gist", t.location),
+    unq: unique().on(t.sensorId, t.time), // Only one measurement for a sensor at the same time
   }),
 );
 
 /**
  * Relations
+ * 1. One-to-many: One measurement could have exactly on location (mobile) or no location (stationary)
  */
+export const measurementRelations = relations(measurement, ({ one }) => ({
+  location: one(location, {
+    fields: [measurement.locationId],
+    references: [location.id],
+  }),
+}));
 
 /**
  * Views

@@ -22,6 +22,14 @@ export function getDevice({ id }: Pick<Device, "id">) {
       status: true,
       updatedAt: true,
     },
+    with: {
+      locations: {
+        // https://github.com/drizzle-team/drizzle-orm/pull/2778
+        // with: {
+        //   geometry: true
+        // },
+      },
+    },
   });
 }
 

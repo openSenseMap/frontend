@@ -4,6 +4,7 @@ import { HIGH_COLOR, LOW_COLOR } from "./color-palette";
 import { useEffect, useRef, useState } from "react";
 
 export default function MobileBoxView({ sensors }: { sensors: Sensor[] }) {
+  // console.log("Mobile Device View: ", sensors);
   return (
     <div className="absolute bottom-full flex flex-col gap-4 p-4">
       {sensors.map((sensor) => (
@@ -14,25 +15,26 @@ export default function MobileBoxView({ sensors }: { sensors: Sensor[] }) {
 }
 
 function SensorView({ sensor }: { sensor: Sensor }) {
+  // console.log("SensorView: ", sensor);
   const [minColor, setMinColor] = useState(LOW_COLOR);
   const [maxColor, setMaxColor] = useState(HIGH_COLOR);
 
   return (
     <>
-      <Legend
+      {/* <Legend
         sensor={sensor}
         key={"Legend_" + sensor.id}
         onColorChange={(min, max) => {
           setMinColor(min);
           setMaxColor(max);
         }}
-      />
-      <MobileBoxLayer
+      /> */}
+      {/* <MobileBoxLayer
         sensor={sensor}
         key={sensor.id}
         minColor={minColor}
         maxColor={maxColor}
-      />
+      /> */}
     </>
   );
 }
