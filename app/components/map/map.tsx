@@ -27,6 +27,7 @@ const Map = forwardRef<MapRef, MapProps>(
         }
         mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
         pitchWithRotate={false}
+        projection={"globe"}
         preserveDrawingBuffer
         hash={true}
         ref={ref}

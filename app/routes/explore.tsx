@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Outlet,
   useNavigate,
   useSearchParams,
   useLoaderData,
   useParams,
+  redirect,
 } from "@remix-run/react";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
@@ -20,9 +22,7 @@ import { getPhenomena } from "~/models/phenomena.server";
 import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
 import { type Device, type Sensor } from "~/schema";
-import { Toaster } from "~/components/ui//toaster";
 import { getUser, getUserSession } from "~/session.server";
-import { useToast } from "~/components/ui/use-toast";
 
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
@@ -46,6 +46,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
 
+  // Check if the "status" parameter is missing
+  if (!urlFilterParams.has("status")) {
+    urlFilterParams.set("status", "active");
+    return redirect(`${url.pathname}?${urlFilterParams.toString()}`);
+  }
+
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
     ? await getDevices()
@@ -57,11 +63,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   var filteredDevices = getFilteredDevices(devices, urlFilterParams);
 
   const user = await getUser(request);
-  const phenomena = await getPhenomena();
+  //const phenomena = await getPhenomena();
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({ devices, user, profile, filteredDevices, phenomena });
+    return typedjson({
+      devices,
+      user,
+      profile,
+      filteredDevices,
+      //phenomena
+    });
   }
   return typedjson({
     devices,
@@ -70,7 +82,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filterParams,
     filteredDevices,
     message,
-    phenomena,
+    //phenomena,
   });
 }
 
@@ -115,60 +127,60 @@ export default function Explore() {
   });
 
   //listen to search params change
-  useEffect(() => {
-    //filters devices for pheno
-    if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
-      let sensorsFiltered: any = [];
-      let currentParam = searchParams.get("mapPheno");
-      //check if pheno exists in sensor-wiki data
-      let pheno = data.phenomena.filter(
-        (pheno: any) => pheno.slug == currentParam?.toString(),
-      );
-      if (pheno[0]) {
-        setSelectedPheno(pheno[0]);
-        data.devices.features.forEach((device: any) => {
-          device.properties.sensors.forEach((sensor: Sensor) => {
-            if (
-              sensor.sensorWikiPhenomenon == currentParam &&
-              sensor.lastMeasurement
-            ) {
-              const lastMeasurementDate = new Date(
-                //@ts-ignore
-                sensor.lastMeasurement.createdAt,
-              );
-              //take only measurements in the last 10mins
-              //@ts-ignore
-              if (currentDate < lastMeasurementDate) {
-                sensorsFiltered.push({
-                  ...device,
-                  properties: {
-                    ...device.properties,
-                    sensor: {
-                      ...sensor,
-                      lastMeasurement: {
-                        //@ts-ignore
-                        value: parseFloat(sensor.lastMeasurement.value),
-                        //@ts-ignore
-                        createdAt: sensor.lastMeasurement.createdAt,
-                      },
-                    },
-                  },
-                });
-              }
-            }
-          });
-          return false;
-        });
-        setFilteredData({
-          type: "FeatureCollection",
-          features: sensorsFiltered,
-        });
-      }
-    } else {
-      setSelectedPheno(undefined);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  // useEffect(() => {
+  //   //filters devices for pheno
+  //   if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
+  //     let sensorsFiltered: any = [];
+  //     let currentParam = searchParams.get("mapPheno");
+  //     //check if pheno exists in sensor-wiki data
+  //     let pheno = data.phenomena.filter(
+  //       (pheno: any) => pheno.slug == currentParam?.toString(),
+  //     );
+  //     if (pheno[0]) {
+  //       setSelectedPheno(pheno[0]);
+  //       data.devices.features.forEach((device: any) => {
+  //         device.properties.sensors.forEach((sensor: Sensor) => {
+  //           if (
+  //             sensor.sensorWikiPhenomenon == currentParam &&
+  //             sensor.lastMeasurement
+  //           ) {
+  //             const lastMeasurementDate = new Date(
+  //               //@ts-ignore
+  //               sensor.lastMeasurement.createdAt,
+  //             );
+  //             //take only measurements in the last 10mins
+  //             //@ts-ignore
+  //             if (currentDate < lastMeasurementDate) {
+  //               sensorsFiltered.push({
+  //                 ...device,
+  //                 properties: {
+  //                   ...device.properties,
+  //                   sensor: {
+  //                     ...sensor,
+  //                     lastMeasurement: {
+  //                       //@ts-ignore
+  //                       value: parseFloat(sensor.lastMeasurement.value),
+  //                       //@ts-ignore
+  //                       createdAt: sensor.lastMeasurement.createdAt,
+  //                     },
+  //                   },
+  //                 },
+  //               });
+  //             }
+  //           }
+  //         });
+  //         return false;
+  //       });
+  //       setFilteredData({
+  //         type: "FeatureCollection",
+  //         features: sensorsFiltered,
+  //       });
+  //     }
+  //   } else {
+  //     setSelectedPheno(undefined);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [searchParams]);
 
   function calculateLabelPositions(length: number): string[] {
     const positions: string[] = [];
@@ -202,7 +214,6 @@ export default function Explore() {
     }
     return legend;
   };
-  const { toast } = useToast();
 
   // // /**
   // //  * Focus the search input when the search overlay is displayed
@@ -260,13 +271,6 @@ export default function Explore() {
     //TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
     return defaultLayer;
   };
-  useEffect(() => {
-    if (data.message !== null) {
-      toast({
-        description: data.message,
-      });
-    }
-  }, [data.message, toast]);
 
   return (
     <div className="h-full w-full">
@@ -308,7 +312,6 @@ export default function Explore() {
           {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-          <Toaster />
           <Outlet />
         </Map>
       </MapProvider>

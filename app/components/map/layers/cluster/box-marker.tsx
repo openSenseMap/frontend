@@ -17,7 +17,7 @@ const getStatusColor = (device: Device) => {
     if (device.exposure === "mobile") {
       return "bg-blue-100";
     }
-    return "bg-green-100";
+    return "bg-green-300";
   } else if (device.status === "inactive") {
     return "bg-gray-100";
   } else {
@@ -84,7 +84,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
           <span
             className={cn(
               "relative rounded-full transition-colors",
-              isFullZoom && `${getStatusColor(device)} p-1`,
+              `${getStatusColor(device)} p-1`,
             )}
           >
             {device.exposure === "mobile" ? (
@@ -92,7 +92,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
             ) : (
               <Box className="text-black h-4 w-4" />
             )}
-            {isFullZoom && device.status === "active" ? (
+            {device.status === "active" ? (
               <div
                 className={cn(
                   "absolute left-0 top-0 h-full w-full animate-ping rounded-full opacity-50",

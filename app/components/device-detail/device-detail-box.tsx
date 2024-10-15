@@ -76,9 +76,12 @@ import {
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 
-export interface LastMeasurementProps {
+export interface MeasurementProps {
+  sensorId: string;
   time: Date;
   value: string;
+  min_value: string;
+  max_value: string;
 }
 
 export interface DeviceAndSelectedSensors {
@@ -404,7 +407,7 @@ export default function DeviceDetailBox() {
                             : ""
                         }
                       >
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
                           {sensors
                             ? sensors.map((sensor: SensorWithMeasurement) => {
                                 return (
@@ -413,7 +416,7 @@ export default function DeviceDetailBox() {
                                     className={
                                       "hover:bg-muted " +
                                       (selectedSensorIds.includes(sensor.id)
-                                        ? "bg-green-100"
+                                        ? "bg-green-100 dark:bg-dark-green"
                                         : "")
                                     }
                                   >

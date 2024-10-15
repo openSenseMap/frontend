@@ -60,24 +60,25 @@ export function getSensors(deviceId: Sensor["deviceId"]) {
 //   return sensors;
 // }
 
-// FIXME: This is exactly the same as getSensorsForDevice!!!
 export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
   return drizzleClient.query.sensor.findMany({
     where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
   });
 }
 
-// LATERAL JOIN to get latest measurement for sensors belonging to a specific device
+// LATERAL JOIN to get latest measurement for sensors belonging to a specific device, including device name
 export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
   return drizzleClient.execute(
-    sql`SELECT * FROM sensor s
+    sql`SELECT s.*, d.name AS device_name, measure.*
+    FROM sensor s
+    JOIN device d ON s.device_id = d.id
     LEFT JOIN LATERAL (
       SELECT * FROM measurement m
       WHERE m.sensor_id = s.id
       ORDER BY m.time DESC
       LIMIT 1
-    ) AS last_measurement On true
-    WHERE s.device_id=${deviceId};`,
+    ) AS measure ON true
+    WHERE s.device_id = ${deviceId};`,
   );
 }
 
@@ -98,13 +99,6 @@ export async function registerSensor(newSensor: Sensor) {
     .returning();
 
   return insertedSensor;
-}
-
-export function getSensorsForDevice(deviceId: Sensor["deviceId"]) {
-  return drizzleClient.query.sensor.findMany({
-    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
-    with: {},
-  });
 }
 
 export function addNewSensor({

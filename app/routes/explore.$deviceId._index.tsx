@@ -16,7 +16,6 @@ import i18next from "~/i18next.server";
 import ErrorMessage from "~/components/error-message";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  console.log(`[explore.$deviceId._index.tsx - loader]`);
   const locale = await i18next.getLocale(request);
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
   const url = new URL(request.url);
