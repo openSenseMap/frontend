@@ -21,6 +21,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
       sensorWikiModel: true,
       status: true,
       updatedAt: true,
+      tags: true,
     },
   });
 }
