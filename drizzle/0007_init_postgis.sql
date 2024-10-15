@@ -1,0 +1,2 @@
+-- Create Extension
+CREATE EXTENSION IF NOT EXISTS postgis CASCADE;

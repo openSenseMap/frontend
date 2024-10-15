@@ -25,6 +25,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const device = await getDevice({ id: params.deviceId });
+  console.log("Device: ", device);
   const sensors = await getSensorsFromDevice(params.deviceId);
 
   const sensorsWithLastestMeasurement = await getSensorsWithLastMeasurement(
@@ -72,7 +73,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     }),
   );
-  
+
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
     sensor.color = color;
@@ -98,6 +99,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function DeviceId() {
   // Retrieving the data returned by the loader using the useLoaderData hook
   const data = useLoaderData<typeof loader>();
+  console.log(data);
 
   if (!data?.device && !data.sensors) {
     return null;
