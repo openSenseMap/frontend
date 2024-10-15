@@ -1,8 +1,8 @@
 import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
-import { device, sensor, type Device, type Sensor } from "~/schema";
-import { eq } from "drizzle-orm";
+import { device, location, sensor, type Device, type Sensor } from "~/schema";
+import { eq, sql } from "drizzle-orm";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
@@ -28,6 +28,18 @@ export function getDevice({ id }: Pick<Device, "id">) {
         // with: {
         //   geometry: true
         // },
+        columns: {
+          time: true,
+        },
+        with: {
+          geometry: {
+            columns: {},
+            extras: {
+              x: sql<number>`ST_X(${location.location})`.as("x"),
+              y: sql<number>`ST_Y(${location.location})`.as("y"),
+            },
+          },
+        },
       },
     },
   });
