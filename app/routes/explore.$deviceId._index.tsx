@@ -14,6 +14,7 @@ import {
 } from "~/models/sensor.server";
 import i18next from "~/i18next.server";
 import ErrorMessage from "~/components/error-message";
+import { getPublicLogEntriesByDeviceId } from "~/models/log-entry.server";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -26,6 +27,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const device = await getDevice({ id: params.deviceId });
   const sensors = await getSensorsFromDevice(params.deviceId);
+  const deviceLogs = await getPublicLogEntriesByDeviceId(params.deviceId);
 
   const sensorsWithLastestMeasurement = await getSensorsWithLastMeasurement(
     params.deviceId,
@@ -43,6 +45,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!sensorsToQuery) {
     return typedjson({
       device: device,
+      deviceLogs: deviceLogs,
       selectedSensors: [],
       OSEM_API_URL: process.env.OSEM_API_URL,
       locale: locale,
@@ -72,7 +75,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     }),
   );
-  
+
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
     sensor.color = color;
@@ -82,6 +85,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Combine the device data with the selected sensors and return the result as JSON + add env variable
   const data = {
     device: device,
+    deviceLogs: deviceLogs,
     sensors: sensorsWithLastestMeasurement,
     selectedSensors: selectedSensors,
     aggregation: aggregation,
