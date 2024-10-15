@@ -9,7 +9,7 @@ import {
   primaryKey,
   unique,
 } from "drizzle-orm/pg-core";
-import { deviceModelEnum, exposureEnum, statusEnum } from "./enum";
+import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
 import {
   relations,
   type InferInsertModel,
@@ -32,9 +32,9 @@ export const device = pgTable("device", {
   description: text("description"),
   link: text("link"),
   useAuth: boolean("use_auth"),
-  exposure: exposureEnum("exposure"),
-  status: statusEnum("status").default("inactive"),
-  model: deviceModelEnum("model"),
+  exposure: DeviceExposureEnum("exposure"),
+  status: DeviceStatusEnum("status").default("inactive"),
+  model: DeviceModelEnum("model"),
   public: boolean("public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

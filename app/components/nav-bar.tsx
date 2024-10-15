@@ -1,25 +1,8 @@
-import { Form, Link, useLocation } from "@remix-run/react";
+import { Link, useLocation } from "@remix-run/react";
 import { Button } from "./ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTrigger,
-} from "./ui/sheet";
-import {
-  ChevronDownIcon,
-  Globe,
-  LogOut,
-  Mailbox,
-  Plus,
-  Puzzle,
-  Settings,
-  UserIcon,
-} from "lucide-react";
-import { SidebarNav } from "./sidebar-nav";
+
+import { ChevronDownIcon, LogIn, Mailbox, Plus } from "lucide-react";
 import { useOptionalUser } from "~/utils";
-import { UserAvatar } from "~/routes/resources.user-avatar";
 import {
   DropdownMenu,
   DropdownMenuGroup,
@@ -27,32 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-
-const sidebarNavItems = [
-  {
-    title: "Your profile",
-    href: "/profile/me",
-    icon: <UserIcon size={24} />,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: <Settings size={24} />,
-    separator: true,
-  },
-  {
-    title: "Forum",
-    href: "https://docs.sensebox.de/",
-    icon: <Puzzle size={24} />,
-  },
-  {
-    title: "API Docs",
-    href: "https://docs.opensensemap.org/",
-    icon: <Globe size={24} />,
-    separator: true,
-  },
-];
+import Menu from "./header/menu";
 
 export function NavBar() {
   const location = useLocation();
@@ -60,9 +18,6 @@ export function NavBar() {
     .split("/")
     .slice(1)
     .map((item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase());
-
-  // To be able to close nested sheet component.
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   // User is optional
   // If no user render Login button
@@ -75,7 +30,7 @@ export function NavBar() {
           <Link to="/" className="flex items-center md:pr-4">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
           </Link>
-          <span className="dark:text-dark-green text-light-green hidden self-center whitespace-nowrap text-xl font-semibold text-light-green md:block">
+          <span className="dark:text-dark-green hidden self-center whitespace-nowrap text-xl font-semibold text-light-green md:block">
             {parts.join(" / ")}
           </span>
         </div>
@@ -84,9 +39,9 @@ export function NavBar() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" disabled>
                     <Plus className="h-4 w-4" />
-                    <ChevronDownIcon className=" m-0 inline h-4  w-4 p-0" />
+                    <ChevronDownIcon className="m-0 inline h-4  w-4 p-0" />
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -116,64 +71,22 @@ export function NavBar() {
               </Button>
 
               <div className="px-8">
-                <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-8 w-8 rounded-full"
-                    >
-                      <UserAvatar />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                    side="right"
-                    className="dark:bg-dark-background dark:text-dark-text"
-                  >
-                    <SheetHeader>
-                      <SheetDescription>
-                        <div className="flex gap-4">
-                          <UserAvatar />
-                          <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">
-                              {user.name}
-                            </p>
-                            <p className="text-xs leading-none text-muted-foreground">
-                              {user.email}
-                            </p>
-                          </div>
-                        </div>
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="grid gap-4 py-4">
-                      <>
-                        <SidebarNav
-                          items={sidebarNavItems}
-                          setOpen={setSheetOpen}
-                          className="dark:bg-dark-background dark:text-dark-text"
-                        />
-                        <Form action="/logout" method="post">
-                          <button
-                            type="submit"
-                            className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text outline-none transition-colors pl-0 pt-0"
-                          >
-                            <LogOut className="mr-2 h-5 w-5" />
-                            <span className="text-red-500 hover:bg-transparent hover:underline">
-                              Sign out
-                            </span>
-                          </button>
-                        </Form>
-                      </>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                <Menu />
               </div>
             </>
           ) : (
-            <>
-              <Link to="/login">
-                <Button variant="outline">Login</Button>
-              </Link>
-            </>
+            <div className="px-8">
+              <div className="pointer-events-auto box-border h-10 w-10">
+                <button
+                  type="button"
+                  className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
+                >
+                  <Link to="/login">
+                    <LogIn className="mx-auto h-6 w-6" />
+                  </Link>
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

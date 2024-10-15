@@ -78,7 +78,7 @@ export default function () {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full bg-white dark:bg-dark-background md:pt-4 p-8">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full md:pt-4 p-8">
         <div className="bg-white dark:bg-dark-background shadow-lg p-6 rounded-xl flex flex-col gap-6 w-full md:w-1/3">
           <div className="flex items-center gap-4 dark:text-dark-text">
             <Avatar className="h-16 w-16">

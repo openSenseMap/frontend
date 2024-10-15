@@ -10,6 +10,11 @@ import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
 import type { loader } from "~/routes/explore";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
+import {
+  type DeviceExposureType,
+  type DeviceStatusType,
+  DeviceStatusZodEnum,
+} from "~/schema/enum";
 
 export default function FilterOptions() {
   const data = useLoaderData<typeof loader>();
@@ -18,19 +23,23 @@ export default function FilterOptions() {
   const navigation = useNavigation();
 
   //* Set initial filter params based on url Search Params
-  const [exposureVal, setExposureVal] = useState(
-    searchParams.get("exposure") ?? null,
+  const [exposureVal, setExposureVal] = useState<DeviceExposureType | "all">(
+    (searchParams.get("exposure") as DeviceExposureType) ?? "all",
   );
-  const [statusVal, setStatusVal] = useState(
-    searchParams.get("status") ?? null,
+  const [statusVal, setStatusVal] = useState<DeviceStatusType | "all">(
+    (searchParams.get("status") as DeviceStatusType | "all") ??
+      DeviceStatusZodEnum.Enum.active,
   );
-  const [, setPhenomenonVal] = useState(searchParams.get("phenomenon") ?? null);
 
   //* Update filter params based on url Search Params
   useEffect(() => {
-    setExposureVal(searchParams.get("exposure") ?? null);
-    setStatusVal(searchParams.get("status") ?? null);
-    setPhenomenonVal(searchParams.get("phenomenon") ?? null);
+    setExposureVal(
+      (searchParams.get("exposure") as DeviceExposureType) ?? "all",
+    );
+    setStatusVal(
+      (searchParams.get("status") as DeviceStatusType | "all") ??
+        DeviceStatusZodEnum.Enum.active,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -47,18 +56,33 @@ export default function FilterOptions() {
           <ToggleGroup
             className="w-full"
             rovingFocus={false}
-            type="single"
+            type="multiple"
             variant="outline"
-            defaultValue="all"
-            value={exposureVal ?? "all"}
-            onValueChange={(value: string) => {
-              if (value === "all") {
-                searchParams.delete("exposure");
-              } else if (value === "") {
-                searchParams.delete("exposure");
+            value={exposureVal ? exposureVal.split(",") : ["all"]}
+            onValueChange={(values: string[]) => {
+              // If no values are selected, set to "all"
+              if (values.length === 0) {
+                setExposureVal("all"); // Reset to "all"
+                searchParams.set("exposure", "all"); // Set exposure param to "all" in URL
+              } else if (
+                values.includes("all") &&
+                values.indexOf("all") === 0
+              ) {
+                const filteredValues = values.filter(
+                  (value) => value !== "all",
+                );
+                const valueString = filteredValues.join(",");
+                setExposureVal(valueString as DeviceExposureType | "all");
+                searchParams.set("exposure", valueString);
+              } else if (values.includes("all")) {
+                setExposureVal("all");
+                searchParams.set("exposure", "all");
               } else {
-                searchParams.set("exposure", value);
+                const valueString = values.join(",");
+                setExposureVal(valueString as DeviceExposureType | "all");
+                searchParams.set("exposure", valueString);
               }
+
               setSearchParams(searchParams);
             }}
           >
@@ -80,18 +104,32 @@ export default function FilterOptions() {
           <Label className="text-base">Status: </Label>
           <ToggleGroup
             className="w-full"
-            type="single"
+            type="multiple"
             variant="outline"
-            defaultValue="all"
-            value={statusVal ?? "all"}
-            onValueChange={(value: string) => {
-              if (value === "all") {
-                searchParams.delete("status");
-              } else if (value === "") {
-                searchParams.delete("status");
+            value={statusVal ? statusVal.split(",") : ["active"]}
+            onValueChange={(values: string[]) => {
+              // If no values are selected, set to "all"
+              if (values.length === 0) {
+                setStatusVal("all"); // Reset to default "all"
+                searchParams.set("status", "all"); // Set status param to "all" in URL
+              } else if (
+                values.includes("all") &&
+                values.indexOf("all") === 0
+              ) {
+                const filteredValues = values.filter(
+                  (value) => value !== "all",
+                );
+                const valueString = filteredValues.join(",");
+                searchParams.set("status", valueString);
+              } else if (values.includes("all")) {
+                setStatusVal("all");
+                searchParams.set("status", "all");
               } else {
-                searchParams.set("status", value);
+                const valueString = values.join(",");
+                setStatusVal(valueString as DeviceStatusType | "all");
+                searchParams.set("status", valueString);
               }
+
               setSearchParams(searchParams);
             }}
           >
@@ -118,8 +156,8 @@ export default function FilterOptions() {
           variant="outline"
           className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
           onClick={() => {
-            searchParams.delete("exposure");
-            searchParams.delete("status");
+            searchParams.set("exposure", "all");
+            searchParams.set("status", "all");
             searchParams.delete("phenomenon");
             setSearchParams(searchParams);
           }}
