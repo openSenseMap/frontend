@@ -57,6 +57,13 @@
       "when": 1728981072442,
       "tag": "0007_add_entryLogs",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1729065392478,
+      "tag": "0008_add_deviceTags",
+      "breakpoints": true
     }
   ]
 }
