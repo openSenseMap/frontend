@@ -16,7 +16,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import ErrorMessage from "~/components/error-message";
 import { getProfileByUserId, updateProfile } from "~/models/profile.server";
-// import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -170,7 +170,7 @@ export default function EditUserProfilePage() {
           </div>
           <div className="flex w-1/2 justify-center">
             <div className="relative h-52 w-52">
-              {/* <Avatar className="h-full w-full">
+              <Avatar className="h-full w-full">
                 <AvatarImage
                   className="aspect-auto w-full h-full rounded-full object-cover"
                   src={"/resources/file/" + data.profile.profileImage?.id}
@@ -178,7 +178,7 @@ export default function EditUserProfilePage() {
                 <AvatarFallback>
                   {getInitials(data.profile?.username ?? "")}
                 </AvatarFallback>
-              </Avatar> */}
+              </Avatar>
               <Link
                 preventScrollReset
                 to="photo"
