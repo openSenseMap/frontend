@@ -26,7 +26,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const device = await getDevice({ id: params.deviceId });
   const sensors = await getSensorsFromDevice(params.deviceId);
-
   const sensorsWithLastestMeasurement = await getSensorsWithLastMeasurement(
     params.deviceId,
   );
@@ -72,7 +71,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     }),
   );
-  
+
   selectedSensors.map((sensor: any) => {
     const color = getGraphColor(sensor.title);
     sensor.color = color;
