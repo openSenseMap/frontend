@@ -6,7 +6,6 @@ import type {
 import { json } from "@remix-run/node";
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -15,12 +14,12 @@ import {
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
 import { getUser, themeSessionResolver } from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css";
-import appStylesheetUrl from "./styles/app.css";
+import tailwindStylesheetUrl from "./styles/tailwind.css?url";
+import appStylesheetUrl from "./styles/app.css?url";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
-import { useChangeLanguage } from "remix-i18next";
+import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
 import { ThemeProvider, useTheme } from "remix-themes";
@@ -131,7 +130,6 @@ export function App() {
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
           }}
         />
-        <LiveReload />
       </body>
     </html>
   );

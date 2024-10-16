@@ -20,7 +20,7 @@ import type { ChartOptions } from "chart.js";
 import { de, enGB } from "date-fns/locale";
 import type { loader } from "~/routes/explore.$deviceId._index";
 import { useMemo, useRef, useState, useEffect } from "react";
-import { saveAs } from "file-saver";
+// import { saveAs } from "file-saver";
 import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
@@ -396,7 +396,7 @@ export default function Graph(props: any) {
   function handlePngDownloadClick() {
     if (chartRef.current) {
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
-      saveAs(imageString, "chart.png");
+      // saveAs(imageString, "chart.png");
     }
   }
 
@@ -425,7 +425,7 @@ export default function Graph(props: any) {
     });
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "chart_data.csv");
+    // saveAs(blob, "chart_data.csv");
   }
 
   function handleResetZoomClick() {
@@ -528,10 +528,10 @@ export default function Graph(props: any) {
                     transform: "translate(-50%, -50%)", // Centers the color picker
                   }}
                 >
-                  <ColorPicker
+                  {/* <ColorPicker
                     currentColor={colorPickerState.color}
                     setColor={handleColorChange}
-                  />
+                  /> */}
                 </div>
               )}
             </div>
