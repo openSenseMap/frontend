@@ -1,14 +1,9 @@
-const defaultTheme = require("tailwindcss/defaultTheme");
+import { type Config } from "tailwindcss";
+import defaultTheme from "tailwindcss/defaultTheme";
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: ["class"],
-  content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx,mdx,md}",
-    "./src/**/*.{ts,tsx}",
-  ],
+  content: ["./app/**/*.{ts,tsx,js,jsx,mdx,md}"],
   theme: {
     // shadcn container
     container: {
@@ -193,12 +188,12 @@ module.exports = {
           to: { transform: "translateX(100%)" },
         },
         contentShow: {
-          from: { opacity: 0, transform: "translate(-50%, 0%) scale(0.5)" },
-          to: { opacity: 1, transform: "translate(-50%, 0%) scale(1)" },
+          from: { opacity: "0", transform: "translate(-50%, 0%) scale(0.5)" },
+          to: { opacity: "1", transform: "translate(-50%, 0%) scale(1)" },
         },
         contentClose: {
-          from: { opacity: 1, transform: "translate(-50%, -50%) scale(1)" },
-          to: { opacity: 0, transform: "translate(-50%, -48%) scale(0.5)" },
+          from: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+          to: { opacity: "0", transform: "translate(-50%, -48%) scale(0.5)" },
         },
         "fade-in-up": {
           "0%": {
@@ -221,12 +216,12 @@ module.exports = {
 
         // shadcn accordion animation
         "accordion-down": {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -243,4 +238,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
-};
+} satisfies Config;
