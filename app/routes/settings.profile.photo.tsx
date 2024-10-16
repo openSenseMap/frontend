@@ -29,7 +29,7 @@ import { getInitials } from "~/utils/misc";
 import ErrorMessage from "~/components/error-message";
 import { profileImage } from "~/schema";
 import { eq } from "drizzle-orm";
-// import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { getUserById } from "~/models/user.server";
 import { getProfileByUserId } from "~/models/profile.server";
 
@@ -148,7 +148,7 @@ export default function PhotoChooserModal() {
           onReset={() => setNewImageSrc(null)}
           {...form.props}
         >
-          {/* <Avatar className="h-64 w-64">
+          <Avatar className="h-64 w-64">
             <AvatarImage
               className="aspect-auto w-full h-full rounded-full object-cover"
               src={
@@ -160,7 +160,7 @@ export default function PhotoChooserModal() {
             <AvatarFallback>
               {getInitials(data.profile?.username ?? "")}
             </AvatarFallback>
-          </Avatar> */}
+          </Avatar>
           {/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
           <input
             {...conform.input(photoFile, { type: "file" })}

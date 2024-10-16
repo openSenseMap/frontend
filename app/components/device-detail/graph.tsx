@@ -35,9 +35,9 @@ import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
-import { ColorPicker } from "../color-picker";
 import { ClientOnly } from "../client-only";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 ChartJS.register(
   LineElement,
@@ -80,6 +80,7 @@ export default function Graph(props: any) {
     index: 0,
     color: "#000000",
   });
+  const inputRef = useRef<HTMLInputElement>(null);
   const isAggregated = loaderData.aggregation !== "raw";
 
   const nodeRef = useRef(null);
@@ -354,13 +355,10 @@ export default function Graph(props: any) {
             canvas.title = ""; // Remove tooltip on leave
           },
 
-          onClick: (e, legendItem, legend) => {
-            const index = legendItem.datasetIndex ?? 0;
-            setColorPickerState({
-              open: !colorPickerState.open,
-              index,
-              color: lineData.datasets[index].borderColor as string,
-            });
+          onClick: () => {
+            if (inputRef.current) {
+              inputRef.current.click();
+            }
           },
           labels: {
             usePointStyle: true,
@@ -374,8 +372,6 @@ export default function Graph(props: any) {
     loaderData.locale,
     loaderData.selectedSensors,
     theme,
-    colorPickerState.open,
-    lineData.datasets,
   ]);
 
   function handleColorChange(newColor: string) {
@@ -497,7 +493,11 @@ export default function Graph(props: any) {
                 <DateRangeFilter />
                 <AggregationFilter />
                 {isZoomed && (
-                  <Button variant="outline" className="h-8" onClick={handleResetZoomClick}>
+                  <Button
+                    variant="outline"
+                    className="h-8"
+                    onClick={handleResetZoomClick}
+                  >
                     <RefreshCcw className="mr-2 h-4 w-4" /> Reset Zoom
                   </Button>
                 )}
@@ -548,22 +548,18 @@ export default function Graph(props: any) {
                   )}
                 </ClientOnly>
               )}
-              {colorPickerState.open && (
-                <div
-                  className="absolute z-50 bg-white rounded dark:bg-zinc-800"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    transform: "translate(-50%, -50%)", // Centers the color picker
-                  }}
-                >
-                  {/* <ColorPicker
-                    currentColor={colorPickerState.color}
-                    setColor={handleColorChange}
-                  /> */}
-                </div>
-              )}
             </div>
+            <Input
+              ref={inputRef}
+              id="color-picker"
+              type="color"
+              value={colorPickerState.color}
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement; // Type assertion
+                handleColorChange(target.value);
+              }}
+              className="sr-only"
+            />
           </div>
         </Draggable>
       )}

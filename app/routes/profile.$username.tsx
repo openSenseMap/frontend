@@ -1,4 +1,4 @@
-// import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -81,7 +81,7 @@ export default function () {
       <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full md:pt-4 p-8">
         <div className="bg-white dark:bg-dark-background shadow-lg p-6 rounded-xl flex flex-col gap-6 w-full md:w-1/3">
           <div className="flex items-center gap-4 dark:text-dark-text">
-            {/* <Avatar className="h-16 w-16">
+            <Avatar className="h-16 w-16">
               <AvatarImage
                 className="aspect-auto w-full h-full rounded-full object-cover"
                 src={"/resources/file/" + profile?.profileImage?.id}
@@ -89,7 +89,7 @@ export default function () {
               <AvatarFallback>
                 {getInitials(profile?.username ?? "")}
               </AvatarFallback>
-            </Avatar> */}
+            </Avatar>
             <div>
               <h3 className="text-2xl font-semibold dark:text-dark-text">
                 {profile?.user?.name || ""}
