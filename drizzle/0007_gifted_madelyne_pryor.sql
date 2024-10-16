@@ -1,1 +1,0 @@
-ALTER TABLE "device" ADD COLUMN "tags" text[] DEFAULT ARRAY[]::text[];
