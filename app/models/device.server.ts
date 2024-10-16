@@ -23,6 +23,17 @@ export function getDevice({ id }: Pick<Device, "id">) {
       updatedAt: true,
       tags: true,
     },
+    with: {
+      logEntries: {
+        where: (entry, { eq }) => eq(entry.public, true),
+        columns: {
+          id: true,
+          content: true,
+          createdAt: true,
+          public: true,
+        },
+      },
+    },
   });
 }
 

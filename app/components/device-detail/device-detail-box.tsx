@@ -75,6 +75,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import EntryLogs from "./entry-logs";
 
 export interface MeasurementProps {
   sensorId: string;
@@ -352,13 +353,12 @@ export default function DeviceDetailBox() {
                           </div>
                         </div>
                       </div>
-                      {/* <div className="flex h-auto w-auto items-center justify-center p-4 opacity-100">
-                        <img
-                          className="aspect-[4/3] rounded-lg"
-                          alt="device_image"
-                          src={`https://opensensemap.org/userimages/${data.device.image}`}
-                        ></img>
-                      </div> */}
+                      {data.device.logEntries.length > 0 && (
+                        <>
+                          <Separator className="my-4"></Separator>
+                          <EntryLogs entryLogs={data.device.logEntries} />
+                        </>
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>

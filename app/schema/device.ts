@@ -15,6 +15,7 @@ import {
 } from "drizzle-orm";
 import { user } from "./user";
 import { sensor } from "./sensor";
+import { logEntry } from "./log-entry";
 
 /**
  * Table
@@ -53,6 +54,7 @@ export const deviceRelations = relations(device, ({ one, many }) => ({
     references: [user.id],
   }),
   sensors: many(sensor),
+  logEntries: many(logEntry),
 }));
 
 /**
