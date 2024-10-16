@@ -1,13 +1,6 @@
-// /**
-//  * @type {import('@remix-run/dev').AppConfig}
-//  */
-// module.exports = {
-//   cacheDirectory: "./node_modules/.cache/remix",
-//   ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
-//   serverDependenciesToBundle: ["chartjs-adapter-date-fns", "maplibre-gl", "supercluster", "use-supercluster", "kdbush", "postgres"],
-//   serverModuleFormat: "cjs",
-//   browserNodeBuiltinsPolyfill: { modules: { events: true } }
-// };
+/**
+ * epic-stack: https://github.com/epicweb-dev/epic-stack/blob/main/vite.config.ts
+ */
 
 import mdx from "@mdx-js/rollup";
 import { vitePlugin as remix } from "@remix-run/dev";
@@ -16,7 +9,18 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig } from "vite";
 
+const MODE = process.env.NODE_ENV;
+
 export default defineConfig({
+  build: {
+    cssMinify: MODE === "production",
+
+    rollupOptions: {
+      external: [/node:.*/, "fsevents"],
+    },
+
+    sourcemap: true, // not sure if we really should use it
+  },
   plugins: [
     mdx({
       remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
