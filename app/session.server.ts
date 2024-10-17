@@ -11,19 +11,6 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "__session",
-    httpOnly: true,
-    path: "/",
-    sameSite: "lax",
-    secrets: process.env.SESSION_SECRET
-      ? [process.env.SESSION_SECRET]
-      : ["s3cr3t"],
-    secure: isProduction,
-  },
-});
-
-export const themeSessionStorage = createCookieSessionStorage({
-  cookie: {
     name: "theme",
     path: "/",
     httpOnly: true,
@@ -31,12 +18,11 @@ export const themeSessionStorage = createCookieSessionStorage({
     secrets: process.env.SESSION_SECRET
       ? [process.env.SESSION_SECRET]
       : ["s3cr3t"],
-    secure: isProduction,
+    ...(isProduction ? { domain: "opensensemap.org", secure: true } : {}),
   },
 });
 
-export const themeSessionResolver =
-  createThemeSessionResolver(themeSessionStorage);
+export const themeSessionResolver = createThemeSessionResolver(sessionStorage);
 
 const USER_SESSION_KEY = "userId";
 
