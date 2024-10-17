@@ -1,8 +1,4 @@
-import type {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -14,8 +10,8 @@ import {
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
 import { getUser, themeSessionResolver } from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css?url";
-import appStylesheetUrl from "./styles/app.css?url";
+import "./styles/tailwind.css";
+import "./styles/app.css";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
@@ -23,42 +19,6 @@ import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
 import { ThemeProvider, useTheme } from "remix-themes";
-
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: "preload",
-      as: "font",
-      href: "/fonts/RobotoSlab-Medium.woff2",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "preload",
-      as: "font",
-      href: "/fonts/RobotoSlab-Regular.woff2",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "preload",
-      as: "font",
-      href: "/fonts/Urbanist-Medium.woff2",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "preload",
-      as: "font",
-      href: "/fonts/Urbanist-Regular.woff2",
-      type: "font/woff2",
-      crossOrigin: "anonymous",
-    },
-    { rel: "icon", href: "/favicon.ico" },
-    { rel: "stylesheet", href: tailwindStylesheetUrl },
-    { rel: "stylesheet", href: appStylesheetUrl },
-  ];
-};
 
 export const meta: MetaFunction = () => [
   { charset: "utf-8" },
