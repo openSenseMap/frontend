@@ -10,8 +10,8 @@ import {
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
 import { getUser, themeSessionResolver } from "./session.server";
-import "./styles/tailwind.css";
-import "./styles/app.css";
+import "./styles/tailwind.css?url";
+import "./styles/app.css?url";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
