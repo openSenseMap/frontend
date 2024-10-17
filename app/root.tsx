@@ -14,7 +14,6 @@ import {
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
 import { getUser, themeSessionResolver } from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css?url";
 import appStylesheetUrl from "./styles/app.css?url";
 import clsx from "clsx";
 import i18next from "./i18next.server";
@@ -55,7 +54,6 @@ export const links: LinksFunction = () => {
       crossOrigin: "anonymous",
     },
     { rel: "icon", href: "/favicon.ico" },
-    { rel: "stylesheet", href: tailwindStylesheetUrl },
     { rel: "stylesheet", href: appStylesheetUrl },
   ];
 };
