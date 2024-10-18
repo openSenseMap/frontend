@@ -111,9 +111,6 @@ jobs:
           retry_on: error
           command: npm run drizzle:migrate
 
-      - name: Check file paths
-        run: ls -R ./app/styles
-
       - name: ⚙️ Build
         run: npm run build
 
