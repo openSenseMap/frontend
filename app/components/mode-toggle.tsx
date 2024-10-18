@@ -1,6 +1,6 @@
 "use client";
 
-import { Lightbulb } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Theme, useTheme } from "remix-themes";
 import { Button } from "./ui/button";
 
@@ -16,13 +16,9 @@ export function ModeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      aria-label="Toggle theme"
+      className="hover:bg-transparent dark:hover:text-white hover:text-black"
     >
-      <Lightbulb
-        className={`h-6 w-6 transition-colors ${
-          isDark ? "text-yellow" : "text-gray-400"
-        }`}
-      />
+      {isDark ? <Moon className="h-6 w-6" /> : <Sun className="h-6 w-6" />}
     </Button>
   );
 }
