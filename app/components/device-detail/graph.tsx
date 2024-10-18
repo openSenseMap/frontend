@@ -37,7 +37,7 @@ import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
 import { ClientOnly } from "../client-only";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { ColorPicker } from "../color-picker";
 
 ChartJS.register(
   LineElement,
@@ -80,7 +80,6 @@ export default function Graph(props: any) {
     index: 0,
     color: "#000000",
   });
-  const inputRef = useRef<HTMLInputElement>(null);
   const isAggregated = loaderData.aggregation !== "raw";
 
   const nodeRef = useRef(null);
@@ -355,10 +354,13 @@ export default function Graph(props: any) {
             canvas.title = ""; // Remove tooltip on leave
           },
 
-          onClick: () => {
-            if (inputRef.current) {
-              inputRef.current.click();
-            }
+          onClick: (e, legendItem, legend) => {
+            const index = legendItem.datasetIndex ?? 0;
+            setColorPickerState({
+              open: !colorPickerState.open,
+              index,
+              color: lineData.datasets[index].borderColor as string,
+            });
           },
           labels: {
             usePointStyle: true,
@@ -372,6 +374,8 @@ export default function Graph(props: any) {
     loaderData.locale,
     loaderData.selectedSensors,
     theme,
+    colorPickerState.open,
+    lineData.datasets,
   ]);
 
   function handleColorChange(newColor: string) {
@@ -549,17 +553,22 @@ export default function Graph(props: any) {
                 </ClientOnly>
               )}
             </div>
-            <Input
-              ref={inputRef}
-              id="color-picker"
-              type="color"
-              value={colorPickerState.color}
-              onInput={(e) => {
-                const target = e.target as HTMLInputElement; // Type assertion
-                handleColorChange(target.value);
-              }}
-              className="sr-only"
-            />
+            {colorPickerState.open && (
+              <div
+                className="absolute z-50 bg-white rounded dark:bg-zinc-800"
+                style={{
+                  left: "50%",
+                  top: "50%",
+
+                  transform: "translate(-50%, -50%)", // Centers the color picker
+                }}
+              >
+                <ColorPicker
+                  currentColor={colorPickerState.color}
+                  setColor={handleColorChange}
+                />
+              </div>
+            )}
           </div>
         </Draggable>
       )}
