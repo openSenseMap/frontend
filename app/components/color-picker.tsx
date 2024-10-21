@@ -1,5 +1,4 @@
-import pkg from "react-color";
-const { BlockPicker } = pkg;
+import { BlockPicker } from "react-color";
 
 // Accept currentColor and setColor as props
 export function ColorPicker({
