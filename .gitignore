@@ -15,7 +15,5 @@ node_modules
 /postgres-data
 /pgdata
 
-/app/styles/**/*.css
-
 /db/imports/*.csv
 measurements.csv

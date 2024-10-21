@@ -30,10 +30,6 @@ export default defineConfig({
     tsconfigPaths(),
     remix({
       ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
-      future: {
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-      },
     }),
   ],
 });

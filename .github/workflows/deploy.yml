@@ -114,14 +114,6 @@ jobs:
       - name: ⚙️ Build
         run: npm run build
 
-      # New step to list directories
-      - name: 📂 List Root and /app directories
-        run: |
-          echo "Listing contents of root (/):"
-          ls /
-          echo "Listing contents of /app:"
-          ls /app || echo "/app directory not found"
-
       - name: 🌳 Cypress run
         uses: cypress-io/github-action@v6
         with:
