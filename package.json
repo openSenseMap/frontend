@@ -22,7 +22,7 @@
     "lint": "eslint .",
     "setup": "npm run drizzle:generate && npm run drizzle:migrate && npm run drizzle:seed",
     "start": "cross-env NODE_ENV=production node .",
-    "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require dotenv/config ./build/server.js",
+    "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx .",
     "test": "vitest",
     "test:e2e:dev": "start-server-and-test dev http://localhost:3000 \"npx cypress open\"",
     "pretest:e2e:run": "npm run build",
