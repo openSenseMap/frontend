@@ -31,7 +31,7 @@ You can create a copy of `.env.example`, rename it to `.env` and set the values.
 
 ### Setup Steps
 
-1. Clone the repo: `git clone https://github.com/openSenseMap`
+1. Clone the repo: `git clone https://github.com/openSenseMap/frontend`
 2. Copy `.env.example` into `.env`
 3. Run `npm install` to install dependencies
 4. Run `npm run docker` to start the docker container running your local postgres DB
