@@ -1,8 +1,4 @@
-import type {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -14,8 +10,8 @@ import {
 } from "@remix-run/react";
 import { getEnv } from "./env.server";
 import { getUser, themeSessionResolver } from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css?url";
-import appStylesheetUrl from "./styles/app.css?url";
+import tailwindStylesheetUrl from "/app/tailwind.css?url";
+import appStylesheetUrl from "/app/app.css?url";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
@@ -24,7 +20,7 @@ import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
 import { ThemeProvider, useTheme } from "remix-themes";
 
-export const links: LinksFunction = () => {
+export const links = () => {
   return [
     {
       rel: "preload",

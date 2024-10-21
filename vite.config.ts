@@ -8,6 +8,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig } from "vite";
+import preserveDirectives from "rollup-preserve-directives";
 
 const MODE = process.env.NODE_ENV;
 
@@ -25,9 +26,10 @@ export default defineConfig({
     mdx({
       remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
     }),
+    preserveDirectives(),
+    tsconfigPaths(),
     remix({
       ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
     }),
-    tsconfigPaths(),
   ],
 });
