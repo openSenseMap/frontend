@@ -18,7 +18,11 @@ import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
-import { ThemeProvider, useTheme } from "remix-themes";
+import {
+  PreventFlashOnWrongTheme,
+  ThemeProvider,
+  useTheme,
+} from "remix-themes";
 
 export const links = () => {
   return [
@@ -114,6 +118,7 @@ export function App() {
     <html lang={data.locale} dir={i18n.dir()} className={clsx(theme)}>
       <head>
         <Meta />
+        <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
         <Links />
       </head>
       <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text">

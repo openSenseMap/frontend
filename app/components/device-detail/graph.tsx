@@ -37,7 +37,7 @@ import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
 import { ClientOnly } from "../client-only";
 import { Button } from "../ui/button";
-import { GradientPicker } from "../color-picker";
+import { ColorPicker } from "../color-picker";
 
 ChartJS.register(
   LineElement,
@@ -566,7 +566,7 @@ export default function Graph(props: any) {
                     transform: "translate(-50%, -50%)", // Centers the color picker
                   }}
                 >
-                  <GradientPicker
+                  <ColorPicker
                     handleColorChange={handleColorChange}
                     colorPickerState={colorPickerState}
                     setColorPickerState={setColorPickerState}

@@ -85,9 +85,7 @@ export default {
       violet: {
         500: "var(--color-violet-500)",
       },
-      yellow: {
-        500: "var(--color-yellow-500)",
-      },
+      yellow: "#FFD700",
       sensorWiki: "var(--color-yellow-sensorWiki)",
       headerBorder: "var(--color-headerBorder)",
       logo: {
