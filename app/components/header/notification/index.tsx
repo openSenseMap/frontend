@@ -22,10 +22,10 @@ export default function Notification() {
   return (
     <div className="pointer-events-auto mr-4 box-border flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-black hover:bg-gray-100">
       <NovuProvider
-        backendUrl={ENV.NOVU_API_URL}
-        socketUrl={ENV.NOVU_WEBSOCKET_URL}
+        backendUrl={""}
+        socketUrl={""}
         subscriberId={data?.user?.id}
-        applicationIdentifier={ENV.NOVU_APPLICATION_IDENTIFIER || ""}
+        applicationIdentifier={""}
         //i18n={{}}
       >
         <PopoverNotificationCenter
