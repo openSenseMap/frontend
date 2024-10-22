@@ -121,6 +121,7 @@ jobs:
           wait-on: http://localhost:8811
         env:
           PORT: 8811
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
 
   build:
     name: 🐳 Build
