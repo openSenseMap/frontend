@@ -35,7 +35,7 @@ function getClient() {
   // re-run per request like everything else is. So if you need to change
   // something in this file, you'll need to manually restart the server.
   const queryClient = postgres(DATABASE_URL, {
-    ssl: process.env.PG_CLIENT_SSL === "true" ? true : false,
+    ssl: process.env.PG_CLIENT_SSL,
   });
   const client = drizzle(queryClient, { schema });
 
