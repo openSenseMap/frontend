@@ -20,7 +20,6 @@ import type { ChartOptions } from "chart.js";
 import { de, enGB } from "date-fns/locale";
 import type { loader } from "~/routes/explore.$deviceId._index";
 import { useMemo, useRef, useState, useEffect } from "react";
-import { saveAs } from "file-saver";
 import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
@@ -36,9 +35,9 @@ import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
-import { ColorPicker } from "../color-picker";
 import { ClientOnly } from "../client-only";
 import { Button } from "../ui/button";
+import { ColorPicker } from "../color-picker";
 
 ChartJS.register(
   LineElement,
@@ -389,14 +388,25 @@ export default function Graph(props: any) {
       ...prevData,
       datasets: updatedDatasets,
     }));
-
-    setColorPickerState((prev) => ({ ...prev, open: false }));
   }
 
   function handlePngDownloadClick() {
     if (chartRef.current) {
       const imageString = chartRef.current.canvas.toDataURL("image/png", 1.0);
-      saveAs(imageString, "chart.png");
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = imageString; // Set the href to the data URL
+      link.download = "chart.png"; // Specify the download file name
+
+      // Append the link to the document body
+      document.body.appendChild(link);
+
+      // Programmatically click the link to trigger the download
+      link.click();
+
+      // Clean up and remove the link from the document
+      document.body.removeChild(link);
     }
   }
 
@@ -424,8 +434,25 @@ export default function Graph(props: any) {
       });
     });
 
+    // Create a Blob from the CSV content
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "chart_data.csv");
+
+    // Create a temporary link element
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob); // Create a URL for the Blob
+
+    link.href = url; // Set the href to the Blob URL
+    link.download = "chart_data.csv"; // Specify the download file name
+
+    // Append the link to the document body
+    document.body.appendChild(link);
+
+    // Programmatically click the link to trigger the download
+    link.click();
+
+    // Clean up and remove the link from the document
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Clean up the URL object
   }
 
   function handleResetZoomClick() {
@@ -468,7 +495,11 @@ export default function Graph(props: any) {
                 <DateRangeFilter />
                 <AggregationFilter />
                 {isZoomed && (
-                  <Button variant="outline" className="h-8" onClick={handleResetZoomClick}>
+                  <Button
+                    variant="outline"
+                    className="h-8"
+                    onClick={handleResetZoomClick}
+                  >
                     <RefreshCcw className="mr-2 h-4 w-4" /> Reset Zoom
                   </Button>
                 )}
@@ -519,7 +550,14 @@ export default function Graph(props: any) {
                   )}
                 </ClientOnly>
               )}
-              {colorPickerState.open && (
+            </div>
+  
+            {/* Overlay when the color picker is open */}
+            {colorPickerState.open && (
+              <>
+                <div
+                  className="absolute inset-0 z-50 bg-black opacity-50"
+                ></div> {/* This is the overlay */}
                 <div
                   className="absolute z-50 bg-white rounded dark:bg-zinc-800"
                   style={{
@@ -529,15 +567,17 @@ export default function Graph(props: any) {
                   }}
                 >
                   <ColorPicker
-                    currentColor={colorPickerState.color}
-                    setColor={handleColorChange}
+                    handleColorChange={handleColorChange}
+                    colorPickerState={colorPickerState}
+                    setColorPickerState={setColorPickerState}
                   />
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </Draggable>
       )}
     </>
   );
+  
 }

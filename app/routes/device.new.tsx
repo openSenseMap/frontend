@@ -16,8 +16,8 @@ import { withZod } from "@remix-validated-form/with-zod";
 import { ValidatedForm } from "remix-validated-form";
 
 import { MapProvider } from "react-map-gl";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
-import mapboxglgeocoder from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
+import mapboxglgeocoder from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css?url";
 
 import General from "~/components/device/new/general";
 import SelectDevice from "~/components/device/new/select-device";
