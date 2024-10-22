@@ -1,5 +1,3 @@
-"use client";
-
 import { Moon, Sun } from "lucide-react";
 import { Theme, useTheme } from "remix-themes";
 import { Button } from "./ui/button";

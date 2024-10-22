@@ -9,6 +9,7 @@ import {
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
 import {
   relations,
+  sql,
   type InferInsertModel,
   type InferSelectModel,
 } from "drizzle-orm";
@@ -27,6 +28,9 @@ export const device = pgTable("device", {
   name: text("name").notNull(),
   image: text("image"),
   description: text("description"),
+  tags: text("tags")
+    .array()
+    .default(sql`ARRAY[]::text[]`),
   link: text("link"),
   useAuth: boolean("use_auth"),
   exposure: DeviceExposureEnum("exposure"),
