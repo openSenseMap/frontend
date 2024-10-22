@@ -37,7 +37,7 @@ import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
 import { ClientOnly } from "../client-only";
 import { Button } from "../ui/button";
-import { ColorPicker } from "../color-picker";
+import { GradientPicker } from "../color-picker";
 
 ChartJS.register(
   LineElement,
@@ -388,8 +388,6 @@ export default function Graph(props: any) {
       ...prevData,
       datasets: updatedDatasets,
     }));
-
-    setColorPickerState((prev) => ({ ...prev, open: false }));
   }
 
   function handlePngDownloadClick() {
@@ -553,25 +551,33 @@ export default function Graph(props: any) {
                 </ClientOnly>
               )}
             </div>
+  
+            {/* Overlay when the color picker is open */}
             {colorPickerState.open && (
-              <div
-                className="absolute z-50 bg-white rounded dark:bg-zinc-800"
-                style={{
-                  left: "50%",
-                  top: "50%",
-
-                  transform: "translate(-50%, -50%)", // Centers the color picker
-                }}
-              >
-                <ColorPicker
-                  currentColor={colorPickerState.color}
-                  setColor={handleColorChange}
-                />
-              </div>
+              <>
+                <div
+                  className="absolute inset-0 z-50 bg-black opacity-50"
+                ></div> {/* This is the overlay */}
+                <div
+                  className="absolute z-50 bg-white rounded dark:bg-zinc-800"
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)", // Centers the color picker
+                  }}
+                >
+                  <GradientPicker
+                    handleColorChange={handleColorChange}
+                    colorPickerState={colorPickerState}
+                    setColorPickerState={setColorPickerState}
+                  />
+                </div>
+              </>
             )}
           </div>
         </Draggable>
       )}
     </>
   );
+  
 }
