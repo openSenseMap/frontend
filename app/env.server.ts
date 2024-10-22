@@ -5,7 +5,8 @@ const schema = z.object({
   DATABASE_URL: z.string(),
   PG_CLIENT_SSL: z
     .enum(["true", "false"])
-    .transform((value) => value === "true"),
+    .transform((value) => value === "true")
+    .pipe(z.boolean()),
   SESSION_SECRET: z.string(),
   MAPBOX_GEOCODING_API: z.string().url(),
   MAPBOX_ACCESS_TOKEN: z.string(),
