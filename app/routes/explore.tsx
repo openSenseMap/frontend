@@ -54,8 +54,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
-    ? await getDevices()
-    : await getDevicesWithSensors();
+  ? await getDevices()
+  : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;
