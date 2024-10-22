@@ -13,7 +13,6 @@ export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "theme",
     path: "/",
-    httpOnly: true,
     sameSite: "lax",
     secrets: process.env.SESSION_SECRET
       ? [process.env.SESSION_SECRET]
