@@ -3,10 +3,7 @@ import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z.enum(["production", "development", "test"] as const),
   DATABASE_URL: z.string(),
-  PG_CLIENT_SSL: z
-    .enum(["true", "false"])
-    .transform((value) => value === "true")
-    .pipe(z.boolean()),
+  PG_CLIENT_SSL: z.string(),
   SESSION_SECRET: z.string(),
   MAPBOX_GEOCODING_API: z.string().url(),
   MAPBOX_ACCESS_TOKEN: z.string(),
