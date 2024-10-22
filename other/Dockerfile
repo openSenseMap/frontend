@@ -2,10 +2,10 @@
 FROM node:22-bullseye-slim AS base
 
 # set for base and all layer that inherit from it
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
-# Install openssl for Prisma
-RUN apt-get update && apt-get install -y openssl
+# Update system and install some stuff
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
 
 # Install all node_modules, including dev dependencies
 FROM base AS deps
@@ -33,7 +33,7 @@ COPY --from=deps /myapp/node_modules /myapp/node_modules
 ADD . .
 
 # RUN npm run drizzle:generate
-#RUN npm run drizzle:migrate
+# RUN npm run drizzle:migrate
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
@@ -42,10 +42,13 @@ FROM base
 WORKDIR /myapp
 
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
-#COPY --from=build /myapp/node_modules/.prisma /myapp/node_modules/.prisma
 
+COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
+
+# Not sure if we really need this or if we should move all our /public folder to /app/assets
 COPY --from=build /myapp/public /myapp/public
+
 ADD . .
 
 CMD ["npm", "start"]
