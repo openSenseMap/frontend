@@ -132,7 +132,7 @@ export function getFilteredDevices(
   filterParams: URLSearchParams,
 ) {
   // Set default to "active" if no status is provided, and allow "all" to include every status and exposure.
-  const statusFilter = filterParams.get("status")?.split(",") || ["active"];
+  const statusFilter = filterParams.get("status")?.split(",") || ["all"];
   const exposureFilter = filterParams.get("exposure")?.split(",") || ["all"];
   const phenomenonList = filterParams.get("phenomenon")?.split(",");
 
