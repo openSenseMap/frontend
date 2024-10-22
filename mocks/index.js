@@ -1,4 +1,5 @@
-const { setupServer } = require("msw/node");
+//const { setupServer } = require("msw/node");
+import { setupServer } from "msw/node";
 
 const server = setupServer();
 

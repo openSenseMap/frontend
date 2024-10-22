@@ -243,7 +243,6 @@ export default function Advanced({ data }: AdvancedProps) {
                     name="ttn.decodeProfile"
                     id="ttnDecodeProfile"
                     required
-                    placeholder="Profile"
                     value={ttnDecodeProfile}
                     onChange={(e) => {
                       setTtnDecodeProfile(e.target.value);
