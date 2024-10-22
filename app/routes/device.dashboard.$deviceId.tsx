@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Map, MapProvider, Marker } from "react-map-gl";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
 import { diffFromCreateDate, getMinuteFormattedString } from "~/utils";
 import { Badge } from "~/components/ui/badge";
 import moment from "moment";

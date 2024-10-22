@@ -8,7 +8,7 @@ import {
   redirect,
 } from "@remix-run/react";
 import Map from "~/components/map";
-import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
