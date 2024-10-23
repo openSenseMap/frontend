@@ -1,18 +1,11 @@
 import { Filter } from "lucide-react";
 import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "./ui/command";
 import { useSearchParams, useSubmit } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+
+import { Select, SelectContent, SelectItem } from "./ui/select";
 
 type Aggregation = {
   value: string;
@@ -50,32 +43,24 @@ export function AggregationFilter() {
   const submit = useSubmit();
   const [searchParams] = useSearchParams();
 
-  const [open, setOpen] = useState(false);
-
   const aggregationParam = searchParams.get("aggregation") || "raw";
   const selectedAggregation = aggregations.find(
     (aggregation) => aggregation.value === aggregationParam,
   );
 
-  // Shortcut to open aggregation selection
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "a" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-
-    document.addEventListener("keydown", down);
-
-    return () => {
-      document.removeEventListener("keydown", down);
-    };
-  }, []);
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Select
+      value={selectedAggregation?.value}
+      onValueChange={(value) => {
+        searchParams.set("aggregation", value);
+        submit(searchParams);
+      }}
+    >
+      <SelectPrimitive.Trigger
+        className={
+          "flex h-10 w-full items-center justify-between bg-transparent px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400"
+        }
+      >
         <Button variant="outline" size="sm" className="h-8">
           <Filter className="mr-2 h-4 w-4" />
           Aggregation
@@ -86,30 +71,14 @@ export function AggregationFilter() {
             </Badge>
           </>
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0 dark:bg-dark-background ring-1 dark:ring-white rounded" align="start" side="right">
-        <Command>
-          <CommandInput placeholder="Change aggregation" />
-          <CommandList>
-            <CommandEmpty>No aggregation found.</CommandEmpty>
-            <CommandGroup>
-              {aggregations.map((aggregation) => (
-                <CommandItem
-                  key={aggregation.value}
-                  value={aggregation.value}
-                  onSelect={(value) => {
-                    setOpen(false);
-                    searchParams.set("aggregation", value);
-                    submit(searchParams);
-                  }}
-                >
-                  <span>{aggregation.label}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </SelectPrimitive.Trigger>
+      <SelectContent>
+        {aggregations.map((aggregation) => (
+          <SelectItem key={aggregation.value} value={aggregation.value}>
+            {aggregation.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
