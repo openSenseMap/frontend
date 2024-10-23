@@ -47,12 +47,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
 
-  // Check if the "status" parameter is missing
-  if (!urlFilterParams.has("status")) {
-    urlFilterParams.set("status", "active");
-    return redirect(`${url.pathname}?${urlFilterParams.toString()}`);
-  }
-
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
     ? await getDevices()
@@ -110,8 +104,8 @@ export default function Explore() {
 
   // get map bounds
   const [, setViewState] = useState({
-    longitude: 52,
-    latitude: 7,
+    longitude: 7.628202,
+    latitude: 51.961563,
     zoom: 2,
   });
   const navigate = useNavigate();
