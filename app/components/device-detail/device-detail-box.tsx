@@ -285,82 +285,69 @@ export default function DeviceDetailBox() {
                 />
               </div>
               <div className="no-scrollbar relative flex-1 overflow-y-scroll">
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full"
-                  defaultValue="item-1"
-                >
-                  <AccordionItem value="item-1" className="sticky top-0 z-10">
-                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                      General
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="relative grid grid-cols-4 gap-x-4">
-                        <div className="col-span-2">
-                          <img
-                            className="aspect-[4/3] rounded-lg"
-                            alt="device_image"
-                            src={getDeviceImage(data.device.image)}
-                          ></img>
-                        </div>
-                        <div className="col-span-2 col-start-3">
-                          <div className="flex flex-col gap-1">
-                            {data.device.tags.length > 0 && (
-                              <>
-                                <div className="flex items-center space-y-1 text-sm">
-                                  <Hash className="mr-2 h-4 w-4" />
-                                  <div className="flex gap-2">
-                                    {data.device.tags.map((tag: string) => (
-                                      <Badge key={tag}>{tag}</Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                                <Separator className="my-4"></Separator>
-                              </>
-                            )}
-                            <div className="flex items-center space-y-1 text-sm">
-                              <LandPlot className="mr-2 h-4 w-4" />
-                              {data.device.exposure}
-                            </div>
-                            <Separator className="my-4"></Separator>
-                            <a
-                              href={data.device.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="Open external link"
-                              className="w-full cursor-pointer flex items-center space-y-1 text-sm"
+                <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
+                  <div className="md:w-1/2">
+                    <img
+                      className="w-full object-cover rounded-lg"
+                      alt="device_image"
+                      src={getDeviceImage(data.device.image)}
+                    ></img>
+                  </div>
+                  <div className="sm:w-1/2 space-y-2">
+                    <InfoItem
+                      icon={LandPlot}
+                      title="Exposure"
+                      text={data.device.exposure}
+                    />
+                    <InfoItem
+                      icon={Cpu}
+                      title="Sensor Model"
+                      text={data.device.sensorWikiModel}
+                    />
+                    <Separator className="my-2" />
+                    <InfoItem
+                      icon={Rss}
+                      title="Last Updated"
+                      text={format(new Date(data.device.updatedAt), "PPP")}
+                    />
+                    <Separator className="my-2" />
+                    <InfoItem
+                      icon={CalendarPlus}
+                      title="Created At"
+                      text={format(new Date(data.device.createdAt), "PPP")}
+                    />
+                  </div>
+                </div>
+                {data.device.tags.length > 0 && (
+                  <div className="pt-4">
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Tags
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="flex flex-wrap gap-2">
+                          {data.device.tags.map((tag: string) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="text-xs font-medium"
                             >
-                              <ExternalLink className="mr-2 h-4 w-4" />
-                              External Link
-                            </a>
-                            <Separator className="my-4"></Separator>
-                            <div className="flex items-center space-y-1 text-sm">
-                              <Cpu className="mr-2 h-4 w-4" />{" "}
-                              {data.device.sensorWikiModel ?? "Not specified"}
-                            </div>
-                            <Separator className="my-4"></Separator>
-                            <div className="flex items-center space-y-1 text-sm">
-                              <Rss className="mr-2 h-4 w-4" />
-                              {format(new Date(data.device.updatedAt), "PPP")}
-                            </div>
-                            <Separator className="my-4"></Separator>
-                            <div className="flex items-center space-y-1 text-sm">
-                              <CalendarPlus className="mr-2 h-4 w-4" />
-                              {format(new Date(data.device.createdAt), "PPP")}
-                            </div>
-                          </div>
+                              {tag}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-                      {data.device.logEntries.length > 0 && (
-                        <>
-                          <Separator className="my-4"></Separator>
-                          <EntryLogs entryLogs={data.device.logEntries} />
-                        </>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                    </div>
+                  </div>
+                )}
+                <Separator className="my-4"></Separator>
+                {data.device.logEntries.length > 0 && (
+                  <>
+                    <EntryLogs entryLogs={data.device.logEntries} />
+                    <Separator className="my-4" />
+                  </>
+                )}
                 {data.device.description && (
                   <Accordion
                     type="single"
@@ -533,3 +520,22 @@ export default function DeviceDetailBox() {
     </>
   );
 }
+
+const InfoItem = ({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: React.ElementType;
+  title: string;
+  text?: string;
+}) =>
+  text && (
+    <div className="space-y-1">
+      <div className="text-sm font-medium text-muted-foreground">{title}</div>
+      <div className="flex items-center space-x-2 text-sm">
+        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span>{text}</span>
+      </div>
+    </div>
+  );
