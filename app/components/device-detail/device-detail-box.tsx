@@ -306,17 +306,23 @@ export default function DeviceDetailBox() {
                         <div className="col-span-2 col-start-3">
                           <div className="flex flex-col gap-1">
                             {data.device.tags.length > 0 && (
-                              <>
-                                <div className="flex items-center space-y-1 text-sm">
-                                  <Hash className="mr-2 h-4 w-4" />
-                                  <div className="flex gap-2">
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                  <Hash className="mr-2 h-4 w-4 shrink-0" />
+                                  <div className="flex flex-wrap gap-2">
                                     {data.device.tags.map((tag: string) => (
-                                      <Badge key={tag}>{tag}</Badge>
+                                      <Badge
+                                        key={tag}
+                                        variant="secondary"
+                                        className="text-xs font-medium"
+                                      >
+                                        {tag}
+                                      </Badge>
                                     ))}
                                   </div>
                                 </div>
-                                <Separator className="my-4"></Separator>
-                              </>
+                                <Separator />
+                              </div>
                             )}
                             <div className="flex items-center space-y-1 text-sm">
                               <LandPlot className="mr-2 h-4 w-4" />
