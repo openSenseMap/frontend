@@ -36,8 +36,13 @@ import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
 import { ClientOnly } from "../client-only";
-import { Button } from "../ui/button";
 import { ColorPicker } from "../color-picker";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 ChartJS.register(
   LineElement,
@@ -494,17 +499,23 @@ export default function Graph(props: any) {
               <div className="flex items-center justify-center gap-4">
                 <DateRangeFilter />
                 <AggregationFilter />
-                {isZoomed && (
-                  <Button
-                    variant="outline"
-                    className="h-8"
-                    onClick={handleResetZoomClick}
-                  >
-                    <RefreshCcw className="mr-2 h-4 w-4" /> Reset Zoom
-                  </Button>
-                )}
               </div>
               <div className="flex items-center justify-end gap-4">
+                {isZoomed && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <RefreshCcw
+                          onClick={handleResetZoomClick}
+                          className="cursor-pointer"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Reset zoom</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <Download />
@@ -551,13 +562,11 @@ export default function Graph(props: any) {
                 </ClientOnly>
               )}
             </div>
-  
             {/* Overlay when the color picker is open */}
             {colorPickerState.open && (
               <>
-                <div
-                  className="absolute inset-0 z-50 bg-black opacity-50"
-                ></div> {/* This is the overlay */}
+                <div className="absolute inset-0 z-50 bg-black opacity-50"></div>{" "}
+                {/* This is the overlay */}
                 <div
                   className="absolute z-50 bg-white rounded dark:bg-zinc-800"
                   style={{
@@ -579,5 +588,4 @@ export default function Graph(props: any) {
       )}
     </>
   );
-  
 }

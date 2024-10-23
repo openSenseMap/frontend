@@ -236,6 +236,7 @@ export default function DeviceDetailBox() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="cursor-pointer"
+                      disabled={true}
                       onClick={() => handleCompareClick()}
                     >
                       <Scale className="mr-2 h-4 w-4" />
@@ -365,7 +366,7 @@ export default function DeviceDetailBox() {
                     type="single"
                     collapsible
                     className="w-full"
-                    defaultValue={data.device.description}
+                    defaultValue={"item-1"}
                   >
                     <AccordionItem value="item-1">
                       <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
@@ -408,80 +409,78 @@ export default function DeviceDetailBox() {
                         }
                       >
                         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-                          {sensors
-                            ? sensors.map((sensor: SensorWithMeasurement) => {
-                                return (
-                                  <Card
-                                    key={sensor.id}
-                                    className={
-                                      "hover:bg-muted " +
-                                      (selectedSensorIds.includes(sensor.id)
-                                        ? "bg-green-100 dark:bg-dark-green"
-                                        : "")
-                                    }
-                                  >
-                                    <label htmlFor={sensor.id}>
-                                      <input
-                                        className="peer hidden"
-                                        disabled={
-                                          !selectedSensorIds.includes(
-                                            sensor.id,
-                                          ) &&
-                                          searchParams.getAll("sensor")
-                                            .length >= 2
-                                            ? true
-                                            : false
-                                        } // check if there are already two selected and this one is not one of them
-                                        type="checkbox"
-                                        name="sensor"
-                                        id={sensor.id}
-                                        value={sensor.id}
-                                        defaultChecked={selectedSensorIds.includes(
+                          {sensors &&
+                            sensors.map((sensor: SensorWithMeasurement) => {
+                              return (
+                                <Card
+                                  key={sensor.id}
+                                  className={
+                                    (selectedSensorIds.includes(sensor.id)
+                                      ? "bg-green-100 dark:bg-dark-green"
+                                      : "hover:bg-muted")
+                                  }
+                                >
+                                  <label htmlFor={sensor.id} className="cursor-pointer">
+                                    <input
+                                      className="peer hidden"
+                                      disabled={
+                                        !selectedSensorIds.includes(
                                           sensor.id,
-                                        )}
+                                        ) &&
+                                        searchParams.getAll("sensor").length >=
+                                          2
+                                          ? true
+                                          : false
+                                      } // check if there are already two selected and this one is not one of them
+                                      type="checkbox"
+                                      name="sensor"
+                                      id={sensor.id}
+                                      value={sensor.id}
+                                      defaultChecked={selectedSensorIds.includes(
+                                        sensor.id,
+                                      )}
+                                    />
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                      <CardTitle className="text-sm font-medium">
+                                        {sensor.title}
+                                      </CardTitle>
+                                      <SensorIcon
+                                        title={sensor.title || ""}
+                                        className="h-4 w-4 text-muted-foreground"
                                       />
-                                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
-                                          {sensor.title}
-                                        </CardTitle>
-                                        <SensorIcon
-                                          title={sensor.title || ""}
-                                          className="h-4 w-4 text-muted-foreground"
-                                        />
-                                      </CardHeader>
-                                      <CardContent>
-                                        <div className="flex flex-row items-center space-x-2">
-                                          <div className="text-2xl font-bold">
-                                            {sensor.value}
-                                          </div>
-                                          <p className="text-xs text-muted-foreground">
-                                            {sensor.unit}
-                                          </p>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="flex flex-row items-center space-x-2">
+                                        <div className="text-2xl font-bold">
+                                          {sensor.value}
                                         </div>
-                                      </CardContent>
-                                      <Separator />
-                                      <CardFooter className="justify-between px-6 py-3">
-                                        <div className="flex items-center gap-1">
-                                          <div
-                                            className={
-                                              sensor.status === "active"
-                                                ? "h-2 w-2 rounded-full bg-light-green"
-                                                : "h-2 w-2 rounded-full bg-red-500"
-                                            }
-                                          ></div>
-                                          <p className="text-xs text-muted-foreground">
-                                            {formatDistanceToNow(
-                                              new Date(sensor.time),
-                                            )}{" "}
-                                            ago
-                                          </p>
-                                        </div>
-                                      </CardFooter>
-                                    </label>
-                                  </Card>
-                                );
-                              })
-                            : null}
+                                        <p className="text-xs text-muted-foreground">
+                                          {sensor.unit}
+                                        </p>
+                                      </div>
+                                    </CardContent>
+                                    <Separator />
+                                    <CardFooter className="justify-between px-6 py-3">
+                                      <div className="flex items-center gap-1">
+                                        <div
+                                          className={
+                                            sensor.status === "active"
+                                              ? "h-2 w-2 rounded-full bg-light-green"
+                                              : "h-2 w-2 rounded-full bg-red-500"
+                                          }
+                                        ></div>
+                                        <p className="text-xs text-muted-foreground">
+                                          {formatDistanceToNow(
+                                            new Date(sensor.time),
+                                          )}{" "}
+                                          ago
+                                        </p>
+                                      </div>
+                                    </CardFooter>
+                                  </label>
+                                </Card>
+                              );
+                            })}
                         </div>
                       </Form>
                     </AccordionContent>
