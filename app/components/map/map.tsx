@@ -16,8 +16,8 @@ const Map = forwardRef<MapRef, MapProps>(
         id="osem"
         dragRotate={false}
         initialViewState={{
-          longitude: 10,
-          latitude: 25,
+          longitude: 7.628202,
+          latitude: 51.961563,
           zoom: 2,
         }}
         mapStyle={
