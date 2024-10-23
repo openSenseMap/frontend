@@ -13,7 +13,6 @@ import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import {
   type DeviceExposureType,
   type DeviceStatusType,
-  DeviceStatusZodEnum,
 } from "~/schema/enum";
 
 export default function FilterOptions() {
@@ -27,8 +26,7 @@ export default function FilterOptions() {
     (searchParams.get("exposure") as DeviceExposureType) ?? "all",
   );
   const [statusVal, setStatusVal] = useState<DeviceStatusType | "all">(
-    (searchParams.get("status") as DeviceStatusType | "all") ??
-      DeviceStatusZodEnum.Enum.active,
+    (searchParams.get("status") as DeviceStatusType) ?? "all",
   );
 
   //* Update filter params based on url Search Params
@@ -36,10 +34,7 @@ export default function FilterOptions() {
     setExposureVal(
       (searchParams.get("exposure") as DeviceExposureType) ?? "all",
     );
-    setStatusVal(
-      (searchParams.get("status") as DeviceStatusType | "all") ??
-        DeviceStatusZodEnum.Enum.active,
-    );
+    setStatusVal((searchParams.get("status") as DeviceStatusType) ?? "all");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 

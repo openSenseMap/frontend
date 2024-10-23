@@ -1,13 +1,7 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { Badge } from "../ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "../ui/collapsible";
+import { X } from "lucide-react";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import type { loader } from "~/routes/explore";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect } from "react";
 import { DeviceExposureZodEnum, DeviceStatusZodEnum } from "~/schema/enum";
 
 export default function FilterVisualization() {
@@ -70,54 +64,48 @@ export default function FilterVisualization() {
     }
   });
 
-  // State to track if the collapsible is open
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const storedState = localStorage.getItem("collapsibleOpen");
-    const initialOpenState =
-      storedState === null
-        ? Object.keys(groupedFilters).length > 0
-        : storedState === "true";
-    setIsOpen(initialOpenState);
-  }, [groupedFilters]);
-
-  // Function to toggle collapsible state
-  const toggleCollapsible = () => {
-    const newState = !isOpen;
-    setIsOpen(newState);
-    localStorage.setItem("collapsibleOpen", newState.toString());
-  };
-
   // Don't render anything if there are no active valid filters
   if (Object.keys(groupedFilters).length === 0) {
     return null;
   }
 
+  const onRemoveFilter = (key: string) => {
+    const newParams = new URLSearchParams(params);
+
+    // Set the key to "all" and remove all other values
+    newParams.delete(key);
+
+    // Update the URL without reloading the page
+    navigate(`?${newParams.toString()}`, { replace: true });
+  };
+
   return (
-    <div className="absolute pt-2 pointer-events-auto">
-      <Collapsible
-        open={isOpen}
-        onOpenChange={toggleCollapsible} // Use the toggle function
-      >
-        <CollapsibleTrigger className="text-white">
-          {isOpen ? <ChevronDown /> : <ChevronRight />}
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="flex flex-col gap-2">
-            {Object.entries(groupedFilters).map(([key, values]) => (
-              <Badge
-                key={key} // Unique key for each badge based on the key
-                className="bg-light-green animate-pulse delay-0"
-                variant="secondary"
-              >
-                {`${key}: ${values.join(", ")}`}{" "}
-                {/* Displaying the key and combined values */}
-              </Badge>
+    <div className="flex flex-wrap items-center gap-2">
+      {Object.entries(groupedFilters).map(([key, values]) => (
+        <div
+          key={key}
+          className="flex items-center bg-blue-100 rounded-full pr-2 text-sm"
+        >
+          <span className="bg-blue-100 text-white px-2 py-1 rounded-l-full font-medium">
+            {key}
+          </span>
+          <div className="flex items-center ml-2">
+            {values.map((value, index) => (
+              <Fragment key={`${key}-${value}`}>
+                {index > 0 && <span className="mx-1">/</span>}
+                <span className="text-blue-800">{value}</span>
+              </Fragment>
             ))}
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+          <button
+            onClick={() => onRemoveFilter(key)}
+            className="ml-2 text-blue-500 hover:text-blue-700 focus:outline-none"
+            aria-label={`Remove ${key} filter`}
+          >
+            <X className="text-white" size={14} />
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

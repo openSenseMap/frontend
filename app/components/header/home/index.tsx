@@ -1,5 +1,4 @@
 import { Link } from "@remix-run/react";
-import FilterVisualization from "~/components/map/filter-visualization";
 
 export default function Home() {
   return (
@@ -18,7 +17,6 @@ export default function Home() {
           </button>
         </Link>
       </div>
-      <FilterVisualization />
     </div>
   );
 }
