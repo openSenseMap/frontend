@@ -13,7 +13,7 @@ import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
-import { MapProvider, Layer, Source } from "react-map-gl";
+import { MapProvider, Layer, Source, Marker } from "react-map-gl";
 import { useState, useRef, useEffect } from "react";
 import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import Legend from "~/components/map/legend";
@@ -29,6 +29,7 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
+import BoxMarker from "~/components/map/layers/cluster/box-marker";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -54,8 +55,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
-  ? await getDevices()
-  : await getDevicesWithSensors();
+    ? await getDevices()
+    : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;
@@ -260,11 +261,15 @@ export default function Explore() {
   //* fly to sensebox location when url inludes deviceId
   const { deviceId } = useParams();
   var deviceLoc: any;
+  let selectedDevice: any;
   if (deviceId) {
-    const device = data.devices.features.find(
+    selectedDevice = data.devices.features.find(
       (device: any) => device.properties.id === deviceId,
     );
-    deviceLoc = [device?.properties.latitude, device?.properties.longitude];
+    deviceLoc = [
+      selectedDevice?.properties.latitude,
+      selectedDevice?.properties.longitude,
+    ];
   }
 
   const buildLayerFromPheno = (selectedPheno: any) => {
@@ -307,6 +312,21 @@ export default function Explore() {
                   buildLayerFromPheno(selectedPheno))}
               />
             </Source>
+          )}
+
+          {/* Render BoxMarker for the selected device */}
+          {selectedDevice && deviceId && (
+            <Marker
+              latitude={selectedDevice.properties.latitude}
+              longitude={selectedDevice.properties.longitude}
+            >
+              <BoxMarker
+                key={`device-${selectedDevice.properties.id}`}
+                latitude={selectedDevice.properties.latitude}
+                longitude={selectedDevice.properties.longitude}
+                device={selectedDevice.properties as Device}
+              />
+            </Marker>
           )}
 
           {/* <ClusterLayer
