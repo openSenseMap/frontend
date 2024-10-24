@@ -121,23 +121,29 @@ export function validatePassLength(passwords: any) {
   return { isValid: index == -1 ? true : false, index: index };
 }
 
-/**
- * This function is called in the loader of /explore route. It return list of devices based on user selected filters.
-
- * @param devices all devices data
- * @param filterParams attributes and selected values
- */
 export function getFilteredDevices(
   devices: any,
   filterParams: URLSearchParams,
 ) {
-  // Set default to "active" if no status is provided, and allow "all" to include every status and exposure.
-  const statusFilter = filterParams.get("status")?.split(",") || ["all"];
-  const exposureFilter = filterParams.get("exposure")?.split(",") || ["all"];
-  const phenomenonList = filterParams.get("phenomenon")?.split(",");
-
+  const statusFilter = filterParams.get("status")?.toLowerCase().split(",") || [
+    "all",
+  ];
+  const exposureFilter = filterParams
+    .get("exposure")
+    ?.toLowerCase()
+    .split(",") || ["all"];
+  const phenomenonList = filterParams
+    .get("phenomenon")
+    ?.toLowerCase()
+    .split(",");
+  const tagsFilter = filterParams.get("tags")?.toLowerCase().split(",") || [];
   let results = devices.features.filter((device: any) => {
-    const sensorsList = device.properties.sensors?.map((s: any) => s.title);
+    const sensorsList = device.properties.sensors?.map((s: any) =>
+      s.title.toLowerCase(),
+    );
+    const deviceTags =
+      device.properties.tags?.map((tag: string) => tag.toLowerCase()) || []; // Convert device tags to lowercase
+
     return (
       // If "all" is selected, include all exposures; otherwise, check for matches
       (exposureFilter.includes("all") ||
@@ -145,8 +151,12 @@ export function getFilteredDevices(
       // If "all" is selected, include all statuses; otherwise, check for matches
       (statusFilter.includes("all") ||
         statusFilter.includes(device.properties.status.toLowerCase())) &&
+      // If phenomenon is provided, check if any sensor matches the selected phenomenon
       (!filterParams.get("phenomenon") ||
-        sensorsList.some((s: any) => phenomenonList?.includes(s.toLowerCase())))
+        sensorsList.some((s: any) => phenomenonList?.includes(s))) &&
+      // If tags are provided, check if the device contains any of the selected tags
+      (tagsFilter.length === 0 ||
+        tagsFilter.some((tag) => deviceTags.includes(tag)))
     );
   });
 

@@ -1,10 +1,11 @@
 import type { Device } from "~/schema";
 import Search from "~/components/search";
-import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
+import { Clock4Icon, Filter, IceCream2Icon, Tag } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";
 import { cn } from "~/lib/utils";
 import FilterOptions from "./filter-options/filter-options";
 import { PhenomenonSelect } from "./phenomenon-select/phenomenon-select";
+import FilterTags from "./filter-options/filter-tags";
 
 interface NavBarHandlerProps {
   devices: Device[];
@@ -14,28 +15,28 @@ interface NavBarHandlerProps {
 function getSections(devices: Device[]) {
   return [
     {
+      title: "Filter",
+      icon: Filter,
+      color: "bg-gray-300",
+      component: <FilterOptions />,
+    },
+    {
+      title: "Tags",
+      icon: Tag,
+      color: "bg-light-green",
+      component: <FilterTags />,
+    },
+    {
       title: "Datum & Zeit",
       icon: Clock4Icon,
       color: "bg-blue-100",
       component: <div>Datum & Zeit</div>,
     },
     {
-      title: "Filter",
-      icon: Filter,
-      color: "bg-gray-300",
-      component: <FilterOptions></FilterOptions>,
-    },
-    {
       title: "Phänomen",
       icon: IceCream2Icon,
       color: "bg-slate-500",
-      component: <PhenomenonSelect></PhenomenonSelect>,
-    },
-    {
-      title: "Einstellungen",
-      icon: Cog,
-      color: "bg-light-green",
-      component: <div>Einstellungen</div>,
+      component: <PhenomenonSelect />,
     },
   ];
 }
