@@ -1,19 +1,13 @@
-import {
-  useSearchParams,
-  useNavigation,
-  useLoaderData,
-} from "@remix-run/react";
+import { useSearchParams, useNavigation } from "@remix-run/react";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
-import type { loader } from "~/routes/explore";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { type DeviceExposureType, type DeviceStatusType } from "~/schema/enum";
 
 export default function FilterOptions() {
-  const data = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
 
@@ -59,7 +53,6 @@ export default function FilterOptions() {
     setTempStatusVal("all");
     searchParams.set("exposure", "all");
     searchParams.set("status", "all");
-    searchParams.delete("phenomenon");
     setSearchParams(searchParams);
     setIsChanged(false);
   };
@@ -157,14 +150,6 @@ export default function FilterOptions() {
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
-      </div>
-      <div className="w-full">
-        <div className="text-2xl font-bold text-center mt-2 tabular-nums">
-          {data.filteredDevices.features.length}
-        </div>
-        <p className="text-center text-muted-foreground mt-2">
-          Total Devices Found
-        </p>
       </div>
       <div className="flex justify-between align-bottom">
         <Button

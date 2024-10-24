@@ -16,6 +16,8 @@ export default function FilterVisualization() {
         return DeviceExposureZodEnum.safeParse(value).success;
       case "status":
         return DeviceStatusZodEnum.safeParse(value).success;
+      case "tags":
+        return true; // No validation for tags
       default:
         return false; // Invalid key
     }
@@ -106,6 +108,11 @@ export default function FilterVisualization() {
           </button>
         </div>
       ))}
+      <div className="flex items-center bg-light-green rounded-full pr-2 text-sm">
+        <span className="bg-light-green text-white px-2 py-1 rounded-l-full font-medium">
+          {"Total Devices: " + data.filteredDevices.features.length}
+        </span>
+      </div>
     </div>
   );
 }
