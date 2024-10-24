@@ -5,9 +5,10 @@ import {
   useSearchParams,
   useLoaderData,
   useParams,
+  redirect,
 } from "@remix-run/react";
 import Map from "~/components/map";
-import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
@@ -45,10 +46,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
 
+  // Check if the "status" parameter is missing
+  if (!urlFilterParams.has("status")) {
+    urlFilterParams.set("status", "active");
+    return redirect(`${url.pathname}?${urlFilterParams.toString()}`);
+  }
+
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
-    ? await getDevices()
-    : await getDevicesWithSensors();
+  ? await getDevices()
+  : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
   const message = session.get("global_message") || null;

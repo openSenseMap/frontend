@@ -6,14 +6,16 @@ import {
   timestamp,
   doublePrecision,
 } from "drizzle-orm/pg-core";
-import { deviceModelEnum, exposureEnum, statusEnum } from "./enum";
+import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
 import {
   relations,
+  sql,
   type InferInsertModel,
   type InferSelectModel,
 } from "drizzle-orm";
 import { user } from "./user";
 import { sensor } from "./sensor";
+import { logEntry } from "./log-entry";
 
 /**
  * Table
@@ -26,11 +28,14 @@ export const device = pgTable("device", {
   name: text("name").notNull(),
   image: text("image"),
   description: text("description"),
+  tags: text("tags")
+    .array()
+    .default(sql`ARRAY[]::text[]`),
   link: text("link"),
   useAuth: boolean("use_auth"),
-  exposure: exposureEnum("exposure"),
-  status: statusEnum("status").default("inactive"),
-  model: deviceModelEnum("model"),
+  exposure: DeviceExposureEnum("exposure"),
+  status: DeviceStatusEnum("status").default("inactive"),
+  model: DeviceModelEnum("model"),
   public: boolean("public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -49,6 +54,7 @@ export const deviceRelations = relations(device, ({ one, many }) => ({
     references: [user.id],
   }),
   sensors: many(sensor),
+  logEntries: many(logEntry),
 }));
 
 /**

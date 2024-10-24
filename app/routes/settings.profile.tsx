@@ -8,7 +8,7 @@ import {
   // useNavigation,
 } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import type { DataFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
 import { getInitials } from "~/utils/misc";
 import { Label } from "~/components/ui/label";
@@ -28,8 +28,15 @@ import {
 import { Switch } from "~/components/ui/switch";
 import { useEffect, useState } from "react";
 import { useToast } from "~/components/ui/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { InfoIcon } from "lucide-react";
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserId(request);
   const profile = await getProfileByUserId(userId);
   if (!profile) {
@@ -98,12 +105,30 @@ export default function EditUserProfilePage() {
       <Card className="space-y-6 dark:bg-dark-boxes dark:border-white">
         <CardHeader>
           <CardTitle>Profile Settings</CardTitle>
-          <CardDescription>This is how others see your profile.</CardDescription>
+          <CardDescription>
+            This is how others see your profile.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex">
           <div className="space-y-6 w-1/2 justify-center">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="username">Username</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        {
+                          "If your profile is public, this is how people will see you."
+                        }
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <Input
                 min={3}
                 max={40}
@@ -115,14 +140,32 @@ export default function EditUserProfilePage() {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="isPublic">Public Profile</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        If activated, others will be able to see your public{" "}
+                        <Link to="/profile/me" target="__blank">
+                          <span className="underline">profile</span>
+                        </Link>
+                        .
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <Switch
                 id="isPublic"
                 name="isPublic"
                 defaultChecked={isPublic}
                 onCheckedChange={(e) => setIsPublic(e)}
               />
-              <Label htmlFor="isPublic">Public Profile</Label>
             </div>
           </div>
           <div className="flex w-1/2 justify-center">
@@ -139,7 +182,7 @@ export default function EditUserProfilePage() {
               <Link
                 preventScrollReset
                 to="photo"
-                className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
+                className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5 pointer-events-none"
                 title="Change profile photo"
                 aria-label="Change profile photo"
               >

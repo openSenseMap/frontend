@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import { pgTable, text, timestamp, json } from "drizzle-orm/pg-core";
-import { statusEnum } from "./enum";
+import { DeviceStatusEnum } from "./enum";
 import {
   relations,
   type InferInsertModel,
@@ -20,7 +20,7 @@ export const sensor = pgTable("sensor", {
   title: text("title"),
   unit: text("unit"),
   sensorType: text("sensor_type"),
-  status: statusEnum("status").default("inactive"),
+  status: DeviceStatusEnum("status").default("inactive"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   deviceId: text("device_id").notNull(),

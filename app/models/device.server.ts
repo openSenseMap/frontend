@@ -21,6 +21,18 @@ export function getDevice({ id }: Pick<Device, "id">) {
       sensorWikiModel: true,
       status: true,
       updatedAt: true,
+      tags: true,
+    },
+    with: {
+      logEntries: {
+        where: (entry, { eq }) => eq(entry.public, true),
+        columns: {
+          id: true,
+          content: true,
+          createdAt: true,
+          public: true,
+        },
+      },
     },
   });
 }

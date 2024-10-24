@@ -22,9 +22,10 @@ export default function SettingsLayoutPage() {
             }}
           >
             <TabsList>
+              <TabsTrigger value="profile">Public Profile</TabsTrigger>
               <TabsTrigger value="account">Account Information</TabsTrigger>
               <TabsTrigger value="password">Password</TabsTrigger>
-              <TabsTrigger value="profile">Profile Information</TabsTrigger>
+              <TabsTrigger value="delete">Delete Account</TabsTrigger>
             </TabsList>
             <TabsContent className="mt-6" value={currentTab || "account"}>
               <Outlet />

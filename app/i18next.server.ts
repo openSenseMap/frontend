@@ -1,6 +1,6 @@
 import Backend from "i18next-fs-backend";
 import { resolve } from "node:path";
-import { RemixI18Next } from "remix-i18next";
+import { RemixI18Next } from "remix-i18next/server";
 import i18nextOptions from "./i18next-options";
 import { i18nCookie } from "./cookies";
 

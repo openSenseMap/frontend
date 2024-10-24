@@ -22,7 +22,7 @@ import {
 } from "~/models/device.server";
 import type { MarkerDragEvent } from "react-map-gl";
 import { Map, MapProvider, Marker, NavigationControl } from "react-map-gl";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
 import ErrorMessage from "~/components/error-message";
 
 //*****************************************************

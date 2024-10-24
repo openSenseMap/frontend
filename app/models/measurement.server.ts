@@ -16,10 +16,6 @@ export function getMeasurement(
   startDate?: Date,
   endDate?: Date,
 ) {
-  console.log(
-    `[measurement.server.ts]: ${sensorId} - ${aggregation} - ${startDate} - ${endDate}`,
-  );
-
   // If both start date and end date are provided, filter measurements within the specified time range.
   if (startDate && endDate) {
     // Check the aggregation level for measurements and fetch accordingly.
@@ -133,6 +129,6 @@ export function getMeasurement(
   return drizzleClient.query.measurement.findMany({
     where: (measurement, { eq }) => eq(measurement.sensorId, sensorId),
     orderBy: [desc(measurement.time)],
-    limit: 20000,
+    limit: 3600, // 60 measurements per hour * 24 hours * 2.5 days
   });
 }

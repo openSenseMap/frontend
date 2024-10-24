@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { useState } from "react";
 import LanguageSelector from "./language-selector";
-import { ThemeSelector } from "./theme-selector";
+import { ModeToggle } from "../mode-toggle";
 
 const links = [
   {
@@ -41,7 +41,7 @@ export default function Header() {
           {/* Osem Logo*/}
           <Link to="/" className="flex items-center md:pr-10">
             <img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-            <span className="text-light-green dark:text-dark-green hidden self-center whitespace-nowrap text-xl font-semibold md:block">
+            <span className="text-light-green dark:text-dark-green hidden self-center whitespace-nowrap text-xl md:block">
               openSenseMap
             </span>
           </Link>
@@ -71,7 +71,7 @@ export default function Header() {
         <div>
           <div className="flex items-center justify-center md:order-2 gap-2">
             {/* Theme */}
-            <ThemeSelector />
+            <ModeToggle />
             {/* Language */}
             <LanguageSelector />
             {/* Collapsible navigation bar */}

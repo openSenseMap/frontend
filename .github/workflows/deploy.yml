@@ -28,7 +28,7 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 18
+          node-version: 20
 
       - name: 📥 Install deps
         run: npm install
@@ -48,7 +48,7 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 18
+          node-version: 20
 
       - name: 📥 Install deps
         run: npm install
@@ -68,7 +68,7 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 18
+          node-version: 20
 
       - name: 📥 Install deps
         run: npm install
@@ -91,7 +91,7 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 18
+          node-version: 20
 
       - name: 📥 Install deps
         run: npm install
@@ -162,6 +162,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./other/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

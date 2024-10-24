@@ -7,3 +7,4 @@ export * from "./profile-image";
 export * from "./types";
 export * from "./sensor";
 export * from "./user";
+export * from "./log-entry";
