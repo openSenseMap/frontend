@@ -1,13 +1,15 @@
 import { useSearchParams, useNavigation } from "@remix-run/react";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { type DeviceExposureType, type DeviceStatusType } from "~/schema/enum";
+import { NavbarContext } from "..";
 
 export default function FilterOptions() {
+  const { setOpen } = useContext(NavbarContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
 
@@ -46,6 +48,7 @@ export default function FilterOptions() {
     searchParams.set("status", tempStatusVal);
     setSearchParams(searchParams);
     setIsChanged(false);
+    setOpen(false);
   };
 
   const handleResetFilters = () => {

@@ -1,13 +1,15 @@
 import { useNavigation, useSearchParams } from "@remix-run/react";
 import { Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Spinner from "~/components/spinner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { NavbarContext } from "..";
 
 export default function FilterTags() {
+  const { setOpen } = useContext(NavbarContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
 
@@ -36,6 +38,7 @@ export default function FilterTags() {
     }
     setSearchParams(searchParams);
     setIsChanged(false);
+    setOpen(false);
   };
 
   const handleResetFilters = () => {
