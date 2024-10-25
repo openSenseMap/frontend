@@ -1,19 +1,15 @@
-import {
-  useSearchParams,
-  useNavigation,
-  useLoaderData,
-} from "@remix-run/react";
+import { useSearchParams, useNavigation } from "@remix-run/react";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import Spinner from "../../../spinner";
-import type { loader } from "~/routes/explore";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { type DeviceExposureType, type DeviceStatusType } from "~/schema/enum";
+import { NavbarContext } from "..";
 
 export default function FilterOptions() {
-  const data = useLoaderData<typeof loader>();
+  const { setOpen } = useContext(NavbarContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
 
@@ -52,6 +48,7 @@ export default function FilterOptions() {
     searchParams.set("status", tempStatusVal);
     setSearchParams(searchParams);
     setIsChanged(false);
+    setOpen(false);
   };
 
   const handleResetFilters = () => {
@@ -59,7 +56,6 @@ export default function FilterOptions() {
     setTempStatusVal("all");
     searchParams.set("exposure", "all");
     searchParams.set("status", "all");
-    searchParams.delete("phenomenon");
     setSearchParams(searchParams);
     setIsChanged(false);
   };
@@ -158,15 +154,7 @@ export default function FilterOptions() {
           </ToggleGroup>
         </div>
       </div>
-      <div className="w-full">
-        <div className="text-2xl font-bold text-center mt-2 tabular-nums">
-          {data.filteredDevices.features.length}
-        </div>
-        <p className="text-center text-muted-foreground mt-2">
-          Total Devices Found
-        </p>
-      </div>
-      <div className="flex justify-between align-bottom">
+      <div className="flex justify-end gap-4 align-bottom">
         <Button
           variant="outline"
           className="px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"

@@ -108,7 +108,7 @@ export default function NavBar(props: NavBarProps) {
             </AnimatePresence>
           </NavbarContext.Provider>
         </div>
-        {(!open && isDesktop) && (
+        {!open && isDesktop && (
           <div className="w-full flex items-center justify-center">
             <FilterVisualization />
           </div>
