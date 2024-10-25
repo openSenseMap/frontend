@@ -107,7 +107,7 @@ export default function FilterTags() {
           ))}
         </div>
       </div>
-      <div className="flex justify-between align-bottom">
+      <div className="flex justify-end gap-4 align-bottom">
         <Button
           variant="outline"
           className="px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"

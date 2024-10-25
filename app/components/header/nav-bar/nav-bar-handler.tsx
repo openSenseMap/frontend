@@ -55,7 +55,7 @@ export default function NavbarHandler({
 
   return (
     <div className="mt-4 flex h-60 flex-col gap-4 md:flex-row">
-      <div className="flex justify-around gap-2 md:h-full md:flex-1 md:flex-col">
+      <div className="flex justify-around gap-2 md:h-full md:shrink md:flex-col">
         {sections.map((section, index) => (
           <div
             key={index}
