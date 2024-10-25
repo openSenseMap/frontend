@@ -257,7 +257,13 @@ export default function CompareDevices() {
                       <X
                         className="cursor-pointer"
                         onClick={() => {
-                          navigate("/explore");
+                          if (searchParams.has("sensor")) {
+                            searchParams.delete("sensor");
+                          }
+                          navigate({
+                            pathname: "/explore",
+                            search: searchParams.toString(),
+                          });
                         }}
                       />
                     </div>

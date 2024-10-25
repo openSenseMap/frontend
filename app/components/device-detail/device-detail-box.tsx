@@ -280,7 +280,13 @@ export default function DeviceDetailBox() {
                 <X
                   className="cursor-pointer"
                   onClick={() => {
-                    navigate("/explore");
+                    if (searchParams.has("sensor")) {
+                      searchParams.delete("sensor");
+                    }
+                    navigate({
+                      pathname: "/explore",
+                      search: searchParams.toString(),
+                    });
                   }}
                 />
               </div>
@@ -402,12 +408,15 @@ export default function DeviceDetailBox() {
                                 <Card
                                   key={sensor.id}
                                   className={
-                                    (selectedSensorIds.includes(sensor.id)
+                                    selectedSensorIds.includes(sensor.id)
                                       ? "bg-green-100 dark:bg-dark-green"
-                                      : "hover:bg-muted")
+                                      : "hover:bg-muted"
                                   }
                                 >
-                                  <label htmlFor={sensor.id} className="cursor-pointer">
+                                  <label
+                                    htmlFor={sensor.id}
+                                    className="cursor-pointer"
+                                  >
                                     <input
                                       className="peer hidden"
                                       disabled={
