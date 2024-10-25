@@ -1,10 +1,11 @@
 import type { Device } from "~/schema";
 import Search from "~/components/search";
-import { Clock4Icon, Cog, Filter, IceCream2Icon } from "lucide-react";
+import { Clock4Icon, Filter, IceCream2Icon, Tag } from "lucide-react";
 import useKeyboardNav from "./use-keyboard-nav";
 import { cn } from "~/lib/utils";
 import FilterOptions from "./filter-options/filter-options";
-import { PhenomenonSelect } from "./phenomenon-select/phenomenon-select";
+// import { PhenomenonSelect } from "./phenomenon-select/phenomenon-select";
+import FilterTags from "./filter-options/filter-tags";
 
 interface NavBarHandlerProps {
   devices: Device[];
@@ -14,28 +15,28 @@ interface NavBarHandlerProps {
 function getSections(devices: Device[]) {
   return [
     {
-      title: "Datum & Zeit",
-      icon: Clock4Icon,
-      color: "bg-blue-100",
-      component: <div>Datum & Zeit</div>,
-    },
-    {
       title: "Filter",
       icon: Filter,
+      color: "bg-blue-100",
+      component: <FilterOptions />,
+    },
+    {
+      title: "Tags",
+      icon: Tag,
+      color: "bg-light-green",
+      component: <FilterTags />,
+    },
+    {
+      title: "Date & Time",
+      icon: Clock4Icon,
       color: "bg-gray-300",
-      component: <FilterOptions></FilterOptions>,
+      component: <div>Coming soon...</div>,
     },
     {
       title: "Phänomen",
       icon: IceCream2Icon,
       color: "bg-slate-500",
-      component: <PhenomenonSelect></PhenomenonSelect>,
-    },
-    {
-      title: "Einstellungen",
-      icon: Cog,
-      color: "bg-light-green",
-      component: <div>Einstellungen</div>,
+      component: <div>Coming soon...</div> //<PhenomenonSelect />,
     },
   ];
 }
@@ -54,7 +55,7 @@ export default function NavbarHandler({
 
   return (
     <div className="mt-4 flex h-60 flex-col gap-4 md:flex-row">
-      <div className="flex justify-around gap-2 md:h-full md:flex-1 md:flex-col">
+      <div className="flex justify-around gap-2 md:h-full md:shrink md:flex-col">
         {sections.map((section, index) => (
           <div
             key={index}

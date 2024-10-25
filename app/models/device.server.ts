@@ -122,6 +122,7 @@ export async function getDevices() {
       exposure: true,
       status: true,
       createdAt: true,
+      tags: true,
     },
   });
   const geojson: GeoJSON.FeatureCollection<Point> = {
