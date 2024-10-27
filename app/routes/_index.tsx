@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 import PricingPlans from "~/components/landing/pricing-plans";
 import Integrations from "~/components/landing/integrations";
 import Connect from "~/components/landing/connect";
-import GlobeComponent from "~/components/landing/globe";
+import { GlobeComponent } from "~/components/landing/globe.client";
 import { useMediaQuery } from "@mantine/hooks";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -79,7 +79,7 @@ export default function Index() {
         <div className="overflow-hidden pt-8 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between w-full">
-              <div className="w-1/2 z-10">
+              <div className="w-full md:w-1/2 z-10">
                 <h1 className="text-5xl font-bold tracking-tight text-light-green dark:text-dark-green">
                   openSenseMap
                 </h1>
