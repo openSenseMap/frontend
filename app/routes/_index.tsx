@@ -15,6 +15,8 @@ import { useTranslation } from "react-i18next";
 import PricingPlans from "~/components/landing/pricing-plans";
 import Integrations from "~/components/landing/integrations";
 import Connect from "~/components/landing/connect";
+import GlobeComponent from "~/components/landing/globe";
+import { useMediaQuery } from "@mantine/hooks";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   let locale = await i18next.getLocale(request);
@@ -66,6 +68,8 @@ export default function Index() {
 
   const { t } = useTranslation("landing");
 
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
   return (
     <div className="min-h-full bg-white dark:bg-black">
       <header>
@@ -74,8 +78,8 @@ export default function Index() {
       <main>
         <div className="overflow-hidden pt-8 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
-              <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
+            <div className="flex items-center justify-between w-full">
+              <div className="w-1/2 z-10">
                 <h1 className="text-5xl font-bold tracking-tight text-light-green dark:text-dark-green">
                   openSenseMap
                 </h1>
@@ -146,51 +150,46 @@ export default function Index() {
                   </motion.div>
                 </div>
               </div>
-              <div className="relative mt-10 sm:mt-20 lg:col-span-5 lg:row-span-2 lg:mt-0 xl:col-span-6">
-                <div className="stroke-gray-300/70 absolute right-0 top-4 h-[1026px] w-[1026px] translate-x-1/2 [mask-image:linear-gradient(to_bottom,white_20%,transparent_75%)] sm:top-16 sm:translate-x-1/2 lg:-top-16 lg:mr-12 xl:-top-14 xl:mr-0">
-                  <img
-                    src="/landing/screenshot_osem.png"
-                    alt="osem_screenshot"
-                    className="h-full rounded-l-full"
-                  />
+              {isDesktop && (
+                <div className="w-1/3">
+                  <GlobeComponent />
                 </div>
-                <div className="-mx-4 h-[448px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:-bottom-20 lg:-top-10 lg:h-auto lg:px-0 lg:pt-10 xl:-bottom-32"></div>
-              </div>
-              <div className="relative -mt-4 lg:col-span-7 lg:mt-0 xl:col-span-6">
-                <Stats {...stats} />
-              </div>
+              )}
+            </div>
+            <div className="relative -mt-4 lg:col-span-7 lg:mt-0 xl:col-span-6">
+              <Stats {...stats} />
             </div>
           </div>
         </div>
+        <section className="py-20 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Features />
+          </div>
+        </section>
+        <section className="py-20 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Connect />
+          </div>
+        </section>
+        <section className="py-20 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Integrations />
+          </div>
+        </section>
+        <section className="py-20 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <PricingPlans />
+          </div>
+        </section>
+        <section className="pt-20 sm:pt-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Partners data={partners} />
+          </div>
+        </section>
+        <footer className="">
+          <Footer />
+        </footer>
       </main>
-      <section className="py-20 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Features />
-        </div>
-      </section>
-      <section className="py-20 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Connect />
-        </div>
-      </section>
-      <section className="py-20 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Integrations />
-        </div>
-      </section>
-      <section className="py-20 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <PricingPlans />
-        </div>
-      </section>
-      <section className="pt-20 sm:pt-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Partners data={partners} />
-        </div>
-      </section>
-      <footer className="">
-        <Footer />
-      </footer>
     </div>
   );
 }
