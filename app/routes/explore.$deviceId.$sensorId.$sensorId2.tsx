@@ -7,11 +7,15 @@ import { getMeasurement } from "~/models/measurement.server";
 import { getSensor } from "~/models/sensor.server";
 import { type Sensor } from "~/schema";
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  const { deviceId, sensorId } = params;
+interface SensorWithColor extends Sensor {
+  color: string;
+}
 
-  if (!deviceId || !sensorId) {
-    throw new Response("Device or sensor not found", { status: 404 });
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const { deviceId, sensorId, sensorId2 } = params;
+
+  if (!deviceId || !sensorId || !sensorId2) {
+    throw new Response("Device or sensors not found", { status: 404 });
   }
 
   const url = new URL(request.url);
@@ -19,26 +23,38 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const startDate = url.searchParams.get("date_from");
   const endDate = url.searchParams.get("date_to");
 
-  const sensor = (await getSensor(sensorId)) as Sensor;
+  // Fetch sensors
+  const sensor1 = (await getSensor(sensorId)) as SensorWithColor;
+  const sensor2 = (await getSensor(sensorId2)) as SensorWithColor;
 
-  // If sensor is not found, handle gracefully
-  if (!sensor) {
-    throw new Response("Sensor not found", { status: 404 });
+  if (!sensor1 || !sensor2) {
+    throw new Response("One or both sensors not found", { status: 404 });
   }
 
-  // Fetch measurements
-  const sensorData = await getMeasurement(
+  // Fetch measurements for each sensor
+  const sensor1Data = await getMeasurement(
     sensorId,
     aggregation,
     startDate ? new Date(startDate) : undefined,
     endDate ? addDays(new Date(endDate), 1) : undefined,
   );
+  const sensor2Data = await getMeasurement(
+    sensorId2,
+    aggregation,
+    startDate ? new Date(startDate) : undefined,
+    endDate ? addDays(new Date(endDate), 1) : undefined,
+  );
 
-  // Assign data to sensor
-  sensor.data = sensorData;
+  // Assign data to sensors
+  sensor1.data = sensor1Data;
+  sensor2.data = sensor2Data;
+
+  // Ensure each sensor has a color
+  sensor1.color = sensor1.color || "#000000"; // Default color for sensor 1
+  sensor2.color = sensor2.color || "#000000"; // Default color for sensor 2
 
   return typedjson({
-    sensors: [sensor],
+    sensors: [sensor1, sensor2],
     startDate,
     endDate,
     aggregation,

@@ -1,4 +1,9 @@
-import { useNavigate, useNavigation, useSearchParams } from "@remix-run/react";
+import {
+  useMatches,
+  useNavigate,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -82,7 +87,7 @@ export default function Graph({
   endDate,
 }: GraphProps) {
   const navigation = useNavigation();
-  console.log("🚀 ~ navigation:", navigation)
+  const matches = useMatches();
   const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
@@ -534,6 +539,10 @@ export default function Graph({
                   searchParams.delete("date_to");
                   searchParams.delete("date_from");
                   searchParams.delete("aggregation");
+                  navigate({
+                    pathname: matches[2].pathname,
+                    search: searchParams.toString(),
+                  });
                   setSearchParams(searchParams);
                 }}
               />
