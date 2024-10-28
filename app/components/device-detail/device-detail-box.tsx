@@ -142,14 +142,23 @@ export default function DeviceDetailBox() {
       const existingIndex = sensorIdArray.indexOf(sensorId);
       if (existingIndex > -1 && sensorIdArray.length > 1) {
         sensorIdArray.splice(existingIndex, 1);
-        navigate(`/explore/${deviceId}/${sensorIdArray[0]}`);
+        navigate({
+          pathname: `/explore/${deviceId}/${sensorIdArray[0]}`,
+          search: searchParams.toString(),
+        });
         return;
       }
       // If it is, navigate to the explore route without that sensor
-      navigate(`/explore/${deviceId}`);
+      navigate({
+        pathname: `/explore/${deviceId}`,
+        search: searchParams.toString(),
+      });
       return;
     } else if (matches.length === 4 && sensorIds.size === 1) {
-      navigate(`${matches[3].pathname}/${sensorId}`);
+      navigate({
+        pathname: `${matches[3].pathname}/${sensorId}`,
+        search: searchParams.toString(),
+      });
       return;
     } else if (sensorIds.size === 2) {
       toast({
@@ -160,7 +169,10 @@ export default function DeviceDetailBox() {
       return;
     } else {
       // If not, navigate to the new route
-      navigate(`/explore/${deviceId}/${sensorId}`);
+      navigate({
+        pathname: `/explore/${deviceId}/${sensorId}`,
+        search: searchParams.toString(),
+      });
     }
   };
 
