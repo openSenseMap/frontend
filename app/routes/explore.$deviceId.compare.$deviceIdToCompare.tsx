@@ -123,6 +123,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       device1,
       device2,
       sensorGroups,
+      aggregation,
       selectedSensors: [],
     });
   }
@@ -189,7 +190,7 @@ export default function CompareDevices() {
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const [open, setOpen] = useState(true);
-  const [openGraph, setOpenGraph] = useState(
+  const [, setOpenGraph] = useState(
     Boolean(data.selectedSensors.length > 0 ? true : false),
   );
   const { setCompareMode } = useSharedCompareMode();
@@ -504,7 +505,7 @@ export default function CompareDevices() {
         </div>
       )}
       {sensorIds.length > 0 ? (
-        <Graph setOpenGraph={setOpenGraph} openGraph={openGraph} />
+        <Graph sensors={data.selectedSensors} aggregation={data.aggregation} />
       ) : null}
     </>
   );
