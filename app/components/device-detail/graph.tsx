@@ -1,5 +1,6 @@
 import {
-  useLoaderData,
+  useMatches,
+  useNavigate,
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
@@ -17,8 +18,7 @@ import {
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
-import { de, enGB } from "date-fns/locale";
-import type { loader } from "~/routes/explore.$deviceId._index";
+// import { de, enGB } from "date-fns/locale";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
@@ -73,9 +73,22 @@ const LineWithZoom = (props: any) => {
   );
 };
 
-export default function Graph(props: any) {
-  const loaderData = useLoaderData<typeof loader>();
+interface GraphProps {
+  aggregation: string;
+  sensors: any[];
+  startDate?: string;
+  endDate?: string;
+}
+
+export default function Graph({
+  aggregation,
+  sensors,
+  startDate,
+  endDate,
+}: GraphProps) {
   const navigation = useNavigation();
+  const matches = useMatches();
+  const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
@@ -85,7 +98,7 @@ export default function Graph(props: any) {
     index: 0,
     color: "#000000",
   });
-  const isAggregated = loaderData.aggregation !== "raw";
+  const isAggregated = aggregation !== "raw";
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
@@ -95,12 +108,10 @@ export default function Graph(props: any) {
 
   const [lineData, setLineData] = useState(() => {
     const includeDeviceName =
-      loaderData.selectedSensors.length === 2 &&
-      loaderData.selectedSensors[0].device_name !==
-        loaderData.selectedSensors[1].device_name;
+      sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name;
 
     return {
-      datasets: loaderData.selectedSensors
+      datasets: sensors
         .map(
           (
             sensor: {
@@ -127,7 +138,7 @@ export default function Graph(props: any) {
               tension: 0.4,
             };
 
-            if (isAggregated && loaderData.selectedSensors.length === 1) {
+            if (isAggregated && sensors.length === 1) {
               const minDataset = {
                 ...baseDataset,
                 label: `${baseDataset.label} (Min)`,
@@ -164,12 +175,10 @@ export default function Graph(props: any) {
 
   useEffect(() => {
     const includeDeviceName =
-      loaderData.selectedSensors.length === 2 &&
-      loaderData.selectedSensors[0].device_name !==
-        loaderData.selectedSensors[1].device_name;
+      sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name;
 
     setLineData({
-      datasets: loaderData.selectedSensors
+      datasets: sensors
         .map(
           (
             sensor: {
@@ -196,7 +205,7 @@ export default function Graph(props: any) {
               tension: 0.4,
             };
 
-            if (isAggregated && loaderData.selectedSensors.length === 1) {
+            if (isAggregated && sensors.length === 1) {
               const minDataset = {
                 ...baseDataset,
                 label: `${baseDataset.label} (Min)`,
@@ -229,7 +238,7 @@ export default function Graph(props: any) {
         )
         .flat(),
     });
-  }, [loaderData, isAggregated]);
+  }, [sensors, isAggregated]);
 
   const options: ChartOptions<"line"> = useMemo(() => {
     return {
@@ -249,8 +258,8 @@ export default function Graph(props: any) {
           type: "time",
           time: {
             unit: datesHave48HourRange(
-              new Date(loaderData.fromDate),
-              new Date(loaderData.toDate),
+              startDate ? new Date(startDate) : new Date(),
+              endDate ? new Date(endDate) : new Date(),
             )
               ? "hour"
               : "day",
@@ -263,11 +272,11 @@ export default function Graph(props: any) {
             },
             tooltipFormat: "dd.MM.yyyy HH:mm",
           },
-          adapters: {
-            date: {
-              locale: loaderData.locale === "de" ? de : enGB,
-            },
-          },
+          // adapters: {
+          //   date: {
+          //     locale: data.locale === "de" ? de : enGB,
+          //   },
+          // },
           ticks: {
             major: {
               enabled: true,
@@ -291,10 +300,7 @@ export default function Graph(props: any) {
         y: {
           title: {
             display: true,
-            text:
-              loaderData.selectedSensors[0].title +
-              " in " +
-              loaderData.selectedSensors[0].unit,
+            text: sensors[0].title + " in " + sensors[0].unit,
           },
           type: "linear",
           display: true,
@@ -309,11 +315,7 @@ export default function Graph(props: any) {
         y1: {
           title: {
             display: true,
-            text: loaderData.selectedSensors[1]
-              ? loaderData.selectedSensors[1].title +
-                " in " +
-                loaderData.selectedSensors[1].unit
-              : "", //data.sensors[1].unit
+            text: sensors[1] ? sensors[1].title + " in " + sensors[1].unit : "", //data.sensors[1].unit
           },
           type: "linear",
           display: "auto",
@@ -374,10 +376,10 @@ export default function Graph(props: any) {
       },
     };
   }, [
-    loaderData.fromDate,
-    loaderData.toDate,
-    loaderData.locale,
-    loaderData.selectedSensors,
+    startDate,
+    endDate,
+    // data.locale,
+    sensors,
     theme,
     colorPickerState.open,
     lineData.datasets,
@@ -422,12 +424,12 @@ export default function Graph(props: any) {
 
     // Loop through each timestamp and sensor data
     labels.forEach((timestamp: any, index: string | number) => {
-      loaderData.selectedSensors.forEach((sensor: any) => {
+      sensors.forEach((sensor: any) => {
         const dataset = lineData.datasets.find(
           (ds: { label: string | any[] }) => ds.label.includes(sensor.title),
         );
         if (dataset) {
-          const value = dataset.data[index]?.y ?? "";
+          const value = (dataset.data as any)[index]?.y ?? "";
 
           csvContent += `${timestamp},`;
           csvContent += `${sensor.deviceId},`;
@@ -474,118 +476,117 @@ export default function Graph(props: any) {
 
   return (
     <>
-      {props.openGraph && (
-        <Draggable
-          nodeRef={nodeRef}
-          bounds="#osem"
-          handle="#graphTop"
-          defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
-          onDrag={handleDrag}
-          disabled={!isBrowser && !isTablet}
+      <Draggable
+        nodeRef={nodeRef}
+        bounds="#osem"
+        handle="#graphTop"
+        defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
+        onDrag={handleDrag}
+        disabled={!isBrowser && !isTablet}
+      >
+        <div
+          ref={nodeRef}
+          className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 right-4 top-14 z-40 flex flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:right-4 md:left-auto md:top-auto md:w-[60vw] md:h-[35%] md:max-h-[35%]"
         >
+          {navigation.state === "loading" && (
+            <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+              <Spinner />
+            </div>
+          )}
           <div
-            ref={nodeRef}
-            className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 right-4 top-14 z-40 flex flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:right-4 md:left-auto md:top-auto md:w-[60vw] md:h-[35%] md:max-h-[35%]"
+            className="flex cursor-move items-center justify-between px-2 pt-2"
+            id="graphTop"
           >
-            {navigation.state === "loading" && (
-              <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
-                <Spinner />
-              </div>
-            )}
-            <div
-              className="flex cursor-move items-center justify-between px-2 pt-2"
-              id="graphTop"
-            >
-              <div className="flex items-center justify-center gap-4">
-                <DateRangeFilter />
-                <AggregationFilter />
-              </div>
-              <div className="flex items-center justify-end gap-4">
-                {isZoomed && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <RefreshCcw
-                          onClick={handleResetZoomClick}
-                          className="cursor-pointer"
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Reset zoom</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Download />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handlePngDownloadClick}>
-                      PNG
-                    </DropdownMenuItem>
-                    {loaderData.selectedSensors.length < 2 && (
-                      <DropdownMenuItem onClick={handleCsvDownloadClick}>
-                        CSV
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <X
-                  className="cursor-pointer"
-                  onClick={() => {
-                    searchParams.delete("sensor");
-                    searchParams.delete("date_to");
-                    searchParams.delete("date_from");
-                    searchParams.delete("aggregation");
-                    setSearchParams(searchParams);
-                    props.setOpenGraph(false);
-                  }}
-                />
-              </div>
+            <div className="flex items-center justify-center gap-4">
+              <DateRangeFilter />
+              <AggregationFilter />
             </div>
-            <div className="flex h-full w-full items-center justify-center">
-              {(loaderData.selectedSensors[0].data.length === 0 &&
-                loaderData.selectedSensors[1] === undefined) ||
-              (loaderData.selectedSensors[0].data.length === 0 &&
-                loaderData.selectedSensors[1].data.length === 0) ? (
-                <div>There is no data for the selected time period.</div>
-              ) : (
-                <ClientOnly fallback={<Spinner />}>
-                  {() => (
-                    <LineWithZoom
-                      lineData={lineData}
-                      options={options}
-                      chartRef={chartRef} // Pass chartRef as a prop
-                    />
-                  )}
-                </ClientOnly>
+            <div className="flex items-center justify-end gap-4">
+              {isZoomed && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <RefreshCcw
+                        onClick={handleResetZoomClick}
+                        className="cursor-pointer"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Reset zoom</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Download />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={handlePngDownloadClick}>
+                    PNG
+                  </DropdownMenuItem>
+                  {sensors.length < 2 && (
+                    <DropdownMenuItem onClick={handleCsvDownloadClick}>
+                      CSV
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <X
+                className="cursor-pointer"
+                onClick={() => {
+                  searchParams.delete("sensor");
+                  searchParams.delete("date_to");
+                  searchParams.delete("date_from");
+                  searchParams.delete("aggregation");
+                  navigate({
+                    pathname: matches[2].pathname,
+                    search: searchParams.toString(),
+                  });
+                  setSearchParams(searchParams);
+                }}
+              />
             </div>
-            {/* Overlay when the color picker is open */}
-            {colorPickerState.open && (
-              <>
-                <div className="absolute inset-0 z-50 bg-black opacity-50"></div>{" "}
-                {/* This is the overlay */}
-                <div
-                  className="absolute z-50 bg-white rounded dark:bg-zinc-800"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    transform: "translate(-50%, -50%)", // Centers the color picker
-                  }}
-                >
-                  <ColorPicker
-                    handleColorChange={handleColorChange}
-                    colorPickerState={colorPickerState}
-                    setColorPickerState={setColorPickerState}
+          </div>
+          <div className="flex h-full w-full items-center justify-center">
+            {(sensors[0].data.length === 0 && sensors[1] === undefined) ||
+            (sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
+              <div>There is no data for the selected time period.</div>
+            ) : (
+              <ClientOnly fallback={<Spinner />}>
+                {() => (
+                  <LineWithZoom
+                    lineData={lineData}
+                    options={options}
+                    chartRef={chartRef} // Pass chartRef as a prop
                   />
-                </div>
-              </>
+                )}
+              </ClientOnly>
             )}
           </div>
-        </Draggable>
-      )}
+          {/* Overlay when the color picker is open */}
+          {colorPickerState.open && (
+            <>
+              <div className="absolute inset-0 z-50 bg-black opacity-50"></div>{" "}
+              {/* This is the overlay */}
+              <div
+                className="absolute z-50 bg-white rounded dark:bg-zinc-800"
+                style={{
+                  left: "50%",
+                  top: "50%",
+                  transform: "translate(-50%, -50%)", // Centers the color picker
+                }}
+              >
+                <ColorPicker
+                  handleColorChange={handleColorChange}
+                  colorPickerState={colorPickerState}
+                  setColorPickerState={setColorPickerState}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </Draggable>
     </>
   );
 }

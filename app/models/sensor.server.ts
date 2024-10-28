@@ -131,6 +131,13 @@ export function updateSensor({
     .where(eq(sensor.id, id));
 }
 
+// return first sensor with its device name
+export function getSensor(id: Sensor["id"]) {
+  return drizzleClient.query.sensor.findFirst({
+    where: (sensor, { eq }) => eq(sensor.id, id),
+  });
+}
+
 export function deleteSensor(id: Sensor["id"]) {
   return drizzleClient.delete(sensor).where(eq(sensor.id, id));
 }

@@ -1,12 +1,11 @@
 import {
-  Form,
   useLoaderData,
+  useMatches,
   useNavigate,
   useNavigation,
+  useParams,
   useSearchParams,
-  useSubmit,
 } from "@remix-run/react";
-import Graph from "./graph";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -14,7 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import type { loader } from "~/routes/explore.$deviceId._index";
+import type { loader } from "~/routes/explore.$deviceId";
 import {
   ChevronUp,
   Minus,
@@ -76,6 +75,7 @@ import {
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import EntryLogs from "./entry-logs";
+import { useToast } from "../ui/use-toast";
 
 export interface MeasurementProps {
   sensorId: string;
@@ -100,21 +100,30 @@ export const useSharedCompareMode = () => useBetween(useCompareMode);
 export default function DeviceDetailBox() {
   const navigation = useNavigation();
   const navigate = useNavigate();
+  const matches = useMatches();
+  const { toast } = useToast();
+
+  const sensorIds = new Set();
+  // Check the last two segments of the URL
+  const lastSegment = matches[matches.length - 1]?.params?.sensorId2;
+  if (lastSegment) {
+    const secondLastSegment = matches[matches.length - 2]?.params?.sensorId;
+    sensorIds.add(secondLastSegment);
+    sensorIds.add(lastSegment);
+  } else {
+    const lastSegment = matches[matches.length - 1]?.params?.sensorId;
+    sensorIds.add(lastSegment);
+  }
+
   const data = useLoaderData<typeof loader>();
   const nodeRef = useRef(null);
   // state variables
   const [open, setOpen] = useState(true);
-  const [openGraph, setOpenGraph] = useState(
-    Boolean(data.selectedSensors.length > 0 ? true : false),
-  );
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const { compareMode, setCompareMode } = useSharedCompareMode();
   const [refreshOn] = useState(false);
   const [refreshSecond, setRefreshSecond] = useState(59);
-  useEffect(() => {
-    setOpenGraph(Boolean(data.selectedSensors.length));
-  }, [data.selectedSensors]);
 
   const [sensors, setSensors] = useState<SensorWithMeasurement[]>();
   useEffect(() => {
@@ -123,18 +132,41 @@ export default function DeviceDetailBox() {
 
   const [searchParams] = useSearchParams();
 
-  // get list of selected sensor ids from URL search params
-  const selectedSensorIds = searchParams.getAll("sensor");
+  const { deviceId } = useParams(); // Get the deviceId from the URL params
+
+  // Function to handle sensor click
+  const handleSensorClick = (sensorId: string) => {
+    // check if that last entry is the same as the current sensorId
+    if (sensorIds.has(sensorId)) {
+      const sensorIdArray = Array.from(sensorIds);
+      const existingIndex = sensorIdArray.indexOf(sensorId);
+      if (existingIndex > -1 && sensorIdArray.length > 1) {
+        sensorIdArray.splice(existingIndex, 1);
+        navigate(`/explore/${deviceId}/${sensorIdArray[0]}`);
+        return;
+      }
+      // If it is, navigate to the explore route without that sensor
+      navigate(`/explore/${deviceId}`);
+      return;
+    } else if (matches.length === 4 && sensorIds.size === 1) {
+      navigate(`${matches[3].pathname}/${sensorId}`);
+      return;
+    } else if (sensorIds.size === 2) {
+      toast({
+        title: "Cant select more than 2 sensors",
+        description: "Deselect one sensor to select another",
+        variant: "destructive",
+      });
+      return;
+    } else {
+      // If not, navigate to the new route
+      navigate(`/explore/${deviceId}/${sensorId}`);
+    }
+  };
 
   function handleDrag(_e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
-  }
-
-  function handleCompareClick() {
-    setCompareMode(!compareMode);
-    setOpenGraph(false);
-    setOpen(false);
   }
 
   const addLineBreaks = (text: string) =>
@@ -159,8 +191,6 @@ export default function DeviceDetailBox() {
     }
     return () => clearInterval(interval);
   }, [refreshOn, refreshSecond]);
-
-  const submit = useSubmit();
 
   const getDeviceImage = (imageUri: string) =>
     imageUri !== null
@@ -237,7 +267,6 @@ export default function DeviceDetailBox() {
                     <DropdownMenuItem
                       className="cursor-pointer"
                       disabled={true}
-                      onClick={() => handleCompareClick()}
                     >
                       <Scale className="mr-2 h-4 w-4" />
                       <span>Compare</span>
@@ -280,9 +309,6 @@ export default function DeviceDetailBox() {
                 <X
                   className="cursor-pointer"
                   onClick={() => {
-                    if (searchParams.has("sensor")) {
-                      searchParams.delete("sensor");
-                    }
                     navigate({
                       pathname: "/explore",
                       search: searchParams.toString(),
@@ -382,19 +408,7 @@ export default function DeviceDetailBox() {
                       Sensors
                     </AccordionTrigger>
                     <AccordionContent>
-                      <Form
-                        method="get"
-                        onChange={(e) => {
-                          // handle sensor selection and keep time/aggregation params if at least one sensor is selected
-                          const formData = new FormData(e.currentTarget);
-                          if (formData.getAll("sensor").length > 0) {
-                            searchParams.delete("sensor");
-                            searchParams.forEach((value, key) => {
-                              formData.append(key, value);
-                            });
-                          }
-                          submit(formData);
-                        }}
+                      <div
                         className={
                           navigation.state === "loading"
                             ? "pointer-events-none"
@@ -408,10 +422,11 @@ export default function DeviceDetailBox() {
                                 <Card
                                   key={sensor.id}
                                   className={
-                                    selectedSensorIds.includes(sensor.id)
+                                    sensorIds.has(sensor.id)
                                       ? "bg-green-100 dark:bg-dark-green"
                                       : "hover:bg-muted"
                                   }
+                                  onClick={() => handleSensorClick(sensor.id)} // Update to handle click
                                 >
                                   <label
                                     htmlFor={sensor.id}
@@ -420,21 +435,16 @@ export default function DeviceDetailBox() {
                                     <input
                                       className="peer hidden"
                                       disabled={
-                                        !selectedSensorIds.includes(
-                                          sensor.id,
-                                        ) &&
-                                        searchParams.getAll("sensor").length >=
-                                          2
+                                        !sensorIds.has(sensor.id) &&
+                                        sensorIds.size >= 2
                                           ? true
                                           : false
-                                      } // check if there are already two selected and this one is not one of them
+                                      }
                                       type="checkbox"
                                       name="sensor"
                                       id={sensor.id}
                                       value={sensor.id}
-                                      defaultChecked={selectedSensorIds.includes(
-                                        sensor.id,
-                                      )}
+                                      defaultChecked={sensorIds.has(sensor.id)}
                                     />
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                       <CardTitle className="text-sm font-medium">
@@ -478,7 +488,7 @@ export default function DeviceDetailBox() {
                               );
                             })}
                         </div>
-                      </Form>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -523,9 +533,6 @@ export default function DeviceDetailBox() {
           </TooltipProvider>
         </div>
       )}
-      {selectedSensorIds.length > 0 ? (
-        <Graph setOpenGraph={setOpenGraph} openGraph={openGraph} />
-      ) : null}
     </>
   );
 }
