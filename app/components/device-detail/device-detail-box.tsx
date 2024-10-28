@@ -6,7 +6,6 @@ import {
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
-import Graph from "./graph";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -14,7 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import type { loader } from "~/routes/explore.$deviceId._index";
+import type { loader } from "~/routes/explore.$deviceId";
 import {
   ChevronUp,
   Minus,
@@ -104,17 +103,11 @@ export default function DeviceDetailBox() {
   const nodeRef = useRef(null);
   // state variables
   const [open, setOpen] = useState(true);
-  const [openGraph, setOpenGraph] = useState(
-    Boolean(data.selectedSensors.length > 0 ? true : false),
-  );
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
   const { compareMode, setCompareMode } = useSharedCompareMode();
   const [refreshOn] = useState(false);
   const [refreshSecond, setRefreshSecond] = useState(59);
-  useEffect(() => {
-    setOpenGraph(Boolean(data.selectedSensors.length));
-  }, [data.selectedSensors]);
 
   const [sensors, setSensors] = useState<SensorWithMeasurement[]>();
   useEffect(() => {
@@ -129,12 +122,6 @@ export default function DeviceDetailBox() {
   function handleDrag(_e: any, data: DraggableData) {
     setOffsetPositionX(data.x);
     setOffsetPositionY(data.y);
-  }
-
-  function handleCompareClick() {
-    setCompareMode(!compareMode);
-    setOpenGraph(false);
-    setOpen(false);
   }
 
   const addLineBreaks = (text: string) =>
@@ -237,7 +224,6 @@ export default function DeviceDetailBox() {
                     <DropdownMenuItem
                       className="cursor-pointer"
                       disabled={true}
-                      onClick={() => handleCompareClick()}
                     >
                       <Scale className="mr-2 h-4 w-4" />
                       <span>Compare</span>
@@ -523,9 +509,6 @@ export default function DeviceDetailBox() {
           </TooltipProvider>
         </div>
       )}
-      {selectedSensorIds.length > 0 ? (
-        <Graph setOpenGraph={setOpenGraph} openGraph={openGraph} />
-      ) : null}
     </>
   );
 }
