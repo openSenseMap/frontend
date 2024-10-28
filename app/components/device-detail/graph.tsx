@@ -1,5 +1,4 @@
 import {
-  useMatches,
   useNavigate,
   useNavigation,
   useSearchParams,
@@ -87,7 +86,6 @@ export default function Graph({
   endDate,
 }: GraphProps) {
   const navigation = useNavigation();
-  const matches = useMatches();
   const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
@@ -535,15 +533,14 @@ export default function Graph({
               <X
                 className="cursor-pointer"
                 onClick={() => {
-                  searchParams.delete("sensor");
                   searchParams.delete("date_to");
                   searchParams.delete("date_from");
                   searchParams.delete("aggregation");
+                  setSearchParams(searchParams);
                   navigate({
-                    pathname: matches[2].pathname,
+                    pathname: `/explore/${sensors[0].deviceId}`,
                     search: searchParams.toString(),
                   });
-                  setSearchParams(searchParams);
                 }}
               />
             </div>
