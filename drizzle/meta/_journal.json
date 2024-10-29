@@ -50,20 +50,6 @@
       "when": 1722275512453,
       "tag": "0006_wealthy_fat_cobra",
       "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1728471479514,
-      "tag": "0007_init_postgis",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1728911300960,
-      "tag": "0008_add_locations",
-      "breakpoints": true
     }
   ]
 }
