@@ -8,12 +8,12 @@ import {
   redirect,
 } from "@remix-run/react";
 import Map from "~/components/map";
-import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css";
+import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
 import Header from "~/components/header";
 import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
-import { MapProvider, Layer, Source } from "react-map-gl";
+import { MapProvider, Layer, Source, Marker } from "react-map-gl";
 import { useState, useRef, useEffect } from "react";
 import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import Legend from "~/components/map/legend";
@@ -29,6 +29,7 @@ import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
+import BoxMarker from "~/components/map/layers/cluster/box-marker";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -45,12 +46,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
-
-  // Check if the "status" parameter is missing
-  if (!urlFilterParams.has("status")) {
-    urlFilterParams.set("status", "active");
-    return redirect(`${url.pathname}?${urlFilterParams.toString()}`);
-  }
 
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
@@ -109,8 +104,8 @@ export default function Explore() {
 
   // get map bounds
   const [, setViewState] = useState({
-    longitude: 52,
-    latitude: 7,
+    longitude: 7.628202,
+    latitude: 51.961563,
     zoom: 2,
   });
   const navigate = useNavigate();
@@ -260,11 +255,15 @@ export default function Explore() {
   //* fly to sensebox location when url inludes deviceId
   const { deviceId } = useParams();
   var deviceLoc: any;
+  let selectedDevice: any;
   if (deviceId) {
-    const device = data.devices.features.find(
+    selectedDevice = data.devices.features.find(
       (device: any) => device.properties.id === deviceId,
     );
-    deviceLoc = [device?.properties.latitude, device?.properties.longitude];
+    deviceLoc = [
+      selectedDevice?.properties.latitude,
+      selectedDevice?.properties.longitude,
+    ];
   }
 
   const buildLayerFromPheno = (selectedPheno: any) => {
@@ -307,6 +306,21 @@ export default function Explore() {
                   buildLayerFromPheno(selectedPheno))}
               />
             </Source>
+          )}
+
+          {/* Render BoxMarker for the selected device */}
+          {selectedDevice && deviceId && (
+            <Marker
+              latitude={selectedDevice.properties.latitude}
+              longitude={selectedDevice.properties.longitude}
+            >
+              <BoxMarker
+                key={`device-${selectedDevice.properties.id}`}
+                latitude={selectedDevice.properties.latitude}
+                longitude={selectedDevice.properties.longitude}
+                device={selectedDevice.properties as Device}
+              />
+            </Marker>
           )}
 
           {/* <ClusterLayer

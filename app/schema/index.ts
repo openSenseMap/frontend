@@ -8,3 +8,4 @@ export * from "./types";
 export * from "./sensor";
 export * from "./user";
 export * from "./location";
+export * from "./log-entry";

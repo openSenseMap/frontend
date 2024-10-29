@@ -138,7 +138,7 @@ export default function Index() {
                           damping: 10,
                         }}
                       >
-                        <button className="dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:bg-dark-blue dark:text-white">
+                        <button className="dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:text-white">
                           {t("donate")}
                         </button>
                       </motion.div>

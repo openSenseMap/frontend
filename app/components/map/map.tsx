@@ -7,7 +7,7 @@ const Map = forwardRef<MapRef, MapProps>(
   (
     // take fog and terrain out of props to resolve error
     { children, mapStyle, fog = null, terrain = null, ...props },
-    ref
+    ref,
   ) => {
     // get theme from tailwind
     const [theme] = useTheme();
@@ -16,8 +16,8 @@ const Map = forwardRef<MapRef, MapProps>(
         id="osem"
         dragRotate={false}
         initialViewState={{
-          longitude: 10,
-          latitude: 25,
+          longitude: 7.628202,
+          latitude: 51.961563,
           zoom: 2,
         }}
         mapStyle={
@@ -27,7 +27,7 @@ const Map = forwardRef<MapRef, MapProps>(
         }
         mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
         pitchWithRotate={false}
-        projection={"globe"}
+        projection={{ name: "globe" }}
         preserveDrawingBuffer
         hash={true}
         ref={ref}
@@ -45,7 +45,7 @@ const Map = forwardRef<MapRef, MapProps>(
         <NavigationControl position="bottom-right" showCompass={false} />
       </ReactMap>
     );
-  }
+  },
 );
 
 Map.displayName = "Map";

@@ -28,6 +28,8 @@ import {
   Cpu,
   Rss,
   CalendarPlus,
+  Hash,
+  LandPlot,
 } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -72,6 +74,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import EntryLogs from "./entry-logs";
 
 export interface MeasurementProps {
   sensorId: string;
@@ -232,6 +236,7 @@ export default function DeviceDetailBox() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="cursor-pointer"
+                      disabled={true}
                       onClick={() => handleCompareClick()}
                     >
                       <Scale className="mr-2 h-4 w-4" />
@@ -280,80 +285,86 @@ export default function DeviceDetailBox() {
                 />
               </div>
               <div className="no-scrollbar relative flex-1 overflow-y-scroll">
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full"
-                  defaultValue="item-1"
-                >
-                  <AccordionItem value="item-1" className="sticky top-0 z-10">
-                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                      General
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="relative grid grid-cols-4 gap-x-4">
-                        <div className="col-span-2">
-                          <img
-                            className="aspect-[4/3] rounded-lg"
-                            alt="device_image"
-                            src={getDeviceImage(data.device.image)}
-                          ></img>
-                        </div>
-                        <div className="col-span-2 col-start-3">
-                          <div className="flex flex-col gap-1">
-                            <a
-                              href={data.device.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="Open external link"
-                              className="w-full cursor-pointer flex items-center space-y-1 text-sm"
+                <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
+                  <div className="md:w-1/2">
+                    <img
+                      className="w-full object-cover rounded-lg"
+                      alt="device_image"
+                      src={getDeviceImage(data.device.image)}
+                    ></img>
+                  </div>
+                  <div className="sm:w-1/2 space-y-2">
+                    <InfoItem
+                      icon={LandPlot}
+                      title="Exposure"
+                      text={data.device.exposure}
+                    />
+                    <InfoItem
+                      icon={Cpu}
+                      title="Sensor Model"
+                      text={data.device.sensorWikiModel}
+                    />
+                    <Separator className="my-2" />
+                    <InfoItem
+                      icon={Rss}
+                      title="Last Updated"
+                      text={format(new Date(data.device.updatedAt), "PPP")}
+                    />
+                    <Separator className="my-2" />
+                    <InfoItem
+                      icon={CalendarPlus}
+                      title="Created At"
+                      text={format(new Date(data.device.createdAt), "PPP")}
+                    />
+                  </div>
+                </div>
+                {data.device.tags.length > 0 && (
+                  <div className="pt-4">
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Tags
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="flex flex-wrap gap-2">
+                          {data.device.tags.map((tag: string) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="text-xs font-medium"
                             >
-                              <ExternalLink className="mr-2 h-4 w-4" />
-                              External Link
-                            </a>
-                            <Separator className="my-4"></Separator>
-                            <div className="flex items-center space-y-1 text-sm">
-                              <Cpu className="mr-2 h-4 w-4" />{" "}
-                              {data.device.sensorWikiModel ?? "Not specified"}
-                            </div>
-                            <Separator className="my-4"></Separator>
-                            <div className="flex items-center space-y-1 text-sm">
-                              <Rss className="mr-2 h-4 w-4" />
-                              {format(new Date(data.device.updatedAt), "PPP")}
-                            </div>
-                            <Separator className="my-4"></Separator>
-                            <div className="flex items-center space-y-1 text-sm">
-                              <CalendarPlus className="mr-2 h-4 w-4" />
-                              {format(new Date(data.device.createdAt), "PPP")}
-                            </div>
-                          </div>
+                              {tag}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-                      {/* <div className="flex h-auto w-auto items-center justify-center p-4 opacity-100">
-                        <img
-                          className="aspect-[4/3] rounded-lg"
-                          alt="device_image"
-                          src={`https://opensensemap.org/userimages/${data.device.image}`}
-                        ></img>
-                      </div> */}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full"
-                  defaultValue={data.device.description ? "item-1" : ""}
-                >
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                      Description
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {addLineBreaks(data.device.description || "")}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                    </div>
+                  </div>
+                )}
+                <Separator className="my-4"></Separator>
+                {data.device.logEntries.length > 0 && (
+                  <>
+                    <EntryLogs entryLogs={data.device.logEntries} />
+                    <Separator className="my-4" />
+                  </>
+                )}
+                {data.device.description && (
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="w-full"
+                    defaultValue={"item-1"}
+                  >
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
+                        Description
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {addLineBreaks(data.device.description)}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                )}
                 <Accordion
                   type="single"
                   collapsible
@@ -385,80 +396,78 @@ export default function DeviceDetailBox() {
                         }
                       >
                         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-                          {sensors
-                            ? sensors.map((sensor: SensorWithMeasurement) => {
-                                return (
-                                  <Card
-                                    key={sensor.id}
-                                    className={
-                                      "hover:bg-muted " +
-                                      (selectedSensorIds.includes(sensor.id)
-                                        ? "bg-green-100 dark:bg-dark-green"
-                                        : "")
-                                    }
-                                  >
-                                    <label htmlFor={sensor.id}>
-                                      <input
-                                        className="peer hidden"
-                                        disabled={
-                                          !selectedSensorIds.includes(
-                                            sensor.id,
-                                          ) &&
-                                          searchParams.getAll("sensor")
-                                            .length >= 2
-                                            ? true
-                                            : false
-                                        } // check if there are already two selected and this one is not one of them
-                                        type="checkbox"
-                                        name="sensor"
-                                        id={sensor.id}
-                                        value={sensor.id}
-                                        defaultChecked={selectedSensorIds.includes(
+                          {sensors &&
+                            sensors.map((sensor: SensorWithMeasurement) => {
+                              return (
+                                <Card
+                                  key={sensor.id}
+                                  className={
+                                    (selectedSensorIds.includes(sensor.id)
+                                      ? "bg-green-100 dark:bg-dark-green"
+                                      : "hover:bg-muted")
+                                  }
+                                >
+                                  <label htmlFor={sensor.id} className="cursor-pointer">
+                                    <input
+                                      className="peer hidden"
+                                      disabled={
+                                        !selectedSensorIds.includes(
                                           sensor.id,
-                                        )}
+                                        ) &&
+                                        searchParams.getAll("sensor").length >=
+                                          2
+                                          ? true
+                                          : false
+                                      } // check if there are already two selected and this one is not one of them
+                                      type="checkbox"
+                                      name="sensor"
+                                      id={sensor.id}
+                                      value={sensor.id}
+                                      defaultChecked={selectedSensorIds.includes(
+                                        sensor.id,
+                                      )}
+                                    />
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                      <CardTitle className="text-sm font-medium">
+                                        {sensor.title}
+                                      </CardTitle>
+                                      <SensorIcon
+                                        title={sensor.title || ""}
+                                        className="h-4 w-4 text-muted-foreground"
                                       />
-                                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
-                                          {sensor.title}
-                                        </CardTitle>
-                                        <SensorIcon
-                                          title={sensor.title || ""}
-                                          className="h-4 w-4 text-muted-foreground"
-                                        />
-                                      </CardHeader>
-                                      <CardContent>
-                                        <div className="flex flex-row items-center space-x-2">
-                                          <div className="text-2xl font-bold">
-                                            {sensor.value}
-                                          </div>
-                                          <p className="text-xs text-muted-foreground">
-                                            {sensor.unit}
-                                          </p>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="flex flex-row items-center space-x-2">
+                                        <div className="text-2xl font-bold">
+                                          {sensor.value}
                                         </div>
-                                      </CardContent>
-                                      <Separator />
-                                      <CardFooter className="justify-between px-6 py-3">
-                                        <div className="flex items-center gap-1">
-                                          <div
-                                            className={
-                                              sensor.status === "active"
-                                                ? "h-2 w-2 rounded-full bg-light-green"
-                                                : "h-2 w-2 rounded-full bg-red-500"
-                                            }
-                                          ></div>
-                                          <p className="text-xs text-muted-foreground">
-                                            {formatDistanceToNow(
-                                              new Date(sensor.time),
-                                            )}{" "}
-                                            ago
-                                          </p>
-                                        </div>
-                                      </CardFooter>
-                                    </label>
-                                  </Card>
-                                );
-                              })
-                            : null}
+                                        <p className="text-xs text-muted-foreground">
+                                          {sensor.unit}
+                                        </p>
+                                      </div>
+                                    </CardContent>
+                                    <Separator />
+                                    <CardFooter className="justify-between px-6 py-3">
+                                      <div className="flex items-center gap-1">
+                                        <div
+                                          className={
+                                            sensor.status === "active"
+                                              ? "h-2 w-2 rounded-full bg-light-green"
+                                              : "h-2 w-2 rounded-full bg-red-500"
+                                          }
+                                        ></div>
+                                        <p className="text-xs text-muted-foreground">
+                                          {formatDistanceToNow(
+                                            new Date(sensor.time),
+                                          )}{" "}
+                                          ago
+                                        </p>
+                                      </div>
+                                    </CardFooter>
+                                  </label>
+                                </Card>
+                              );
+                            })}
                         </div>
                       </Form>
                     </AccordionContent>
@@ -511,3 +520,22 @@ export default function DeviceDetailBox() {
     </>
   );
 }
+
+const InfoItem = ({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: React.ElementType;
+  title: string;
+  text?: string;
+}) =>
+  text && (
+    <div className="space-y-1">
+      <div className="text-sm font-medium text-muted-foreground">{title}</div>
+      <div className="flex items-center space-x-2 text-sm">
+        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span>{text}</span>
+      </div>
+    </div>
+  );

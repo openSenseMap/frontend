@@ -4,7 +4,7 @@ import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { getEnv } from "./env.server";
+import { getEnv, init } from "./env.server";
 import { createInstance } from "i18next";
 import i18next from "./i18next.server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
@@ -14,13 +14,14 @@ import { resolve } from "node:path";
 
 const ABORT_DELAY = 5000;
 
+init();
 global.ENV = getEnv();
 
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   const callbackName = isbot(request.headers.get("user-agent"))
     ? "onAllReady"
@@ -69,7 +70,7 @@ export default async function handleRequest(
             new Response(stream, {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
-            })
+            }),
           );
 
           pipe(body);
@@ -82,7 +83,7 @@ export default async function handleRequest(
 
           console.error(error);
         },
-      }
+      },
     );
 
     setTimeout(abort, ABORT_DELAY);
