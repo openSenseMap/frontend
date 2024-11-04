@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Sensor } from "~/schema";
 import MobileBoxLayer from "./mobile-box-layer";
 import { HIGH_COLOR, LOW_COLOR } from "./color-palette";
@@ -19,7 +20,7 @@ function SensorView({ sensor }: { sensor: Sensor }) {
 
   return (
     <>
-      <Legend
+      {/* <Legend
         sensor={sensor}
         key={"Legend_" + sensor.id}
         onColorChange={(min, max) => {
@@ -32,7 +33,7 @@ function SensorView({ sensor }: { sensor: Sensor }) {
         key={sensor.id}
         minColor={minColor}
         maxColor={maxColor}
-      />
+      /> */}
     </>
   );
 }

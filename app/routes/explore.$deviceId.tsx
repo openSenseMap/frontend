@@ -1,6 +1,6 @@
 import { type Sensor } from "~/schema";
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import { typedjson } from "remix-typedjson";
 import { addDays } from "date-fns";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
@@ -109,6 +109,7 @@ export default function DeviceId() {
         <MobileBoxView sensors={data.sensors} />
       ) : null}
       <DeviceDetailBox />
+      <Outlet />
     </>
   );
 }
