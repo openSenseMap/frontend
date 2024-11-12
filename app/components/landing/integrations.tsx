@@ -3,7 +3,7 @@ import { ArrowUpDown, RadioTower, Unplug } from "lucide-react";
 export default function Integrations() {
   return (
     <section
-      id="integrations"
+      id="integrations-section"
       className="flex justify-between mx-32 gap-10 border-t border-gray-200 py-20"
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">

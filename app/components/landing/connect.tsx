@@ -3,7 +3,7 @@ import { BookA, Wrench } from "lucide-react";
 export default function Connect() {
   return (
     <section
-      id="connect"
+      id="connect-section"
       className="flex justify-between mx-32 gap-20 border-t border-gray-200 py-20"
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">

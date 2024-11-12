@@ -188,9 +188,7 @@ export default function Index() {
           <Partners data={partners} />
         </div>
       </section>
-      <footer className="">
-        <Footer />
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -27,10 +27,10 @@ export default function Stats(stats: number[]) {
   ];
 
   return (
-    <div className="mx-auto px-4 py-16 sm:max-w-xl md:max-w-full md:px-24 lg:max-w-screen-xl lg:px-8 lg:py-24">
+    <div className="mx-auto px-4 py-16 sm:max-w-xl md:max-w-full md:px-24 lg:max-w-screen-xl lg:px-8 lg:py-24" id="stats-section">
       <div className="row-gap-8 grid gap-10 lg:grid-cols-3">
         {osemStats.map((stat) => (
-          <div key={stat.id}>
+          <div key={stat.id} id={stat.name}>
             <motion.div
               initial="hidden"
               whileInView="visible"

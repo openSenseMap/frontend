@@ -76,8 +76,8 @@ jobs:
       - name: ⚡ Run vitest
         run: npm run test -- --coverage
 
-  cypress:
-    name: ⚫️ Cypress
+  playwright:
+    name: 🎭 Playwright
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -97,7 +97,7 @@ jobs:
         run: npm install
 
       - name: 🐳 Docker compose
-        # the sleep is just there to give time for postgres to get started
+        # Wait for PostgreSQL to be ready
         run: docker compose -f docker-compose.ci.yml up -d && sleep 60
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
@@ -114,11 +114,8 @@ jobs:
       - name: ⚙️ Build
         run: npm run build
 
-      - name: 🌳 Cypress run
-        uses: cypress-io/github-action@v6
-        with:
-          start: npm run start:mocks
-          wait-on: http://localhost:8811
+      - name: 🌳 Run Playwright tests
+        run: npx playwright test --reporter=github
         env:
           PORT: 8811
 
