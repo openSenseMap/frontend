@@ -78,25 +78,51 @@ jobs:
 
   playwright:
     name: 🎭 Playwright
-    timeout-minutes: 20
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: 📥 Install Playwright Browsers
+        run: npm run test:e2e:install
 
-      - name: Run Playwright tests
+      # Drizzle migration equivalent to Prisma migrate
+      - name: 🛠 Run Drizzle Migrations
+        run: npm run drizzle:migrate
+
+      - name: 🏦 Cache Database
+        id: db-cache
+        uses: actions/cache@v4
+        with:
+          path: db/data.db
+          key: db-cache-schema_${{ hashFiles('./db/schema.ts') }}-migrations_${{ hashFiles('./db/migrations/*') }}
+
+      # Drizzle seed equivalent to Prisma seed
+      - name: 🌱 Seed Database
+        if: steps.db-cache.outputs.cache-hit != 'true'
+        run: npm run drizzle:seed
+
+      - name: 🏗 Build
+        run: npm run build
+
+      - name: 🎭 Run Playwright tests
         run: npx playwright test
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+      - name: 📊 Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: playwright-report
           path: playwright-report/
