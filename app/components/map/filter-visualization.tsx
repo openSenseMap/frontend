@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import type { loader } from "~/routes/explore";
+import type { loader } from "~/routes/explore+/_explore";
 import { Fragment, useEffect } from "react";
 import { DeviceExposureZodEnum, DeviceStatusZodEnum } from "~/schema/enum";
 

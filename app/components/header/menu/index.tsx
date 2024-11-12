@@ -1,4 +1,10 @@
-import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useMatches,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +41,7 @@ export default function Menu() {
   const navigation = useNavigation();
   const isLoggingOut = Boolean(navigation.state === "submitting");
   const user = useOptionalUser();
+  const matches = useMatches();
 
   const { t } = useTranslation("menu");
 
@@ -92,26 +99,32 @@ export default function Menu() {
                   <Spinner />
                 </div>
               )}
-              <Link to="/explore">
-                <DropdownMenuItem className="cursor-pointer">
-                  <Compass className="mr-2 h-5 w-5" />
-                  <span>{"Explore"}</span>
-                </DropdownMenuItem>
-              </Link>
-              <Link to="/profile/me">
-                <DropdownMenuItem className="cursor-pointer">
-                  <User2 className="mr-2 h-5 w-5" />
-                  Profile
-                </DropdownMenuItem>
-              </Link>
+              {!(matches[1].pathname === "/explore") && (
+                <Link to="/explore">
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Compass className="mr-2 h-5 w-5" />
+                    <span>{"Explore"}</span>
+                  </DropdownMenuItem>
+                </Link>
+              )}
+              {!(matches[1].pathname === "/profile") && (
+                <Link to="/profile/me">
+                  <DropdownMenuItem className="cursor-pointer">
+                    <User2 className="mr-2 h-5 w-5" />
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
+              )}
 
-              <Link to="/settings">
-                <DropdownMenuItem className=" cursor-pointer">
-                  <Settings className="mr-2 h-5 w-5" />
-                  <span>{"Settings"}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </Link>
+              {!(matches[1].pathname === "/settings") && (
+                <Link to="/settings/profile">
+                  <DropdownMenuItem className=" cursor-pointer">
+                    <Settings className="mr-2 h-5 w-5" />
+                    <span>{"Settings"}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </Link>
+              )}
             </DropdownMenuGroup>
           )}
           <DropdownMenuGroup>
