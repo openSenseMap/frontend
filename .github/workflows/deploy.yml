@@ -98,22 +98,6 @@ jobs:
       - name: 📥 Install Playwright Browsers
         run: npm run test:e2e:install
 
-      # Drizzle migration equivalent to Prisma migrate
-      - name: 🛠 Run Drizzle Migrations
-        run: npm run drizzle:migrate
-
-      - name: 🏦 Cache Database
-        id: db-cache
-        uses: actions/cache@v4
-        with:
-          path: db/data.db
-          key: db-cache-schema_${{ hashFiles('./db/schema.ts') }}-migrations_${{ hashFiles('./db/migrations/*') }}
-
-      # Drizzle seed equivalent to Prisma seed
-      - name: 🌱 Seed Database
-        if: steps.db-cache.outputs.cache-hit != 'true'
-        run: npm run drizzle:seed
-
       - name: 🏗 Build
         run: npm run build
 
