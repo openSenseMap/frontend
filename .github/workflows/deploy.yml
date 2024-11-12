@@ -79,22 +79,47 @@ jobs:
   playwright:
     name: 🎭 Playwright
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: npm ci
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          cache-dependency-path: ./package.json
+          node-version: 20
+
+      - name: 📥 Install deps
+        run: npm install
+
+      - name: 🐳 Docker compose
+        # the sleep is just there to give time for postgres to get started
+        run: docker compose -f docker-compose.ci.yml up -d && sleep 60
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+
+      - name: 🛠 Setup Database
+        uses: nick-fields/retry@v3.0.0
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_wait_seconds: 45
+          retry_on: error
+          command: npm run drizzle:migrate
+
+      - name: ⚙️ Build
+        run: npm run build
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         run: npx playwright test
-        
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
