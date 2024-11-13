@@ -15,6 +15,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
+    colorScheme: "light",
     baseURL: `http://localhost:${PORT}/`,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -27,8 +28,6 @@ export default defineConfig({
       use: {
         ...devices["Desktop Safari"],
         headless: true,
-        video: "on",
-        trace: "retain-on-failure",
       },
     },
   ],
