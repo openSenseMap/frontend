@@ -10,10 +10,12 @@ node_modules
 .env
 .cache
 
-/cypress/screenshots
-/cypress/videos
 /postgres-data
 /pgdata
 
 /db/imports/*.csv
 measurements.csv
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
