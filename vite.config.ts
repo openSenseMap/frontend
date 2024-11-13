@@ -37,16 +37,29 @@ export default defineConfig({
     }),
     preserveDirectives(),
     tsconfigPaths(),
-    remix({
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-        v3_singleFetch: true,
-        // v3_lazyRouteDiscovery: true,
-        unstable_routeConfig: true,
-      },
-      ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
-    }),
+    process.env.NODE_ENV === "test"
+      ? null
+      : remix({
+          future: {
+            v3_fetcherPersist: true,
+            v3_relativeSplatPath: true,
+            v3_throwAbortReason: true,
+            v3_singleFetch: true,
+            // v3_lazyRouteDiscovery: true,
+            unstable_routeConfig: true,
+          },
+          ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
+        }),
   ],
+  test: {
+    globals: true,
+    environment: "happy-dom",
+    setupFiles: ["./test/setup-test-env.ts"],
+    include: ["./app/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    exclude: [
+      ".*\\/node_modules\\/.*",
+      ".*\\/build\\/.*",
+      ".*\\/postgres-data\\/.*",
+    ],
+  },
 });
