@@ -5,9 +5,9 @@ const PORT = process.env.PORT || "3000";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: process.env.CI ? 30 * 1000 : 15 * 1000,
+  timeout: 15 * 1000,
   expect: {
-    timeout: process.env.CI ? 10 * 1000 : 5 * 1000,
+    timeout: 5 * 1000,
   },
   fullyParallel: !process.env.CI,
   forbidOnly: !!process.env.CI,
