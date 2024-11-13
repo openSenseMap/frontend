@@ -15,7 +15,7 @@ import { X } from "lucide-react";
 import { Checkbox } from "~/components/ui/checkbox";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Button } from "~/components/ui/button";
-import type { loader } from "~/routes/explore";
+import type { loader } from "~/routes/explore+/_explore";
 
 export function PhenomenonSelect() {
   const data = useLoaderData<typeof loader>();

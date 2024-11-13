@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { data } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { motion } from "framer-motion";
 import Features from "~/components/landing/features";
@@ -48,7 +48,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     },
   );
 
-  return json({
+  return data({
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
     partners: partnersResponse.data,
@@ -71,7 +71,7 @@ export default function Index() {
       <header>
         <Header />
       </header>
-      <main>
+      <main id="main">
         <div className="overflow-hidden pt-8 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
@@ -188,9 +188,7 @@ export default function Index() {
           <Partners data={partners} />
         </div>
       </section>
-      <footer className="">
-        <Footer />
-      </footer>
+      <Footer />
     </div>
   );
 }

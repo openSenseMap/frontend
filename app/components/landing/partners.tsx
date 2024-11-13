@@ -8,7 +8,7 @@ type PartnersProps = {
 export default function Partners({ data }: PartnersProps) {
   return (
     <div
-      id="partners"
+      id="partners-section"
       className="flex h-full min-h-full items-center justify-center text-xl text-gray-300 dark:text-gray-100"
     >
       <div className="flex h-full w-5/6 flex-col justify-evenly">

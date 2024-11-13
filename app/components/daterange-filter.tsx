@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
 import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
-import type { loader } from "~/routes/explore.$deviceId";
+import type { loader } from "~/routes/explore+/$deviceId+/_$deviceId";
 import type { DateRange } from "react-day-picker";
 import { PopoverClose } from "@radix-ui/react-popover";
 import dateTimeRanges from "~/lib/date-ranges";
