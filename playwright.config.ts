@@ -28,7 +28,7 @@ export default defineConfig({
     command: process.env.CI ? "npm run start:mocks && sleep 5" : "npm run dev",
     port: Number(PORT),
     reuseExistingServer: true,
-    timeout: 60 * 1000,
+    timeout: 120 * 1000,
     env: {
       PORT,
       NODE_ENV: "test",

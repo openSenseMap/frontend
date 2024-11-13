@@ -4,6 +4,8 @@ test.describe("Landing Page", () => {
   // Navigate to the landing page before each test
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    const mainSection = page.locator("#main");
+    await mainSection.waitFor();
   });
 
   test("should display the page title", async ({ page }) => {
