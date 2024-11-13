@@ -1,24 +1,35 @@
+import type { BrowserContext, Page } from "@playwright/test";
 import { test, expect } from "@playwright/test";
 
 test.describe("Landing Page", () => {
-  // Navigate to the landing page before each test
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+  let context: BrowserContext;
+  let page: Page;
+
+  // Set up a new context and page before each test
+  test.beforeEach(async ({ browser }) => {
+    context = await browser.newContext(); // Create a new incognito browser context
+    page = await context.newPage(); // Create a new page inside this context
+    await page.goto("/"); // Navigate to the landing page
     const mainSection = page.locator("#main");
     await mainSection.waitFor();
   });
 
-  test("should display the page title", async ({ page }) => {
+  // Close the context after each test to clear session data
+  test.afterEach(async () => {
+    await context.close();
+  });
+
+  test("should display the page title", async () => {
     const title = await page.title();
     expect(title).toBe("openSenseMap"); // Replace with actual title if different
   });
 
-  test("should display header and footer", async ({ page }) => {
+  test("should display header and footer", async () => {
     await expect(page.locator("header")).toBeVisible();
     await expect(page.locator("footer")).toBeVisible();
   });
 
-  test("should display main call-to-action buttons", async ({ page }) => {
+  test("should display main call-to-action buttons", async () => {
     const exploreButton = page.getByRole("button", { name: "Explore" });
     const donateButton = page.getByRole("button", { name: "Donate" });
 
@@ -26,7 +37,7 @@ test.describe("Landing Page", () => {
     await expect(donateButton).toBeVisible();
   });
 
-  test("should open external link for Donate button", async ({ page }) => {
+  test("should open external link for Donate button", async () => {
     const [newPage] = await Promise.all([
       page.waitForEvent("popup"),
       page.click("text=Donate"), // or use the role selector
@@ -36,9 +47,7 @@ test.describe("Landing Page", () => {
     );
   });
 
-  test("should render stats section with animated counters", async ({
-    page,
-  }) => {
+  test("should render stats section with animated counters", async () => {
     // Ensure stats section is visible
     await expect(page.locator("#stats-section")).toBeVisible();
 
@@ -54,9 +63,7 @@ test.describe("Landing Page", () => {
     }
   });
 
-  test("should render sections: Features, Connect, Integrations, Pricing Plans, Partners", async ({
-    page,
-  }) => {
+  test("should render sections: Features, Connect, Integrations, Pricing Plans, Partners", async () => {
     await expect(page.locator("#features-section")).toBeVisible();
     await expect(page.locator("#connect-section")).toBeVisible();
     await expect(page.locator("#integrations-section")).toBeVisible();
