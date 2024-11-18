@@ -362,7 +362,7 @@ export default function DeviceDetailBox() {
                     />
                   </div>
                 </div>
-                {data.device.tags.length > 0 && (
+                {data.device.tags?.length > 0 && (
                   <div className="pt-4">
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-muted-foreground">
