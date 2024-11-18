@@ -1,5 +1,4 @@
 import { Filter } from "lucide-react";
-import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { useSearchParams, useSubmit } from "@remix-run/react";
@@ -61,7 +60,7 @@ export function AggregationFilter() {
           "flex h-10 w-full items-center justify-between bg-transparent px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400"
         }
       >
-        <Button variant="outline" size="sm" className="h-8">
+        <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 h-8 border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50 ">
           <Filter className="mr-2 h-4 w-4" />
           Aggregation
           <>
@@ -70,7 +69,7 @@ export function AggregationFilter() {
               {selectedAggregation?.label}
             </Badge>
           </>
-        </Button>
+        </div>
       </SelectPrimitive.Trigger>
       <SelectContent>
         {aggregations.map((aggregation) => (
