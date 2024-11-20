@@ -23,6 +23,7 @@ declare module "@remix-run/node" {
 
 export default defineConfig({
   build: {
+    target: "esnext",
     cssMinify: MODE === "production",
 
     rollupOptions: {
