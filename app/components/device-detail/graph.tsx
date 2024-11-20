@@ -82,7 +82,7 @@ export default function Graph({
   startDate,
   endDate,
 }: GraphProps) {
-  const { hoveredPoint, setHoveredPoint } = useContext(HoveredPointContext);
+  const { setHoveredPoint } = useContext(HoveredPointContext);
   const navigation = useNavigation();
   const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
@@ -96,12 +96,25 @@ export default function Graph({
   });
   const isAggregated = aggregation !== "raw";
 
-  useEffect(() => {
-    console.log("🚀 HoveredPoint updated:", hoveredPoint);
-  }, [hoveredPoint]);
-
   const nodeRef = useRef(null);
-  const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
+  const chartRef = useRef<ChartJS<"line">>(null);
+
+  useEffect(() => {
+    if (chartRef.current) {
+      const canvas = chartRef.current.canvas;
+
+      const handleMouseLeave = () => {
+        setHoveredPoint(null); // Clear the hovered point when the mouse leaves the chart area
+      };
+
+      canvas.addEventListener("mouseleave", handleMouseLeave);
+
+      // Cleanup
+      return () => {
+        canvas.removeEventListener("mouseleave", handleMouseLeave);
+      };
+    }
+  }, [chartRef, setHoveredPoint]);
 
   // get theme from tailwind
   const [theme] = useTheme();
@@ -342,7 +355,6 @@ export default function Graph({
               const datasetIndex = context.datasetIndex;
               const point = lineData.datasets[datasetIndex].data[dataIndex];
               const locationId = point.locationId;
-              console.log("🚀 ~ locationId:", locationId);
               setHoveredPoint(locationId);
               return `${context.dataset.label}: ${context.raw.y}`;
             },

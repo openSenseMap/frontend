@@ -54,7 +54,6 @@ export default function DeviceId() {
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
   const setHoveredPointDebug = (point: any) => {
-    console.log("🚀 Setting HoveredPoint to:", point); // Log the update
     setHoveredPoint(point);
   };
 
