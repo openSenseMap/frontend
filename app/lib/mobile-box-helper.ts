@@ -10,8 +10,8 @@ export interface LocationPoint {
 
 interface Trip {
   points: LocationPoint[];
-  startTime?: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
 }
 
 export function categorizeIntoTrips(
@@ -22,19 +22,16 @@ export function categorizeIntoTrips(
   const trips: Trip[] = [];
   let currentTrip: LocationPoint[] = [];
 
-  // Sort data by time if available to ensure order
-  const sortedDataPoints = [...dataPoints].sort((a, b) => {
-    if (a.time && b.time) {
-      return new Date(a.time).getTime() - new Date(b.time).getTime();
-    }
-    return 0; // No sorting if times are not present
-  });
+  // Pre-sort data by time to ensure order
+  dataPoints.sort(
+    (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+  );
 
-  for (let i = 1; i < sortedDataPoints.length; i++) {
-    const previousPoint = sortedDataPoints[i - 1];
-    const currentPoint = sortedDataPoints[i];
+  for (let i = 1; i < dataPoints.length; i++) {
+    const previousPoint = dataPoints[i - 1];
+    const currentPoint = dataPoints[i];
 
-    // Calculate distance in meters
+    // Calculate distance
     const distance = getDistance(
       {
         latitude: previousPoint.geometry.x,
@@ -43,7 +40,7 @@ export function categorizeIntoTrips(
       { latitude: currentPoint.geometry.x, longitude: currentPoint.geometry.y },
     );
 
-    // Calculate time difference in seconds if times are provided
+    // Calculate time difference if applicable
     let timeDifference = 0;
     if (previousPoint.time && currentPoint.time) {
       timeDifference =
@@ -52,15 +49,12 @@ export function categorizeIntoTrips(
         1000;
     }
 
-    // Check if a new trip should start based on distance and optionally time
+    // Check if a new trip should start
     const isNewTrip =
       distance > distanceThreshold ||
-      (timeThreshold && previousPoint.time && currentPoint.time
-        ? timeDifference > timeThreshold
-        : false);
+      (timeThreshold && timeDifference > timeThreshold);
 
     if (isNewTrip) {
-      // Save the completed trip if it has points
       if (currentTrip.length > 0) {
         trips.push({
           points: currentTrip,
@@ -68,22 +62,65 @@ export function categorizeIntoTrips(
           endTime: currentTrip[currentTrip.length - 1].time,
         });
       }
-      // Start a new trip
-      currentTrip = [currentPoint];
-    } else {
-      currentTrip.push(currentPoint);
+      currentTrip = [];
     }
+    currentTrip.push(currentPoint);
   }
 
-  // Add the last trip if it has points
+  // Add the final trip
   if (currentTrip.length > 0) {
-    const lastPoint = currentTrip[currentTrip.length - 1];
     trips.push({
       points: currentTrip,
       startTime: currentTrip[0].time,
-      endTime: lastPoint.time,
+      endTime: currentTrip[currentTrip.length - 1].time,
     });
   }
 
-  return trips;
+  // Merge small trips into larger ones
+  return mergeSmallTrips(trips, distanceThreshold);
+}
+
+function mergeSmallTrips(trips: Trip[], distanceThreshold: number): Trip[] {
+  if (trips.length <= 1) return trips;
+
+  // Combine small trips into adjacent larger trips
+  const mergedTrips: Trip[] = [];
+  let currentTrip: Trip | null = null;
+
+  for (const trip of trips) {
+    if (trip.points.length >= 50) {
+      // If a small trip exists, merge it with the current large trip
+      if (currentTrip) {
+        mergedTrips.push(currentTrip);
+        currentTrip = null;
+      }
+      mergedTrips.push(trip);
+    } else {
+      // Small trip: merge with the nearest valid trip
+      if (!currentTrip) {
+        currentTrip = { points: [], startTime: "", endTime: "" };
+      }
+      currentTrip.points.push(...trip.points);
+
+      // Recompute start and end times
+      if (currentTrip.points.length > 0) {
+        currentTrip.startTime = currentTrip.points[0].time;
+        currentTrip.endTime =
+          currentTrip.points[currentTrip.points.length - 1].time;
+      }
+    }
+  }
+
+  // Add any remaining combined trip
+  if (currentTrip && currentTrip.points.length > 0) {
+    mergedTrips.push(currentTrip);
+  }
+
+  // Post-process to sort all trips by time
+  return mergedTrips.map((trip) => {
+    trip.points.sort(
+      (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+    );
+    return trip;
+  });
 }
