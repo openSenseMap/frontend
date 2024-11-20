@@ -6,13 +6,18 @@ import {
   point,
 } from "@turf/helpers";
 import type { MultiLineString, Point } from "geojson";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Layer, Source, useMap } from "react-map-gl";
 import bbox from "@turf/bbox";
 import { HIGH_COLOR, LOW_COLOR, createPalette } from "./color-palette";
 
-const FIT_PADDING = 50;
+const FIT_PADDING = 100;
 const BOTTOM_BAR_HEIGHT = 400;
+
+export const HoveredPointContext = createContext({
+  hoveredPoint: null,
+  setHoveredPoint: (_point: number | null) => {},
+});
 
 export default function MobileBoxLayer({
   sensor,
@@ -28,13 +33,18 @@ export default function MobileBoxLayer({
     | mapboxgl.LinePaint["line-color"];
 }) {
   const [sourceData, setSourceData] = useState<GeoJSON.FeatureCollection>();
+  const { hoveredPoint, setHoveredPoint } = useContext(HoveredPointContext);
 
-  const { osem } = useMap();
+  const { osem: mapRef } = useMap();
+
+  useEffect(() => {
+    console.log("🚀 HoveredPoint updated:", hoveredPoint);
+  }, [hoveredPoint]);
 
   useEffect(() => {
     const sensorData = sensor.data! as unknown as {
       value: String;
-      location?: number[];
+      location: { x: number; y: number; id: number };
       createdAt: Date;
     }[];
 
@@ -45,18 +55,22 @@ export default function MobileBoxLayer({
       minValue,
       maxValue,
       minColor as string,
-      maxColor as string
+      maxColor as string,
     );
 
     // generate points from the sensor data
     // apply color from palette
-    const points = sensorData.map((measurement) =>
-      point(measurement.location!, {
-        value: Number(measurement.value),
-        createdAt: new Date(measurement.createdAt),
-        color: palette(Number(measurement.value)).hex(),
-      })
-    );
+    const points = sensorData.map((measurement) => {
+      const tempPoint = point(
+        [measurement.location.x, measurement.location.y],
+        {
+          value: Number(measurement.value),
+          createdAt: new Date(measurement.createdAt),
+          color: palette(Number(measurement.value)).hex(),
+        },
+      );
+      return tempPoint;
+    });
 
     if (points.length === 0) return;
 
@@ -65,23 +79,28 @@ export default function MobileBoxLayer({
     const lines = multiLineString([line.geometry.coordinates]);
 
     setSourceData(
-      featureCollection<Point | MultiLineString>([...points, lines])
+      featureCollection<Point | MultiLineString>([...points, lines]),
     );
   }, [maxColor, minColor, sensor.data]);
 
-  // fit the map to the bounds of the data
   useEffect(() => {
-    if (!osem || !sourceData) return;
-    const [x1, y1, x2, y2] = bbox(sourceData);
-    osem?.fitBounds([x1, y1, x2, y2], {
+    if (!mapRef || !sourceData) return;
+
+    const bounds = bbox(sourceData).slice(0, 4) as [
+      number,
+      number,
+      number,
+      number,
+    ];
+    mapRef.fitBounds(bounds, {
       padding: {
         top: FIT_PADDING,
-        bottom: BOTTOM_BAR_HEIGHT + FIT_PADDING,
-        left: FIT_PADDING,
+        bottom: BOTTOM_BAR_HEIGHT,
+        left: 500,
         right: FIT_PADDING,
       },
     });
-  }, [osem, sourceData]);
+  }, [mapRef, sourceData]);
 
   if (!sourceData) return null;
 

@@ -53,7 +53,7 @@ import { getArchiveLink } from "~/utils/device";
 import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isTablet, isBrowser } from "react-device-detect";
-import type { Device, Sensor, SensorWithMeasurement } from "~/schema";
+import type { SensorWithMeasurement } from "~/schema";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   Card,
@@ -83,11 +83,6 @@ export interface MeasurementProps {
   value: string;
   min_value: string;
   max_value: string;
-}
-
-export interface DeviceAndSelectedSensors {
-  device: Device;
-  selectedSensors: Sensor[];
 }
 
 const useCompareMode = () => {

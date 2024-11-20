@@ -1,8 +1,4 @@
-import {
-  useNavigate,
-  useNavigation,
-  useSearchParams,
-} from "@remix-run/react";
+import { useNavigate, useNavigation, useSearchParams } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -18,7 +14,7 @@ import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 // import { de, enGB } from "date-fns/locale";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useContext } from "react";
 import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
@@ -42,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { HoveredPointContext } from "../map/layers/mobile/mobile-box-layer";
 
 ChartJS.register(
   LineElement,
@@ -85,6 +82,7 @@ export default function Graph({
   startDate,
   endDate,
 }: GraphProps) {
+  const { hoveredPoint, setHoveredPoint } = useContext(HoveredPointContext);
   const navigation = useNavigation();
   const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
@@ -97,6 +95,10 @@ export default function Graph({
     color: "#000000",
   });
   const isAggregated = aggregation !== "raw";
+
+  useEffect(() => {
+    console.log("🚀 HoveredPoint updated:", hoveredPoint);
+  }, [hoveredPoint]);
 
   const nodeRef = useRef(null);
   const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
@@ -127,6 +129,7 @@ export default function Graph({
               data: sensor.data.map((measurement) => ({
                 x: measurement.time,
                 y: measurement.value,
+                locationId: measurement.locationId,
               })),
               pointRadius: 0,
               borderColor: sensor.color,
@@ -143,6 +146,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.min_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -155,6 +159,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.max_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -194,6 +199,7 @@ export default function Graph({
               data: sensor.data.map((measurement) => ({
                 x: measurement.time,
                 y: measurement.value,
+                locationId: measurement.locationId,
               })),
               pointRadius: 0,
               borderColor: sensor.color,
@@ -210,6 +216,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.min_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -222,6 +229,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.max_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -324,6 +332,22 @@ export default function Graph({
         },
       },
       plugins: {
+        tooltip: {
+          enabled: true,
+          mode: "index",
+          intersect: false,
+          callbacks: {
+            label: (context: any) => {
+              const dataIndex = context.dataIndex;
+              const datasetIndex = context.datasetIndex;
+              const point = lineData.datasets[datasetIndex].data[dataIndex];
+              const locationId = point.locationId;
+              console.log("🚀 ~ locationId:", locationId);
+              setHoveredPoint(locationId);
+              return `${context.dataset.label}: ${context.raw.y}`;
+            },
+          },
+        },
         zoom: {
           pan: {
             enabled: true,
@@ -376,11 +400,11 @@ export default function Graph({
   }, [
     startDate,
     endDate,
-    // data.locale,
-    sensors,
     theme,
-    colorPickerState.open,
+    sensors,
     lineData.datasets,
+    setHoveredPoint,
+    colorPickerState.open,
   ]);
 
   function handleColorChange(newColor: string) {
