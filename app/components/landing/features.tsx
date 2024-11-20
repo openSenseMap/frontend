@@ -11,7 +11,7 @@ import {
 export default function Features() {
   return (
     <section
-      id="features"
+      id="features-section"
       className="flex justify-between mx-32 gap-10 border-t border-gray-200 py-20"
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">

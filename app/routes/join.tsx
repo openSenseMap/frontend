@@ -3,7 +3,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 
@@ -17,7 +17,7 @@ import ErrorMessage from "~/components/error-message";
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
-  return json({});
+  return {};
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -29,7 +29,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!name || typeof name !== "string") {
-    return json(
+    return data(
       { errors: { name: "Name is required", email: null, password: null } },
       { status: 400 },
     );
@@ -38,7 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
   //* Validate userName
   const validateUserName = validateName(name?.toString());
   if (!validateUserName.isValid) {
-    return json(
+    return data(
       {
         errors: {
           name: validateUserName.errorMsg,
@@ -51,21 +51,21 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (!validateEmail(email)) {
-    return json(
+    return data(
       { errors: { name: null, email: "Email is invalid", password: null } },
       { status: 400 },
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
-    return json(
+    return data(
       { errors: { name: null, email: null, password: "Password is required" } },
       { status: 400 },
     );
   }
 
   if (password.length < 8) {
-    return json(
+    return data(
       {
         errors: {
           name: null,
@@ -77,26 +77,10 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  //* user name shouldn't be unique
-  //* check if user exists by name
-  /* const existingUserByName = await getUserByName(name);
-  if (existingUserByName) {
-    return json(
-      {
-        errors: {
-          name: null,
-          email: null,
-          password: "Please use at least 8 characters.",
-        },
-      },
-      { status: 400 }
-    );
-  } */
-
   //* check if user exists by email
   const existingUserByEmail = await getUserByEmail(email);
   if (existingUserByEmail) {
-    return json(
+    return data(
       {
         errors: {
           name: null,

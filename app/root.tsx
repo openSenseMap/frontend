@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { data } from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -71,7 +71,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getUser(request);
   // const themeSession = await getThemeSession(request);
   const { getTheme } = await themeSessionResolver(request);
-  return json(
+  return data(
     {
       user: user,
       locale: locale,

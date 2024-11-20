@@ -1,5 +1,5 @@
 import { useTheme } from "remix-themes";
-import type { DeviceClusterProperties } from "~/routes/explore";
+import type { DeviceClusterProperties } from "~/routes/explore+/_explore";
 
 type DonutChartClusterType = {
   cluster: any;

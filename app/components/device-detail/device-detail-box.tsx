@@ -13,7 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import type { loader } from "~/routes/explore.$deviceId";
+import type { loader } from "~/routes/explore+/$deviceId+/_$deviceId";
 import {
   ChevronUp,
   Minus,
