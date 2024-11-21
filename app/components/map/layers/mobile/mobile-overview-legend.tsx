@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Switch } from "~/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
@@ -16,11 +17,15 @@ type LegendItem = {
 type MapLegendProps = {
   items: LegendItem[];
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  toggleTrips: () => void;
+  showOriginalColors: boolean;
 };
 
 export default function MapLegend({
   items,
   position = "top-right",
+  toggleTrips,
+  showOriginalColors,
 }: MapLegendProps) {
   const positionClasses = {
     "top-left": "top-4 left-4",
@@ -41,6 +46,11 @@ export default function MapLegend({
     >
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-sm font-semibold">Trips</h3>
+        <Switch
+          id="trip-color-mode"
+          checked={showOriginalColors}
+          onCheckedChange={toggleTrips}
+        />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -50,7 +60,10 @@ export default function MapLegend({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>We have tried to organise your data into trips. This may not be accurate.</p>
+              <p>
+                We have tried to organise your data into trips. This may not be
+                accurate.
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Source, Layer, useMap, Popup } from "react-map-gl";
 import { point, featureCollection } from "@turf/helpers";
 import bbox from "@turf/bbox";
@@ -60,6 +60,8 @@ export default function MobileOverviewLayer({
     startTime: string;
     endTime: string;
   } | null>(null);
+  console.log("🚀 ~ popupInfo:", popupInfo);
+  const [showOriginalColors, setShowOriginalColors] = useState(true);
 
   useEffect(() => {
     if (!trips || trips.length === 0) return;
@@ -106,45 +108,63 @@ export default function MobileOverviewLayer({
     });
   }, [mapRef, sourceData]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleHover = (event: any) => {
-    if (event.features && event.features.length > 0) {
-      const feature = event.features[0];
-      const { tripNumber } = feature.properties;
-      setHighlightedTrip(tripNumber); // Highlight the trip
-
-      // Find the corresponding trip to get the time range
-      const hoveredTrip = trips[tripNumber - 1];
-      if (hoveredTrip) {
-        const { startTime, endTime } = hoveredTrip;
-        const [longitude, latitude] = feature.geometry.coordinates;
-        setPopupInfo({ longitude, latitude, startTime, endTime });
+  const handleHover = useCallback(
+    (event: any) => {
+      if (!showOriginalColors) {
+        setHighlightedTrip(null); // Ensure no highlight
+        setPopupInfo(null); // Ensure no popup
+        return;
       }
-    } else {
-      setHighlightedTrip(null); // Reset highlight if no feature is hovered
-      setPopupInfo(null); // Hide the popup
-    }
-  };
+
+      if (event.features && event.features.length > 0) {
+        const feature = event.features[0];
+        const { tripNumber } = feature.properties;
+        setHighlightedTrip(tripNumber); // Highlight the trip
+
+        // Find the corresponding trip to get the time range
+        const hoveredTrip = trips[tripNumber - 1];
+        if (hoveredTrip) {
+          const { startTime, endTime } = hoveredTrip;
+          const [longitude, latitude] = feature.geometry.coordinates;
+          setPopupInfo({ longitude, latitude, startTime, endTime });
+        }
+      } else {
+        setHighlightedTrip(null); // Reset highlight if no feature is hovered
+        setPopupInfo(null); // Hide the popup
+      }
+    },
+    [showOriginalColors, trips], // Add dependencies here
+  );
 
   useEffect(() => {
     if (!mapRef) return;
 
-    mapRef.on("mousemove", "box-overview-layer", (event) => {
+    const onMouseMove = (event: any) => {
+      if (!showOriginalColors) {
+        mapRef.getCanvas().style.cursor = ""; // Reset cursor
+        return;
+      }
+
       mapRef.getCanvas().style.cursor = event.features?.length ? "pointer" : "";
       handleHover(event);
-    });
-    mapRef.on("mouseleave", "box-overview-layer", () => {
-      mapRef.getCanvas().style.cursor = "";
+    };
+
+    const onMouseLeave = () => {
+      if (!showOriginalColors) return;
+      mapRef.getCanvas().style.cursor = ""; // Reset cursor
       setHighlightedTrip(null);
       setPopupInfo(null); // Hide popup on mouse leave
-    });
-
-    // Cleanup events on unmount
-    return () => {
-      mapRef.off("mousemove", "box-overview-layer", handleHover);
-      mapRef.off("mouseleave", "box-overview-layer", () => {});
     };
-  }, [handleHover, mapRef, trips]);
+
+    mapRef.on("mousemove", "box-overview-layer", onMouseMove);
+    mapRef.on("mouseleave", "box-overview-layer", onMouseLeave);
+
+    // Cleanup events on unmount or when `showOriginalColors` changes
+    return () => {
+      mapRef.off("mousemove", "box-overview-layer", onMouseMove);
+      mapRef.off("mouseleave", "box-overview-layer", onMouseLeave);
+    };
+  }, [mapRef, handleHover, showOriginalColors, trips]);
 
   if (!sourceData) return null;
 
@@ -156,14 +176,16 @@ export default function MobileOverviewLayer({
           type="circle"
           source="box-overview-source"
           paint={{
-            "circle-color": ["get", "color"],
+            "circle-color": showOriginalColors ? ["get", "color"] : "#888", // Single color when toggled off
             "circle-radius": 3,
-            "circle-opacity": [
-              "case",
-              ["==", ["get", "tripNumber"], highlightedTrip],
-              1, // Full opacity for the highlighted trip
-              0.2, // Reduced opacity for other trips
-            ],
+            "circle-opacity": showOriginalColors
+              ? [
+                  "case",
+                  ["==", ["get", "tripNumber"], highlightedTrip],
+                  1, // Full opacity for the highlighted trip
+                  0.2, // Reduced opacity for other trips
+                ]
+              : 1, // Always full opacity when showing a single color
           }}
         />
       </Source>
@@ -198,8 +220,12 @@ export default function MobileOverviewLayer({
           </div>
         </Popup>
       )}
-      {/* Pass legend items to the MapLegend component */}
-      <MapLegend items={legendItems} position="top-right" />
+      <MapLegend
+        items={legendItems}
+        position="top-right"
+        toggleTrips={() => setShowOriginalColors(!showOriginalColors)}
+        showOriginalColors={showOriginalColors}
+      />
     </>
   );
 }
