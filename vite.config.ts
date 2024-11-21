@@ -22,15 +22,24 @@ declare module "@remix-run/node" {
 }
 
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   build: {
-    target: "esnext",
+    target: "es2022",
     cssMinify: MODE === "production",
-
     rollupOptions: {
       external: [/node:.*/, "fsevents"],
+      output: {
+        format: "es",
+      },
     },
-
     sourcemap: true, // not sure if we really should use it
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "es2022",
+    },
   },
   plugins: [
     mdx({
