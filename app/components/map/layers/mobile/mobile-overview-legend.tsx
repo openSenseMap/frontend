@@ -44,7 +44,7 @@ export default function MapLegend({
     <Card
       className={`absolute w-40 ${positionClasses[position]} p-2 bg-white bg-opacity-90 shadow-md rounded-lg`}
     >
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center">
         <h3 className="text-sm font-semibold">Trips</h3>
         <Switch
           id="trip-color-mode"
@@ -60,25 +60,27 @@ export default function MapLegend({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>
+              {showOriginalColors ? (<p>
                 We have tried to organise your data into trips. This may not be
                 accurate.
-              </p>
+              </p>) : (<p>You are viewing raw data right now. Activate to see trips.</p>)}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
-      <ul className="flex flex-wrap gap-2">
-        {uniqueColors.map((item, index) => (
-          <li key={index} className="flex items-center">
-            <div
-              className="w-4 h-4 rounded-full border border-gray-300"
-              style={{ backgroundColor: item?.color }}
-              aria-label={`Color: ${item?.color}`}
-            />
-          </li>
-        ))}
-      </ul>
+      {showOriginalColors && (
+        <ul className="flex flex-wrap gap-2">
+          {uniqueColors.map((item, index) => (
+            <li key={index} className="flex items-center">
+              <div
+                className="w-4 h-4 rounded-full border border-gray-300"
+                style={{ backgroundColor: item?.color }}
+                aria-label={`Color: ${item?.color}`}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   );
 }
