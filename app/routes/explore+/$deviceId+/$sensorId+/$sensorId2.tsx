@@ -3,6 +3,8 @@ import { useLoaderData } from "@remix-run/react";
 import { addDays } from "date-fns";
 import { typedjson } from "remix-typedjson";
 import Graph from "~/components/device-detail/graph";
+import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
+import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getSensor } from "~/models/sensor.server";
 import { type Sensor } from "~/schema";
@@ -14,9 +16,13 @@ interface SensorWithColor extends Sensor {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { deviceId, sensorId, sensorId2 } = params;
 
-  if (!deviceId || !sensorId || !sensorId2) {
-    throw new Response("Device or sensors not found", { status: 404 });
+  if (!deviceId) {
+    throw new Response("Device not found", { status: 404 });
   }
+  if (!sensorId || !sensorId2) {
+    throw new Response("Sensor not found", { status: 404 });
+  }
+  const device = await getDevice({ id: deviceId });
 
   const url = new URL(request.url);
   const aggregation = url.searchParams.get("aggregation") || "raw";
@@ -54,6 +60,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   sensor2.color = sensor2.color || "#000000"; // Default color for sensor 2
 
   return typedjson({
+    device: device,
     sensors: [sensor1, sensor2],
     startDate,
     endDate,
@@ -64,6 +71,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function SensorView() {
   const loaderData = useLoaderData<typeof loader>();
   return (
-    <Graph aggregation={loaderData.aggregation} sensors={loaderData.sensors} />
+    <>
+      <Graph
+        aggregation={loaderData.aggregation}
+        sensors={loaderData.sensors}
+      />
+      {loaderData.device.exposure === "mobile" && (
+        <MobileBoxView sensors={loaderData.sensors} />
+      )}
+    </>
   );
 }
