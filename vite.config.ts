@@ -56,7 +56,7 @@ export default defineConfig({
             v3_throwAbortReason: true,
             v3_singleFetch: true,
             // v3_lazyRouteDiscovery: true,
-            unstable_routeConfig: true,
+            v3_routeConfig: true,
           },
           ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
         }),
