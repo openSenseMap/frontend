@@ -18,13 +18,9 @@ export default function DonutChartCluster({
   cluster,
   clusterOnClick,
 }: DonutChartClusterType) {
-  const [theme,] = useTheme();
+  const [theme] = useTheme();
   const { categories, point_count: pointCount } = cluster.properties;
-  const {
-    active: active = 0,
-    inactive: inactive = 0,
-    old: old = 0,
-  } = categories;
+  const { active = 0, inactive = 0, old = 0 } = categories;
   const counts: number[] = [active, inactive, old];
   const offsets: number[] = [];
   let total = 0;
@@ -37,18 +33,18 @@ export default function DonutChartCluster({
     pointCount >= 1000
       ? 14
       : pointCount >= 100
-      ? 12
-      : pointCount >= 10
-      ? 10
-      : 10;
+        ? 12
+        : pointCount >= 10
+          ? 10
+          : 10;
   const r =
     pointCount >= 1000
       ? 36
       : pointCount >= 100
-      ? 20
-      : pointCount >= 10
-      ? 18
-      : 18;
+        ? 20
+        : pointCount >= 10
+          ? 18
+          : 18;
   const r0 = Math.round(r * 0.7);
   const w = r * 2;
 
@@ -94,7 +90,11 @@ export default function DonutChartCluster({
           );
         })}
         <circle cx={r} cy={r} r={r0} fill="transparent" />
-        <text dominantBaseline="central" fill={theme === "dark" ? "white" : "black"} transform={`translate(${r}, ${r})`}>
+        <text
+          dominantBaseline="central"
+          fill={theme === "dark" ? "white" : "black"}
+          transform={`translate(${r}, ${r})`}
+        >
           {pointCount}
         </text>
       </svg>
