@@ -39,7 +39,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
         //   geometry: true
         // },
         columns: {
-          time: true,
+          // time: true,
         },
         with: {
           geometry: {
