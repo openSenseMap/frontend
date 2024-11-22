@@ -162,7 +162,7 @@ export default function MobileBoxLayer({
       (popupRef.current as mapboxgl.Popup).remove();
       popupRef.current = null;
     }
-  }, [hoveredPoint, sourceData, mapRef, sensor.title]);
+  }, [hoveredPoint, sourceData, mapRef, sensor.title, sensor.unit]);
 
   if (!sourceData) return null;
 
