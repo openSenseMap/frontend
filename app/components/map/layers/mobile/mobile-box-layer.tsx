@@ -142,8 +142,7 @@ export default function MobileBoxLayer({
 
       if (feature && feature.geometry.type === "Point") {
         const { coordinates } = feature.geometry;
-        const { locationId, value } =
-          feature.properties as CustomGeoJsonProperties;
+        const { value } = feature.properties as CustomGeoJsonProperties;
 
         popupRef.current = new mapboxgl.Popup({
           closeButton: false,
@@ -152,9 +151,9 @@ export default function MobileBoxLayer({
         })
           .setLngLat(coordinates as [number, number])
           .setHTML(
-            `<div>
-               <strong>ID:</strong> ${locationId}<br/>
-               <strong>Value:</strong> ${value}
+            `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+               <strong>${sensor.title}</strong>
+               <strong>${value}${sensor.unit}</strong>
              </div>`,
           )
           .addTo(map);
@@ -163,7 +162,7 @@ export default function MobileBoxLayer({
       (popupRef.current as mapboxgl.Popup).remove();
       popupRef.current = null;
     }
-  }, [hoveredPoint, sourceData, mapRef]);
+  }, [hoveredPoint, sourceData, mapRef, sensor.title]);
 
   if (!sourceData) return null;
 

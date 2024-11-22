@@ -1,20 +1,43 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useEffect, useRef, useState } from "react";
 import type { Sensor } from "~/schema";
 import MobileBoxLayer from "./mobile-box-layer";
 import { HIGH_COLOR, LOW_COLOR } from "./color-palette";
-import { useEffect, useRef, useState } from "react";
+import { Button } from "~/components/ui/button";
+import { ArrowDownUp } from "lucide-react";
 
-export default function MobileBoxView({ sensors }: { sensors: Sensor[] }) {
+export default function MobileBoxView({
+  sensors: initialSensors,
+}: {
+  sensors: Sensor[];
+}) {
+  const [sensors, setSensors] = useState<Sensor[]>(initialSensors);
+
+  // Toggle the order of sensors
+  const switchSensors = () => {
+    setSensors((prevSensors) => [...prevSensors].reverse());
+  };
+
   return (
     <div className="absolute top-10 right-0 flex flex-col gap-4 p-4">
-      {sensors.map((sensor) => (
-        <SensorView sensor={sensor} key={sensor.id} />
+      {sensors.map((sensor, index) => (
+        <>
+          {index === 1 && sensors.length === 2 && (
+            <Button
+              className="self-center px-4 py-2 rounded-full"
+              onClick={switchSensors}
+              variant={"outline"}
+            >
+              <ArrowDownUp />
+            </Button>
+          )}
+          <SensorView sensor={sensor} index={index} />
+        </>
       ))}
     </div>
   );
 }
 
-function SensorView({ sensor }: { sensor: Sensor }) {
+function SensorView({ sensor, index }: { sensor: Sensor; index: number }) {
   const [minColor, setMinColor] = useState(LOW_COLOR);
   const [maxColor, setMaxColor] = useState(HIGH_COLOR);
 
@@ -28,12 +51,14 @@ function SensorView({ sensor }: { sensor: Sensor }) {
           setMaxColor(max);
         }}
       />
-      <MobileBoxLayer
-        sensor={sensor}
-        key={sensor.id}
-        minColor={minColor}
-        maxColor={maxColor}
-      />
+      {index < 1 && (
+        <MobileBoxLayer
+          sensor={sensor}
+          key={sensor.id}
+          minColor={minColor}
+          maxColor={maxColor}
+        />
+      )}
     </>
   );
 }
