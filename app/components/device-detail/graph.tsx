@@ -52,7 +52,7 @@ ChartJS.register(
 );
 
 // ClientOnly component to handle the plugin that needs window
-const LineWithZoom = (props: any) => {
+const GraphWithZoom = (props: any) => {
   useMemo(() => {
     // Dynamically import the zoom plugin
     import("chartjs-plugin-zoom").then(({ default: zoomPlugin }) => {
@@ -87,7 +87,10 @@ export default function Graph({
   const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
+  const [currentZoom, setCurrentZoom] = useState<{
+    xMin: number;
+    xMax: number;
+  } | null>(null); // To track zoom
   const [searchParams, setSearchParams] = useSearchParams();
   const [colorPickerState, setColorPickerState] = useState({
     open: false,
@@ -296,6 +299,8 @@ export default function Graph({
           //     locale: data.locale === "de" ? de : enGB,
           //   },
           // },
+          min: currentZoom?.xMin,
+          max: currentZoom?.xMax,
           ticks: {
             major: {
               enabled: true,
@@ -361,20 +366,22 @@ export default function Graph({
           },
         },
         zoom: {
-          pan: {
-            enabled: true,
-            mode: "xy",
-            onPan: () => setIsZoomed(true), // Mark zoom as active
-          },
           zoom: {
             wheel: {
               enabled: true,
             },
-            pinch: {
+            drag: {
               enabled: true,
             },
-            mode: "xy",
-            onZoom: () => setIsZoomed(true), // Mark zoom as active
+            mode: "x",
+            onZoom: ({ chart }) => {
+              const xScale = chart.scales["x"];
+              const xMin = xScale.min;
+              const xMax = xScale.max;
+
+              // Track the zoom level
+              setCurrentZoom({ xMin, xMax });
+            },
           },
         },
         legend: {
@@ -412,6 +419,8 @@ export default function Graph({
   }, [
     startDate,
     endDate,
+    currentZoom?.xMin,
+    currentZoom?.xMax,
     theme,
     sensors,
     lineData.datasets,
@@ -499,7 +508,7 @@ export default function Graph({
   function handleResetZoomClick() {
     if (chartRef.current) {
       chartRef.current.resetZoom(); // Use the resetZoom function from the zoom plugin
-      setIsZoomed(false); // Reset zoom state
+      setCurrentZoom(null); // Reset the zoom state
     }
   }
 
@@ -536,21 +545,23 @@ export default function Graph({
               <AggregationFilter />
             </div>
             <div className="flex items-center justify-end gap-4">
-              {isZoomed && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <RefreshCcw
-                        onClick={handleResetZoomClick}
-                        className="cursor-pointer"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Reset zoom</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              {currentZoom !== null &&
+                currentZoom.xMax !== 0 &&
+                currentZoom.xMin !== 0 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <RefreshCcw
+                          onClick={handleResetZoomClick}
+                          className="cursor-pointer"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Reset zoom</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Download />
@@ -588,7 +599,7 @@ export default function Graph({
             ) : (
               <ClientOnly fallback={<Spinner />}>
                 {() => (
-                  <LineWithZoom
+                  <GraphWithZoom
                     lineData={lineData}
                     options={options}
                     chartRef={chartRef} // Pass chartRef as a prop
