@@ -60,7 +60,6 @@ export default function MobileOverviewLayer({
     startTime: string;
     endTime: string;
   } | null>(null);
-  console.log("🚀 ~ popupInfo:", popupInfo);
   const [showOriginalColors, setShowOriginalColors] = useState(true);
 
   useEffect(() => {
@@ -202,11 +201,8 @@ export default function MobileOverviewLayer({
           </div>
           <div className="space-y-1 text-center">
             <div>
-              <span className="text-xs font-medium text-muted-foreground">
-                From
-              </span>
               <p className="text-sm font-bold text-primary">
-                {format(new Date(popupInfo.startTime), "PPpp")}
+                {format(new Date(popupInfo.startTime), "Pp")}
               </p>
             </div>
             <div>
@@ -214,7 +210,7 @@ export default function MobileOverviewLayer({
                 To
               </span>
               <p className="text-sm font-bold text-primary">
-                {format(new Date(popupInfo.endTime), "PPpp")}
+                {format(new Date(popupInfo.endTime), "Pp")}
               </p>
             </div>
           </div>

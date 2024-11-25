@@ -20,7 +20,7 @@ export default function MobileBoxView({
   return (
     <div className="absolute top-10 right-0 flex flex-col gap-4 p-4">
       {sensors.map((sensor, index) => (
-        <>
+        <div key={index} className="flex flex-col items-center gap-4">
           {index === 1 && sensors.length === 2 && (
             <Button
               className="self-center px-4 py-2 rounded-full"
@@ -31,7 +31,7 @@ export default function MobileBoxView({
             </Button>
           )}
           <SensorView sensor={sensor} index={index} />
-        </>
+        </div>
       ))}
     </div>
   );
