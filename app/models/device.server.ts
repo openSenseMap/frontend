@@ -41,6 +41,9 @@ export function getDevice({ id }: Pick<Device, "id">) {
         columns: {
           // time: true,
         },
+        extras: {
+          time: sql<Date>`time`.as("time"),
+        },
         with: {
           geometry: {
             columns: {},
