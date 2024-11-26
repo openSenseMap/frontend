@@ -29,6 +29,7 @@ import {
   CalendarPlus,
   Hash,
   LandPlot,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";
@@ -199,11 +200,6 @@ export default function DeviceDetailBox() {
     return () => clearInterval(interval);
   }, [refreshOn, refreshSecond]);
 
-  const getDeviceImage = (imageUri: string) =>
-    imageUri !== null
-      ? `https://opensensemap.org/userimages/${imageUri}`
-      : "https://images.placeholders.dev/?width=400&height=350&text=No%20image&bgColor=%234fae48&textColor=%23727373";
-
   return (
     <>
       {open && (
@@ -326,11 +322,17 @@ export default function DeviceDetailBox() {
               <div className="no-scrollbar relative flex-1 overflow-y-scroll">
                 <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
                   <div className="md:w-1/2">
-                    <img
-                      className="w-full object-cover rounded-lg"
-                      alt="device_image"
-                      src={getDeviceImage(data.device.image)}
-                    ></img>
+                    {data.device.image ? (
+                      <img
+                        className="w-full object-cover rounded-lg"
+                        alt="device_image"
+                        src={data.device.image}
+                      ></img>
+                    ) : (
+                      <div className="w-full object-cover rounded-lg text-muted-foreground">
+                        <ImageIcon strokeWidth={1} className="w-full h-full" />
+                      </div>
+                    )}
                   </div>
                   <div className="sm:w-1/2 space-y-2">
                     <InfoItem
