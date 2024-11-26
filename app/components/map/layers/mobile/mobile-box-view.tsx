@@ -1,16 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import type { Sensor } from "~/schema";
 import MobileBoxLayer from "./mobile-box-layer";
-import { HIGH_COLOR, LOW_COLOR } from "./color-palette";
+import { calculateColorRange } from "./color-palette";
 import { Button } from "~/components/ui/button";
 import { ArrowDownUp } from "lucide-react";
+
+interface SensorWithColor extends Sensor {
+  color: string; // Add the color property
+}
 
 export default function MobileBoxView({
   sensors: initialSensors,
 }: {
-  sensors: Sensor[];
+  sensors: SensorWithColor[];
 }) {
-  const [sensors, setSensors] = useState<Sensor[]>(initialSensors);
+  const [sensors, setSensors] = useState<SensorWithColor[]>(initialSensors);
 
   // Toggle the order of sensors
   const switchSensors = () => {
@@ -37,9 +41,17 @@ export default function MobileBoxView({
   );
 }
 
-function SensorView({ sensor, index }: { sensor: Sensor; index: number }) {
-  const [minColor, setMinColor] = useState(LOW_COLOR);
-  const [maxColor, setMaxColor] = useState(HIGH_COLOR);
+function SensorView({
+  sensor,
+  index,
+}: {
+  sensor: SensorWithColor;
+  index: number;
+}) {
+  const { lowColor, highColor } = calculateColorRange(sensor.color); // Calculate dynamically
+
+  const [minColor, setMinColor] = useState(lowColor);
+  const [maxColor, setMaxColor] = useState(highColor);
 
   return (
     <>
@@ -67,14 +79,16 @@ function Legend({
   sensor,
   onColorChange,
 }: {
-  sensor: Sensor;
+  sensor: SensorWithColor;
   onColorChange?: (min: string, max: string) => void;
 }) {
+  const { lowColor, highColor } = calculateColorRange(sensor.color);
+
   const minColorInputRef = useRef<HTMLInputElement>(null);
   const maxColorInputRef = useRef<HTMLInputElement>(null);
 
-  const [minColor, setMinColor] = useState(LOW_COLOR);
-  const [maxColor, setMaxColor] = useState(HIGH_COLOR);
+  const [minColor, setMinColor] = useState(lowColor);
+  const [maxColor, setMaxColor] = useState(highColor);
 
   useEffect(() => {
     onColorChange && onColorChange(minColor, maxColor);

@@ -47,7 +47,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Assign data to sensor
   sensor.data = sensorData;
   // query parameter color when sensor wiki works again
-  sensor.color = sensor.color || "#000000";
+  sensor.color = sensor.color || "#8da0cb";
 
   return typedjson({
     device,

@@ -56,8 +56,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   sensor2.data = sensor2Data;
 
   // Ensure each sensor has a color
-  sensor1.color = sensor1.color || "#000000"; // Default color for sensor 1
-  sensor2.color = sensor2.color || "#000000"; // Default color for sensor 2
+  sensor1.color = sensor1.color || "#8da0cb"; // Default color for sensor 1
+  sensor2.color = sensor2.color || "#fc8d62"; // Default color for sensor 2
 
   return typedjson({
     device: device,
