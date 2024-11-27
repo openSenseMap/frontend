@@ -3,7 +3,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 import ErrorMessage from "~/components/error-message";
@@ -16,7 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   //* check session if a user is already logged in
   const userId = await getUserId(request);
   if (userId) return redirect("/"); //* redirect to home page
-  return json({}); //* remain in login page
+  return {}; //* remain in login page
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -28,7 +28,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   //* validate email
   if (!validateEmail(email)) {
-    return json(
+    return data(
       { errors: { email: "Email is invalid", password: null } },
       { status: 400 },
     );
@@ -36,14 +36,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
   //* validate password
   if (typeof password !== "string" || password.length === 0) {
-    return json(
+    return data(
       { errors: { password: "Password is required", email: null } },
       { status: 400 },
     );
   }
 
   if (password.length < 8) {
-    return json(
+    return data(
       {
         errors: { password: "Please use at least 8 characters.", email: null },
       },
@@ -54,7 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const user = await verifyLogin(email, password);
 
   if (!user) {
-    return json(
+    return data(
       { errors: { email: "Invalid email or password", password: null } },
       { status: 400 },
     );

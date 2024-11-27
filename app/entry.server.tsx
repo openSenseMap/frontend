@@ -12,7 +12,8 @@ import I18NexFsBackend from "i18next-fs-backend";
 import i18nextOptions from "./i18next-options"; // our i18n configuration file
 import { resolve } from "node:path";
 
-const ABORT_DELAY = 5000;
+// Reject/cancel all pending promises after 5 seconds
+export const streamTimeout = 5000;
 
 init();
 global.ENV = getEnv();
@@ -86,6 +87,8 @@ export default async function handleRequest(
       },
     );
 
-    setTimeout(abort, ABORT_DELAY);
+    // Automatically timeout the React renderer after 6 seconds, which ensures
+    // React has enough time to flush down the rejected boundary contents
+    setTimeout(abort, streamTimeout + 1000);
   });
 }

@@ -7,7 +7,6 @@
 /build
 /.github
 /.vscode
-/cypress
 /mocks
 /db
 docker-compose.ci.yml

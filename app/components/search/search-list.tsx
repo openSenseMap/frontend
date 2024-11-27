@@ -38,8 +38,8 @@ export default function SearchList(props: SearchListProps) {
     compareMode
       ? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
       : selected.type === "device"
-      ? `/explore/${selected.deviceId}`
-      : `/explore${searchParams.size > 0 ? "?" + searchParams.toString() : ""}`,
+        ? `/explore/${selected.deviceId + "?" + searchParams.toString()}}`
+        : `/explore?${searchParams.toString()}`,
   );
 
   const handleNavigate = useCallback(
@@ -47,10 +47,8 @@ export default function SearchList(props: SearchListProps) {
       return compareMode
         ? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
         : result.type === "device"
-        ? `/explore/${result.deviceId}`
-        : `/explore${
-            searchParams.size > 0 ? "?" + searchParams.toString() : ""
-          }`;
+          ? `/explore/${result.deviceId + "?" + searchParams.toString()}`
+          : `/explore?${searchParams.toString()}`;
     },
     [searchParams, compareMode, matches, selected],
   );

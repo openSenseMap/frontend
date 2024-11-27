@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
 import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
-import type { loader } from "~/routes/explore.$deviceId._index";
+import type { loader } from "~/routes/explore+/$deviceId+/_$deviceId";
 import type { DateRange } from "react-day-picker";
 import { PopoverClose } from "@radix-ui/react-popover";
 import dateTimeRanges from "~/lib/date-ranges";
@@ -32,20 +32,20 @@ export function DateRangeFilter() {
 
   // State for selected date range and aggregation
   const [date, setDate] = useState<DateRange | undefined>({
-    from: loaderData.fromDate ? new Date(loaderData.fromDate) : undefined,
-    to: loaderData.toDate ? new Date(loaderData.toDate) : undefined,
+    from: loaderData.startDate ? new Date(loaderData.startDate) : undefined,
+    to: loaderData.endDate ? new Date(loaderData.endDate) : undefined,
   });
 
   if (
     !date?.from &&
     !date?.to &&
-    loaderData.selectedSensors[0].data.length > 0
+    loaderData.sensors[0].data.length > 0
   ) {
     // on initial load, without a selected time range, check what time rage the last 20000 data points are in
-    const firstDate = loaderData.selectedSensors[0].data[0].time;
+    const firstDate = loaderData.sensors[0].data[0].time;
     const lastDate =
-      loaderData.selectedSensors[0].data[
-        loaderData.selectedSensors[0].data.length - 1
+      loaderData.sensors[0].data[
+        loaderData.sensors[0].data.length - 1
       ].time;
     setDate({
       from: lastDate ? new Date(lastDate) : undefined,
