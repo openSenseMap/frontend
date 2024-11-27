@@ -1,43 +1,55 @@
 import { Gift, Star } from "lucide-react";
+import SVGFace from "../smile/svg-face";
+import React, { useState } from "react";
 
 export default function PricingPlans() {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
+
   return (
-    <>
-      <section id="pricing">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-semibold">Pricing</h2>
-            <p className="mt-2 text-lg text-gray-600">
-              Just kidding, openSenseMap is free and open-source. <br></br>
-              You can still make your contribution.
-            </p>
+    <section id="pricing">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-semibold">Pricing</h2>
+          <p className="mt-2 text-lg text-gray-600">
+            Just kidding, openSenseMap is free and open-source. <br></br>
+            You can still make your contribution.
+          </p>
+        </div>
+        <div className="flex justify-center mt-4 gap-5">
+          <div id="left" className="flex flex-col gap-3">
+            <a
+              href="http://github.com/openSenseMap/frontend"
+              rel="noreferrer noopener nofollow"
+              target="_blank"
+              className="flex items-center justify-center border-2 border-solid rounded-sm px-4 py-2 hover:cursor-pointer"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Star className="h-4 w-4 mr-2" />
+              Give us a star
+            </a>
           </div>
-          <div className="flex justify-center mt-4 gap-5">
-            <div id="left" className="flex flex-col gap-3">
-              <a
-                href="http://github.com/openSenseMap/frontend"
-                rel="noreferrer noopener nofollow"
-                target="_blank"
-                className="flex items-center justify-center border-2 border-solid rounded-sm px-4 py-2 hover:cursor-pointer"
-              >
-                <Star className="h-4 w-4 mr-2" />
-                Give us a star
-              </a>
-            </div>
-            <div id="right" className="flex flex-col gap-3 ">
-              <a
-                href="https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
-                rel="noreferrer noopener nofollow"
-                target="_blank"
-                className="flex items-center justify-center border-2 border-solid rounded-sm px-4 py-2 hover:cursor-pointer"
-              >
-                <Gift className="h-4 w-4 mr-2" />
-                Become a sponsor
-              </a>
-            </div>
+          <div id="right" className="flex flex-col gap-3">
+            <a
+              href="https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten"
+              rel="noreferrer noopener nofollow"
+              target="_blank"
+              className="flex items-center justify-center border-2 border-solid rounded-sm px-4 py-2 hover:cursor-pointer"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Gift className="h-4 w-4 mr-2" />
+              Become a sponsor
+            </a>
           </div>
         </div>
-      </section>
-    </>
+        <div className="pt-8 lg:pt-16">
+          <SVGFace isHovered={isHovered} />
+        </div>
+      </div>
+    </section>
   );
 }
