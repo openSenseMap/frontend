@@ -2,7 +2,7 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import i18next from "i18next";
 import type { loader } from "~/root";
-import { Button } from "../ui/button";
+import { Button } from "~/components/ui/button";
 
 export default function LanguageSelector() {
   const data = useLoaderData<typeof loader>();

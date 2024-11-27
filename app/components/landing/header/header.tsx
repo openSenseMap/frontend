@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { useState } from "react";
+import { ModeToggle } from "../../mode-toggle";
 import LanguageSelector from "./language-selector";
-import { ModeToggle } from "../mode-toggle";
 
 const links = [
   {

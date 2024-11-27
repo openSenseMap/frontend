@@ -9,7 +9,7 @@ export default function Partners({ data }: PartnersProps) {
   return (
     <div
       id="partners"
-      className="flex h-full min-h-full items-center justify-center text-xl text-gray-300 dark:text-gray-100"
+      className="flex h-full items-center justify-center text-xl text-gray-300 dark:text-gray-100"
     >
       <div className="flex h-full w-5/6 flex-col justify-evenly">
         <div className="flex items-center justify-center pb-10">

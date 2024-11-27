@@ -2,19 +2,19 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { motion } from "framer-motion";
-import Features from "~/components/landing/features";
+import Features from "~/components/landing/sections/features";
 import Footer from "~/components/landing/footer";
-import Header from "~/components/landing/header";
-import Partners from "~/components/landing/partners";
+import Header from "~/components/landing/header/header";
+import Partners from "~/components/landing/sections/partners";
 import Stats from "~/components/landing/stats";
 import i18next from "~/i18next.server";
 import type { Partner } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
 import { getUserId, getUserName } from "~/session.server";
 import { useTranslation } from "react-i18next";
-import PricingPlans from "~/components/landing/pricing-plans";
-import Integrations from "~/components/landing/integrations";
-import Connect from "~/components/landing/connect";
+import PricingPlans from "~/components/landing/sections/pricing-plans";
+import Integrations from "~/components/landing/sections/integrations";
+import Connect from "~/components/landing/sections/connect";
 import { GlobeComponent } from "~/components/landing/globe.client";
 import { useMediaQuery } from "@mantine/hooks";
 
@@ -217,16 +217,14 @@ export default function Index() {
           );
         })}
         <div
-          className="h-screen flex justify-center items-center mx-32 border-2 scroll-snap-section"
+          className="h-screen flex flex-col justify-center items-center mx-32 scroll-snap-section"
           style={{
             scrollSnapAlign: "center",
           }}
         >
           <Partners data={partners} />
-        </div>
-        <footer>
           <Footer />
-        </footer>
+        </div>
       </main>
     </div>
   );
