@@ -17,7 +17,7 @@ export default function Partners({ data }: PartnersProps) {
             Partners
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center">
+        <div className="flex items-center justify-center">
           {data.map((partner, index) => {
             return (
               <motion.div

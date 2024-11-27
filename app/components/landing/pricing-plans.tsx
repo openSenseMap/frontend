@@ -3,7 +3,7 @@ import { Gift, Star } from "lucide-react";
 export default function PricingPlans() {
   return (
     <>
-      <section id="pricing" className="border-t border-gray-200 py-20">
+      <section id="pricing">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Pricing</h2>

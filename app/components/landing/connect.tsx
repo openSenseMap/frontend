@@ -4,7 +4,7 @@ export default function Connect() {
   return (
     <section
       id="connect"
-      className="flex justify-between mx-32 gap-20 border-t border-gray-200 py-20"
+      className="h-full flex justify-center items-center mx-32 gap-20 py-20"
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">
         <div id="title" className="text-2xl font-semibold">
