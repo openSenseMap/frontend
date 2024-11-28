@@ -4,21 +4,35 @@ import { useEffect, useRef } from "react";
 import Globe from "react-globe.gl";
 
 export const GlobeComponent = () => {
-  const globeEl = useRef<any>(null); // Use `any` as a quick workaround
-  const colors = ["#3D843F", "#037EA1"];
+  const globeEl = useRef<any>(null);
 
-  // arcs data
-  const arcN = 12;
-  const arcsData = [...Array(arcN).keys()].map(() => ({
-    startLat: (Math.random() - 0.5) * 180,
-    startLng: (Math.random() - 0.5) * 360,
-    endLat: (Math.random() - 0.5) * 180,
-    endLng: (Math.random() - 0.5) * 360,
-    color: [
-      colors[Math.round(Math.random() * 1)],
-      colors[Math.round(Math.random() * 1)],
-    ],
-  }));
+  // Example sensor data with lat/lng, max radius, propagation speed, and repeat period
+  const sensorData = [
+    {
+      lat: 52.52,
+      lng: 13.405,
+      maxR: 10,
+      propagationSpeed: 5,
+      repeatPeriod: 1000,
+    }, // Berlin
+    {
+      lat: 48.8566,
+      lng: 2.3522,
+      maxR: 12,
+      propagationSpeed: 4,
+      repeatPeriod: 1200,
+    }, // Paris
+    {
+      lat: 40.7128,
+      lng: -74.006,
+      maxR: 8,
+      propagationSpeed: 6,
+      repeatPeriod: 900,
+    }, // New York
+    // Add more locations here
+  ];
+
+  const colorInterpolator = (t: any) => `rgba(255,100,50,${Math.sqrt(1 - t)})`;
 
   useEffect(() => {
     if (globeEl.current) {
@@ -36,12 +50,11 @@ export const GlobeComponent = () => {
       backgroundColor="rgba(0, 0, 0, 0)"
       width={500}
       height={500}
-      arcsData={arcsData}
-      arcDashLength={Math.random() * (1 - 0.4) + 0.4}
-      arcDashGap={Math.random() * (3 - 0.4) + 0.4}
-      arcStroke={1}
-      arcDashAnimateTime={Math.floor(Math.random() * (4000 - 2000 + 1)) + 2000}
-      arcColor={(d: any) => d.color}
+      ringsData={sensorData}
+      ringColor={() => colorInterpolator}
+      ringMaxRadius="maxR"
+      ringPropagationSpeed="propagationSpeed"
+      ringRepeatPeriod="repeatPeriod"
     />
   );
 };
