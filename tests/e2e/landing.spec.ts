@@ -19,7 +19,10 @@ test.describe("Landing Page", () => {
   });
 
   test("should display main call-to-action buttons", async ({ page }) => {
+    // eslint-disable-next-line testing-library/prefer-screen-queries
     const exploreButton = page.getByRole("button", { name: "Explore" });
+
+    // eslint-disable-next-line testing-library/prefer-screen-queries
     const donateButton = page.getByRole("button", { name: "Donate" });
 
     await expect(exploreButton).toBeVisible();

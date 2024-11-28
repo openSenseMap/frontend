@@ -5,6 +5,9 @@ import {
   text,
   timestamp,
   doublePrecision,
+  integer,
+  primaryKey,
+  unique,
 } from "drizzle-orm/pg-core";
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
 import {
@@ -15,6 +18,7 @@ import {
 } from "drizzle-orm";
 import { user } from "./user";
 import { sensor } from "./sensor";
+import { location } from "./location";
 import { logEntry } from "./log-entry";
 
 /**
@@ -45,6 +49,25 @@ export const device = pgTable("device", {
   sensorWikiModel: text("sensor_wiki_model"),
 });
 
+// Many-to-many relation between device - location
+// https://orm.drizzle.team/docs/rqb#many-to-many
+export const deviceToLocation = pgTable(
+  "device_to_location",
+  {
+    deviceId: text("device_id")
+      .notNull()
+      .references(() => device.id),
+    locationId: integer("location_id")
+      .notNull()
+      .references(() => location.id),
+    time: timestamp("time").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.deviceId, t.locationId, t.time] }),
+    unique: unique().on(t.deviceId, t.locationId, t.time), // Device can only be at one location at the same time
+  }),
+);
+
 /**
  * Relations
  */
@@ -54,8 +77,24 @@ export const deviceRelations = relations(device, ({ one, many }) => ({
     references: [user.id],
   }),
   sensors: many(sensor),
+  locations: many(deviceToLocation),
   logEntries: many(logEntry),
 }));
+
+// Many-to-many
+export const deviceToLocationRelations = relations(
+  deviceToLocation,
+  ({ one }) => ({
+    device: one(device, {
+      fields: [deviceToLocation.deviceId],
+      references: [device.id],
+    }),
+    geometry: one(location, {
+      fields: [deviceToLocation.locationId],
+      references: [location.id],
+    }),
+  }),
+);
 
 /**
  * Types
