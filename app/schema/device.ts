@@ -56,7 +56,10 @@ export const deviceToLocation = pgTable(
   {
     deviceId: text("device_id")
       .notNull()
-      .references(() => device.id),
+      .references(() => device.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     locationId: integer("location_id")
       .notNull()
       .references(() => location.id),
