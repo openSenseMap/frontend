@@ -48,7 +48,7 @@ export default function EntryLogs({
               <Activity className="w-5 h-5" />
             </div>
             <div className="flex-grow">
-              <p className="text-sm font-medium mb-2">{entryLogs[0].content}</p>
+              <p className="text-sm font-medium mb-2">{entryLogs[entryLogs.length -1].content}</p>
               <div className="flex items-center text-xs text-muted-foreground">
                 <Clock className="w-3 h-3 mr-1" />
                 {new Date(entryLogs[0].createdAt).toLocaleString()}
