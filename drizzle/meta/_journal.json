@@ -64,6 +64,27 @@
       "when": 1729065392478,
       "tag": "0008_add_deviceTags",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1733129750282,
+      "tag": "0009_add_temporary_devices",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1733137000160,
+      "tag": "0010_sensor_cascade_device_ondelete",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1733138016474,
+      "tag": "0011_cron_delete_temporary_devices",
+      "breakpoints": true
     }
   ]
 }
