@@ -1,0 +1,1 @@
+ALTER TABLE "device" ADD COLUMN "expires_at" date;

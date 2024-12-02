@@ -1,1 +1,0 @@
-ALTER TABLE "device" ADD COLUMN "temporary" boolean DEFAULT false;

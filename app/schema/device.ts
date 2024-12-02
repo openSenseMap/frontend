@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   doublePrecision,
+  date,
 } from "drizzle-orm/pg-core";
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
 import {
@@ -39,11 +40,11 @@ export const device = pgTable("device", {
   public: boolean("public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  expiresAt: date("expires_at", { mode: "date" }),
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
   userId: text("user_id").notNull(),
   sensorWikiModel: text("sensor_wiki_model"),
-  temporary: boolean("temporary").default(false),
 });
 
 /**

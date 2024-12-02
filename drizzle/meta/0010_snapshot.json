@@ -1,6 +1,6 @@
 {
-  "id": "78a6e768-0c88-4e2e-896a-10b3480ea21d",
-  "prevId": "0a22f7dc-1501-4751-9449-6de4d1aef92a",
+  "id": "8cca115a-de94-46b3-b329-cd568f612f8f",
+  "prevId": "d017cd08-785d-4563-8de7-f88d81de73e8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -94,6 +94,12 @@
           "notNull": true,
           "default": "now()"
         },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
         "latitude": {
           "name": "latitude",
           "type": "double precision",
@@ -117,13 +123,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "temporary": {
-          "name": "temporary",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         }
       },
       "indexes": {},

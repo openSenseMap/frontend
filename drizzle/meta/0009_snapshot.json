@@ -1,5 +1,5 @@
 {
-  "id": "0a22f7dc-1501-4751-9449-6de4d1aef92a",
+  "id": "d017cd08-785d-4563-8de7-f88d81de73e8",
   "prevId": "109b9611-48ac-4cd7-8003-9bb880e663a5",
   "version": "7",
   "dialect": "postgresql",
@@ -117,13 +117,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "temporary": {
-          "name": "temporary",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         }
       },
       "indexes": {},
@@ -433,7 +426,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "sensor_device_id_device_id_fk": {
+          "name": "sensor_device_id_device_id_fk",
+          "tableFrom": "sensor",
+          "tableTo": "device",
+          "columnsFrom": [
+            "device_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

@@ -1,4 +1,3 @@
--- Custom SQL migration file, put your code below! --
 -- Stored procedure to import MongoDB exports
 CREATE OR REPLACE PROCEDURE delete_temporary_devices()
 LANGUAGE plpgsql
@@ -6,7 +5,7 @@ AS $func$
 DECLARE
 	affected_rows INT;
 BEGIN
-	DELETE FROM device WHERE TEMPORARY=TRUE AND created_at::TIMESTAMP::date < NOW()::TIMESTAMP::date - INTERVAL '1 week';
+	SELECT * FROM device WHERE expires_at IS NOT NULL AND expires_at <= NOW()::TIMESTAMP::date;
 
 --  Not sure if we should use this or just ignore how many ROWS were deleted!
 --	GET DIAGNOSTICS affected_rows = ROW_COUNT;
