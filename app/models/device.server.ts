@@ -22,6 +22,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
       status: true,
       updatedAt: true,
       tags: true,
+      expiresAt: true,
     },
     with: {
       logEntries: {
