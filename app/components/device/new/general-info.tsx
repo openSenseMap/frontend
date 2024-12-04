@@ -21,7 +21,7 @@ export function GeneralInfoStep() {
     name: "tags", // Tags array
   });
 
-  const currentExposure = watch("exposure", "unknown"); // Watch exposure value
+  const currentExposure = watch("exposure"); // Watch exposure value
 
   const addTag = (event: React.FormEvent) => {
     event.preventDefault();
