@@ -12,7 +12,7 @@ export function LocationStep() {
   const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     if (!isNaN(value)) {
-      setValue("latitude", value); // Update the latitude value in form state
+      setValue("latitude", value);
       console.log("Updated Latitude:", value);
     }
   };
@@ -20,13 +20,13 @@ export function LocationStep() {
   const handleLongitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     if (!isNaN(value)) {
-      setValue("longitude", value); // Update the longitude value in form state
+      setValue("longitude", value);
       console.log("Updated Longitude:", value);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full flex flex-col justify-evenly p-2">
       <div>
         <Label htmlFor="latitude">Latitude</Label>
         <Input
@@ -34,8 +34,8 @@ export function LocationStep() {
           type="number"
           {...register("latitude", {
             valueAsNumber: true,
-          })} // Ensure value is treated as a number
-          onChange={handleLatitudeChange} // Update value in form context
+          })}
+          onChange={handleLatitudeChange}
           placeholder="Enter latitude (-90 to 90)"
           className="w-full p-2 border rounded-md"
         />
@@ -52,8 +52,8 @@ export function LocationStep() {
           type="number"
           {...register("longitude", {
             valueAsNumber: true,
-          })} // Ensure value is treated as a number
-          onChange={handleLongitudeChange} // Update value in form context
+          })}
+          onChange={handleLongitudeChange}
           placeholder="Enter longitude (-180 to 180)"
           className="w-full p-2 border rounded-md"
         />
