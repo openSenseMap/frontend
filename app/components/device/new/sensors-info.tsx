@@ -43,8 +43,7 @@ export function SensorSelectionStep() {
 
   return (
     <div className="flex flex-col items-center h-full">
-      <h2 className="text-3xl font-bold mb-4">Select Sensors</h2>
-      <div className="container mx-auto p-4 bg-white rounded-md shadow-md h-full max-h-[80vh] overflow-auto space-y-6">
+      <div className="container mx-auto p-4 bg-white rounded-md overflow-auto space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sensors.map((sensor, index) => {
             // Create a unique ID for each sensor using its index and sensorType

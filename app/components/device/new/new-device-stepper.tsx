@@ -61,6 +61,7 @@ const Stepper = defineStepper(
 );
 
 export default function NewDeviceStepper() {
+  const [formData, setFormData] = useState({});
   const stepper = Stepper.useStepper();
   const form = useForm({
     mode: "onTouched",
@@ -70,13 +71,26 @@ export default function NewDeviceStepper() {
   const [isFirst, setIsFirst] = useState(false);
 
   useEffect(() => {
-    setIsFirst(stepper.isFirst); // Ensure `isFirst` is consistently resolved on the client
+    setIsFirst(stepper.isFirst);
   }, [stepper.isFirst]);
 
   const onSubmit = (data: any) => {
-    console.log("Form Data on Next:", data); // Log the entire form data
+    // Update the accumulated data
+    setFormData((prevData) => {
+      const updatedData = {
+        ...prevData,
+        [stepper.current.id]: data,
+      };
+      console.log("Updated Form Data:", updatedData);
+      return updatedData;
+    });
+
+    // Move to the next step or complete the form
     if (stepper.isLast) {
-      console.log("Complete!");
+      console.log("Complete! Final Data:", {
+        ...formData,
+        [stepper.current.id]: data,
+      });
       stepper.reset();
     } else {
       stepper.next();
@@ -88,21 +102,22 @@ export default function NewDeviceStepper() {
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 p-6 border rounded-lg w-[450px]"
+          className="h-full space-y-6 p-6 border rounded-lg w-[650px] bg-white flex flex-col justify-between"
         >
           <h2 className="text-lg font-medium">
             Step {stepper.current.index + 1} of {Stepper.steps.length}:{" "}
             {stepper.current.label}
           </h2>
-          {stepper.switch({
-            "general-info": () => <GeneralInfoStep />,
-            location: () => <LocationStep />,
-            "device-selection": () => <DeviceSelectionStep />,
-            "sensor-selection": () => <SensorSelectionStep />,
-            advanced: () => <div>Advanced</div>,
-            complete: () => <CompleteComponent />,
-          })}
-
+          <div className="overflow-auto h-full">
+            {stepper.switch({
+              "general-info": () => <GeneralInfoStep />,
+              location: () => <LocationStep />,
+              "device-selection": () => <DeviceSelectionStep />,
+              "sensor-selection": () => <SensorSelectionStep />,
+              advanced: () => <div>Advanced</div>,
+              complete: () => <CompleteComponent />,
+            })}
+          </div>
           <div className="flex justify-between mt-4">
             <Button
               type="button"

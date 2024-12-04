@@ -3,11 +3,13 @@ import { NavBar } from "~/components/nav-bar";
 
 export default function NewDevice() {
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="flex flex-col h-screen">
       <NavBar />
-      <div className="flex h-full overflow-auto w-full justify-center py-10 bg-gray-100 dark:bg-dark-background">
-        <div className="w-full max-w-3xl rounded-lg p-6 dark:shadow-none dark:bg-transparent dark:text-dark-text">
-          <ValidationStepperForm />
+      <div className="flex-grow bg-gray-100 overflow-auto">
+        <div className="flex h-full w-full justify-center py-10">
+          <div className="w-full h-full max-w-3xl rounded-lg p-6 dark:shadow-none dark:bg-transparent dark:text-dark-text">
+            <ValidationStepperForm />
+          </div>
         </div>
       </div>
     </div>

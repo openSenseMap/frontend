@@ -14,8 +14,7 @@ export function DeviceSelectionStep() {
   const devices: Device[] = ["senseBoxHomeV2", "senseBoxEdu", "luftdatenInfo"];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold mb-6">Select a Device</h2>
+    <div className="space-y-6 h-full flex items-center justify-center">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {devices.map((device) => (
           <div
