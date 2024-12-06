@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { defineStepper } from "@stepperize/react";
+import type { FieldErrors } from "react-hook-form";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { GeneralInfoStep } from "./general-info";
@@ -8,6 +9,8 @@ import { DeviceSelectionStep } from "./device-info";
 import { Button } from "~/components/ui/button";
 import { useEffect, useState } from "react";
 import { SensorSelectionStep } from "./sensors-info";
+import { DeviceModelEnum } from "~/schema/enum";
+import { useToast } from "~/components/ui/use-toast";
 
 const generalInfoSchema = z.object({
   name: z
@@ -43,14 +46,16 @@ const locationSchema = z.object({
     .max(180, "Longitude must be less than or equal to 180"),
 });
 
-const hardwareSchema = z.object({
-  hardwareId: z.string().min(1, "Hardware selection is required"),
+const deviceSchema = z.object({
+  model: z.enum(DeviceModelEnum.enumValues, {
+    errorMap: () => ({ message: "Please select a device." }),
+  }),
 });
 
 const Stepper = defineStepper(
   { id: "general-info", label: "General Info", schema: generalInfoSchema },
   { id: "location", label: "Location", schema: locationSchema },
-  { id: "device-selection", label: "Device Selection", schema: hardwareSchema },
+  { id: "device-selection", label: "Device Selection", schema: deviceSchema },
   {
     id: "sensor-selection",
     label: "Sensor Selection",
@@ -60,13 +65,22 @@ const Stepper = defineStepper(
   { id: "complete", label: "Complete", schema: z.object({}) },
 );
 
+type GeneralInfoData = z.infer<typeof generalInfoSchema>;
+type LocationData = z.infer<typeof locationSchema>;
+type DeviceData = z.infer<typeof deviceSchema>;
+
+type FormData = GeneralInfoData &
+  LocationData &
+  DeviceData & { selectedSensors?: string[] };
+
 export default function NewDeviceStepper() {
   const [formData, setFormData] = useState({});
   const stepper = Stepper.useStepper();
-  const form = useForm({
+  const form = useForm<FormData>({
     mode: "onTouched",
     resolver: zodResolver(stepper.current.schema),
   });
+  const { toast } = useToast();
 
   const [isFirst, setIsFirst] = useState(false);
 
@@ -97,11 +111,24 @@ export default function NewDeviceStepper() {
     }
   };
 
+  const onError = (errors: FieldErrors<FormData>) => {
+    const firstErrorMessage = Object.values(errors)?.[0]?.message;
+
+    if (firstErrorMessage) {
+      toast({
+        title: "Form Error",
+        description: firstErrorMessage,
+        variant: "destructive",
+        duration: 2000,
+      });
+    }
+  };
+
   return (
     <Stepper.Scoped>
       <FormProvider {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit, onError)}
           className="h-full space-y-6 p-6 border rounded-lg w-[650px] bg-white flex flex-col justify-between"
         >
           <h2 className="text-lg font-medium">

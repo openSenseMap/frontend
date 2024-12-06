@@ -16,15 +16,14 @@ import {
 export function LocationStep() {
   const mapRef = useRef<MapRef | null>(null);
 
-  const {
-    register,
-    setValue,
-    formState: { errors },
-  } = useFormContext();
+  const { register, setValue } = useFormContext();
 
-  const [marker, setMarker] = useState({
-    latitude: 51, // Default latitude
-    longitude: 10, // Default longitude
+  const [marker, setMarker] = useState<{
+    latitude: number | null;
+    longitude: number | null;
+  }>({
+    latitude: null,
+    longitude: null,
   });
 
   const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,8 +76,8 @@ export function LocationStep() {
           ref={mapRef}
           projection={{ name: "mercator" }}
           initialViewState={{
-            latitude: marker.latitude,
-            longitude: marker.longitude,
+            latitude: marker.latitude || 51,
+            longitude: marker.longitude || 7,
             zoom: 3.5,
           }}
           mapStyle="mapbox://styles/mapbox/streets-v12"
@@ -96,13 +95,15 @@ export function LocationStep() {
             tileSize={512}
             maxzoom={14}
           />
-          <Marker
-            latitude={marker.latitude}
-            longitude={marker.longitude}
-            anchor="center"
-            draggable
-            onDrag={onMarkerDrag}
-          />
+          {marker.latitude && marker.longitude && (
+            <Marker
+              latitude={marker.latitude}
+              longitude={marker.longitude}
+              anchor="center"
+              draggable
+              onDrag={onMarkerDrag}
+            />
+          )}
           <NavigationControl position="top-right" showCompass={false} />
           <GeolocateControl
             position="top-right"
@@ -119,38 +120,30 @@ export function LocationStep() {
           <Input
             id="latitude"
             type="number"
+            step={"any"}
             {...register("latitude", {
               valueAsNumber: true,
             })}
-            value={marker.latitude}
+            value={marker.latitude !== null ? marker.latitude : ""}
             onChange={handleLatitudeChange}
             placeholder="Enter latitude (-90 to 90)"
             className="w-full p-2 border rounded-md"
           />
-          {errors.latitude && (
-            <p className="text-sm text-red-600">
-              {String(errors.latitude.message)}
-            </p>
-          )}
         </div>
         <div>
           <Label htmlFor="longitude">Longitude</Label>
           <Input
             id="longitude"
             type="number"
+            step={"any"}
             {...register("longitude", {
               valueAsNumber: true,
             })}
-            value={marker.longitude}
+            value={marker.longitude !== null ? marker.longitude : ""}
             onChange={handleLongitudeChange}
             placeholder="Enter longitude (-180 to 180)"
             className="w-full p-2 border rounded-md"
           />
-          {errors.longitude && (
-            <p className="text-sm text-red-600">
-              {String(errors.longitude.message)}
-            </p>
-          )}
         </div>
       </div>
     </div>

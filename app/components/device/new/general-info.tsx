@@ -8,14 +8,7 @@ import { Badge } from "~/components/ui/badge";
 type ExposureOption = "outdoor" | "indoor" | "mobile" | "unknown";
 
 export function GeneralInfoStep() {
-  const {
-    register,
-    control,
-    setValue,
-    getValues,
-    watch,
-    formState: { errors },
-  } = useFormContext();
+  const { register, control, setValue, getValues, watch } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "tags", // Tags array
@@ -61,9 +54,6 @@ export function GeneralInfoStep() {
           {...register("name")}
           className="w-full p-2 border rounded-md"
         />
-        {errors.name && (
-          <p className="text-sm text-red-600">{String(errors.name.message)}</p>
-        )}
       </div>
       <div>
         <Label htmlFor="exposure">Exposure</Label>
@@ -85,11 +75,6 @@ export function GeneralInfoStep() {
             </Button>
           ))}
         </div>
-        {errors.exposure && (
-          <p className="text-sm text-red-600">
-            {String(errors.exposure.message)}
-          </p>
-        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="tag-input" className="text-base">

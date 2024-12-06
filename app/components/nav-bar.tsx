@@ -39,7 +39,7 @@ export function NavBar() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" disabled>
+                  <Button variant="outline" size="icon">
                     <Plus className="h-4 w-4" />
                     <ChevronDownIcon className="m-0 inline h-4  w-4 p-0" />
                   </Button>

@@ -8,6 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!user) {
     return redirect("/login");
   }
+  return {};
 }
 
 export default function NewDevice() {
