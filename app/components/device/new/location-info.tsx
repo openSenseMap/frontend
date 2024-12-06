@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -16,8 +16,9 @@ import {
 export function LocationStep() {
   const mapRef = useRef<MapRef | null>(null);
 
-  const { register, setValue } = useFormContext();
+  const { register, setValue, watch } = useFormContext();
 
+  // Initialize state with form values
   const [marker, setMarker] = useState<{
     latitude: number | null;
     longitude: number | null;
@@ -25,6 +26,18 @@ export function LocationStep() {
     latitude: null,
     longitude: null,
   });
+
+  // Sync state with form values on mount
+  useEffect(() => {
+    const savedLatitude = watch("latitude");
+    const savedLongitude = watch("longitude");
+    if (savedLatitude !== undefined && savedLongitude !== undefined) {
+      setMarker({
+        latitude: savedLatitude,
+        longitude: savedLongitude,
+      });
+    }
+  }, [watch]);
 
   const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -84,7 +97,6 @@ export function LocationStep() {
           mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
           style={{
             width: "100%",
-            // height: "80%",
           }}
           onClick={onMapClick}
         >
