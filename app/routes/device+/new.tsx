@@ -1,5 +1,14 @@
+import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import ValidationStepperForm from "~/components/device/new/new-device-stepper";
 import { NavBar } from "~/components/nav-bar";
+import { getUser } from "~/session.server";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await getUser(request);
+  if (!user) {
+    return redirect("/login");
+  }
+}
 
 export default function NewDevice() {
   return (
