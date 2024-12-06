@@ -8,30 +8,41 @@ type Sensor = {
   title: string;
   unit: string;
   sensorType: string;
-  icon: string;
+  icon?: string;
+  image?: string;
 };
 
 type SensorGroup = {
   sensorType: string;
-  measurements: Sensor[];
+  sensors: Sensor[];
+  image?: string;
 };
 
 export function SensorSelectionStep() {
   const { watch, setValue } = useFormContext();
-  const selectedDevice = watch("hardwareId");
+  const selectedDevice = watch("model");
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [selectedSensorTypes, setSelectedSensorTypes] = useState<string[]>([]);
 
   useEffect(() => {
     if (selectedDevice) {
-      const fetchSensors = async () => {
-        const fetchedSensors = await getSensorsForModel(selectedDevice);
+      // if selectedDevice begins with homeV2 set it to senseBox:Home, otherwise use selectedDevice
+      const selectedDeviceModel = selectedDevice.startsWith("homeV2")
+        ? "senseBoxHomeV2"
+        : selectedDevice;
+      const fetchSensors = () => {
+        const fetchedSensors = getSensorsForModel(selectedDeviceModel);
         setSensors(fetchedSensors);
       };
-
       fetchSensors();
     }
   }, [selectedDevice]);
+
+  useEffect(() => {
+    // Initialize selectedSensorTypes from form state if it exists
+    const savedSelectedSensors = watch("selectedSensors") || [];
+    setSelectedSensorTypes(savedSelectedSensors);
+  }, [watch]);
 
   const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
     const grouped = sensors.reduce(
@@ -45,9 +56,10 @@ export function SensorSelectionStep() {
       {} as Record<string, Sensor[]>,
     );
 
-    return Object.entries(grouped).map(([sensorType, measurements]) => ({
+    return Object.entries(grouped).map(([sensorType, sensors]) => ({
       sensorType,
-      measurements,
+      sensors,
+      image: sensors.find((sensor) => sensor.image)?.image, // Select the first available image for the group
     }));
   };
 
@@ -60,14 +72,8 @@ export function SensorSelectionStep() {
 
     setSelectedSensorTypes(updatedSensorTypes);
 
-    // Update the selected sensors in form state
-    const updatedSensors = sensors.filter((sensor) =>
-      updatedSensorTypes.includes(sensor.sensorType),
-    );
-    setValue(
-      "selectedSensors",
-      updatedSensors.map((sensor) => sensor.sensorType),
-    );
+    // Store the selected sensors in the form state
+    setValue("selectedSensors", [...new Set(updatedSensorTypes)]);
   };
 
   if (!selectedDevice) {
@@ -103,21 +109,20 @@ export function SensorSelectionStep() {
                     </h3>
                   </div>
                   <ul className="mb-4">
-                    {group.measurements.map((measurement) => (
-                      <li
-                        key={measurement.title}
-                        className="text-sm text-gray-600"
-                      >
-                        {measurement.title} ({measurement.unit})
+                    {group.sensors.map((sensor) => (
+                      <li key={sensor.title} className="text-sm text-gray-600">
+                        {sensor.title} ({sensor.unit})
                       </li>
                     ))}
                   </ul>
-                  <div className="h-32 bg-gray-100 rounded-md flex items-center justify-center">
-                    <img
-                      src={`/placeholder.svg?height=128&width=256`}
-                      alt={`${group.sensorType} placeholder`}
-                      className="w-full h-full object-cover rounded-md"
-                    />
+                  <div className="rounded-md h-32 w-32 flex items-center justify-center">
+                    {group.image && (
+                      <img
+                        src={group.image}
+                        alt={`${group.sensorType} placeholder`}
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                    )}
                   </div>
                 </CardContent>
               </Card>
