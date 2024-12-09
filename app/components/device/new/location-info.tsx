@@ -23,8 +23,8 @@ export function LocationStep() {
     latitude: number | null;
     longitude: number | null;
   }>({
-    latitude: null,
-    longitude: null,
+    latitude: 0,
+    longitude: 0,
   });
 
   // Sync state with form values on mount

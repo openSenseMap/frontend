@@ -195,12 +195,6 @@ export const sensorDefinitions = {
     image:
       "https://sensebox.kaufen/api/public/uploads/1646750298501-1646737282568-sensebox-dps310_1.png",
   },
-  index: {
-    title: null,
-    unit: null,
-    sensorType: null,
-    icon: null,
-  },
   bme280_pressure_hpa: {
     title: "Luftdruck",
     unit: "hPa",

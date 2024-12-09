@@ -25,8 +25,30 @@ export const modelDefinitions = {
     sensorDefinitions.sps30_pm10,
     sensorDefinitions.sps30_pm25,
   ],
-  senseBoxEdu: [],
-  luftdatenInfo: [
+  "senseBox:Edu": [
+    sensorDefinitions.hdc1080_temperature,
+    sensorDefinitions.hdc1080_humidity,
+    sensorDefinitions.bmp280_pressure,
+    sensorDefinitions.tsl45315_lightintensity,
+    sensorDefinitions.veml6070_uvintensity,
+    sensorDefinitions.sds011_pm10,
+    sensorDefinitions.sds011_pm25,
+    sensorDefinitions.bme680_humidity,
+    sensorDefinitions.bme680_temperature,
+    sensorDefinitions.bme680_pressure,
+    sensorDefinitions.bme680_voc,
+    sensorDefinitions.smt50_soilmoisture,
+    sensorDefinitions.smt50_soiltemperature,
+    sensorDefinitions.soundlevelmeter,
+    sensorDefinitions.windspeed,
+    sensorDefinitions.scd30_co2,
+    sensorDefinitions.dps310_pressure,
+    sensorDefinitions.sps30_pm1,
+    sensorDefinitions.sps30_pm4,
+    sensorDefinitions.sps30_pm10,
+    sensorDefinitions.sps30_pm25,
+  ],
+  "luftdaten.info": [
     sensorDefinitions.pms1003_pm01,
     sensorDefinitions.pms1003_pm10,
     sensorDefinitions.pms1003_pm25,
@@ -59,6 +81,8 @@ export const modelDefinitions = {
     sensorDefinitions.dht22_humidity,
     sensorDefinitions.dht22_temperature,
   ],
+  // if custom, return all sensors
+  Custom: Object.values(sensorDefinitions),
 };
 
 // Exporting models

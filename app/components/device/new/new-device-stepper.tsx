@@ -5,10 +5,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { GeneralInfoStep } from "./general-info";
 import { LocationStep } from "./location-info";
+import { SummaryInfo } from "./summary-info";
 import { DeviceSelectionStep } from "./device-info";
 import { Button } from "~/components/ui/button";
 import { useEffect, useState } from "react";
-import { SensorSelectionStep } from "./sensors-info";
+import { sensorSchema, SensorSelectionStep } from "./sensors-info";
 import { DeviceModelEnum } from "~/schema/enum";
 import { useToast } from "~/components/ui/use-toast";
 
@@ -52,6 +53,11 @@ const deviceSchema = z.object({
   }),
 });
 
+// selectedSensors can be an array of sensors
+const sensorsSchema = z.object({
+  selectedSensors: z.array(sensorSchema),
+});
+
 const Stepper = defineStepper(
   { id: "general-info", label: "General Info", schema: generalInfoSchema },
   { id: "location", label: "Location", schema: locationSchema },
@@ -59,10 +65,10 @@ const Stepper = defineStepper(
   {
     id: "sensor-selection",
     label: "Sensor Selection",
-    schema: z.object({ selectedSensors: z.array(z.string()).optional() }),
+    schema: sensorsSchema,
   },
   { id: "advanced", label: "Advanced", schema: z.object({}) },
-  { id: "complete", label: "Complete", schema: z.object({}) },
+  { id: "summary", label: "Summary", schema: z.object({}) },
 );
 
 type GeneralInfoData = z.infer<typeof generalInfoSchema>;
@@ -142,7 +148,7 @@ export default function NewDeviceStepper() {
               "device-selection": () => <DeviceSelectionStep />,
               "sensor-selection": () => <SensorSelectionStep />,
               advanced: () => <div>Advanced</div>,
-              complete: () => <CompleteComponent />,
+              summary: () => <SummaryInfo />,
             })}
           </div>
           <div className="flex justify-between mt-4">
@@ -161,11 +167,5 @@ export default function NewDeviceStepper() {
         </form>
       </FormProvider>
     </Stepper.Scoped>
-  );
-}
-
-function CompleteComponent() {
-  return (
-    <div className="text-center">Thank you! Your device has been added.</div>
   );
 }

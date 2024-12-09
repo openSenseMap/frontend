@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+import { z } from "zod";
 import { Card, CardContent } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 import { getSensorsForModel } from "~/utils/model-definitions";
 
-type Sensor = {
-  title: string;
-  unit: string;
-  sensorType: string;
-  icon?: string;
-  image?: string;
-};
+export const sensorSchema = z.object({
+  title: z.string(),
+  unit: z.string(),
+  sensorType: z.string(),
+  icon: z.string().optional(),
+  image: z.string().optional(),
+});
+
+type Sensor = z.infer<typeof sensorSchema>;
 
 type SensorGroup = {
   sensorType: string;
@@ -21,17 +24,21 @@ type SensorGroup = {
 export function SensorSelectionStep() {
   const { watch, setValue } = useFormContext();
   const selectedDevice = watch("model");
+  const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
+    null,
+  );
   const [sensors, setSensors] = useState<Sensor[]>([]);
-  const [selectedSensorTypes, setSelectedSensorTypes] = useState<string[]>([]);
+  const [selectedSensors, setSelectedSensors] = useState<Sensor[]>([]);
 
   useEffect(() => {
     if (selectedDevice) {
-      // if selectedDevice begins with homeV2 set it to senseBox:Home, otherwise use selectedDevice
-      const selectedDeviceModel = selectedDevice.startsWith("homeV2")
+      const deviceModel = selectedDevice.startsWith("homeV2")
         ? "senseBoxHomeV2"
         : selectedDevice;
+      setSelectedDeviceModel(deviceModel);
+
       const fetchSensors = () => {
-        const fetchedSensors = getSensorsForModel(selectedDeviceModel);
+        const fetchedSensors = getSensorsForModel(deviceModel);
         setSensors(fetchedSensors);
       };
       fetchSensors();
@@ -39,9 +46,8 @@ export function SensorSelectionStep() {
   }, [selectedDevice]);
 
   useEffect(() => {
-    // Initialize selectedSensorTypes from form state if it exists
     const savedSelectedSensors = watch("selectedSensors") || [];
-    setSelectedSensorTypes(savedSelectedSensors);
+    setSelectedSensors(savedSelectedSensors);
   }, [watch]);
 
   const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
@@ -59,21 +65,57 @@ export function SensorSelectionStep() {
     return Object.entries(grouped).map(([sensorType, sensors]) => ({
       sensorType,
       sensors,
-      image: sensors.find((sensor) => sensor.image)?.image, // Select the first available image for the group
+      image: sensors.find((sensor) => sensor.image)?.image,
     }));
   };
 
   const sensorGroups = groupSensorsByType(sensors);
 
-  const handleSensorTypeToggle = (sensorType: string) => {
-    const updatedSensorTypes = selectedSensorTypes.includes(sensorType)
-      ? selectedSensorTypes.filter((type) => type !== sensorType)
-      : [...selectedSensorTypes, sensorType];
+  const handleGroupToggle = (group: SensorGroup) => {
+    const isGroupSelected = group.sensors.every((sensor) =>
+      selectedSensors.some(
+        (s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
+      ),
+    );
 
-    setSelectedSensorTypes(updatedSensorTypes);
+    const updatedSensors = isGroupSelected
+      ? selectedSensors.filter(
+          (s) =>
+            !group.sensors.some(
+              (sensor) =>
+                s.title === sensor.title && s.sensorType === sensor.sensorType,
+            ),
+        )
+      : [
+          ...selectedSensors,
+          ...group.sensors.filter(
+            (sensor) =>
+              !selectedSensors.some(
+                (s) =>
+                  s.title === sensor.title &&
+                  s.sensorType === sensor.sensorType,
+              ),
+          ),
+        ];
 
-    // Store the selected sensors in the form state
-    setValue("selectedSensors", [...new Set(updatedSensorTypes)]);
+    setSelectedSensors(updatedSensors);
+    setValue("selectedSensors", updatedSensors);
+  };
+
+  const handleSensorToggle = (sensor: Sensor) => {
+    const isAlreadySelected = selectedSensors.some(
+      (s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
+    );
+
+    const updatedSensors = isAlreadySelected
+      ? selectedSensors.filter(
+          (s) =>
+            !(s.title === sensor.title && s.sensorType === sensor.sensorType),
+        )
+      : [...selectedSensors, sensor];
+
+    setSelectedSensors(updatedSensors);
+    setValue("selectedSensors", updatedSensors);
   };
 
   if (!selectedDevice) {
@@ -85,35 +127,68 @@ export function SensorSelectionStep() {
       <div className="container mx-auto p-4 bg-white rounded-md overflow-auto space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sensorGroups.map((group) => {
-            const isSelected = selectedSensorTypes.includes(group.sensorType);
+            const isGroupSelected = group.sensors.every((sensor) =>
+              selectedSensors.some(
+                (s) =>
+                  s.title === sensor.title &&
+                  s.sensorType === sensor.sensorType,
+              ),
+            );
 
             return (
               <Card
                 key={group.sensorType}
                 className={cn(
                   "overflow-hidden cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105",
-                  isSelected
+                  isGroupSelected
                     ? "ring-2 ring-primary shadow-lg"
                     : "hover:shadow-md",
                 )}
-                onClick={() => handleSensorTypeToggle(group.sensorType)}
+                onClick={
+                  selectedDeviceModel === "senseBoxHomeV2"
+                    ? () => handleGroupToggle(group)
+                    : undefined
+                }
               >
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3
-                      className="text-xl font-semibold break-words w-full"
-                      style={{ wordBreak: "break-word", whiteSpace: "normal" }}
-                      title={group.sensorType} // Add this to show the full text on hover
-                    >
-                      {group.sensorType}
-                    </h3>
-                  </div>
-                  <ul className="mb-4">
-                    {group.sensors.map((sensor) => (
-                      <li key={sensor.title} className="text-sm text-gray-600">
-                        {sensor.title} ({sensor.unit})
-                      </li>
-                    ))}
+                  <h3
+                    className="text-xl font-semibold break-words mb-4"
+                    style={{ wordBreak: "break-word", whiteSpace: "normal" }}
+                    title={group.sensorType}
+                  >
+                    {group.sensorType}
+                  </h3>
+
+                  <ul className="mb-4 space-y-2">
+                    {group.sensors.map((sensor) => {
+                      const isSelected = selectedSensors.some(
+                        (s) =>
+                          s.title === sensor.title &&
+                          s.sensorType === sensor.sensorType,
+                      );
+
+                      return (
+                        <li
+                          key={sensor.title}
+                          className={cn(
+                            "text-sm text-gray-600 cursor-pointer px-2 py-1 rounded-md",
+                            isSelected
+                              ? "bg-primary text-white"
+                              : "hover:bg-gray-100",
+                          )}
+                          onClick={
+                            selectedDeviceModel !== "senseBoxHomeV2"
+                              ? (e) => {
+                                  e.stopPropagation();
+                                  handleSensorToggle(sensor);
+                                }
+                              : undefined
+                          }
+                        >
+                          {sensor.title} ({sensor.unit})
+                        </li>
+                      );
+                    })}
                   </ul>
                   <div className="rounded-md h-32 w-32 flex items-center justify-center">
                     {group.image && (
