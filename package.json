@@ -111,7 +111,7 @@
     "framer-motion": "^11.11.8",
     "get-port": "^7.1.0",
     "get-user-locale": "^2.2.1",
-    "i18next": "^23.16.0",
+    "i18next": "^24.0.5",
     "i18next-browser-languagedetector": "^7.0.1",
     "i18next-fs-backend": "^2.1.1",
     "i18next-http-backend": "^2.3.1",
