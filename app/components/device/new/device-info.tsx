@@ -97,7 +97,7 @@ export function DeviceSelectionStep() {
   };
 
   return (
-    <div className="p-6 overflow-hidden">
+    <div className="p-4 overflow-hidden">
       <div
         className={cn(
           "grid gap-6",
@@ -127,7 +127,7 @@ export function DeviceSelectionStep() {
                 handleDeviceChange(device.name);
               }}
             >
-              <CardContent className="p-4 flex flex-col items-center space-y-4">
+              <CardContent className="p-2 flex flex-col items-center space-y-4">
                 {selectedDevice === "senseBox:Home" && (
                   <Button
                     variant="ghost"

@@ -18,7 +18,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, Slash } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
 
 const generalInfoSchema = z.object({
   name: z
@@ -105,22 +112,41 @@ type FormData = GeneralInfoData &
   DeviceData & { selectedSensors?: string[] };
 
 export default function NewDeviceStepper() {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const stepper = Stepper.useStepper();
   const form = useForm<FormData>({
     mode: "onTouched",
     resolver: zodResolver(stepper.current.schema),
   });
   const { toast } = useToast();
-
   const [isFirst, setIsFirst] = useState(false);
 
   useEffect(() => {
     setIsFirst(stepper.isFirst);
   }, [stepper.isFirst]);
 
+  // Determine the farthest reachable step
+  const getFarthestStepIndex = () => {
+    let farthestIndex = -1;
+
+    for (let i = 0; i < Stepper.steps.length; i++) {
+      const step = Stepper.steps[i];
+      const formDataForStep = formData[step.id];
+
+      // Validate using Zod's safeParse
+      const validationResult = step.schema.safeParse(formDataForStep);
+
+      if (validationResult.success) {
+        farthestIndex = i;
+      } else {
+        break; // Stop at the first invalid step
+      }
+    }
+
+    return farthestIndex;
+  };
+
   const onSubmit = (data: any) => {
-    // Update the accumulated data
     setFormData((prevData) => {
       const updatedData = {
         ...prevData,
@@ -130,7 +156,6 @@ export default function NewDeviceStepper() {
       return updatedData;
     });
 
-    // Move to the next step or complete the form
     if (stepper.isLast) {
       console.log("Complete! Final Data:", {
         ...formData,
@@ -144,7 +169,6 @@ export default function NewDeviceStepper() {
 
   const onError = (errors: FieldErrors<FormData>) => {
     const firstErrorMessage = Object.values(errors)?.[0]?.message;
-
     if (firstErrorMessage) {
       toast({
         title: "Form Error",
@@ -162,22 +186,71 @@ export default function NewDeviceStepper() {
           onSubmit={form.handleSubmit(onSubmit, onError)}
           className="h-full space-y-6 p-6 border rounded-lg w-[650px] bg-white flex flex-col justify-between"
         >
-          <div className="flex items-center justify-start gap-2">
-            <h2 className="text-lg font-medium">
-              Step {stepper.current.index + 1} of {Stepper.steps.length}:{" "}
-              {stepper.current.label}
-            </h2>
-            {stepper.current.info && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger onClick={(e) => e.preventDefault()}>
-                    <Info />
-                  </TooltipTrigger>
-                  <TooltipContent>{stepper.current.info}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+          <div className="space-y-4">
+            {/* Breadcrumb Navigation */}
+            <Breadcrumb>
+              <BreadcrumbList>
+                {Stepper.steps.map((step, index) => {
+                  const farthestStepIndex = getFarthestStepIndex();
+                  const isClickable =
+                    index <= farthestStepIndex ||
+                    stepper.current.index === index;
+
+                  return (
+                    <>
+                      <BreadcrumbItem key={step.id}>
+                        <BreadcrumbLink
+                          onClick={() => isClickable && stepper.goTo(step.id)}
+                          className={`
+                              ${
+                                stepper.current.index === index
+                                  ? "font-bold text-black"
+                                  : isClickable
+                                    ? "text-gray-500"
+                                    : "text-gray-300 cursor-not-allowed"
+                              }
+                              ${
+                                isClickable
+                                  ? "cursor-pointer hover:text-black"
+                                  : ""
+                              }
+                            `}
+                        >
+                          {step.label}
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+
+                      {index < Stepper.steps.length - 1 && (
+                        <BreadcrumbSeparator>
+                          <Slash className="h-4 w-4" />
+                        </BreadcrumbSeparator>
+                      )}
+                    </>
+                  );
+                })}
+              </BreadcrumbList>
+            </Breadcrumb>
+
+            {/* Step Header with Info */}
+            <div className="flex items-center justify-start gap-2">
+              <h2 className="text-lg font-medium">
+                Step {stepper.current.index + 1} of {Stepper.steps.length}:{" "}
+                {stepper.current.label}
+              </h2>
+              {stepper.current.info && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger onClick={(e) => e.preventDefault()}>
+                      <Info />
+                    </TooltipTrigger>
+                    <TooltipContent>{stepper.current.info}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
           </div>
+
+          {/* Form Content */}
           <div className="overflow-auto h-full">
             {stepper.switch({
               "general-info": () => <GeneralInfoStep />,
@@ -188,6 +261,8 @@ export default function NewDeviceStepper() {
               summary: () => <SummaryInfo />,
             })}
           </div>
+
+          {/* Navigation Buttons */}
           <div className="flex justify-between mt-4">
             <Button
               type="button"
