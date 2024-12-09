@@ -92,8 +92,8 @@ export function DeviceSelectionStep() {
   };
 
   const handleClose = () => {
-    setSelectedDevice("");
-    setValue("model", "");
+    setSelectedDevice(null);
+    setValue("model", null);
   };
 
   return (
