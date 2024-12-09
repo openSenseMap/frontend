@@ -55,7 +55,7 @@ const deviceSchema = z.object({
 
 // selectedSensors can be an array of sensors
 const sensorsSchema = z.object({
-  selectedSensors: z.array(sensorSchema),
+  selectedSensors: z.array(sensorSchema).min(1, "Please select at least one sensor"),
 });
 
 const Stepper = defineStepper(

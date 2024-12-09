@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Card, CardContent } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 import { getSensorsForModel } from "~/utils/model-definitions";
+import { CustomDeviceConfig } from "./custom-device-config";
 
 export const sensorSchema = z.object({
   title: z.string(),
@@ -13,7 +14,7 @@ export const sensorSchema = z.object({
   image: z.string().optional(),
 });
 
-type Sensor = z.infer<typeof sensorSchema>;
+export type Sensor = z.infer<typeof sensorSchema>;
 
 type SensorGroup = {
   sensorType: string;
@@ -120,6 +121,10 @@ export function SensorSelectionStep() {
 
   if (!selectedDevice) {
     return <p className="text-center text-lg">Please select a device first.</p>;
+  }
+
+  if (selectedDevice === "Custom") {
+    return <CustomDeviceConfig />;
   }
 
   return (
