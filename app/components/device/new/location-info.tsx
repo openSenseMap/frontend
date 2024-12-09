@@ -23,8 +23,8 @@ export function LocationStep() {
     latitude: number | null;
     longitude: number | null;
   }>({
-    latitude: 0,
-    longitude: 0,
+    latitude: null,
+    longitude: null,
   });
 
   // Sync state with form values on mount
@@ -136,7 +136,7 @@ export function LocationStep() {
             {...register("latitude", {
               valueAsNumber: true,
             })}
-            value={marker.latitude !== null ? marker.latitude : ""}
+            value={marker.latitude !== null ? marker.latitude : undefined}
             onChange={handleLatitudeChange}
             placeholder="Enter latitude (-90 to 90)"
             className="w-full p-2 border rounded-md"
@@ -151,7 +151,7 @@ export function LocationStep() {
             {...register("longitude", {
               valueAsNumber: true,
             })}
-            value={marker.longitude !== null ? marker.longitude : ""}
+            value={marker.longitude !== null ? marker.longitude : undefined}
             onChange={handleLongitudeChange}
             placeholder="Enter longitude (-180 to 180)"
             className="w-full p-2 border rounded-md"

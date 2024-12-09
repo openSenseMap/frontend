@@ -12,6 +12,13 @@ import { useEffect, useState } from "react";
 import { sensorSchema, SensorSelectionStep } from "./sensors-info";
 import { DeviceModelEnum } from "~/schema/enum";
 import { useToast } from "~/components/ui/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 const generalInfoSchema = z.object({
   name: z
@@ -55,20 +62,38 @@ const deviceSchema = z.object({
 
 // selectedSensors can be an array of sensors
 const sensorsSchema = z.object({
-  selectedSensors: z.array(sensorSchema).min(1, "Please select at least one sensor"),
+  selectedSensors: z
+    .array(sensorSchema)
+    .min(1, "Please select at least one sensor"),
 });
 
 const Stepper = defineStepper(
-  { id: "general-info", label: "General Info", schema: generalInfoSchema },
-  { id: "location", label: "Location", schema: locationSchema },
-  { id: "device-selection", label: "Device Selection", schema: deviceSchema },
+  {
+    id: "general-info",
+    label: "General Info",
+    info: "Provide a unique name for your device, select its operating environment (outdoor, indoor, mobile, or unknown), and add relevant tags (optional).",
+    schema: generalInfoSchema,
+  },
+  {
+    id: "location",
+    label: "Location",
+    info: "Select the device's location by clicking on the map or entering latitude and longitude coordinates manually. Drag the marker on the map to adjust the location if needed.",
+    schema: locationSchema,
+  },
+  {
+    id: "device-selection",
+    label: "Device Selection",
+    info: "Select a device model from the available options",
+    schema: deviceSchema,
+  },
   {
     id: "sensor-selection",
     label: "Sensor Selection",
+    info: "Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.",
     schema: sensorsSchema,
   },
-  { id: "advanced", label: "Advanced", schema: z.object({}) },
-  { id: "summary", label: "Summary", schema: z.object({}) },
+  { id: "advanced", label: "Advanced", info: null, schema: z.object({}) },
+  { id: "summary", label: "Summary", info: null, schema: z.object({}) },
 );
 
 type GeneralInfoData = z.infer<typeof generalInfoSchema>;
@@ -137,10 +162,22 @@ export default function NewDeviceStepper() {
           onSubmit={form.handleSubmit(onSubmit, onError)}
           className="h-full space-y-6 p-6 border rounded-lg w-[650px] bg-white flex flex-col justify-between"
         >
-          <h2 className="text-lg font-medium">
-            Step {stepper.current.index + 1} of {Stepper.steps.length}:{" "}
-            {stepper.current.label}
-          </h2>
+          <div className="flex items-center justify-start gap-2">
+            <h2 className="text-lg font-medium">
+              Step {stepper.current.index + 1} of {Stepper.steps.length}:{" "}
+              {stepper.current.label}
+            </h2>
+            {stepper.current.info && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger onClick={(e) => e.preventDefault()}>
+                    <Info />
+                  </TooltipTrigger>
+                  <TooltipContent>{stepper.current.info}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <div className="overflow-auto h-full">
             {stepper.switch({
               "general-info": () => <GeneralInfoStep />,
