@@ -197,7 +197,7 @@ export default function NewDeviceStepper() {
                     stepper.current.index === index;
 
                   return (
-                    <>
+                    <div className="flex gap-2" key={index}>
                       <BreadcrumbItem key={step.id}>
                         <BreadcrumbLink
                           onClick={() => isClickable && stepper.goTo(step.id)}
@@ -225,7 +225,7 @@ export default function NewDeviceStepper() {
                           <Slash className="h-4 w-4" />
                         </BreadcrumbSeparator>
                       )}
-                    </>
+                    </div>
                   );
                 })}
               </BreadcrumbList>
