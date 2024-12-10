@@ -26,6 +26,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import { AdvancedStep } from "./advanced-info";
+import { Form, useSubmit } from "@remix-run/react";
 
 const generalInfoSchema = z.object({
   name: z
@@ -74,7 +76,90 @@ const sensorsSchema = z.object({
     .min(1, "Please select at least one sensor"),
 });
 
-const Stepper = defineStepper(
+const mqttSchema = z
+  .object({
+    mqttEnabled: z.boolean().default(false),
+    url: z.string().optional(),
+    topic: z.string().optional(),
+    messageFormat: z.enum(["json", "csv"]).optional(),
+    decodeOptions: z.string().optional(),
+    connectionOptions: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.mqttEnabled) {
+      // Check required fields when enabled is true
+      if (!data.url) {
+        ctx.addIssue({
+          path: ["url"],
+          message: "URL is required when MQTT is enabled.",
+          code: "custom",
+        });
+      }
+      if (!data.topic) {
+        ctx.addIssue({
+          path: ["topic"],
+          message: "Topic is required when MQTT is enabled.",
+          code: "custom",
+        });
+      }
+      if (!data.messageFormat) {
+        ctx.addIssue({
+          path: ["messageFormat"],
+          message: "Message format is required when MQTT is enabled.",
+          code: "custom",
+        });
+      }
+    }
+  });
+
+const ttnSchema = z
+  .object({
+    ttnEnabled: z.boolean().default(false),
+    dev_id: z.string().optional(),
+    app_id: z.string().optional(),
+    profile: z
+      .enum([
+        "lora-serialization",
+        "sensebox/home",
+        "json",
+        "debug",
+        "cayenne-lpp",
+      ])
+      .optional(),
+    decodeOptions: z.string().optional(),
+    port: z.number().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.ttnEnabled) {
+      if (!data.dev_id) {
+        ctx.addIssue({
+          path: ["dev_id"],
+          message: "Device ID is required when TTN is enabled.",
+          code: "custom",
+        });
+      }
+
+      if (!data.app_id) {
+        ctx.addIssue({
+          path: ["app_id"],
+          message: "Application ID is required when TTN is enabled.",
+          code: "custom",
+        });
+      }
+
+      if (!data.profile) {
+        ctx.addIssue({
+          path: ["profile"],
+          message: "Profile is required when TTN is enabled.",
+          code: "custom",
+        });
+      }
+    }
+  });
+
+const advancedSchema = z.intersection(mqttSchema, ttnSchema);
+
+export const Stepper = defineStepper(
   {
     id: "general-info",
     label: "General Info",
@@ -99,19 +184,26 @@ const Stepper = defineStepper(
     info: "Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.",
     schema: sensorsSchema,
   },
-  { id: "advanced", label: "Advanced", info: null, schema: z.object({}) },
+  { id: "advanced", label: "Advanced", info: null, schema: advancedSchema },
   { id: "summary", label: "Summary", info: null, schema: z.object({}) },
 );
 
 type GeneralInfoData = z.infer<typeof generalInfoSchema>;
 type LocationData = z.infer<typeof locationSchema>;
 type DeviceData = z.infer<typeof deviceSchema>;
+type SensorData = z.infer<typeof sensorsSchema>;
+type MqttData = z.infer<typeof mqttSchema>;
+type TtnData = z.infer<typeof ttnSchema>;
 
 type FormData = GeneralInfoData &
   LocationData &
-  DeviceData & { selectedSensors?: string[] };
+  DeviceData &
+  SensorData &
+  MqttData &
+  TtnData;
 
 export default function NewDeviceStepper() {
+  const submit = useSubmit();
   const [formData, setFormData] = useState<Record<string, any>>({});
   const stepper = Stepper.useStepper();
   const form = useForm<FormData>({
@@ -131,7 +223,6 @@ export default function NewDeviceStepper() {
         ...prevData,
         [stepper.current.id]: data,
       };
-      console.log("Updated Form Data:", updatedData);
       return updatedData;
     });
 
@@ -140,7 +231,14 @@ export default function NewDeviceStepper() {
         ...formData,
         [stepper.current.id]: data,
       });
-      stepper.reset();
+      // submit form data
+      submit(
+        {
+          ...formData,
+          [stepper.current.id]: data,
+        },
+        { method: "post" },
+      );
     } else {
       stepper.next();
     }
@@ -161,33 +259,25 @@ export default function NewDeviceStepper() {
   return (
     <Stepper.Scoped>
       <FormProvider {...form}>
-        <form
+        <Form
           onSubmit={form.handleSubmit(onSubmit, onError)}
-          className="h-full space-y-6 p-6 border rounded-lg w-[650px] bg-white flex flex-col justify-between"
+          className="h-full space-y-6 p-6 border rounded-lg w-1/2 bg-white flex flex-col justify-between"
         >
           <div className="space-y-4">
             {/* Breadcrumb Navigation */}
             <Breadcrumb>
               <BreadcrumbList>
                 {Stepper.steps.map((step, index) => {
-                  const isClickable = stepper.current.index >= index;
                   return (
                     <div className="flex gap-2" key={index}>
                       <BreadcrumbItem key={step.id}>
                         <BreadcrumbLink
-                          onClick={() => isClickable && stepper.goTo(step.id)}
+                          onClick={() => stepper.goTo(step.id)}
                           className={`
                               ${
                                 stepper.current.index === index
                                   ? "font-bold text-black"
-                                  : isClickable
-                                    ? "text-gray-500"
-                                    : "text-gray-300 cursor-not-allowed"
-                              }
-                              ${
-                                isClickable
-                                  ? "cursor-pointer hover:text-black"
-                                  : ""
+                                  : "text-gray-500 cursor-pointer hover:text-black"
                               }
                             `}
                         >
@@ -228,11 +318,11 @@ export default function NewDeviceStepper() {
           {/* Form Content */}
           <div className="overflow-auto h-full">
             {stepper.switch({
+              advanced: () => <AdvancedStep />,
               "general-info": () => <GeneralInfoStep />,
               location: () => <LocationStep />,
               "device-selection": () => <DeviceSelectionStep />,
               "sensor-selection": () => <SensorSelectionStep />,
-              advanced: () => <div>Advanced</div>,
               summary: () => <SummaryInfo />,
             })}
           </div>
@@ -251,7 +341,7 @@ export default function NewDeviceStepper() {
               {stepper.isLast ? "Complete" : "Next"}
             </Button>
           </div>
-        </form>
+        </Form>
       </FormProvider>
     </Stepper.Scoped>
   );
