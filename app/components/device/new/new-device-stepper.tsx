@@ -217,25 +217,21 @@ export default function NewDeviceStepper() {
     setIsFirst(stepper.isFirst);
   }, [stepper.isFirst]);
 
-  const onSubmit = (data: any) => {
-    setFormData((prevData) => {
-      const updatedData = {
-        ...prevData,
-        [stepper.current.id]: data,
-      };
-      return updatedData;
-    });
+  const onSubmit = (data: FormData) => {
+    const updatedData = {
+      ...formData,
+      [stepper.current.id]: data,
+    };
+
+    setFormData(updatedData);
 
     if (stepper.isLast) {
-      console.log("Complete! Final Data:", {
-        ...formData,
-        [stepper.current.id]: data,
-      });
-      // submit form data
+      console.log("Complete! Final Data:", updatedData);
+
+      // Submit form data as JSON
       submit(
         {
-          ...formData,
-          [stepper.current.id]: data,
+          formData: JSON.stringify(updatedData), // Serialize the data
         },
         { method: "post" },
       );
