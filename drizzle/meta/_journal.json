@@ -85,6 +85,13 @@
       "when": 1732793261789,
       "tag": "0011_delete_device_location",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1733819006789,
+      "tag": "0012_define_device_models",
+      "breakpoints": true
     }
   ]
 }
