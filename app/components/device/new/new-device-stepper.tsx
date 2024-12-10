@@ -125,27 +125,6 @@ export default function NewDeviceStepper() {
     setIsFirst(stepper.isFirst);
   }, [stepper.isFirst]);
 
-  // Determine the farthest reachable step
-  const getFarthestStepIndex = () => {
-    let farthestIndex = -1;
-
-    for (let i = 0; i < Stepper.steps.length; i++) {
-      const step = Stepper.steps[i];
-      const formDataForStep = formData[step.id];
-
-      // Validate using Zod's safeParse
-      const validationResult = step.schema.safeParse(formDataForStep);
-
-      if (validationResult.success) {
-        farthestIndex = i;
-      } else {
-        break; // Stop at the first invalid step
-      }
-    }
-
-    return farthestIndex;
-  };
-
   const onSubmit = (data: any) => {
     setFormData((prevData) => {
       const updatedData = {
@@ -191,11 +170,7 @@ export default function NewDeviceStepper() {
             <Breadcrumb>
               <BreadcrumbList>
                 {Stepper.steps.map((step, index) => {
-                  const farthestStepIndex = getFarthestStepIndex();
-                  const isClickable =
-                    index <= farthestStepIndex ||
-                    stepper.current.index === index;
-
+                  const isClickable = stepper.current.index >= index;
                   return (
                     <div className="flex gap-2" key={index}>
                       <BreadcrumbItem key={step.id}>
