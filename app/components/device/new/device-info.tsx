@@ -63,6 +63,7 @@ export function DeviceSelectionStep() {
   }, [model]);
 
   const handleDeviceChange = (value: string) => {
+    setValue("selectedSensors", null); // Reset the selected sensors
     if (selectedDevice === value) {
       // Deselect the currently selected device
       setSelectedDevice(null);

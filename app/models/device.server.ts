@@ -230,139 +230,15 @@ export async function createDevice(deviceData: any, userId: string) {
             title: sensorData.title,
             unit: sensorData.unit,
             sensorType: sensorData.sensorType,
-            deviceId: createdDevice.id, // Link to the created device
+            deviceId: createdDevice.id,
           });
         }
       }
-
       return createdDevice;
     });
-
     return newDevice;
   } catch (error) {
     console.error("Error creating device with sensors:", error);
     throw new Error("Failed to create device and its sensors.");
   }
 }
-
-// export async function createDevice(
-//   deviceData: any,
-//   userId: string | undefined,
-// ) {
-//   console.log("🚀 ~ userId:", userId);
-//   console.log("🚀 ~ deviceData:", deviceData);
-
-//   const authData = await fetch(
-//     `${process.env.OSEM_API_TESTING_URL}/users/sign-in`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         email: `${process.env.TESTING_ACCOUNT}`,
-//         password: `${process.env.TESTING_PW}`,
-//       }),
-//     },
-//   ).then((res) => res.json());
-
-//   // Call the OSEM API with formatted device data
-//   const registeredDevice = await createDeviceOsemAPI(
-//     { ...deviceData },
-//     authData.token,
-//   );
-
-//   // Save device to Postgres
-//   const newDevicePostgres = await createDevicePostgres(
-//     registeredDevice.data,
-//     userId,
-//     deviceData.sensors,
-//     deviceData,
-//   );
-
-//   return newDevicePostgres;
-// }
-
-// export async function createDevicePostgres(
-//   deviceData: any,
-//   userId: string | undefined,
-//   sensorArray: any[],
-//   formDeviceData: any,
-// ) {
-//   const newDevice = await drizzleClient
-//     .insert(device)
-//     .values({
-//       id: deviceData._id,
-//       sensorWikiModel: formDeviceData.type,
-//       userId: userId ?? "unknown",
-//       name: deviceData.name,
-//       exposure: deviceData.exposure,
-//       useAuth: deviceData.useAuth,
-//       latitude: Number(deviceData.currentLocation.coordinates[1]),
-//       longitude: Number(deviceData.currentLocation.coordinates[0]),
-//     })
-//     .returning();
-
-//   for await (let [i, sensor] of deviceData.sensors.entries()) {
-//     await drizzleClient.insert(sensor).values({
-//       id: sensor._id,
-//       deviceId: newDevice[0].id,
-//       title: sensorArray[i].name,
-//       sensorType: sensor.sensorType,
-//       unit: sensor.unit,
-//       sensorWikiType: sensor.sensorType,
-//       sensorWikiUnit: sensor.unit,
-//       sensorWikiPhenomenon: sensor.title,
-//     });
-//   }
-
-//   return newDevice;
-// }
-
-// export async function createDeviceOsemAPI(deviceData: any, token: string) {
-//   const registerDevice = await fetch(
-//     `${process.env.OSEM_API_TESTING_URL}/boxes`,
-//     {
-//       method: "POST",
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         name: deviceData.name,
-//         grouptag: deviceData.groupId,
-//         exposure: deviceData.exposure.toLowerCase(),
-//         // model: deviceData.type,
-//         sensors: deviceData.sensors,
-//         location: {
-//           lat: deviceData.latitude,
-//           lng: deviceData.longitude,
-//           ...(deviceData.height && { height: deviceData.height }),
-//         },
-//         ...(deviceData.ttnEnabled && {
-//           ttn: {
-//             dev_id: deviceData["ttn.devId"],
-//             app_id: deviceData["ttn.appId"],
-//             profile: deviceData["ttn.decodeProfile"],
-//             ...(deviceData["ttn.decodeOptions"] && {
-//               decodeOptions: deviceData["ttn.decodeOptions"],
-//             }),
-//             ...(deviceData["ttn.port"] && { port: deviceData["ttn.port"] }),
-//           },
-//         }),
-//         ...(deviceData.mqttEnabled && {
-//           mqtt: {
-//             enabled: true,
-//             url: deviceData["mqtt.url"],
-//             topic: deviceData["mqtt.topic"],
-//             messageFormat: deviceData["mqtt.messageFormat"],
-//             decodeOptions: deviceData["mqtt.decodeOptions"],
-//             connectionOptions: deviceData["mqtt.connectOptions"],
-//           },
-//         }),
-//       }),
-//     },
-//   ).then((res) => res.json());
-
-//   return registerDevice;
-// }

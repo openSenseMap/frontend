@@ -128,7 +128,7 @@ export function LocationStep() {
       </div>
 
       <div className="p-4 w-full bg-gray-50 dark:bg-gray-800 flex items-center justify-around">
-        <div className="mb-4">
+        <div>
           <Label htmlFor="latitude">Latitude</Label>
           <Input
             id="latitude"
