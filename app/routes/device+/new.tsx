@@ -43,6 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const devicePayload = {
       name: data["general-info"].name,
       exposure: data["general-info"].exposure,
+      tags: data["general-info"].tags?.map((tag: { value: string }) => tag.value) || [],
       latitude: data.location.latitude,
       longitude: data.location.longitude,
       model: data["device-selection"].model,

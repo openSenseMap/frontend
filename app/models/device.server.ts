@@ -209,7 +209,8 @@ export async function createDevice(deviceData: any, userId: string) {
         .values({
           id: deviceData.id,
           useAuth: deviceData.useAuth ?? true,
-          sensorWikiModel: deviceData.sensorWikiModel,
+          model: deviceData.model,
+          tags: deviceData.tags,
           userId: userId,
           name: deviceData.name,
           exposure: deviceData.exposure,
