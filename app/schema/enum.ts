@@ -9,6 +9,23 @@ export const DeviceExposureEnum = pgEnum("exposure", [
   "unknown",
 ]);
 
+export const MqttMessageFormatEnum = pgEnum("message_format", [
+  "json",
+  "csv",
+  "application/json",
+  "text/csv",
+  "debug_plain",
+  "",
+]);
+
+export const TtnProfileEnum = pgEnum("ttn_profile", [
+  "json",
+  "debug",
+  "sensebox/home",
+  "lora-serialization",
+  "cayenne-lpp",
+]);
+
 // Zod schema for validating device exposure types
 export const DeviceExposureZodEnum = z.enum(DeviceExposureEnum.enumValues);
 
@@ -16,11 +33,7 @@ export const DeviceExposureZodEnum = z.enum(DeviceExposureEnum.enumValues);
 export type DeviceExposureType = z.infer<typeof DeviceExposureZodEnum>;
 
 // Enum for device status types
-export const DeviceStatusEnum = pgEnum("status", [
-  "active",
-  "inactive",
-  "old",
-]);
+export const DeviceStatusEnum = pgEnum("status", ["active", "inactive", "old"]);
 
 // Zod schema for validating device status types
 export const DeviceStatusZodEnum = z.enum(DeviceStatusEnum.enumValues);

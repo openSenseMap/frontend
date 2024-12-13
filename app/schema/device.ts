@@ -16,6 +16,7 @@ import {
 import { user } from "./user";
 import { sensor } from "./sensor";
 import { logEntry } from "./log-entry";
+import { deviceToIntegrations } from "./integration";
 
 /**
  * Table
@@ -55,6 +56,10 @@ export const deviceRelations = relations(device, ({ one, many }) => ({
   }),
   sensors: many(sensor),
   logEntries: many(logEntry),
+  integrations: one(deviceToIntegrations, {
+    fields: [device.id],
+    references: [deviceToIntegrations.deviceId],
+  }),
 }));
 
 /**
