@@ -2,13 +2,14 @@ import { createId } from "@paralleldrive/cuid2";
 import {
   boolean,
   integer,
+  json,
   pgTable,
   primaryKey,
   text,
 } from "drizzle-orm/pg-core";
 import { MqttMessageFormatEnum, TtnProfileEnum } from "./enum";
 import { device } from "./device";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 export const mqttIntegration = pgTable("mqtt_integration", {
   id: text("id")
@@ -21,8 +22,8 @@ export const mqttIntegration = pgTable("mqtt_integration", {
   messageFormat: MqttMessageFormatEnum("message_format")
     .default("json")
     .notNull(),
-  decodeOptions: text("decode_options").notNull(),
-  connectionOptions: text("connection_options").notNull(),
+  decodeOptions: json("decode_options"),
+  connectionOptions: json("connection_options"),
   deviceId: text("device_id").references(() => device.id, {
     onDelete: "cascade",
   }),
@@ -38,7 +39,9 @@ export const ttnIntegration = pgTable("ttn_integration", {
   appId: text("app_id").notNull(),
   port: integer("port"),
   profile: TtnProfileEnum("profile").default("json").notNull(),
-  decodeOptions: text("decode_options").notNull(),
+  decodeOptions: json("decode_options")
+    .$type<string[]>()
+    .default(sql`'{}'::json`),
   deviceId: text("device_id").references(() => device.id, {
     onDelete: "cascade",
   }),
