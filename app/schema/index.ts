@@ -8,3 +8,4 @@ export * from "./types";
 export * from "./sensor";
 export * from "./user";
 export * from "./log-entry";
+export * from "./integration";
