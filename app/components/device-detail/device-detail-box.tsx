@@ -357,6 +357,16 @@ export default function DeviceDetailBox() {
                       title="Created At"
                       text={format(new Date(data.device.createdAt), "PPP")}
                     />
+                    {data.device.expiresAt && (
+                      <>
+                        <Separator className="my-2" />
+                        <InfoItem
+                          icon={CalendarPlus}
+                          title="Expires At"
+                          text={format(new Date(data.device.expiresAt), "PPP")}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
                 {data.device.tags?.length > 0 && (

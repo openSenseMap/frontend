@@ -25,8 +25,8 @@ export function SummaryInfo() {
       title: "Location",
       icon: <MapPin className="w-5 h-5" />,
       data: [
-        { label: "Latitude", value: formData.latitude },
-        { label: "Longitude", value: formData.longitude },
+        { label: "Latitude", value: parseFloat(formData.latitude).toFixed(4) },
+        { label: "Longitude", value: parseFloat(formData.longitude).toFixed(4) },
       ],
     },
     {

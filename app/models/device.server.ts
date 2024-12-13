@@ -23,6 +23,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
       status: true,
       updatedAt: true,
       tags: true,
+      expiresAt: true,
     },
     with: {
       logEntries: {
@@ -201,6 +202,7 @@ export async function getDevicesWithSensors() {
 }
 
 export async function createDevice(deviceData: any, userId: string) {
+  console.log("🚀 ~ createDevice ~ deviceData:", deviceData);
   try {
     const newDevice = await drizzleClient.transaction(async (tx) => {
       // Create the device
@@ -214,6 +216,7 @@ export async function createDevice(deviceData: any, userId: string) {
           userId: userId,
           name: deviceData.name,
           exposure: deviceData.exposure,
+          expiresAt: deviceData.expiresAt,
           latitude: deviceData.latitude,
           longitude: deviceData.longitude,
         })
@@ -222,6 +225,7 @@ export async function createDevice(deviceData: any, userId: string) {
       if (!createdDevice) {
         throw new Error("Failed to create device.");
       }
+      console.log("🚀 ~ newDevice ~ createdDevice:", createdDevice);
 
       // Use addNewSensor for each sensor
       if (deviceData.sensors && Array.isArray(deviceData.sensors)) {

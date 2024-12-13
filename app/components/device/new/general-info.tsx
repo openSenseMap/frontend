@@ -2,8 +2,15 @@ import { useFormContext, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "~/components/ui/label";
-import { Plus, Cloud, Home, HelpCircle, Bike, X } from "lucide-react";
+import { Plus, Cloud, Home, HelpCircle, Bike, X, Info } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 type ExposureOption = "outdoor" | "indoor" | "mobile" | "unknown";
 
@@ -15,6 +22,11 @@ export function GeneralInfoStep() {
   });
 
   const currentExposure = watch("exposure"); // Watch exposure value
+  const temporaryExpirationDate = watch("temporaryExpirationDate"); // Watch expiration date
+  console.log(
+    "🚀 ~ GeneralInfoStep ~ temporaryExpirationDate:",
+    temporaryExpirationDate,
+  );
 
   const addTag = (event: React.FormEvent) => {
     event.preventDefault();
@@ -43,6 +55,17 @@ export function GeneralInfoStep() {
       label: "Unknown",
     },
   ];
+
+  const maxExpirationDate = new Date();
+  maxExpirationDate.setMonth(maxExpirationDate.getMonth() + 1);
+
+  const handleTemporaryChange = (checked: boolean) => {
+    if (checked) {
+      setValue("temporaryExpirationDate", maxExpirationDate);
+    } else {
+      setValue("temporaryExpirationDate", "");
+    }
+  };
 
   return (
     <div className="space-y-4 h-full flex flex-col justify-evenly p-2">
@@ -74,6 +97,60 @@ export function GeneralInfoStep() {
               <span className="text-sm">{option.label}</span>
             </Button>
           ))}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isTemporary"
+              checked={temporaryExpirationDate}
+              onCheckedChange={handleTemporaryChange}
+            />
+            <Label htmlFor="isTemporary" className="text-base font-medium">
+              Temporary Device
+            </Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {
+                    <p className="text-sm text-gray-500">
+                      Temporary devices will be automatically deleted after a
+                      maximum of one month.
+                    </p>
+                  }
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          {temporaryExpirationDate && (
+            <div className="flex items-center space-x-2 flex-grow">
+              <Label
+                htmlFor="temporaryExpirationDate"
+                className="text-sm font-medium whitespace-nowrap"
+              >
+                Expiration Date:
+              </Label>
+              <Input
+                type="date"
+                id="temporaryExpirationDate"
+                {...register("temporaryExpirationDate")}
+                value={
+                  temporaryExpirationDate
+                    ? new Date(temporaryExpirationDate)
+                        .toISOString()
+                        .split("T")[0]
+                    : ""
+                }
+                min={new Date().toISOString().split("T")[0]}
+                max={maxExpirationDate.toISOString().split("T")[0]}
+                className="flex-grow p-2 border rounded-md"
+              />
+            </div>
+          )}
         </div>
       </div>
       <div className="space-y-2">

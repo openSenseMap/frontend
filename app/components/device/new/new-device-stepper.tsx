@@ -37,6 +37,17 @@ const generalInfoSchema = z.object({
   exposure: z.enum(["indoor", "outdoor", "mobile", "unknown"], {
     errorMap: () => ({ message: "Exposure is required" }),
   }),
+  temporaryExpirationDate: z
+    .string()
+    .optional()
+    .transform((date) => (date ? new Date(date) : undefined)) // Transform string to Date
+    .refine(
+      (date) =>
+        !date || date <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      {
+        message: "Temporary expiration date must be within 1 month from now",
+      },
+    ),
   tags: z
     .array(
       z.object({
@@ -218,6 +229,7 @@ export default function NewDeviceStepper() {
   }, [stepper.isFirst]);
 
   const onSubmit = (data: FormData) => {
+    console.log("🚀 ~ onSubmit ~ data:", data);
     const updatedData = {
       ...formData,
       [stepper.current.id]: data,
