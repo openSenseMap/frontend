@@ -23,10 +23,6 @@ export function GeneralInfoStep() {
 
   const currentExposure = watch("exposure"); // Watch exposure value
   const temporaryExpirationDate = watch("temporaryExpirationDate"); // Watch expiration date
-  console.log(
-    "🚀 ~ GeneralInfoStep ~ temporaryExpirationDate:",
-    temporaryExpirationDate,
-  );
 
   const addTag = (event: React.FormEvent) => {
     event.preventDefault();

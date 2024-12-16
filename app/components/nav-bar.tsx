@@ -58,7 +58,7 @@ export function NavBar() {
                     </Link>
 
                     <Link to="/device/transfer">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem disabled>
                         <span>Transfer device</span>
                       </DropdownMenuItem>
                     </Link>

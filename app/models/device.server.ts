@@ -3,7 +3,6 @@ import { point } from "@turf/helpers";
 import type { Point } from "geojson";
 import { device, location, sensor, type Device, type Sensor } from "~/schema";
 import { eq, sql } from "drizzle-orm";
-import { addNewSensor } from "./sensor.server";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
@@ -202,7 +201,6 @@ export async function getDevicesWithSensors() {
 }
 
 export async function createDevice(deviceData: any, userId: string) {
-  console.log("🚀 ~ createDevice ~ deviceData:", deviceData);
   try {
     const newDevice = await drizzleClient.transaction(async (tx) => {
       // Create the device
@@ -216,7 +214,7 @@ export async function createDevice(deviceData: any, userId: string) {
           userId: userId,
           name: deviceData.name,
           exposure: deviceData.exposure,
-          expiresAt: deviceData.expiresAt,
+          expiresAt: new Date(deviceData.expiresAt),
           latitude: deviceData.latitude,
           longitude: deviceData.longitude,
         })
@@ -225,16 +223,14 @@ export async function createDevice(deviceData: any, userId: string) {
       if (!createdDevice) {
         throw new Error("Failed to create device.");
       }
-      console.log("🚀 ~ newDevice ~ createdDevice:", createdDevice);
-
-      // Use addNewSensor for each sensor
+      // Add sensors in the same transaction
       if (deviceData.sensors && Array.isArray(deviceData.sensors)) {
         for (const sensorData of deviceData.sensors) {
-          await addNewSensor({
+          await tx.insert(sensor).values({
             title: sensorData.title,
             unit: sensorData.unit,
             sensorType: sensorData.sensorType,
-            deviceId: createdDevice.id,
+            deviceId: createdDevice.id, // Reference the created device ID
           });
         }
       }
