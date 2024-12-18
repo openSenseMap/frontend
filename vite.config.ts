@@ -22,14 +22,24 @@ declare module "@remix-run/node" {
 }
 
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   build: {
+    target: "es2022",
     cssMinify: MODE === "production",
-
     rollupOptions: {
       external: [/node:.*/, "fsevents"],
+      output: {
+        format: "es",
+      },
     },
-
     sourcemap: true, // not sure if we really should use it
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "es2022",
+    },
   },
   plugins: [
     mdx({
@@ -46,7 +56,7 @@ export default defineConfig({
             v3_throwAbortReason: true,
             v3_singleFetch: true,
             // v3_lazyRouteDiscovery: true,
-            unstable_routeConfig: true,
+            v3_routeConfig: true,
           },
           ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
         }),

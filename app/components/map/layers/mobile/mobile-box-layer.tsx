@@ -6,13 +6,23 @@ import {
   point,
 } from "@turf/helpers";
 import type { MultiLineString, Point } from "geojson";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Layer, Source, useMap } from "react-map-gl";
 import bbox from "@turf/bbox";
 import { HIGH_COLOR, LOW_COLOR, createPalette } from "./color-palette";
+import mapboxgl from "mapbox-gl";
 
-const FIT_PADDING = 50;
-const BOTTOM_BAR_HEIGHT = 400;
+interface CustomGeoJsonProperties {
+  locationId: number;
+  value: number;
+  createdAt: Date;
+  color: string;
+}
+
+export const HoveredPointContext = createContext({
+  hoveredPoint: null,
+  setHoveredPoint: (_point: number | null) => {},
+});
 
 export default function MobileBoxLayer({
   sensor,
@@ -28,13 +38,15 @@ export default function MobileBoxLayer({
     | mapboxgl.LinePaint["line-color"];
 }) {
   const [sourceData, setSourceData] = useState<GeoJSON.FeatureCollection>();
+  const { hoveredPoint, setHoveredPoint } = useContext(HoveredPointContext);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
 
-  const { osem } = useMap();
+  const { osem: mapRef } = useMap();
 
   useEffect(() => {
     const sensorData = sensor.data! as unknown as {
       value: String;
-      location?: number[];
+      location: { x: number; y: number; id: number };
       createdAt: Date;
     }[];
 
@@ -45,18 +57,23 @@ export default function MobileBoxLayer({
       minValue,
       maxValue,
       minColor as string,
-      maxColor as string
+      maxColor as string,
     );
 
     // generate points from the sensor data
     // apply color from palette
-    const points = sensorData.map((measurement) =>
-      point(measurement.location!, {
-        value: Number(measurement.value),
-        createdAt: new Date(measurement.createdAt),
-        color: palette(Number(measurement.value)).hex(),
-      })
-    );
+    const points = sensorData.map((measurement) => {
+      const tempPoint = point(
+        [measurement.location.x, measurement.location.y],
+        {
+          value: Number(measurement.value),
+          createdAt: new Date(measurement.createdAt),
+          color: palette(Number(measurement.value)).hex(),
+          locationId: measurement.location.id,
+        },
+      );
+      return tempPoint;
+    });
 
     if (points.length === 0) return;
 
@@ -65,50 +82,127 @@ export default function MobileBoxLayer({
     const lines = multiLineString([line.geometry.coordinates]);
 
     setSourceData(
-      featureCollection<Point | MultiLineString>([...points, lines])
+      featureCollection<Point | MultiLineString>([...points, lines]),
     );
   }, [maxColor, minColor, sensor.data]);
 
-  // fit the map to the bounds of the data
   useEffect(() => {
-    if (!osem || !sourceData) return;
-    const [x1, y1, x2, y2] = bbox(sourceData);
-    osem?.fitBounds([x1, y1, x2, y2], {
+    if (!mapRef || !sourceData) return;
+
+    const bounds = bbox(sourceData).slice(0, 4) as [
+      number,
+      number,
+      number,
+      number,
+    ];
+    mapRef.fitBounds(bounds, {
       padding: {
-        top: FIT_PADDING,
-        bottom: BOTTOM_BAR_HEIGHT + FIT_PADDING,
-        left: FIT_PADDING,
-        right: FIT_PADDING,
+        top: 100,
+        bottom: 400,
+        left: 500,
+        right: 100,
       },
     });
-  }, [osem, sourceData]);
+  }, [mapRef, sourceData]);
+
+  useEffect(() => {
+    if (!mapRef) return;
+
+    const map = mapRef.getMap();
+
+    map.on("mousemove", "box-layer-point", (e) => {
+      if (!e.features || e.features.length === 0) return;
+
+      const feature = e.features[0];
+      const { locationId } = feature.properties as CustomGeoJsonProperties;
+
+      setHoveredPoint(locationId); // Update hoveredPoint dynamically
+    });
+
+    map.on("mouseleave", "box-layer-point", () => {
+      setHoveredPoint(null); // Clear hoveredPoint
+    });
+  }, [mapRef, setHoveredPoint]);
+
+  useEffect(() => {
+    if (!mapRef) return;
+
+    const map = mapRef.getMap();
+
+    // Cleanup previous popup
+    if (popupRef.current) {
+      popupRef.current.remove();
+      popupRef.current = null;
+    }
+
+    if (hoveredPoint !== null) {
+      const feature = sourceData?.features.find(
+        (feat) => feat.properties?.locationId === hoveredPoint,
+      );
+
+      if (feature && feature.geometry.type === "Point") {
+        const { coordinates } = feature.geometry;
+        const { value } = feature.properties as CustomGeoJsonProperties;
+
+        popupRef.current = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          className: "highlight-popup",
+        })
+          .setLngLat(coordinates as [number, number])
+          .setHTML(
+            `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+               <strong>${sensor.title}</strong>
+               <strong>${value}${sensor.unit}</strong>
+             </div>`,
+          )
+          .addTo(map);
+      }
+    } else if (popupRef.current) {
+      (popupRef.current as mapboxgl.Popup).remove();
+      popupRef.current = null;
+    }
+  }, [hoveredPoint, sourceData, mapRef, sensor.title, sensor.unit]);
 
   if (!sourceData) return null;
 
   return (
-    <Source id="box-source" type="geojson" data={sourceData}>
-      <Layer
-        id="box-layer-point"
-        source="box-source"
-        filter={["==", "$type", "Point"]}
-        type="circle"
-        paint={{
-          "circle-color": ["get", "color"],
-          "circle-radius": 5,
-        }}
-      />
-      <Layer
-        id="box-layer-line"
-        source="box-source"
-        type="line"
-        filter={["==", "$type", "LineString"]}
-        paint={{
-          "line-color": "#333",
-          "line-width": 2,
-          "line-opacity": 0.7,
-        }}
-        beforeId="box-layer-point"
-      />
-    </Source>
+    <>
+      <Source id="box-source" type="geojson" data={sourceData}>
+        <Layer
+          id="box-layer-line"
+          source="box-source"
+          type="line"
+          filter={["==", "$type", "LineString"]}
+          paint={{
+            "line-color": "#333",
+            "line-width": 2,
+            "line-opacity": 0.7,
+          }}
+        />
+        <Layer
+          id="box-layer-point"
+          source="box-source"
+          filter={["==", "$type", "Point"]}
+          type="circle"
+          paint={{
+            "circle-color": ["get", "color"],
+            "circle-radius": 5,
+          }}
+        />
+        <Layer
+          id="highlighted-layer"
+          source="box-source"
+          filter={["==", ["get", "locationId"], hoveredPoint ?? -1]} // Filter only the highlighted feature
+          type="circle"
+          paint={{
+            "circle-color": ["get", "color"],
+            "circle-radius": 8,
+            "circle-opacity": 1,
+          }}
+          beforeId="box-layer-point" // Ensure this layer is above the point layer
+        />
+      </Source>
+    </>
   );
 }

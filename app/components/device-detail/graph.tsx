@@ -1,8 +1,4 @@
-import {
-  useNavigate,
-  useNavigation,
-  useSearchParams,
-} from "@remix-run/react";
+import { useNavigate, useNavigation, useSearchParams } from "@remix-run/react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -18,7 +14,7 @@ import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { ChartOptions } from "chart.js";
 // import { de, enGB } from "date-fns/locale";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useContext } from "react";
 import { Download, RefreshCcw, X } from "lucide-react";
 import type { DraggableData } from "react-draggable";
 import Draggable from "react-draggable";
@@ -42,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { HoveredPointContext } from "../map/layers/mobile/mobile-box-layer";
 
 ChartJS.register(
   LineElement,
@@ -55,7 +52,7 @@ ChartJS.register(
 );
 
 // ClientOnly component to handle the plugin that needs window
-const LineWithZoom = (props: any) => {
+const GraphWithZoom = (props: any) => {
   useMemo(() => {
     // Dynamically import the zoom plugin
     import("chartjs-plugin-zoom").then(({ default: zoomPlugin }) => {
@@ -85,11 +82,15 @@ export default function Graph({
   startDate,
   endDate,
 }: GraphProps) {
+  const { setHoveredPoint } = useContext(HoveredPointContext);
   const navigation = useNavigation();
   const navigate = useNavigate();
   const [offsetPositionX, setOffsetPositionX] = useState(0);
   const [offsetPositionY, setOffsetPositionY] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
+  const [currentZoom, setCurrentZoom] = useState<{
+    xMin: number;
+    xMax: number;
+  } | null>(null); // To track zoom
   const [searchParams, setSearchParams] = useSearchParams();
   const [colorPickerState, setColorPickerState] = useState({
     open: false,
@@ -99,7 +100,24 @@ export default function Graph({
   const isAggregated = aggregation !== "raw";
 
   const nodeRef = useRef(null);
-  const chartRef = useRef<ChartJS<"line">>(null); // Define chartRef here
+  const chartRef = useRef<ChartJS<"line">>(null);
+
+  useEffect(() => {
+    if (chartRef.current) {
+      const canvas = chartRef.current.canvas;
+
+      const handleMouseLeave = () => {
+        setHoveredPoint(null); // Clear the hovered point when the mouse leaves the chart area
+      };
+
+      canvas.addEventListener("mouseleave", handleMouseLeave);
+
+      // Cleanup
+      return () => {
+        canvas.removeEventListener("mouseleave", handleMouseLeave);
+      };
+    }
+  }, [chartRef, setHoveredPoint]);
 
   // get theme from tailwind
   const [theme] = useTheme();
@@ -127,6 +145,7 @@ export default function Graph({
               data: sensor.data.map((measurement) => ({
                 x: measurement.time,
                 y: measurement.value,
+                locationId: measurement.locationId,
               })),
               pointRadius: 0,
               borderColor: sensor.color,
@@ -143,6 +162,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.min_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -155,6 +175,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.max_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -194,6 +215,7 @@ export default function Graph({
               data: sensor.data.map((measurement) => ({
                 x: measurement.time,
                 y: measurement.value,
+                locationId: measurement.locationId,
               })),
               pointRadius: 0,
               borderColor: sensor.color,
@@ -210,6 +232,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.min_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -222,6 +245,7 @@ export default function Graph({
                 data: sensor.data.map((measurement) => ({
                   x: measurement.time,
                   y: measurement.max_value,
+                  locationId: null,
                 })),
                 borderColor: sensor.color + "33",
                 backgroundColor: sensor.color + "33",
@@ -275,6 +299,8 @@ export default function Graph({
           //     locale: data.locale === "de" ? de : enGB,
           //   },
           // },
+          min: currentZoom?.xMin,
+          max: currentZoom?.xMax,
           ticks: {
             major: {
               enabled: true,
@@ -324,21 +350,38 @@ export default function Graph({
         },
       },
       plugins: {
-        zoom: {
-          pan: {
-            enabled: true,
-            mode: "xy",
-            onPan: () => setIsZoomed(true), // Mark zoom as active
+        tooltip: {
+          enabled: true,
+          mode: "index",
+          intersect: false,
+          callbacks: {
+            label: (context: any) => {
+              const dataIndex = context.dataIndex;
+              const datasetIndex = context.datasetIndex;
+              const point = lineData.datasets[datasetIndex].data[dataIndex];
+              const locationId = point.locationId;
+              setHoveredPoint(locationId);
+              return `${context.dataset.label}: ${context.raw.y}`;
+            },
           },
+        },
+        zoom: {
           zoom: {
             wheel: {
               enabled: true,
             },
-            pinch: {
+            drag: {
               enabled: true,
             },
-            mode: "xy",
-            onZoom: () => setIsZoomed(true), // Mark zoom as active
+            mode: "x",
+            onZoom: ({ chart }) => {
+              const xScale = chart.scales["x"];
+              const xMin = xScale.min;
+              const xMax = xScale.max;
+
+              // Track the zoom level
+              setCurrentZoom({ xMin, xMax });
+            },
           },
         },
         legend: {
@@ -376,11 +419,13 @@ export default function Graph({
   }, [
     startDate,
     endDate,
-    // data.locale,
-    sensors,
+    currentZoom?.xMin,
+    currentZoom?.xMax,
     theme,
-    colorPickerState.open,
+    sensors,
     lineData.datasets,
+    setHoveredPoint,
+    colorPickerState.open,
   ]);
 
   function handleColorChange(newColor: string) {
@@ -463,7 +508,7 @@ export default function Graph({
   function handleResetZoomClick() {
     if (chartRef.current) {
       chartRef.current.resetZoom(); // Use the resetZoom function from the zoom plugin
-      setIsZoomed(false); // Reset zoom state
+      setCurrentZoom(null); // Reset the zoom state
     }
   }
 
@@ -500,21 +545,23 @@ export default function Graph({
               <AggregationFilter />
             </div>
             <div className="flex items-center justify-end gap-4">
-              {isZoomed && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <RefreshCcw
-                        onClick={handleResetZoomClick}
-                        className="cursor-pointer"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Reset zoom</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              {currentZoom !== null &&
+                currentZoom.xMax !== 0 &&
+                currentZoom.xMin !== 0 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <RefreshCcw
+                          onClick={handleResetZoomClick}
+                          className="cursor-pointer"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Reset zoom</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Download />
@@ -552,7 +599,7 @@ export default function Graph({
             ) : (
               <ClientOnly fallback={<Spinner />}>
                 {() => (
-                  <LineWithZoom
+                  <GraphWithZoom
                     lineData={lineData}
                     options={options}
                     chartRef={chartRef} // Pass chartRef as a prop

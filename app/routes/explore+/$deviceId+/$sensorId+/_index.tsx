@@ -3,6 +3,8 @@ import { useLoaderData } from "@remix-run/react";
 import { addDays } from "date-fns";
 import { typedjson } from "remix-typedjson";
 import Graph from "~/components/device-detail/graph";
+import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
+import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getSensor } from "~/models/sensor.server";
 import { type Sensor } from "~/schema";
@@ -14,9 +16,13 @@ interface SensorWithColor extends Sensor {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { deviceId, sensorId } = params;
 
-  if (!deviceId || !sensorId) {
-    throw new Response("Device or sensor not found", { status: 404 });
+  if (!deviceId) {
+    throw new Response("Device not found", { status: 404 });
   }
+  if (!sensorId) {
+    throw new Response("Sensor not found", { status: 404 });
+  }
+  const device = await getDevice({ id: deviceId });
 
   const url = new URL(request.url);
   const aggregation = url.searchParams.get("aggregation") || "raw";
@@ -41,12 +47,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Assign data to sensor
   sensor.data = sensorData;
   // query parameter color when sensor wiki works again
-  sensor.color = sensor.color || "#000000";
+  sensor.color = sensor.color || "#8da0cb";
 
   return typedjson({
+    device,
     sensors: [sensor],
-    startDate,
-    endDate,
     aggregation,
   });
 }
@@ -54,6 +59,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function SensorView() {
   const loaderData = useLoaderData<typeof loader>();
   return (
-    <Graph aggregation={loaderData.aggregation} sensors={loaderData.sensors} />
+    <>
+      <Graph
+        aggregation={loaderData.aggregation}
+        sensors={loaderData.sensors}
+      />
+      {loaderData.device.exposure === "mobile" && (
+        <MobileBoxView sensors={loaderData.sensors} />
+      )}
+    </>
   );
 }

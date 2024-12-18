@@ -1,26 +1,61 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useEffect, useRef, useState } from "react";
 import type { Sensor } from "~/schema";
 import MobileBoxLayer from "./mobile-box-layer";
-import { HIGH_COLOR, LOW_COLOR } from "./color-palette";
-import { useEffect, useRef, useState } from "react";
+import { calculateColorRange } from "./color-palette";
+import { Button } from "~/components/ui/button";
+import { ArrowDownUp } from "lucide-react";
 
-export default function MobileBoxView({ sensors }: { sensors: Sensor[] }) {
+interface SensorWithColor extends Sensor {
+  color: string; // Add the color property
+}
+
+export default function MobileBoxView({
+  sensors: initialSensors,
+}: {
+  sensors: SensorWithColor[];
+}) {
+  const [sensors, setSensors] = useState<SensorWithColor[]>(initialSensors);
+
+  // Toggle the order of sensors
+  const switchSensors = () => {
+    setSensors((prevSensors) => [...prevSensors].reverse());
+  };
+
   return (
-    <div className="absolute bottom-full flex flex-col gap-4 p-4">
-      {sensors.map((sensor) => (
-        <SensorView sensor={sensor} key={sensor.id} />
+    <div className="absolute top-10 right-0 flex flex-col gap-4 p-4">
+      {sensors.map((sensor, index) => (
+        <div key={index} className="flex flex-col items-center gap-4">
+          {index === 1 && sensors.length === 2 && (
+            <Button
+              className="self-center px-4 py-2 rounded-full"
+              onClick={switchSensors}
+              variant={"outline"}
+            >
+              <ArrowDownUp />
+            </Button>
+          )}
+          <SensorView sensor={sensor} index={index} />
+        </div>
       ))}
     </div>
   );
 }
 
-function SensorView({ sensor }: { sensor: Sensor }) {
-  const [minColor, setMinColor] = useState(LOW_COLOR);
-  const [maxColor, setMaxColor] = useState(HIGH_COLOR);
+function SensorView({
+  sensor,
+  index,
+}: {
+  sensor: SensorWithColor;
+  index: number;
+}) {
+  const { lowColor, highColor } = calculateColorRange(sensor.color); // Calculate dynamically
+
+  const [minColor, setMinColor] = useState(lowColor);
+  const [maxColor, setMaxColor] = useState(highColor);
 
   return (
     <>
-      {/* <Legend
+      <Legend
         sensor={sensor}
         key={"Legend_" + sensor.id}
         onColorChange={(min, max) => {
@@ -28,12 +63,14 @@ function SensorView({ sensor }: { sensor: Sensor }) {
           setMaxColor(max);
         }}
       />
-      <MobileBoxLayer
-        sensor={sensor}
-        key={sensor.id}
-        minColor={minColor}
-        maxColor={maxColor}
-      /> */}
+      {index < 1 && (
+        <MobileBoxLayer
+          sensor={sensor}
+          key={sensor.id}
+          minColor={minColor}
+          maxColor={maxColor}
+        />
+      )}
     </>
   );
 }
@@ -42,14 +79,16 @@ function Legend({
   sensor,
   onColorChange,
 }: {
-  sensor: Sensor;
+  sensor: SensorWithColor;
   onColorChange?: (min: string, max: string) => void;
 }) {
+  const { lowColor, highColor } = calculateColorRange(sensor.color);
+
   const minColorInputRef = useRef<HTMLInputElement>(null);
   const maxColorInputRef = useRef<HTMLInputElement>(null);
 
-  const [minColor, setMinColor] = useState(LOW_COLOR);
-  const [maxColor, setMaxColor] = useState(HIGH_COLOR);
+  const [minColor, setMinColor] = useState(lowColor);
+  const [maxColor, setMaxColor] = useState(highColor);
 
   useEffect(() => {
     onColorChange && onColorChange(minColor, maxColor);
@@ -57,7 +96,7 @@ function Legend({
 
   const sensorData = sensor.data! as unknown as {
     value: String;
-    location?: number[];
+    location: { x: number; y: number; id: number };
     createdAt: Date;
   }[];
 
@@ -65,7 +104,7 @@ function Legend({
   const maxValue = Math.max(...sensorData.map((d) => Number(d.value)));
 
   return (
-    <div className="flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-sm">
+    <div className="flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-sm z-50">
       <span className="font-semibold">{sensor.title}</span>
       <div
         className="flex w-full items-center justify-between rounded-sm p-1"
