@@ -2,7 +2,6 @@ import {
   type ActionFunctionArgs,
   redirect,
   type LoaderFunctionArgs,
-  json,
 } from "@remix-run/node";
 import ValidationStepperForm from "~/components/device/new/new-device-stepper";
 import { NavBar } from "~/components/nav-bar";
@@ -44,7 +43,9 @@ export async function action({ request }: ActionFunctionArgs) {
       name: data["general-info"].name,
       exposure: data["general-info"].exposure,
       expiresAt: data["general-info"].temporaryExpirationDate,
-      tags: data["general-info"].tags?.map((tag: { value: string }) => tag.value) || [],
+      tags:
+        data["general-info"].tags?.map((tag: { value: string }) => tag.value) ||
+        [],
       latitude: data.location.latitude,
       longitude: data.location.longitude,
       model: data["device-selection"].model,
@@ -57,10 +58,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const newDevice = await createDevice(devicePayload, userId);
     console.log("🚀 ~ New Device Created:", newDevice);
 
-    return json({ success: true, device: newDevice });
+    return redirect("/profile/me");
   } catch (error) {
     console.error("Error creating device:", error);
-    return json({ error: "Failed to create device" }, { status: 400 });
+    return redirect("/profile/me");
   }
 }
 
