@@ -78,6 +78,34 @@
       "when": 1730192030008,
       "tag": "0010_add_locations",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1732793261789,
+      "tag": "0011_delete_device_location",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1733819006789,
+      "tag": "0012_define_device_models",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1734092303665,
+      "tag": "0013_add_tempoary_devices",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1734094141250,
+      "tag": "0014_cron_delete_temporary_devices",
+      "breakpoints": true
     }
   ]
 }

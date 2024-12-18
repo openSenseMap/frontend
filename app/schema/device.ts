@@ -8,6 +8,7 @@ import {
   integer,
   primaryKey,
   unique,
+  date,
 } from "drizzle-orm/pg-core";
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
 import {
@@ -43,6 +44,7 @@ export const device = pgTable("device", {
   public: boolean("public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  expiresAt: date("expires_at", { mode: "date" }),
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
   userId: text("user_id").notNull(),
@@ -56,7 +58,10 @@ export const deviceToLocation = pgTable(
   {
     deviceId: text("device_id")
       .notNull()
-      .references(() => device.id),
+      .references(() => device.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     locationId: integer("location_id")
       .notNull()
       .references(() => location.id),

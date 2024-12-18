@@ -13,6 +13,7 @@ import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
 import ErrorMessage from "~/components/error-message";
+import { getProfileByUsername } from "~/models/profile.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -85,6 +86,21 @@ export async function action({ request }: ActionFunctionArgs) {
         errors: {
           name: null,
           email: "A user already exists with this email",
+          password: null,
+        },
+      },
+      { status: 400 },
+    );
+  }
+
+  // check if profile exists by name
+  const existingUserByName = await getProfileByUsername(name);
+  if (existingUserByName) {
+    return data(
+      {
+        errors: {
+          name: "A user already exists with this name",
+          email: null,
           password: null,
         },
       },

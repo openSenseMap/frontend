@@ -22,6 +22,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
       status: true,
       updatedAt: true,
       tags: true,
+      expiresAt: true,
     },
     with: {
       logEntries: {
@@ -199,150 +200,45 @@ export async function getDevicesWithSensors() {
   return geojson;
 }
 
-export async function getMeasurements(
-  deviceId: any,
-  sensorId: any,
-  startDate: Date,
-  endDate: Date,
-) {
-  const response = await fetch(
-    process.env.OSEM_API_URL +
-      "/boxes/" +
-      deviceId +
-      "/data/" +
-      sensorId +
-      "?from-date=" +
-      startDate.toISOString() + //new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString() + //24 hours ago
-      "&to-date=" +
-      endDate.toISOString(), //new Date().toISOString()
-  );
-  const jsonData = await response.json();
-  return jsonData;
-}
+export async function createDevice(deviceData: any, userId: string) {
+  try {
+    const newDevice = await drizzleClient.transaction(async (tx) => {
+      // Create the device
+      const [createdDevice] = await tx
+        .insert(device)
+        .values({
+          id: deviceData.id,
+          useAuth: deviceData.useAuth ?? true,
+          model: deviceData.model,
+          tags: deviceData.tags,
+          userId: userId,
+          name: deviceData.name,
+          exposure: deviceData.exposure,
+          expiresAt: new Date(deviceData.expiresAt),
+          latitude: deviceData.latitude,
+          longitude: deviceData.longitude,
+        })
+        .returning();
 
-export async function createDevice(
-  deviceData: any,
-  userId: string | undefined,
-) {
-  // hack to register to OSEM API
-  const authData = await fetch(
-    `${process.env.OSEM_API_TESTING_URL}/users/sign-in`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: `${process.env.TESTING_ACCOUNT}`,
-        password: `${process.env.TESTING_PW}`,
-      }),
-    },
-  ).then((res) => res.json());
-
-  let sensorArray: any = [];
-  Object.values(deviceData.sensors).forEach((sensorsOfPhenomenon: any) => {
-    sensorsOfPhenomenon.forEach((sensor: any) => {
-      sensorArray.push({
-        name: sensor[0],
-        title: sensor[2],
-        sensorType: sensor[1],
-        unit: sensor[3],
-      });
+      if (!createdDevice) {
+        throw new Error("Failed to create device.");
+      }
+      // Add sensors in the same transaction
+      if (deviceData.sensors && Array.isArray(deviceData.sensors)) {
+        for (const sensorData of deviceData.sensors) {
+          await tx.insert(sensor).values({
+            title: sensorData.title,
+            unit: sensorData.unit,
+            sensorType: sensorData.sensorType,
+            deviceId: createdDevice.id, // Reference the created device ID
+          });
+        }
+      }
+      return createdDevice;
     });
-  });
-  const registeredDevice = await createDeviceOsemAPI(
-    { ...deviceData, sensors: sensorArray },
-    authData.token,
-  );
-  const newDevicePostgres = await createDevicePostgres(
-    registeredDevice.data,
-    userId,
-    sensorArray,
-    deviceData,
-  );
-  return newDevicePostgres;
-}
-
-export async function createDevicePostgres(
-  deviceData: any,
-  userId: string | undefined,
-  sensorArray: any[],
-  formDeviceData: any,
-) {
-  const newDevice = await drizzleClient
-    .insert(device)
-    .values({
-      id: deviceData._id,
-      sensorWikiModel: formDeviceData.type,
-      userId: userId ?? "unknown",
-      name: deviceData.name,
-      exposure: deviceData.exposure,
-      useAuth: deviceData.useAuth,
-      latitude: Number(deviceData.currentLocation.coordinates[1]),
-      longitude: Number(deviceData.currentLocation.coordinates[0]),
-    })
-    .returning();
-
-  for await (let [i, sensor] of deviceData.sensors.entries()) {
-    await drizzleClient.insert(sensor).values({
-      id: sensor._id,
-      deviceId: newDevice[0].id,
-      title: sensorArray[i].name,
-      sensorType: sensor.sensorType,
-      unit: sensor.unit,
-      sensorWikiType: sensor.sensorType,
-      sensorWikiUnit: sensor.unit,
-      sensorWikiPhenomenon: sensor.title,
-    });
+    return newDevice;
+  } catch (error) {
+    console.error("Error creating device with sensors:", error);
+    throw new Error("Failed to create device and its sensors.");
   }
-
-  return newDevice;
-}
-
-export async function createDeviceOsemAPI(deviceData: any, token: string) {
-  const registerDevice = await fetch(
-    `${process.env.OSEM_API_TESTING_URL}/boxes`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: deviceData.name,
-        grouptag: deviceData.groupId,
-        exposure: deviceData.exposure.toLowerCase(),
-        // model: deviceData.type,
-        sensors: deviceData.sensors,
-        location: {
-          lat: deviceData.latitude,
-          lng: deviceData.longitude,
-          ...(deviceData.height && { height: deviceData.height }),
-        },
-        ...(deviceData.ttnEnabled && {
-          ttn: {
-            dev_id: deviceData["ttn.devId"],
-            app_id: deviceData["ttn.appId"],
-            profile: deviceData["ttn.decodeProfile"],
-            ...(deviceData["ttn.decodeOptions"] && {
-              decodeOptions: deviceData["ttn.decodeOptions"],
-            }),
-            ...(deviceData["ttn.port"] && { port: deviceData["ttn.port"] }),
-          },
-        }),
-        ...(deviceData.mqttEnabled && {
-          mqtt: {
-            enabled: true,
-            url: deviceData["mqtt.url"],
-            topic: deviceData["mqtt.topic"],
-            messageFormat: deviceData["mqtt.messageFormat"],
-            decodeOptions: deviceData["mqtt.decodeOptions"],
-            connectionOptions: deviceData["mqtt.connectOptions"],
-          },
-        }),
-      }),
-    },
-  ).then((res) => res.json());
-
-  return registerDevice;
 }

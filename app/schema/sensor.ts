@@ -23,7 +23,11 @@ export const sensor = pgTable("sensor", {
   status: DeviceStatusEnum("status").default("inactive"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  deviceId: text("device_id").notNull(),
+  deviceId: text("device_id")
+    .references(() => device.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
   sensorWikiType: text("sensor_wiki_type"),
   sensorWikiPhenomenon: text("sensor_wiki_phenomenon"),
   sensorWikiUnit: text("sensor_wiki_unit"),
