@@ -77,6 +77,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import EntryLogs from "./entry-logs";
 import { useToast } from "../ui/use-toast";
+import clsx from "clsx";
 
 export interface MeasurementProps {
   sensorId: string;
@@ -382,7 +383,46 @@ export default function DeviceDetailBox() {
                             <Badge
                               key={tag}
                               variant="secondary"
-                              className="text-xs font-medium"
+                              className={clsx(
+                                "text-xs font-medium cursor-pointer",
+                                searchParams
+                                  .get("tags")
+                                  ?.split(",")
+                                  .includes(tag)
+                                  ? "bg-green-100 dark:bg-dark-green"
+                                  : "",
+                              )}
+                              onClick={(event) => {
+                                event.stopPropagation();
+
+                                const currentParams = new URLSearchParams(
+                                  searchParams.toString(),
+                                );
+
+                                // Safely retrieve and parse the current tags
+                                const currentTags =
+                                  currentParams.get("tags")?.split(",") || [];
+
+                                // Toggle the tag in the list
+                                const updatedTags = currentTags.includes(tag)
+                                  ? currentTags.filter((t) => t !== tag) // Remove if already present
+                                  : [...currentTags, tag]; // Add if not present
+
+                                // Update the tags parameter or remove it if empty
+                                if (updatedTags.length > 0) {
+                                  currentParams.set(
+                                    "tags",
+                                    updatedTags.join(","),
+                                  );
+                                } else {
+                                  currentParams.delete("tags");
+                                }
+
+                                // Update the URL with the new search params
+                                navigate({
+                                  search: currentParams.toString(),
+                                });
+                              }}
                             >
                               {tag}
                             </Badge>
