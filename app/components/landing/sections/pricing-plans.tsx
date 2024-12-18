@@ -1,12 +1,6 @@
 import { Gift, Star } from "lucide-react";
-import SVGFace from "../smile/svg-face";
-import React, { useState } from "react";
 
 export default function PricingPlans() {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseEnter = () => setIsHovered(true);
-  const handleMouseLeave = () => setIsHovered(false);
 
   return (
     <section id="pricing">
@@ -25,8 +19,6 @@ export default function PricingPlans() {
               rel="noreferrer noopener nofollow"
               target="_blank"
               className="flex items-center justify-center border-2 border-solid rounded-sm px-4 py-2 hover:cursor-pointer"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
             >
               <Star className="h-4 w-4 mr-2" />
               Give us a star
@@ -38,16 +30,11 @@ export default function PricingPlans() {
               rel="noreferrer noopener nofollow"
               target="_blank"
               className="flex items-center justify-center border-2 border-solid rounded-sm px-4 py-2 hover:cursor-pointer"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
             >
               <Gift className="h-4 w-4 mr-2" />
               Become a sponsor
             </a>
           </div>
-        </div>
-        <div className="pt-8 lg:pt-16">
-          <SVGFace isHovered={isHovered} />
         </div>
       </div>
     </section>
