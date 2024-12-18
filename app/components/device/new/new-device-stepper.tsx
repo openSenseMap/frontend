@@ -43,7 +43,7 @@ const generalInfoSchema = z.object({
     .transform((date) => (date ? new Date(date) : undefined)) // Transform string to Date
     .refine(
       (date) =>
-        !date || date <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        !date || date <= new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
       {
         message: "Temporary expiration date must be within 1 month from now",
       },

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,30 @@ export function GeneralInfoStep() {
   });
 
   const currentExposure = watch("exposure"); // Watch exposure value
-  const temporaryExpirationDate = watch("temporaryExpirationDate"); // Watch expiration date
+
+  // State for temporary expiration date
+  const [temporaryExpirationDate, setTemporaryExpirationDate] = useState<
+    string | null
+  >(watch("temporaryExpirationDate") || null);
+
+  const maxExpirationDate = new Date();
+  maxExpirationDate.setMonth(maxExpirationDate.getMonth() + 1);
+
+  const handleTemporaryChange = (checked: boolean) => {
+    if (checked) {
+      const newDate = maxExpirationDate.toISOString().split("T")[0];
+      setTemporaryExpirationDate(newDate); // Update local state
+      setValue("temporaryExpirationDate", newDate); // Update form value
+    } else {
+      setTemporaryExpirationDate(null); // Clear local state
+      setValue("temporaryExpirationDate", ""); // Clear form value
+    }
+  };
+
+  const handleExpirationDateChange = (date: string) => {
+    setTemporaryExpirationDate(date); // Update local state
+    setValue("temporaryExpirationDate", date); // Update form value
+  };
 
   const addTag = (event: React.FormEvent) => {
     event.preventDefault();
@@ -51,17 +75,6 @@ export function GeneralInfoStep() {
       label: "Unknown",
     },
   ];
-
-  const maxExpirationDate = new Date();
-  maxExpirationDate.setMonth(maxExpirationDate.getMonth() + 1);
-
-  const handleTemporaryChange = (checked: boolean) => {
-    if (checked) {
-      setValue("temporaryExpirationDate", maxExpirationDate);
-    } else {
-      setValue("temporaryExpirationDate", "");
-    }
-  };
 
   return (
     <div className="space-y-4 h-full flex flex-col justify-evenly p-2">
@@ -100,7 +113,7 @@ export function GeneralInfoStep() {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="isTemporary"
-              checked={temporaryExpirationDate}
+              checked={!!temporaryExpirationDate}
               onCheckedChange={handleTemporaryChange}
             />
             <Label htmlFor="isTemporary" className="text-base font-medium">
@@ -133,14 +146,8 @@ export function GeneralInfoStep() {
               <Input
                 type="date"
                 id="temporaryExpirationDate"
-                {...register("temporaryExpirationDate")}
-                value={
-                  temporaryExpirationDate
-                    ? new Date(temporaryExpirationDate)
-                        .toISOString()
-                        .split("T")[0]
-                    : ""
-                }
+                value={temporaryExpirationDate}
+                onChange={(e) => handleExpirationDateChange(e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
                 max={maxExpirationDate.toISOString().split("T")[0]}
                 className="flex-grow p-2 border rounded-md"
