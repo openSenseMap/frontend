@@ -6,6 +6,7 @@ import { password } from "./password";
 import { profile } from "./profile";
 import { device } from "./device";
 import { v4 as uuidv4 } from "uuid";
+import { refreshToken } from "./refresh-token";
 
 /**
  * Table
@@ -40,6 +41,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     references: [profile.userId],
   }),
   devices: many(device),
+  refreshToken: many(refreshToken),
 }));
 
 /**
