@@ -5,6 +5,7 @@ import { pgTable, boolean, text, timestamp } from "drizzle-orm/pg-core";
 import { password } from "./password";
 import { profile } from "./profile";
 import { device } from "./device";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Table
@@ -19,6 +20,9 @@ export const user = pgTable("user", {
   role: text("role").$type<"admin" | "user">().default("user"),
   language: text("language").default("en_US"),
   emailIsConfirmed: boolean("email_is_confirmed").default(false),
+  emailConfirmationToken: text("email_confirmation_token").$defaultFn(() =>
+    uuidv4(),
+  ),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

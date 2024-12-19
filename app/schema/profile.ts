@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, boolean, text } from "drizzle-orm/pg-core";
+import { pgTable, boolean, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import {
   relations,
@@ -22,6 +22,11 @@ export const profile = pgTable("profile", {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
 });
 
 /**

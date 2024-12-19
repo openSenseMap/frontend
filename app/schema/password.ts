@@ -1,4 +1,4 @@
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
@@ -13,6 +13,11 @@ export const password = pgTable("password", {
       onUpdate: "cascade",
     })
     .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
 });
 
 /**
