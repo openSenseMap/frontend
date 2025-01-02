@@ -1,8 +1,8 @@
 ![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/openSenseMap.png)
 
-This repository contains the code of the new *openSenseMap* frontend running at [https://beta.opensensemap.org](https://beta.opensensemap.org). To get more information about *openSenseMap* and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=I8ZeT6hzjKQ) or read the [openSenseMap](https://docs.sensebox.de/category/opensensemap/) chapter in our documentation.
+This repository contains the code of the new *openSenseMap* frontend running at [https://beta.opensensemap.org](https://beta.opensensemap.org).
 
-Originally, the *openSenseMap* was built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, University of Münster). Between 2016 and 2022 development was partly funded by the German Ministry of Education and Research (BMBF) in the projets senseBox and senseBox Pro. This new version has been developed and is currently maintained by [@mpfeil](https://github.com/mpfeil) and [@freds-dev](https://github.com/freds-dev).
+Originally, the *openSenseMap* was built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, University of Münster). Between 2016 and 2022 development was partly funded by the German Ministry of Education and Research (BMBF) in the projets senseBox and senseBox Pro. This version has been developed by [@mpfeil](https://github.com/mpfeil) and [@freds-dev](https://github.com/freds-dev).
 
 <img width="1438" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/a7bf16fb-44a2-4a21-9c0f-d4bf431ab9b5">
 

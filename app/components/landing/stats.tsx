@@ -10,24 +10,24 @@ export default function Stats(stats: number[]) {
       id: 1,
       name: "devices",
       value: stats[0] / 1000,
-      unit: "K",
+      unit: "k",
     },
     {
       id: 2,
       name: "measurements_total",
       value: stats[1] / 1000000,
-      unit: "Mio.",
+      unit: "m",
     },
     {
       id: 3,
       name: "measurements_per_minute",
       value: stats[2] / 1000,
-      unit: "K",
+      unit: "k",
     },
   ];
 
   return (
-    <div className="mx-auto px-4 py-16 sm:max-w-xl md:max-w-full md:px-24 lg:max-w-screen-xl lg:px-8 lg:py-24" id="stats-section">
+    <div className="mx-auto px-4 sm:max-w-xl md:max-w-full md:px-24 lg:max-w-screen-xl lg:px-8 lg:py-12">
       <div className="row-gap-8 grid gap-10 lg:grid-cols-3">
         {osemStats.map((stat) => (
           <div key={stat.id} id={stat.name}>

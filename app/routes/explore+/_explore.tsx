@@ -67,6 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       user,
       profile,
       filteredDevices,
+      filterParams,
       //phenomena
     });
   }

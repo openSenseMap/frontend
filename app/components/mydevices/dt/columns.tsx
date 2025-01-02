@@ -115,10 +115,10 @@ export const columns: ColumnDef<SenseBox>[] = [
             <DropdownMenuItem>
               <a href={`/explore/${senseBox.id}`}>Show on map</a>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem disabled>
               <a href={`/device/${senseBox.id}/edit/general`}>Edit</a>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem disabled>
               <a href={`/device/${senseBox.id}/dataupload`}>Data upload</a>
             </DropdownMenuItem>
             <DropdownMenuItem>

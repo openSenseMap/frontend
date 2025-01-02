@@ -1,4 +1,5 @@
 import {
+  location,
   measurement,
   measurements10minView,
   measurements1dayView,
@@ -6,7 +7,7 @@ import {
   measurements1monthView,
   measurements1yearView,
 } from "~/schema";
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 
 // This function retrieves measurements from the database based on the provided parameters.
@@ -129,6 +130,21 @@ export function getMeasurement(
   return drizzleClient.query.measurement.findMany({
     where: (measurement, { eq }) => eq(measurement.sensorId, sensorId),
     orderBy: [desc(measurement.time)],
+    with: {
+      location: {
+        // https://github.com/drizzle-team/drizzle-orm/pull/2778
+        // with: {
+        //   geometry: true
+        // },
+        columns: {
+          id: true,
+        },
+        extras: {
+          x: sql<number>`ST_X(${location.location})`.as("x"),
+          y: sql<number>`ST_Y(${location.location})`.as("y"),
+        },
+      },
+    },
     limit: 3600, // 60 measurements per hour * 24 hours * 2.5 days
   });
 }

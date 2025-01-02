@@ -44,11 +44,11 @@ export default function EntryLogs({
         <p className="font-bold pb-4">Logs</p>
         <div className="flex items-center">
           <div className="flex items-start space-x-4 w-full">
-            <div className="shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <Activity className="text-primary-foreground w-5 h-5" />
+            <div className="shrink-0 w-10 h-10 rounded-full border-4 border-muted-foreground text-muted-foreground flex items-center justify-center">
+              <Activity className="w-5 h-5" />
             </div>
             <div className="flex-grow">
-              <p className="text-sm font-medium mb-2">{entryLogs[0].content}</p>
+              <p className="text-sm font-medium mb-2">{entryLogs[entryLogs.length -1].content}</p>
               <div className="flex items-center text-xs text-muted-foreground">
                 <Clock className="w-3 h-3 mr-1" />
                 {new Date(entryLogs[0].createdAt).toLocaleString()}
