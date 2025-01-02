@@ -10,7 +10,7 @@
     "build:server": "tsx ./other/build-server.ts",
     "dev:build": "cross-env NODE_ENV=development npm run build:server -- --watch",
     "dev:css": "cross-env NODE_ENV=development npm run generate:css -- --watch",
-    "dev": "node ./server/dev-server.js",
+    "dev": "remix vite:dev",
     "docker": "docker compose up -d",
     "format": "prettier --write .",
     "drizzle:generate": "drizzle-kit generate",
