@@ -1,4 +1,4 @@
-import unicorn from "eslint-plugin-unicorn";
+import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -19,7 +19,7 @@ export default [...compat.extends(
     "prettier",
 ), {
     plugins: {
-        unicorn,
+        unicorn: eslintPluginUnicorn,
     },
 
     languageOptions: {
