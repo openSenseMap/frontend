@@ -56,7 +56,6 @@ export default function FilterVisualization() {
   }, []);
 
   // Group valid filters by key
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const groupedFilters: { [key: string]: string[] } = {};
 
   params.forEach((value, key) => {
