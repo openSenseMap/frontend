@@ -1,5 +1,4 @@
-import { fixupPluginRules } from "@eslint/compat";
-import { fixupConfigRules } from "@eslint/compat";
+import { fixupPluginRules, fixupConfigRules } from "@eslint/compat";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
