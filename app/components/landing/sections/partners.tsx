@@ -8,8 +8,8 @@ type PartnersProps = {
 export default function Partners({ data }: PartnersProps) {
   return (
     <div
-      id="partners-section"
-      className="flex h-full min-h-full items-center justify-center text-xl text-gray-300 dark:text-gray-100"
+      id="partners"
+      className="flex h-full items-center justify-center text-xl text-gray-300 dark:text-gray-100"
     >
       <div className="flex h-full w-5/6 flex-col justify-evenly">
         <div className="flex items-center justify-center pb-10">
@@ -17,7 +17,7 @@ export default function Partners({ data }: PartnersProps) {
             Partners
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center">
+        <div className="flex items-center justify-center">
           {data.map((partner, index) => {
             return (
               <motion.div

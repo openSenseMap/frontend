@@ -7,6 +7,7 @@ import { data, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 import ErrorMessage from "~/components/error-message";
+import { NavBar } from "~/components/nav-bar";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
@@ -89,100 +90,103 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex h-screen min-h-full flex-col items-center justify-center">
-      <div className="mx-auto w-full max-w-md px-8">
-        <Form method="post" className="space-y-6" noValidate>
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
-            </label>
-            <div className="mt-1">
-              <input
-                ref={emailRef}
-                id="email"
-                required
-                autoFocus={true}
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
-                aria-describedby="email-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.errors?.email && (
-                <div className="pt-1 text-[#FF0000]" id="email-error">
-                  {actionData.errors.email}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <div className="mt-1">
-              <input
-                id="password"
-                ref={passwordRef}
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={actionData?.errors?.password ? true : undefined}
-                aria-describedby="password-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.errors?.password && (
-                <div className="pt-1 text-[#FF0000]" id="password-error">
-                  {actionData.errors.password}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <input type="hidden" name="redirectTo" value={redirectTo} />
-          <button
-            type="submit"
-            className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
-          >
-            Log in
-          </button>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember"
-                name="remember"
-                type="checkbox"
-                className="text-blue-600 h-4 w-4 rounded border-gray-300 focus:ring-blue-500"
-              />
+    <div className="flex flex-col h-screen">
+      <NavBar />
+      <div className="flex h-full w-full justify-center py-10">
+        <div className="w-full flex items-center justify-center h-full max-w-3xl rounded-lg p-6 dark:shadow-none dark:bg-transparent dark:text-dark-text">
+          <Form method="post" className="space-y-6" noValidate>
+            <div>
               <label
-                htmlFor="remember"
-                className="ml-2 block text-sm text-gray-900"
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
               >
-                Remember me
+                Email address
               </label>
+              <div className="mt-1">
+                <input
+                  ref={emailRef}
+                  id="email"
+                  required
+                  autoFocus={true}
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={actionData?.errors?.email ? true : undefined}
+                  aria-describedby="email-error"
+                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                />
+                {actionData?.errors?.email && (
+                  <div className="pt-1 text-[#FF0000]" id="email-error">
+                    {actionData.errors.email}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="text-center text-sm text-gray-500">
-              Don't have an account?{" "}
-              <Link
-                className="text-blue-500 underline"
-                to={{
-                  pathname: "/join",
-                  search: searchParams.toString(),
-                }}
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
               >
-                Sign up
-              </Link>
+                Password
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  ref={passwordRef}
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={actionData?.errors?.password ? true : undefined}
+                  aria-describedby="password-error"
+                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                />
+                {actionData?.errors?.password && (
+                  <div className="pt-1 text-[#FF0000]" id="password-error">
+                    {actionData.errors.password}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </Form>
+
+            <input type="hidden" name="redirectTo" value={redirectTo} />
+            <button
+              type="submit"
+              className="hover:bg-blue-600 focus:bg-blue-400 w-full  rounded bg-blue-500 px-4 py-2 text-white"
+            >
+              Log in
+            </button>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember"
+                  name="remember"
+                  type="checkbox"
+                  className="text-blue-600 h-4 w-4 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="remember"
+                  className="ml-2 block text-sm text-gray-900"
+                >
+                  Remember me
+                </label>
+              </div>
+              <div className="text-center text-sm text-gray-500">
+                Don't have an account?{" "}
+                <Link
+                  className="text-blue-500 underline"
+                  to={{
+                    pathname: "/join",
+                    search: searchParams.toString(),
+                  }}
+                >
+                  Sign up
+                </Link>
+              </div>
+            </div>
+          </Form>
+        </div>
       </div>
     </div>
   );

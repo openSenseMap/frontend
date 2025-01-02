@@ -43,7 +43,7 @@ function getZIndex({
 
 export default function FeaturesCarousel({ data }: FeaturesProps) {
   const [[activeIndex, direction], setActiveIndex] = useState<[number, number]>(
-    [0, 0]
+    [0, 0],
   );
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [isMobileScreen, setIsMobileScreen] = useState(false);

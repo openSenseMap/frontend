@@ -16,11 +16,7 @@ export const DeviceExposureZodEnum = z.enum(DeviceExposureEnum.enumValues);
 export type DeviceExposureType = z.infer<typeof DeviceExposureZodEnum>;
 
 // Enum for device status types
-export const DeviceStatusEnum = pgEnum("status", [
-  "active",
-  "inactive",
-  "old",
-]);
+export const DeviceStatusEnum = pgEnum("status", ["active", "inactive", "old"]);
 
 // Zod schema for validating device status types
 export const DeviceStatusZodEnum = z.enum(DeviceStatusEnum.enumValues);
@@ -29,4 +25,11 @@ export const DeviceStatusZodEnum = z.enum(DeviceStatusEnum.enumValues);
 export type DeviceStatusType = z.infer<typeof DeviceStatusZodEnum>;
 
 // Enum for device model types
-export const DeviceModelEnum = pgEnum("model", ["HOME_V2_LORA"]);
+export const DeviceModelEnum = pgEnum("model", [
+  "homeV2Lora",
+  "homeV2Ethernet",
+  "homeV2Wifi",
+  "senseBox:Edu",
+  "luftdaten.info",
+  "Custom",
+]);
