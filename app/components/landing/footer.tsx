@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="w-full bg-white px-4 text-gray-300 dark:bg-black dark:text-gray-100 sm:p-6 lg:text-lg">
+    <footer id="footer" className="w-full bg-white px-4 text-gray-300 dark:bg-black dark:text-gray-100 sm:p-6 lg:text-lg">
       <hr className="my-6 border-gray-300 dark:border-gray-100 sm:mx-auto lg:my-8" />
       <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
