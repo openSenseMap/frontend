@@ -2,7 +2,7 @@ import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
 import type { Point } from "geojson";
 import { device, location, sensor, type Device, type Sensor } from "~/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({
@@ -241,4 +241,20 @@ export async function createDevice(deviceData: any, userId: string) {
     console.error("Error creating device with sensors:", error);
     throw new Error("Failed to create device and its sensors.");
   }
+}
+
+// get the 10 latest created (createdAt property) devices with id, name, latitude, and longitude
+export async function getLatestDevices() {
+  const devices = await drizzleClient
+    .select({
+      id: device.id,
+      name: device.name,
+      latitude: device.latitude,
+      longitude: device.longitude,
+    })
+    .from(device)
+    .orderBy(desc(device.createdAt))
+    .limit(10);
+
+  return devices;
 }

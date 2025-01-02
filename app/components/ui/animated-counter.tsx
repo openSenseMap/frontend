@@ -24,7 +24,7 @@ function AnimatedCounter({ from, to }: AnimatedCounterProps) {
 
     const updateCount = () => {
       if (count.get() !== to) {
-        animate(count, to, { duration: 1 });
+        animate(count, to, { duration: 0.15 });
         requestAnimationFrame(updateCount);
       }
     };

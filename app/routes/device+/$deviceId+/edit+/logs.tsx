@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "~/components/ui/use-toast";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -127,38 +129,29 @@ export default function Logs() {
                 <div>
                   <h1 className=" text-4xl">Device Logs</h1>
                 </div>
-                <div>
-                  {/* Save button */}
-                  <button
-                    name="intent"
-                    value="save"
-                    className=" h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
-                  >
-                    <Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
-                  </button>
-                </div>
+                <div></div>
               </div>
             </div>
 
             {/* divider */}
             <hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
             <div className="flex space-x-2">
-              <input
+              <Input
                 name="content"
-                type="text"
                 placeholder="Enter log content"
+                type="text"
                 value={newLogContent}
                 onChange={(e) => setNewLogContent(e.target.value)}
-                className="flex-grow rounded border border-gray-300 px-3 py-2 text-base"
               />
-              <button
+              <Button
                 type="submit"
+                variant={"outline"}
                 name="intent"
                 value="addLog"
-                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                className="gap-2"
               >
-                <Save className="h-5 w-5" />
-              </button>
+                <Save className="h-4 w-4" />
+              </Button>
             </div>
           </Form>
 
