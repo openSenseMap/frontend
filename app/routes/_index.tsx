@@ -17,6 +17,7 @@ import Integrations from "~/components/landing/sections/integrations";
 import Connect from "~/components/landing/sections/connect";
 import { GlobeComponent } from "~/components/landing/globe.client";
 import { useMediaQuery } from "@mantine/hooks";
+import { getLatestDevices } from "~/models/device.server";
 
 const sections = [
   {
@@ -77,6 +78,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     },
   );
 
+  const latestDevices = await getLatestDevices();
+
   return data({
     useCases: useCasesResponse.data,
     features: featuresResponse.data,
@@ -84,13 +87,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     stats: stats,
     header: { userId: userId, userName: userName },
     locale: locale,
+    latestDevices: latestDevices,
   });
 };
 
 export default function Index() {
-  const { partners, stats } = useLoaderData<{
+  const { partners, stats, latestDevices } = useLoaderData<{
     partners: Partner[];
     stats: number[];
+    latestDevices: any[];
   }>();
 
   const { t } = useTranslation("landing");
@@ -192,7 +197,7 @@ export default function Index() {
             </div>
             {isDesktop && (
               <div className="w-1/3 cursor-pointer">
-                <GlobeComponent />
+                <GlobeComponent latestDevices={latestDevices}/>
               </div>
             )}
           </div>

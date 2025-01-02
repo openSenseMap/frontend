@@ -3,36 +3,31 @@
 import { useEffect, useRef } from "react";
 import Globe from "react-globe.gl";
 
-export const GlobeComponent = () => {
+interface Device {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+interface GlobeComponentProps {
+  latestDevices: Device[];
+}
+
+export const GlobeComponent = ({ latestDevices }: GlobeComponentProps) => {
   const globeEl = useRef<any>(null);
 
-  // Example sensor data with lat/lng, max radius, propagation speed, and repeat period
-  const sensorData = [
-    {
-      lat: 52.52,
-      lng: 13.405,
-      maxR: 10,
-      propagationSpeed: 5,
-      repeatPeriod: 1000,
-    }, // Berlin
-    {
-      lat: 48.8566,
-      lng: 2.3522,
-      maxR: 12,
-      propagationSpeed: 4,
-      repeatPeriod: 1200,
-    }, // Paris
-    {
-      lat: 40.7128,
-      lng: -74.006,
-      maxR: 8,
-      propagationSpeed: 6,
-      repeatPeriod: 900,
-    }, // New York
-    // Add more locations here
-  ];
+  const colorInterpolator = (t: number) =>
+    `rgba(${50 + Math.floor(t * 50)}, ${100 + Math.floor(t * 100)}, 255, ${Math.sqrt(1 - t)})`;
 
-  const colorInterpolator = (t: any) => `rgba(255,100,50,${Math.sqrt(1 - t)})`;
+  // Transform latestDevices into the format required by Globe's ringsData
+  const sensorData = latestDevices.map((device) => ({
+    lat: device.latitude,
+    lng: device.longitude,
+    maxR: 10,
+    propagationSpeed: 5,
+    repeatPeriod: 1000,
+  }));
 
   useEffect(() => {
     if (globeEl.current) {
