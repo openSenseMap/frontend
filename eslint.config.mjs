@@ -1,51 +1,61 @@
-import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import { fixupPluginRules } from "@eslint/compat";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all,
 });
 
-export default [...compat.extends(
-    "@remix-run/eslint-config",
-    "@remix-run/eslint-config/node",
-    "@remix-run/eslint-config/jest-testing-library",
-    "prettier",
-), {
+export default [
+  ...fixupConfigRules(
+    compat.extends(
+      "@remix-run/eslint-config",
+      "@remix-run/eslint-config/node",
+      "@remix-run/eslint-config/jest-testing-library",
+      "prettier",
+    ),
+  ),
+  {
     plugins: {
-        unicorn: eslintPluginUnicorn,
+      unicorn: fixupPluginRules(eslintPluginUnicorn),
     },
 
     languageOptions: {
-        globals: {},
+      globals: {},
     },
 
     settings: {
-        jest: {
-            version: 28,
-        },
+      jest: {
+        version: 28,
+      },
     },
 
     rules: {
-        "unicorn/filename-case": ["error", {
-            case: "kebabCase",
-        }],
+      "unicorn/filename-case": [
+        "error",
+        {
+          case: "kebabCase",
+        },
+      ],
     },
-}, {
+  },
+  {
     files: [
-        "app/routes/**/*.ts",
-        "app/routes/**/*.js",
-        "app/routes/**/*.tsx",
-        "app/routes/**/*.jsx",
+      "app/routes/**/*.ts",
+      "app/routes/**/*.js",
+      "app/routes/**/*.tsx",
+      "app/routes/**/*.jsx",
     ],
 
     rules: {
-        "unicorn/filename-case": "off",
+      "unicorn/filename-case": "off",
     },
-}];
+  },
+];
