@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 import prom from "@isaacs/express-prometheus-middleware";
 import { createRequestHandler } from "@remix-run/express";
 import type { ServerBuild } from "@remix-run/node";
-import { installGlobals } from "@remix-run/node";
 import { ip as ipAddress } from "address";
 import chalk from "chalk";
 import closeWithGrace from "close-with-grace";
@@ -14,8 +13,6 @@ import getPort, { portNumbers } from "get-port";
 const MODE = process.env.NODE_ENV ?? "development";
 const IS_PROD = MODE === "production";
 const IS_DEV = MODE === "development";
-
-installGlobals();
 
 const viteDevServer = IS_PROD
   ? undefined
