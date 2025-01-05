@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from "@remix-run/react";
+import { useLoaderData, useNavigation, useSearchParams } from "react-router";
 // import { useTranslation } from "react-i18next";
 import type { SensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";

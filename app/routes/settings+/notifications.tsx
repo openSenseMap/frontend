@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form } from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { Separator } from "~/components/ui/separator";
 

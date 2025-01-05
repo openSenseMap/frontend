@@ -1,16 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Outlet,
-  useNavigate,
-  useSearchParams,
-  useLoaderData,
-  useParams,
-  redirect,
-} from "@remix-run/react";
+import { Outlet, useNavigate, useSearchParams, useLoaderData, useParams, redirect } from "react-router";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
 import Header from "~/components/header";
-import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, LinksFunction } from "react-router";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source, Marker } from "react-map-gl";

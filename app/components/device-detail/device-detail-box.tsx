@@ -5,7 +5,7 @@ import {
   useNavigation,
   useParams,
   useSearchParams,
-} from "@remix-run/react";
+} from "react-router";
 import Spinner from "../spinner";
 import {
   Accordion,

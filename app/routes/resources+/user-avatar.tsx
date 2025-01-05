@@ -1,7 +1,7 @@
-import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import type { LoaderFunctionArgs } from "react-router";
 import { getProfileByUserId } from "~/models/profile.server";
 import { requireUser } from "~/session.server";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { getInitials } from "~/utils/misc";
 import { useEffect } from "react";

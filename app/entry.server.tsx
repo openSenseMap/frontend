@@ -1,7 +1,7 @@
 import { PassThrough } from "stream";
-import type { EntryContext } from "@remix-run/node";
-import { createReadableStreamFromReadable } from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
+import type { EntryContext } from "react-router";
+import { createReadableStreamFromReadable } from "@react-router/node";
+import { ServerRouter } from "react-router";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { getEnv, init } from "./env.server";
@@ -22,7 +22,7 @@ export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
 ) {
   const callbackName = isbot(request.headers.get("user-agent"))
     ? "onAllReady"
@@ -35,7 +35,7 @@ export default async function handleRequest(
   // Then we could detect locale from the request
   let lng = await i18next.getLocale(request);
   // And here we detect what namespaces the routes about to render want to use
-  let ns = i18next.getRouteNamespaces(remixContext);
+  let ns = i18next.getRouteNamespaces(reactRouterContext);
 
   // First, we create a new instance of i18next so every request will have a
   // completely unique instance and not share any state.
@@ -58,7 +58,7 @@ export default async function handleRequest(
     // entry.client file
     const { pipe, abort } = renderToPipeableStream(
       <I18nextProvider i18n={instance}>
-        <RemixServer context={remixContext} url={request.url} />
+        <ServerRouter context={reactRouterContext} url={request.url} />
       </I18nextProvider>,
       {
         [callbackName]: () => {

@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction } from "react-router";
 import { NavBar } from "~/components/nav-bar";
 import {
   Card,

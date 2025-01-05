@@ -1,6 +1,6 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
-import { Form, Link } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { redirect } from "react-router";
+import { Form, Link } from "react-router";
 import { useState } from "react";
 import { getUserId } from "~/session.server";
 import { ArrowLeft, Upload } from "lucide-react";

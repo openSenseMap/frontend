@@ -6,13 +6,8 @@ import {
   redirect,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
-} from "@remix-run/node";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
+} from "react-router";
+import { Form, useActionData, useLoaderData, useNavigate } from "react-router";
 import {
   Dialog,
   DialogContent,

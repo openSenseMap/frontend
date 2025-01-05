@@ -1,6 +1,6 @@
 import { measurement, type Measurement } from "~/schema";
-import type { ActionFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
-import { data } from "@remix-run/node";
+import type { ActionFunctionArgs } from "react-router"; // or cloudflare/deno
+import { data } from "react-router";
 import { drizzleClient } from "~/db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {

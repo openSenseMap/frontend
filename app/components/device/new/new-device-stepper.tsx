@@ -27,7 +27,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { AdvancedStep } from "./advanced-info";
-import { Form, useSubmit } from "@remix-run/react";
+import { Form, useSubmit } from "react-router";
 
 const generalInfoSchema = z.object({
   name: z

@@ -1,4 +1,4 @@
-import { useNavigate, useNavigation, useSearchParams } from "@remix-run/react";
+import { useNavigate, useNavigation, useSearchParams } from "react-router";
 import {
   Chart as ChartJS,
   LineElement,

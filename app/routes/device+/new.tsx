@@ -1,8 +1,4 @@
-import {
-  type ActionFunctionArgs,
-  redirect,
-  type LoaderFunctionArgs,
-} from "@remix-run/node";
+import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "react-router";
 import ValidationStepperForm from "~/components/device/new/new-device-stepper";
 import { NavBar } from "~/components/nav-bar";
 import { createDevice } from "~/models/device.server";

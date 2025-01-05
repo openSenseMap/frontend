@@ -13,7 +13,7 @@ import {
 } from "./ui/command";
 import { useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
-import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
+import { useLoaderData, useSearchParams, useSubmit } from "react-router";
 import type { loader } from "~/routes/explore+/$deviceId+/_$deviceId";
 import type { DateRange } from "react-day-picker";
 import { PopoverClose } from "@radix-ui/react-popover";

@@ -1,8 +1,18 @@
-/// <reference types="@remix-run/node" />
-/// <reference types="vite/client" />
+declare module "react-router" {
+  // Your AppLoadContext used in v2
+  interface AppLoadContext {
+    whatever: string;
+  }
 
-declare module "*.mdx" {
-  let MDXComponent: (props: any) => JSX.Element;
-  export const frontmatter: any;
-  export default MDXComponent;
+  // TODO: remove this once we've migrated to `Route.LoaderArgs` instead for our loaders
+  interface LoaderFunctionArgs {
+    context: AppLoadContext;
+  }
+
+  // TODO: remove this once we've migrated to `Route.ActionArgs` instead for our actions
+  interface ActionFunctionArgs {
+    context: AppLoadContext;
+  }
 }
+
+export {}; // necessary for TS to treat this as a module

@@ -4,7 +4,7 @@ import {
   NotificationBell,
 } from "@novu/notification-center";
 import type { IMessage } from "@novu/notification-center";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "react-router";
 import { useTheme } from "remix-themes";
 import type { loader } from "~/root";
 

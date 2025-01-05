@@ -1,5 +1,5 @@
 import type { Device } from "~/schema";
-import { useMatches, useNavigate, useSearchParams } from "@remix-run/react";
+import { useMatches, useNavigate, useSearchParams } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, Rocket } from "lucide-react";
 import { useState } from "react";

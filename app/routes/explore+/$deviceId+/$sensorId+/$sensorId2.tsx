@@ -1,5 +1,5 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import { addDays } from "date-fns";
 import { typedjson } from "remix-typedjson";
 import Graph from "~/components/device-detail/graph";

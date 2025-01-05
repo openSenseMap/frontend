@@ -1,5 +1,5 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Outlet, useLoaderData, useMatches } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "react-router";
+import { Outlet, useLoaderData, useMatches } from "react-router";
 import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import { getDevice } from "~/models/device.server";

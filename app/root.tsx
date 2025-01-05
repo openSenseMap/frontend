@@ -1,13 +1,6 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { data } from "@remix-run/node";
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useLoaderData,
-} from "@remix-run/react";
+import type { LoaderFunctionArgs, MetaFunction } from "react-router";
+import { data } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "react-router";
 import { getEnv } from "./env.server";
 import { getUser, themeSessionResolver } from "./session.server";
 import tailwindStylesheetUrl from "/app/tailwind.css?url";

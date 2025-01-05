@@ -1,5 +1,5 @@
-import { useLocation } from "@remix-run/react";
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router";
+import { Link } from "react-router";
 import { buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
