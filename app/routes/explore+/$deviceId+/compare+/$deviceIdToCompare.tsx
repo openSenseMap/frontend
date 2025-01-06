@@ -1,9 +1,9 @@
 import type { Sensor, SensorWithMeasurement } from "~/schema";
-import { redirect } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
 import {
   Form,
   useLoaderData,
+  redirect,
   useNavigate,
   useNavigation,
   useSearchParams,
