@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Outlet, useNavigate, useSearchParams, useLoaderData, useParams, redirect } from "react-router";
+import {
+  Outlet,
+  useNavigate,
+  useSearchParams,
+  useLoaderData,
+  useParams,
+  redirect,
+} from "react-router";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
 import Header from "~/components/header";
@@ -19,7 +26,6 @@ import { getUser, getUserSession } from "~/session.server";
 
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
-import { typedjson } from "remix-typedjson";
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
 import BoxMarker from "~/components/map/layers/cluster/box-marker";
@@ -55,16 +61,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({
+    return {
       devices,
       user,
       profile,
       filteredDevices,
       filterParams,
       //phenomena
-    });
+    };
   }
-  return typedjson({
+  return {
     devices,
     user,
     profile: null,
@@ -72,7 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filteredDevices,
     message,
     //phenomena,
-  });
+  };
 }
 
 export const links: LinksFunction = () => {
@@ -92,7 +98,7 @@ if (process.env.NODE_ENV === "production") {
 
 export default function Explore() {
   // data from our loader
-  const data = useLoaderData<typeof loader>();
+  const {devices, user, profile, filterParams, filteredDevices, message} = useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -114,62 +120,6 @@ export default function Explore() {
     type: "FeatureCollection",
     features: [],
   });
-
-  //listen to search params change
-  // useEffect(() => {
-  //   //filters devices for pheno
-  //   if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
-  //     let sensorsFiltered: any = [];
-  //     let currentParam = searchParams.get("mapPheno");
-  //     //check if pheno exists in sensor-wiki data
-  //     let pheno = data.phenomena.filter(
-  //       (pheno: any) => pheno.slug == currentParam?.toString(),
-  //     );
-  //     if (pheno[0]) {
-  //       setSelectedPheno(pheno[0]);
-  //       data.devices.features.forEach((device: any) => {
-  //         device.properties.sensors.forEach((sensor: Sensor) => {
-  //           if (
-  //             sensor.sensorWikiPhenomenon == currentParam &&
-  //             sensor.lastMeasurement
-  //           ) {
-  //             const lastMeasurementDate = new Date(
-  //               //@ts-ignore
-  //               sensor.lastMeasurement.createdAt,
-  //             );
-  //             //take only measurements in the last 10mins
-  //             //@ts-ignore
-  //             if (currentDate < lastMeasurementDate) {
-  //               sensorsFiltered.push({
-  //                 ...device,
-  //                 properties: {
-  //                   ...device.properties,
-  //                   sensor: {
-  //                     ...sensor,
-  //                     lastMeasurement: {
-  //                       //@ts-ignore
-  //                       value: parseFloat(sensor.lastMeasurement.value),
-  //                       //@ts-ignore
-  //                       createdAt: sensor.lastMeasurement.createdAt,
-  //                     },
-  //                   },
-  //                 },
-  //               });
-  //             }
-  //           }
-  //         });
-  //         return false;
-  //       });
-  //       setFilteredData({
-  //         type: "FeatureCollection",
-  //         features: sensorsFiltered,
-  //       });
-  //     }
-  //   } else {
-  //     setSelectedPheno(undefined);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [searchParams]);
 
   function calculateLabelPositions(length: number): string[] {
     const positions: string[] = [];
@@ -204,28 +154,6 @@ export default function Explore() {
     return legend;
   };
 
-  // // /**
-  // //  * Focus the search input when the search overlay is displayed
-  // //  */
-  // // const focusSearchInput = () => {
-  // //   searchRef.current?.focus();
-  // // };
-
-  // /**
-  //  * Display the search overlay when the ctrl + k key combination is pressed
-  //  */
-  // useHotkeys([
-  //   [
-  //     "ctrl+K",
-  //     () => {
-  //       setShowSearch(!showSearch);
-  //       setTimeout(() => {
-  //         focusSearchInput();
-  //       }, 100);
-  //     },
-  //   ],
-  // ]);
-
   const onMapClick = (e: MapLayerMouseEvent) => {
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
@@ -251,7 +179,7 @@ export default function Explore() {
   var deviceLoc: any;
   let selectedDevice: any;
   if (deviceId) {
-    selectedDevice = data.devices.features.find(
+    selectedDevice = devices.features.find(
       (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [
@@ -268,7 +196,7 @@ export default function Explore() {
   return (
     <div className="h-full w-full">
       <MapProvider>
-        <Header devices={data.devices} />
+        <Header devices={devices} />
         {selectedPheno && (
           <Legend
             title={selectedPheno.label.item[0].text}
@@ -287,7 +215,7 @@ export default function Explore() {
               : { latitude: 7, longitude: 52, zoom: 2 }
           }
         >
-          {!selectedPheno && <ClusterLayer devices={data.filteredDevices} />}
+          {!selectedPheno && <ClusterLayer devices={filteredDevices as FeatureCollection<Point, Device>} />}
           {selectedPheno && (
             <Source
               id="osem-data"

@@ -3,7 +3,6 @@ import type { User } from "~/schema";
 import invariant from "tiny-invariant";
 
 import { getUserById } from "~/models/user.server";
-import { createThemeSessionResolver } from "remix-themes";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -20,8 +19,6 @@ export const sessionStorage = createCookieSessionStorage({
     ...(isProduction ? { domain: "opensensemap.org", secure: true } : {}),
   },
 });
-
-export const themeSessionResolver = createThemeSessionResolver(sessionStorage);
 
 const USER_SESSION_KEY = "userId";
 

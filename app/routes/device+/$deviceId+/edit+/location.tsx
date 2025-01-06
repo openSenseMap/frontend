@@ -1,11 +1,18 @@
-import type { ActionFunctionArgs, LinksFunction, LoaderFunctionArgs } from "react-router";
-import { redirect } from "react-router";
-import { Form, useActionData, useLoaderData, useOutletContext } from "react-router";
+import type {
+  ActionFunctionArgs,
+  LinksFunction,
+  LoaderFunctionArgs,
+} from "react-router";
+import {
+  redirect,
+  Form,
+  useActionData,
+  useLoaderData,
+  useOutletContext,
+} from "react-router";
 import React, { useCallback, useState } from "react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
-
-import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
 import {
   getDeviceWithoutSensors,
@@ -25,12 +32,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
-    return "deviceID not found";
+    return { device: null };
   }
 
   const deviceData = await getDeviceWithoutSensors({ id: deviceID });
 
-  return typedjson(deviceData);
+  return { device: deviceData };
 }
 
 //*****************************************
@@ -63,12 +70,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 //**********************************
 export default function EditLocation() {
-  const data = useLoaderData<typeof loader>();
+  const { device } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   //* map marker
   const [marker, setMarker] = useState({
-    latitude: data.latitude,
-    longitude: data.longitude,
+    latitude: device?.latitude,
+    longitude: device?.longitude,
   });
   //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
@@ -136,13 +143,15 @@ export default function EditLocation() {
                     borderRadius: "6px",
                   }}
                 >
-                  <Marker
-                    longitude={marker.longitude}
-                    latitude={marker.latitude}
-                    anchor="bottom"
-                    draggable
-                    onDrag={onMarkerDrag}
-                  ></Marker>
+                  {marker.latitude && marker.longitude && (
+                    <Marker
+                      longitude={marker.longitude}
+                      latitude={marker.latitude}
+                      anchor="bottom"
+                      draggable
+                      onDrag={onMarkerDrag}
+                    ></Marker>
+                  )}
                   <NavigationControl position="top-left" showCompass={false} />
                 </Map>
               </MapProvider>
@@ -175,7 +184,7 @@ export default function EditLocation() {
                           Number(e.target.value) <= 85.06
                         ) {
                           setMarker({
-                            latitude: e.target.value,
+                            latitude: e.target.value as unknown as number,
                             longitude: marker.longitude,
                           });
                         }
@@ -216,7 +225,7 @@ export default function EditLocation() {
                         ) {
                           setMarker({
                             latitude: marker.latitude,
-                            longitude: e.target.value,
+                            longitude: e.target.value as unknown as number,
                           });
                         }
                       }}
@@ -235,8 +244,8 @@ export default function EditLocation() {
               <button
                 onClick={() => {
                   setMarker({
-                    latitude: data.latitude,
-                    longitude: data.longitude,
+                    latitude: device?.latitude,
+                    longitude: device?.longitude,
                   });
                 }}
                 className="mb-10 mt-4 font-semibold

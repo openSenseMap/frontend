@@ -1,6 +1,5 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { Outlet, useLoaderData, useMatches } from "react-router";
-import { typedjson } from "remix-typedjson";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import { getDevice } from "~/models/device.server";
 import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
@@ -40,7 +39,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     locale: locale,
   };
 
-  return typedjson(data);
+  return data;
 }
 
 // Defining the component that will render the page

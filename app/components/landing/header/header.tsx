@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { useState } from "react";
-import { ModeToggle } from "../../mode-toggle";
+// import { ModeToggle } from "../../mode-toggle";
 import LanguageSelector from "./language-selector";
 
 const links = [
@@ -71,7 +71,7 @@ export default function Header() {
         <div>
           <div className="flex items-center justify-center md:order-2 gap-2">
             {/* Theme */}
-            <ModeToggle />
+            {/* <ModeToggle /> */}
             {/* Language */}
             <LanguageSelector />
             {/* Collapsible navigation bar */}

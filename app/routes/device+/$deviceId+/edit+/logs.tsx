@@ -1,9 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { data, redirect } from "react-router";
-import { Form, useActionData, useLoaderData, useSubmit } from "react-router";
+import { data, redirect , Form, useActionData, useLoaderData, useSubmit } from "react-router";
 import { Save, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
-import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
 import ErrorMessage from "~/components/error-message";
 import {
@@ -33,11 +31,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const deviceID = params.deviceId;
   if (typeof deviceID !== "string") {
-    return "deviceID not found";
+    return { logEntries: null };
   }
 
   const logEntries = await getLogEntriesByDeviceId(deviceID);
-  return typedjson(logEntries);
+  return {logEntries: logEntries};
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -88,7 +86,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function Logs() {
-  const { __obj__: logEntries } = useLoaderData<typeof loader>();
+  const { logEntries } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { toast } = useToast();
   const [newLogContent, setNewLogContent] = useState("");
