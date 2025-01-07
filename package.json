@@ -108,7 +108,7 @@
     "express": "^4.18.2",
     "express-prometheus-middleware": "^1.2.0",
     "flubber": "^0.4.2",
-    "framer-motion": "^11.11.8",
+    "framer-motion": "^11.16.0",
     "geolib": "^3.3.4",
     "get-port": "^7.1.0",
     "get-user-locale": "^2.2.1",
