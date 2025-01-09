@@ -1,7 +1,7 @@
 import { Filter } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
-import { useSearchParams, useSubmit } from "@remix-run/react";
+import { useSearchParams, useSubmit } from "react-router";
 import * as SelectPrimitive from "@radix-ui/react-select";
 
 import { Select, SelectContent, SelectItem } from "./ui/select";

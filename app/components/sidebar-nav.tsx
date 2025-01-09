@@ -1,6 +1,6 @@
 "use client";
 
-import { NavLink } from "@remix-run/react";
+import { NavLink } from "react-router";
 import { cn } from "~/lib/utils";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {

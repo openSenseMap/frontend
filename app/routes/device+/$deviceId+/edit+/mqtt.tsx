@@ -1,6 +1,6 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { data, redirect } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { data, redirect } from "react-router";
+import { Form, useActionData } from "react-router";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";

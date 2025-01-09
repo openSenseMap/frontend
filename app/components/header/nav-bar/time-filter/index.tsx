@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Form } from "@remix-run/react";
+import { Form } from "react-router";
 import { useToast } from "@/components/ui/use-toast";
 
 import { getUserLocale } from "get-user-locale";

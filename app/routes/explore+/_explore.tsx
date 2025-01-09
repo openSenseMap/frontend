@@ -6,11 +6,11 @@ import {
   useLoaderData,
   useParams,
   redirect,
-} from "@remix-run/react";
+} from "react-router";
 import Map from "~/components/map";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
 import Header from "~/components/header";
-import type { LoaderFunctionArgs, LinksFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, LinksFunction } from "react-router";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
 import { MapProvider, Layer, Source, Marker } from "react-map-gl";
@@ -26,7 +26,7 @@ import { getUser, getUserSession } from "~/session.server";
 
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
-import { typedjson } from "remix-typedjson";
+
 import { getFilteredDevices } from "~/utils";
 import ErrorMessage from "~/components/error-message";
 import BoxMarker from "~/components/map/layers/cluster/box-marker";
@@ -62,16 +62,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
-    return typedjson({
+    return {
       devices,
       user,
       profile,
       filteredDevices,
       filterParams,
       //phenomena
-    });
+    };
   }
-  return typedjson({
+  return {
     devices,
     user,
     profile: null,
@@ -79,7 +79,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filteredDevices,
     message,
     //phenomena,
-  });
+  };
 }
 
 export const links: LinksFunction = () => {
@@ -99,7 +99,8 @@ if (process.env.NODE_ENV === "production") {
 
 export default function Explore() {
   // data from our loader
-  const data = useLoaderData<typeof loader>();
+  const { devices, user, profile, filterParams, filteredDevices, message } =
+    useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -258,7 +259,7 @@ export default function Explore() {
   var deviceLoc: any;
   let selectedDevice: any;
   if (deviceId) {
-    selectedDevice = data.devices.features.find(
+    selectedDevice = devices.features.find(
       (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [
@@ -275,7 +276,7 @@ export default function Explore() {
   return (
     <div className="h-full w-full">
       <MapProvider>
-        <Header devices={data.devices} />
+        <Header devices={devices} />
         {selectedPheno && (
           <Legend
             title={selectedPheno.label.item[0].text}
@@ -294,7 +295,11 @@ export default function Explore() {
               : { latitude: 7, longitude: 52, zoom: 2 }
           }
         >
-          {!selectedPheno && <ClusterLayer devices={data.filteredDevices} />}
+          {!selectedPheno && (
+            <ClusterLayer
+              devices={filteredDevices as FeatureCollection<Point, Device>}
+            />
+          )}
           {selectedPheno && (
             <Source
               id="osem-data"

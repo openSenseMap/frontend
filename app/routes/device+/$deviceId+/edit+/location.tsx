@@ -2,19 +2,18 @@ import type {
   ActionFunctionArgs,
   LinksFunction,
   LoaderFunctionArgs,
-} from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+} from "react-router";
 import {
+  redirect,
   Form,
   useActionData,
   useLoaderData,
   useOutletContext,
-} from "@remix-run/react";
+} from "react-router";
 import React, { useCallback, useState } from "react";
 import { getUserId } from "~/session.server";
 import { Save } from "lucide-react";
 
-import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
 import {
   getDeviceWithoutSensors,
@@ -39,7 +38,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const deviceData = await getDeviceWithoutSensors({ id: deviceID });
 
-  return typedjson(deviceData);
+  return { device: deviceData };
 }
 
 //*****************************************
@@ -72,12 +71,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 //**********************************
 export default function EditLocation() {
-  const data = useLoaderData<typeof loader>();
+  const { device } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   //* map marker
   const [marker, setMarker] = useState({
-    latitude: data.latitude,
-    longitude: data.longitude,
+    latitude: device.latitude,
+    longitude: device.longitude,
   });
   //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
@@ -244,8 +243,8 @@ export default function EditLocation() {
               <button
                 onClick={() => {
                   setMarker({
-                    latitude: data.latitude,
-                    longitude: data.longitude,
+                    latitude: device.latitude,
+                    longitude: device.longitude,
                   });
                 }}
                 className="mb-10 mt-4 font-semibold

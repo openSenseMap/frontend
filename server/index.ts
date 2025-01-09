@@ -1,8 +1,7 @@
 import crypto from "node:crypto";
 import prom from "@isaacs/express-prometheus-middleware";
-import { createRequestHandler } from "@remix-run/express";
-import type { ServerBuild } from "@remix-run/node";
-import { installGlobals } from "@remix-run/node";
+import { createRequestHandler } from "@react-router/express";
+import type { ServerBuild } from "react-router";
 import { ip as ipAddress } from "address";
 import chalk from "chalk";
 import closeWithGrace from "close-with-grace";
@@ -14,8 +13,6 @@ import getPort, { portNumbers } from "get-port";
 const MODE = process.env.NODE_ENV ?? "development";
 const IS_PROD = MODE === "production";
 const IS_DEV = MODE === "development";
-
-installGlobals();
 
 const viteDevServer = IS_PROD
   ? undefined
@@ -87,9 +84,9 @@ app.use((_, res, next) => {
 async function getBuild() {
   try {
     const build = viteDevServer
-      ? await viteDevServer.ssrLoadModule("virtual:remix/server-build")
+      ? await viteDevServer.ssrLoadModule("virtual:react-router/server-build")
       : // @ts-expect-error - the file might not exist yet but it will
-        // eslint-disable-next-line import/no-unresolved
+
         await import("../build/server/index.js");
 
     return { build: build as unknown as ServerBuild, error: null };

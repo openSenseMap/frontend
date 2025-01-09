@@ -1,4 +1,3 @@
-import { useTheme } from "remix-themes";
 import type { DeviceClusterProperties } from "~/routes/explore+/_explore";
 
 type DonutChartClusterType = {
@@ -18,7 +17,7 @@ export default function DonutChartCluster({
   cluster,
   clusterOnClick,
 }: DonutChartClusterType) {
-  const [theme] = useTheme();
+  const [theme] = "light"; //useTheme();
   const { categories, point_count: pointCount } = cluster.properties;
   const { active = 0, inactive = 0, old = 0 } = categories;
   const counts: number[] = [active, inactive, old];

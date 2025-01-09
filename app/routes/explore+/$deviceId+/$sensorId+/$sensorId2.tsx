@@ -1,7 +1,6 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import { addDays } from "date-fns";
-import { typedjson } from "remix-typedjson";
 import Graph from "~/components/device-detail/graph";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
@@ -59,13 +58,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   sensor1.color = sensor1.color || "#8da0cb"; // Default color for sensor 1
   sensor2.color = sensor2.color || "#fc8d62"; // Default color for sensor 2
 
-  return typedjson({
+  return {
     device: device,
     sensors: [sensor1, sensor2],
     startDate,
     endDate,
     aggregation,
-  });
+  };
 }
 
 export default function SensorView() {

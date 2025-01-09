@@ -1,11 +1,12 @@
 import {
+  Link,
   useLoaderData,
   useMatches,
   useNavigate,
   useNavigation,
   useParams,
   useSearchParams,
-} from "@remix-run/react";
+} from "react-router";
 import Spinner from "../spinner";
 import {
   Accordion,
@@ -13,7 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import type { loader } from "~/routes/explore+/$deviceId+/_$deviceId";
+import type { loader } from "~/routes/explore+/$deviceId+/_$devideId";
 import {
   ChevronUp,
   Minus,
@@ -152,10 +153,11 @@ export default function DeviceDetailBox() {
       });
       return;
     } else if (matches.length === 4 && sensorIds.size === 1) {
-      navigate({
-        pathname: `${matches[3].pathname}/${sensorId}`,
-        search: searchParams.toString(),
-      });
+      navigate(`${matches[3].pathname}/${sensorId}`);
+      // navigate({
+      //   pathname: `${matches[3].pathname}/${sensorId}`,
+      //   // search: searchParams.toString(),
+      // });
       return;
     } else if (sensorIds.size === 2) {
       toast({
@@ -166,10 +168,11 @@ export default function DeviceDetailBox() {
       return;
     } else {
       // If not, navigate to the new route
-      navigate({
-        pathname: `/explore/${deviceId}/${sensorId}`,
-        search: searchParams.toString(),
-      });
+      navigate(`/explore/${deviceId}/${sensorId}`);
+      // navigate({
+      //   pathname: `/explore/${deviceId}/${sensorId}`,
+      //   search: searchParams.toString(),
+      // });
     }
   };
 
@@ -522,6 +525,11 @@ export default function DeviceDetailBox() {
                                         <p className="text-xs text-muted-foreground">
                                           {sensor.unit}
                                         </p>
+                                        {/* <Link
+                                          to={`/explore/60f077874fb91e001c71b3b1/${sensor.id}`}
+                                        >
+                                          Go to sensor
+                                        </Link> */}
                                       </div>
                                     </CardContent>
                                     <Separator />

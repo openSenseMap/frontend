@@ -1,4 +1,4 @@
-import { useNavigate, useNavigation, useSearchParams } from "@remix-run/react";
+import { useNavigate, useNavigation, useSearchParams } from "react-router";
 import {
   Chart as ChartJS,
   LineElement,
@@ -26,7 +26,6 @@ import {
 } from "../ui/dropdown-menu";
 import { datesHave48HourRange } from "~/lib/utils";
 import { isBrowser, isTablet } from "react-device-detect";
-import { useTheme } from "remix-themes";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
 import Spinner from "../spinner";
@@ -120,7 +119,7 @@ export default function Graph({
   }, [chartRef, setHoveredPoint]);
 
   // get theme from tailwind
-  const [theme] = useTheme();
+  const [theme] = "light"; //useTheme();
 
   const [lineData, setLineData] = useState(() => {
     const includeDeviceName =

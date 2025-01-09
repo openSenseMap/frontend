@@ -1,7 +1,7 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import { addDays } from "date-fns";
-import { typedjson } from "remix-typedjson";
+
 import Graph from "~/components/device-detail/graph";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
@@ -49,24 +49,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // query parameter color when sensor wiki works again
   sensor.color = sensor.color || "#8da0cb";
 
-  return typedjson({
+  return {
     device,
     sensors: [sensor],
     aggregation,
-  });
+  };
 }
 
 export default function SensorView() {
-  const loaderData = useLoaderData<typeof loader>();
+  const { device, sensors, aggregation } = useLoaderData<typeof loader>();
   return (
     <>
-      <Graph
-        aggregation={loaderData.aggregation}
-        sensors={loaderData.sensors}
-      />
-      {loaderData.device.exposure === "mobile" && (
-        <MobileBoxView sensors={loaderData.sensors} />
-      )}
+      <Graph aggregation={aggregation} sensors={sensors} />
+      {device.exposure === "mobile" && <MobileBoxView sensors={sensors} />}
     </>
   );
 }

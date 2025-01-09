@@ -1,14 +1,14 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { data, redirect } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import {
+  data,
+  redirect,
   Form,
   useActionData,
   useLoaderData,
   useOutletContext,
-} from "@remix-run/react";
+} from "react-router";
 import { Save } from "lucide-react";
 import React, { useState } from "react";
-import { typedjson } from "remix-typedjson";
 import invariant from "tiny-invariant";
 import ErrorMessage from "~/components/error-message";
 import {
@@ -33,7 +33,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const deviceData = await getDeviceWithoutSensors({ id: deviceID });
 
-  return typedjson(deviceData);
+  return { device: deviceData };
 }
 
 //*****************************************************
@@ -119,14 +119,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 //**********************************
 export default function () {
-  const deviceData = useLoaderData<typeof loader>();
+  const device = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [passwordDelVal, setPasswordVal] = useState(""); //* to enable delete account button
   //* focus when an error occured
   const nameRef = React.useRef<HTMLInputElement>(null);
   const passwordDelRef = React.useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(deviceData?.name);
-  const [exposure, setExposure] = useState(deviceData?.exposure);
+  const [name, setName] = useState(device?.name);
+  const [exposure, setExposure] = useState(device?.exposure);
   //* to view toast on edit page
   const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>();
 
@@ -168,8 +168,7 @@ export default function () {
                     name="intent"
                     value="save"
                     disabled={
-                      name === deviceData?.name &&
-                      exposure === deviceData?.exposure
+                      name === device?.name && exposure === device?.exposure
                     }
                     className=" h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
                   >
@@ -200,7 +199,7 @@ export default function () {
                     autoFocus={true}
                     name="name"
                     type="text"
-                    defaultValue={deviceData?.name}
+                    defaultValue={device?.name}
                     onChange={(e) => setName(e.target.value)}
                     ref={nameRef}
                     aria-describedby="name-error"
@@ -222,7 +221,7 @@ export default function () {
                   <select
                     id="exposure"
                     name="exposure"
-                    defaultValue={deviceData?.exposure}
+                    defaultValue={device?.exposure}
                     onChange={(e) => setExposure(e.target.value)}
                     className="appearance-auto w-full rounded border border-gray-200 px-2 py-1.5 text-base"
                   >

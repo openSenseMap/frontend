@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useContext } from "react";
 import { useMap } from "react-map-gl";
-import { useMatches, useNavigate, useSearchParams } from "@remix-run/react";
+import { useMatches, useNavigate, useSearchParams } from "react-router";
 
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";

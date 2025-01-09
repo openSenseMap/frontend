@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from "react-router";
 
 export default function ErrorMessage() {
   let navigate = useNavigate();

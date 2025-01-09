@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from "@remix-run/react";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { NavBar } from "~/components/nav-bar";
 import ErrorMessage from "~/components/error-message";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";

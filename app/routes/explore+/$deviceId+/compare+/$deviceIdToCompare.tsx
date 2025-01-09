@@ -1,6 +1,6 @@
 import type { Sensor, SensorWithMeasurement } from "~/schema";
-import { redirect } from "@remix-run/node";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import { redirect } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import {
   Form,
   useLoaderData,
@@ -8,7 +8,7 @@ import {
   useNavigation,
   useSearchParams,
   useSubmit,
-} from "@remix-run/react";
+} from "react-router";
 import { ChevronUp, Minus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DraggableData } from "react-draggable";

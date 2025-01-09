@@ -2,7 +2,7 @@ import * as React from "react";
 import { CloudSunRain, SunIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Form } from "@remix-run/react";
+import { Form } from "react-router";
 import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
