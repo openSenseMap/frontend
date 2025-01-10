@@ -1,4 +1,4 @@
-import type { DeviceClusterProperties } from "~/routes/explore+/_explore";
+import type { DeviceClusterProperties } from "~/routes/explore";
 
 type DonutChartClusterType = {
   cluster: any;

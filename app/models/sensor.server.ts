@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { sensor } from "~/schema";
-import type { Sensor } from "~/schema";
+import type { Sensor, SensorWithMeasurement } from "~/schema";
 import { drizzleClient } from "~/db.server";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
@@ -68,7 +68,7 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
 
 // LATERAL JOIN to get latest measurement for sensors belonging to a specific device, including device name
 export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
-  return drizzleClient.execute(
+  const result = drizzleClient.execute(
     sql`SELECT s.*, d.name AS device_name, measure.*
     FROM sensor s
     JOIN device d ON s.device_id = d.id
@@ -80,6 +80,8 @@ export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
     ) AS measure ON true
     WHERE s.device_id = ${deviceId};`,
   );
+
+  return result as unknown as SensorWithMeasurement[];
 }
 
 //if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations

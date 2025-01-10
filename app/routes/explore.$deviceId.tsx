@@ -9,6 +9,7 @@ import ErrorMessage from "~/components/error-message";
 import MobileOverviewLayer from "~/components/map/layers/mobile/mobile-overview-layer";
 import { HoveredPointContext } from "~/components/map/layers/mobile/mobile-box-layer";
 import { useState } from "react";
+import type { LocationPoint } from "~/lib/mobile-box-helper";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
@@ -68,7 +69,9 @@ export default function DeviceId() {
       >
         {/* If the box is mobile, iterate over selected sensors and show trajectory */}
         {data.device?.exposure === "mobile" && !isSensorView && (
-          <MobileOverviewLayer locations={data.device.locations} />
+          <MobileOverviewLayer
+            locations={data.device.locations as unknown as LocationPoint[]}
+          />
         )}
         <DeviceDetailBox />
         <Outlet />

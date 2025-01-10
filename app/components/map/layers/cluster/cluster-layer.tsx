@@ -9,7 +9,7 @@ import { useMemo, useCallback, useState, useEffect } from "react";
 import { Marker, useMap } from "react-map-gl";
 import type { PointFeature } from "supercluster";
 import useSupercluster from "use-supercluster";
-import type { DeviceClusterProperties } from "~/routes/explore+/_explore";
+import type { DeviceClusterProperties } from "~/routes/explore";
 import DonutChartCluster from "./donut-chart-cluster";
 import BoxMarker from "./box-marker";
 import debounce from "lodash.debounce";

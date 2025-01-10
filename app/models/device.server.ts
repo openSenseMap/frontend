@@ -32,6 +32,7 @@ export function getDevice({ id }: Pick<Device, "id">) {
           content: true,
           createdAt: true,
           public: true,
+          deviceId: true,
         },
       },
       locations: {

@@ -168,7 +168,7 @@
     "@mdx-js/rollup": "^3.0.1",
     "@playwright/test": "^1.48.2",
     "@react-router/dev": "^7.0.0",
-    "@react-router/fs-routes": "^7.0.0",
+    "@react-router/fs-routes": "^7.1.1",
     "@react-router/remix-config-routes-adapter": "^0.0.0-nightly-bf7ecb711-20240911",
     "@react-router/remix-routes-option-adapter": "^7.0.0",
     "@remix-run/eslint-config": "^2.15.2",

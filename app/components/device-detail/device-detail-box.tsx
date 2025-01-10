@@ -1,5 +1,4 @@
 import {
-  Link,
   useLoaderData,
   useMatches,
   useNavigate,
@@ -14,7 +13,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import type { loader } from "~/routes/explore+/$deviceId+/_$devideId";
 import {
   ChevronUp,
   Minus,
@@ -79,6 +77,7 @@ import { Badge } from "../ui/badge";
 import EntryLogs from "./entry-logs";
 import { useToast } from "../ui/use-toast";
 import clsx from "clsx";
+import type { loader } from "~/routes/explore.$deviceId";
 
 export interface MeasurementProps {
   sensorId: string;
@@ -103,7 +102,7 @@ export default function DeviceDetailBox() {
 
   const sensorIds = new Set();
   // Check the last two segments of the URL
-  const lastSegment = matches[matches.length - 1]?.params?.sensorId2;
+  const lastSegment = matches[matches.length - 1]?.params?.["*"];
   if (lastSegment) {
     const secondLastSegment = matches[matches.length - 2]?.params?.sensorId;
     sensorIds.add(secondLastSegment);
@@ -204,6 +203,8 @@ export default function DeviceDetailBox() {
     return () => clearInterval(interval);
   }, [refreshOn, refreshSecond]);
 
+  if(!data.device) return null;
+
   return (
     <>
       {open && (
@@ -296,7 +297,7 @@ export default function DeviceDetailBox() {
                       <ExternalLink className="mr-2 h-4 w-4" />
                       <span>
                         <a
-                          href={data.device.link}
+                          href={data.device.link || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Open external link"
@@ -342,12 +343,12 @@ export default function DeviceDetailBox() {
                     <InfoItem
                       icon={LandPlot}
                       title="Exposure"
-                      text={data.device.exposure}
+                      text={data.device.exposure || "Unknown"}
                     />
                     <InfoItem
                       icon={Cpu}
                       title="Sensor Model"
-                      text={data.device.sensorWikiModel}
+                      text={data.device.sensorWikiModel || "Unknown"}
                     />
                     <Separator className="my-2" />
                     <InfoItem
@@ -373,7 +374,7 @@ export default function DeviceDetailBox() {
                     )}
                   </div>
                 </div>
-                {data.device.tags?.length > 0 && (
+                {data.device.tags && data.device.tags.length > 0 && (
                   <div className="pt-4">
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-muted-foreground">
