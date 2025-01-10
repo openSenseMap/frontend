@@ -1,10 +1,9 @@
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { NavBar } from "~/components/nav-bar";
 import ErrorMessage from "~/components/error-message";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export default function SettingsLayoutPage() {
-  const navigate = useNavigate();
   const location = useLocation();
   // get current tab from the URL
   const currentTab = location.pathname.split("/")[2];
@@ -17,34 +16,31 @@ export default function SettingsLayoutPage() {
             className="w-full"
             defaultValue="account"
             value={currentTab || "account"}
-            onValueChange={(value) => {
-              navigate(`/settings/${value}`);
-            }}
           >
             <TabsList className="w-full justify-evenly">
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="profile"
               >
-                Public Profile
+                <Link to={`/settings/profile`}>Public Profile</Link>
               </TabsTrigger>
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="account"
               >
-                Account Information
+                <Link to={`/settings/account`}>Account</Link>
               </TabsTrigger>
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="password"
               >
-                Password
+                <Link to={`/settings/password`}>Password</Link>
               </TabsTrigger>
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="delete"
               >
-                Delete Account
+                <Link to={`/settings/delete`}>Delete Account</Link>
               </TabsTrigger>
             </TabsList>
             <TabsContent className="mt-6" value={currentTab || "profile"}>
