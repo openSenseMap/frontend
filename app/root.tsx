@@ -8,8 +8,8 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "react-router";
-import { getEnv } from "./env.server";
-import { getUser } from "./session.server";
+import { getEnv } from "./utils/env.server";
+import { getUser } from "./utils/session.server";
 import tailwindStylesheetUrl from "/app/tailwind.css?url";
 import appStylesheetUrl from "/app/app.css?url";
 import clsx from "clsx";

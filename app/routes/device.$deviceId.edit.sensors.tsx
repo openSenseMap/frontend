@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect , Form, useActionData, useLoaderData, useOutletContext } from "react-router";
 import React, { useState } from "react";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import {
   ChevronDownIcon,
   Trash2,

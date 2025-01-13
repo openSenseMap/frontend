@@ -4,7 +4,7 @@ Form, Link, Outlet, useActionData, // useFormAction,
 useLoaderData
 } from "react-router";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { requireUserId } from "~/session.server";
+import { requireUserId } from "~/utils/session.server";
 import { getInitials } from "~/utils/misc";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";

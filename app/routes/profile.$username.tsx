@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 import type { LoaderFunctionArgs } from "react-router";
 import { redirect , Link, useLoaderData } from "react-router";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { getProfileByUsername } from "~/models/profile.server";
 import type { MyBadge } from "~/models/badge.server";
 import {

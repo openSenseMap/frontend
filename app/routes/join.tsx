@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react
 import { data, redirect , Form, Link, useActionData, useSearchParams } from "react-router";
 import * as React from "react";
 
-import { createUserSession, getUserId } from "~/session.server";
+import { createUserSession, getUserId } from "~/utils/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";

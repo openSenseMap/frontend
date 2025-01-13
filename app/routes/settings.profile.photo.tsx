@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/dialog";
 import { z } from "zod";
 import { drizzleClient } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireUserId } from "~/utils/session.server";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { LabelButton } from "~/components/label-button";

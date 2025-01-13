@@ -5,7 +5,7 @@ import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
 
 import { verifyLogin } from "~/models/user.server";
-import { createUserSession, getUserId } from "~/session.server";
+import { createUserSession, getUserId } from "~/utils/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {

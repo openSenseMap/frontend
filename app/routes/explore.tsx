@@ -22,7 +22,7 @@ import { getPhenomena } from "~/models/phenomena.server";
 import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
 import { type Device, type Sensor } from "~/schema";
-import { getUser, getUserSession } from "~/session.server";
+import { getUser, getUserSession } from "~/utils/session.server";
 
 import { getProfileByUserId } from "~/models/profile.server";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";

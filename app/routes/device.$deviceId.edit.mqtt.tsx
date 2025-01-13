@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { data, redirect , Form, useActionData } from "react-router";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import React, { useState } from "react";

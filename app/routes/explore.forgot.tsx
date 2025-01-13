@@ -3,7 +3,7 @@ import { data, redirect, Form, Link, useActionData, useNavigation, useSearchPara
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { validateEmail } from "~/utils";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";

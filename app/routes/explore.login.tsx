@@ -4,7 +4,7 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { verifyLogin } from "~/models/user.server";
-import { createUserSession, getUserId } from "~/session.server";
+import { createUserSession, getUserId } from "~/utils/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/components/spinner";

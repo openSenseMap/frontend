@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect , Link, useLoaderData } from "react-router";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { ArrowLeft } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";

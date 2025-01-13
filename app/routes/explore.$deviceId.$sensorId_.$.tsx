@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from "react-router";
+import { redirect, type LoaderFunctionArgs } from "react-router";
 import { useLoaderData } from "react-router";
 import { addDays } from "date-fns";
 import Graph from "~/components/device-detail/graph";
@@ -6,7 +6,7 @@ import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getSensor } from "~/models/sensor.server";
-import type { SensorWithMeasurementData} from "~/schema";
+import type { SensorWithMeasurementData } from "~/schema";
 
 interface SensorWithColor extends SensorWithMeasurementData {
   color: string;
@@ -17,10 +17,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const sensorId2 = params["*"];
 
   if (!deviceId) {
-    throw new Response("Device not found", { status: 404 });
+    return redirect("/explore");
   }
 
   const device = await getDevice({ id: deviceId });
+
+  if (!device) {
+    return redirect("/explore");
+  }
 
   const url = new URL(request.url);
   const aggregation = url.searchParams.get("aggregation") || "raw";

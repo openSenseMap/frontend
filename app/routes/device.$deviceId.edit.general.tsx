@@ -17,7 +17,7 @@ import {
   updateDeviceInfo,
 } from "~/models/device.server";
 import { verifyLogin } from "~/models/user.server";
-import { getUserEmail, getUserId } from "~/session.server";
+import { getUserEmail, getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {

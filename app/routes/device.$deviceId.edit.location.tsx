@@ -11,7 +11,7 @@ import {
   useOutletContext,
 } from "react-router";
 import React, { useCallback, useState } from "react";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { Save } from "lucide-react";
 
 import invariant from "tiny-invariant";

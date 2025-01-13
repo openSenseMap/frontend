@@ -9,7 +9,7 @@ import {
   deleteUserByEmail,
   getUserByEmail,
 } from "~/models/user.server";
-import { getUserEmail, getUserId } from "~/session.server";
+import { getUserEmail, getUserId } from "~/utils/session.server";
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { clsx } from "clsx";

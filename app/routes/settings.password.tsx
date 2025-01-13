@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { data, redirect , Form, useActionData } from "react-router";
 import invariant from "tiny-invariant";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
-import { getUserEmail, getUserId } from "~/session.server";
+import { getUserEmail, getUserId } from "~/utils/session.server";
 import { validatePassLength, validatePassType } from "~/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useRef } from "react";

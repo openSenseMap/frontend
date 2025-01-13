@@ -4,7 +4,7 @@ import { createReadableStreamFromReadable } from "@react-router/node";
 import { ServerRouter } from "react-router";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { getEnv, init } from "./env.server";
+import { getEnv, init } from "./utils/env.server";
 import { createInstance } from "i18next";
 import i18next from "./i18next.server";
 import { I18nextProvider, initReactI18next } from "react-i18next";

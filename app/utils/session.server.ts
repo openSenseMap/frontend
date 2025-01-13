@@ -1,19 +1,18 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import type { User } from "~/schema";
 import invariant from "tiny-invariant";
-
 import { getUserById } from "~/models/user.server";
-// import { createThemeSessionResolver } from "remix-themes";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
 const isProduction = process.env.NODE_ENV === "production";
 
-export const sessionStorage = createCookieSessionStorage({
+export const authSessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "theme",
+    name: "en_session",
+    sameSite: "lax", // CSRF protection is advised if changing to 'none'
     path: "/",
-    sameSite: "lax",
+    httpOnly: true,
     secrets: process.env.SESSION_SECRET
       ? [process.env.SESSION_SECRET]
       : ["s3cr3t"],
@@ -21,13 +20,37 @@ export const sessionStorage = createCookieSessionStorage({
   },
 });
 
-// export const themeSessionResolver = createThemeSessionResolver(sessionStorage);
+// we have to do this because every time you commit the session you overwrite it
+// so we store the expiration time in the cookie and reset it every time we commit
+const originalCommitSession = authSessionStorage.commitSession;
+
+Object.defineProperty(authSessionStorage, "commitSession", {
+  value: async function commitSession(
+    ...args: Parameters<typeof originalCommitSession>
+  ) {
+    const [session, options] = args;
+    if (options?.expires) {
+      session.set("expires", options.expires);
+    }
+    if (options?.maxAge) {
+      session.set("expires", new Date(Date.now() + options.maxAge * 1000));
+    }
+    const expires = session.has("expires")
+      ? new Date(session.get("expires"))
+      : undefined;
+    const setCookieHeader = await originalCommitSession(session, {
+      ...options,
+      expires,
+    });
+    return setCookieHeader;
+  },
+});
 
 const USER_SESSION_KEY = "userId";
 
 export async function getUserSession(request: Request) {
   const cookie = request.headers.get("Cookie");
-  return sessionStorage.getSession(cookie);
+  return authSessionStorage.getSession(cookie);
 }
 
 export async function getUserId(
@@ -105,7 +128,7 @@ export async function createUserSession({
   session.flash("global_message", "You successfully logged in.");
   return redirect(redirectTo, {
     headers: {
-      "Set-Cookie": await sessionStorage.commitSession(session, {
+      "Set-Cookie": await authSessionStorage.commitSession(session, {
         maxAge: remember
           ? 60 * 60 * 24 * 7 // 7 days
           : undefined,
@@ -126,7 +149,7 @@ export async function logout({
   session.flash("global_message", "You successfully logged out.");
   return redirect(redirectTo, {
     headers: {
-      "Set-Cookie": await sessionStorage.commitSession(session),
+      "Set-Cookie": await authSessionStorage.commitSession(session),
     },
   });
 }

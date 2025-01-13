@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect , Form } from "react-router";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { Save } from "lucide-react";
 import ErrorMessage from "~/components/error-message";
 

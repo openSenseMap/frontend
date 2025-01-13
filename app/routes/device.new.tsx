@@ -2,7 +2,7 @@ import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "reac
 import ValidationStepperForm from "~/components/device/new/new-device-stepper";
 import { NavBar } from "~/components/nav-bar";
 import { createDevice } from "~/models/device.server";
-import { getUser, getUserId } from "~/session.server";
+import { getUser, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getUser(request);

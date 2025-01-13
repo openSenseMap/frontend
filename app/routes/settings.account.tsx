@@ -1,6 +1,6 @@
 import { Form, useActionData, useLoaderData , data, redirect } from "react-router";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { getUserEmail, getUserId } from "~/session.server";
+import { getUserEmail, getUserId } from "~/utils/session.server";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";

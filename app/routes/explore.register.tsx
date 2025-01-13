@@ -3,7 +3,7 @@ import { data, redirect , Form, Link, useActionData, useNavigation, useSearchPar
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createUserSession, getUserId } from "~/session.server";
+import { createUserSession, getUserId } from "~/utils/session.server";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import { useTranslation } from "react-i18next";

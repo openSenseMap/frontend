@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect , Form, Link } from "react-router";
 import { useState } from "react";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 import { ArrowLeft, Upload } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import ErrorMessage from "~/components/error-message";

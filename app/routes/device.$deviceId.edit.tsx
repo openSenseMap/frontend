@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect , Link, Outlet, useParams } from "react-router";
 import { useState } from "react";
-import { getUserId } from "~/session.server";
+import { getUserId } from "~/utils/session.server";
 
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";

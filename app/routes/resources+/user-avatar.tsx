@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { getProfileByUserId } from "~/models/profile.server";
-import { requireUser } from "~/session.server";
+import { requireUser } from "~/utils/session.server";
 import { useFetcher } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { getInitials } from "~/utils/misc";

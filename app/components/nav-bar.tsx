@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router";
 import { Button } from "./ui/button";
 
-import { ChevronDownIcon, LogIn, Mailbox, Plus } from "lucide-react";
+import { LogIn, Mailbox, Plus } from "lucide-react";
 import { useOptionalUser } from "~/utils";
 import {
   DropdownMenu,
@@ -39,9 +39,8 @@ export function NavBar() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" className="mx-2">
                     <Plus className="h-4 w-4" />
-                    <ChevronDownIcon className="m-0 inline h-4  w-4 p-0" />
                   </Button>
                 </DropdownMenuTrigger>
 

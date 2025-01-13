@@ -9,7 +9,7 @@ import Stats from "~/components/landing/stats";
 import i18next from "~/i18next.server";
 import type { Partner } from "~/lib/directus";
 import { getDirectusClient } from "~/lib/directus";
-import { getUserId, getUserName } from "~/session.server";
+import { getUserId, getUserName } from "~/utils/session.server";
 import { useTranslation } from "react-i18next";
 import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Integrations from "~/components/landing/sections/integrations";
