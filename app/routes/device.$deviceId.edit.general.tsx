@@ -28,7 +28,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
-    return "deviceID not found";
+    return redirect("/profile/me");
   }
 
   const deviceData = await getDeviceWithoutSensors({ id: deviceID });
@@ -119,7 +119,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 //**********************************
 export default function () {
-  const device = useLoaderData<typeof loader>();
+  const { device } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [passwordDelVal, setPasswordVal] = useState(""); //* to enable delete account button
   //* focus when an error occured
@@ -221,8 +221,16 @@ export default function () {
                   <select
                     id="exposure"
                     name="exposure"
-                    defaultValue={device?.exposure}
-                    onChange={(e) => setExposure(e.target.value)}
+                    defaultValue={device?.exposure || "UNKNOWN"}
+                    onChange={(e) =>
+                      setExposure(
+                        e.target.value as
+                          | "indoor"
+                          | "outdoor"
+                          | "mobile"
+                          | "unknown",
+                      )
+                    }
                     className="appearance-auto w-full rounded border border-gray-200 px-2 py-1.5 text-base"
                   >
                     <option value="INDOOR">indoor</option>

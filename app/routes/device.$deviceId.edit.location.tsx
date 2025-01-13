@@ -33,7 +33,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const deviceID = params.deviceId;
 
   if (typeof deviceID !== "string") {
-    return "deviceID not found";
+    return redirect("/profile/me");
   }
 
   const deviceData = await getDeviceWithoutSensors({ id: deviceID });
@@ -75,8 +75,8 @@ export default function EditLocation() {
   const actionData = useActionData<typeof action>();
   //* map marker
   const [marker, setMarker] = useState({
-    latitude: device.latitude,
-    longitude: device.longitude,
+    latitude: device?.latitude,
+    longitude: device?.longitude,
   });
   //* on-marker-drag event
   const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
@@ -145,8 +145,8 @@ export default function EditLocation() {
                   }}
                 >
                   <Marker
-                    longitude={marker.longitude}
-                    latitude={marker.latitude}
+                    longitude={marker.longitude || 0}
+                    latitude={marker.latitude || 0}
                     anchor="bottom"
                     draggable
                     onDrag={onMarkerDrag}
@@ -178,12 +178,10 @@ export default function EditLocation() {
                       max="85.06"
                       value={marker.latitude}
                       onChange={(e) => {
-                        if (
-                          Number(e.target.value) >= -85.06 &&
-                          Number(e.target.value) <= 85.06
-                        ) {
+                        const value = Number(e.target.value);
+                        if (value >= -85.06 && value <= 85.06) {
                           setMarker({
-                            latitude: e.target.value,
+                            latitude: value,
                             longitude: marker.longitude,
                           });
                         }
@@ -218,13 +216,11 @@ export default function EditLocation() {
                       max="180"
                       value={marker.longitude}
                       onChange={(e) => {
-                        if (
-                          Number(e.target.value) >= -180 &&
-                          Number(e.target.value) <= 180
-                        ) {
+                        const value = Number(e.target.value);
+                        if (value >= -180 && value <= 180) {
                           setMarker({
                             latitude: marker.latitude,
-                            longitude: e.target.value,
+                            longitude: value,
                           });
                         }
                       }}
@@ -243,8 +239,8 @@ export default function EditLocation() {
               <button
                 onClick={() => {
                   setMarker({
-                    latitude: device.latitude,
-                    longitude: device.longitude,
+                    latitude: device?.latitude,
+                    longitude: device?.longitude,
                   });
                 }}
                 className="mb-10 mt-4 font-semibold
