@@ -18,7 +18,7 @@ import type { DateRange } from "react-day-picker";
 import { PopoverClose } from "@radix-ui/react-popover";
 import dateTimeRanges from "~/lib/date-ranges";
 import { format } from "date-fns";
-import type { loader } from "~/routes/explore.$deviceId";
+import type { loader } from "~/routes/explore.$deviceId.$sensorId_.$";
 
 export function DateRangeFilter() {
   // Get data from the loader
@@ -32,8 +32,8 @@ export function DateRangeFilter() {
 
   // State for selected date range and aggregation
   const [date, setDate] = useState<DateRange | undefined>({
-    from: loaderData.fromDate ? new Date(loaderData.fromDate) : undefined,
-    to: loaderData.toDate ? new Date(loaderData.toDate) : undefined,
+    from: loaderData.startDate ? new Date(loaderData.startDate) : undefined,
+    to: loaderData.endDate ? new Date(loaderData.endDate) : undefined,
   });
 
   if (

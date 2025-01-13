@@ -53,7 +53,7 @@ import { getArchiveLink } from "~/utils/device";
 import { useBetween } from "use-between";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { isTablet, isBrowser } from "react-device-detect";
-import type { SensorWithMeasurement } from "~/schema";
+import type { SensorWithLatestMeasurement } from "~/schema";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   Card,
@@ -122,7 +122,7 @@ export default function DeviceDetailBox() {
   const [refreshOn] = useState(false);
   const [refreshSecond, setRefreshSecond] = useState(59);
 
-  const [sensors, setSensors] = useState<SensorWithMeasurement[]>();
+  const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>();
   useEffect(() => {
     setSensors(data.sensors);
   }, [data.sensors]);
@@ -480,7 +480,7 @@ export default function DeviceDetailBox() {
                       >
                         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
                           {sensors &&
-                            sensors.map((sensor: SensorWithMeasurement) => {
+                            sensors.map((sensor: SensorWithLatestMeasurement) => {
                               return (
                                 <Card
                                   key={sensor.id}

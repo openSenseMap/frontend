@@ -1,8 +1,8 @@
-import { type DataFunctionArgs } from "react-router";
+import { type LoaderFunctionArgs } from "react-router";
 import invariant from "tiny-invariant";
 import { drizzleClient } from "~/db.server";
 
-export async function loader({ params }: DataFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
   invariant(params.fileId, 'File ID is required');
 
   const image = await drizzleClient.query.profileImage.findFirst({

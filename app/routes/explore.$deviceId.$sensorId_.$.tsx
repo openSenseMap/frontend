@@ -6,9 +6,9 @@ import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getSensor } from "~/models/sensor.server";
-import { type Sensor } from "~/schema";
+import type { SensorWithMeasurementData} from "~/schema";
 
-interface SensorWithColor extends Sensor {
+interface SensorWithColor extends SensorWithMeasurementData {
   color: string;
 }
 

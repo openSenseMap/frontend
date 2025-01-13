@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { sensor } from "~/schema";
-import type { Sensor, SensorWithMeasurements } from "~/schema";
+import type { Sensor, SensorWithLatestMeasurement } from "~/schema";
 import { drizzleClient } from "~/db.server";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
@@ -81,7 +81,7 @@ export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
     WHERE s.device_id = ${deviceId};`,
   );
 
-  return result as unknown as SensorWithMeasurements[];
+  return result as unknown as SensorWithLatestMeasurement[];
 }
 
 //if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
