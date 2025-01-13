@@ -1,8 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 import type { LoaderFunctionArgs } from "react-router";
-import { redirect } from "react-router";
-import { Link, useLoaderData } from "react-router";
+import { redirect , Link, useLoaderData } from "react-router";
 import { getUserId } from "~/session.server";
 import { getProfileByUsername } from "~/models/profile.server";
 import type { MyBadge } from "~/models/badge.server";
