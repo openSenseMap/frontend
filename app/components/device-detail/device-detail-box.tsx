@@ -5,6 +5,7 @@ import {
   useNavigation,
   useParams,
   useSearchParams,
+  Link,
 } from "react-router";
 import Spinner from "../spinner";
 import {
@@ -101,16 +102,6 @@ export default function DeviceDetailBox() {
   const { toast } = useToast();
 
   const sensorIds = new Set();
-  // Check the last two segments of the URL
-  const lastSegment = matches[matches.length - 1]?.params?.["*"];
-  if (lastSegment) {
-    const secondLastSegment = matches[matches.length - 2]?.params?.sensorId;
-    sensorIds.add(secondLastSegment);
-    sensorIds.add(lastSegment);
-  } else {
-    const lastSegment = matches[matches.length - 1]?.params?.sensorId;
-    sensorIds.add(lastSegment);
-  }
 
   const data = useLoaderData<typeof loader>();
   const nodeRef = useRef(null);
@@ -131,48 +122,41 @@ export default function DeviceDetailBox() {
 
   const { deviceId } = useParams(); // Get the deviceId from the URL params
 
-  // Function to handle sensor click
-  const handleSensorClick = (sensorId: string) => {
-    // check if that last entry is the same as the current sensorId
-    if (sensorIds.has(sensorId)) {
-      const sensorIdArray = Array.from(sensorIds);
-      const existingIndex = sensorIdArray.indexOf(sensorId);
-      if (existingIndex > -1 && sensorIdArray.length > 1) {
-        sensorIdArray.splice(existingIndex, 1);
-        navigate({
-          pathname: `/explore/${deviceId}/${sensorIdArray[0]}`,
-          search: searchParams.toString(),
-        });
-        return;
-      }
-      // If it is, navigate to the explore route without that sensor
-      navigate({
-        pathname: `/explore/${deviceId}`,
-        search: searchParams.toString(),
-      });
-      return;
-    } else if (matches.length === 4 && sensorIds.size === 1) {
-      navigate(`${matches[3].pathname}/${sensorId}`);
-      // navigate({
-      //   pathname: `${matches[3].pathname}/${sensorId}`,
-      //   // search: searchParams.toString(),
-      // });
-      return;
-    } else if (sensorIds.size === 2) {
-      toast({
-        title: "Cant select more than 2 sensors",
-        description: "Deselect one sensor to select another",
-        variant: "destructive",
-      });
-      return;
+  const createSensorLink = (sensorIdToBeSelected: string) => {
+    const lastSegment = matches[matches.length - 1]?.params?.["*"];
+    if (lastSegment) {
+      const secondLastSegment = matches[matches.length - 2]?.params?.sensorId;
+      sensorIds.add(secondLastSegment);
+      sensorIds.add(lastSegment);
     } else {
-      // If not, navigate to the new route
-      navigate(`/explore/${deviceId}/${sensorId}`);
-      // navigate({
-      //   pathname: `/explore/${deviceId}/${sensorId}`,
-      //   search: searchParams.toString(),
-      // });
+      const lastSegment = matches[matches.length - 1]?.params?.sensorId;
+      if (lastSegment) {
+        sensorIds.add(lastSegment);
+      }
     }
+
+    // If sensorIdToBeSelected is second selected sensor
+    if (sensorIds.has(sensorIdToBeSelected) && sensorIds.size === 2) {
+      const clonedSet = new Set(sensorIds);
+      clonedSet.delete(sensorIdToBeSelected);
+      return `/explore/${deviceId}/${Array.from(clonedSet).join("/")}?${searchParams.toString()}`;
+    } else if (sensorIds.has(sensorIdToBeSelected) && sensorIds.size === 1) {
+      return `/explore/${deviceId}?${searchParams.toString()}`;
+    } else if (sensorIds.size === 0) {
+      return `/explore/${deviceId}/${sensorIdToBeSelected}?${searchParams.toString()}`;
+    } else if (sensorIds.size === 1) {
+      return `/explore/${deviceId}/${Array.from(sensorIds).join("/")}/${sensorIdToBeSelected}?${searchParams.toString()}`;
+    }
+
+    return "";
+  };
+
+  const isSensorActive = (sensorId: string) => {
+    if (sensorIds.has(sensorId)) {
+      return "bg-green-100 dark:bg-dark-green";
+    }
+
+    return "hover:bg-muted";
   };
 
   function handleDrag(_e: any, data: DraggableData) {
@@ -203,7 +187,7 @@ export default function DeviceDetailBox() {
     return () => clearInterval(interval);
   }, [refreshOn, refreshSecond]);
 
-  if(!data.device) return null;
+  if (!data.device) return null;
 
   return (
     <>
@@ -480,81 +464,154 @@ export default function DeviceDetailBox() {
                       >
                         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
                           {sensors &&
-                            sensors.map((sensor: SensorWithLatestMeasurement) => {
-                              return (
-                                <Card
-                                  key={sensor.id}
-                                  className={
-                                    sensorIds.has(sensor.id)
-                                      ? "bg-green-100 dark:bg-dark-green"
-                                      : "hover:bg-muted"
-                                  }
-                                  onClick={() => handleSensorClick(sensor.id)} // Update to handle click
-                                >
-                                  <label
-                                    htmlFor={sensor.id}
-                                    className="cursor-pointer"
-                                  >
-                                    <input
-                                      className="peer hidden"
-                                      disabled={
-                                        !sensorIds.has(sensor.id) &&
-                                        sensorIds.size >= 2
-                                          ? true
-                                          : false
+                            sensors.map(
+                              (sensor: SensorWithLatestMeasurement) => {
+                                const sensorLink = createSensorLink(sensor.id);
+                                if (sensorLink === "") {
+                                  return (
+                                    <Card
+                                      key={sensor.id}
+                                      className=""
+                                      onClick={() =>
+                                        toast({
+                                          title:
+                                            "Cant select more than 2 sensors",
+                                          description:
+                                            "Deselect one sensor to select another",
+                                          variant: "destructive",
+                                        })
                                       }
-                                      type="checkbox"
-                                      name="sensor"
-                                      id={sensor.id}
-                                      value={sensor.id}
-                                      defaultChecked={sensorIds.has(sensor.id)}
-                                    />
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                      <CardTitle className="text-sm font-medium">
-                                        {sensor.title}
-                                      </CardTitle>
-                                      <SensorIcon
-                                        title={sensor.title || ""}
-                                        className="h-4 w-4 text-muted-foreground"
-                                      />
-                                    </CardHeader>
-                                    <CardContent>
-                                      <div className="flex flex-row items-center space-x-2">
-                                        <div className="text-2xl font-bold">
-                                          {sensor.value}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                          {sensor.unit}
-                                        </p>
-                                        {/* <Link
-                                          to={`/explore/60f077874fb91e001c71b3b1/${sensor.id}`}
-                                        >
-                                          Go to sensor
-                                        </Link> */}
-                                      </div>
-                                    </CardContent>
-                                    <Separator />
-                                    <CardFooter className="justify-between px-6 py-3">
-                                      <div className="flex items-center gap-1">
-                                        <div
-                                          className={
-                                            sensor.status === "active"
-                                              ? "h-2 w-2 rounded-full bg-light-green"
-                                              : "h-2 w-2 rounded-full bg-red-500"
+                                    >
+                                      <label
+                                        htmlFor={sensor.id}
+                                        className="cursor-pointer"
+                                      >
+                                        <input
+                                          className="peer hidden"
+                                          disabled={
+                                            !sensorIds.has(sensor.id) &&
+                                            sensorIds.size >= 2
+                                              ? true
+                                              : false
                                           }
-                                        ></div>
-                                        <p className="text-xs text-muted-foreground">
-                                          {formatDistanceToNow(
-                                            new Date(sensor.time),
-                                          )}{" "}
-                                          ago
-                                        </p>
-                                      </div>
-                                    </CardFooter>
-                                  </label>
-                                </Card>
-                              );
-                            })}
+                                          type="checkbox"
+                                          name="sensor"
+                                          id={sensor.id}
+                                          value={sensor.id}
+                                          defaultChecked={sensorIds.has(
+                                            sensor.id,
+                                          )}
+                                        />
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                          <CardTitle className="text-sm font-medium">
+                                            {sensor.title}
+                                          </CardTitle>
+                                          <SensorIcon
+                                            title={sensor.title || ""}
+                                            className="h-4 w-4 text-muted-foreground"
+                                          />
+                                        </CardHeader>
+                                        <CardContent>
+                                          <div className="flex flex-row items-center space-x-2">
+                                            <div className="text-2xl font-bold">
+                                              {sensor.value}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                              {sensor.unit}
+                                            </p>
+                                          </div>
+                                        </CardContent>
+                                        <Separator />
+                                        <CardFooter className="justify-between px-6 py-3">
+                                          <div className="flex items-center gap-1">
+                                            <div
+                                              className={
+                                                sensor.status === "active"
+                                                  ? "h-2 w-2 rounded-full bg-light-green"
+                                                  : "h-2 w-2 rounded-full bg-red-500"
+                                              }
+                                            ></div>
+                                            <p className="text-xs text-muted-foreground">
+                                              {formatDistanceToNow(
+                                                new Date(sensor.time),
+                                              )}{" "}
+                                              ago
+                                            </p>
+                                          </div>
+                                        </CardFooter>
+                                      </label>
+                                    </Card>
+                                  );
+                                }
+                                return (
+                                  <Link key={sensor.id} to={sensorLink}>
+                                    <Card
+                                      key={sensor.id}
+                                      className={isSensorActive(sensor.id)}
+                                    >
+                                      <label
+                                        htmlFor={sensor.id}
+                                        className="cursor-pointer"
+                                      >
+                                        <input
+                                          className="peer hidden"
+                                          disabled={
+                                            !sensorIds.has(sensor.id) &&
+                                            sensorIds.size >= 2
+                                              ? true
+                                              : false
+                                          }
+                                          type="checkbox"
+                                          name="sensor"
+                                          id={sensor.id}
+                                          value={sensor.id}
+                                          defaultChecked={sensorIds.has(
+                                            sensor.id,
+                                          )}
+                                        />
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                          <CardTitle className="text-sm font-medium">
+                                            {sensor.title}
+                                          </CardTitle>
+                                          <SensorIcon
+                                            title={sensor.title || ""}
+                                            className="h-4 w-4 text-muted-foreground"
+                                          />
+                                        </CardHeader>
+                                        <CardContent>
+                                          <div className="flex flex-row items-center space-x-2">
+                                            <div className="text-2xl font-bold">
+                                              {sensor.value}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                              {sensor.unit}
+                                            </p>
+                                          </div>
+                                        </CardContent>
+                                        <Separator />
+                                        <CardFooter className="justify-between px-6 py-3">
+                                          <div className="flex items-center gap-1">
+                                            <div
+                                              className={
+                                                sensor.status === "active"
+                                                  ? "h-2 w-2 rounded-full bg-light-green"
+                                                  : "h-2 w-2 rounded-full bg-red-500"
+                                              }
+                                            ></div>
+                                            <p className="text-xs text-muted-foreground">
+                                              {formatDistanceToNow(
+                                                new Date(sensor.time),
+                                              )}{" "}
+                                              ago
+                                            </p>
+                                          </div>
+                                        </CardFooter>
+                                      </label>
+                                    </Card>
+                                  </Link>
+                                );
+                              },
+                            )}
                         </div>
                       </div>
                     </AccordionContent>
