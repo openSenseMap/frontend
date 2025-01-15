@@ -18,7 +18,7 @@ import type { DateRange } from "react-day-picker";
 import { PopoverClose } from "@radix-ui/react-popover";
 import dateTimeRanges from "~/lib/date-ranges";
 import { format } from "date-fns";
-import type { loader } from "~/routes/explore.$deviceId.$";
+import type { loader } from "~/routes/explore.$deviceId.$sensorId.$";
 
 export function DateRangeFilter() {
   // Get data from the loader
