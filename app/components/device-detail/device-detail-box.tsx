@@ -115,7 +115,10 @@ export default function DeviceDetailBox() {
 
   const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>();
   useEffect(() => {
-    setSensors(data.sensors);
+    const sortedSensors = [...data.sensors].sort(
+      (a, b) => (a.id as unknown as number) - (b.id as unknown as number),
+    );
+    setSensors(sortedSensors);
   }, [data.sensors]);
 
   const [searchParams] = useSearchParams();
