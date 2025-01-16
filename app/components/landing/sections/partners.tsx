@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import type { Partner } from "~/lib/directus";
+import  { type Partner } from "~/lib/directus";
 
 type PartnersProps = {
   data: Partner[];

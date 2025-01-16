@@ -1,13 +1,13 @@
+import { Cpu, Globe, MapPin } from "lucide-react";
 import { useState, useEffect, useCallback, useContext } from "react";
 import { useMap } from "react-map-gl";
-import { useMatches, useNavigate, useSearchParams } from "@remix-run/react";
+import { useMatches, useNavigate, useSearchParams } from "react-router";
 
+import { useSharedCompareMode } from "../device-detail/device-detail-box";
+import { NavbarContext } from "../header/nav-bar";
+import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
-import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
-import { NavbarContext } from "../header/nav-bar";
-import { Cpu, Globe, MapPin } from "lucide-react";
-import { useSharedCompareMode } from "../device-detail/device-detail-box";
 
 interface SearchListProps {
   searchResultsLocation: any[];
@@ -72,7 +72,7 @@ export default function SearchList(props: SearchListProps) {
         goTo(osem, searchResultsAll[Number(event.key) - 1]);
         setTimeout(() => {
           setShowSearchCallback(false);
-          navigate(handleNavigate(searchResultsAll[Number(event.key) - 1]));
+          void navigate(handleNavigate(searchResultsAll[Number(event.key) - 1]));
         }, 500);
       }
     },
@@ -101,7 +101,7 @@ export default function SearchList(props: SearchListProps) {
     if (length !== 0 && enterPress) {
       goTo(osem, selected);
       setShowSearchCallback(false);
-      navigate(navigateTo);
+      void navigate(navigateTo);
     }
   }, [
     enterPress,
@@ -140,7 +140,7 @@ export default function SearchList(props: SearchListProps) {
           onClick={() => {
             goTo(osem, device);
             setShowSearchCallback(false);
-            navigate(navigateTo);
+            void navigate(navigateTo);
           }}
         />
       ))}
@@ -160,7 +160,7 @@ export default function SearchList(props: SearchListProps) {
             onClick={() => {
               goTo(osem, location);
               setShowSearchCallback(false);
-              navigate(navigateTo);
+              void navigate(navigateTo);
             }}
           />
         );

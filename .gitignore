@@ -19,3 +19,5 @@ measurements.csv
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+.react-router/

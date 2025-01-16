@@ -1,5 +1,4 @@
-import { Directus } from '@directus/sdk';
-import type { ID } from '@directus/sdk';
+import { Directus, type ID  } from '@directus/sdk';
 
 const directusUrl = process.env.DIRECTUS_URL || 'http://localhost:8055'
 

@@ -1,10 +1,10 @@
-import { Filter } from "lucide-react";
-import { Separator } from "./ui/separator";
-import { Badge } from "./ui/badge";
-import { useSearchParams, useSubmit } from "@remix-run/react";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import { Filter } from "lucide-react";
+import { useSearchParams, useSubmit } from "react-router";
+import { Badge } from "./ui/badge";
 
 import { Select, SelectContent, SelectItem } from "./ui/select";
+import { Separator } from "./ui/separator";
 
 type Aggregation = {
   value: string;
@@ -52,7 +52,7 @@ export function AggregationFilter() {
       value={selectedAggregation?.value}
       onValueChange={(value) => {
         searchParams.set("aggregation", value);
-        submit(searchParams);
+        void submit(searchParams);
       }}
     >
       <SelectPrimitive.Trigger

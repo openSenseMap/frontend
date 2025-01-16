@@ -1,4 +1,4 @@
-import type { LngLatBounds, LngLatLike, MapRef } from "react-map-gl";
+import  { type LngLatBounds, type LngLatLike, type MapRef } from "react-map-gl";
 
 /**
  * The function that is called when the user clicks on a location without bbox property in the search results. It flies the map to the location and closes the search results.
@@ -46,13 +46,13 @@ export const goToLocationBBox = (
  *
  * @param lng longitude of the device
  * @param lat latitude of the device
- * @param id id of the device
+ * @param _id id of the device
  */
 export const goToDevice = (
   map: MapRef | undefined,
   lng: number,
   lat: number,
-  id: string,
+  _id: string,
 ) => {
   map?.flyTo({
     center: [lng, lat],

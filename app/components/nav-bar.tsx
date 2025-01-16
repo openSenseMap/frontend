@@ -1,8 +1,8 @@
-import { Link, useLocation } from "@remix-run/react";
+import { LogIn, Mailbox, Plus } from "lucide-react";
+import { Link, useLocation } from "react-router";
+import Menu from "./header/menu";
 import { Button } from "./ui/button";
 
-import { ChevronDownIcon, LogIn, Mailbox, Plus } from "lucide-react";
-import { useOptionalUser } from "~/utils";
 import {
   DropdownMenu,
   DropdownMenuGroup,
@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Menu from "./header/menu";
+import { useOptionalUser } from "~/utils";
 
 export function NavBar() {
   const location = useLocation();
@@ -39,9 +39,8 @@ export function NavBar() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" className="mx-2">
                     <Plus className="h-4 w-4" />
-                    <ChevronDownIcon className="m-0 inline h-4  w-4 p-0" />
                   </Button>
                 </DropdownMenuTrigger>
 

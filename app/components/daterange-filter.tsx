@@ -1,8 +1,12 @@
+import { PopoverClose } from "@radix-ui/react-popover";
+import { format } from "date-fns";
 import { Clock } from "lucide-react";
-import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Separator } from "./ui/separator";
+import { useEffect, useState } from "react";
+import  { type DateRange } from "react-day-picker";
+import { useLoaderData, useSearchParams, useSubmit } from "react-router";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
 import {
   Command,
   CommandEmpty,
@@ -11,14 +15,10 @@ import {
   CommandItem,
   CommandList,
 } from "./ui/command";
-import { useEffect, useState } from "react";
-import { Calendar } from "./ui/calendar";
-import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
-import type { loader } from "~/routes/explore+/$deviceId+/_$deviceId";
-import type { DateRange } from "react-day-picker";
-import { PopoverClose } from "@radix-ui/react-popover";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Separator } from "./ui/separator";
 import dateTimeRanges from "~/lib/date-ranges";
-import { format } from "date-fns";
+import  { type loader } from "~/routes/explore.$deviceId.$sensorId.$";
 
 export function DateRangeFilter() {
   // Get data from the loader
@@ -39,14 +39,15 @@ export function DateRangeFilter() {
   if (
     !date?.from &&
     !date?.to &&
+    loaderData.sensors &&
+    loaderData.sensors.length > 0 &&
+    loaderData.sensors[0].data &&
     loaderData.sensors[0].data.length > 0
   ) {
-    // on initial load, without a selected time range, check what time rage the last 20000 data points are in
-    const firstDate = loaderData.sensors[0].data[0].time;
+    const firstDate = loaderData.sensors[0].data[0]?.time;
     const lastDate =
-      loaderData.sensors[0].data[
-        loaderData.sensors[0].data.length - 1
-      ].time;
+      loaderData.sensors[0].data[loaderData.sensors[0].data.length - 1]?.time;
+
     setDate({
       from: lastDate ? new Date(lastDate) : undefined,
       to: firstDate ? new Date(firstDate) : undefined,
@@ -157,7 +158,7 @@ export function DateRangeFilter() {
             <PopoverClose
               className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
               onClick={() => {
-                submit(searchParams);
+                void submit(searchParams);
               }}
             >
               Apply

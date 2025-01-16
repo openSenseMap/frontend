@@ -1,6 +1,5 @@
-import type { VariantProps } from "class-variance-authority";
-import { cva } from "class-variance-authority";
-import type { HTMLProps } from "react";
+import  { type VariantProps, cva  } from "class-variance-authority";
+import  { type HTMLProps } from "react";
 
 export type HeroIcon = React.ComponentType<
   React.PropsWithoutRef<React.ComponentProps<"svg">> & {

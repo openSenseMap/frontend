@@ -1,15 +1,15 @@
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Checkbox } from "~/components/ui/checkbox";
+import { useField } from "remix-validated-form";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useField } from "remix-validated-form";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Checkbox } from "~/components/ui/checkbox";
 
 interface AdvancedProps {
   data: any;

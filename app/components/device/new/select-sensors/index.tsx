@@ -1,8 +1,8 @@
 import { PlusCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { InfoIcon } from "lucide-react";
 import { useState } from "react";
-import { AspectRatio } from "~/components/ui/aspect-ratio";
-import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
-import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
+import { Trans, useTranslation } from "react-i18next";
+import { useField } from "remix-validated-form";
 import {
   Table,
   TableBody,
@@ -11,11 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Trans, useTranslation } from "react-i18next";
-import { useField } from "remix-validated-form";
 import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
-import { InfoIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { AspectRatio } from "~/components/ui/aspect-ratio";
+import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SelectSensorsProps {
   data: any;

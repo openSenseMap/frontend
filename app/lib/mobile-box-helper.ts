@@ -80,7 +80,7 @@ export function categorizeIntoTrips(
   return mergeSmallTrips(trips, distanceThreshold);
 }
 
-function mergeSmallTrips(trips: Trip[], distanceThreshold: number): Trip[] {
+function mergeSmallTrips(trips: Trip[], _distanceThreshold: number): Trip[] {
   if (trips.length <= 1) return trips;
 
   // Combine small trips into adjacent larger trips

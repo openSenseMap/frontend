@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import type { Sensor } from "~/schema";
-import MobileBoxLayer from "./mobile-box-layer";
-import { calculateColorRange } from "./color-palette";
-import { Button } from "~/components/ui/button";
 import { ArrowDownUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { calculateColorRange } from "./color-palette";
+import MobileBoxLayer from "./mobile-box-layer";
+import { Button } from "~/components/ui/button";
+import  { type Sensor } from "~/schema";
 
 interface SensorWithColor extends Sensor {
   color: string; // Add the color property
@@ -14,7 +14,15 @@ export default function MobileBoxView({
 }: {
   sensors: SensorWithColor[];
 }) {
+  console.log("🚀 ~ sensors:", initialSensors)
   const [sensors, setSensors] = useState<SensorWithColor[]>(initialSensors);
+  console.log("🚀 ~ sensors:", sensors)
+
+  useEffect(() => {
+    setSensors(initialSensors);
+  }, [initialSensors]);
+  
+  
 
   // Toggle the order of sensors
   const switchSensors = () => {

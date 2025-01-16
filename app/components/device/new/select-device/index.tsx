@@ -2,12 +2,12 @@ import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { useField } from "remix-validated-form";
+import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
-import { useField } from "remix-validated-form";
-import SensorWikHoverCard from "~/components/sensor-wiki-hover-card";
 
 interface SelectDeviceProps {
   data: any;

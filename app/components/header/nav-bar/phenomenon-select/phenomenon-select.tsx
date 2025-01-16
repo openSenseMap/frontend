@@ -1,21 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from "@remix-run/react";
-// import { useTranslation } from "react-i18next";
-import type { SensorWikiLabel } from "~/utils/sensor-wiki-helper";
-import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
-import type { Key } from "react";
-import { useState, useEffect } from "react"; // Changed import
-import { Label } from "~/components/ui/label";
-import Spinner from "~/components/spinner";
 import { X } from "lucide-react";
-import { Checkbox } from "~/components/ui/checkbox";
-import { ScrollArea } from "~/components/ui/scroll-area";
+// import { useTranslation } from "react-i18next";
+import { useState, useEffect, type Key } from "react"; // Changed import
+import { useLoaderData, useNavigation, useSearchParams } from "react-router";
+import Spinner from "~/components/spinner";
 import { Button } from "~/components/ui/button";
-import type { loader } from "~/routes/explore+/_explore";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Label } from "~/components/ui/label";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import  { type loader } from "~/routes/explore";
+import { sensorWikiLabel, type SensorWikiLabel  } from "~/utils/sensor-wiki-helper";
 
 export function PhenomenonSelect() {
   const data = useLoaderData<typeof loader>();

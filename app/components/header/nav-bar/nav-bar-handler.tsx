@@ -1,18 +1,18 @@
-import type { Device } from "~/schema";
-import Search from "~/components/search";
 import { Clock4Icon, Filter, IceCream2Icon, Tag } from "lucide-react";
-import useKeyboardNav from "./use-keyboard-nav";
-import { cn } from "~/lib/utils";
 import FilterOptions from "./filter-options/filter-options";
 // import { PhenomenonSelect } from "./phenomenon-select/phenomenon-select";
 import FilterTags from "./filter-options/filter-tags";
+import useKeyboardNav from "./use-keyboard-nav";
+import Search from "~/components/search";
+import { cn } from "~/lib/utils";
+import  { type Device } from "~/schema";
 
 interface NavBarHandlerProps {
   devices: Device[];
   searchString: string;
 }
 
-function getSections(devices: Device[]) {
+function getSections() {
   return [
     {
       title: "Filter",
@@ -45,7 +45,7 @@ export default function NavbarHandler({
   devices,
   searchString,
 }: NavBarHandlerProps) {
-  const sections = getSections(devices);
+  const sections = getSections();
 
   const { cursor, setCursor } = useKeyboardNav(0, 0, sections.length);
 

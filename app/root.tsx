@@ -1,28 +1,22 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { data } from "@remix-run/node";
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useLoaderData,
-} from "@remix-run/react";
-import { getEnv } from "./env.server";
-import { getUser, themeSessionResolver } from "./session.server";
 import tailwindStylesheetUrl from "/app/tailwind.css?url";
 import appStylesheetUrl from "/app/app.css?url";
 import clsx from "clsx";
 import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
+import {
+  data,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData, type LoaderFunctionArgs, type MetaFunction 
+} from "react-router";
 import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
-import {
-  PreventFlashOnWrongTheme,
-  ThemeProvider,
-  useTheme,
-} from "remix-themes";
+import { getEnv } from "./utils/env.server";
+import { getUser } from "./utils/session.server";
 
 export const links = () => {
   return [
@@ -70,13 +64,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
   const user = await getUser(request);
   // const themeSession = await getThemeSession(request);
-  const { getTheme } = await themeSessionResolver(request);
+  // const { getTheme } = await themeSessionResolver(request);
   return data(
     {
       user: user,
       locale: locale,
       ENV: getEnv(),
-      theme: getTheme(),
+      // theme: getTheme(),
     },
     {
       headers: { "Set-Cookie": await i18nCookie.serialize(locale) },
@@ -93,18 +87,18 @@ export let handle = {
 };
 
 export default function AppWithProviders() {
-  const data = useLoaderData<typeof loader>();
+  // const data = useLoaderData<typeof loader>();
 
   return (
-    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
-      <App />
-    </ThemeProvider>
+    // <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
+    <App />
+    // </ThemeProvider>
   );
 }
 
 export function App() {
   const data = useLoaderData<typeof loader>();
-  const [theme] = useTheme();
+  // const [theme] = useTheme();
 
   let { i18n } = useTranslation();
 
@@ -115,10 +109,10 @@ export function App() {
   useChangeLanguage(data.locale);
 
   return (
-    <html lang={data.locale} dir={i18n.dir()} className={clsx(theme)}>
+    <html lang={data.locale} dir={i18n.dir()} className={clsx("light")}>
       <head>
         <Meta />
-        <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
+        {/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
         <Links />
       </head>
       <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text">

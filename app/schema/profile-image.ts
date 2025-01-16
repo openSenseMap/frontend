@@ -1,8 +1,8 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
-import { bytea } from "./types";
+import  { type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { profile } from "./profile";
+import { bytea } from "./types";
 
 /**
  * Table
