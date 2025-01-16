@@ -1,13 +1,13 @@
+import { Cpu, Globe, MapPin } from "lucide-react";
 import { useState, useEffect, useCallback, useContext } from "react";
 import { useMap } from "react-map-gl";
 import { useMatches, useNavigate, useSearchParams } from "react-router";
 
+import { useSharedCompareMode } from "../device-detail/device-detail-box";
+import { NavbarContext } from "../header/nav-bar";
+import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
 import SearchListItem from "./search-list-item";
 import { goTo } from "~/lib/search-map-helper";
-import useKeyboardNav from "../header/nav-bar/use-keyboard-nav";
-import { NavbarContext } from "../header/nav-bar";
-import { Cpu, Globe, MapPin } from "lucide-react";
-import { useSharedCompareMode } from "../device-detail/device-detail-box";
 
 interface SearchListProps {
   searchResultsLocation: any[];

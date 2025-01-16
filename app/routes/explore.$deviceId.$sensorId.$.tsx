@@ -1,12 +1,11 @@
-import { redirect, type LoaderFunctionArgs } from "react-router";
-import { useLoaderData } from "react-router";
 import { addDays } from "date-fns";
+import { redirect, type LoaderFunctionArgs, useLoaderData  } from "react-router";
 import Graph from "~/components/device-detail/graph";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getSensor } from "~/models/sensor.server";
-import type { SensorWithMeasurementData } from "~/schema";
+import  { type SensorWithMeasurementData } from "~/schema";
 
 interface SensorWithColor extends SensorWithMeasurementData {
   color: string;

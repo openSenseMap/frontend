@@ -1,16 +1,13 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react-router";
-import { data, redirect , Form, Link, useActionData, useNavigation, useSearchParams } from "react-router";
+import i18next from "app/i18next.server";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect , Form, Link, useActionData, useNavigation, useSearchParams  } from "react-router";
+import invariant from "tiny-invariant";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createUserSession, getUserId } from "~/utils/session.server";
-import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail, validateName } from "~/utils";
-import { useTranslation } from "react-i18next";
-import i18next from "app/i18next.server";
-import invariant from "tiny-invariant";
-import Spinner from "~/components/spinner";
 import ErrorMessage from "~/components/error-message";
+import Spinner from "~/components/spinner";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,7 +16,9 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
+import { createUser, getUserByEmail } from "~/models/user.server";
+import { safeRedirect, validateEmail, validateName } from "~/utils";
+import { createUserSession, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);

@@ -1,7 +1,6 @@
-import type { User, Profile } from "~/schema";
-import { profile } from "~/schema";
-import { drizzleClient } from "~/db.server";
 import { eq } from "drizzle-orm";
+import { drizzleClient } from "~/db.server";
+import  { type User, type Profile, profile  } from "~/schema";
 
 export async function getProfileByUserId(id: Profile["id"]) {
   return drizzleClient.query.profile.findFirst({

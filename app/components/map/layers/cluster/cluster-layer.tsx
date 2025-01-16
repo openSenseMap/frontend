@@ -1,18 +1,18 @@
-import type { Device } from "~/schema";
-import type {
-  GeoJsonProperties,
-  BBox,
-  FeatureCollection,
-  Point,
+import  {
+  type GeoJsonProperties,
+  type BBox,
+  type FeatureCollection,
+  type Point,
 } from "geojson";
+import debounce from "lodash.debounce";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { Marker, useMap } from "react-map-gl";
-import type { PointFeature } from "supercluster";
+import  { type PointFeature } from "supercluster";
 import useSupercluster from "use-supercluster";
-import type { DeviceClusterProperties } from "~/routes/explore";
-import DonutChartCluster from "./donut-chart-cluster";
 import BoxMarker from "./box-marker";
-import debounce from "lodash.debounce";
+import DonutChartCluster from "./donut-chart-cluster";
+import  { type DeviceClusterProperties } from "~/routes/explore";
+import  { type Device } from "~/schema";
 
 const DEBOUNCE_VALUE = 50;
 

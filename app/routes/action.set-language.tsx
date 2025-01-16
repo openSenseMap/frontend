@@ -1,5 +1,4 @@
-import type { ActionFunctionArgs } from "react-router";
-import { data } from "react-router";
+import  { type ActionFunctionArgs, data  } from "react-router";
 import { i18nCookie } from "~/cookies";
 
 /**

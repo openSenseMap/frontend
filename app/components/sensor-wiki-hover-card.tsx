@@ -1,10 +1,10 @@
+import { useEffect, useState } from "react";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { useEffect, useState } from "react";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SensorWikHoverCardProps {

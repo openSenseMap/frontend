@@ -1,5 +1,4 @@
-import { isRouteErrorResponse, useParams, useRouteError } from "react-router";
-import { type ErrorResponse } from "react-router";
+import { isRouteErrorResponse, useParams, useRouteError, type ErrorResponse  } from "react-router";
 import { getErrorMessage } from "~/utils/misc";
 
 type StatusHandler = (info: {

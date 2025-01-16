@@ -1,23 +1,20 @@
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
-import type { LoaderFunctionArgs } from "react-router";
-import { redirect , Link, useLoaderData } from "react-router";
-import { getUserId } from "~/utils/session.server";
-import { getProfileByUsername } from "~/models/profile.server";
-import type { MyBadge } from "~/models/badge.server";
+import  { type LoaderFunctionArgs, redirect , Link, useLoaderData  } from "react-router";
+import ErrorMessage from "~/components/error-message";
+import { columns } from "~/components/mydevices/dt/columns";
+import { DataTable } from "~/components/mydevices/dt/data-table";
+import { NavBar } from "~/components/nav-bar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { cn } from "~/lib/utils";
 import {
   getAllBadges,
   getMyBadgesAccessToken,
-  getUserBackpack,
+  getUserBackpack, type MyBadge 
 } from "~/models/badge.server";
+import { getProfileByUsername } from "~/models/profile.server";
+import { getUniqueActiveBadges, sortBadges, type BadgeClass  } from "~/utils";
 import { getInitials } from "~/utils/misc";
-import ErrorMessage from "~/components/error-message";
-import { DataTable } from "~/components/mydevices/dt/data-table";
-import { columns } from "~/components/mydevices/dt/columns";
-import { cn } from "~/lib/utils";
-import type { BadgeClass } from "~/utils";
-import { getUniqueActiveBadges, sortBadges } from "~/utils";
-import { NavBar } from "~/components/nav-bar";
+import { getUserId } from "~/utils/session.server";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const requestingUserId = await getUserId(request);

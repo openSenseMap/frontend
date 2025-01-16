@@ -1,16 +1,15 @@
+import { resolve } from "node:path";
 import { PassThrough } from "stream";
-import type { EntryContext } from "react-router";
 import { createReadableStreamFromReadable } from "@react-router/node";
-import { ServerRouter } from "react-router";
+import { createInstance } from "i18next";
+import I18NexFsBackend from "i18next-fs-backend";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { getEnv, init } from "./utils/env.server";
-import { createInstance } from "i18next";
-import i18next from "./i18next.server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import I18NexFsBackend from "i18next-fs-backend";
+import { ServerRouter, type EntryContext  } from "react-router";
 import i18nextOptions from "./i18next-options"; // our i18n configuration file
-import { resolve } from "node:path";
+import i18next from "./i18next.server";
+import { getEnv, init } from "./utils/env.server";
 
 // Reject/cancel all pending promises after 5 seconds
 export const streamTimeout = 5000;

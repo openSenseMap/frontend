@@ -1,12 +1,11 @@
-import type { Device } from "~/schema";
-import { useMatches, useNavigate, useSearchParams } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, Rocket } from "lucide-react";
 import { useState } from "react";
-import type { MarkerProps } from "react-map-gl";
-import { Marker, useMap } from "react-map-gl";
+import  { type MarkerProps, Marker, useMap  } from "react-map-gl";
+import { useMatches, useNavigate, useSearchParams } from "react-router";
 import { useSharedCompareMode } from "~/components/device-detail/device-detail-box";
 import { cn } from "~/lib/utils";
+import  { type Device } from "~/schema";
 
 interface BoxMarkerProps extends MarkerProps {
   device: Device;

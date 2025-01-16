@@ -1,8 +1,8 @@
-import { useFetcher, useLoaderData } from "react-router";
-import { useState } from "react";
 import i18next from "i18next";
-import type { loader } from "~/root";
+import { useState } from "react";
+import { useFetcher, useLoaderData } from "react-router";
 import { Button } from "~/components/ui/button";
+import  { type loader } from "~/root";
 
 export default function LanguageSelector() {
   const data = useLoaderData<typeof loader>();

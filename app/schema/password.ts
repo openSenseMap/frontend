@@ -1,6 +1,6 @@
+import  { type InferInsertModel, type InferSelectModel } from "drizzle-orm";
 import { pgTable, text } from "drizzle-orm/pg-core";
 import { user } from "./user";
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 /**
  * Table

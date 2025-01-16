@@ -1,12 +1,11 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react-router";
-import { data, redirect , Form, Link, useActionData, useSearchParams } from "react-router";
 import * as React from "react";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect , Form, Link, useActionData, useSearchParams  } from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
 
 import { verifyLogin } from "~/models/user.server";
-import { createUserSession, getUserId } from "~/utils/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { createUserSession, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   //* check session if a user is already logged in

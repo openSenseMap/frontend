@@ -1,25 +1,15 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import {
+import { Save, Trash } from "lucide-react";
+import { useEffect, useState } from "react";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs,
   data,
   redirect,
   Form,
   useActionData,
   useLoaderData,
-  useSubmit,
-} from "react-router";
-import { Save, Trash } from "lucide-react";
-import { useEffect, useState } from "react";
+  useSubmit } from "react-router";
 
 import invariant from "tiny-invariant";
-import ErrorMessage from "~/components/error-message";
-import {
-  createLogEntry,
-  deleteLogEntry,
-  getLogEntriesByDeviceId,
-  updateLogEntryVisibility,
-} from "~/models/log-entry.server";
-import type { LogEntry } from "~/schema/log-entry";
-import { getUserId } from "~/utils/session.server";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -28,10 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "~/components/ui/use-toast";
-import { Input } from "~/components/ui/input";
+import ErrorMessage from "~/components/error-message";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { useToast } from "~/components/ui/use-toast";
+import {
+  createLogEntry,
+  deleteLogEntry,
+  getLogEntriesByDeviceId,
+  updateLogEntryVisibility,
+} from "~/models/log-entry.server";
+import  { type LogEntry } from "~/schema/log-entry";
+import { getUserId } from "~/utils/session.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);

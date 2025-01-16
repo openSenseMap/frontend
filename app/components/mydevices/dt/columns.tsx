@@ -1,9 +1,8 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import  { type ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ClipboardCopy, Ellipsis } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Device } from "~/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import  { type Device } from "~/schema";
 
 export type SenseBox = {
   id: string;

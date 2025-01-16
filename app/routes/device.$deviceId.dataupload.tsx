@@ -1,12 +1,11 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { redirect , Form, Link } from "react-router";
-import { useState } from "react";
-import { getUserId } from "~/utils/session.server";
 import { ArrowLeft, Upload } from "lucide-react";
-import { Input } from "~/components/ui/input";
+import { useState } from "react";
+import { redirect , Form, Link, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,7 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { Label } from "~/components/ui/label";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {

@@ -1,7 +1,6 @@
 import { eq, sql } from "drizzle-orm";
-import { sensor } from "~/schema";
-import type { Sensor, SensorWithLatestMeasurement } from "~/schema";
 import { drizzleClient } from "~/db.server";
+import { sensor, type Sensor, type SensorWithLatestMeasurement  } from "~/schema";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 

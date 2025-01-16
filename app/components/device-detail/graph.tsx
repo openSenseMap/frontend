@@ -8,23 +8,20 @@ import {
   PointElement,
   Legend,
   Tooltip as ChartTooltip,
-  Filler,
+  Filler, type ChartOptions 
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
-import type { ChartOptions } from "chart.js";
 // import { de, enGB } from "date-fns/locale";
-import { useMemo, useRef, useState, useEffect, useContext } from "react";
 import { Download, RefreshCcw, X } from "lucide-react";
-import type { DraggableData } from "react-draggable";
-import Draggable from "react-draggable";
+import { useMemo, useRef, useState, useEffect, useContext } from "react";
+import Draggable, type { DraggableData } from "react-draggable";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { datesHave48HourRange } from "~/lib/utils";
 import { isBrowser, isTablet } from "react-device-detect";
 import { AggregationFilter } from "../aggregation-filter";
 import { DateRangeFilter } from "../daterange-filter";
@@ -38,6 +35,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { HoveredPointContext } from "../map/layers/mobile/mobile-box-layer";
+import { datesHave48HourRange } from "~/lib/utils";
 
 ChartJS.register(
   LineElement,

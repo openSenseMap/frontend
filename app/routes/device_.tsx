@@ -1,6 +1,6 @@
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
-import type { DeviceExposureType, DeviceStatusType } from "~/schema";
+import  { type DeviceExposureType, type DeviceStatusType } from "~/schema";
 
 interface UserDevices {
   devices: {

@@ -1,20 +1,4 @@
 import {
-  useLoaderData,
-  useMatches,
-  useNavigate,
-  useNavigation,
-  useParams,
-  useSearchParams,
-  Link,
-} from "react-router";
-import Spinner from "../spinner";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion";
-import {
   ChevronUp,
   Minus,
   Share2,
@@ -31,9 +15,24 @@ import {
   LandPlot,
   Image as ImageIcon,
 } from "lucide-react";
+import {
+  useLoaderData,
+  useMatches,
+  useNavigate,
+  useNavigation,
+  useParams,
+  useSearchParams,
+  Link,
+} from "react-router";
+import Spinner from "../spinner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 import { Fragment, useEffect, useRef, useState } from "react";
-import type { DraggableData } from "react-draggable";
-import Draggable from "react-draggable";
+import Draggable, type { DraggableData } from "react-draggable";
 import {
   Tooltip,
   TooltipContent,
@@ -49,6 +48,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import EntryLogs from "./entry-logs";
 import ShareLink from "./share-link";
 import { getArchiveLink } from "~/utils/device";
 import { useBetween } from "use-between";
@@ -75,10 +75,9 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import EntryLogs from "./entry-logs";
 import { useToast } from "../ui/use-toast";
 import clsx from "clsx";
-import type { loader } from "~/routes/explore.$deviceId";
+import  { type loader } from "~/routes/explore.$deviceId";
 
 export interface MeasurementProps {
   sensorId: string;

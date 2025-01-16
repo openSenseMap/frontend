@@ -1,23 +1,23 @@
 "use client";
 
-import * as React from "react";
-// import { useSearchParams, useSubmit } from "@remix-run/react";
+import { CalendarIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { de, enGB } from "date-fns/locale";
-import { CalendarIcon } from "@heroicons/react/24/outline";
+import { getUserLocale } from "get-user-locale";
 import { Clock, CalendarSearch, CalendarClock } from "lucide-react";
-import type { DateRange } from "react-day-picker";
+import * as React from "react";
+// import { useSearchParams, useSubmit } from "@remix-run/react";
+import  { type DateRange } from "react-day-picker";
 
-import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { Form } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Form } from "react-router";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
-import { getUserLocale } from "get-user-locale";
-import { useTranslation } from "react-i18next";
 
 interface TimeFilterProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];

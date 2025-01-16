@@ -1,12 +1,7 @@
+import getUserLocale from "get-user-locale";
+import { InfoIcon } from "lucide-react";
 import React, { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 import {
   Map,
   type MapLayerMouseEvent,
@@ -18,11 +13,16 @@ import {
   type GeolocateResultEvent,
   Source,
 } from "react-map-gl";
+import { useField } from "remix-validated-form";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 import GeocoderControl from "~/components/map/geocoder-control";
-import { InfoIcon } from "lucide-react";
-import getUserLocale from "get-user-locale";
-import { useField } from "remix-validated-form";
 
 export interface SelectLocationProps {
   data: any;

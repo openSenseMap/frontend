@@ -1,11 +1,10 @@
-import { type Password, type User } from "~/schema";
-import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
-
-import { drizzleClient } from "~/db.server";
-import { password as passwordTable, user } from "~/schema";
-import { createProfile } from "./profile.server";
+import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { createProfile } from "./profile.server";
+import { drizzleClient } from "~/db.server";
+import { type Password, type User, password as passwordTable, user  } from "~/schema";
+
 
 export async function getUserById(id: User["id"]) {
   return drizzleClient.query.user.findFirst({

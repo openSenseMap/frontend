@@ -1,28 +1,25 @@
-import type {
-  ActionFunctionArgs,
-  LinksFunction,
-  LoaderFunctionArgs,
-} from "react-router";
-import {
+import { Save } from "lucide-react";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
+import React, { useCallback, useState } from "react";
+import  { type MarkerDragEvent, Map, MapProvider, Marker, NavigationControl  } from "react-map-gl";
+import  {
+  type ActionFunctionArgs,
+  type LinksFunction,
+  type LoaderFunctionArgs,
   redirect,
   Form,
   useActionData,
   useLoaderData,
-  useOutletContext,
+  useOutletContext
 } from "react-router";
-import React, { useCallback, useState } from "react";
-import { getUserId } from "~/utils/session.server";
-import { Save } from "lucide-react";
 
 import invariant from "tiny-invariant";
+import ErrorMessage from "~/components/error-message";
 import {
   getDeviceWithoutSensors,
   updateDeviceLocation,
 } from "~/models/device.server";
-import type { MarkerDragEvent } from "react-map-gl";
-import { Map, MapProvider, Marker, NavigationControl } from "react-map-gl";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
-import ErrorMessage from "~/components/error-message";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {

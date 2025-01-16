@@ -1,7 +1,10 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { data, redirect , Form, useActionData, useLoaderData } from "react-router";
+import * as ToastPrimitive from "@radix-ui/react-toast";
+import { clsx } from "clsx";
 import React, { useState } from "react";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs, data, redirect , Form, useActionData, useLoaderData  } from "react-router";
 import invariant from "tiny-invariant";
+import ErrorMessage from "~/components/error-message";
+import Home from "~/components/header/home";
 import {
   updateUserName,
   updateUserlocale,
@@ -11,10 +14,6 @@ import {
 } from "~/models/user.server";
 import { getUserEmail, getUserId } from "~/utils/session.server";
 //* Toast impl.
-import * as ToastPrimitive from "@radix-ui/react-toast";
-import { clsx } from "clsx";
-import Home from "~/components/header/home";
-import ErrorMessage from "~/components/error-message";
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {

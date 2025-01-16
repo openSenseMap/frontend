@@ -1,4 +1,4 @@
-import type { LngLatBounds, LngLatLike, MapRef } from "react-map-gl";
+import  { type LngLatBounds, type LngLatLike, type MapRef } from "react-map-gl";
 
 /**
  * The function that is called when the user clicks on a location without bbox property in the search results. It flies the map to the location and closes the search results.

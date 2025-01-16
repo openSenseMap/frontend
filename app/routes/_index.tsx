@@ -1,22 +1,20 @@
-import type { LoaderFunctionArgs } from "react-router";
-import { data, Link, useLoaderData } from "react-router";
+import { useMediaQuery } from "@mantine/hooks";
 import { motion } from "framer-motion";
-import Features from "~/components/landing/sections/features";
+import { useTranslation } from "react-i18next";
+import  { type LoaderFunctionArgs, data, Link, useLoaderData  } from "react-router";
 import Footer from "~/components/landing/footer";
+import { GlobeComponent } from "~/components/landing/globe.client";
 import Header from "~/components/landing/header/header";
+import Connect from "~/components/landing/sections/connect";
+import Features from "~/components/landing/sections/features";
+import Integrations from "~/components/landing/sections/integrations";
 import Partners from "~/components/landing/sections/partners";
+import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Stats from "~/components/landing/stats";
 import i18next from "~/i18next.server";
-import type { Partner } from "~/lib/directus";
-import { getDirectusClient } from "~/lib/directus";
-import { getUserId, getUserName } from "~/utils/session.server";
-import { useTranslation } from "react-i18next";
-import PricingPlans from "~/components/landing/sections/pricing-plans";
-import Integrations from "~/components/landing/sections/integrations";
-import Connect from "~/components/landing/sections/connect";
-import { GlobeComponent } from "~/components/landing/globe.client";
-import { useMediaQuery } from "@mantine/hooks";
+import  { type Partner, getDirectusClient  } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
+import { getUserId, getUserName } from "~/utils/session.server";
 
 const sections = [
   {

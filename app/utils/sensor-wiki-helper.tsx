@@ -1,5 +1,5 @@
 import i18next from "i18next";
-import type { Unit } from "~/models/unit.server";
+import  { type Unit } from "~/models/unit.server";
 
 export type SensorWikiTranslation = {
   item: SensorWikiLabel[];

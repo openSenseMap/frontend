@@ -1,10 +1,9 @@
-import type { LoaderFunctionArgs } from "react-router";
-import { getProfileByUserId } from "~/models/profile.server";
-import { requireUser } from "~/utils/session.server";
-import { useFetcher } from "react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { getInitials } from "~/utils/misc";
 import { useEffect } from "react";
+import  { type LoaderFunctionArgs, useFetcher  } from "react-router";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { getProfileByUserId } from "~/models/profile.server";
+import { getInitials } from "~/utils/misc";
+import { requireUser } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireUser(request);

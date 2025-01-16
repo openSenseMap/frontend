@@ -1,8 +1,8 @@
-import { drizzleClient } from "~/db.server";
 import { point } from "@turf/helpers";
-import type { Point } from "geojson";
-import { device, location, sensor, type Device, type Sensor } from "~/schema";
 import { eq, sql, desc } from "drizzle-orm";
+import  { type Point } from "geojson";
+import { drizzleClient } from "~/db.server";
+import { device, location, sensor, type Device, type Sensor } from "~/schema";
 
 export function getDevice({ id }: Pick<Device, "id">) {
   return drizzleClient.query.device.findFirst({

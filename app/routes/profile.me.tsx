@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from "react-router";
+import  { type LoaderFunctionArgs } from "react-router";
 import { redirect } from "react-router"; // or cloudflare/deno
 import { getProfileByUserId } from "~/models/profile.server";
 import { getUser } from "~/utils/session.server";

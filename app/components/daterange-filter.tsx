@@ -1,8 +1,12 @@
+import { PopoverClose } from "@radix-ui/react-popover";
+import { format } from "date-fns";
 import { Clock } from "lucide-react";
-import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Separator } from "./ui/separator";
+import { useEffect, useState } from "react";
+import  { type DateRange } from "react-day-picker";
+import { useLoaderData, useSearchParams, useSubmit } from "react-router";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
 import {
   Command,
   CommandEmpty,
@@ -11,14 +15,10 @@ import {
   CommandItem,
   CommandList,
 } from "./ui/command";
-import { useEffect, useState } from "react";
-import { Calendar } from "./ui/calendar";
-import { useLoaderData, useSearchParams, useSubmit } from "react-router";
-import type { DateRange } from "react-day-picker";
-import { PopoverClose } from "@radix-ui/react-popover";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Separator } from "./ui/separator";
 import dateTimeRanges from "~/lib/date-ranges";
-import { format } from "date-fns";
-import type { loader } from "~/routes/explore.$deviceId.$sensorId.$";
+import  { type loader } from "~/routes/explore.$deviceId.$sensorId.$";
 
 export function DateRangeFilter() {
   // Get data from the loader

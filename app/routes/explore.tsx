@@ -1,35 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import  { type FeatureCollection, type Point } from "geojson";
+import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
+import { useState, useRef, useEffect } from "react";
+import  { type MapLayerMouseEvent, type MapRef, MapProvider, Layer, Source, Marker  } from "react-map-gl";
 import {
   Outlet,
   useNavigate,
   useSearchParams,
   useLoaderData,
   useParams,
-  redirect,
+  redirect, type LoaderFunctionArgs, type LinksFunction 
 } from "react-router";
-import Map from "~/components/map";
-import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
-import Header from "~/components/header";
-import type { LoaderFunctionArgs, LinksFunction } from "react-router";
-import { getDevices, getDevicesWithSensors } from "~/models/device.server";
-import type { MapLayerMouseEvent, MapRef } from "react-map-gl";
-import { MapProvider, Layer, Source, Marker } from "react-map-gl";
-import { useState, useRef, useEffect } from "react";
-import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
-import Legend from "~/components/map/legend";
-import type { LegendValue } from "~/components/map/legend";
-import { getPhenomena } from "~/models/phenomena.server";
-import type { FeatureCollection, Point } from "geojson";
 import type Supercluster from "supercluster";
+import ErrorMessage from "~/components/error-message";
+import Header from "~/components/header";
+import Map from "~/components/map";
+import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
+import BoxMarker from "~/components/map/layers/cluster/box-marker";
+import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
+import Legend, { type LegendValue } from "~/components/map/legend";
+import { getDevices, getDevicesWithSensors } from "~/models/device.server";
+import { getPhenomena } from "~/models/phenomena.server";
+import { getProfileByUserId } from "~/models/profile.server";
 import { type Device, type Sensor } from "~/schema";
+import { getFilteredDevices } from "~/utils";
 import { getUser, getUserSession } from "~/utils/session.server";
 
-import { getProfileByUserId } from "~/models/profile.server";
-import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 
-import { getFilteredDevices } from "~/utils";
-import ErrorMessage from "~/components/error-message";
-import BoxMarker from "~/components/map/layers/cluster/box-marker";
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>

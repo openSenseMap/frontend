@@ -1,5 +1,5 @@
-import { Link } from "react-router";
 import clsx from "clsx";
+import { Link } from "react-router";
 
 interface Step {
   title: string;

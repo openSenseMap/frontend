@@ -1,14 +1,14 @@
+import crypto from "node:crypto";
+import bcrypt from "bcryptjs";
+import csvtojson from "csvtojson";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import bcrypt from "bcryptjs";
-import crypto from "node:crypto";
-import csvtojson from "csvtojson";
-import { sensor } from "../app/schema/sensor";
 import { device } from "../app/schema/device";
-import { user } from "../app/schema/user";
 import { measurement } from "../app/schema/measurement";
 import { password } from "../app/schema/password";
 import { profile } from "../app/schema/profile";
+import { sensor } from "../app/schema/sensor";
+import { user } from "../app/schema/user";
 import { envDBSchema } from "./env-schema";
 
 console.log(`🔌 setting up drizzle client to ${envDBSchema.DATABASE_URL}`);

@@ -1,12 +1,12 @@
-import * as React from "react";
 import { CloudSunRain, SunIcon } from "lucide-react";
+import * as React from "react";
+import { useTranslation } from "react-i18next";
+import { Form } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Form } from "react-router";
-import { useTranslation } from "react-i18next";
 import { cn } from "~/lib/utils";
-import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 import { type Phenomenon } from "~/models/phenomena.server";
+import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SensorFilterProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];

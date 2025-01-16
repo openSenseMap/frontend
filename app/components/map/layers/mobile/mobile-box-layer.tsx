@@ -1,16 +1,16 @@
-import type { Sensor } from "~/schema";
+import bbox from "@turf/bbox";
 import {
   featureCollection,
   lineString,
   multiLineString,
   point,
 } from "@turf/helpers";
-import type { MultiLineString, Point } from "geojson";
+import  { type MultiLineString, type Point } from "geojson";
+import mapboxgl from "mapbox-gl";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Layer, Source, useMap } from "react-map-gl";
-import bbox from "@turf/bbox";
 import { HIGH_COLOR, LOW_COLOR, createPalette } from "./color-palette";
-import mapboxgl from "mapbox-gl";
+import  { type Sensor } from "~/schema";
 
 interface CustomGeoJsonProperties {
   locationId: number;

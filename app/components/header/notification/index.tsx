@@ -1,11 +1,10 @@
 import {
   NovuProvider,
   PopoverNotificationCenter,
-  NotificationBell,
+  NotificationBell, type IMessage 
 } from "@novu/notification-center";
-import type { IMessage } from "@novu/notification-center";
 import { useLoaderData } from "react-router";
-import type { loader } from "~/root";
+import  { type loader } from "~/root";
 
 function onNotificationClick(message: IMessage) {
   if (message?.cta?.data?.url) {

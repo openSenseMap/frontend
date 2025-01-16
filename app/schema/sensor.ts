@@ -1,13 +1,13 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, text, timestamp, json } from "drizzle-orm/pg-core";
-import { DeviceStatusEnum } from "./enum";
 import {
   relations,
   type InferInsertModel,
   type InferSelectModel,
 } from "drizzle-orm";
+import { pgTable, text, timestamp, json } from "drizzle-orm/pg-core";
 import { device } from "./device";
-import type { Measurement } from "./measurement";
+import { DeviceStatusEnum } from "./enum";
+import  { type Measurement } from "./measurement";
 
 /**
  * Table

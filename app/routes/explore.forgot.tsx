@@ -1,13 +1,11 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react-router";
-import { data, redirect, Form, Link, useActionData, useNavigation, useSearchParams } from "react-router";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect, Form, Link, useActionData, useNavigation, useSearchParams  } from "react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getUserId } from "~/utils/session.server";
-import { validateEmail } from "~/utils";
-import { useTranslation } from "react-i18next";
-import Spinner from "~/components/spinner";
 import ErrorMessage from "~/components/error-message";
+import Spinner from "~/components/spinner";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
+import { validateEmail } from "~/utils";
+import { getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);

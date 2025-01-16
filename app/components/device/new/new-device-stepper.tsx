@@ -1,24 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { defineStepper } from "@stepperize/react";
-import type { FieldErrors } from "react-hook-form";
-import { FormProvider, useForm } from "react-hook-form";
+import { Info, Slash } from "lucide-react";
+import { useEffect, useState } from "react";
+import  { type FieldErrors, FormProvider, useForm  } from "react-hook-form";
+import { Form, useSubmit } from "react-router";
 import { z } from "zod";
+import { AdvancedStep } from "./advanced-info";
+import { DeviceSelectionStep } from "./device-info";
 import { GeneralInfoStep } from "./general-info";
 import { LocationStep } from "./location-info";
-import { SummaryInfo } from "./summary-info";
-import { DeviceSelectionStep } from "./device-info";
-import { Button } from "~/components/ui/button";
-import { useEffect, useState } from "react";
 import { sensorSchema, SensorSelectionStep } from "./sensors-info";
-import { DeviceModelEnum } from "~/schema/enum";
-import { useToast } from "~/components/ui/use-toast";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { Info, Slash } from "lucide-react";
+import { SummaryInfo } from "./summary-info";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,8 +18,15 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { AdvancedStep } from "./advanced-info";
-import { Form, useSubmit } from "react-router";
+import { Button } from "~/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { useToast } from "~/components/ui/use-toast";
+import { DeviceModelEnum } from "~/schema/enum";
 
 const generalInfoSchema = z.object({
   name: z

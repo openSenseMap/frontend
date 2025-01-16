@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from "react-router";
-import { NavBar } from "~/components/nav-bar";
 import ErrorMessage from "~/components/error-message";
+import { NavBar } from "~/components/nav-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export default function SettingsLayoutPage() {

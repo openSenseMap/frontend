@@ -1,8 +1,8 @@
+import { LogIn, Mailbox, Plus } from "lucide-react";
 import { Link, useLocation } from "react-router";
+import Menu from "./header/menu";
 import { Button } from "./ui/button";
 
-import { LogIn, Mailbox, Plus } from "lucide-react";
-import { useOptionalUser } from "~/utils";
 import {
   DropdownMenu,
   DropdownMenuGroup,
@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Menu from "./header/menu";
+import { useOptionalUser } from "~/utils";
 
 export function NavBar() {
   const location = useLocation();

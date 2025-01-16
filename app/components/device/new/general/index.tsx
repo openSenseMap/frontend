@@ -1,8 +1,8 @@
 import { InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { useField } from "remix-validated-form";
 import TagsInput from "react-tagsinput";
+import { useField } from "remix-validated-form";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import "react-tagsinput/react-tagsinput.css";
 import { useState } from "react";
 
