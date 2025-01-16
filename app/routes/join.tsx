@@ -1,19 +1,13 @@
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
-import { data, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
-import * as React from "react";
-
-import { createUserSession, getUserId } from "~/session.server";
-
-import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail, validateName } from "~/utils";
 import i18next from "app/i18next.server";
+import * as React from "react";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect , Form, Link, useActionData, useSearchParams  } from "react-router";
+
 import ErrorMessage from "~/components/error-message";
 import { getProfileByUsername } from "~/models/profile.server";
+import { createUser, getUserByEmail } from "~/models/user.server";
+import { safeRedirect, validateEmail, validateName } from "~/utils";
+import { createUserSession, getUserId } from "~/utils/session.server";
+
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);

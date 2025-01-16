@@ -1,5 +1,4 @@
-import type { Key } from "react";
-import { useState, useEffect } from "react";
+import  { type Key, useState, useEffect  } from "react";
 
 export default function useKeyboardNav(
   initCursorVal: number = 0,

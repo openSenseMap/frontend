@@ -1,12 +1,12 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, boolean, text } from "drizzle-orm/pg-core";
-import { user } from "./user";
 import {
   relations,
   type InferInsertModel,
   type InferSelectModel,
 } from "drizzle-orm";
+import { pgTable, boolean, text } from "drizzle-orm/pg-core";
 import { profileImage } from "./profile-image";
+import { user } from "./user";
 
 /**
  * Table

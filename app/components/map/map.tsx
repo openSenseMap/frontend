@@ -1,7 +1,5 @@
-import type { MapProps, MapRef } from "react-map-gl";
-import { NavigationControl, Map as ReactMap } from "react-map-gl";
 import { forwardRef } from "react";
-import { useTheme } from "remix-themes";
+import  { type MapProps, type MapRef, NavigationControl, Map as ReactMap  } from "react-map-gl";
 
 const Map = forwardRef<MapRef, MapProps>(
   (
@@ -10,7 +8,7 @@ const Map = forwardRef<MapRef, MapProps>(
     ref,
   ) => {
     // get theme from tailwind
-    const [theme] = useTheme();
+    const [theme] = "light"; //useTheme();
     return (
       <ReactMap
         id="osem"

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import SearchList from "./search-list";
-import { useTranslation, Trans } from "react-i18next";
 import getUserLocale from "get-user-locale";
+import { useEffect, useState } from "react";
+import { useTranslation, Trans } from "react-i18next";
+import SearchList from "./search-list";
 
 interface SearchProps {
   searchString: string;

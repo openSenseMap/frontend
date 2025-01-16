@@ -1,23 +1,4 @@
 import {
-  Form,
-  Link,
-  useMatches,
-  useNavigation,
-  useSearchParams,
-} from "@remix-run/react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import Spinner from "~/components/spinner";
-import {
   Globe,
   LogIn,
   LogOut,
@@ -30,8 +11,21 @@ import {
   Settings,
   Compass,
 } from "lucide-react";
-import { useOptionalUser } from "~/utils";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Form, Link, useMatches, useNavigation, useSearchParams } from "react-router";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Spinner from "~/components/spinner";
 import { toast } from "~/components/ui/use-toast";
+import { useOptionalUser } from "~/utils";
 
 export default function Menu() {
   const [searchParams] = useSearchParams();

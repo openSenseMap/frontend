@@ -1,5 +1,11 @@
 import { createId } from "@paralleldrive/cuid2";
 import {
+  relations,
+  sql,
+  type InferInsertModel,
+  type InferSelectModel,
+} from "drizzle-orm";
+import {
   pgTable,
   boolean,
   text,
@@ -11,16 +17,10 @@ import {
   date,
 } from "drizzle-orm/pg-core";
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from "./enum";
-import {
-  relations,
-  sql,
-  type InferInsertModel,
-  type InferSelectModel,
-} from "drizzle-orm";
-import { user } from "./user";
-import { sensor } from "./sensor";
 import { location } from "./location";
 import { logEntry } from "./log-entry";
+import { sensor } from "./sensor";
+import { user } from "./user";
 
 /**
  * Table

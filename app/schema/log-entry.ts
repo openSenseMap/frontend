@@ -1,12 +1,12 @@
 // log-entry.ts
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
-import { device } from "./device";
+import { createId } from "@paralleldrive/cuid2";
 import {
   relations,
   type InferInsertModel,
   type InferSelectModel,
 } from "drizzle-orm";
-import { createId } from "@paralleldrive/cuid2";
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { device } from "./device";
 
 // Table definition
 export const logEntry = pgTable("log_entry", {

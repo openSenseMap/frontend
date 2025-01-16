@@ -1,5 +1,3 @@
-import type { Device } from "~/schema";
-
 /**
  * Replace german s (ß) with two s
  * @param {*} value string to check
@@ -10,7 +8,7 @@ const doubleGermanS = function (value: string) {
   return value;
 };
 
-export function getArchiveLink(device: Device) {
+export function getArchiveLink(device: any) {
   const date = new Date();
   date.setDate(date.getDate() - 1);
   const yesterday = date

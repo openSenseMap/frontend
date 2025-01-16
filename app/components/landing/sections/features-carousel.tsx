@@ -1,9 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import type { Variants } from "framer-motion";
-import type { Feature } from "~/lib/directus";
-import FeatureCard from "./features-card";
+import { AnimatePresence, motion, type Variants  } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import FeatureCard from "./features-card";
+import  { type Feature } from "~/lib/directus";
 
 type FeaturesProps = {
   data: Feature[];

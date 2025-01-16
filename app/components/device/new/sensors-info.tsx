@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
+import { CustomDeviceConfig } from "./custom-device-config";
 import { Card, CardContent } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 import { getSensorsForModel } from "~/utils/model-definitions";
-import { CustomDeviceConfig } from "./custom-device-config";
 
 export const sensorSchema = z.object({
   title: z.string(),
