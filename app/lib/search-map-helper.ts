@@ -46,13 +46,13 @@ export const goToLocationBBox = (
  *
  * @param lng longitude of the device
  * @param lat latitude of the device
- * @param id id of the device
+ * @param _id id of the device
  */
 export const goToDevice = (
   map: MapRef | undefined,
   lng: number,
   lat: number,
-  id: string,
+  _id: string,
 ) => {
   map?.flyTo({
     center: [lng, lat],

@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { redirect , Link, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
+import { redirect , Link, useLoaderData, type LoaderFunctionArgs  } from "react-router";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
@@ -26,7 +26,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionFunctionArgs) {
+export async function action() {
   return {};
 }
 

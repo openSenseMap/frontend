@@ -3,7 +3,6 @@
  */
 
 import { reactRouter } from "@react-router/dev/vite";
-import remarkFrontmatter from "remark-frontmatter";
 import preserveDirectives from "rollup-preserve-directives";
 import { defineConfig } from "vite";
 // import { flatRoutes } from "remix-flat-routes";

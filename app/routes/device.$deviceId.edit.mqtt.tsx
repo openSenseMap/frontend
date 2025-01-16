@@ -10,7 +10,7 @@ import { checkMqttValidaty } from "~/models/mqtt.server";
 import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -19,7 +19,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { enableMQTTcb, mqttURL, mqttTopic } = Object.fromEntries(formData);
 

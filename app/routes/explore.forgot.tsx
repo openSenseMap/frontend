@@ -69,6 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: { email: "An error occurred. Please try again later." },
         success: false,
+        error: error
       },
       { status: 500 },
     );

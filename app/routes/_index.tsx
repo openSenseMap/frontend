@@ -204,7 +204,7 @@ export default function Index() {
             </div>
           )}
         </div>
-        {sections.map((section, index) => {
+        {sections.map((section, _index) => {
           const Component = section.component;
           return (
             <div

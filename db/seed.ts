@@ -135,6 +135,7 @@ async function seed() {
     process.stdout.write("\n");
   } catch (error) {
     console.log("ℹ️  No measurements found for import!");
+    console.log(error);
   }
 
   console.log(`Database has been seeded. 🌱`);

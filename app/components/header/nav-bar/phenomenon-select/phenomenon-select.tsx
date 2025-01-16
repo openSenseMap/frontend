@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { X } from "lucide-react";
-import  { type Key } from "react";
 // import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react"; // Changed import
+import { useState, useEffect, type Key } from "react"; // Changed import
 import { useLoaderData, useNavigation, useSearchParams } from "react-router";
 import Spinner from "~/components/spinner";
 import { Button } from "~/components/ui/button";

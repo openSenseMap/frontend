@@ -15,7 +15,7 @@ import {
   NotepadText,
 } from "lucide-react";
 import { useState } from "react";
-import { redirect , Link, Outlet, useParams, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
+import { redirect , Link, Outlet, useParams, type LoaderFunctionArgs  } from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
 import { NavBar } from "~/components/nav-bar";
@@ -34,7 +34,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionFunctionArgs) {
+export async function action() {
   return redirect("/");
 }
 
