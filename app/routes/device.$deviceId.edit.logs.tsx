@@ -190,7 +190,7 @@ export default function Logs() {
                             formData.append("logEntryId", logEntry.id);
                             formData.append("isPublic", event.toString());
                             formData.append("intent", "togglePublic");
-                            submit(formData, { method: "post" });
+                            void submit(formData, { method: "post" });
                           }}
                         />
                         <button

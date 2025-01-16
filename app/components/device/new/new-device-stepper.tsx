@@ -244,7 +244,7 @@ export default function NewDeviceStepper() {
       console.log("Complete! Final Data:", updatedData);
 
       // Submit form data as JSON
-      submit(
+      void submit(
         {
           formData: JSON.stringify(updatedData), // Serialize the data
         },

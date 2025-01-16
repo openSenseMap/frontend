@@ -45,7 +45,7 @@ export default function FilterVisualization() {
 
     if (modified) {
       // Update the URL without reloading the page
-      navigate(`?${newParams.toString()}`, { replace: true });
+      void navigate(`?${newParams.toString()}`, { replace: true });
     }
   };
 
@@ -77,7 +77,7 @@ export default function FilterVisualization() {
     newParams.delete(key);
 
     // Update the URL without reloading the page
-    navigate(`?${newParams.toString()}`, { replace: true });
+    void navigate(`?${newParams.toString()}`, { replace: true });
   };
 
   return (

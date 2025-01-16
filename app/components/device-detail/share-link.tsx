@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
 import { Copy, Link } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -83,7 +82,7 @@ export default function ShareLink() {
         ></Input>
         <Button
           onClick={() => {
-            navigator.clipboard.writeText(window.location.href);
+            void navigator.clipboard.writeText(window.location.href);
             toast({
               title: "Copied to clipboard",
               description: "Go ahead and share your link! 🎉",

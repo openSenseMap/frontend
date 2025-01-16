@@ -72,7 +72,7 @@ export default function SearchList(props: SearchListProps) {
         goTo(osem, searchResultsAll[Number(event.key) - 1]);
         setTimeout(() => {
           setShowSearchCallback(false);
-          navigate(handleNavigate(searchResultsAll[Number(event.key) - 1]));
+          void navigate(handleNavigate(searchResultsAll[Number(event.key) - 1]));
         }, 500);
       }
     },
@@ -101,7 +101,7 @@ export default function SearchList(props: SearchListProps) {
     if (length !== 0 && enterPress) {
       goTo(osem, selected);
       setShowSearchCallback(false);
-      navigate(navigateTo);
+      void navigate(navigateTo);
     }
   }, [
     enterPress,
@@ -140,7 +140,7 @@ export default function SearchList(props: SearchListProps) {
           onClick={() => {
             goTo(osem, device);
             setShowSearchCallback(false);
-            navigate(navigateTo);
+            void navigate(navigateTo);
           }}
         />
       ))}
@@ -160,7 +160,7 @@ export default function SearchList(props: SearchListProps) {
             onClick={() => {
               goTo(osem, location);
               setShowSearchCallback(false);
-              navigate(navigateTo);
+              void navigate(navigateTo);
             }}
           />
         );

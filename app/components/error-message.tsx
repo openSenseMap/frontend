@@ -12,7 +12,7 @@ export default function ErrorMessage() {
         <X
           className="cursor-pointer h-4 w-4"
           onClick={() => {
-            goBack();
+            void goBack();
           }}
         />
       </div>

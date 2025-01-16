@@ -21,7 +21,7 @@ export function UserAvatar() {
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data == null) {
-      fetcher.load("/resources/user-avatar");
+      void fetcher.load("/resources/user-avatar");
     }
   }, [fetcher]);
 

@@ -69,13 +69,13 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
               searchParams.delete("sensor");
             }
             if (compareMode) {
-              navigate(
+              void navigate(
                 `/explore/${matches[2].params.deviceId}/compare/${device.id}`,
               );
               setCompareMode(false);
               return;
             }
-            navigate({
+            void navigate({
               pathname: `${device.id}`,
               search: searchParams.toString(),
             });

@@ -3,7 +3,7 @@ import defaultTheme from "tailwindcss/defaultTheme";
 
 export default {
   darkMode: ["class"],
-  content: ["./app/**/*.{ts,tsx,js,jsx,mdx,md}"],
+  content: ["./app/**/*.{ts,tsx,js,jsx}"],
   theme: {
     // shadcn container
     container: {

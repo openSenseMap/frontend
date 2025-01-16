@@ -12,7 +12,7 @@ interface NavBarHandlerProps {
   searchString: string;
 }
 
-function getSections(devices: Device[]) {
+function getSections() {
   return [
     {
       title: "Filter",
@@ -45,7 +45,7 @@ export default function NavbarHandler({
   devices,
   searchString,
 }: NavBarHandlerProps) {
-  const sections = getSections(devices);
+  const sections = getSections();
 
   const { cursor, setCursor } = useKeyboardNav(0, 0, sections.length);
 

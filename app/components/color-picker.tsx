@@ -8,7 +8,6 @@ export function ColorPicker({
   handleColorChange,
   colorPickerState,
   setColorPickerState,
-  className,
 }: {
   handleColorChange: (color: string, index: number) => void;
   colorPickerState: {

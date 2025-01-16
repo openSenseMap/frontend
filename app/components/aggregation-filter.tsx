@@ -52,7 +52,7 @@ export function AggregationFilter() {
       value={selectedAggregation?.value}
       onValueChange={(value) => {
         searchParams.set("aggregation", value);
-        submit(searchParams);
+        void submit(searchParams);
       }}
     >
       <SelectPrimitive.Trigger

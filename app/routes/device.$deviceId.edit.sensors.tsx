@@ -265,7 +265,7 @@ export default function EditBoxSensors() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  navigator.clipboard.writeText(sensor?.id);
+                                  void navigator.clipboard.writeText(sensor?.id);
                                 }}
                               >
                                 <ClipboardCopy className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />

@@ -236,7 +236,7 @@ export default function Explore() {
       const feature = e.features[0];
 
       if (feature.layer.id === "phenomenon-layer") {
-        navigate(
+        void navigate(
           `/explore/${feature.properties?.id}?${searchParams.toString()}`,
         );
       }
