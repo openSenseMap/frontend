@@ -1,4 +1,8 @@
-import type { LoaderFunctionArgs, MetaFunction } from "react-router";
+import tailwindStylesheetUrl from "/app/tailwind.css?url";
+import appStylesheetUrl from "/app/app.css?url";
+import clsx from "clsx";
+import i18next from "./i18next.server";
+import { useTranslation } from "react-i18next";
 import {
   data,
   Links,
@@ -6,18 +10,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
+  useLoaderData, type LoaderFunctionArgs, type MetaFunction 
 } from "react-router";
-import { getEnv } from "./utils/env.server";
-import { getUser } from "./utils/session.server";
-import tailwindStylesheetUrl from "/app/tailwind.css?url";
-import appStylesheetUrl from "/app/app.css?url";
-import clsx from "clsx";
-import i18next from "./i18next.server";
-import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
+import { getEnv } from "./utils/env.server";
+import { getUser } from "./utils/session.server";
 
 export const links = () => {
   return [

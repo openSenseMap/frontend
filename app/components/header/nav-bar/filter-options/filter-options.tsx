@@ -1,12 +1,12 @@
-import { useSearchParams, useNavigation } from "react-router";
 import { X } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { useSearchParams, useNavigation } from "react-router";
+import { NavbarContext } from "..";
+import Spinner from "../../../spinner";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import Spinner from "../../../spinner";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { type DeviceExposureType, type DeviceStatusType } from "~/schema/enum";
-import { NavbarContext } from "..";
 
 export default function FilterOptions() {
   const { setOpen } = useContext(NavbarContext);

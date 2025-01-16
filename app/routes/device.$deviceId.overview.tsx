@@ -1,13 +1,12 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { redirect , Link, useLoaderData } from "react-router";
-import { getUserId } from "~/utils/session.server";
 import { ArrowLeft } from "lucide-react";
-import { Separator } from "~/components/ui/separator";
+import { redirect , Link, useLoaderData, type LoaderFunctionArgs  } from "react-router";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { getDeviceWithoutSensors } from "~/models/device.server";
-import { getSensorsFromDevice } from "~/models/sensor.server";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
+import { Separator } from "~/components/ui/separator";
+import { getDeviceWithoutSensors } from "~/models/device.server";
+import { getSensorsFromDevice } from "~/models/sensor.server";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -27,7 +26,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionFunctionArgs) {
+export async function action() {
   return {};
 }
 

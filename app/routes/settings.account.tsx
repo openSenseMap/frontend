@@ -1,8 +1,6 @@
-import { Form, useActionData, useLoaderData , data, redirect } from "react-router";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { getUserEmail, getUserId } from "~/utils/session.server";
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
+import { useEffect, useRef, useState } from "react";
+import { Form, useActionData, useLoaderData , data, redirect, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
+import invariant from "tiny-invariant";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -12,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,15 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import invariant from "tiny-invariant";
+import { useToast } from "~/components/ui/use-toast";
 import {
   getUserByEmail,
   updateUserName,
   updateUserlocale,
   verifyLogin,
 } from "~/models/user.server";
-import { useEffect, useRef, useState } from "react";
-import { useToast } from "~/components/ui/use-toast";
+import { getUserEmail, getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {

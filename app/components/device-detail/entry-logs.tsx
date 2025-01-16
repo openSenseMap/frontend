@@ -1,8 +1,7 @@
-import { Activity, Clock, ExternalLink } from "lucide-react";
-import type { LogEntry } from "~/schema/log-entry";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
 import { useMediaQuery } from "@mantine/hooks";
+import { Activity, Clock, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { Button } from "../ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -22,13 +20,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "../ui/drawer";
-import { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import  { type LogEntry } from "~/schema/log-entry";
 
 export default function EntryLogs({
   entryLogs = [],

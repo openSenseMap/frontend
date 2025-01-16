@@ -1,5 +1,9 @@
-import type { LinksFunction } from "react-router";
+import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
+import moment from "moment";
+import { Map, MapProvider, Marker } from "react-map-gl";
+import  { type LinksFunction } from "react-router";
 import { NavBar } from "~/components/nav-bar";
+import { Badge } from "~/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -7,11 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Map, MapProvider, Marker } from "react-map-gl";
-import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
 import { diffFromCreateDate, getMinuteFormattedString } from "~/utils";
-import { Badge } from "~/components/ui/badge";
-import moment from "moment";
 
 let deviceData = {
   _id: "5b411d0e5dc1ec001b4f11c8",

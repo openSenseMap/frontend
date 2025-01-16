@@ -1,8 +1,8 @@
-import { useMatches } from "react-router";
-import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
-import type { MyBadge } from "./models/badge.server";
+import { useMatches } from "react-router";
+import  { type MyBadge } from "./models/badge.server";
+import  { type User } from "~/schema";
 
 const DEFAULT_REDIRECT = "/";
 

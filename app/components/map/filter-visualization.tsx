@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
-import { useLoaderData, useNavigate } from "react-router";
-import type { loader } from "~/routes/explore";
 import { Fragment, useEffect } from "react";
+import { useLoaderData, useNavigate } from "react-router";
+import  { type loader } from "~/routes/explore";
 import { DeviceExposureZodEnum, DeviceStatusZodEnum } from "~/schema/enum";
 
 export default function FilterVisualization() {
@@ -45,7 +45,7 @@ export default function FilterVisualization() {
 
     if (modified) {
       // Update the URL without reloading the page
-      navigate(`?${newParams.toString()}`, { replace: true });
+      void navigate(`?${newParams.toString()}`, { replace: true });
     }
   };
 
@@ -77,7 +77,7 @@ export default function FilterVisualization() {
     newParams.delete(key);
 
     // Update the URL without reloading the page
-    navigate(`?${newParams.toString()}`, { replace: true });
+    void navigate(`?${newParams.toString()}`, { replace: true });
   };
 
   return (

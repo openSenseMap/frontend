@@ -1,11 +1,11 @@
+import { Plus, Cloud, Home, HelpCircle, Bike, X, Info } from "lucide-react";
 import React, { useState } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "~/components/ui/label";
-import { Plus, Cloud, Home, HelpCircle, Bike, X, Info } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
+import { Label } from "~/components/ui/label";
 import {
   Tooltip,
   TooltipContent,

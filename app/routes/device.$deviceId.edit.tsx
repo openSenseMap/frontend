@@ -1,7 +1,3 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { redirect , Link, Outlet, useParams } from "react-router";
-import { useState } from "react";
-import { getUserId } from "~/utils/session.server";
 
 //* Toast impl.
 import * as ToastPrimitive from "@radix-ui/react-toast";
@@ -18,10 +14,13 @@ import {
   UploadCloud,
   NotepadText,
 } from "lucide-react";
-import { Separator } from "~/components/ui/separator";
-import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
+import { useState } from "react";
+import { redirect , Link, Outlet, useParams, type LoaderFunctionArgs  } from "react-router";
 import ErrorMessage from "~/components/error-message";
+import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
 import { NavBar } from "~/components/nav-bar";
+import { Separator } from "~/components/ui/separator";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -35,7 +34,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionFunctionArgs) {
+export async function action() {
   return redirect("/");
 }
 

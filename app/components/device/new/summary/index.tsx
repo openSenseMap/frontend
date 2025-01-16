@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -6,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTranslation } from "react-i18next";
 import { sensorWikiLabel } from "~/utils/sensor-wiki-helper";
 
 interface SummaryProps {

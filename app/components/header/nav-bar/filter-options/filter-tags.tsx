@@ -1,12 +1,12 @@
-import { useNavigation, useSearchParams } from "react-router";
 import { Plus, X } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { useNavigation, useSearchParams } from "react-router";
+import { NavbarContext } from "..";
 import Spinner from "~/components/spinner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { NavbarContext } from "..";
 
 export default function FilterTags() {
   const { setOpen } = useContext(NavbarContext);

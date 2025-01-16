@@ -1,7 +1,3 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { redirect , Form, useActionData, useLoaderData, useOutletContext } from "react-router";
-import React, { useState } from "react";
-import { getUserId } from "~/utils/session.server";
 import {
   ChevronDownIcon,
   Trash2,
@@ -12,12 +8,8 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import {
-  addNewSensor,
-  deleteSensor,
-  getSensorsFromDevice,
-  updateSensor,
-} from "~/models/sensor.server";
+import React, { useState } from "react";
+import { redirect , Form, useActionData, useLoaderData, useOutletContext, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
 import invariant from "tiny-invariant";
 import {
   DropdownMenu,
@@ -26,8 +18,15 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { assignIcon, getIcon, iconsList } from "~/utils/sensoricons";
 import ErrorMessage from "~/components/error-message";
+import {
+  addNewSensor,
+  deleteSensor,
+  getSensorsFromDevice,
+  updateSensor,
+} from "~/models/sensor.server";
+import { assignIcon, getIcon, iconsList } from "~/utils/sensoricons";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -266,7 +265,7 @@ export default function EditBoxSensors() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  navigator.clipboard.writeText(sensor?.id);
+                                  void navigator.clipboard.writeText(sensor?.id);
                                 }}
                               >
                                 <ClipboardCopy className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />

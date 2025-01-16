@@ -1,12 +1,12 @@
+import { useMediaQuery } from "@mantine/hooks";
+import { AnimatePresence, motion } from "framer-motion";
+import { SearchIcon, XIcon } from "lucide-react";
 import { useState, useEffect, useRef, createContext } from "react";
+import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl";
 import NavbarHandler from "./nav-bar-handler";
-import { AnimatePresence, motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-import { SearchIcon, XIcon } from "lucide-react";
-import type { Device } from "~/schema";
 import FilterVisualization from "~/components/map/filter-visualization";
-import { useMediaQuery } from "@mantine/hooks";
+import  { type Device } from "~/schema";
 
 interface NavBarProps {
   devices: Device[];

@@ -34,13 +34,7 @@
     "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run",
     "components": "npx shadcn-ui"
   },
-  "prettier": {},
-  "eslintIgnore": [
-    "/node_modules",
-    "/build",
-    "/public/build",
-    "/postgres-data"
-  ],
+  "prettier": "@epic-web/config/prettier",
   "dependencies": {
     "@conform-to/react": "^0.9.1",
     "@conform-to/zod": "^0.9.0",
@@ -163,11 +157,11 @@
     "zod-form-data": "^2.0.2"
   },
   "devDependencies": {
+    "@epic-web/config": "^1.16.5",
     "@eslint/compat": "^1.2.4",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.14.0",
     "@faker-js/faker": "^8.0.2",
-    "@mdx-js/rollup": "^3.0.1",
     "@playwright/test": "^1.48.2",
     "@react-router/dev": "^7.0.0",
     "@react-router/fs-routes": "^7.1.1",
@@ -217,7 +211,6 @@
     "prettier": "3.3.3",
     "prettier-plugin-tailwindcss": "^0.5.11",
     "remark-frontmatter": "^5.0.0",
-    "remark-mdx-frontmatter": "^5.0.0",
     "remix-flat-routes": "^0.6.5",
     "shadcn-ui": "^0.4.0",
     "start-server-and-test": "^2.0.0",

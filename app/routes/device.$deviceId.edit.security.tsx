@@ -1,13 +1,12 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { redirect , Form } from "react-router";
-import { getUserId } from "~/utils/session.server";
 import { RefreshCw, Save } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+import  { type LoaderFunctionArgs, redirect , Form  } from "react-router";
+import { Checkbox } from "@/components/ui/checkbox";
 import ErrorMessage from "~/components/error-message";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -16,7 +15,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action() {
   return "";
 }
 

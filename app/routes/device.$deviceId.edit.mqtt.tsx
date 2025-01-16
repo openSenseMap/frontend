@@ -1,17 +1,16 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { data, redirect , Form, useActionData } from "react-router";
-import { getUserId } from "~/utils/session.server";
 import { Save } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import React, { useState } from "react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { data, redirect , Form, useActionData, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ErrorMessage from "~/components/error-message";
 import { toast } from "~/components/ui/use-toast";
 import { checkMqttValidaty } from "~/models/mqtt.server";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   //* if user is not logged in, redirect to home
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
@@ -20,7 +19,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { enableMQTTcb, mqttURL, mqttTopic } = Object.fromEntries(formData);
 

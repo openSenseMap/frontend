@@ -2,15 +2,12 @@
  * epic-stack: https://github.com/epicweb-dev/epic-stack/blob/main/vite.config.ts
  */
 
-import mdx from "@mdx-js/rollup";
 import { reactRouter } from "@react-router/dev/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-import remarkFrontmatter from "remark-frontmatter";
-import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import preserveDirectives from "rollup-preserve-directives";
 import { defineConfig } from "vite";
 // import { flatRoutes } from "remix-flat-routes";
 
-import preserveDirectives from "rollup-preserve-directives";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const MODE = process.env.NODE_ENV;
 
@@ -42,9 +39,6 @@ export default defineConfig({
     },
   },
   plugins: [
-    mdx({
-      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
-    }),
     preserveDirectives(),
     tsconfigPaths(),
     process.env.NODE_ENV === "test" ? null : reactRouter(),

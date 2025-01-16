@@ -1,9 +1,11 @@
 import { conform, useForm } from "@conform-to/react";
 import { getFieldsetConstraint, parse } from "@conform-to/zod";
-import type {
-  LoaderFunctionArgs,
-  ActionFunctionArgs} from "react-router";
-import {
+import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
+import { eq } from "drizzle-orm";
+import { useState } from "react";
+import  {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
   data,
   redirect,
   Form,
@@ -11,27 +13,24 @@ import {
   useLoaderData,
   useNavigate
 } from "react-router";
-import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
+import { z } from "zod";
+import ErrorMessage from "~/components/error-message";
+import { LabelButton } from "~/components/label-button";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { z } from "zod";
 import { drizzleClient } from "~/db.server";
-import { requireUserId } from "~/utils/session.server";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { LabelButton } from "~/components/label-button";
-import { getInitials } from "~/utils/misc";
-import ErrorMessage from "~/components/error-message";
-import { profileImage } from "~/schema";
-import { eq } from "drizzle-orm";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { getUserById } from "~/models/user.server";
 import { getProfileByUserId } from "~/models/profile.server";
+import { getUserById } from "~/models/user.server";
+import { profileImage } from "~/schema";
 import { uploadHandler } from "~/utils/file-upload.server";
+import { getInitials } from "~/utils/misc";
+import { requireUserId } from "~/utils/session.server";
 
 const MAX_SIZE = 1024 * 1024 * 3; // 3MB
 

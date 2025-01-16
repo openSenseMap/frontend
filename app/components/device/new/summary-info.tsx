@@ -1,7 +1,7 @@
-import { useFormContext } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MapPin, Tag, Smartphone, Cpu, Cog } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function SummaryInfo() {
   const { getValues } = useFormContext();

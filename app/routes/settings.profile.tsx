@@ -1,17 +1,13 @@
+import { InfoIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
 Form, Link, Outlet, useActionData, // useFormAction,
 // useNavigation,
-useLoaderData
+useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs 
 } from "react-router";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { requireUserId } from "~/utils/session.server";
-import { getInitials } from "~/utils/misc";
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
 import ErrorMessage from "~/components/error-message";
-import { getProfileByUserId, updateProfile } from "~/models/profile.server";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -20,16 +16,19 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Switch } from "~/components/ui/switch";
-import { useEffect, useState } from "react";
-import { useToast } from "~/components/ui/use-toast";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { InfoIcon } from "lucide-react";
+import { useToast } from "~/components/ui/use-toast";
+import { getProfileByUserId, updateProfile } from "~/models/profile.server";
+import { getInitials } from "~/utils/misc";
+import { requireUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserId(request);
