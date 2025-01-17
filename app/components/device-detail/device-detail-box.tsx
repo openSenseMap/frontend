@@ -76,7 +76,7 @@ import { useToast } from '../ui/use-toast'
 import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
 import { type loader } from '~/routes/explore.$deviceId'
-import  { type SensorWithLatestMeasurement } from '~/schema'
+import { type SensorWithLatestMeasurement } from '~/schema'
 import { getArchiveLink } from '~/utils/device'
 
 export interface MeasurementProps {
@@ -103,7 +103,7 @@ export default function DeviceDetailBox() {
 	const sensorIds = new Set()
 
 	const data = useLoaderData<typeof loader>()
-	const nodeRef = useRef(null)
+	const nodeRef = useRef<HTMLDivElement>(null)
 	// state variables
 	const [open, setOpen] = useState(true)
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
@@ -195,7 +195,7 @@ export default function DeviceDetailBox() {
 		<>
 			{open && (
 				<Draggable
-					nodeRef={nodeRef}
+					nodeRef={nodeRef as React.RefObject<HTMLDivElement>}
 					defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
 					onDrag={handleDrag}
 					bounds="#osem"
