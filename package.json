@@ -104,6 +104,7 @@
     "geolib": "^3.3.4",
     "get-port": "^7.1.0",
     "get-user-locale": "^2.2.1",
+    "i": "^0.3.7",
     "i18next": "^24.2.1",
     "i18next-browser-languagedetector": "^7.0.1",
     "i18next-fs-backend": "^2.1.1",
@@ -117,6 +118,7 @@
     "morgan": "^1.10.0",
     "mqtt": "^5.1.2",
     "node-fetch": "^3.3.1",
+    "npm": "^11.0.0",
     "pg": "^8.11.3",
     "postcss-import": "^16.1.0",
     "postgres": "^3.4.1",
@@ -218,9 +220,9 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.1",
     "typescript": "5.1.6",
-    "vite": "^6.0.7",
+    "vite": "^6.0.11",
     "vite-tsconfig-paths": "^3.6.0",
-    "vitest": "^2.1.4"
+    "vitest": "^3.0.3"
   },
   "engines": {
     "node": "22"
