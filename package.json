@@ -195,7 +195,7 @@
     "@vitejs/plugin-react": "^4.0.4",
     "@vitest/coverage-v8": "^2.1.5",
     "autoprefixer": "^10.4.15",
-    "cookie": "^0.6.0",
+    "cookie": "^1.0.2",
     "cssnano": "^7.0.6",
     "csvtojson": "^2.0.10",
     "esbuild": "^0.19.4",
