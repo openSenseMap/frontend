@@ -1,6 +1,6 @@
 import { addDays } from "date-fns";
 import { redirect, type LoaderFunctionArgs, useLoaderData  } from "react-router";
-import Graph from "~/components/device-detail/graph";
+import Graph from "~/components/device-overview/graph";
 import MobileBoxView from "~/components/map/layers/mobile/mobile-box-view";
 import { getDevice } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
