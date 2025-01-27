@@ -15,8 +15,8 @@ import {
 } from '../ui/card'
 import { toast } from '../ui/use-toast'
 import SensorIcon from '../sensor-icon'
-import { Separator } from '../ui/separator'
 import { type SensorWithLatestMeasurement } from '~/schema'
+import { Separator } from '../ui/separator'
 
 export default function SensorCards({
 	sensors,

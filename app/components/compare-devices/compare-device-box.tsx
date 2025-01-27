@@ -27,9 +27,9 @@ export default function CompareDevices({
 						</div>
 					)}
 					{/* this is the header */}
-					<div className="flex w-full cursor-move items-center gap-3 py-2">
+					<div className="flex w-full cursor-move items-end gap-3 py-2">
 						<X
-							className="cursor-pointer"
+							className="cursor-pointer ml-auto"
 							onClick={() => {
 								void navigate({
 									pathname: '/explore',
