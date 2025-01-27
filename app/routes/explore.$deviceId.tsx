@@ -8,7 +8,6 @@ import {
 } from 'react-router'
 
 import DeviceDetailBox from '~/components/device-overview/device-detail-box'
-import ErrorMessage from '~/components/error-message'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import i18next from '~/i18next.server'

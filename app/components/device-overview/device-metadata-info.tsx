@@ -1,7 +1,7 @@
-import { CalendarPlus, Cpu, LandPlot, Rss } from 'lucide-react'
-import InfoItem from './info-item'
 import { Separator } from '../ui/separator'
 import { format } from 'date-fns'
+import { CalendarPlus, Cpu, LandPlot, Rss } from 'lucide-react'
+import InfoItem from './info-item'
 
 export default function DeviceMetadataInfo({
 	exposure,

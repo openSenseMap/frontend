@@ -15,7 +15,7 @@ export default function Compare() {
 					<XSquare
 						className="h-4 w-4 cursor-pointer"
 						onClick={() => {
-							navigate('/explore')
+							void navigate('/explore')
 						}}
 					/>
 					<AlertTitle>Compare devices</AlertTitle>

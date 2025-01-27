@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { Archive, EllipsisVertical, ExternalLink, Scale } from 'lucide-react'
 import { Button } from '../ui/button'
 import {
@@ -8,7 +9,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import { Link } from 'react-router'
 import { getArchiveLink } from '~/utils/device'
 
 export default function DeviceOptions({

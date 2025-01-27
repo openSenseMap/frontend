@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns'
 import {
 	Link,
 	useMatches,
@@ -5,7 +6,6 @@ import {
 	useParams,
 	useSearchParams,
 } from 'react-router'
-import { SensorWithLatestMeasurement } from '~/schema'
 import {
 	Card,
 	CardContent,
@@ -16,7 +16,7 @@ import {
 import { toast } from '../ui/use-toast'
 import SensorIcon from '../sensor-icon'
 import { Separator } from '../ui/separator'
-import { formatDistanceToNow } from 'date-fns'
+import { type SensorWithLatestMeasurement } from '~/schema'
 
 export default function SensorCards({
 	sensors,

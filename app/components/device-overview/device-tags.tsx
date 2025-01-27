@@ -1,7 +1,7 @@
+import { useNavigate, useSearchParams } from 'react-router'
 import { Hash } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import clsx from 'clsx'
-import { useNavigate, useSearchParams } from 'react-router'
 
 export default function DeviceTags({ tags }: { tags: string[] }) {
 	const [searchParams] = useSearchParams()

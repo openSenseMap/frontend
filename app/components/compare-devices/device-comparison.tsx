@@ -1,4 +1,3 @@
-import { Device } from '~/schema'
 import DeviceInfo from './device-info'
 import { SensorComparison } from './sensor-comparison'
 import { Separator } from '../ui/separator'

@@ -1,9 +1,9 @@
-import { Device } from '~/schema'
+import { Link } from 'react-router'
+import { type Device } from '~/schema'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { ExposureBadge } from './exposure-badge'
 import { StatusBadge } from './status-badge'
 import { Trash } from 'lucide-react'
-import { Link } from 'react-router'
 
 export default function DeviceInfo({
 	device,

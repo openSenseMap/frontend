@@ -1,8 +1,6 @@
+import { useNavigate, useNavigation, useSearchParams } from 'react-router'
 import { X } from 'lucide-react'
 import Spinner from '../spinner'
-import { useNavigate, useNavigation, useSearchParams } from 'react-router'
-import DeviceInfo from './device-info'
-import { SensorComparison } from './sensor-comparison'
 import { DeviceComparison } from './device-comparison'
 
 export default function CompareDevices({
@@ -15,9 +13,9 @@ export default function CompareDevices({
 	const [searchParams] = useSearchParams()
 
 	const allSensors = devicesWithSensors.flatMap((device) => device.sensors)
-	const uniqueSensorTitles = [
-		...new Set(allSensors.map((sensor) => sensor.title)),
-	]
+	// const uniqueSensorTitles = [
+	// 	...new Set(allSensors.map((sensor) => sensor.title)),
+	// ]
 
 	return (
 		<>

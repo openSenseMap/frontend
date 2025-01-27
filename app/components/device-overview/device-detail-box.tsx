@@ -8,6 +8,11 @@ import {
 	useNavigation,
 	useSearchParams,
 } from 'react-router'
+import DeviceMetadataInfo from './device-metadata-info'
+import DeviceImage from './device-image'
+import DeviceOptions from './device-options'
+import DeviceTags from './device-tags'
+import SensorCards from './sensor-cards'
 import Spinner from '../spinner'
 import {
 	Accordion,
@@ -35,11 +40,6 @@ import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
 import { type loader } from '~/routes/explore.$deviceId'
 import { type SensorWithLatestMeasurement } from '~/schema'
-import DeviceMetadataInfo from './device-metadata-info'
-import DeviceImage from './device-image'
-import DeviceOptions from './device-options'
-import DeviceTags from './device-tags'
-import SensorCards from './sensor-cards'
 
 export interface MeasurementProps {
 	sensorId: string
