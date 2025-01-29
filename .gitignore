@@ -21,3 +21,5 @@ measurements.csv
 /playwright/.cache/
 
 .react-router/
+
+/coverage
