@@ -180,7 +180,7 @@
     "@types/lodash.debounce": "^4.0.9",
     "@types/mapbox__mapbox-gl-geocoder": "^4.7.4",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^18.19.55",
+    "@types/node": "^22.13.4",
     "@types/node-fetch": "^2.6.4",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
