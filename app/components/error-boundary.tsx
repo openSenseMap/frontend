@@ -1,10 +1,11 @@
+import React from "react";
 import { isRouteErrorResponse, useParams, useRouteError, type ErrorResponse  } from "react-router";
 import { getErrorMessage } from "~/utils/misc";
 
 type StatusHandler = (info: {
   error: ErrorResponse;
   params: Record<string, string | undefined>;
-}) => JSX.Element | null;
+}) => React.JSX.Element | null;
 
 export function GeneralErrorBoundary({
   defaultStatusHandler = ({ error }) => (
@@ -17,7 +18,7 @@ export function GeneralErrorBoundary({
 }: {
   defaultStatusHandler?: StatusHandler;
   statusHandlers?: Record<number, StatusHandler>;
-  unexpectedErrorHandler?: (error: unknown) => JSX.Element | null;
+  unexpectedErrorHandler?: (error: unknown) => React.JSX.Element | null;
 }) {
   const error = useRouteError();
   const params = useParams();

@@ -97,7 +97,7 @@ export default function Graph({
 	})
 	const isAggregated = aggregation !== 'raw'
 
-	const nodeRef = useRef(null)
+	const nodeRef = useRef<HTMLDivElement>(null)
 	const chartRef = useRef<ChartJS<'line'>>(null)
 
 	useEffect(() => {
@@ -518,7 +518,7 @@ export default function Graph({
 	return (
 		<>
 			<Draggable
-				nodeRef={nodeRef}
+				nodeRef={nodeRef as React.RefObject<HTMLDivElement>}
 				bounds="#osem"
 				handle="#graphTop"
 				defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
