@@ -8,7 +8,7 @@ const doubleGermanS = function (value: string) {
   return value;
 };
 
-export function getArchiveLink(device: any) {
+export function getArchiveLink({ name, id } : { name: string, id: string }) {
   const date = new Date();
   date.setDate(date.getDate() - 1);
   const yesterday = date
@@ -17,8 +17,8 @@ export function getArchiveLink(device: any) {
     .reverse()
     .join("-");
   const normalizedName = doubleGermanS(
-    device.name.replace(/[^A-Za-z0-9._-]/g, "_")
+    name.replace(/[^A-Za-z0-9._-]/g, "_")
   );
 
-  return `https://archive.opensensemap.org/${yesterday}/${device.id}-${normalizedName}`;
+  return `https://archive.opensensemap.org/${yesterday}/${id}-${normalizedName}`;
 }
