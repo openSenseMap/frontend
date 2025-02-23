@@ -104,7 +104,6 @@ export default function Index() {
       className="w-screen h-screen bg-white dark:bg-black scroll-snap-container"
       style={{
         scrollSnapType: "y mandatory",
-        overflowY: "scroll",
         height: "100vh",
       }}
     >
