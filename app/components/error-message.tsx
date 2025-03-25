@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
+import { useNavigate } from "react-router";
 import { Alert, AlertDescription } from "./ui/alert";
-import { useNavigate } from "@remix-run/react";
 
 export default function ErrorMessage() {
   let navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function ErrorMessage() {
         <X
           className="cursor-pointer h-4 w-4"
           onClick={() => {
-            goBack();
+            void goBack();
           }}
         />
       </div>

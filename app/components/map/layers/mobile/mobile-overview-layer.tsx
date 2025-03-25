@@ -1,13 +1,12 @@
+import bbox from "@turf/bbox";
+import { point, featureCollection } from "@turf/helpers";
+import { format } from "date-fns";
+import  { type FeatureCollection, type Point } from "geojson";
+import { CalendarClock } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Source, Layer, useMap, Popup } from "react-map-gl";
-import { point, featureCollection } from "@turf/helpers";
-import bbox from "@turf/bbox";
-import type { FeatureCollection, Point } from "geojson";
-import type { LocationPoint } from "~/lib/mobile-box-helper";
-import { categorizeIntoTrips } from "~/lib/mobile-box-helper";
 import MapLegend from "./mobile-overview-legend";
-import { format } from "date-fns";
-import { CalendarClock } from "lucide-react";
+import  { type LocationPoint, categorizeIntoTrips  } from "~/lib/mobile-box-helper";
 
 const FIT_PADDING = 100;
 

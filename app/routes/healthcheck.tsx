@@ -1,5 +1,5 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
-import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import  { type LoaderFunctionArgs } from "react-router";
 import { drizzleClient } from "~/db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

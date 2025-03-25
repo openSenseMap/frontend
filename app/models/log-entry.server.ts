@@ -1,10 +1,10 @@
+import { eq, and, desc } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
   type LogEntry,
   logEntry,
   type InsertLogEntry,
 } from "~/schema/log-entry";
-import { eq, and, desc } from "drizzle-orm";
 
 /**
  * Create a new log entry for a device

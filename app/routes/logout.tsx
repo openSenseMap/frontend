@@ -1,8 +1,7 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import  { type ActionFunctionArgs, redirect  } from "react-router";
 import ErrorMessage from "~/components/error-message";
 
-import { logout } from "~/session.server";
+import { logout } from "~/utils/session.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

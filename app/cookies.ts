@@ -1,4 +1,4 @@
-import { createCookie } from "@remix-run/node";
+import { createCookie } from "react-router";
 
 const isProduction = process.env.NODE_ENV === "production";
 

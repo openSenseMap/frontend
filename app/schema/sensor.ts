@@ -1,13 +1,13 @@
 import { createId } from "@paralleldrive/cuid2";
-import { pgTable, text, timestamp, json } from "drizzle-orm/pg-core";
-import { DeviceStatusEnum } from "./enum";
 import {
   relations,
   type InferInsertModel,
   type InferSelectModel,
 } from "drizzle-orm";
+import { pgTable, text, timestamp, json } from "drizzle-orm/pg-core";
 import { device } from "./device";
-import type { Measurement } from "./measurement";
+import { DeviceStatusEnum } from "./enum";
+import  { type Measurement } from "./measurement";
 
 /**
  * Table
@@ -51,4 +51,14 @@ export const sensorRelations = relations(sensor, ({ one }) => ({
 export type Sensor = InferSelectModel<typeof sensor>;
 export type InsertSensor = InferInsertModel<typeof sensor>;
 
-export type SensorWithMeasurement = Sensor & Measurement;
+export type SensorWithLatestMeasurement = Sensor & Measurement;
+
+export type SensorWithMeasurementData = Sensor & {
+  data: {
+    locationId?: BigInt | null;
+    location?: { id: number; x: number; y: number } | null;
+    time: Date | null;
+    value: number | null;
+    sensorId: string | null;
+  }[];
+};

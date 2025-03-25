@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import AnimatedCounter from "../ui/animated-counter";
 import { useTranslation } from "react-i18next";
+import AnimatedCounter from "../ui/animated-counter";
 
 export default function Stats(stats: number[]) {
   const { t } = useTranslation("stats");

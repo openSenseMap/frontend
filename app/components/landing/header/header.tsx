@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { useState } from "react";
-import { ModeToggle } from "../../mode-toggle";
+import { Link } from "react-router";
+// import { ModeToggle } from "../../mode-toggle";
 import LanguageSelector from "./language-selector";
 
 const links = [
@@ -34,7 +34,10 @@ export default function Header() {
   const [openMenu, setOpenMenu] = useState(false);
 
   return (
-    <nav id="header" className="relative z-50 h-16 py-6 mx-auto flex max-w-7xl justify-between dark:border-gray-300 dark:bg-black">
+    <nav
+      id="header"
+      className="relative z-50 h-16 py-6 mx-auto flex max-w-7xl justify-between dark:border-gray-300 dark:bg-black"
+    >
       <div className="container z-50 mx-auto flex flex-wrap items-center justify-between font-serif px-4">
         {/* Osem Logo*/}
         <div className="flex max-w-screen-xl flex-wrap items-center justify-between">
@@ -71,7 +74,7 @@ export default function Header() {
         <div>
           <div className="flex items-center justify-center md:order-2 gap-2">
             {/* Theme */}
-            <ModeToggle />
+            {/* <ModeToggle /> */}
             {/* Language */}
             <LanguageSelector />
             {/* Collapsible navigation bar */}

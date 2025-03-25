@@ -1,8 +1,8 @@
-import { useMatches } from "@remix-run/react";
-import type { User } from "~/schema";
 import moment from "moment";
 import { useMemo } from "react";
-import type { MyBadge } from "./models/badge.server";
+import { useMatches } from "react-router";
+import  { type MyBadge } from "./models/badge.server";
+import  { type User } from "~/schema";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -146,6 +146,7 @@ export function getFilteredDevices(
 
     return (
       // If "all" is selected, include all exposures; otherwise, check for matches
+      (// If tags are provided, check if the device contains any of the selected tags
       (exposureFilter.includes("all") ||
         exposureFilter.includes(device.properties.exposure.toLowerCase())) &&
       // If "all" is selected, include all statuses; otherwise, check for matches
@@ -153,10 +154,7 @@ export function getFilteredDevices(
         statusFilter.includes(device.properties.status.toLowerCase())) &&
       // If phenomenon is provided, check if any sensor matches the selected phenomenon
       (!filterParams.get("phenomenon") ||
-        sensorsList.some((s: any) => phenomenonList?.includes(s))) &&
-      // If tags are provided, check if the device contains any of the selected tags
-      (tagsFilter.length === 0 ||
-        tagsFilter.some((tag) => deviceTags.includes(tag)))
+        sensorsList.some((s: any) => phenomenonList?.includes(s))) && (tagsFilter.length === 0 || tagsFilter.some((tag) => deviceTags.includes(tag))))
     );
   });
 

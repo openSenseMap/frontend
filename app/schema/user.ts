@@ -1,10 +1,9 @@
 import { createId } from "@paralleldrive/cuid2";
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { relations } from "drizzle-orm";
+import  { type InferInsertModel, type InferSelectModel, relations  } from "drizzle-orm";
 import { pgTable, boolean, text, timestamp } from "drizzle-orm/pg-core";
+import { device } from "./device";
 import { password } from "./password";
 import { profile } from "./profile";
-import { device } from "./device";
 
 /**
  * Table
