@@ -34,7 +34,7 @@ export default function MobileOverviewLayer({
 }) {
   // Generate trips and assign colors once
   const trips = useMemo(
-    () => categorizeIntoTrips(locations, 50, 600),
+    () => categorizeIntoTrips(locations, 50),
     [locations],
   );
 

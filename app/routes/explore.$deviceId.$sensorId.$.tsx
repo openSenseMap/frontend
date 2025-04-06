@@ -2,6 +2,7 @@ import { addDays } from 'date-fns'
 import { redirect, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import Graph from '~/components/device-detail/graph'
 import MobileBoxView from '~/components/map/layers/mobile/mobile-box-view'
+import { categorizeIntoTrips, LocationPoint } from '~/lib/mobile-box-helper'
 import { getDevice } from '~/models/device.server'
 import { getMeasurement } from '~/models/measurement.server'
 import { getSensor } from '~/models/sensor.server'
@@ -63,8 +64,50 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		},
 	}))
 
-	sensor1.data = normalizedSensor1Data
-	sensor1.color = sensor1.color || '#8da0cb'
+	// If device exposure is 'mobile', process trips
+	if (device.exposure === 'mobile') {
+		// Categorize data into trips
+		const dataPoints: LocationPoint[] = normalizedSensor1Data.map((d) => ({
+			geometry: { x: d.location.x, y: d.location.y },
+			time: d.time.toISOString(), // Ensure the time is in ISO format
+		}))
+
+		const trips = categorizeIntoTrips(dataPoints, 600) // 600 seconds (10 minutes) as the time threshold
+
+		// Get the latest 5 trips
+		const latestTrips = trips.slice(0, 1)
+
+		// Calculate the time range of the latest 5 trips
+		const latestTripTimeRange = {
+			startTime: latestTrips[0].startTime,
+			endTime: latestTrips[latestTrips.length - 1].endTime,
+		}
+
+		// Filter sensor data to include only the points within the time range of the latest 5 trips
+		const filteredData = normalizedSensor1Data.filter((point) => {
+			const pointTime = point.time.getTime()
+			const tripStartTime = new Date(latestTripTimeRange.startTime).getTime()
+			const tripEndTime = new Date(latestTripTimeRange.endTime).getTime()
+
+			// Keep only the points within the time range of the latest trips
+			return pointTime >= tripStartTime && pointTime <= tripEndTime
+		})
+
+		// Update sensor1 data with the filtered data
+		sensor1.data = filteredData.map((d) => ({
+			...d,
+			sensorId: sensorId, // Set the sensorId to match
+			locationId: d.locationId ?? null, // Retain the locationId if available
+			location: d.location,
+			time: d.time, // Keep the timestamp
+			value: d.value ?? 0, // Set value to the actual value or default it to 0
+		}))
+
+		sensor1.color = sensor1.color || '#8da0cb'
+	} else {
+		sensor1.data = normalizedSensor1Data
+		sensor1.color = sensor1.color || '#8da0cb'
+	}
 
 	let sensor2: SensorWithColor | null = null
 
@@ -98,8 +141,48 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			},
 		}))
 
-		sensor2.data = normalizedSensor2Data
-		sensor2.color = sensor2.color || '#fc8d62'
+		if (device.exposure === 'mobile') {
+			// Categorize data into trips
+			const dataPoints: LocationPoint[] = normalizedSensor2Data.map((d) => ({
+				geometry: { x: d.location.x, y: d.location.y },
+				time: d.time.toISOString(), // Ensure the time is in ISO format
+			}))
+
+			const trips = categorizeIntoTrips(dataPoints, 600) // 600 seconds (10 minutes) as the time threshold
+
+			// Get the latest trip --- slice to get more trips if needed
+			const latestTrips = trips.slice(0, 1)
+
+			// Calculate the time range of the latest 5 trips
+			const latestTripTimeRange = {
+				startTime: latestTrips[0].startTime,
+				endTime: latestTrips[latestTrips.length - 1].endTime,
+			}
+
+			// Filter sensor data to include only the points within the time range of the latest 5 trips
+			const filteredData = normalizedSensor2Data.filter((point) => {
+				const pointTime = point.time.getTime()
+				const tripStartTime = new Date(latestTripTimeRange.startTime).getTime()
+				const tripEndTime = new Date(latestTripTimeRange.endTime).getTime()
+
+				// Keep only the points within the time range of the latest trips
+				return pointTime >= tripStartTime && pointTime <= tripEndTime
+			})
+
+			// Update sensor2 data with the filtered data
+			sensor2.data = filteredData.map((d) => ({
+				...d,
+				sensorId: sensorId2, // Set the sensorId to match
+				locationId: d.locationId ?? null, // Retain the locationId if available
+				location: d.location,
+				time: d.time, // Keep the timestamp
+				value: d.value ?? 0, // Set value to the actual value or default it to 0
+			}))
+			sensor2.color = sensor2.color || '#fc8d62'
+		} else {
+			sensor2.data = normalizedSensor2Data
+			sensor2.color = sensor2.color || '#fc8d62'
+		}
 	}
 
 	return {
