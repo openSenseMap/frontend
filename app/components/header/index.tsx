@@ -1,3 +1,4 @@
+import Download from "./download";
 import Home from "./home";
 import Menu from "./menu";
 import NavBar from "./nav-bar";
@@ -16,6 +17,7 @@ export default function Header(props: HeaderProps) {
       <Home />
       <NavBar devices={props.devices} />
       <div className="flex">
+        <Download devices={props.devices} />
         {/* {data?.user?.email ? <Notification /> : null} */}
         <Menu />
       </div>
