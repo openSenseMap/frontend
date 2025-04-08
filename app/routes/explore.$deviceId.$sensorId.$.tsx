@@ -65,7 +65,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	}))
 
 	// If device exposure is 'mobile', process trips
-	if (device.exposure === 'mobile') {
+	if (device.exposure === 'mobile' && !startDate) {
 		// Categorize data into trips
 		const dataPoints: LocationPoint[] = normalizedSensor1Data.map((d) => ({
 			geometry: { x: d.location.x, y: d.location.y },
