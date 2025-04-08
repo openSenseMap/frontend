@@ -90,6 +90,21 @@ export function getMeasurement(
           lte(measurement.time, endDate),
         ),
       orderBy: [desc(measurement.time)],
+      with: {
+        location: {
+          // https://github.com/drizzle-team/drizzle-orm/pull/2778
+          // with: {
+          //   geometry: true
+          // },
+          columns: {
+            id: true,
+          },
+          extras: {
+            x: sql<number>`ST_X(${location.location})`.as("x"),
+            y: sql<number>`ST_Y(${location.location})`.as("y"),
+          },
+        },
+      },
     });
   }
 
