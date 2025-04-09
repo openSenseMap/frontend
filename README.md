@@ -12,7 +12,7 @@ Originally, the *openSenseMap* was built as part of the bachelor thesis of [@mpf
 If you do need to set the project up locally yourself, feel free to follow these instructions:
 
 ### System Requirements
-- [Node.js](https://nodejs.org/) >= 20.0.0
+- [Node.js](https://nodejs.org/) >= 22.0.0
 - [npm](https://npmjs.com/) >= 8.18.0
 - [git](https://git-scm.com/) >= 2.38.0
 - [Docker](https://www.docker.com) >= 27.0.0
