@@ -6,8 +6,8 @@ This repository contains the code of the new _openSenseMap_ frontend running at
 Originally, the _openSenseMap_ was built as part of the bachelor thesis of
 [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics,
 University of Münster). Between 2016 and 2022 development was partly funded by
-the German Ministry of Education and Research (BMBF) in the projets senseBox and
-senseBox Pro. This version has been developed by
+the German Ministry of Education and Research (BMBF) in the projects senseBox
+and senseBox Pro. This version has been developed by
 [@mpfeil](https://github.com/mpfeil) and
 [@freds-dev](https://github.com/freds-dev).
 
@@ -23,6 +23,13 @@ instructions:
 - [Node.js](https://nodejs.org/) >= 22.0.0
 - [npm](https://npmjs.com/) >= 8.18.0
 - [git](https://git-scm.com/) >= 2.38.0
+- [Docker](https://www.docker.com) >= 27.0.0
+
+#### Developing inside a DevContainer
+
+- [Visual Studio Code](https://code.visualstudio.com/)
+  - the
+    [DevContainers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - [Docker](https://www.docker.com) >= 27.0.0
 
 ### Variables
@@ -47,6 +54,19 @@ You can create a copy of `.env.example`, rename it to `.env` and set the values.
    postgres DB
 5. Run `npm run build`
 6. Run `npm run dev` to start the local server
+
+#### Using a DevContainer
+
+Simply open the project in Visual Studio Code. It should prompt and ask you if
+you would like to open the project in a DevContainer.
+
+If you are not prompted hit <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+(<kbd>Shift</kbd>+<kbd>Command</kbd>+<kbd>P</kbd> on Mac) and select
+`>DevContainers: Open Workspace in Container...`.
+
+The DevContainer will now build (which will take a bit the first time your are
+doing this) and the window will reload. For convenience `npm install` and
+`npm run build` are executed for you on start.
 
 ### Debugging
 
