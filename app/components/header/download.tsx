@@ -23,6 +23,9 @@ import {
 import { Checkbox } from '../ui/checkbox'
 import debounce from 'lodash.debounce'
 import { Device } from '~/schema'
+import { Form, useActionData } from 'react-router'
+import { string } from 'zod'
+import { Input } from '../ui/input'
 
 const DEBOUNCE_VALUE = 50
 
@@ -77,7 +80,13 @@ export default function Download(props: any) {
 				})
 			: []
 	console.log('🚀 ~ Download ~ devicesInBounds:', devicesInBounds.length)
-
+	console.log(devicesInBounds);
+	let deviceIDs:Array<string> = [];
+	devicesInBounds.map((device:any)=>{
+		deviceIDs.push(device.properties.id);
+	})
+	console.log(deviceIDs);
+	
 	const [format, setFormat] = useState<string>('csv')
 	const [fields, setFields] = useState({
 		title: true,
@@ -96,6 +105,7 @@ export default function Download(props: any) {
 		console.log('Bounds:', bounds)
 		console.log(devicesInBounds)
 	}
+	
 	return (
 		<Dialog>
 			<DialogTrigger asChild className="pointer-events-auto">
@@ -117,9 +127,12 @@ export default function Download(props: any) {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
+				  <Form method='post' action='/explore/$deviceId'>
 					<div className="grid gap-2">
+						<Label htmlFor='Devices'>Devices</Label>
+						<Input type="text" name='devices' value={deviceIDs} readOnly/>
 						<Label htmlFor="format">Format</Label>
-						<Select value={format} onValueChange={setFormat}>
+						<Select value={format} onValueChange={setFormat} name='format'>
 							<SelectTrigger id="format">
 								<SelectValue placeholder="Select format" />
 							</SelectTrigger>
@@ -138,7 +151,7 @@ export default function Download(props: any) {
 									id="title"
 									checked={fields.title}
 									onCheckedChange={() => handleFieldChange('title')}
-								/>
+								name='title'/>
 								<Label htmlFor="title" className="cursor-pointer">
 									Title
 								</Label>
@@ -148,7 +161,7 @@ export default function Download(props: any) {
 									id="unit"
 									checked={fields.unit}
 									onCheckedChange={() => handleFieldChange('unit')}
-								/>
+								name='unit'/>
 								<Label htmlFor="unit" className="cursor-pointer">
 									Unit
 								</Label>
@@ -158,7 +171,7 @@ export default function Download(props: any) {
 									id="value"
 									checked={fields.value}
 									onCheckedChange={() => handleFieldChange('value')}
-								/>
+								name='value'/>
 								<Label htmlFor="value" className="cursor-pointer">
 									Value
 								</Label>
@@ -168,16 +181,19 @@ export default function Download(props: any) {
 									id="timestamp"
 									checked={fields.timestamp}
 									onCheckedChange={() => handleFieldChange('timestamp')}
-								/>
+								name='timestamp'/>
 								<Label htmlFor="timestamp" className="cursor-pointer">
 									Timestamp
 								</Label>
 							</div>
 						</div>
 					</div>
+					<div className='w-full mt-3 items-center justify-center space-x-2'>
+						<Button type='submit'>Download</Button>
+					</div>
+					</Form>
 				</div>
 				<DialogFooter>
-					<Button onClick={handleDownload}>Download</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

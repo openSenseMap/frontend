@@ -329,7 +329,7 @@ export default function Explore() {
           {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-          <Outlet />
+          <Outlet /> 
         </Map>
       </MapProvider>
     </div>
