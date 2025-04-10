@@ -31,6 +31,7 @@ export async function action({request}:{request:Request}){
       measurements.push(await getMeasurement(id,'10m'));
   }
   console.log("measurements",measurements);
+  const content: string = "Name,Age,Occupation\nJohn Doe,30,Software Developer";
   return new Response(content, {
     status: 200,
     headers: {
