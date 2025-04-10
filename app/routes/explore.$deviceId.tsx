@@ -15,7 +15,7 @@ const measurements:Array<object>=[]
 export async function action({request}:{request:Request}){
 	// console.log("'Testing the action function'");
 	const formdata = await request.formData();
-  // console.log(formdata);
+  console.log(formdata);
   const deviceIds = (formdata.get('devices') as string).split(',');
   console.log("devices:",deviceIds);
   for(const device of deviceIds){
@@ -31,7 +31,7 @@ export async function action({request}:{request:Request}){
       measurements.push(await getMeasurement(id,'10m'));
   }
   console.log("measurements",measurements);
-  
+   
 }
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);

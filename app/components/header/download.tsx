@@ -88,6 +88,7 @@ export default function Download(props: any) {
 	console.log(deviceIDs);
 	
 	const [format, setFormat] = useState<string>('csv')
+	const [aggregate,setAggregate] = useState<string>('10m')
 	const [fields, setFields] = useState({
 		title: true,
 		unit: true,
@@ -126,7 +127,7 @@ export default function Download(props: any) {
 						the download.
 					</DialogDescription>
 				</DialogHeader>
-				<div className="grid gap-4 py-4">
+				<div className="grid gap-4 py-3">
 				  <Form method='post' action='/explore/$deviceId'>
 					<div className="grid gap-2">
 						<Label htmlFor='Devices'>Devices</Label>
@@ -142,8 +143,21 @@ export default function Download(props: any) {
 								<SelectItem value="txt">Text</SelectItem>
 							</SelectContent>
 						</Select>
+						<Label htmlFor="aggregate">Aggreate to</Label>
+						<Select value={aggregate} onValueChange={setAggregate} name='aggregate'>
+							<SelectTrigger id="aggregate">
+								<SelectValue placeholder="Aggregate to" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="10m">10 minutes</SelectItem>
+								<SelectItem value="1h">1 hour</SelectItem>
+								<SelectItem value="1d">1 day</SelectItem>
+								<SelectItem value="1m">1 month</SelectItem>
+								<SelectItem value="1y">1 year</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
-					<div className="grid gap-2">
+					<div className="grid gap-2 mt-2">
 						<Label>Fields to include</Label>
 						<div className="grid grid-cols-2 gap-3">
 							<div className="flex items-center space-x-2">
@@ -188,13 +202,13 @@ export default function Download(props: any) {
 							</div>
 						</div>
 					</div>
-					<div className='w-full mt-3 items-center justify-center space-x-2'>
-						<Button type='submit'>Download</Button>
-					</div>
+					<DialogFooter>
+						<div className='w-full mt-10 flex items-center justify-center'>
+							<Button type='submit'>Download</Button>
+						</div>
+					</DialogFooter>
 					</Form>
 				</div>
-				<DialogFooter>
-				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	)
