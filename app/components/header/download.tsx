@@ -128,7 +128,7 @@ export default function Download(props: any) {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-3">
-				  <Form method='post' action='/explore/$deviceId'>
+				  <Form method='post' action={`/explore/$deviceId`} target='_blank'>
 					<div className="grid gap-2">
 						<Label htmlFor='Devices'>Devices</Label>
 						<Input type="text" name='devices' value={deviceIDs} readOnly/>

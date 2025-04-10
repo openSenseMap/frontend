@@ -31,8 +31,16 @@ export async function action({request}:{request:Request}){
       measurements.push(await getMeasurement(id,'10m'));
   }
   console.log("measurements",measurements);
-   
+  return new Response(content, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="measurements.csv"`,
+    },
+  });
 }
+
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const locale = await i18next.getLocale(request);
   // Extracting the selected sensors from the URL query parameters using the stringToArray function
