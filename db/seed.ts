@@ -54,10 +54,10 @@ async function seed() {
   };
 
   //* cleanup the existing database (if any)
-  await client.delete(sensor).catch(() => {});
-  await client.delete(device).catch(() => {});
-  await client.delete(user).catch((err) => console.log("DELETE users", err));
-  await client.delete(measurement).catch(() => {});
+  // await client.delete(sensor).catch(() => {});
+  // await client.delete(device).catch(() => {});
+  // await client.delete(user).catch((err) => console.log("DELETE users", err));
+  // await client.delete(measurement).catch(() => {});
 
   //* create intial user
   await client.insert(user).values({
