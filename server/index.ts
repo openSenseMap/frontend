@@ -86,9 +86,7 @@ async function getBuild() {
 	try {
 		const build = viteDevServer
 			? await viteDevServer.ssrLoadModule('virtual:react-router/server-build')
-			: // @ts-expect-error - the file might not exist yet but it will
-
-				await import('../build/server/index.js')
+			: await import('../build/server/index.js')
 
 		return { build: build as unknown as ServerBuild, error: null }
 	} catch (error) {
