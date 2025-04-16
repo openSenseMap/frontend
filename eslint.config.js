@@ -5,7 +5,6 @@ import prettier from 'eslint-plugin-prettier'
 export default [
 	...defaultConfig,
 	{
-		extends: [defaultConfig],
 		files: ['**/tests/**/*.ts'],
 		ignores: ['**/.react-router/**'],
 		plugins: {
