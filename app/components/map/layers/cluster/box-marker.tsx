@@ -70,7 +70,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
 						}
 						if (compareMode) {
 							void navigate(
-								`/explore/${matches[2].params.deviceId}/compare/${device.id}`,
+								`/explore/${matches[2]?.params.deviceId}/compare/${device.id}`,
 							)
 							setCompareMode(false)
 							return

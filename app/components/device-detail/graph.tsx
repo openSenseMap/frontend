@@ -13,7 +13,14 @@ import {
 import 'chartjs-adapter-date-fns'
 // import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
-import { useMemo, useRef, useState, useEffect, useContext, RefObject } from 'react'
+import {
+	useMemo,
+	useRef,
+	useState,
+	useEffect,
+	useContext,
+	RefObject,
+} from 'react'
 import { Scatter } from 'react-chartjs-2'
 import { isBrowser, isTablet } from 'react-device-detect'
 import Draggable, { type DraggableData } from 'react-draggable'
@@ -356,8 +363,9 @@ export default function Graph({
 						label: (context: any) => {
 							const dataIndex = context.dataIndex
 							const datasetIndex = context.datasetIndex
-							const point = chartData.datasets[datasetIndex].data[dataIndex]
-							const locationId = point.locationId
+							const point =
+								chartData.datasets.at(datasetIndex)?.data.at(dataIndex) ?? null
+							const locationId = point?.locationId ?? null
 							setHoveredPoint(locationId)
 							return `${context.dataset.label}: ${context.raw.y}`
 						},
@@ -374,11 +382,15 @@ export default function Graph({
 						mode: 'x',
 						onZoom: ({ chart }) => {
 							const xScale = chart.scales['x']
-							const xMin = xScale.min
-							const xMax = xScale.max
+							const xMin = xScale?.min
+							const xMax = xScale?.max
 
 							// Track the zoom level
-							setCurrentZoom({ xMin, xMax })
+							setCurrentZoom(
+								xMin !== undefined && xMax !== undefined
+									? { xMin, xMax }
+									: null,
+							)
 						},
 					},
 				},
@@ -405,7 +417,8 @@ export default function Graph({
 						setColorPickerState({
 							open: !colorPickerState.open,
 							index,
-							color: chartData.datasets[index].borderColor as string,
+							color: (chartData.datasets.at(index)?.borderColor ??
+								'#000000') as string,
 						})
 					},
 					labels: {
@@ -428,8 +441,13 @@ export default function Graph({
 
 	function handleColorChange(newColor: string) {
 		const updatedDatasets = [...chartData.datasets]
-		updatedDatasets[colorPickerState.index].borderColor = newColor
-		updatedDatasets[colorPickerState.index].backgroundColor = newColor
+		if (
+			colorPickerState.index >= 0 &&
+			colorPickerState.index < updatedDatasets.length
+		) {
+			updatedDatasets[colorPickerState.index]!.borderColor = newColor
+			updatedDatasets[colorPickerState.index]!.backgroundColor = newColor
+		}
 
 		// Update the chartData state with the new dataset colors
 		setChartData((prevData) => ({
@@ -459,7 +477,9 @@ export default function Graph({
 	}
 
 	function handleCsvDownloadClick() {
-		const labels = chartData.datasets[0].data.map((point: any) => point.x)
+		if (chartData.datasets.length === 0) return
+
+		const labels = chartData.datasets[0]!.data.map((point: any) => point.x)
 
 		let csvContent = 'timestamp,deviceId,sensorId,value,unit,phenomena\n'
 

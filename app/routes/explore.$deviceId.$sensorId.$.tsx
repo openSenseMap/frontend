@@ -79,8 +79,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 		// Calculate the time range of the latest 5 trips
 		const latestTripTimeRange = {
-			startTime: latestTrips[0].startTime,
-			endTime: latestTrips[latestTrips.length - 1].endTime,
+			startTime: latestTrips[0]?.startTime ?? 0,
+			endTime: latestTrips.at(-1)?.endTime ?? 0,
 		}
 
 		// Filter sensor data to include only the points within the time range of the latest 5 trips
@@ -155,8 +155,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 			// Calculate the time range of the latest 5 trips
 			const latestTripTimeRange = {
-				startTime: latestTrips[0].startTime,
-				endTime: latestTrips[latestTrips.length - 1].endTime,
+				startTime: latestTrips[0]?.startTime ?? 0,
+				endTime: latestTrips.at(-1)?.endTime ?? 0,
 			}
 
 			// Filter sensor data to include only the points within the time range of the latest 5 trips

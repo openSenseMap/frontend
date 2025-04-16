@@ -36,7 +36,7 @@ export default function SearchList(props: SearchListProps) {
 	const [searchParams] = useSearchParams()
 	const [navigateTo, setNavigateTo] = useState(
 		compareMode
-			? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
+			? `/explore/${matches[2]?.params.deviceId}/compare/${selected.deviceId}`
 			: selected.type === 'device'
 				? `/explore/${selected.deviceId + '?' + searchParams.toString()}}`
 				: `/explore?${searchParams.toString()}`,
@@ -45,7 +45,7 @@ export default function SearchList(props: SearchListProps) {
 	const handleNavigate = useCallback(
 		(result: any) => {
 			return compareMode
-				? `/explore/${matches[2].params.deviceId}/compare/${selected.deviceId}`
+				? `/explore/${matches[2]?.params.deviceId}/compare/${selected.deviceId}`
 				: result.type === 'device'
 					? `/explore/${result.deviceId + '?' + searchParams.toString()}`
 					: `/explore?${searchParams.toString()}`
