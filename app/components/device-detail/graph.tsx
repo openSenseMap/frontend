@@ -14,7 +14,7 @@ import 'chartjs-adapter-date-fns'
 // import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
 import { useMemo, useRef, useState, useEffect, useContext } from 'react'
-import { Line } from 'react-chartjs-2'
+import { Scatter } from 'react-chartjs-2'
 import { isBrowser, isTablet } from 'react-device-detect'
 import Draggable, { type DraggableData } from 'react-draggable'
 import { useNavigate, useNavigation, useSearchParams } from 'react-router'
@@ -59,11 +59,11 @@ const GraphWithZoom = (props: any) => {
 	}, [])
 
 	return (
-		<Line
-			data={props.lineData}
+		<Scatter
+			data={props.chartData}
 			options={props.options}
 			ref={props.chartRef}
-		></Line>
+		></Scatter>
 	)
 }
 
@@ -98,7 +98,7 @@ export default function Graph({
 	const isAggregated = aggregation !== 'raw'
 
 	const nodeRef = useRef<HTMLDivElement>(null)
-	const chartRef = useRef<ChartJS<'line'>>(null)
+	const chartRef = useRef<ChartJS<'scatter'>>(null)
 
 	useEffect(() => {
 		if (chartRef.current) {
@@ -120,7 +120,7 @@ export default function Graph({
 	// get theme from tailwind
 	const [theme] = 'light' //useTheme();
 
-	const [lineData, setLineData] = useState(() => {
+	const [chartData, setChartData] = useState(() => {
 		const includeDeviceName =
 			sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
 
@@ -145,7 +145,7 @@ export default function Graph({
 								y: measurement.value,
 								locationId: measurement.locationId,
 							})),
-							pointRadius: 0,
+							pointRadius: 3,
 							borderColor: sensor.color,
 							backgroundColor: sensor.color,
 							yAxisID: index === 0 ? 'y' : 'y1',
@@ -194,7 +194,7 @@ export default function Graph({
 		const includeDeviceName =
 			sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
 
-		setLineData({
+		setChartData({
 			datasets: sensors
 				.map(
 					(
@@ -215,7 +215,7 @@ export default function Graph({
 								y: measurement.value,
 								locationId: measurement.locationId,
 							})),
-							pointRadius: 0,
+							pointRadius: 1,
 							borderColor: sensor.color,
 							backgroundColor: sensor.color,
 							yAxisID: index === 0 ? 'y' : 'y1',
@@ -260,7 +260,7 @@ export default function Graph({
 		})
 	}, [sensors, isAggregated])
 
-	const options: ChartOptions<'line'> = useMemo(() => {
+	const options: ChartOptions<'scatter'> = useMemo(() => {
 		return {
 			maintainAspectRatio: false,
 			responsive: true,
@@ -324,7 +324,7 @@ export default function Graph({
 						display: true,
 						text: sensors[0].title + ' in ' + sensors[0].unit,
 					},
-					type: 'linear',
+					// type: 'linear',
 					display: true,
 					position: 'left',
 					grid: {
@@ -339,7 +339,7 @@ export default function Graph({
 						display: true,
 						text: sensors[1] ? sensors[1].title + ' in ' + sensors[1].unit : '', //data.sensors[1].unit
 					},
-					type: 'linear',
+					// type: 'linear',
 					display: 'auto',
 					position: 'right',
 					grid: {
@@ -356,7 +356,7 @@ export default function Graph({
 						label: (context: any) => {
 							const dataIndex = context.dataIndex
 							const datasetIndex = context.datasetIndex
-							const point = lineData.datasets[datasetIndex].data[dataIndex]
+							const point = chartData.datasets[datasetIndex].data[dataIndex]
 							const locationId = point.locationId
 							setHoveredPoint(locationId)
 							return `${context.dataset.label}: ${context.raw.y}`
@@ -405,7 +405,7 @@ export default function Graph({
 						setColorPickerState({
 							open: !colorPickerState.open,
 							index,
-							color: lineData.datasets[index].borderColor as string,
+							color: chartData.datasets[index].borderColor as string,
 						})
 					},
 					labels: {
@@ -421,18 +421,18 @@ export default function Graph({
 		currentZoom?.xMax,
 		theme,
 		sensors,
-		lineData.datasets,
+		chartData.datasets,
 		setHoveredPoint,
 		colorPickerState.open,
 	])
 
 	function handleColorChange(newColor: string) {
-		const updatedDatasets = [...lineData.datasets]
+		const updatedDatasets = [...chartData.datasets]
 		updatedDatasets[colorPickerState.index].borderColor = newColor
 		updatedDatasets[colorPickerState.index].backgroundColor = newColor
 
-		// Update the lineData state with the new dataset colors
-		setLineData((prevData) => ({
+		// Update the chartData state with the new dataset colors
+		setChartData((prevData) => ({
 			...prevData,
 			datasets: updatedDatasets,
 		}))
@@ -459,14 +459,14 @@ export default function Graph({
 	}
 
 	function handleCsvDownloadClick() {
-		const labels = lineData.datasets[0].data.map((point: any) => point.x)
+		const labels = chartData.datasets[0].data.map((point: any) => point.x)
 
 		let csvContent = 'timestamp,deviceId,sensorId,value,unit,phenomena\n'
 
 		// Loop through each timestamp and sensor data
 		labels.forEach((timestamp: any, index: string | number) => {
 			sensors.forEach((sensor: any) => {
-				const dataset = lineData.datasets.find(
+				const dataset = chartData.datasets.find(
 					(ds: { label: string | any[] }) => ds.label.includes(sensor.title),
 				)
 				if (dataset) {
@@ -518,7 +518,7 @@ export default function Graph({
 	return (
 		<>
 			<Draggable
-				nodeRef={nodeRef as React.RefObject<HTMLDivElement>}
+				nodeRef={nodeRef}
 				bounds="#osem"
 				handle="#graphTop"
 				defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
@@ -598,7 +598,7 @@ export default function Graph({
 							<ClientOnly fallback={<Spinner />}>
 								{() => (
 									<GraphWithZoom
-										lineData={lineData}
+										chartData={chartData}
 										options={options}
 										chartRef={chartRef} // Pass chartRef as a prop
 									/>
