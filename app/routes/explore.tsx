@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import  { type FeatureCollection, type Point } from "geojson";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef} from "react";
 import  { type MapLayerMouseEvent, type MapRef, MapProvider, Layer, Source, Marker  } from "react-map-gl";
 import {
   Outlet,
@@ -9,7 +9,7 @@ import {
   useSearchParams,
   useLoaderData,
   useParams,
-  redirect, type LoaderFunctionArgs, type LinksFunction 
+  type LoaderFunctionArgs, type LinksFunction 
 } from "react-router";
 import type Supercluster from "supercluster";
 import ErrorMessage from "~/components/error-message";
@@ -20,12 +20,139 @@ import BoxMarker from "~/components/map/layers/cluster/box-marker";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import Legend, { type LegendValue } from "~/components/map/legend";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
-import { getPhenomena } from "~/models/phenomena.server";
+import { getMeasurement } from "~/models/measurement.server";
 import { getProfileByUserId } from "~/models/profile.server";
-import { type Device, type Sensor } from "~/schema";
+import { getSensors } from "~/models/sensor.server";
+import { type Device } from "~/schema";
 import { getFilteredDevices } from "~/utils";
-import { getUser, getUserSession } from "~/utils/session.server";
+import { getUser, getUserSession } from "~/utils/session.server"
 
+
+
+export async function action({request}:{request:Request}){
+
+	// console.log("'Testing the action function'");
+  const sensorIds:Array<string>=[]
+  const measurements:Array<object>=[]
+	const formdata = await request.formData();
+  console.log(formdata);
+  const deviceIds = (formdata.get('devices') as string).split(',');
+  const format = formdata.get('format') as string
+  const aggregate = formdata.get('aggregate') as string
+  const includeFields = {
+    title: formdata.get('title') === 'on',
+    unit: formdata.get('unit') === 'on',
+    value: formdata.get('value') === 'on',
+    timestamp: formdata.get('timestamp') === 'on',
+  }
+  console.log("devices:",deviceIds);
+  if(deviceIds.length>=50){
+    return Response.json({error:"Too many devices selected. If you want huge amounts of data, please consider visiting our archive.",link:"https://archive.opensensemap.org/"})
+  }
+  for(const device of deviceIds){
+    const sensors = await getSensors(device);
+    // console.log(sensors);
+    for (const sensor of sensors) {
+      sensorIds.push(sensor.id);
+      const measurement = await getMeasurement(sensor.id,aggregate);
+      measurement.map((m:any)=>{
+        m["title"] = sensor.title;
+        m["unit"] = sensor.unit;
+      })
+      // console.log(measurement); 
+      measurements.push(measurement);
+    }
+  }
+  // console.log(measurements);
+  
+  let content = '';
+  let contentType = 'text/plain';
+  let fileName = 'measurements';
+  let rows;
+  let csvrows:any=[];
+  let textrows:any=[];
+  
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: "Europe/Berlin" // Adjust to your target timezone
+  });
+
+  if (format === 'csv') {
+    contentType = 'text/csv';
+    fileName += '.csv';
+    
+    // Generate CSV headers
+    const headers = ['SensorId', includeFields.title?'Title':null, includeFields.value?'Value':null,includeFields.unit?'Unit':null,includeFields.timestamp?'Timestamp':null];
+  
+    // Generate CSV rows
+        measurements.map((measure:any)=>{
+          // console.log(measure);
+           measure.map((m:any)=>{
+              rows = [m.sensorId,includeFields.title?m.title:null,includeFields.value?m.value:null,includeFields.unit?m.unit:null,includeFields.timestamp?formatter.format(new Date(m.time)):null].join(',')
+              csvrows.push(rows);
+          })
+          
+        })
+        // console.log(csvrows);
+        content = [headers.join(','), ...csvrows].join('\n');
+        
+  }
+  else if (format === 'json') {
+    contentType = 'application/json';
+    fileName += '.json';
+    
+    // Create a properly filtered JSON structure based on includeFields
+    const filteredMeasurements:any = [];
+    
+    measurements.forEach((measureGroup: any) => {
+      const groupData:any = [];
+      
+      measureGroup.forEach((m: any) => {
+        // Create an object with only the requested fields
+        const filteredItem: any = {};
+        
+        // Always include sensorId as it's a key identifier
+        filteredItem.sensorId = m.sensorId;
+        
+        // Add optional fields based on user selection
+        if (includeFields.title) filteredItem.title = m.title;
+        if (includeFields.value) filteredItem.value = m.value;
+        if (includeFields.unit) filteredItem.unit = m.unit;
+        if (includeFields.timestamp) filteredItem.timestamp = formatter.format(new Date(m.time));
+        
+        groupData.push(filteredItem);
+      });
+      
+      if (groupData.length > 0) {
+        filteredMeasurements.push(groupData);
+      }
+    });
+    
+    // Pretty-print the JSON with 2-space indentation
+    content = JSON.stringify(filteredMeasurements, null, 2);
+  } 
+  else { // txt format
+    fileName += '.txt';
+    contentType = 'text/plain';
+    measurements.map((measure:any)=>{
+        measure.map((m:any)=>{
+            rows = `Title: ${m.title}\nSensorId: ${m.sensorId}\nValue: ${m.value}\nUnit: ${m.unit}\nTimestamp: ${formatter.format(new Date(m.time))}\n`
+            textrows.push(rows)
+        })
+    })
+    content = textrows.join('\n');
+    
+  }
+
+  console.log(content);
+  console.log(fileName);
+  console.log(new Blob([content]).size / (1024 * 1024));
+  return Response.json({
+    href: `data:${contentType};charset=utf-8,${encodeURIComponent(content)}`,
+    download: fileName
+  });
+}
 
 
 export type DeviceClusterProperties =
@@ -329,7 +456,7 @@ export default function Explore() {
           {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-          <Outlet />
+          <Outlet /> 
         </Map>
       </MapProvider>
     </div>
