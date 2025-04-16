@@ -61,8 +61,8 @@ export default function DonutChartCluster({
 				}}
 			>
 				{counts.map((count, i) => {
-					const start = offsets[i] ?? 0 / total
-					let end = (offsets[i] ?? 0 + count) / total
+					const start = (offsets[i] ?? 0) / total
+					let end = ((offsets[i] ?? 0) + count) / total
 
 					if (end - start === 1) end -= 0.00001
 					const a0 = 2 * Math.PI * (start - 0.25)
