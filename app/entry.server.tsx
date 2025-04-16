@@ -3,7 +3,7 @@ import { PassThrough } from "stream";
 import { createReadableStreamFromReadable } from "@react-router/node";
 import { createInstance } from "i18next";
 import I18NexFsBackend from "i18next-fs-backend";
-import isbot from "isbot";
+import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { ServerRouter, type EntryContext  } from "react-router";

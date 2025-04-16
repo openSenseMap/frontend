@@ -7,7 +7,7 @@ export function CheckboxField({
   buttonProps,
 }: // errors,
 {
-  labelProps: Omit<JSX.IntrinsicElements["label"], "className">;
+  labelProps: Omit<React.JSX.IntrinsicElements["label"], "className">;
   buttonProps: Omit<
     React.ComponentPropsWithoutRef<typeof Checkbox.Root>,
     "type" | "className"

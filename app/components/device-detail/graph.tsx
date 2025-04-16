@@ -13,7 +13,7 @@ import {
 import 'chartjs-adapter-date-fns'
 // import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
-import { useMemo, useRef, useState, useEffect, useContext } from 'react'
+import { useMemo, useRef, useState, useEffect, useContext, RefObject } from 'react'
 import { Scatter } from 'react-chartjs-2'
 import { isBrowser, isTablet } from 'react-device-detect'
 import Draggable, { type DraggableData } from 'react-draggable'
@@ -97,7 +97,7 @@ export default function Graph({
 	})
 	const isAggregated = aggregation !== 'raw'
 
-	const nodeRef = useRef(null)
+	const nodeRef = useRef<HTMLDivElement>(null)
 	const chartRef = useRef<ChartJS<'scatter'>>(null)
 
 	useEffect(() => {
@@ -518,7 +518,7 @@ export default function Graph({
 	return (
 		<>
 			<Draggable
-				nodeRef={nodeRef}
+				nodeRef={nodeRef as RefObject<HTMLDivElement>}
 				bounds="#osem"
 				handle="#graphTop"
 				defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
