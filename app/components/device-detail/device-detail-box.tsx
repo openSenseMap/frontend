@@ -29,7 +29,6 @@ import {
 	useSearchParams,
 	Link,
 } from 'react-router'
-import { useBetween } from 'use-between'
 import SensorIcon from '../sensor-icon'
 import Spinner from '../spinner'
 import {
@@ -76,8 +75,9 @@ import { useToast } from '../ui/use-toast'
 import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
 import { type loader } from '~/routes/explore.$deviceId'
-import  { type SensorWithLatestMeasurement } from '~/schema'
+import { type SensorWithLatestMeasurement } from '~/schema'
 import { getArchiveLink } from '~/utils/device'
+import { useGlobalCompareMode } from './useGlobalCompareMode'
 
 export interface MeasurementProps {
 	sensorId: string
@@ -86,13 +86,6 @@ export interface MeasurementProps {
 	min_value: string
 	max_value: string
 }
-
-const useCompareMode = () => {
-	const [compareMode, setCompareMode] = useState(false)
-	return { compareMode, setCompareMode }
-}
-
-export const useSharedCompareMode = () => useBetween(useCompareMode)
 
 export default function DeviceDetailBox() {
 	const navigation = useNavigation()
@@ -103,12 +96,12 @@ export default function DeviceDetailBox() {
 	const sensorIds = new Set()
 
 	const data = useLoaderData<typeof loader>()
-	const nodeRef = useRef(null)
+	const nodeRef = useRef<HTMLDivElement>(null)
 	// state variables
 	const [open, setOpen] = useState(true)
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
 	const [offsetPositionY, setOffsetPositionY] = useState(0)
-	const { compareMode, setCompareMode } = useSharedCompareMode()
+	const [compareMode, setCompareMode] = useGlobalCompareMode()
 	const [refreshOn] = useState(false)
 	const [refreshSecond, setRefreshSecond] = useState(59)
 
@@ -195,7 +188,7 @@ export default function DeviceDetailBox() {
 		<>
 			{open && (
 				<Draggable
-					nodeRef={nodeRef}
+					nodeRef={nodeRef as React.RefObject<HTMLDivElement>}
 					defaultPosition={{ x: offsetPositionX, y: offsetPositionY }}
 					onDrag={handleDrag}
 					bounds="#osem"
