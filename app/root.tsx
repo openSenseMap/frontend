@@ -109,13 +109,13 @@ export function App() {
   useChangeLanguage(data.locale);
 
   return (
-    <html lang={data.locale} dir={i18n.dir()} className={clsx("light")}>
+    <html lang={data.locale} dir={i18n.dir()} className={clsx("light", "overflow-hidden")}>
       <head>
         <Meta />
         {/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
         <Links />
       </head>
-      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text">
+      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text" style={{ overflow: "initial" }}>
         <Outlet />
         <Toaster />
         <ScrollRestoration />
