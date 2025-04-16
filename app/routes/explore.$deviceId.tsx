@@ -6,40 +6,8 @@ import { HoveredPointContext } from "~/components/map/layers/mobile/mobile-box-l
 import MobileOverviewLayer from "~/components/map/layers/mobile/mobile-overview-layer";
 import i18next from "~/i18next.server";
 import  { type LocationPoint } from "~/lib/mobile-box-helper";
-import { getDevice, getDevices } from "~/models/device.server";
-import { getMeasurement } from "~/models/measurement.server";
-import { getSensor, getSensors, getSensorsWithLastMeasurement } from "~/models/sensor.server";
-
-const sensorIds:Array<string>=[]
-const measurements:Array<object>=[]
-export async function action({request}:{request:Request}){
-	// console.log("'Testing the action function'");
-	const formdata = await request.formData();
-  console.log(formdata);
-  const deviceIds = (formdata.get('devices') as string).split(',');
-  console.log("devices:",deviceIds);
-  for(const device of deviceIds){
-    const sensors = await getSensors(device);
-    // console.log(sensors);
-    for (const sensor of sensors) {
-      sensorIds.push(sensor.id);
-    }
-  }
-  console.log("sensors:",sensorIds);
-//getting measurements from sensors using their ids 
-  for(const id of sensorIds){ 
-      measurements.push(await getMeasurement(id,'10m'));
-  }
-  console.log("measurements",measurements);
-  const content: string = "Name,Age,Occupation\nJohn Doe,30,Software Developer";
-  return new Response(content, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/csv',
-      'Content-Disposition': `attachment; filename="measurements.csv"`,
-    },
-  });
-}
+import { getDevice} from "~/models/device.server";
+import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
 
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
