@@ -47,7 +47,7 @@ export async function action({request}:{request:Request}){
   }
   console.log("devices:",deviceIds);
   if(deviceIds.length>=50){
-    return Response.json({error:"Too many devices selected. If you want huge amounts of data, please consider visiting our archive.",link:"https://archive.opensensemap.org/"})
+    return Response.json({error:"Too many devices selected. If you are looking for bulk data, please consider visiting our archive.",link:"https://archive.opensensemap.org/"})
   }
   for(const device of deviceIds){
     const sensors = await getSensors(device);
