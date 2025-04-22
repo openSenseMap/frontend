@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { Download as DownloadIcon } from 'lucide-react'
 import { BBox } from 'geojson'
+import { useEffect, useState } from 'react'
 import debounce from 'lodash.debounce'
 import { useMap } from 'react-map-gl'
 import { Form, useNavigation, useActionData } from 'react-router'
@@ -14,7 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog'
-import { Download as DownloadIcon } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import {

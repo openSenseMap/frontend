@@ -2,12 +2,12 @@ import { Cpu, Globe, MapPin } from 'lucide-react'
 import { useState, useEffect, useCallback, useContext } from 'react'
 import { useMap } from 'react-map-gl'
 import { useMatches, useNavigate, useSearchParams } from 'react-router'
-
+import { useGlobalCompareMode } from '../device-detail/useGlobalCompareMode'
 import { NavbarContext } from '../header/nav-bar'
 import useKeyboardNav from '../header/nav-bar/use-keyboard-nav'
 import SearchListItem from './search-list-item'
 import { goTo } from '~/lib/search-map-helper'
-import { useGlobalCompareMode } from '../device-detail/useGlobalCompareMode'
+
 
 interface SearchListProps {
 	searchResultsLocation: any[]
