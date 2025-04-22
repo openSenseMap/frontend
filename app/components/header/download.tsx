@@ -1,5 +1,10 @@
+import { useEffect, useState } from 'react'
+import { BBox } from 'geojson'
+import debounce from 'lodash.debounce'
 import { useMap } from 'react-map-gl'
+import { Form, useNavigation, useActionData } from 'react-router'
 import { Button } from '../ui/button'
+import { Checkbox } from '../ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -9,11 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog'
-import { useEffect, useState } from 'react'
-import { BBox } from 'geojson'
 import { Download as DownloadIcon } from 'lucide-react'
+import { Input } from '../ui/input'
 import { Label } from '../ui/label'
-import { Form, useNavigation, useActionData } from 'react-router'
 import {
   Select,
   SelectContent,
@@ -21,9 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select'
-import { Checkbox } from '../ui/checkbox'
-import debounce from 'lodash.debounce'
-import { Input } from '../ui/input'
+
+
 
 // Custom Loading Animation Component
 const PulsingDownloadAnimation = () => {
