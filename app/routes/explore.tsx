@@ -95,7 +95,8 @@ export async function action({request}:{request:Request}){
           
         })
         // console.log(csvrows);
-        content = [headers.join(','), ...csvrows].join('\n');
+        const utf8BOM = '\uFEFF';
+        content = utf8BOM + [headers.join(','), ...csvrows].join('\n');
         
   }
   else if (format === 'json') {
