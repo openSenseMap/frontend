@@ -16,8 +16,7 @@ interface Trip {
 
 export function categorizeIntoTrips(
   dataPoints: LocationPoint[],
-  distanceThreshold: number, // in meters
-  timeThreshold?: number, // in seconds, optional
+  timeThreshold: number, // in seconds, time threshold for a new trip
 ): Trip[] {
   const trips: Trip[] = [];
   let currentTrip: LocationPoint[] = [];
@@ -31,28 +30,12 @@ export function categorizeIntoTrips(
     const previousPoint = dataPoints[i - 1];
     const currentPoint = dataPoints[i];
 
-    // Calculate distance
-    const distance = getDistance(
-      {
-        latitude: previousPoint.geometry.x,
-        longitude: previousPoint.geometry.y,
-      },
-      { latitude: currentPoint.geometry.x, longitude: currentPoint.geometry.y },
-    );
+    // Calculate time difference in seconds
+    const timeDifference =
+      (new Date(currentPoint.time).getTime() - new Date(previousPoint.time).getTime()) / 1000;
 
-    // Calculate time difference if applicable
-    let timeDifference = 0;
-    if (previousPoint.time && currentPoint.time) {
-      timeDifference =
-        (new Date(currentPoint.time).getTime() -
-          new Date(previousPoint.time).getTime()) /
-        1000;
-    }
-
-    // Check if a new trip should start
-    const isNewTrip =
-      distance > distanceThreshold ||
-      (timeThreshold && timeDifference > timeThreshold);
+    // Check if a new trip should start based solely on the time difference
+    const isNewTrip = timeDifference > timeThreshold;
 
     if (isNewTrip) {
       if (currentTrip.length > 0) {
@@ -76,27 +59,27 @@ export function categorizeIntoTrips(
     });
   }
 
-  // Merge small trips into larger ones
-  return mergeSmallTrips(trips, distanceThreshold);
+  // Optionally merge small trips (can be removed if not needed)
+  return mergeSmallTrips(trips, timeThreshold);
 }
 
-function mergeSmallTrips(trips: Trip[], _distanceThreshold: number): Trip[] {
+function mergeSmallTrips(trips: Trip[], timeThreshold: number): Trip[] {
   if (trips.length <= 1) return trips;
 
-  // Combine small trips into adjacent larger trips
   const mergedTrips: Trip[] = [];
   let currentTrip: Trip | null = null;
 
   for (const trip of trips) {
-    if (trip.points.length >= 50) {
-      // If a small trip exists, merge it with the current large trip
+    // If a trip is too small (in terms of points or duration), merge it with the current trip
+    const tripDuration = (new Date(trip.endTime).getTime() - new Date(trip.startTime).getTime()) / 1000;
+    
+    if (tripDuration >= timeThreshold) {
       if (currentTrip) {
         mergedTrips.push(currentTrip);
         currentTrip = null;
       }
       mergedTrips.push(trip);
     } else {
-      // Small trip: merge with the nearest valid trip
       if (!currentTrip) {
         currentTrip = { points: [], startTime: "", endTime: "" };
       }
@@ -105,8 +88,7 @@ function mergeSmallTrips(trips: Trip[], _distanceThreshold: number): Trip[] {
       // Recompute start and end times
       if (currentTrip.points.length > 0) {
         currentTrip.startTime = currentTrip.points[0].time;
-        currentTrip.endTime =
-          currentTrip.points[currentTrip.points.length - 1].time;
+        currentTrip.endTime = currentTrip.points[currentTrip.points.length - 1].time;
       }
     }
   }
