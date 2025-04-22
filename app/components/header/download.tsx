@@ -202,7 +202,7 @@ const handleDownloadStart = () => {
           </button>
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-1/2">
+      <DialogContent className="max-w-1/2" style={{ maxHeight: '100vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Download Options</DialogTitle>
           <DialogDescription>
