@@ -11,7 +11,6 @@ import {
 	text,
 	timestamp,
 	doublePrecision,
-	integer,
 	primaryKey,
 	unique,
 	date,

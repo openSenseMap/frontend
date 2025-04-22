@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import  { type LoaderFunctionArgs, Outlet, redirect, useLoaderData, useMatches  } from "react-router";
+import  { type LoaderFunctionArgs, Outlet, useLoaderData, useMatches  } from "react-router";
 import DeviceDetailBox from "~/components/device-detail/device-detail-box";
 import ErrorMessage from "~/components/error-message";
 import { HoveredPointContext } from "~/components/map/layers/mobile/mobile-box-layer";
