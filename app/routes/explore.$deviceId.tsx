@@ -10,33 +10,9 @@ import {
 	categorizeIntoTrips,
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
-import { getDevice, getDevices } from "~/models/device.server";
-import { getMeasurement } from "~/models/measurement.server";
-import { getSensor, getSensors, getSensorsWithLastMeasurement } from "~/models/sensor.server";
+import { getDevice} from "~/models/device.server";
+import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
 
-const sensorIds:Array<string>=[]
-const measurements:Array<object>=[]
-export async function action({request}:{request:Request}){
-	// console.log("'Testing the action function'");
-	const formdata = await request.formData();
-  // console.log(formdata);
-  const deviceIds = (formdata.get('devices') as string).split(',');
-  console.log("devices:",deviceIds);
-  for(const device of deviceIds){
-    const sensors = await getSensors(device);
-    // console.log(sensors);
-    for (const sensor of sensors) {
-      sensorIds.push(sensor.id);
-    }
-  }
-  console.log("sensors:",sensorIds);
-//getting measurements from sensors using their ids 
-  for(const id of sensorIds){ 
-      measurements.push(await getMeasurement(id,'10m'));
-  }
-  console.log("measurements",measurements);
-  
-}
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const locale = await i18next.getLocale(request)
 	// Extracting the selected sensors from the URL query parameters using the stringToArray function
