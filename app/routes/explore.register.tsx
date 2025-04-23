@@ -35,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return data(
       {
         errors: {
-          username: "UserName is required",
+          username: "username_required",
           email: null,
           password: null,
         },
@@ -62,13 +62,13 @@ export async function action({ request }: ActionFunctionArgs) {
   const existingUsername = await getUserByUsername(username);
   if(existingUsername)
     return data(
-      { errors: { username: "This username is already taken", email: null, password: null } },
+      { errors: { username: "username_already_taken", email: null, password: null } },
       { status: 400 },
     );
 
   if (!validateEmail(email)) {
     return data(
-      { errors: { username: null, email: "Email is invalid", password: null } },
+      { errors: { username: null, email: "email_invalid", password: null } },
       { status: 400 },
     );
   }
@@ -78,7 +78,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: {
           username: null,
-          password: "Password is required",
+          password: "password_required",
           email: null,
         },
       },
@@ -91,7 +91,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: {
           username: null,
-          password: "Password is too short",
+          password: "password_too_short",
           email: null,
         },
       },
@@ -106,7 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: {
           username: null,
-          email: "A user already exists with this email",
+          email: "email_already_taken",
           password: null,
         },
       },
@@ -171,17 +171,17 @@ export default function RegisterDialog() {
         )}
         <Form method="post" className="space-y-6" noValidate>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Register</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t('register')}</CardTitle>
             <CardDescription>
-              Create a new account to get started.
+              {t('create_account')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t('username')}</Label>
               <Input
                 id="username"
-                placeholder="Enter your username"
+                placeholder={t('enter_username')}
                 ref={usernameRef}
                 name="username"
                 type="text"
@@ -189,16 +189,16 @@ export default function RegisterDialog() {
               />
               {actionData?.errors?.username && (
                 <div className="text-sm text-red-500 mt-1" id="password-error">
-                  {actionData.errors.username}
+                  {t(actionData.errors.username)}
                 </div>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">{t("email_label")}</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('enter_email')}
                 ref={emailRef}
                 required
                 autoFocus={true}
@@ -209,16 +209,16 @@ export default function RegisterDialog() {
               />
               {actionData?.errors?.email && (
                 <div className="text-sm text-red-500 mt-1" id="email-error">
-                  {actionData.errors.email}
+                  {t(actionData.errors.email)}
                 </div>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("password_label")}</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('enter_password')}
                 ref={passwordRef}
                 name="password"
                 autoComplete="new-password"
@@ -227,17 +227,17 @@ export default function RegisterDialog() {
               />
               {actionData?.errors?.password && (
                 <div className="text-sm text-red-500 mt-1" id="password-error">
-                  {actionData.errors.password}
+                  {t(actionData.errors.password)}
                 </div>
               )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col items-center gap-2">
-            <Button className="w-full bg-light-blue">Register</Button>
+            <Button className="w-full bg-light-blue">{t('register')}</Button>
             <div className="text-sm text-muted-foreground">
-              {t("already_account_label")}{" "}
+              {t("already_account")}{" "}
               <Link to="/explore/login" className="underline">
-                {t("login_label")}
+                {t("login")}
               </Link>
             </div>
           </CardFooter>
