@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { createUser, getUserByEmail } from "~/models/user.server";
+import { createUser, getUserByEmail, getUserByUsername } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import { createUserSession, getUserId } from "~/utils/session.server";
 
@@ -58,6 +58,13 @@ export async function action({ request }: ActionFunctionArgs) {
       { status: 400 },
     );
   }
+
+  const existingUsername = await getUserByUsername(username);
+  if(existingUsername)
+    return data(
+      { errors: { username: "This username is already taken", email: null, password: null } },
+      { status: 400 },
+    );
 
   if (!validateEmail(email)) {
     return data(
@@ -113,11 +120,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const locale = await i18next.getLocale(request);
   const language = locale === "de" ? "de_DE" : "en_US";
 
-  //* temp -> dummy name
-  // const name = "Max Mustermann";
-
   const user = await createUser(username, email, language, password);
-  // const user = await createUser(email, password, username?.toString());
 
   return createUserSession({
     request,
