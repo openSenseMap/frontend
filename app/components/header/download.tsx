@@ -83,7 +83,7 @@ export default function Download(props: any) {
     mapRef?.getMap().getBounds().toArray().flat() as BBox,
   )
 
-  const [zoom, setZoom] = useState(mapRef?.getZoom() || 0)
+  const [_, setZoom] = useState(mapRef?.getZoom() || 0)
   const [isDownloadReady, setIsDownloadReady] = useState(false)
   const [showReadyAnimation, setShowReadyAnimation] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

@@ -31,11 +31,9 @@ import { getUser, getUserSession } from "~/utils/session.server"
 
 export async function action({request}:{request:Request}){
 
-	// console.log("'Testing the action function'");
   const sensorIds:Array<string>=[]
   const measurements:Array<object>=[]
 	const formdata = await request.formData();
-  console.log(formdata);
   const deviceIds = (formdata.get('devices') as string).split(',');
   const format = formdata.get('format') as string
   const aggregate = formdata.get('aggregate') as string
@@ -51,7 +49,6 @@ export async function action({request}:{request:Request}){
   }
   for(const device of deviceIds){
     const sensors = await getSensors(device);
-    // console.log(sensors);
     for (const sensor of sensors) {
       sensorIds.push(sensor.id);
       const measurement = await getMeasurement(sensor.id,aggregate);
@@ -59,11 +56,11 @@ export async function action({request}:{request:Request}){
         m["title"] = sensor.title;
         m["unit"] = sensor.unit;
       })
-      // console.log(measurement); 
+   
       measurements.push(measurement);
     }
   }
-  // console.log(measurements);
+
   
   let content = '';
   let contentType = 'text/plain';
@@ -94,7 +91,7 @@ export async function action({request}:{request:Request}){
           })
           
         })
-        // console.log(csvrows);
+       
         const utf8BOM = '\uFEFF';
         content = utf8BOM + [headers.join(','), ...csvrows].join('\n');
         
