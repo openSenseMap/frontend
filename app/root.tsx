@@ -115,7 +115,7 @@ export function App() {
         {/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
         <Links />
       </head>
-      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text" style={{ overflow: "visible" }}>
+      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text overflow-visible">
         <Outlet />
         <Toaster />
         <ScrollRestoration />
