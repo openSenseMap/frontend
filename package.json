@@ -104,7 +104,7 @@
     "get-user-locale": "^2.2.1",
     "i": "^0.3.7",
     "i18next": "^24.2.1",
-    "i18next-browser-languagedetector": "^7.0.1",
+    "i18next-browser-languagedetector": "^8.0.5",
     "i18next-fs-backend": "^2.1.1",
     "i18next-http-backend": "^3.0.1",
     "isbot": "^5.1.26",
