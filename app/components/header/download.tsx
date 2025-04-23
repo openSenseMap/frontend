@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select'
+import { toast } from '../ui/use-toast'
 
 
 
@@ -83,26 +84,24 @@ export default function Download(props: any) {
     mapRef?.getMap().getBounds().toArray().flat() as BBox,
   )
 
-  const [_, setZoom] = useState(mapRef?.getZoom() || 0)
+  const [, setZoom] = useState(mapRef?.getZoom() || 0)
   const [isDownloadReady, setIsDownloadReady] = useState(false)
   const [showReadyAnimation, setShowReadyAnimation] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [link, setLink] = useState<any|null>(null)
   // Update download ready state when actionData changes
   useEffect(() => {
     if (actionData && actionData.error) {
       setErrorMessage(actionData.error)
-      setLink(actionData.link)
     } else {
       setErrorMessage(null)
       // Only set download ready if there's no error
       if (actionData) {
         setIsDownloadReady(true)
         setShowReadyAnimation(true)
-        const timer = setTimeout(() => {
-          setShowReadyAnimation(false)
-        }, 2500)
-        return () => clearTimeout(timer)
+        // const timer = setTimeout(() => {
+        //   setShowReadyAnimation(false)
+        // }, 2500)
+        // return () => clearTimeout(timer)
       }
     }
   }, [actionData])
@@ -120,11 +119,18 @@ export default function Download(props: any) {
 // Add this function to handle download start
 const handleDownloadStart = () => {
   setDownloadStarted(true)
+  setShowReadyAnimation(false)
+  toast({
+    description: "✔️ Download has Started. Please wait...",
+    duration: 4000,
+    variant:"success"
+  })
   
   // Reset the download started state after a delay
   setTimeout(() => {
     setDownloadStarted(false)
-  }, 4000)
+    setOpen(false)
+  }, 2000)
 }
 
 
@@ -182,7 +188,7 @@ const handleDownloadStart = () => {
     value: true,
     timestamp: true,
   })
-
+  const [open, setOpen] = useState(false)
   const handleFieldChange = (field: keyof typeof fields) => {
     setFields((prev) => ({ ...prev, [field]: !prev[field] }))
     setIsDownloadReady(false)
@@ -191,12 +197,12 @@ const handleDownloadStart = () => {
   }
   
   return (
-    <Dialog>
-      <DialogTrigger asChild className="pointer-events-auto">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild className="pointer-events-auto" onClick={()=>setOpen(true)}>
         <div className="pointer-events-auto box-border h-10 w-10">
           <button
             type="button"
-            className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100 transition-all hover:shadow-md"
+            className="h-10 w-10 rounded-full border border-green-700 bg-green-300 text-center text-black hover:bg-gray-50 transition-all hover:shadow-md"
           >
             <DownloadIcon className="mx-auto h-6 w-6" />
           </button>
@@ -294,7 +300,7 @@ const handleDownloadStart = () => {
               </div>
             </div>
             
-            <div className="h-16 flex items-center justify-center mt-4">
+            <div className="h-16 flex items-center justify-center mt-2">
               {isLoading ? (
                 <PulsingDownloadAnimation />
               ) : showReadyAnimation ? (
@@ -302,18 +308,17 @@ const handleDownloadStart = () => {
               ) : null}
             </div>
             {errorMessage && (
-            <div className="mt-2 p-3 bg-red-100 border border-red-300 text-red-700 rounded flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+            <div className="p-2 bg-red-100 border border-red-300 text-red-700 rounded flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500 animate-pulse">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
              </svg>
-            <p>{errorMessage}<a href={link} className='text-blue-100' target='_blank'>Click here</a>{" "}to go to archive.</p>
-            <img src="https://media1.tenor.com/m/lOECKg5bABIAAAAd/please-don%E2%80%99t-kill-me-don%E2%80%99t-kill-me.gif" alt="" height={'150px'} width={'120px'} className='ms-2 rounded-lg'/>
+            <p>{errorMessage}<a href={actionData?.link} className='text-blue-100' target='_blank'>Click here</a>{" "}to go to archive.</p>
           </div>
 )}
             <DialogFooter>
-              <div className="w-full mt-4 flex items-center justify-center gap-4">
+              <div className="w-full mt-4 flex items-center justify-center space-x-4">
                 <Button 
                   type="submit" 
                   className="bg-blue-100 hover:bg-blue-200 transition-colors text-dark"

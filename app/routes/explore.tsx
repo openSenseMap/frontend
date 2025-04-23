@@ -30,7 +30,7 @@ import { getUser, getUserSession } from "~/utils/session.server"
 
 
 export async function action({request}:{request:Request}){
-
+  const deviceLimit = 50
   const sensorIds:Array<string>=[]
   const measurements:Array<object>=[]
 	const formdata = await request.formData();
@@ -43,8 +43,8 @@ export async function action({request}:{request:Request}){
     value: formdata.get('value') === 'on',
     timestamp: formdata.get('timestamp') === 'on',
   }
-  console.log("devices:",deviceIds);
-  if(deviceIds.length>=50){
+
+  if(deviceIds.length>=deviceLimit){
     return Response.json({error:"Too many devices selected. If you are looking for bulk data, please consider visiting our archive.",link:"https://archive.opensensemap.org/"})
   }
   for(const device of deviceIds){
@@ -66,16 +66,11 @@ export async function action({request}:{request:Request}){
   let contentType = 'text/plain';
   let fileName = 'measurements';
   let rows;
-  let csvrows:any=[];
-  let textrows:any=[];
-  
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "full",
-    timeStyle: "short",
-    timeZone: "Europe/Berlin" // Adjust to your target timezone
-  });
+  const csvrows:any=[];
+  const textrows:any=[];
 
-  if (format === 'csv') {
+  // function to convert to csv
+  const getCSV = ()=>{
     contentType = 'text/csv';
     fileName += '.csv';
     
@@ -96,7 +91,13 @@ export async function action({request}:{request:Request}){
         content = utf8BOM + [headers.join(','), ...csvrows].join('\n');
         
   }
-  else if (format === 'json') {
+  
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "full",
+    timeStyle: "short",
+  });
+  // function to convert to JSON
+  const getJSON = () =>{
     contentType = 'application/json';
     fileName += '.json';
     
@@ -129,8 +130,9 @@ export async function action({request}:{request:Request}){
     
     // Pretty-print the JSON with 2-space indentation
     content = JSON.stringify(filteredMeasurements, null, 2);
-  } 
-  else { // txt format
+  }
+  // function to convert to txt
+  const getTXT = () =>{
     fileName += '.txt';
     contentType = 'text/plain';
     measurements.map((measure:any)=>{
@@ -140,7 +142,16 @@ export async function action({request}:{request:Request}){
         })
     })
     content = textrows.join('\n');
-    
+  }
+
+  if (format === 'csv') {
+    getCSV();
+  }
+  else if (format === 'json') {
+    getJSON();
+  } 
+  else { // txt format
+    getTXT();
   }
 
   console.log(content);
