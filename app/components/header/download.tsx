@@ -1,10 +1,10 @@
-import { BBox } from 'geojson'
+import type { BBox } from 'geojson'
 import debounce from 'lodash.debounce'
 import { Download as DownloadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-map-gl'
 import { Form, useNavigation, useActionData } from 'react-router'
-import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import {

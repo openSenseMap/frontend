@@ -11,7 +11,6 @@ import {
   useParams,
   type LoaderFunctionArgs, type LinksFunction 
 } from "react-router";
-import i18next from "~/i18next.server";
 import type Supercluster from "supercluster";
 import ErrorMessage from "~/components/error-message";
 import Header from "~/components/header";
@@ -20,6 +19,7 @@ import { phenomenonLayers, defaultLayer } from "~/components/map/layers";
 import BoxMarker from "~/components/map/layers/cluster/box-marker";
 import ClusterLayer from "~/components/map/layers/cluster/cluster-layer";
 import Legend, { type LegendValue } from "~/components/map/legend";
+import i18next from "~/i18next.server";
 import { getDevices, getDevicesWithSensors } from "~/models/device.server";
 import { getMeasurement } from "~/models/measurement.server";
 import { getProfileByUserId } from "~/models/profile.server";
