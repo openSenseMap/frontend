@@ -11,6 +11,7 @@ import {
   useParams,
   type LoaderFunctionArgs, type LinksFunction 
 } from "react-router";
+import i18next from "~/i18next.server";
 import type Supercluster from "supercluster";
 import ErrorMessage from "~/components/error-message";
 import Header from "~/components/header";
@@ -45,7 +46,7 @@ export async function action({request}:{request:Request}){
   }
 
   if(deviceIds.length>=deviceLimit){
-    return Response.json({error:"Too many devices selected. If you are looking for bulk data, please consider visiting our archive.",link:"https://archive.opensensemap.org/"})
+    return Response.json({error:"error",link:"https://archive.opensensemap.org/"})
   }
   for(const device of deviceIds){
     const sensors = await getSensors(device);
@@ -176,6 +177,7 @@ export type DeviceClusterProperties =
 
 export async function loader({ request }: LoaderFunctionArgs) {
   //* Get filter params
+  let locale = await i18next.getLocale(request);
   const url = new URL(request.url);
   const filterParams = url.search;
   const urlFilterParams = new URLSearchParams(url.search);
@@ -201,6 +203,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       profile,
       filteredDevices,
       filterParams,
+      locale,
       //phenomena
     };
   }

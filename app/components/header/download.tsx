@@ -4,6 +4,7 @@ import { Download as DownloadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useMap } from 'react-map-gl'
 import { Form, useNavigation, useActionData } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import {
@@ -30,6 +31,7 @@ import { toast } from '../ui/use-toast'
 
 // Custom Loading Animation Component
 const PulsingDownloadAnimation = () => {
+  const { t } = useTranslation('download')
   return (
     <div className="flex items-center justify-center">
       <div className="relative">
@@ -51,20 +53,21 @@ const PulsingDownloadAnimation = () => {
         <div className="absolute -top-4 left-0 h-2 w-2 animate-ping rounded-full bg-blue-500" style={{ animationDelay: "0.4s" }}></div>
         <div className="absolute -top-4 left-4 h-2 w-2 animate-ping rounded-full bg-blue-500" style={{ animationDelay: "0.7s" }}></div>
       </div>
-      <span className="ml-3 text-blue-600 font-medium">Processing data...</span>
+      <span className="ml-3 text-blue-600 font-medium">{t('processingData')}</span>
     </div>
   );
 };
 
 // Data Ready Animation
 const DataReadyAnimation = () => {
+  const { t } = useTranslation('download') 
   return (
     <div className="flex items-center justify-center text-light-blue">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4.3 12 14.01 9 11.01"></polyline>
       </svg>
-      <span className="ml-2">Ready to download!</span>
+      <span className="ml-2">{t('readyToDownload')}</span>
     </div>
   );
 };
@@ -72,6 +75,7 @@ const DataReadyAnimation = () => {
 const DEBOUNCE_VALUE = 50
 
 export default function Download(props: any) {
+  const { t } = useTranslation('download')
   const actionData = useActionData()
   const navigation = useNavigation()
   const isLoading = navigation.state === "submitting"
@@ -121,7 +125,7 @@ const handleDownloadStart = () => {
   setDownloadStarted(true)
   setShowReadyAnimation(false)
   toast({
-    description: "✔️ Download has Started. Please wait...",
+    description: "✔️ Download has Started! Please wait....",
     duration: 4000,
     variant:"success"
   })
@@ -202,7 +206,8 @@ const handleDownloadStart = () => {
         <div className="pointer-events-auto box-border h-10 w-10">
           <button
             type="button"
-            className="h-10 w-10 rounded-full border border-green-700 bg-green-300 text-center text-black hover:bg-gray-50 transition-all hover:shadow-md"
+            className="h-10 w-10 rounded-full border border-green-700 bg-green-100 text-center text-black hover:bg-light-green transition-all hover:shadow-md"
+            aria-label={t('download')}
           >
             <DownloadIcon className="mx-auto h-6 w-6" />
           </button>
@@ -210,48 +215,47 @@ const handleDownloadStart = () => {
       </DialogTrigger>
       <DialogContent className="max-w-1/2" style={{ maxHeight: '100vh', overflowY: 'auto' }}>
         <DialogHeader>
-          <DialogTitle>Download Options</DialogTitle>
+          <DialogTitle>{t('downloadOptions')}</DialogTitle>
           <DialogDescription>
-            Choose your preferred format and select which fields to include in
-            the download.
+          {t('downloadDescription')}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-3">
           <Form action={'/explore'} method='post'>
             <div className="grid gap-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor='Devices'>Devices</Label>
-                <span className="text-sm text-blue-600 font-medium">{deviceIDs.length} 📡selected</span>
+                <Label htmlFor='Devices'>{t('devices')}</Label>
+                <span className="text-sm text-blue-600 font-medium">{deviceIDs.length} 📡 {t('selected')}</span>
               </div>
               <Input type="text" name='devices' value={deviceIDs} readOnly/>
-              <Label htmlFor="format">Format</Label>
+              <Label htmlFor="format">{t('format')}</Label>
               <Select value={format} onValueChange={handleFormatChange} name='format'>
                 <SelectTrigger id="format">
-                  <SelectValue placeholder="Select format" />
+                  <SelectValue placeholder={t('selectFormat')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="csv">CSV</SelectItem>
                   <SelectItem value="json">JSON</SelectItem>
-                  <SelectItem value="txt">Text</SelectItem>
+                  <SelectItem value="txt">{t('text')}</SelectItem>
                 </SelectContent>
               </Select>
-              <Label htmlFor="aggregate">Aggregate to</Label>
+              <Label htmlFor="aggregate">{t('aggregateTo')}</Label>
               <Select value={aggregate} onValueChange={(value) => { setAggregate(value); setIsDownloadReady(false); setErrorMessage(null); setShowReadyAnimation(false);}} name='aggregate'>
                 <SelectTrigger id="aggregate">
-                  <SelectValue placeholder="Aggregate to" />
+                  <SelectValue placeholder={t('aggregateTo')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="raw">Raw data</SelectItem>
-                  <SelectItem value="10m">10 minutes</SelectItem>
-                  <SelectItem value="1h">1 hour</SelectItem>
-                  <SelectItem value="1d">1 day</SelectItem>
-                  <SelectItem value="1m">1 month</SelectItem>
-                  <SelectItem value="1y">1 year</SelectItem>
+                  <SelectItem value="raw">{t('rawData')}</SelectItem>
+                  <SelectItem value="10m">{t('10minutes')}</SelectItem>
+                  <SelectItem value="1h">{t('1hour')}</SelectItem>
+                  <SelectItem value="1d">{t('1day')}</SelectItem>
+                  <SelectItem value="1m">{t('1month')}</SelectItem>
+                  <SelectItem value="1y">{t('1year')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2 mt-4">
-              <Label>Fields to include</Label>
+              <Label>{t('fieldsToInclude')}</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -261,7 +265,7 @@ const handleDownloadStart = () => {
                     name="title"
                   />
                   <Label htmlFor="title" className="cursor-pointer">
-                    Title
+                  {t('title')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -272,7 +276,7 @@ const handleDownloadStart = () => {
                     name="unit"
                   />
                   <Label htmlFor="unit" className="cursor-pointer">
-                    Unit
+                  {t('unit')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -283,7 +287,7 @@ const handleDownloadStart = () => {
                     name="value"
                   />
                   <Label htmlFor="value" className="cursor-pointer">
-                    Value
+                  {t('value')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -294,7 +298,7 @@ const handleDownloadStart = () => {
                     name="timestamp"
                   />
                   <Label htmlFor="timestamp" className="cursor-pointer">
-                    Timestamp
+                  {t('timestamp')}
                   </Label>
                 </div>
               </div>
@@ -314,7 +318,7 @@ const handleDownloadStart = () => {
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
              </svg>
-            <p>{errorMessage}<a href={actionData?.link} className='text-blue-100' target='_blank'>Click here</a>{" "}to go to archive.</p>
+            <p>{t('error')} <a href={actionData?.link} className='text-blue-100' target='_blank'>{t('clickHere')}</a>{" "} {t('toGoToArchive')}</p>
           </div>
 )}
             <DialogFooter>
@@ -324,7 +328,7 @@ const handleDownloadStart = () => {
                   className="bg-blue-100 hover:bg-blue-200 transition-colors text-dark"
                   disabled={isLoading || deviceIDs.length === 0}
                 >
-                  {isLoading ? "Processing..." : "Generate File"}
+                  {isLoading ? t('processing') : t('generateFile')}
                 </Button>
                 {actionData && isDownloadReady ? (
                    <a 
@@ -338,7 +342,7 @@ const handleDownloadStart = () => {
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                      </svg>
-                     {downloadStarted ? "Downloading..." : `Download ${format.toUpperCase()} Data`}
+                     {downloadStarted ? t('downloading') : `${format.toUpperCase()} ${t('data')} ${t('download')}`}
                       </a>
                           ) : null}
               </div>
