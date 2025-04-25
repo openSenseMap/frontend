@@ -99,6 +99,7 @@ export default function Download(props: any) {
   const [format, setFormat] = useState<string>('csv')
   const handleFormatChange = (value: string) => {
     setFormat(value)
+    setShowReadyAnimation(false)
     setIsDownloadReady(false)
     setErrorMessage(null);
   }
@@ -129,6 +130,7 @@ const handleDownloadStart = () => {
     bounds && bounds.length === 4
       ? devices.filter((device: any) => {
           // Ensure the device has coordinates
+          
           if (!device.geometry || !device.geometry.coordinates) return false
 
           const [longitude, latitude] = device.geometry.coordinates
@@ -167,12 +169,16 @@ const handleDownloadStart = () => {
   }
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={()=>{
+      setOpen(!open);
+      setIsDownloadReady(false);
+      setErrorMessage(null);
+      setShowReadyAnimation(false);}}>
       <DialogTrigger asChild className="pointer-events-auto" onClick={()=>setOpen(true)}>
         <div className="pointer-events-auto box-border h-10 w-10">
           <button
             type="button"
-            className="h-10 w-10 rounded-full border border-green-700 bg-green-100 text-center text-black hover:bg-light-green transition-all hover:shadow-md"
+            className="h-10 w-10 rounded-full border border-green-700 bg-white text-center text-black hover:bg-slate-50 transition-all hover:shadow-md"
             aria-label={t('download')}
           >
             <DownloadIcon className="mx-auto h-6 w-6" />
