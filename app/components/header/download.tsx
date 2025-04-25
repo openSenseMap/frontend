@@ -1,5 +1,4 @@
 import {type BBox } from 'geojson'
-import debounce from 'lodash.debounce'
 import { Download as DownloadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -26,8 +25,6 @@ import {
   SelectValue,
 } from '../ui/select'
 import { toast } from '../ui/use-toast'
-
-
 
 // Custom Loading Animation Component
 const PulsingDownloadAnimation = () => {
@@ -71,27 +68,19 @@ const DataReadyAnimation = () => {
     </div>
   );
 };
-
-const DEBOUNCE_VALUE = 50
-
+ 
 export default function Download(props: any) {
   const { t } = useTranslation('download')
   const actionData = useActionData()
   const navigation = useNavigation()
-  const isLoading = navigation.state === "submitting"
-  
+  const isLoading = navigation.state === "submitting"  
   const devices = props.devices.features || []
   const { osem: mapRef } = useMap()
 
-  // the viewport bounds and zoom level
-  const [bounds, setBounds] = useState(
-    mapRef?.getMap().getBounds().toArray().flat() as BBox,
-  )
-
-  const [, setZoom] = useState(mapRef?.getZoom() || 0)
   const [isDownloadReady, setIsDownloadReady] = useState(false)
   const [showReadyAnimation, setShowReadyAnimation] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  
   // Update download ready state when actionData changes
   useEffect(() => {
     if (actionData && actionData.error) {
@@ -134,28 +123,8 @@ const handleDownloadStart = () => {
   }, Delay)
 }
 
-
-  // get bounds and zoom level from the map
-  const debouncedChangeHandler = debounce(() => {
-    if (!mapRef) return
-    setBounds(mapRef.getMap().getBounds().toArray().flat() as BBox)
-    setZoom(mapRef.getZoom())
-    // Reset download state when map changes
-    setIsDownloadReady(false)
-    setErrorMessage(null)
-    setShowReadyAnimation(false)
-  }, DEBOUNCE_VALUE)
-
-  // register the debounced change handler to map events
-  useEffect(() => {
-    if (!mapRef) return
-    mapRef?.getMap().on('load', debouncedChangeHandler)
-    mapRef?.getMap().on('zoom', debouncedChangeHandler)
-    mapRef?.getMap().on('move', debouncedChangeHandler)
-    mapRef?.getMap().on('resize', debouncedChangeHandler)
-  }, [debouncedChangeHandler, mapRef])
-
   // Filter devices inside the current bounds
+  const bounds = mapRef?.getMap().getBounds().toArray().flat() as BBox ?? undefined;
   const devicesInBounds =
     bounds && bounds.length === 4
       ? devices.filter((device: any) => {
