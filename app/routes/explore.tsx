@@ -26,6 +26,7 @@ import { getProfileByUserId } from "~/models/profile.server";
 import { getSensors } from "~/models/sensor.server";
 import { type Device } from "~/schema";
 import { getFilteredDevices } from "~/utils";
+import { getCSV, getJSON, getTXT } from "~/utils/file-exports";
 import { getUser, getUserSession } from "~/utils/session.server"
 
 
@@ -62,102 +63,29 @@ export async function action({request}:{request:Request}){
     }
   }
 
-  
   let content = '';
   let contentType = 'text/plain';
-  let fileName = 'measurements';
-  let rows;
-  const csvrows:any=[];
-  const textrows:any=[];
-
-  // function to convert to csv
-  const getCSV = ()=>{
-    contentType = 'text/csv';
-    fileName += '.csv';
-    
-    // Generate CSV headers
-    const headers = ['SensorId', includeFields.title?'Title':null, includeFields.value?'Value':null,includeFields.unit?'Unit':null,includeFields.timestamp?'Timestamp':null];
+  let fileName = '';
   
-    // Generate CSV rows
-        measurements.map((measure:any)=>{
-          // console.log(measure);
-           measure.map((m:any)=>{
-              rows = [m.sensorId,includeFields.title?m.title:null,includeFields.value?m.value:null,includeFields.unit?m.unit:null,includeFields.timestamp?formatter.format(new Date(m.time)):null].join(',')
-              csvrows.push(rows);
-          })
-          
-        })
-       
-        const utf8BOM = '\uFEFF';
-        content = utf8BOM + [headers.join(','), ...csvrows].join('\n');
-        
-  }
-  
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "full",
-    timeStyle: "short",
-  });
-  // function to convert to JSON
-  const getJSON = () =>{
-    contentType = 'application/json';
-    fileName += '.json';
-    
-    // Create a properly filtered JSON structure based on includeFields
-    const filteredMeasurements:any = [];
-    
-    measurements.forEach((measureGroup: any) => {
-      const groupData:any = [];
-      
-      measureGroup.forEach((m: any) => {
-        // Create an object with only the requested fields
-        const filteredItem: any = {};
-        
-        // Always include sensorId as it's a key identifier
-        filteredItem.sensorId = m.sensorId;
-        
-        // Add optional fields based on user selection
-        if (includeFields.title) filteredItem.title = m.title;
-        if (includeFields.value) filteredItem.value = m.value;
-        if (includeFields.unit) filteredItem.unit = m.unit;
-        if (includeFields.timestamp) filteredItem.timestamp = formatter.format(new Date(m.time));
-        
-        groupData.push(filteredItem);
-      });
-      
-      if (groupData.length > 0) {
-        filteredMeasurements.push(groupData);
-      }
-    });
-    
-    // Pretty-print the JSON with 2-space indentation
-    content = JSON.stringify(filteredMeasurements, null, 2);
-  }
-  // function to convert to txt
-  const getTXT = () =>{
-    fileName += '.txt';
-    contentType = 'text/plain';
-    measurements.map((measure:any)=>{
-        measure.map((m:any)=>{
-            rows = `Title: ${m.title}\nSensorId: ${m.sensorId}\nValue: ${m.value}\nUnit: ${m.unit}\nTimestamp: ${formatter.format(new Date(m.time))}\n`
-            textrows.push(rows)
-        })
-    })
-    content = textrows.join('\n');
-  }
-
   if (format === 'csv') {
-    getCSV();
+    const result = getCSV(measurements, includeFields);
+    content = result.content;
+    fileName = result.fileName;
+    contentType = result.contentType;
   }
   else if (format === 'json') {
-    getJSON();
+    const result = getJSON(measurements, includeFields);
+    content = result.content;
+    fileName = result.fileName;
+    contentType = result.contentType;
   } 
   else { // txt format
-    getTXT();
+      const result = getTXT(measurements, includeFields);
+      content = result.content;
+      fileName = result.fileName;
+      contentType = result.contentType;
   }
 
-  console.log(content);
-  console.log(fileName);
-  console.log(new Blob([content]).size / (1024 * 1024));
   return Response.json({
     href: `data:${contentType};charset=utf-8,${encodeURIComponent(content)}`,
     download: fileName

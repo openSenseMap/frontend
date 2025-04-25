@@ -102,10 +102,6 @@ export default function Download(props: any) {
       if (actionData) {
         setIsDownloadReady(true)
         setShowReadyAnimation(true)
-        // const timer = setTimeout(() => {
-        //   setShowReadyAnimation(false)
-        // }, 2500)
-        // return () => clearTimeout(timer)
       }
     }
   }, [actionData])
@@ -122,11 +118,12 @@ export default function Download(props: any) {
 
 // Add this function to handle download start
 const handleDownloadStart = () => {
+  const Delay = 3500;
   setDownloadStarted(true)
   setShowReadyAnimation(false)
   toast({
-    description: "✔️ Download has Started! Please wait....",
-    duration: 4000,
+    description: t('toast'),
+    duration: Delay,
     variant:"success"
   })
   
@@ -134,7 +131,7 @@ const handleDownloadStart = () => {
   setTimeout(() => {
     setDownloadStarted(false)
     setOpen(false)
-  }, 2000)
+  }, Delay)
 }
 
 
@@ -227,7 +224,7 @@ const handleDownloadStart = () => {
                 <Label htmlFor='Devices'>{t('devices')}</Label>
                 <span className="text-sm text-blue-600 font-medium">{deviceIDs.length} 📡 {t('selected')}</span>
               </div>
-              <Input type="text" name='devices' value={deviceIDs} readOnly/>
+              <Input type="text" id='devices' name='devices' value={deviceIDs} readOnly/>
               <Label htmlFor="format">{t('format')}</Label>
               <Select value={format} onValueChange={handleFormatChange} name='format'>
                 <SelectTrigger id="format">
@@ -255,8 +252,8 @@ const handleDownloadStart = () => {
               </Select>
             </div>
             <div className="grid gap-2 mt-4">
-              <Label>{t('fieldsToInclude')}</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <Label htmlFor='fields'>{t('fieldsToInclude')}</Label>
+              <div className="grid grid-cols-2 gap-3" id='fields'>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="title"

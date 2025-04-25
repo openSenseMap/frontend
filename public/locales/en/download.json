@@ -6,6 +6,7 @@
     "error":"Too many devices selected. If you are looking for bulk data, please consider visiting our archive.",
     "selected": "selected",
     "format": "Format",
+    "toast": "✔️ Download has started! Please Wait...",
     "selectFormat": "Select format",
     "text": "Text",
     "aggregateTo": "Aggregate to",
