@@ -1,4 +1,4 @@
-import type { BBox } from 'geojson'
+import {type BBox } from 'geojson'
 import debounce from 'lodash.debounce'
 import { Download as DownloadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
