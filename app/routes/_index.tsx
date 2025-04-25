@@ -115,6 +115,7 @@ export default function Index() {
           id="firstSection"
           className="flex flex-col justify-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
           style={{
+            /** for some reasons not really worth debugging tailwind does not apply min-h-[calc(100vh-8rem)], so we have to use element styles here */
             minHeight: "calc(100vh - 8rem)",
             scrollSnapAlign: "center",
           }}
