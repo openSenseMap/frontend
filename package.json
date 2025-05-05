@@ -43,7 +43,7 @@
     "@hookform/resolvers": "^3.3.2",
     "@isaacs/express-prometheus-middleware": "^1.2.1",
     "@mantine/core": "^7.14.2",
-    "@mantine/hooks": "^7.13.1",
+    "@mantine/hooks": "^8.0.0",
     "@mapbox/mapbox-gl-geocoder": "^5.0.1",
     "@mjackson/form-data-parser": "^0.5.1",
     "@novu/notification-center": "^2.0.0",
