@@ -88,7 +88,7 @@
     "class-variance-authority": "^0.7.0",
     "close-with-grace": "^2.1.0",
     "clsx": "^2.0.0",
-    "cmdk": "^1.0.0",
+    "cmdk": "^1.1.1",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "date-fns": "^4.1.0",
