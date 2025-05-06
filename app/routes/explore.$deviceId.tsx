@@ -44,12 +44,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		const filteredLocations = categorizeIntoTrips(formattedLocations, 60) // 60 seconds as time threshold
 
 		// get the last time of the 5th trip
-		const lastTime =
-			filteredLocations[4]?.points[filteredLocations[4].points.length - 1]?.time
+		const lastTime = filteredLocations[4]?.points.at(-1)?.time
 		// cut all locations from the device to the last time of the 5th trip
 		const cutLocations = device.locations.filter((location) => {
 			const locationTime = String(location.time) // Ensure time is treated as a string
-			return locationTime <= lastTime
+			return lastTime ? locationTime <= lastTime : false
 		})
 		// set the locations to the device
 		device.locations = cutLocations
@@ -79,9 +78,7 @@ export default function DeviceId() {
 	// Retrieving the data returned by the loader using the useLoaderData hook
 	const data = useLoaderData<typeof loader>()
 	const matches = useMatches()
-	const isSensorView = matches[matches.length - 1].params.sensorId
-		? true
-		: false
+	const isSensorView = matches.at(-1)?.params.sensorId ? true : false
 	const [hoveredPoint, setHoveredPoint] = useState(null)
 
 	const setHoveredPointDebug = (point: any) => {

@@ -1,16 +1,17 @@
 import { default as defaultConfig } from '@epic-web/config/eslint'
+import prettier from 'eslint-plugin-prettier'
 
 /** @type {import("eslint").Linter.Config} */
-const options = [
+export default [
 	...defaultConfig,
-	// add custom config objects here:
-	{
-		ignores: ['**/.react-router/**'],
-	},
 	{
 		files: ['**/tests/**/*.ts'],
-		rules: { 'react-hooks/rules-of-hooks': 'off' },
+		ignores: ['**/.react-router/**'],
+		plugins: {
+			prettier: prettier,
+		},
+		rules: {
+			'prettier/prettier': 'error',
+		},
 	},
 ]
-
-export default options

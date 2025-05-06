@@ -1,0 +1,31 @@
+{
+	"name": "openSenseMap frontend",
+	"image": "node:22",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker": "latest"
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode"
+			},
+			"extensions": [
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				"bradlc.vscode-tailwindcss"
+			]
+		}
+	},
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"forwardPorts": [3000],
+	"portsAttributes": {
+		"3000": {
+			"label": "frontend",
+			"onAutoForward": "openBrowserOnce"
+		}
+	},
+	"postStartCommand": "npm install && npm run build"
+}

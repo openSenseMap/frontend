@@ -70,7 +70,7 @@ export default function MobileOverviewLayer({
 		const points = trips.flatMap((trip, index) =>
 			trip.points.map((location) =>
 				point([location.geometry.x, location.geometry.y], {
-					color: colors[index], // Assign stable color per trip
+					color: colors[index] ?? '#000000', // Assign stable color per trip
 					tripNumber: index + 1, // Add trip number metadata
 					timestamp: location.time, // Add timestamp metadata
 				}),
@@ -80,7 +80,7 @@ export default function MobileOverviewLayer({
 		// Set legend items for the trips
 		const legend = trips.map((_, index) => ({
 			label: `Trip ${index + 1}`,
-			color: colors[index],
+			color: colors[index] ?? '#000000',
 		}))
 
 		setSourceData(featureCollection(points))
@@ -170,8 +170,8 @@ export default function MobileOverviewLayer({
 			if (hoveredTrip) {
 				// Find the first point of the trip to get the coordinates (longitude, latitude)
 				const { startTime, endTime } = hoveredTrip
-				const longitude = hoveredTrip.points[0].geometry.x
-				const latitude = hoveredTrip.points[0].geometry.y
+				const longitude = hoveredTrip.points[0]?.geometry.x ?? 0
+				const latitude = hoveredTrip.points[0]?.geometry.y ?? 0
 
 				// Set the popupInfo state with coordinates and time range
 				setPopupInfo({ longitude, latitude, startTime, endTime })
