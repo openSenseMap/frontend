@@ -183,7 +183,8 @@ export default function ClusterLayer({
         }
       } catch (error) {
         // If error getting children (like after zoom change), try to find nearby clusters
-        const radius = 0.05; // Larger radius to find more clusters
+        if(error){
+          const radius = 0.05; // Larger radius to find more clusters
         const bbox: BBox = [
           parentCoordinates[0] - radius,
           parentCoordinates[1] - radius,
@@ -200,6 +201,7 @@ export default function ClusterLayer({
           (item.geometry.coordinates[0] !== parentCoordinates[0] || 
            item.geometry.coordinates[1] !== parentCoordinates[1])
         );
+        }
       }
     } else if (lastExpandedCoordinates) {
       // Use the last known coordinates if no active expanded cluster
