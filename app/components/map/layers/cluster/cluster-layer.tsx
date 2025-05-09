@@ -60,7 +60,7 @@ export default function ClusterLayer({
   // Track if legs should be visible
   const [showLegs, setShowLegs] = useState<boolean>(false);
   
-  // Control visibility of inter-cluster connections
+  // Control visibility of inter-cluster connections - set to true by default to show from initial zoom
   const [showClusterConnections, setShowClusterConnections] = useState<boolean>(true);
 
   // get clusters
@@ -92,6 +92,27 @@ export default function ClusterLayer({
     mapRef?.getMap().on("move", debouncedChangeHandler);
     mapRef?.getMap().on("resize", debouncedChangeHandler);
   }, [debouncedChangeHandler, mapRef]);
+
+  // Always show cluster connections regardless of zoom level
+  useEffect(() => {
+    // Make sure connections are visible from the start
+    setShowClusterConnections(true);
+    
+    // Force initial render of connections
+    if (mapRef) {
+      // Trigger a re-render after the map is loaded
+      const onLoadHandler = () => {
+        setBounds(mapRef.getMap().getBounds().toArray().flat() as BBox);
+        setZoom(mapRef.getZoom());
+      };
+      
+      mapRef.getMap().once('load', onLoadHandler);
+      
+      return () => {
+        mapRef.getMap().off('load', onLoadHandler);
+      };
+    }
+  }, [mapRef]);
 
   // Instead of clearing expanded cluster on zoom changes,
   // we'll keep track of last expanded cluster
@@ -183,8 +204,7 @@ export default function ClusterLayer({
         }
       } catch (error) {
         // If error getting children (like after zoom change), try to find nearby clusters
-        if(error){
-          const radius = 0.05; // Larger radius to find more clusters
+        const radius = 0.05; // Larger radius to find more clusters
         const bbox: BBox = [
           parentCoordinates[0] - radius,
           parentCoordinates[1] - radius,
@@ -201,7 +221,6 @@ export default function ClusterLayer({
           (item.geometry.coordinates[0] !== parentCoordinates[0] || 
            item.geometry.coordinates[1] !== parentCoordinates[1])
         );
-        }
       }
     } else if (lastExpandedCoordinates) {
       // Use the last known coordinates if no active expanded cluster
@@ -259,7 +278,8 @@ export default function ClusterLayer({
 
   // Generate GeoJSON for connections between all visible clusters
   const clusterConnectionsGeoJSON: FeatureCollection<Geometry, GeoJsonProperties> | null = useMemo(() => {
-    if (!showClusterConnections || !clusters || clusters.length === 0) return null;
+    // Always generate connections if clusters exist
+    if (!clusters || clusters.length === 0) return null;
     
     // Extract only the clusters (not individual points)
     const visibleClusters = clusters.filter(c => c.properties.cluster);
@@ -291,9 +311,13 @@ export default function ClusterLayer({
         nearestClusters.push({ cluster: clusterB, distance });
       }
       
-      // Sort by distance and take the nearest 2 clusters (or less if not available)
+      // Sort by distance and take more connections at lower zoom levels
       nearestClusters.sort((a, b) => a.distance - b.distance);
-      const maxConnections = Math.min(2, nearestClusters.length);
+      // More connections at lower zoom levels, fewer at higher zooms
+      const maxConnections = Math.min(
+        zoom < 4 ? 3 : zoom < 8 ? 2 : 1, 
+        nearestClusters.length
+      );
       
       for (let k = 0; k < maxConnections; k++) {
         const nearCluster = nearestClusters[k].cluster;
@@ -304,7 +328,7 @@ export default function ClusterLayer({
         const clusterIdB = nearCluster.properties.cluster_id;
         const pairId = [clusterIdA, clusterIdB].sort().join('-');
         
-        if (!processedPairs.has(pairId) && nearestClusters[k].distance < 0.5) { // Limit by distance
+        if (!processedPairs.has(pairId) && nearestClusters[k].distance < (zoom < 4 ? 10 : zoom < 8 ? 2 : 0.5)) { // Dynamic distance threshold based on zoom
           processedPairs.add(pairId);
           
           features.push({
@@ -331,7 +355,7 @@ export default function ClusterLayer({
       type: "FeatureCollection" as const,
       features
     };
-  }, [clusters, showClusterConnections]);
+  }, [clusters, zoom]);
 
   const clusterMarker = useMemo(() => {
     return clusters.map((cluster) => {
@@ -372,16 +396,6 @@ export default function ClusterLayer({
     });
   }, [clusterOnClick, clusters, expandedClusterId]);
 
-  // Toggle cluster connections when map zoom changes
-  useEffect(() => {
-    // Only show cluster connections at lower zoom levels
-    if (zoom < 14) {
-      setShowClusterConnections(true);
-    } else {
-      setShowClusterConnections(false);
-    }
-  }, [zoom]);
-
   return (
     <>
       {/* Inter-cluster connections layer */}
@@ -392,8 +406,17 @@ export default function ClusterLayer({
             type="line"
             paint={{
               'line-color': '#575757',
-              'line-width': 2,
-              'line-opacity': 0.8,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 
+                1, 3, // Thicker lines at low zoom
+                6, 2.5,
+                10, 2,
+                14, 1.5
+              ],
+              'line-opacity': ['interpolate', ['linear'], ['zoom'],
+                1, 0.9, // More opaque at low zoom
+                10, 0.8,
+                14, 0.7
+              ],
               'line-dasharray': [2, 2]
             }}
           />
