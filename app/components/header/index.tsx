@@ -1,3 +1,4 @@
+import Download from "./download";
 import Home from "./home";
 import Menu from "./menu";
 import NavBar from "./nav-bar";
@@ -15,7 +16,8 @@ export default function Header(props: HeaderProps) {
     <div className="items-top pointer-events-none fixed z-10 flex h-14 w-full justify-between gap-4 p-2">
       <Home />
       <NavBar devices={props.devices} />
-      <div className="flex">
+      <div className="flex gap-2">
+        <Download devices={props.devices} />
         {/* {data?.user?.email ? <Notification /> : null} */}
         <Menu />
       </div>

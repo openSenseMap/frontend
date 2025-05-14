@@ -1,22 +1,17 @@
-import { useState } from 'react'
-import {
-	type LoaderFunctionArgs,
-	Outlet,
-	useLoaderData,
-	useMatches,
-} from 'react-router'
 
-import DeviceDetailBox from '~/components/device-detail/device-detail-box'
-import ErrorMessage from '~/components/error-message'
-import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
-import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
-import i18next from '~/i18next.server'
+import { useState } from "react";
+import  { type LoaderFunctionArgs, Outlet, useLoaderData, useMatches  } from "react-router";
+import DeviceDetailBox from "~/components/device-detail/device-detail-box";
+import ErrorMessage from "~/components/error-message";
+import { HoveredPointContext } from "~/components/map/layers/mobile/mobile-box-layer";
+import MobileOverviewLayer from "~/components/map/layers/mobile/mobile-overview-layer";
+import i18next from "~/i18next.server";
 import {
 	categorizeIntoTrips,
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
-import { getDevice } from '~/models/device.server'
-import { getSensorsWithLastMeasurement } from '~/models/sensor.server'
+import { getDevice} from "~/models/device.server";
+import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const locale = await i18next.getLocale(request)
