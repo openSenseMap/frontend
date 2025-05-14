@@ -1,6 +1,7 @@
 import moment from "moment";
 import { useMemo } from "react";
 import { useMatches } from "react-router";
+import { validateUsername, validateEmail as validateEmailNew } from "./lib/user-service";
 import  { type MyBadge } from "./models/badge.server";
 import  { type User } from "~/schema";
 
@@ -87,22 +88,27 @@ export function useUser(): User {
   return maybeUser;
 }
 
+/**
+ * Validates an email against common criteria.
+ * @deprecated Use {@link validateEmailNew} instead
+ */
 export function validateEmail(email: unknown): email is string {
-  return typeof email === "string" && email.length > 3 && email.includes("@");
+  if(typeof email !== "string") return false;
+  return validateEmailNew(email).isValid;
 }
 
-//* validate user name in join page
+/**
+ * Validates a username against set criteria.
+ * @deprecated Use {@link validateUsername} instead
+ */
 export function validateName(name: string) {
-  if (name.length === 0) {
+  const { required, length, invalidCharacters} = validateUsername(name);
+  if(required)
     return { isValid: false, errorMsg: "Name is required" };
-  } else if (name.length < 4) {
+  else if(length)
     return { isValid: false, errorMsg: "Please use at least 4 characters." };
-  } else if (
-    name &&
-    !/^[a-zA-Z0-9][a-zA-Z0-9\s._-]+[a-zA-Z0-9-_.]$/.test(name.toString())
-  ) {
+  else if(invalidCharacters)
     return { isValid: false, errorMsg: "Name is invalid" };
-  }
 
   return { isValid: true };
 }
