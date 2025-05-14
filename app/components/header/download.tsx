@@ -196,7 +196,7 @@ const handleDownloadStart = () => {
           <Form action={'/explore'} method='post'>
             <div className="grid gap-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor='Devices'>{t('devices')}</Label>
+                <Label htmlFor='devices'>{t('devices')}</Label>
                 <span className="text-sm text-blue-600 font-medium">{deviceIDs.length} 📡 {t('selected')}</span>
               </div>
               <Input type="text" id='devices' name='devices' value={deviceIDs} readOnly/>
@@ -226,9 +226,9 @@ const handleDownloadStart = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2 mt-4">
-              <Label htmlFor='fields'>{t('fieldsToInclude')}</Label>
-              <div className="grid grid-cols-2 gap-3" id='fields'>
+            <div className="grid gap-2 mt-4">              
+              <fieldset className="grid grid-cols-2 gap-3" id='fields'>
+                <legend>{t('fieldsToInclude')}</legend>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="title"
@@ -273,7 +273,7 @@ const handleDownloadStart = () => {
                   {t('timestamp')}
                   </Label>
                 </div>
-              </div>
+              </fieldset>
             </div>
             
             <div className="h-16 flex items-center justify-center mt-2">
