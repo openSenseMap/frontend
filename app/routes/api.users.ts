@@ -1,4 +1,5 @@
 import { type ActionFunctionArgs } from "react-router";
+import { createToken } from "~/lib/jwt";
 import {
   type EmailValidation,
   type PasswordValidation,
@@ -67,19 +68,28 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const user = registration as User;
-    // TODO return JWT etc
-    
-    return new Response(
-      JSON.stringify({
-        message: "Successfully registered new user",
-        token: "",
-        refreshToken: "",
-        data: user,
-      }),
-      {
-        status: 201,
-      },
-    );
+
+    try {
+      const { token, refreshToken } = await createToken(user);
+
+      return new Response(
+        JSON.stringify({
+          message: "Successfully registered new user",
+          token: token,
+          refreshToken: refreshToken,
+          data: user,
+        }),
+        {
+          status: 201,
+        },
+      );
+    } catch (err) {
+      console.error("Unable to create JWT", err);
+      return new Response(
+        `Unable to create jwt for newly created user: ${(err as Error)?.message}`,
+        { status: 500 },
+      );
+    }
   } catch {
     return new Response("Internal Server Error", { status: 500 });
   }
