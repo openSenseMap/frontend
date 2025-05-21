@@ -11,7 +11,7 @@ const { sign } = jsonwebtoken;
 const {
   JWT_ALGORITHM,
   JWT_ISSUER,
-  JWT_VALIDITIY_MS,
+  JWT_VALIDITY_MS,
   JWT_SECRET,
   REFRESH_TOKEN_ALGORITHM,
   REFRESH_TOKEN_SECRET,
@@ -21,7 +21,7 @@ const {
 const jwtSignOptions = {
   algorithm: JWT_ALGORITHM as Algorithm,
   issuer: JWT_ISSUER,
-  expiresIn: Math.round(Number(JWT_VALIDITIY_MS) / 1000),
+  expiresIn: Math.round(Number(JWT_VALIDITY_MS) / 1000),
 };
 
 export const createToken = (
@@ -32,7 +32,7 @@ export const createToken = (
 }> => {
   invariant(typeof JWT_ALGORITHM === "string");
   invariant(typeof JWT_ISSUER === "string");
-  invariant(typeof JWT_VALIDITIY_MS === "string");
+  invariant(typeof JWT_VALIDITY_MS === "string");
   invariant(typeof JWT_SECRET === "string");
   invariant(typeof REFRESH_TOKEN_ALGORITHM === "string");
   invariant(typeof REFRESH_TOKEN_SECRET === "string");

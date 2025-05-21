@@ -14,8 +14,7 @@ export const action: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const method = request.method;
-  if (method !== "POST")
-    return new Response("Method Not Allowed", { status: 405 });
+  if (method !== "POST") return new Response(null, { status: 405 });
 
   const formEntries = await request.formData();
   const username = formEntries.get("name")?.toString() ?? "";
@@ -37,11 +36,15 @@ export const action: ActionFunction = async ({
     );
     if (!registration)
       // null is returned when no new user profile was created because it already exists
-      return new Response("User already exists.", { status: 400 });
+      return new Response(JSON.stringify({ message: "User already exists." }), {
+        status: 400,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+        },
+      });
 
     if ("validationKind" in registration) {
       // A validation was returned, therefore a bad request was sent in
-      console.log(registration);
       let msg = "Bad Request";
       switch (registration.validationKind) {
         case "username":
@@ -66,7 +69,12 @@ export const action: ActionFunction = async ({
             msg = "Password must be at least 8 characters logn.";
           break;
       }
-      return new Response(msg, { status: 400 });
+      return new Response(JSON.stringify({ message: msg }), {
+        status: 400,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+        },
+      });
     }
 
     const user = registration as User;
@@ -83,13 +91,23 @@ export const action: ActionFunction = async ({
         }),
         {
           status: 201,
+          headers: {
+            "content-type": "application/json; charset=utf-8",
+          },
         },
       );
     } catch (err) {
       console.error("Unable to create JWT", err);
       return new Response(
-        `Unable to create jwt for newly created user: ${(err as Error)?.message}`,
-        { status: 500 },
+        JSON.stringify({
+          message: `Unable to create jwt for newly created user: ${(err as Error)?.message}`,
+        }),
+        {
+          status: 500,
+          headers: {
+            "content-type": "application/json; charset=utf-8",
+          },
+        },
       );
     }
   } catch {
