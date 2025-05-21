@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail, validateName } from "~/utils";
+import { safeRedirect, validateEmail, validateName } from "~/utils.server";
 import { createUserSession, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

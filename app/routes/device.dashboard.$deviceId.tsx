@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { diffFromCreateDate, getMinuteFormattedString } from "~/utils";
+import { diffFromCreateDate, getMinuteFormattedString } from "~/utils.server";
 
 let deviceData = {
   _id: "5b411d0e5dc1ec001b4f11c8",

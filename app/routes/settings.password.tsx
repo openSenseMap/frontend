@@ -15,7 +15,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
-import { validatePassLength, validatePassType } from "~/utils";
+import { validatePassLength, validatePassType } from "~/utils.server";
 import { getUserEmail, getUserId } from "~/utils/session.server";
 
 //*****************************************************

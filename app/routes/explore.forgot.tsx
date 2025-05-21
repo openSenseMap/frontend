@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { validateEmail } from "~/utils";
+import { validateEmail } from "~/utils.server";
 import { getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

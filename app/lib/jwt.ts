@@ -1,26 +1,22 @@
 import { createHmac } from "node:crypto";
-import { type Algorithm, sign } from "jsonwebtoken";
+import jsonwebtoken, { type Algorithm } from "jsonwebtoken";
 import invariant from "tiny-invariant";
 import { v4 as uuidv4 } from "uuid";
-import { type User } from "~/schema";
 import { drizzleClient } from "~/db.server";
+import { type User } from "~/schema";
 import { refreshToken } from "~/schema/refreshToken";
 
-const JWT_ALGORITHM = process.env.JWT_ALGORITHM;
-const JWT_ISSUER = process.env.JWT_ISSUER;
-const JWT_VALIDITIY_MS = process.env.JWT_VALIDITY_MS;
-const JWT_SECRET = process.env.JWT_SECRET;
-const REFRESH_TOKEN_ALGORITHM = process.env.REFRESH_TOKEN_ALGORITHM;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-const REFRESH_TOKEN_VALIDITY_MS = process.env.REFRESH_TOKEN_VALIDITY_MS;
+const { sign } = jsonwebtoken;
 
-invariant(JWT_ALGORITHM !== undefined);
-invariant(JWT_ISSUER !== undefined);
-invariant(JWT_VALIDITIY_MS !== undefined);
-invariant(JWT_SECRET !== undefined);
-invariant(REFRESH_TOKEN_ALGORITHM !== undefined);
-invariant(REFRESH_TOKEN_SECRET !== undefined);
-invariant(REFRESH_TOKEN_VALIDITY_MS !== undefined);
+const {
+  JWT_ALGORITHM,
+  JWT_ISSUER,
+  JWT_VALIDITIY_MS,
+  JWT_SECRET,
+  REFRESH_TOKEN_ALGORITHM,
+  REFRESH_TOKEN_SECRET,
+  REFRESH_TOKEN_VALIDITY_MS,
+} = process.env;
 
 const jwtSignOptions = {
   algorithm: JWT_ALGORITHM as Algorithm,
@@ -34,6 +30,14 @@ export const createToken = (
   token: string;
   refreshToken: string;
 }> => {
+  invariant(typeof JWT_ALGORITHM === "string");
+  invariant(typeof JWT_ISSUER === "string");
+  invariant(typeof JWT_VALIDITIY_MS === "string");
+  invariant(typeof JWT_SECRET === "string");
+  invariant(typeof REFRESH_TOKEN_ALGORITHM === "string");
+  invariant(typeof REFRESH_TOKEN_SECRET === "string");
+  invariant(typeof REFRESH_TOKEN_VALIDITY_MS === "string");
+
   const payload = { role: user.role };
   const signOptions = Object.assign(
     { subject: user.email, jwtid: uuidv4() },

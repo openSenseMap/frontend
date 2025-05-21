@@ -1,16 +1,18 @@
-import { type ActionFunctionArgs } from "react-router";
+import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { createToken } from "~/lib/jwt";
 import {
   type EmailValidation,
   type PasswordValidation,
   registerUser,
   type UsernameValidation,
-} from "~/lib/user-service";
+} from "~/lib/user-service.server";
 import { type User } from "~/schema";
 
 const DEFAULT_LANGUAGE: "de_DE" | "en_US" = "en_US";
 
-export async function action({ request }: ActionFunctionArgs) {
+export const action: ActionFunction = async ({
+  request,
+}: ActionFunctionArgs) => {
   const method = request.method;
   if (method !== "POST")
     return new Response("Method Not Allowed", { status: 405 });
@@ -93,4 +95,4 @@ export async function action({ request }: ActionFunctionArgs) {
   } catch {
     return new Response("Internal Server Error", { status: 500 });
   }
-}
+};

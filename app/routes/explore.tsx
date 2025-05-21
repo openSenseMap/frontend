@@ -25,7 +25,7 @@ import { getMeasurement } from "~/models/measurement.server";
 import { getProfileByUserId } from "~/models/profile.server";
 import { getSensors } from "~/models/sensor.server";
 import { type Device } from "~/schema";
-import { getFilteredDevices } from "~/utils";
+import { getFilteredDevices } from "~/utils.server";
 import { getCSV, getJSON, getTXT } from "~/utils/file-exports";
 import { getUser, getUserSession } from "~/utils/session.server"
 

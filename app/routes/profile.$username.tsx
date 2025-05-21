@@ -12,7 +12,7 @@ import {
   getUserBackpack, type MyBadge 
 } from "~/models/badge.server";
 import { getProfileByUsername } from "~/models/profile.server";
-import { getUniqueActiveBadges, sortBadges, type BadgeClass  } from "~/utils";
+import { getUniqueActiveBadges, sortBadges, type BadgeClass  } from "~/utils.server";
 import { getInitials } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 

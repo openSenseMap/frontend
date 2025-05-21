@@ -5,7 +5,7 @@ import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, d
 import ErrorMessage from "~/components/error-message";
 import { getProfileByUsername } from "~/models/profile.server";
 import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail, validateName } from "~/utils";
+import { safeRedirect, validateEmail, validateName } from "~/utils.server";
 import { createUserSession, getUserId } from "~/utils/session.server";
 
 

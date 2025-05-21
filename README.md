@@ -34,9 +34,8 @@ You can create a copy of `.env.example`, rename it to `.env` and set the values.
 1. Clone the repo: `git clone https://github.com/openSenseMap/frontend`
 2. Copy `.env.example` into `.env`
 3. Run `npm install` to install dependencies
-4. Run `npm run docker` to start the docker container running your local postgres DB
-5. Run `npm run build`
-6. Run `npm run dev` to start the local server
+4. Run `docker compose up` to start the docker container running your local postgres DB
+5. Run `npm run dev` to start the local server
 
 ### Contributing
 
@@ -66,8 +65,8 @@ Afterwards follow these steps:
 ├── other
 ├── public              # static assets
 ├── server
-├── test
-├── tests
+├── tests               # automated tests, same structure as the app/ folder with tests placed according to the files they test
+│   ├── routes          # tests for (resource/ api) routes
 ├── types
 ├── ...
 ```
