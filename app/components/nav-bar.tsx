@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOptionalUser } from "~/utils.server";
+import { useOptionalUser } from "~/utils";
 
 export function NavBar() {
   const location = useLocation();
