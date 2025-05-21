@@ -1,17 +1,17 @@
 ![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/openSenseMap.png)
 
-This repository contains the code of the new *openSenseMap* frontend running at [https://beta.opensensemap.org](https://beta.opensensemap.org).
+This repository contains the code of the new _openSenseMap_ frontend running at [https://beta.opensensemap.org](https://beta.opensensemap.org).
 
-Originally, the *openSenseMap* was built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, University of Münster). Between 2016 and 2022 development was partly funded by the German Ministry of Education and Research (BMBF) in the projets senseBox and senseBox Pro. This version has been developed by [@mpfeil](https://github.com/mpfeil) and [@freds-dev](https://github.com/freds-dev).
+Originally, the _openSenseMap_ was built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, University of Münster). Between 2016 and 2022 development was partly funded by the German Ministry of Education and Research (BMBF) in the projets senseBox and senseBox Pro. This version has been developed by [@mpfeil](https://github.com/mpfeil) and [@freds-dev](https://github.com/freds-dev).
 
 <img width="1438" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/a7bf16fb-44a2-4a21-9c0f-d4bf431ab9b5">
-
 
 ## Project setup
 
 If you do need to set the project up locally yourself, feel free to follow these instructions:
 
 ### System Requirements
+
 - [Node.js](https://nodejs.org/) >= 22.0.0
 - [npm](https://npmjs.com/) >= 8.18.0
 - [git](https://git-scm.com/) >= 2.38.0
@@ -21,11 +21,11 @@ If you do need to set the project up locally yourself, feel free to follow these
 
 You can configure the API endpoint and/or map tiles using the following environmental variables:
 
-| ENV | Default value |
-| --------- | ----------------- |
-| OSEM_API_URL     | https://api.testing.opensensemap.org |
-| DATABASE_URL     | <YOUR_POSTGRES_URL> |
-| MAPBOX_ACCESS_TOKEN |  <YOUR_MAPBOX_ACCESS_TOKEN> |
+| ENV                 | Default value                        |
+| ------------------- | ------------------------------------ |
+| OSEM_API_URL        | https://api.testing.opensensemap.org |
+| DATABASE_URL        | <YOUR_POSTGRES_URL>                  |
+| MAPBOX_ACCESS_TOKEN | <YOUR_MAPBOX_ACCESS_TOKEN>           |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 
@@ -40,7 +40,48 @@ You can create a copy of `.env.example`, rename it to `.env` and set the values.
 
 ### Contributing
 
-We welcome all kind of constructive contributions to this project. Please have a look at [CONTRIBUTING](.github/CONTRIBUTING.md) if you want to do so.
+We welcome all kind of constructive contributions to this project.
+If you are planning to implement a new feature or change something, please create an issue first.
+
+Afterwards follow these steps:
+
+1. Fork this repository
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Make and commit your changes
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new pull request against this repository's `dev` branch, linking your issue.
+
+#### How the repository is organized
+
+```shell
+├── app                 # main directory where most of the application code lives
+│   ├── components      # reusable/ general purpose components
+│   ├── lib
+│   ├── models
+│   ├── routes          # app/ api routes
+│   ├── schema
+│   └── utils
+├── db                  # code for seeding/ migration of database
+├── drizzle             # database migrations
+├── other
+├── public              # static assets
+├── server
+├── test
+├── tests
+├── types
+├── ...
+```
+
+#### openSenseMap API
+
+The api is implemented using [Remix resource routes](https://remix.run/docs/en/main/guides/resource-routes).
+Resource routes may not export a component but only [loaders](https://remix.run/docs/en/main/route/loader) (for `GET` requests) and [actions](https://remix.run/docs/en/main/route/action) (for `POST`, `PUT`, `DELETE` etc) and therefore live in `.ts` (not `.tsx`) files.
+All resource routes start with `api` (e.g. `api.user.ts` for `/api/user`).
+
+The api logic is shared with the frontend. Therefore api routes should not implement the actual business logic of an endpoint. They are responsible for checking the request for validity and for transforming the data into the correct output format.
+Logic should be implemented in corresponding services, that may be used by loaders/ actions of page routes that access the same functionality.
+
+For example: User registration is possible from both the api and the frontend. The logic for it is implemented in `lib/user.service.ts` and it is being used by both `api.user.ts` (resource route) as well as `explore.register.tsx` (page route), preventing duplication of common logic while also providing the flexibility to adjust the outputs to the needs of the respective use case.
 
 ## License
 
