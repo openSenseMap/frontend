@@ -34,7 +34,9 @@ You can create a copy of `.env.example`, rename it to `.env` and set the values.
 1. Clone the repo: `git clone https://github.com/openSenseMap/frontend`
 2. Copy `.env.example` into `.env`
 3. Run `npm install` to install dependencies
-4. Run `docker compose up` to start the docker container running your local postgres DB
+4. Optionally run `docker compose up` to start a docker container running your local postgres DB
+   - If it is the first time doing this, you may need to bootstrap the database by running `npm run db:setup`
+   - If you want some example data run `npm run db:seed`. **WARNING**: Do not run this on a production database. It will delete all existing data.
 5. Run `npm run dev` to start the local server
 
 ### Contributing
@@ -81,6 +83,14 @@ The api logic is shared with the frontend. Therefore api routes should not imple
 Logic should be implemented in corresponding services, that may be used by loaders/ actions of page routes that access the same functionality.
 
 For example: User registration is possible from both the api and the frontend. The logic for it is implemented in `lib/user.service.ts` and it is being used by both `api.user.ts` (resource route) as well as `explore.register.tsx` (page route), preventing duplication of common logic while also providing the flexibility to adjust the outputs to the needs of the respective use case.
+
+#### Testing
+
+Tests are placed in the [tests/](./tests/) folder whose structure is similar to the [app/](./app/) folder.
+When adding a test, use the same name as the file you are testing but change the file extension to `.spec.ts`, e.g. when creating tests for [`./app/utils`](./app/utils.ts) name the test file [`./tests/utils.spec.ts`](./tests/utils.spec.ts).
+
+To run the tests, make sure you have a working database connection (e.g. by running `docker compose up` with the corresponding environment variables to use your local database).
+Then simply run `npm test`.
 
 ## License
 

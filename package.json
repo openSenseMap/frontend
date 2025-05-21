@@ -15,6 +15,8 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:setup": "npm run db:generate && npm run db:migrate",
+    "db:seed": "tsx ./db/seed.ts",
     "components": "npx shadcn-ui",
     "format": "prettier --write .",
     "lint": "eslint .",
