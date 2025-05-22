@@ -55,18 +55,18 @@ export const action: ActionFunction = async ({
               "Username must be at least 3 characters long and not more than 40.";
           if (usernameValidation.invalidCharacters)
             msg =
-              "Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces.";
+              "Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.";
           break;
         case "email":
           const emailValidation = registration as EmailValidation;
           if (emailValidation.required) msg = "Email is required.";
-          if (emailValidation.format) msg = "Invalid email format";
+          if (emailValidation.format) msg = "Invalid email format.";
           break;
         case "password":
           const passwordValidation = registration as PasswordValidation;
           if (passwordValidation.required) msg = "Password is required.";
           if (passwordValidation.length)
-            msg = "Password must be at least 8 characters logn.";
+            msg = "Password must be at least 8 characters long.";
           break;
       }
       return new Response(JSON.stringify({ message: msg }), {
