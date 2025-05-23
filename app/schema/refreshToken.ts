@@ -15,8 +15,17 @@ export const refreshToken = pgTable("refresh_token", {
 export const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
   user: one(user, {
     fields: [refreshToken.userId],
-    references: [user.id]
-  })
+    references: [user.id],
+  }),
 }));
 
+export const tokenRevocation = pgTable("token_revocation", {
+  hash: text("hash").notNull(),
+  token: text("token").notNull(),
+  expiresAt: timestamp("expires_at")
+    .notNull()
+    .$defaultFn(() => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)), // UTC today + 1 week in MS
+});
+
 export type RefreshToken = InferSelectModel<typeof refreshToken>;
+export type tokenRevocation = InferSelectModel<typeof tokenRevocation>;
