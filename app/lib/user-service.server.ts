@@ -1,6 +1,8 @@
 import invariant from "tiny-invariant";
+import { revokeToken } from "./jwt";
 import {
   createUser,
+  deleteUserByEmail,
   getUserByEmail,
   updateUserEmail,
   updateUserlocale,
@@ -9,7 +11,6 @@ import {
   verifyLogin,
 } from "~/models/user.server";
 import { type User } from "~/schema";
-import { revokeToken } from "./jwt";
 
 type RegistrationInputValidation = {
   validationKind: "username" | "email" | "password";
@@ -267,4 +268,24 @@ export const updateUserDetails = async (
     signOut: false,
     updatedUser: user,
   };
+};
+
+/**
+ * Deletes a user account after verifiying that the user is entitled by checking
+ * the password and revoking the token.
+ * @param user The user to delete
+ * @param password The users password to verify in addition to the jwt
+ * @param jwtString The jwt token to revoke prior to deletion
+ * @returns True if the user was deleted, otherwise false or "unauthorized"
+ * if the user is not entitle to delete with the given parameters
+ */
+export const deleteUser = async (
+  user: User,
+  password: string,
+  jwtString: string,
+): Promise<boolean | "unauthorized"> => {
+  const verifiedUser = await verifyLogin(user.email, password);
+  if (verifiedUser === null) return "unauthorized";
+  await revokeToken(user, jwtString);
+  return (await deleteUserByEmail(user.email)).count > 0;
 };

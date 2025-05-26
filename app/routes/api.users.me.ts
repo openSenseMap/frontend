@@ -4,8 +4,9 @@ import {
   type LoaderFunction,
   type LoaderFunctionArgs,
 } from "react-router";
-import { getUserFromJwt } from "~/lib/jwt";
-import { updateUserDetails } from "~/lib/user-service.server";
+import { getUserFromJwt, revokeToken } from "~/lib/jwt";
+import { deleteUser, updateUserDetails } from "~/lib/user-service.server";
+import { verifyLogin } from "~/models/user.server";
 import { type User } from "~/schema/user";
 
 export const loader: LoaderFunction = async ({
@@ -59,18 +60,14 @@ export const action: ActionFunction = async ({
   const user = (await loaderValue.json()).data.me as User;
 
   switch (request.method) {
-    case "POST":
-      return await post();
     case "PUT":
       return await put(user, request);
     case "DELETE":
-      return await del();
+      return await del(user, request);
     default:
       return Response.json({ msg: "Method Not Allowed" }, { status: 405 });
   }
 };
-
-const post = async () => {};
 
 const put = async (user: User, request: Request): Promise<Response> => {
   const { email, language, name, currentPassword, newPassword } =
@@ -145,4 +142,46 @@ const put = async (user: User, request: Request): Promise<Response> => {
   }
 };
 
-const del = async () => {};
+const del = async (user: User, r: Request): Promise<Response> => {
+  try {
+    let formData = new FormData();
+    try {
+      formData = await r.formData();
+    } catch {
+      // Just continue, it will fail in the next check
+    }
+
+    if (
+      !formData.has("password") ||
+      formData.get("password")?.toString().length === 0
+    )
+      return new Response("Bad Request", { status: 400 });
+
+    const rawAuthorizationHeader = r.headers.get("authorization");
+    if (!rawAuthorizationHeader) throw new Error("no_token");
+    const [, jwtString] = rawAuthorizationHeader.split(" ");
+
+    const deleted = await deleteUser(
+      user,
+      formData.get("password")!.toString(), // ! operator is fine, we check formData.has above
+      jwtString,
+    );
+
+    if (deleted === "unauthorized")
+      return Response.json(
+        { message: "Password incorrect" },
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        },
+      );
+
+    return Response.json(null, {
+      status: 200,
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+    });
+  } catch (err) {
+    console.warn(err);
+    return new Response("Internal Server Error", { status: 500 });
+  }
+};
