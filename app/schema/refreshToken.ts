@@ -1,5 +1,5 @@
 import { relations, type InferSelectModel } from "drizzle-orm";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { json, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
 export const refreshToken = pgTable("refresh_token", {
@@ -21,7 +21,7 @@ export const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
 
 export const tokenRevocation = pgTable("token_revocation", {
   hash: text("hash").notNull(),
-  token: text("token").notNull(),
+  token: json("token").notNull(),
   expiresAt: timestamp("expires_at")
     .notNull()
     .$defaultFn(() => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)), // UTC today + 1 week in MS

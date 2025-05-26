@@ -1,4 +1,5 @@
 import { createHmac } from "node:crypto";
+import { eq } from "drizzle-orm";
 import jsonwebtoken, {
   type JwtPayload,
   verify,
@@ -10,7 +11,6 @@ import { drizzleClient } from "~/db.server";
 import { getUserByEmail } from "~/models/user.server";
 import { type User } from "~/schema";
 import { refreshToken, tokenRevocation } from "~/schema/refreshToken";
-import { eq } from "drizzle-orm";
 
 const { sign } = jsonwebtoken;
 
@@ -88,6 +88,23 @@ export const createToken = (
   });
 };
 
+export const revokeToken = async (user: User, jwtString: string) => {
+  invariant(typeof JWT_ALGORITHM === "string");
+  invariant(typeof JWT_ISSUER === "string");
+  invariant(typeof JWT_SECRET === "string");
+
+  const hash = hashJwt(jwtString);
+  await deleteRefreshToken(hash);
+  const jwt = await decodeJwtString(jwtString, JWT_SECRET, jwtVerifyOptions);
+
+  if (jwt.jti)
+    await drizzleClient.insert(tokenRevocation).values({
+      hash,
+      token: jwt,
+      expiresAt: jwt.exp === undefined ? new Date() : new Date(jwt.exp),
+    });
+};
+
 /**
  *
  * @param r
@@ -107,53 +124,62 @@ export const getUserFromJwt = async (
   const [bearer, jwtString] = rawAuthorizationHeader.split(" ");
   if (bearer !== "Bearer") return "invalid_token_type";
 
-  return await new Promise((resolve, reject) => {
-    verify(
-      jwtString,
-      JWT_SECRET,
-      {
-        ...jwtVerifyOptions,
-        ignoreExpiration: r.url === "/users/refresh-auth" ? true : false, // ignore expiration for refresh endpoint
-      },
-      async (err, decodedJwt) => {
-        if (err) resolve("verification_error");
-        if (decodedJwt === undefined) {
-          resolve("verification_error");
-          return;
-        }
+  let decodedJwt: JwtPayload | undefined = undefined;
+  try {
+    decodedJwt = await decodeJwtString(jwtString, JWT_SECRET, {
+      ...jwtVerifyOptions,
+      ignoreExpiration: r.url === "/users/refresh-auth" ? true : false, // ignore expiration for refresh endpoint
+    });
+  } catch (err: any) {
+    if (typeof err === "string") return err as "verification_error";
+  }
 
-        // Our tokens are signed with an object, therefore tokens that
-        // verify and decode to a string cannot be valid
-        if (typeof decodedJwt === "string") {
-          resolve("verification_error");
-          return;
-        }
+  invariant(decodedJwt !== undefined);
+  invariant(decodedJwt.sub !== undefined);
+  const user = await getUserByEmail(decodedJwt.sub);
+  if (!user)
+    throw new Error("User was not found despite a verified jwt provided");
+  return user;
+};
 
-        // We sign our jwt with the user email as the subject, so if there is
-        // no subject, the jwt cannot be valid as well.
-        if (decodedJwt.sub === undefined) {
-          resolve("verification_error");
-          return;
-        }
-
-        // check if the token is blacklisted by performing a hmac digest
-        // on the string representation of the jwt.
-        // also checks the existence of the jti claim
-        if (await isTokenRevoked(decodedJwt, jwtString)) {
-          resolve("verification_error");
-          return;
-        }
-
-        const user = await getUserByEmail(decodedJwt.sub);
-        if (!user) {
-          reject("User was not found despite a verified jwt provided");
-          return;
-        }
-
-        resolve(user);
+const decodeJwtString = (
+  jwtString: string,
+  jwtSecret: jsonwebtoken.Secret,
+  options: jsonwebtoken.VerifyOptions & { complete?: false },
+): Promise<JwtPayload> => {
+  return new Promise((resolve, reject) => {
+    verify(jwtString, jwtSecret, options, async (err, decodedJwt) => {
+      if (err) reject("verification_error");
+      if (decodedJwt === undefined) {
+        reject("verification_error");
         return;
-      },
-    );
+      }
+
+      // Our tokens are signed with an object, therefore tokens that
+      // verify and decode to a string cannot be valid
+      if (typeof decodedJwt === "string") {
+        reject("verification_error");
+        return;
+      }
+
+      // We sign our jwt with the user email as the subject, so if there is
+      // no subject, the jwt cannot be valid as well.
+      if (decodedJwt.sub === undefined) {
+        reject("verification_error");
+        return;
+      }
+
+      // check if the token is blacklisted by performing a hmac digest
+      // on the string representation of the jwt.
+      // also checks the existence of the jti claim
+      if (await isTokenRevoked(decodedJwt, jwtString)) {
+        reject("verification_error");
+        return;
+      }
+
+      resolve(decodedJwt);
+      return;
+    });
   });
 };
 
@@ -167,6 +193,12 @@ const addRefreshToken = async (
     token,
     expiresAt,
   });
+};
+
+const deleteRefreshToken = async (tokenHash: string) => {
+  await drizzleClient
+    .delete(refreshToken)
+    .where(eq(refreshToken.token, tokenHash));
 };
 
 const isTokenRevoked = async (token: JwtPayload, tokenString: string) => {
