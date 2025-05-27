@@ -60,6 +60,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@react-router/express": "^7.0.0",
     "@react-router/node": "^7.0.0",
+    "@react-router/serve": "^7.6.1",
     "@stepperize/react": "^4.1.0",
     "@tanstack/react-table": "^8.17.3",
     "@turf/bbox": "^7.1.0",
