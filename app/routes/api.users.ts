@@ -3,9 +3,9 @@ import { createToken } from "~/lib/jwt";
 import {
   type EmailValidation,
   type PasswordValidation,
-  registerUser,
   type UsernameValidation,
-} from "~/lib/user-service.server";
+} from "~/lib/user-service";
+import { registerUser } from "~/lib/user-service.server";
 import { type User } from "~/schema";
 
 const DEFAULT_LANGUAGE: "de_DE" | "en_US" = "en_US";

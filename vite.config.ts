@@ -4,11 +4,11 @@ import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig(({ mode }) => {
-  // Make .evn variables available in tests
+  // Make .env variables available in tests
   // Might be required only because reactRouter() is disabled in test mode
   if (mode === "test") {
     // Loads .env, .env.test, etc.
-    const env = loadEnv(mode, process.cwd(), '');
+    const env = loadEnv(mode, process.cwd(), "");
     Object.assign(process.env, env);
   }
 
@@ -36,6 +36,9 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: ["./vitest.setup.ts"],
       include: ["**/*.{test,spec}.{ts,tsx}"],
+      coverage: {
+        reporter: ["text", "json-summary", "json"],
+      },
     },
   };
 });

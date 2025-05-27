@@ -1,7 +1,18 @@
 import i18next from "app/i18next.server";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect , Form, Link, useActionData, useNavigation, useSearchParams  } from "react-router";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  redirect,
+  Form,
+  Link,
+  useActionData,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import invariant from "tiny-invariant";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +28,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { createUser, getUserByEmail } from "~/models/user.server";
-import { safeRedirect, validateEmail, validateName } from "~/utils.server";
+import { safeRedirect, validateEmail, validateName } from "~/utils";
 import { createUserSession, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
