@@ -1,6 +1,17 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect, Form, Link, useActionData, useNavigation, useSearchParams  } from "react-router";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  redirect,
+  Form,
+  Link,
+  useActionData,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ErrorMessage from "~/components/error-message";
@@ -69,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: { email: "An error occurred. Please try again later." },
         success: false,
-        error: error
+        error: error,
       },
       { status: 500 },
     );

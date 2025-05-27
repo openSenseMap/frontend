@@ -32,8 +32,8 @@ WORKDIR /myapp
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 ADD . .
 
-# RUN npm run drizzle:generate
-#RUN npm run drizzle:migrate
+# RUN npm run db:generate
+# RUN npm run db:migrate
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
@@ -42,8 +42,6 @@ FROM base
 WORKDIR /myapp
 
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
-
-COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
 
 # Not sure if we really need this or if we should move all our /public folder to /app/assets

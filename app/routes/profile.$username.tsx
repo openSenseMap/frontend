@@ -1,5 +1,9 @@
-
-import  { type LoaderFunctionArgs, redirect , Link, useLoaderData  } from "react-router";
+import {
+  type LoaderFunctionArgs,
+  redirect,
+  Link,
+  useLoaderData,
+} from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { columns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
@@ -9,10 +13,11 @@ import { cn } from "~/lib/utils";
 import {
   getAllBadges,
   getMyBadgesAccessToken,
-  getUserBackpack, type MyBadge 
+  getUserBackpack,
+  type MyBadge,
 } from "~/models/badge.server";
 import { getProfileByUsername } from "~/models/profile.server";
-import { getUniqueActiveBadges, sortBadges, type BadgeClass  } from "~/utils";
+import { getUniqueActiveBadges, sortBadges, type BadgeClass } from "~/utils";
 import { getInitials } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 

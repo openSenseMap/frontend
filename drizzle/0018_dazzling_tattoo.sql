@@ -1,0 +1,1 @@
+ALTER TABLE "token_revocation" ALTER COLUMN "token" SET DATA TYPE json USING token::json;

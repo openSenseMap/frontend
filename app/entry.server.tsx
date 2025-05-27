@@ -2,11 +2,11 @@ import { resolve } from "node:path";
 import { PassThrough } from "stream";
 import { createReadableStreamFromReadable } from "@react-router/node";
 import { createInstance } from "i18next";
-import I18NexFsBackend from "i18next-fs-backend";
+import backend from "i18next-fs-backend/cjs"; // Even though unintuitive, cjs is what we want https://github.com/i18next/i18next-fs-backend/issues/57
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import { ServerRouter, type EntryContext  } from "react-router";
+import { ServerRouter, type EntryContext } from "react-router";
 import i18nextOptions from "./i18next-options"; // our i18n configuration file
 import i18next from "./i18next.server";
 import { getEnv, init } from "./utils/env.server";
@@ -40,7 +40,7 @@ export default async function handleRequest(
   // completely unique instance and not share any state.
   await instance
     .use(initReactI18next) // Tell our instance to use react-i18next
-    .use(I18NexFsBackend) // Setup our backend
+    .use(backend) // Setup our backend
     .init({
       ...i18nextOptions, // Spreact the configuration
       lng, // The locale we detected above
