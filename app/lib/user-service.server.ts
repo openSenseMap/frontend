@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import invariant from "tiny-invariant";
 import { v4 as uuidv4 } from "uuid";
 import { revokeToken } from "./jwt";
@@ -20,8 +21,7 @@ import {
   updateUserPassword,
   verifyLogin,
 } from "~/models/user.server";
-import { password, passwordResetRequest, user, type User } from "~/schema";
-import { eq } from "drizzle-orm";
+import { passwordResetRequest, user, type User } from "~/schema";
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
@@ -329,4 +329,30 @@ export const resetPassword = async (
   // TODO: invalidate refreshToken and active accessTokens
 
   return "success";
+};
+
+/**
+ * Resends the email confirmation for the given user again.
+ * This will reset existing email confirmation tokens and therefore
+ * make outstanding requests invalid.
+ * @param u The user to resend the email confirmation
+ * @returns "already_confirmed" if there is no email confirmation pending,
+ * else the updated user containing the new email confirmation token
+ */
+export const resendEmailConfirmation = async (
+  u: User,
+): Promise<"already_confirmed" | User> => {
+  if (u.emailIsConfirmed && u.unconfirmedEmail?.trim().length === 0)
+    return "already_confirmed";
+
+  const savedUser = await drizzleClient
+    .update(user)
+    .set({
+      emailConfirmationToken: uuidv4(),
+    })
+    .where(eq(user.id, u.id))
+    .returning();
+
+  // TODO actually send the confirmation
+  return savedUser[0];
 };
