@@ -20,7 +20,8 @@ import {
   updateUserPassword,
   verifyLogin,
 } from "~/models/user.server";
-import { passwordResetRequest, user, type User } from "~/schema";
+import { password, passwordResetRequest, user, type User } from "~/schema";
+import { eq } from "drizzle-orm";
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
@@ -266,16 +267,16 @@ export const confirmEmail = async (
 };
 
 /**
- *
- * @param email
- * @returns
+ * Initiates a password request for the user with the given email address.
+ * Overwrites existing requests.
+ * @param email The email address to request a password reset for
  */
 export const requestPasswordReset = async (email: string) => {
   const user = await drizzleClient.query.user.findFirst({
     where: (user, { eq }) => eq(user.email, email.toLowerCase()),
   });
 
-  if (!user) return null;
+  if (!user) return;
 
   await drizzleClient
     .insert(passwordResetRequest)
@@ -289,4 +290,43 @@ export const requestPasswordReset = async (email: string) => {
     });
 
   // TODO send out email
+};
+
+/**
+ * Resets a users password using a specified passwordResetToken received through an email.
+ * @param passwordResetToken A token sent to the user via email to allow a password reset without being logged in.
+ * @param newPassword The new password for the user
+ * @returns "forbidden" if the user is not entitled to reset the password with the given parameters,
+ * "expired" if the {@link passwordResetToken} is expired,
+ * "invalid_password_format" if the specified new password does not comply with the password requirements,
+ * "success" if the password was successfuly set to the {@link newPassword}
+ */
+export const resetPassword = async (
+  passwordResetToken: string,
+  newPassword: string,
+): Promise<"forbidden" | "expired" | "invalid_password_format" | "success"> => {
+  const passwordReset =
+    await drizzleClient.query.passwordResetRequest.findFirst({
+      where: (reset, { eq }) => eq(reset.token, passwordResetToken),
+    });
+
+  if (!passwordReset) return "forbidden";
+
+  if (Date.now() > passwordReset.expiresAt.getTime()) return "expired";
+
+  // Validate new Password
+  if (validatePassword(newPassword).isValid === false)
+    return "invalid_password_format";
+
+  const updated = await updateUserPassword(passwordReset.userId, newPassword);
+
+  invariant(updated.length === 1);
+  // invalidate password reset token
+  await drizzleClient
+    .delete(passwordResetRequest)
+    .where(eq(passwordResetRequest.token, passwordResetToken));
+
+  // TODO: invalidate refreshToken and active accessTokens
+
+  return "success";
 };
