@@ -18,7 +18,8 @@ import {
   updateUserPassword,
   verifyLogin,
 } from "~/models/user.server";
-import { type User } from "~/schema";
+import { user, type User } from "~/schema";
+import { drizzleClient } from "~/db.server";
 
 /**
  * Register a new user with the database.
@@ -228,4 +229,35 @@ export const deleteUser = async (
   if (verifiedUser === null) return "unauthorized";
   await revokeToken(user, jwtString);
   return (await deleteUserByEmail(user.email)).count > 0;
+};
+
+/**
+ * Confirms a users email address by processing the token sent to the user and updating
+ * the profile when successful.
+ * @param emailConfirmationToken Token sent to the user via mail to the to-be-confirmed address
+ * @param emailToConfirm To-be-confirmed addresss
+ * @returns The updated user profile when successful or null when the specified user
+ * does not exist or the token is invalid.
+ */
+export const confirmEmail = async (
+  emailConfirmationToken: string,
+  emailToConfirm: string,
+): Promise<User | null> => {
+  const u = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.unconfirmedEmail, emailToConfirm),
+  });
+
+  if (!u || u.emailConfirmationToken !== emailConfirmationToken) return null;
+
+  const updatedUser = await drizzleClient
+    .update(user)
+    .set({
+      emailIsConfirmed: true,
+      emailConfirmationToken: null,
+      email: emailToConfirm,
+      unconfirmedEmail: null,
+    })
+    .returning();
+
+  return updatedUser[0];
 };

@@ -591,15 +591,6 @@ describe("openSenseMap API Routes: /users", () => {
   //     });
   // });
 
-  // it('should deny email confirmation with wrong token', () => {
-  //   return chakram.post(`${BASE_URL}/users/confirm-email`, { token: 'invalid_password-reset_token', email: 'tester@test.test' })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       return chakram.wait();
-  //     });
-  // });
-
   // it('should allow users request a resend of the email confirmation', () => {
   //   return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester4@test.test', password: '12345678' })
   //     .then(function (response) {

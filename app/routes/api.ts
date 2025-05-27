@@ -79,10 +79,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `users/password-reset`,
     //   method: "POST",
     // },
-    // {
-    //   path: `users/confirm-email`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/confirm-email`,
+      method: "POST",
+    },
     // {
     //   path: `users/sign-in`,
     //   method: "POST",
