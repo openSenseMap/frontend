@@ -1,4 +1,6 @@
+import { eq } from "drizzle-orm";
 import invariant from "tiny-invariant";
+import { v4 as uuidv4 } from "uuid";
 import { revokeToken } from "./jwt";
 import {
   type EmailValidation,
@@ -8,6 +10,7 @@ import {
   validatePassword,
   validateUsername,
 } from "./user-service";
+import { drizzleClient } from "~/db.server";
 import {
   createUser,
   deleteUserByEmail,
@@ -18,7 +21,9 @@ import {
   updateUserPassword,
   verifyLogin,
 } from "~/models/user.server";
-import { type User } from "~/schema";
+import { passwordResetRequest, user, type User } from "~/schema";
+
+const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
 /**
  * Register a new user with the database.
@@ -228,4 +233,126 @@ export const deleteUser = async (
   if (verifiedUser === null) return "unauthorized";
   await revokeToken(user, jwtString);
   return (await deleteUserByEmail(user.email)).count > 0;
+};
+
+/**
+ * Confirms a users email address by processing the token sent to the user and updating
+ * the profile when successful.
+ * @param emailConfirmationToken Token sent to the user via mail to the to-be-confirmed address
+ * @param emailToConfirm To-be-confirmed addresss
+ * @returns The updated user profile when successful or null when the specified user
+ * does not exist or the token is invalid.
+ */
+export const confirmEmail = async (
+  emailConfirmationToken: string,
+  emailToConfirm: string,
+): Promise<User | null> => {
+  const u = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.unconfirmedEmail, emailToConfirm),
+  });
+
+  if (!u || u.emailConfirmationToken !== emailConfirmationToken) return null;
+
+  const updatedUser = await drizzleClient
+    .update(user)
+    .set({
+      emailIsConfirmed: true,
+      emailConfirmationToken: null,
+      email: emailToConfirm,
+      unconfirmedEmail: null,
+    })
+    .returning();
+
+  return updatedUser[0];
+};
+
+/**
+ * Initiates a password request for the user with the given email address.
+ * Overwrites existing requests.
+ * @param email The email address to request a password reset for
+ */
+export const requestPasswordReset = async (email: string) => {
+  const user = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email.toLowerCase()),
+  });
+
+  if (!user) return;
+
+  await drizzleClient
+    .insert(passwordResetRequest)
+    .values({ userId: user.id })
+    .onConflictDoUpdate({
+      target: passwordResetRequest.userId,
+      set: {
+        token: uuidv4(),
+        expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS), // 12 hours from now
+      },
+    });
+
+  // TODO send out email
+};
+
+/**
+ * Resets a users password using a specified passwordResetToken received through an email.
+ * @param passwordResetToken A token sent to the user via email to allow a password reset without being logged in.
+ * @param newPassword The new password for the user
+ * @returns "forbidden" if the user is not entitled to reset the password with the given parameters,
+ * "expired" if the {@link passwordResetToken} is expired,
+ * "invalid_password_format" if the specified new password does not comply with the password requirements,
+ * "success" if the password was successfuly set to the {@link newPassword}
+ */
+export const resetPassword = async (
+  passwordResetToken: string,
+  newPassword: string,
+): Promise<"forbidden" | "expired" | "invalid_password_format" | "success"> => {
+  const passwordReset =
+    await drizzleClient.query.passwordResetRequest.findFirst({
+      where: (reset, { eq }) => eq(reset.token, passwordResetToken),
+    });
+
+  if (!passwordReset) return "forbidden";
+
+  if (Date.now() > passwordReset.expiresAt.getTime()) return "expired";
+
+  // Validate new Password
+  if (validatePassword(newPassword).isValid === false)
+    return "invalid_password_format";
+
+  const updated = await updateUserPassword(passwordReset.userId, newPassword);
+
+  invariant(updated.length === 1);
+  // invalidate password reset token
+  await drizzleClient
+    .delete(passwordResetRequest)
+    .where(eq(passwordResetRequest.token, passwordResetToken));
+
+  // TODO: invalidate refreshToken and active accessTokens
+
+  return "success";
+};
+
+/**
+ * Resends the email confirmation for the given user again.
+ * This will reset existing email confirmation tokens and therefore
+ * make outstanding requests invalid.
+ * @param u The user to resend the email confirmation
+ * @returns "already_confirmed" if there is no email confirmation pending,
+ * else the updated user containing the new email confirmation token
+ */
+export const resendEmailConfirmation = async (
+  u: User,
+): Promise<"already_confirmed" | User> => {
+  if (u.emailIsConfirmed && u.unconfirmedEmail?.trim().length === 0)
+    return "already_confirmed";
+
+  const savedUser = await drizzleClient
+    .update(user)
+    .set({
+      emailConfirmationToken: uuidv4(),
+    })
+    .where(eq(user.id, u.id))
+    .returning();
+
+  // TODO actually send the confirmation
+  return savedUser[0];
 };
