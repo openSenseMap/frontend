@@ -95,6 +95,9 @@ jobs:
       - name: ⚡ Run vitest
         run: npm run test:coverage
 
+      - name: 🧐 Report Coverage
+        uses: davelosert/vitest-coverage-report-action@v2
+
       - name: 🗑️ Cleanup
         if: always()
         run: docker compose down
