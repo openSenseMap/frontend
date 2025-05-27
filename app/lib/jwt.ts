@@ -1,10 +1,6 @@
 import { createHmac } from "node:crypto";
 import { eq } from "drizzle-orm";
-import jsonwebtoken, {
-  type JwtPayload,
-  verify,
-  type Algorithm,
-} from "jsonwebtoken";
+import jsonwebtoken, { type JwtPayload, type Algorithm } from "jsonwebtoken";
 import invariant from "tiny-invariant";
 import { v4 as uuidv4 } from "uuid";
 import { drizzleClient } from "~/db.server";
@@ -12,7 +8,7 @@ import { getUserByEmail } from "~/models/user.server";
 import { type User } from "~/schema";
 import { refreshToken, tokenRevocation } from "~/schema/refreshToken";
 
-const { sign } = jsonwebtoken;
+const { sign, verify } = jsonwebtoken;
 
 const {
   JWT_ALGORITHM,
