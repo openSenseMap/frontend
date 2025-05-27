@@ -1,4 +1,5 @@
 import invariant from "tiny-invariant";
+import { v4 as uuidv4 } from "uuid";
 import { revokeToken } from "./jwt";
 import {
   type EmailValidation,
@@ -8,6 +9,7 @@ import {
   validatePassword,
   validateUsername,
 } from "./user-service";
+import { drizzleClient } from "~/db.server";
 import {
   createUser,
   deleteUserByEmail,
@@ -18,8 +20,9 @@ import {
   updateUserPassword,
   verifyLogin,
 } from "~/models/user.server";
-import { user, type User } from "~/schema";
-import { drizzleClient } from "~/db.server";
+import { passwordResetRequest, user, type User } from "~/schema";
+
+const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
 /**
  * Register a new user with the database.
@@ -260,4 +263,30 @@ export const confirmEmail = async (
     .returning();
 
   return updatedUser[0];
+};
+
+/**
+ *
+ * @param email
+ * @returns
+ */
+export const requestPasswordReset = async (email: string) => {
+  const user = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email.toLowerCase()),
+  });
+
+  if (!user) return null;
+
+  await drizzleClient
+    .insert(passwordResetRequest)
+    .values({ userId: user.id })
+    .onConflictDoUpdate({
+      target: passwordResetRequest.userId,
+      set: {
+        token: uuidv4(),
+        expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS), // 12 hours from now
+      },
+    });
+
+  // TODO send out email
 };
