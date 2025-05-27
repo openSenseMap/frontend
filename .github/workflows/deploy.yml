@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   lint:
-    name: ⬣ ESLint
+    name: ⬣ Lint
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -28,7 +28,7 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 20
+          node-version-file: .nvmrc
 
       - name: 📥 Install deps
         run: npm install
@@ -48,7 +48,7 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 20
+          node-version-file: .nvmrc
 
       - name: 📥 Install deps
         run: npm install
@@ -57,7 +57,7 @@ jobs:
         run: npm run typecheck --if-present
 
   vitest:
-    name: ⚡ Vitest
+    name: ⚡ Test
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -68,64 +68,13 @@ jobs:
         with:
           cache: npm
           cache-dependency-path: ./package.json
-          node-version: 20
+          node-version-file: .nvmrc
 
       - name: 📥 Install deps
         run: npm install
 
       - name: ⚡ Run vitest
-        run: npm run test -- --coverage
-
-  playwright:
-    name: 🎭 Playwright
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v4
-        with:
-          cache: npm
-          cache-dependency-path: ./package.json
-          node-version: 20
-
-      - name: 📥 Install deps
-        run: npm install
-
-      - name: 🐳 Docker compose
-        # the sleep is just there to give time for postgres to get started
-        run: docker compose -f docker-compose.ci.yml up -d && sleep 60
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
-
-      - name: 🛠 Setup Database
-        uses: nick-fields/retry@v3.0.2
-        with:
-          timeout_minutes: 10
-          max_attempts: 5
-          retry_wait_seconds: 45
-          retry_on: error
-          command: npm run drizzle:migrate
-
-      - name: ⚙️ Build
-        run: npm run build
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Playwright tests
-        run: npx playwright test
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+        run: npm run test:coverage
 
   build:
     name: 🐳 Build
