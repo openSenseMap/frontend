@@ -120,6 +120,20 @@
       "when": 1747839417161,
       "tag": "0016_watery_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1747984468184,
+      "tag": "0017_slimy_the_executioner",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1748253218694,
+      "tag": "0018_dazzling_tattoo",
+      "breakpoints": true
     }
   ]
 }
