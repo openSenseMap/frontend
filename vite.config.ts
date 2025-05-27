@@ -4,7 +4,7 @@ import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig(({ mode }) => {
-  // Make .evn variables available in tests
+  // Make .env variables available in tests
   // Might be required only because reactRouter() is disabled in test mode
   if (mode === "test") {
     // Loads .env, .env.test, etc.

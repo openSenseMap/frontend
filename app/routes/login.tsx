@@ -1,10 +1,20 @@
 import * as React from "react";
-import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect , Form, Link, useActionData, useSearchParams  } from "react-router";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  redirect,
+  Form,
+  Link,
+  useActionData,
+  useSearchParams,
+} from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
 
 import { verifyLogin } from "~/models/user.server";
-import { safeRedirect, validateEmail } from "~/utils.server";
+import { safeRedirect, validateEmail } from "~/utils";
 import { createUserSession, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -1,7 +1,7 @@
 import mapboxgl from "mapbox-gl/dist/mapbox-gl.css?url";
 import moment from "moment";
 import { Map, MapProvider, Marker } from "react-map-gl";
-import  { type LinksFunction } from "react-router";
+import { type LinksFunction } from "react-router";
 import { NavBar } from "~/components/nav-bar";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { diffFromCreateDate, getMinuteFormattedString } from "~/utils.server";
+import { diffFromCreateDate, getMinuteFormattedString } from "~/utils";
 
 let deviceData = {
   _id: "5b411d0e5dc1ec001b4f11c8",
@@ -205,7 +205,10 @@ export default function DeviceDashboard() {
           <CardContent>
             <div className="mt-4 flex flex-wrap gap-3">
               {deviceData.sensors.map((sensor: any) => (
-                <Card key={sensor._id} className=" rounded-3xl dark:bg-black dark:border-[#ffffff]">
+                <Card
+                  key={sensor._id}
+                  className=" rounded-3xl dark:bg-black dark:border-[#ffffff]"
+                >
                   <CardHeader>
                     <CardTitle className="mb-2">
                       <sensor.icon className=" h-5.5 w-5.5 mr-2 inline align-bottom" />
