@@ -1,7 +1,8 @@
+import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import invariant from "tiny-invariant";
 import { v4 as uuidv4 } from "uuid";
-import { revokeToken } from "./jwt";
+import { createToken, revokeToken } from "./jwt";
 import {
   type EmailValidation,
   type PasswordValidation,
@@ -15,6 +16,7 @@ import {
   createUser,
   deleteUserByEmail,
   getUserByEmail,
+  preparePasswordHash,
   updateUserEmail,
   updateUserlocale,
   updateUserName,
@@ -355,4 +357,27 @@ export const resendEmailConfirmation = async (
 
   // TODO actually send the confirmation
   return savedUser[0];
+};
+
+export const signIn = async (
+  emailOrName: string,
+  password: string,
+): Promise<{ user: User; jwt: string; refreshToken: string } | null> => {
+  const user = await drizzleClient.query.user.findFirst({
+    where: (user, { eq, or }) =>
+      or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
+    with: {
+      password: true,
+    },
+  });
+  if (!user) return null;
+
+  const correctPassword = await bcrypt.compare(
+    preparePasswordHash(password),
+    user.password.hash,
+  );
+  if (!correctPassword) return null;
+
+  const { token, refreshToken } = await createToken(user);
+  return { user, jwt: token, refreshToken };
 };
