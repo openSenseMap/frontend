@@ -4,8 +4,9 @@ import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { action } from "~/routes/api.refresh-auth";
+import { action as signInAction } from "~/routes/api.sign-in";
 import { action as signOutAction } from "~/routes/api.sign-out";
-import { action as meAction } from "~/routes/api.users.me";
+import { action as meAction, loader as meLoader } from "~/routes/api.users.me";
 import { type User } from "~/schema";
 
 const VALID_REFRESH_AUTH_TEST_USER = {
@@ -17,9 +18,9 @@ const CHANGED_PW_TO = "some other very secure password";
 
 describe("openSenseMap API Routes: /users", () => {
   describe("/refresh-auth", () => {
+    let jwt: string = "";
     let newJwt: string = "";
     let refreshToken: string = "";
-    let newRefreshToken: string = "";
     beforeAll(async () => {
       const user = await registerUser(
         VALID_REFRESH_AUTH_TEST_USER.name,
@@ -27,7 +28,7 @@ describe("openSenseMap API Routes: /users", () => {
         VALID_REFRESH_AUTH_TEST_USER.password,
         "en_US",
       );
-      ({ refreshToken } = await createToken(user as User));
+      ({ token: jwt, refreshToken } = await createToken(user as User));
     });
 
     describe("/POST", () => {
@@ -37,7 +38,10 @@ describe("openSenseMap API Routes: /users", () => {
         params.append("token", refreshToken);
         const request = new Request(`${BASE_URL}/users/refresh-auth`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Bearer ${jwt}`,
+          },
           body: params.toString(),
         });
 
@@ -48,6 +52,17 @@ describe("openSenseMap API Routes: /users", () => {
         const response = dataFunctionValue as Response;
         const body = await response?.json();
 
+        // Use the new JWT to get user info
+        newJwt = body.token;
+        const meRequest = new Request(`${BASE_URL}/users/me`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${newJwt}` },
+        });
+        const meResponse = (await meLoader({
+          request: meRequest,
+        } as ActionFunctionArgs)) as Response;
+        const meBody = await meResponse?.json();
+
         // Assert
         expect(dataFunctionValue).toBeInstanceOf(Response);
         expect(response.status).toBe(200);
@@ -56,18 +71,6 @@ describe("openSenseMap API Routes: /users", () => {
         );
         expect(body).toHaveProperty("token");
         expect(body).toHaveProperty("refreshToken");
-
-        // Use the new JWT to get user info
-        newJwt = body.token;
-        newRefreshToken = body.refreshToken;
-        const meRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${newJwt}` },
-        });
-        const meResponse = (await meAction({
-          request: meRequest,
-        } as ActionFunctionArgs)) as Response;
-        const meBody = await meResponse?.json();
 
         expect(meResponse).toBeInstanceOf(Response);
         expect(meResponse.status).toBe(200);
@@ -86,7 +89,10 @@ describe("openSenseMap API Routes: /users", () => {
         params.append("token", refreshToken);
         const request = new Request(`${BASE_URL}/users/refresh-auth`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Bearer ${jwt}`,
+          },
           body: params.toString(),
         });
 
@@ -103,24 +109,26 @@ describe("openSenseMap API Routes: /users", () => {
 
       it("should deny to request a fresh jwt using refresh token after changing the password", async () => {
         // Arrange
-        const changePasswordParams = new URLSearchParams();
-        changePasswordParams.append("token", newJwt);
-        changePasswordParams.append(
-          "currentPassword",
-          VALID_REFRESH_AUTH_TEST_USER.password,
-        );
-        changePasswordParams.append("newPassword", CHANGED_PW_TO);
         const changePasswordRequest = new Request(`${BASE_URL}/users/me`, {
           method: "PUT",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: changePasswordParams.toString(),
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            Authorization: `Bearer ${newJwt}`,
+          },
+          body: JSON.stringify({
+            currentPassword: VALID_REFRESH_AUTH_TEST_USER.password,
+            newPassword: CHANGED_PW_TO,
+          }),
         });
 
         const params = new URLSearchParams();
         params.append("token", refreshToken);
         const request = new Request(`${BASE_URL}/users/refresh-auth`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Bearer ${newJwt}`,
+          },
           body: params.toString(),
         });
 
@@ -143,7 +151,7 @@ describe("openSenseMap API Routes: /users", () => {
         expect(changePwResponse.status).toBe(200);
         expect(changePwJson).toHaveProperty(
           "message",
-          "Password changed. Please sign in with your new password",
+          "User successfully saved. Password changed. Please sign in with your new password",
         );
         expect(dataFunctionValue).toBeInstanceOf(Response);
         expect(response.status).toBe(403);
@@ -151,24 +159,48 @@ describe("openSenseMap API Routes: /users", () => {
 
       it("should deny to use the refreshToken after signing out", async () => {
         // Arrange
-        const signOutParams = new URLSearchParams();
-        signOutParams.append("token", newJwt);
-        const signOutRequest = new Request(`${BASE_URL}/users/sign-out`, {
+        const signInParams = new URLSearchParams();
+        signInParams.append("email", VALID_REFRESH_AUTH_TEST_USER.email);
+        signInParams.append("password", CHANGED_PW_TO);
+        const signInRequest = new Request(`${BASE_URL}/users/sign-in`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: signInParams.toString(),
+        });
+
+        const signOutParams = new URLSearchParams();
+        const signOutRequest = new Request(`${BASE_URL}/users/sign-out`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
           body: signOutParams.toString(),
         });
 
         const params = new URLSearchParams();
-        params.append("token", newRefreshToken);
         const request = new Request(`${BASE_URL}/users/refresh-auth`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
           body: params.toString(),
         });
 
         // Act
-        // Sign out first
+        // Make sure to be signed in
+        const signInFunctionValue = await signInAction({
+          request: signInRequest,
+        } as ActionFunctionArgs);
+        const signInResponse = signInFunctionValue as Response;
+        const body = await signInResponse?.json();
+        const localJwt = body.token;
+        const localRefreshToken = body.refreshToken;
+
+        signOutRequest.headers.append("Authorization", `Bearer ${localJwt}`);
+        request.headers.append("Authorization", `Bearer ${localJwt}`);
+        params.append("token", localRefreshToken);
+
+        // Sign out
         const signOutFunctionValue = await signOutAction({
           request: signOutRequest,
         } as ActionFunctionArgs);
@@ -181,6 +213,14 @@ describe("openSenseMap API Routes: /users", () => {
         const response = dataFunctionValue as Response;
 
         // Assert
+        expect(signInFunctionValue).toBeInstanceOf(Response);
+        expect(signInResponse.status).toBe(200);
+        expect(signInResponse.headers.get("content-type")).toBe(
+          "application/json; charset=utf-8",
+        );
+        expect(body).toHaveProperty("token");
+        expect(body).toHaveProperty("refreshToken");
+
         expect(signOutFunctionValue).toBeInstanceOf(Response);
         expect(signOutResponse.status).toBe(200);
         expect(dataFunctionValue).toBeInstanceOf(Response);
