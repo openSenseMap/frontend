@@ -1,4 +1,4 @@
 #!/bin/sh -ex
 
-npm run drizzle:migrate
+npx --yes tsx ./db/migrate.ts
 npm run start
