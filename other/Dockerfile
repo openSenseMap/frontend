@@ -47,6 +47,9 @@ COPY --from=build /myapp/build /myapp/build
 # Not sure if we really need this or if we should move all our /public folder to /app/assets
 COPY --from=build /myapp/public /myapp/public
 
+COPY ./other/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 ADD . .
 
-ENTRYPOINT [ "docker-entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
