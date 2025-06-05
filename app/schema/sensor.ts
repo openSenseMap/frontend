@@ -55,7 +55,7 @@ export type SensorWithLatestMeasurement = Sensor & Measurement;
 
 export type SensorWithMeasurementData = Sensor & {
   data: {
-    locationId?: number | null;
+    locationId?: BigInt | null;
     location?: { id: number; x: number; y: number } | null;
     time: Date | null;
     value: number | null;
