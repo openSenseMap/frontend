@@ -1,6 +1,9 @@
-import { eq } from "drizzle-orm";
+import { eq, type ExtractTablesWithRelations } from "drizzle-orm";
+import { type PgTransaction } from "drizzle-orm/pg-core";
+import { type PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
 import { drizzleClient } from "~/db.server";
-import  { type User, type Profile, profile  } from "~/schema";
+import { type User, type Profile, profile  } from "~/schema";
+import type * as schema from "~/schema";
 
 export async function getProfileByUserId(id: Profile["id"]) {
   return drizzleClient.query.profile.findFirst({
@@ -45,9 +48,20 @@ export async function createProfile(
   userId: User["id"],
   username: Profile["username"],
 ) {
-  return drizzleClient.insert(profile).values({
-    username,
-    public: false,
-    userId,
-  });
+  return drizzleClient.transaction(t => 
+    createProfileWithTransaction(t, userId, username));
+}
+
+export async function createProfileWithTransaction(
+  transaction: PgTransaction<PostgresJsQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>,
+  userId: User["id"],
+  username: Profile["username"],
+) {
+  return transaction
+    .insert(profile)
+    .values({
+      username,
+      public: false,
+      userId,
+    });
 }

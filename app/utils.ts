@@ -94,14 +94,14 @@ export function validateEmail(email: unknown): email is string {
 //* validate user name in join page
 export function validateName(name: string) {
   if (name.length === 0) {
-    return { isValid: false, errorMsg: "Name is required" };
+    return { isValid: false, errorMsg: "username_required" };
   } else if (name.length < 4) {
-    return { isValid: false, errorMsg: "Please use at least 4 characters." };
+    return { isValid: false, errorMsg: "username_min_characters" };
   } else if (
     name &&
     !/^[a-zA-Z0-9][a-zA-Z0-9\s._-]+[a-zA-Z0-9-_.]$/.test(name.toString())
   ) {
-    return { isValid: false, errorMsg: "Name is invalid" };
+    return { isValid: false, errorMsg: "username_invalid" };
   }
 
   return { isValid: true };
