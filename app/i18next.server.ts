@@ -8,7 +8,7 @@ let i18next: RemixI18Next = new RemixI18Next({
   detection: {
     // persist language selection in cookie
     cookie: i18nCookie,
-    supportedLanguages: i18nextOptions.supportedLngs,
+    supportedLanguages: [...i18nextOptions.supportedLngs],
     fallbackLanguage: i18nextOptions.fallbackLng,
   },
   // This is the configuration for i18next used
