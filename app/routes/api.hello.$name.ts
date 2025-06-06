@@ -1,4 +1,5 @@
-import { LoaderFunctionArgs } from "react-router";
+// app/routes/api.hello.$name.tsx
+import type { LoaderFunctionArgs } from "react-router";
 
 /**
  * @openapi
@@ -32,10 +33,18 @@ import { LoaderFunctionArgs } from "react-router";
  *               type: string
  *             example: "Name parameter is required"
  */
-export const loader = async ({params}: LoaderFunctionArgs) => {
-    const { name } = params;
-    if(!name){
-        return new Response("Name parameter is required", { status: 400 });
-    }
-    return new Response(`Hello, ${name}!`, { status: 200 });
-}
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const { name } = params;
+  
+  if (!name) {
+    return new Response("Name parameter is required", { 
+      status: 400,
+      headers: { "Content-Type": "text/plain" }
+    });
+  }
+  
+  return new Response(`Hello, ${name}!`, { 
+    status: 200,
+    headers: { "Content-Type": "text/plain" }
+  });
+};
