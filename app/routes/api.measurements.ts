@@ -73,8 +73,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     time: new Date(data.time),
     value: Number(data.value),
   }));
-
-  const result = await drizzleClient.insert(measurement).values(measurements);
-
- return Response.json(result);
+  try{
+      await drizzleClient.insert(measurement).values(measurements);
+      return Response.json({ message: "Measurements successfully stored" }, { status: 200 });
+  }catch (error){
+    return data({ message: "Invalid data format" }, 400);
+  }
 };
