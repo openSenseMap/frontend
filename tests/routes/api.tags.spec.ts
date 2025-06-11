@@ -1,6 +1,5 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
-import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
