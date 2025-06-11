@@ -12,6 +12,9 @@ export default function ApiDocumentation() {
   const spec = useLoaderData<typeof loader>();
   return (
   <div style={{ height: '100vh', overflow: 'auto' }}>
+    <div>
+      <img src="../../public/openSenseMap_API.png" alt="" height={300} width={300} className='mt-2'/>
+    </div>
     <SwaggerUI spec={spec} />
     </div>
 );
