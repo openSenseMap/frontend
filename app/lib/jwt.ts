@@ -48,7 +48,6 @@ export const createToken = (
   invariant(typeof JWT_SECRET === "string");
 
   invariant(typeof REFRESH_TOKEN_VALIDITY_MS === "string");
-
   const payload = { role: user.role };
   const signOptions = Object.assign(
     { subject: user.email, jwtid: uuidv4() },
