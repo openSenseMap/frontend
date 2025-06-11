@@ -11,13 +11,13 @@ export const loader = async () => {
 export default function ApiDocumentation() {
   const spec = useLoaderData<typeof loader>();
   return (
-  <>
+  <div style={{ height: '100vh', overflow: 'auto', scrollbarWidth: 'thin'}}>
     <div>
-      <img src="/openSenseMap_API.png" alt="" height={300} width={300} className='px-3 mt-2'/>
+      <img src="/openSenseMap_API.png" alt="" height={350} width={350} className='px-3 mt-2'/>
     </div>
-    <div style={{ height: '100vh', overflow: 'auto', scrollbarWidth: 'none'}}>
+    <div>
       <SwaggerUI spec={spec}/>
       </div>
-  </>
+  </div>
 );
 }

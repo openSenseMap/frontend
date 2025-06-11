@@ -6,10 +6,10 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: '',
       version: '1.0.0',
-      description: `Documentation of the routes and methods to manage users, stations (also called boxes or senseBoxes), and measurements in the openSenseMap API. You can find the API running at [https://api.opensensemap.org/](https://api.opensensemap.org/).
-## Timestamps
+      description: `## Documentation of the routes and methods to manage users, stations (also called boxes or senseBoxes), and measurements in the openSenseMap API. You can find the API running at [https://opensensemap.org/api/](https://opensensemap.org/api/).
+# Timestamps
 
-Please note that the API handles every timestamp in Coordinated universal time (UTC) time zone. Timestamps in parameters should be in RFC 3339 notation.
+## Please note that the API handles every timestamp in Coordinated universal time (UTC) time zone. Timestamps in parameters should be in RFC 3339 notation.
 
 **Timestamp without Milliseconds:**
 
@@ -23,9 +23,9 @@ Please note that the API handles every timestamp in Coordinated universal time (
 2018-02-01T23:18:02.412Z
 \`\`\`
 
-## IDs
+# IDs
 
-All stations and sensors of stations receive a unique public identifier. These identifiers are exactly 24 character long and only contain digits and characters a to f.
+## All stations and sensors of stations receive a unique public identifier. These identifiers are exactly 24 character long and only contain digits and characters a to f.
 
 **Example:**
 
@@ -33,33 +33,21 @@ All stations and sensors of stations receive a unique public identifier. These i
 5a8d1c25bc2d41001927a265
 \`\`\`
 
-## Parameters
+# Parameters
 
-Only if noted otherwise, all requests assume the payload encoded as JSON with Content-type: application/json header. Parameters prepended with a colon (:) are parameters which should be specified through the URL.
+## Only if noted otherwise, all requests assume the payload encoded as JSON with \`Content-type: application/json\` header. Parameters prepended with a colon (\`:\`) are parameters which should be specified through the URL.
 
-## Source code and Licenses
+# Source code and Licenses
 
-You can find the whole source code of the API at GitHub in the [sensebox/openSenseMap-API](https://github.com/sensebox/openSenseMap-API) repository. You can obtain the code under the MIT License.
+## You can find the whole source code of the API at GitHub in the [sensebox/openSenseMap-API](https://github.com/sensebox/openSenseMap-API) repository. You can obtain the code under the MIT License.
 
-The data obtainable through the openSenseMap API at [https://api.opensensemap.org/](https://api.opensensemap.org/) is licensed under the [Public Domain Dedication and License 1.0](https://opendatacommons.org/licenses/pddl/summary/).
+## The data obtainable through the openSenseMap API at [https://opensensemap.org/api/](https://opensensemap.org/api/) is licensed under the [Public Domain Dedication and License 1.0](https://opendatacommons.org/licenses/pddl/summary/).
 
-If you there is something unclear or there is a mistake in this documentation please open an [issue](https://github.com/sensebox/openSenseMap-API/issues/new) in the GitHub repository.`,
-      contact: {
-        name: 'openSenseMap',
-        url: 'https://github.com/sensebox/openSenseMap-API',
-      },
-      license: {
-        name: 'MIT License',
-        url: 'https://opensource.org/licenses/MIT',
-      },
-    },
-    externalDocs: {
-      description: 'GitHub Repository',
-      url: 'https://github.com/sensebox/openSenseMap-API',
+## If there is something unclear or there is a mistake in this documentation please open an [issue](https://github.com/openSenseMap/frontend/issues/new) in the GitHub repository.`,
     },
     servers: [
       {
-        url: process.env.OSEM_API_URL || 'https://api.opensensemap.org', // Uses environment variable or defaults to production URL
+        url: process.env.OSEM_API_URL || 'https://opensensemap.org/api', // Uses environment variable or defaults to production URL
         description: 'Production server',
       },
       {
