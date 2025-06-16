@@ -164,7 +164,6 @@
     "@react-router/dev": "^7.0.0",
     "@react-router/fs-routes": "^7.1.1",
     "@remix-run/eslint-config": "^2.15.2",
-    "@rollup/rollup-win32-x64-msvc": "^4.43.0",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.13",
     "@testing-library/dom": "^10.4.0",
