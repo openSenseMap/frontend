@@ -1,5 +1,5 @@
 // app/routes/docs.tsx
-import { useLoaderData, useNavigation} from 'react-router';
+import { useLoaderData} from 'react-router';
 import SwaggerUI from 'swagger-ui-react';
 import 'swagger-ui-react/swagger-ui.css';
 import { openapiSpecification } from '~/lib/openapi'; // Direct import
@@ -21,7 +21,7 @@ export default function ApiDocumentation() {
   <div style={{ height: '100vh', overflow: 'auto', scrollbarWidth: 'thin'}}>
     <div>
       <div className='flex items-center justify-center p-3'>
-        <img src="./openSenseMap_API.png" alt="API Image" height={250} width={250}/>
+        <img src="./openSenseMap_API.png" alt="API Image" height={350} width={350}/>
       </div>
       <SwaggerUI spec={spec}/>
     </div>
