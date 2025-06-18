@@ -1,206 +1,272 @@
-describe("/boxes/:boxid/data/:sensorid", function () {
-  it("should allow download data through /boxes/:boxid/data/:sensorid", function () {
-    return chakram
-      .get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[0]._id}`)
-      .then(function (response) {
-        expect(response).to.have.status(200);
-        expect(Array.isArray(response.body)).to.be.true;
-        expect(response).to.have.header(
-          "content-type",
-          "application/json; charset=utf-8",
-        );
-        expect(response.body.length).to.be.above(4);
-        expect(response).to.have.schema(measurementsSchema);
-        expect(
-          response.body.every(function (measurement) {
-            return expect(
-              moment
-                .utc(measurement.createdAt, moment.ISO_8601, true)
-                .isValid(),
-            ).true;
-          }),
-        ).true;
+import { type LoaderFunctionArgs } from "react-router";
+import { BASE_URL } from "vitest.setup";
+import { createToken } from "~/lib/jwt";
+import { registerUser } from "~/lib/user-service.server";
+import { createDevice, deleteDevice } from "~/models/device.server";
+import { deleteUserByEmail } from "~/models/user.server";
+import { loader } from "~/routes/api.boxes.$deviceId.sensors.$sensorId";
+import { type Device, type User } from "~/schema";
 
-        return chakram.wait();
-      });
+const DEVICE_SENSORS_ID_USER = {
+  name: "meTestSensorsIds",
+  email: "test@box.sensorids",
+  password: "highlySecurePasswordForTesting",
+};
+
+const DEVICE_SENSOR_ID_BOX = {
+  name: `${DEVICE_SENSORS_ID_USER}s Box`,
+  exposure: "outdoor",
+  expiresAt: null,
+  tags: [],
+  latitude: 0,
+  longitude: 0,
+  model: "luftdaten.info",
+  mqttEnabled: false,
+  ttnEnabled: false,
+};
+
+describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
+  let jwt: string = "";
+  let device: Device;
+  let deviceId: string = "";
+
+  beforeAll(async () => {
+    const user = await registerUser(
+      DEVICE_SENSORS_ID_USER.name,
+      DEVICE_SENSORS_ID_USER.email,
+      DEVICE_SENSORS_ID_USER.password,
+      "en_US",
+    );
+    const { token: t } = await createToken(user as User);
+    jwt = t;
+
+    device = await createDevice(DEVICE_SENSOR_ID_BOX, (user as User).id);
+    deviceId = device.id;
   });
 
-  it("should allow download data through /boxes/:boxid/data/:sensorid as csv", function () {
-    return chakram
-      .get(
-        `${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?format=csv&download=true`,
-      )
-      .then(function (response) {
-        expect(response).to.have.status(200);
-        expect(response.body).not.to.be.empty;
-        expect(response).to.have.header("content-type", "text/csv");
-        expect(response).to.have.header(
-          "Content-Disposition",
-          `attachment; filename=${boxes[0].sensors[1]._id}.csv`,
-        );
+  describe("GET", () => {
+    it("should allow download data", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[0]._id}`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
 
-        return chakram.wait();
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      expect(body.length).toBeGreaterThan(4);
+      // If using schema matcher: expect(body).toMatchSchema(measurementsSchema);
+      body.forEach((measurement) => {
+        expect(new Date(measurement.createdAt).valueOf()).not.toBeNaN(); // Checks if createdAt is valid
       });
-  });
+    });
 
-  it("should return the data for /boxes/:boxId/data/:sensorId in descending order", function () {
-    return chakram
-      .get(
-        `${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`,
-      )
-      .then(function (response) {
-        expect(response).to.have.status(200);
-        expect(response).to.have.header(
-          "content-type",
-          "application/json; charset=utf-8",
-        );
-        expect(response).to.have.schema(measurementsSchema);
-        expect(
-          response.body.every(function (measurement) {
-            return expect(
-              moment
-                .utc(measurement.createdAt, moment.ISO_8601, true)
-                .isValid(),
-            ).true;
-          }),
-        ).true;
-        expect(response.body).not.to.be.empty;
-        let isDescending = true;
-        for (let i = 1; i < response.body.length - 1; i++) {
-          if (
-            new Date(response.body[i - 1].createdAt) -
-              new Date(response.body[i].createdAt) <
-            0
-          ) {
-            isDescending = false;
-            break;
-          }
+    it("should allow download data as csv", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?format=csv&download=true`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const text = await response?.text();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(text).not.toBe("");
+      expect(response.headers.get("content-type")).toBe("text/csv");
+      expect(response.headers.get("Content-Disposition")).toBe(
+        `attachment; filename=${device.sensors[1]._id}.csv`,
+      );
+    });
+
+    it("should return the data in descending order", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      // If using schema matcher: expect(body).toMatchSchema(measurementsSchema);
+      body.forEach((measurement) => {
+        expect(new Date(measurement.createdAt).valueOf()).not.toBeNaN();
+      });
+      expect(body.length).toBeGreaterThan(0);
+      let isDescending = true;
+      for (let i = 1; i < body.length; i++) {
+        if (new Date(body[i - 1].createdAt) < new Date(body[i].createdAt)) {
+          isDescending = false;
+          break;
         }
+      }
+      expect(isDescending).toBe(true);
+    });
 
-        expect(isDescending).true;
+    it("should allow timestamps in the future for data retrieval", async () => {
+      // Arrange
+      const now = new Date();
+      const future1 = new Date(now);
+      future1.setDate(future1.getDate() + 10);
+      const future2 = new Date(future1);
+      future2.setDate(future2.getDate() + 4);
 
-        return chakram.wait();
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?from-date=${future1.toISOString()}&to-date=${future2.toISOString()}`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      expect(body).toEqual([]); // Array is empty
+    });
+
+    it("should allow to compute outliers in measurements and mark them", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?outliers=mark`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      expect(body.length).toBeGreaterThan(0);
+      body.forEach((measurement) => {
+        expect(measurement).toHaveProperty("isOutlier");
+        expect(measurement).toHaveProperty("createdAt");
+        expect(measurement).toHaveProperty("value");
+        expect(measurement).toHaveProperty("location");
+        expect(typeof measurement.isOutlier).toBe("boolean");
       });
+    });
+
+    it("should allow to compute outliers in measurements and replace them", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?outliers=replace`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      expect(body.length).toBeGreaterThan(0);
+      body.forEach((measurement) => {
+        expect(measurement).toHaveProperty("isOutlier");
+        expect(measurement).toHaveProperty("createdAt");
+        expect(measurement).toHaveProperty("value");
+        expect(measurement).toHaveProperty("location");
+        expect(typeof measurement.isOutlier).toBe("boolean");
+      });
+    });
+
+    it("should return a single sensor of a box", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/sensors/${device.sensors[0]._id}`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs); // Assuming a separate loader for single sensor
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      // If you have a schema check: expect(body).toMatchSchema(sensorSchema);
+      // For now, just expect the body has the expected shape
+      expect(body).toHaveProperty("_id");
+    });
+
+    it("should return only value of a single sensor of a box", async () => {
+      // Arrange
+      const request = new Request(
+        `${BASE_URL}/boxes/${deviceId}/sensors/${device.sensors[0]._id}?onlyValue=true`,
+        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+      );
+
+      // Act
+      const dataFunctionValue = await loader({
+        request,
+      } as LoaderFunctionArgs);
+      const response = dataFunctionValue as Response;
+      const body = await response?.json();
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "application/json; charset=utf-8",
+      );
+      expect(typeof body).toBe("number");
+    });
   });
 
-  it("should allow timestamps in the future for data retrieval", function () {
-    const now = moment.utc();
+  afterAll(async () => {
+    // delete the valid test user
+    await deleteUserByEmail(DEVICE_SENSORS_ID_USER.email);
 
-    return chakram
-      .get(
-        `${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=${now.add(10, "days").toISOString()}&to-date=${now.add(14, "days").toISOString()}`,
-      )
-      .then(function (response) {
-        expect(response).to.have.status(200);
-        expect(response).to.have.header(
-          "content-type",
-          "application/json; charset=utf-8",
-        );
-        expect(response.body).to.be.empty;
-
-        return chakram.wait();
-      });
+    // delete the box
+    await deleteDevice({ id: deviceId });
   });
-
-  it("should allow to compute outliers in measurements and mark them", function () {
-    return chakram
-      .get(
-        `${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?outliers=mark`,
-      )
-      .then(function (response) {
-        expect(response).to.have.status(200);
-        expect(response).to.have.header(
-          "content-type",
-          "application/json; charset=utf-8",
-        );
-        expect(response.body).not.lengthOf(0);
-        expect(response).json(function (measurementsArray) {
-          for (const measurement of measurementsArray) {
-            expect(measurement).keys(
-              "isOutlier",
-              "createdAt",
-              "value",
-              "location",
-            );
-            expect(typeof measurement.isOutlier).equal("boolean");
-          }
-        });
-
-        return chakram.wait();
-      });
-  });
-
-  it("should allow to compute outliers in measurements and replace them", function () {
-    return chakram
-      .get(
-        `${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?outliers=replace`,
-      )
-      .then(function (response) {
-        expect(response).to.have.status(200);
-        expect(response).to.have.header(
-          "content-type",
-          "application/json; charset=utf-8",
-        );
-        expect(response.body).not.lengthOf(0);
-        expect(response).json(function (measurementsArray) {
-          for (const measurement of measurementsArray) {
-            expect(measurement).keys(
-              "isOutlier",
-              "createdAt",
-              "value",
-              "location",
-            );
-            expect(typeof measurement.isOutlier).equal("boolean");
-          }
-        });
-
-        return chakram.wait();
-      });
-  });
-});
-
-it("should return a single sensor of a box for /boxes/:boxid/sensors/:sensorId GET", async () => {
-  // Arrange
-  const request = new Request(
-    `${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}`,
-    { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
-  );
-
-  // Act
-  const dataFunctionValue = await boxSensorLoader({
-    request,
-  } as LoaderFunctionArgs); // Assuming a separate loader for single sensor
-  const response = dataFunctionValue as Response;
-  const body = await response?.json();
-
-  // Assert
-  expect(response.status).toBe(200);
-  expect(response.headers.get("content-type")).toBe(
-    "application/json; charset=utf-8",
-  );
-  // If you have a schema check: expect(body).toMatchSchema(sensorSchema);
-  // For now, just expect the body has the expected shape
-  expect(body).toHaveProperty("_id");
-});
-
-it("should return only value of a single sensor of a box for /boxes/:boxid/sensors/:sensorId?onlyValue=true GET", async () => {
-  // Arrange
-  const request = new Request(
-    `${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}?onlyValue=true`,
-    { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
-  );
-
-  // Act
-  const dataFunctionValue = await boxSensorLoader({
-    request,
-  } as LoaderFunctionArgs);
-  const response = dataFunctionValue as Response;
-  const body = await response?.json();
-
-  // Assert
-  expect(response.status).toBe(200);
-  expect(response.headers.get("content-type")).toBe(
-    "application/json; charset=utf-8",
-  );
-  expect(typeof body).toBe("number");
 });

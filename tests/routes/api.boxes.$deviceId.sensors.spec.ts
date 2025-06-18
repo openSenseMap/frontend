@@ -2,8 +2,9 @@ import { type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
-import { createDevice } from "~/models/device.server";
+import { createDevice, deleteDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
+import { loader } from "~/routes/api.boxes.$deviceId.sensors";
 import { type User } from "~/schema";
 
 const DEVICE_SENSORS_USER = {
@@ -43,7 +44,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
   });
 
   describe("GET", () => {
-    it("should return the sensors of a box for /boxes/:boxid/sensors GET", async () => {
+    it("should return all sensors of a box/ device", async () => {
       // Arrange
       const request = new Request(`${BASE_URL}/boxes/${deviceId}/sensors`, {
         method: "GET",
@@ -51,7 +52,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       });
 
       // Act
-      const dataFunctionValue = await boxSensorsLoader({
+      const dataFunctionValue = await loader({
         request,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
@@ -68,7 +69,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       expect(body).toHaveProperty("sensors");
     });
 
-    it("should return the sensors of a box with 3 measurements for /boxes/:boxid/sensors?count=3 GET", async () => {
+    it("should return all sensors of a box with a maximum of 3 measurements when ?count= is used", async () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/sensors?count=3`,
@@ -76,7 +77,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       );
 
       // Act
-      const dataFunctionValue = await boxSensorsLoader({
+      const dataFunctionValue = await loader({
         request,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
@@ -94,5 +95,8 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
   afterAll(async () => {
     // delete the valid test user
     await deleteUserByEmail(DEVICE_SENSORS_USER.email);
+
+    // delete the box
+    await deleteDevice({ id: deviceId });
   });
 });
