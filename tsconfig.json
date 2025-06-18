@@ -16,8 +16,8 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"],
-      "@/*": ["./app/*"]
+      "~/*": ["app/*"],
+      "@/*": ["app/*"]
     },
     "skipLibCheck": true,
     "rootDirs": [".", "./.react-router/types"],

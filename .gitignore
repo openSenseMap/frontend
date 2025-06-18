@@ -5,8 +5,8 @@
 node_modules
 
 /build
-/server-build
 /public/build
+/public/openapi.json
 .env
 .cache
 

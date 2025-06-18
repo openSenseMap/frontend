@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import Backend from "i18next-fs-backend";
+import Backend from "i18next-fs-backend/cjs"; // Even though unintuitive, cjs is what we want https://github.com/i18next/i18next-fs-backend/issues/57
 import { RemixI18Next } from "remix-i18next/server";
 import { i18nCookie } from "./cookies";
 import i18nextOptions from "./i18next-options";

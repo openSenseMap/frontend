@@ -40,8 +40,6 @@ FROM base
 WORKDIR /myapp
 
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
-
-COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
 
 # Not sure if we really need this or if we should move all our /public folder to /app/assets
