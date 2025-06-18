@@ -39,14 +39,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId`,
     //   method: "GET",
     // },
-    // {
-    //   path: `boxes/:boxId/sensors`,
-    //   method: "GET",
-    // },
-    // {
-    //   path: `boxes/:boxId/sensors/:sensorId`,
-    //   method: "GET",
-    // },
+    {
+      path: `boxes/:boxId/sensors`,
+      method: "GET",
+    },
+    {
+      path: `boxes/:boxId/sensors/:sensorId`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/:boxId/data/:sensorId`,
     //   method: "GET",
