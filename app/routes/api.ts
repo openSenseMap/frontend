@@ -8,14 +8,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: "/",
       method: "GET",
     },
-    // {
-    //   path: "/stats",
-    //   method: "GET",
-    // },
-    // {
-    //   path: "/tags",
-    //   method: "GET",
-    // },
+    {
+      path: "/stats",
+      method: "GET",
+    },
+    {
+      path: "/tags",
+      method: "GET",
+    },
     // {
     //   path: `statistics/idw`,
     //   method: "GET",
@@ -101,14 +101,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: `users/me`,
       method: "PUT",
     },
-    // {
-    //   path: `users/me/boxes`,
-    //   method: "GET",
-    // },
-    // {
-    //   path: `users/me/boxes/:boxId`,
-    //   method: "GET",
-    // },
+    {
+      path: `users/me/boxes`,
+      method: "GET",
+    },
+    {
+      path: `users/me/boxes/:boxId`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/:boxId/script`,
     //   method: "GET",
