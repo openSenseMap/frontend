@@ -4,9 +4,8 @@ import {
   type LoaderFunction,
   type LoaderFunctionArgs,
 } from "react-router";
-import { getUserFromJwt, revokeToken } from "~/lib/jwt";
+import { getUserFromJwt } from "~/lib/jwt";
 import { deleteUser, updateUserDetails } from "~/lib/user-service.server";
-import { verifyLogin } from "~/models/user.server";
 import { type User } from "~/schema/user";
 
 export const loader: LoaderFunction = async ({
