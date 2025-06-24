@@ -86,7 +86,83 @@ For example: User registration is possible from both the api and the frontend. T
 
 ##### Documenting an API Route
 
-The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotaions](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotaions in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000). 
+The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotaions](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotations in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000). 
+
+##### Documenting an API Route  
+
+The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotaions](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotations in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000).
+
+##### JSDoc Example
+
+Here's an example of how to document an API route using JSDoc annotations:
+
+```javascript
+/**
+ * @openapi
+ * /api/users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     description: Retrieve a single user by their unique identifier
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Unique identifier of the user
+ *         schema:
+ *           type: string
+ *           example: "12345"
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "12345"
+ *                 name:
+ *                   type: string
+ *                   example: "John Doe"
+ *                 email:
+ *                   type: string
+ *                   example: "john.doe@example.com"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-01-15T10:30:00Z"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error
+ */
+export async function loader({ params }) {
+  const { id } = params;
+  
+  try {
+    const user = await getUserById(id);
+    if (!user) {
+      throw new Response("User not found", { status: 404 });
+    }
+    return Response.json({ user });
+  } catch (error) {
+    throw new Response("Internal server error", { status: 500 });
+  }
+}
+```
+
+This JSDoc annotation will automatically generate comprehensive API documentation including endpoint details, parameters, response schemas, and example values.
 
 
 #### Testing
