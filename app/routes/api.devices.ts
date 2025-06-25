@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		}
 		if (searchParams.format == 'geojson') {
 			try {
-				let result: GeoJSON.FeatureCollection | any[]
+				let result: GeoJSON.FeatureCollection
 
 				result = await getDevices()
 
@@ -74,30 +74,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
 							type: 'FeatureCollection',
 							features: filteredFeatures,
 						} as GeoJSON.FeatureCollection
-					} else if (Array.isArray(result)) {
-						result = result.filter((device: any) => {
-							if (device.geometry && device.geometry.coordinates) {
-								const [longitude, latitude] = device.geometry.coordinates
-								return (
-									longitude >= west &&
-									longitude <= east &&
-									latitude >= south &&
-									latitude <= north
-								)
-							}
+					} 
+					// else if (Array.isArray(result)) {
+					// 	result = result.filter((device: any) => {
+					// 		if (device.geometry && device.geometry.coordinates) {
+					// 			const [longitude, latitude] = device.geometry.coordinates
+					// 			return (
+					// 				longitude >= west &&
+					// 				longitude <= east &&
+					// 				latitude >= south &&
+					// 				latitude <= north
+					// 			)
+					// 		}
 
-							if (device.longitude && device.latitude) {
-								return (
-									device.longitude >= west &&
-									device.longitude <= east &&
-									device.latitude >= south &&
-									device.latitude <= north
-								)
-							}
+					// 		if (device.longitude && device.latitude) {
+					// 			return (
+					// 				device.longitude >= west &&
+					// 				device.longitude <= east &&
+					// 				device.latitude >= south &&
+					// 				device.latitude <= north
+					// 			)
+					// 		}
 
-							return false
-						})
-					}
+					// 		return false
+					// 	})
+					// }
 				}
 
 				return result

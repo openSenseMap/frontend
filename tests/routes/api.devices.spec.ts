@@ -53,17 +53,17 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'GET',
 				headers: { 'Content-Type': 'application/json' },
 			})
-		
+
 			try {
 				await devicesLoader({
 					request: request,
 				} as LoaderFunctionArgs)
-				expect(true).toBe(false) 
+				expect(true).toBe(false)
 			} catch (error) {
 				expect(error).toBeInstanceOf(Response)
-				expect(error.status).toBe(422)
-				
-				const errorData = await error.json()
+				expect((error as Response).status).toBe(422)
+
+				const errorData = await (error as Response).json()
 				expect(errorData.error).toBe('Failed to fetch devices')
 			}
 		})
@@ -80,52 +80,61 @@ describe('openSenseMap API Routes: /boxes', () => {
 				request: request,
 			} as LoaderFunctionArgs)
 
-			console.log("geojson features 0 geometry", geojsonData.features[0].geometry)
+			expect(geojsonData).toBeDefined()
+			if (geojsonData) {
+				// Assert - this should always be GeoJSON since that's what the loader returns
+				expect(geojsonData.type).toBe('FeatureCollection')
+				expect(Array.isArray(geojsonData.features)).toBe(true)
 
-			// Assert - this should always be GeoJSON since that's what the loader returns
-			expect(geojsonData.type).toBe('FeatureCollection')
-			expect(Array.isArray(geojsonData.features)).toBe(true)
-
-			if (geojsonData.features.length > 0) {
-				expect(geojsonData.features[0].type).toBe('Feature')
-				expect(geojsonData.features[0].geometry).toBeDefined()
-				expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
-				expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
-				expect(geojsonData.features[0].properties).toBeDefined()
+				if (geojsonData.features.length > 0) {
+					expect(geojsonData.features[0].type).toBe('Feature')
+					expect(geojsonData.features[0].geometry).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
+					expect(geojsonData.features[0].properties).toBeDefined()
+				}
 			}
 		})
 
 		it('should allow filtering boxes by bounding box', async () => {
 			// Arrange
-			const request = new Request(`${BASE_URL}?format=geojson&bbox=120,60,121,61`, {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			})
-		
+			const request = new Request(
+				`${BASE_URL}?format=geojson&bbox=120,60,121,61`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
+
 			// Act
 			const response = await devicesLoader({
 				request: request,
 			} as LoaderFunctionArgs)
-				
-			// Assert
-			expect(response.type).toBe('FeatureCollection')
-			expect(Array.isArray(response.features)).toBe(true)
-			
-			if (response.features.length > 0) {
-				response.features.forEach((feature: any) => {
-					expect(feature.type).toBe('Feature')
-					expect(feature.geometry).toBeDefined()
-					expect(feature.geometry.coordinates).toBeDefined()
-					
-					const [longitude, latitude] = feature.geometry.coordinates
 
-					
-					// Verify coordinates are within the bounding box [120,60,121,61]
-					expect(longitude).toBeGreaterThanOrEqual(120)
-					expect(longitude).toBeLessThanOrEqual(121)
-					expect(latitude).toBeGreaterThanOrEqual(60)
-					expect(latitude).toBeLessThanOrEqual(61)
-				})
+			expect(response).toBeDefined()
+
+			if (response) {
+				// Assert
+				expect(response.type).toBe('FeatureCollection')
+				expect(Array.isArray(response.features)).toBe(true)
+
+				if (response.features.length > 0) {
+					response.features.forEach((feature: any) => {
+						expect(feature.type).toBe('Feature')
+						expect(feature.geometry).toBeDefined()
+						expect(feature.geometry.coordinates).toBeDefined()
+
+						const [longitude, latitude] = feature.geometry.coordinates
+
+						// Verify coordinates are within the bounding box [120,60,121,61]
+						expect(longitude).toBeGreaterThanOrEqual(120)
+						expect(longitude).toBeLessThanOrEqual(121)
+						expect(latitude).toBeGreaterThanOrEqual(60)
+						expect(latitude).toBeLessThanOrEqual(61)
+					})
+				}
 			}
 		})
 	})
