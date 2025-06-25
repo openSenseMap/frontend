@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from "react-router";
+import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
@@ -23,6 +23,23 @@ const DEVICE_SENSOR_BOX = {
   model: "luftdaten.info",
   mqttEnabled: false,
   ttnEnabled: false,
+  sensors: [
+    {
+      title: "Temp",
+      unit: "°C",
+      sensorType: "dummy",
+    },
+    {
+      title: "CO2",
+      unit: "mol/L",
+      sensorType: "dummy",
+    },
+    {
+      title: "Air Pressure",
+      unit: "kPa",
+      sensorType: "dummy",
+    },
+  ],
 };
 
 describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
@@ -54,6 +71,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: { deviceId: `${deviceId}` } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -63,9 +81,6 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       expect(response.headers.get("content-type")).toBe(
         "application/json; charset=utf-8",
       );
-      // If you have a schema check, you can use a matcher like:
-      // expect(body).toMatchSchema(boxSensorsSchema); // You may need to use a custom matcher
-      // For now, just expect the body has the expected shape
       expect(body).toHaveProperty("sensors");
     });
 
@@ -79,6 +94,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: { deviceId: `${deviceId}` } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();

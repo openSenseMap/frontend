@@ -3,9 +3,10 @@ import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
+import { getSensors } from "~/models/sensor.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { loader } from "~/routes/api.boxes.$deviceId.sensors.$sensorId";
-import { type Device, type User } from "~/schema";
+import { type Sensor, type Device, type User } from "~/schema";
 
 const DEVICE_SENSORS_ID_USER = {
   name: "meTestSensorsIds",
@@ -23,12 +24,30 @@ const DEVICE_SENSOR_ID_BOX = {
   model: "luftdaten.info",
   mqttEnabled: false,
   ttnEnabled: false,
+  sensors: [
+    {
+      title: "Temp",
+      unit: "°C",
+      sensorType: "dummy",
+    },
+    {
+      title: "CO2",
+      unit: "mol/L",
+      sensorType: "dummy",
+    },
+    {
+      title: "Air Pressure",
+      unit: "kPa",
+      sensorType: "dummy",
+    },
+  ],
 };
 
 describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
   let jwt: string = "";
   let device: Device;
   let deviceId: string = "";
+  let sensors: Sensor[] = [];
 
   beforeAll(async () => {
     const user = await registerUser(
@@ -42,13 +61,14 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
 
     device = await createDevice(DEVICE_SENSOR_ID_BOX, (user as User).id);
     deviceId = device.id;
+    sensors = await getSensors(deviceId);
   });
 
   describe("GET", () => {
     it("should allow download data", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[0]._id}`,
+        `${BASE_URL}/boxes/${deviceId}/data/${sensors[0].id}`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -66,8 +86,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
         "application/json; charset=utf-8",
       );
       expect(body.length).toBeGreaterThan(4);
-      // If using schema matcher: expect(body).toMatchSchema(measurementsSchema);
-      body.forEach((measurement) => {
+      body.forEach((measurement: any) => {
         expect(new Date(measurement.createdAt).valueOf()).not.toBeNaN(); // Checks if createdAt is valid
       });
     });
@@ -75,7 +94,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
     it("should allow download data as csv", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?format=csv&download=true`,
+        `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?format=csv&download=true`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -91,14 +110,14 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       expect(text).not.toBe("");
       expect(response.headers.get("content-type")).toBe("text/csv");
       expect(response.headers.get("Content-Disposition")).toBe(
-        `attachment; filename=${device.sensors[1]._id}.csv`,
+        `attachment; filename=${sensors[1].id}.csv`,
       );
     });
 
     it("should return the data in descending order", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`,
+        `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -115,7 +134,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
         "application/json; charset=utf-8",
       );
       // If using schema matcher: expect(body).toMatchSchema(measurementsSchema);
-      body.forEach((measurement) => {
+      body.forEach((measurement: any) => {
         expect(new Date(measurement.createdAt).valueOf()).not.toBeNaN();
       });
       expect(body.length).toBeGreaterThan(0);
@@ -138,7 +157,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       future2.setDate(future2.getDate() + 4);
 
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?from-date=${future1.toISOString()}&to-date=${future2.toISOString()}`,
+        `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?from-date=${future1.toISOString()}&to-date=${future2.toISOString()}`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -160,7 +179,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
     it("should allow to compute outliers in measurements and mark them", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?outliers=mark`,
+        `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?outliers=mark`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -177,7 +196,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
         "application/json; charset=utf-8",
       );
       expect(body.length).toBeGreaterThan(0);
-      body.forEach((measurement) => {
+      body.forEach((measurement: any) => {
         expect(measurement).toHaveProperty("isOutlier");
         expect(measurement).toHaveProperty("createdAt");
         expect(measurement).toHaveProperty("value");
@@ -189,7 +208,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
     it("should allow to compute outliers in measurements and replace them", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/data/${device.sensors[1]._id}?outliers=replace`,
+        `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?outliers=replace`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -206,7 +225,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
         "application/json; charset=utf-8",
       );
       expect(body.length).toBeGreaterThan(0);
-      body.forEach((measurement) => {
+      body.forEach((measurement: any) => {
         expect(measurement).toHaveProperty("isOutlier");
         expect(measurement).toHaveProperty("createdAt");
         expect(measurement).toHaveProperty("value");
@@ -218,7 +237,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
     it("should return a single sensor of a box", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/sensors/${device.sensors[0]._id}`,
+        `${BASE_URL}/boxes/${deviceId}/sensors/${sensors[0].id}`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 
@@ -242,7 +261,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
     it("should return only value of a single sensor of a box", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/boxes/${deviceId}/sensors/${device.sensors[0]._id}?onlyValue=true`,
+        `${BASE_URL}/boxes/${deviceId}/sensors/${sensors[0].id}?onlyValue=true`,
         { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
       );
 

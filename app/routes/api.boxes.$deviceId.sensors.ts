@@ -1,5 +1,6 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
 import { getUserFromJwt } from "~/lib/jwt";
+import { getLatestMeasurements } from "~/lib/measurement-service.server";
 
 export const loader: LoaderFunction = async ({
   request,
@@ -17,6 +18,9 @@ export const loader: LoaderFunction = async ({
         },
         {
           status: 403,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+          },
         },
       );
 
@@ -29,6 +33,9 @@ export const loader: LoaderFunction = async ({
         },
         {
           status: 400,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+          },
         },
       );
 
@@ -51,13 +58,12 @@ export const loader: LoaderFunction = async ({
       );
     count = countParam === null ? undefined : Number(countParam);
 
-    return Response.json(
-      { code: "Ok", data: { me: jwtResponse } },
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
+    const meas = await getLatestMeasurements(deviceId, undefined, count);
+
+    return Response.json(meas, {
+      status: 200,
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+    });
   } catch (err) {
     console.warn(err);
     return Response.json(
@@ -68,6 +74,9 @@ export const loader: LoaderFunction = async ({
       },
       {
         status: 500,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
       },
     );
   }

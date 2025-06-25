@@ -1,6 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
-import { sensor, type Sensor, type SensorWithLatestMeasurement  } from "~/schema";
+import {
+  sensor,
+  type Sensor,
+  type SensorWithLatestMeasurement,
+} from "~/schema";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 
@@ -66,7 +70,10 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
 }
 
 // LATERAL JOIN to get latest measurement for sensors belonging to a specific device, including device name
-export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
+export function getSensorsWithLastMeasurement(
+  deviceId: Sensor["deviceId"],
+  count: number = 1,
+) {
   const result = drizzleClient.execute(
     sql`SELECT s.*, d.name AS device_name, measure.*
     FROM sensor s
@@ -75,7 +82,7 @@ export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
       SELECT * FROM measurement m
       WHERE m.sensor_id = s.id
       ORDER BY m.time DESC
-      LIMIT 1
+      LIMIT ${count}
     ) AS measure ON true
     WHERE s.device_id = ${deviceId};`,
   );
