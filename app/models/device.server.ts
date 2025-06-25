@@ -25,6 +25,11 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 			expiresAt: true,
 		},
 		with: {
+			user: {
+				columns: {
+					id: true
+				}
+			},
 			logEntries: {
 				where: (entry, { eq }) => eq(entry.public, true),
 				columns: {
