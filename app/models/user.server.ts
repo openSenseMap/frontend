@@ -109,7 +109,7 @@ export async function getUsers() {
   return drizzleClient.query.user.findMany();
 }
 
-const preparePasswordHash = function preparePasswordHash(
+export const preparePasswordHash = function preparePasswordHash(
   plaintextPassword: string,
 ) {
   // first round: hash plaintextPassword with sha512
