@@ -1,7 +1,13 @@
+import { readItems } from "@directus/sdk";
 import { useMediaQuery } from "@mantine/hooks";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import  { type LoaderFunctionArgs, data, Link, useLoaderData  } from "react-router";
+import {
+  type LoaderFunctionArgs,
+  data,
+  Link,
+  useLoaderData,
+} from "react-router";
 import Footer from "~/components/landing/footer";
 import { GlobeComponent } from "~/components/landing/globe.client";
 import Header from "~/components/landing/header/header";
@@ -12,7 +18,7 @@ import Partners from "~/components/landing/sections/partners";
 import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Stats from "~/components/landing/stats";
 import i18next from "~/i18next.server";
-import  { type Partner, getDirectusClient  } from "~/lib/directus";
+import { type Partner, getDirectusClient } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
 import { getUserId, getUserName } from "~/utils/session.server";
 
@@ -47,23 +53,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   let locale = await i18next.getLocale(request);
   const directus = await getDirectusClient();
 
-  const useCasesResponse = await directus.items("use_cases").readByQuery({
-    fields: ["*"],
-    filter: {
-      language: locale,
-    },
-  });
+  const useCasesResponse = await directus.request(
+    readItems("use_cases", {
+      fields: ["*"],
+      filter: {
+        language: locale,
+      },
+    }),
+  );
 
-  const featuresResponse = await directus.items("features").readByQuery({
-    fields: ["*"],
-    filter: {
-      language: locale,
-    },
-  });
+  const featuresResponse = await directus.request(
+    readItems("features", {
+      fields: ["*"],
+      filter: {
+        language: locale,
+      },
+    }),
+  );
 
-  const partnersResponse = await directus.items("partners").readByQuery({
-    fields: ["*"],
-  });
+  const partnersResponse = await directus.request(
+    readItems("partners", {
+      fields: ["*"],
+    }),
+  );
 
   //* Get user Id from session
   const userId = await getUserId(request);
@@ -78,9 +90,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const latestDevices = await getLatestDevices();
 
   return data({
-    useCases: useCasesResponse.data,
-    features: featuresResponse.data,
-    partners: partnersResponse.data,
+    useCases: useCasesResponse,
+    features: featuresResponse,
+    partners: partnersResponse,
     stats: stats,
     header: { userId: userId, userName: userName },
     locale: locale,
@@ -104,7 +116,7 @@ export default function Index() {
       className="h-screen bg-white dark:bg-black"
       style={{
         scrollSnapType: "y mandatory",
-        overflowY: "auto"
+        overflowY: "auto",
       }}
     >
       <header className="z-10">
@@ -194,7 +206,7 @@ export default function Index() {
             </div>
             {isDesktop && (
               <div className="w-1/3 cursor-pointer">
-                <GlobeComponent latestDevices={latestDevices}/>
+                <GlobeComponent latestDevices={latestDevices} />
               </div>
             )}
           </div>

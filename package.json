@@ -27,7 +27,7 @@
   "dependencies": {
     "@conform-to/react": "^0.9.2",
     "@conform-to/zod": "^0.9.2",
-    "@directus/sdk": "^10.3.5",
+    "@directus/sdk": "^19.1.0",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.10.0",
     "@isaacs/express-prometheus-middleware": "^1.2.1",
