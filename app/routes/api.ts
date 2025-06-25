@@ -8,14 +8,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: "/",
       method: "GET",
     },
-    // {
-    //   path: "/stats",
-    //   method: "GET",
-    // },
-    // {
-    //   path: "/tags",
-    //   method: "GET",
-    // },
+    {
+      path: "/stats",
+      method: "GET",
+    },
+    {
+      path: "/tags",
+      method: "GET",
+    },
     // {
     //   path: `statistics/idw`,
     //   method: "GET",
