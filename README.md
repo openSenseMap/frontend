@@ -84,10 +84,6 @@ Logic should be implemented in corresponding services, that may be used by loade
 
 For example: User registration is possible from both the api and the frontend. The logic for it is implemented in `lib/user.service.ts` and it is being used by both `api.user.ts` (resource route) as well as `explore.register.tsx` (page route), preventing duplication of common logic while also providing the flexibility to adjust the outputs to the needs of the respective use case.
 
-##### Documenting an API Route
-
-The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotaions](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotations in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000). 
-
 ##### Documenting an API Route  
 
 The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotaions](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotations in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000).
