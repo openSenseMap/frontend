@@ -32,8 +32,6 @@ WORKDIR /myapp
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 ADD . .
 
-# RUN npm run db:generate
-# RUN npm run db:migrate
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
@@ -47,6 +45,9 @@ COPY --from=build /myapp/build /myapp/build
 # Not sure if we really need this or if we should move all our /public folder to /app/assets
 COPY --from=build /myapp/public /myapp/public
 
+COPY ./other/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 ADD . .
 
-CMD ["npm", "start"]
+ENTRYPOINT [ "./entrypoint.sh" ]
