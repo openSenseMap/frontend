@@ -71,18 +71,18 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: `users/register`,
       method: "POST",
     },
-    // {
-    //   path: `users/request-password-reset`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `users/password-reset`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `users/confirm-email`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/request-password-reset`,
+      method: "POST",
+    },
+    {
+      path: `users/password-reset`,
+      method: "POST",
+    },
+    {
+      path: `users/confirm-email`,
+      method: "POST",
+    },
     // {
     //   path: `users/sign-in`,
     //   method: "POST",
@@ -157,10 +157,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: `users/me`,
       method: "DELETE",
     },
-    // {
-    //   path: `users/me/resend-email-confirmation`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/me/resend-email-confirmation`,
+      method: "POST",
+    },
   ],
   // management: [
   //   {
