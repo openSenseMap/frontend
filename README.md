@@ -86,7 +86,7 @@ For example: User registration is possible from both the api and the frontend. T
 
 ##### Documenting an API Route  
 
-The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotations](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotations in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000).
+The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads the JSDoc-annotated source code in the api-routes and generates an openAPI(Swagger) specification and is rendered using [Swaggger UI](https://swagger.io/tools/swagger-ui/). The [JSDoc annotations](https://github.com/Surnet/swagger-jsdoc) is usually added before the loader or action function in the API Routes. The documentation will then be automatically generated from the JSDoc annotations in all the api routes. When testing the api during development do not forget to change the server to [Development Server](http://localhost:3000). To authorize a user you must provide the token obtained after sign-in. You can just copy and paste the token in the value field and then hit the authorize button. 
 
 ##### JSDoc Example
 
