@@ -2,6 +2,34 @@ import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
 import { getUserFromJwt } from "~/lib/jwt";
 import { getLatestMeasurements } from "~/lib/measurement-service.server";
 
+/**
+ * @openapi
+ * /boxes/{deviceId}/sensors:
+ *  get:
+ *    tags:
+ *      - Sensors
+ *    summary: Get the latest measurements of all sensors of the specified senseBox.
+ *    parameters:
+ *      - in: path
+ *        name: deviceId
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: the ID of the senseBox you are referring to
+ *      - in: query
+ *        name: count
+ *        required: false
+ *        schema:
+ *          type: integer
+ *          minimum: 1
+ *          maximum: 100
+ *        description: Number of measurements to be retrieved for every sensor
+ *    responses:
+ *       200:
+ *         description: Success
+ *         content:
+ */
+
 export const loader: LoaderFunction = async ({
   request,
   params,

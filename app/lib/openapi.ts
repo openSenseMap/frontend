@@ -9,7 +9,7 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "",
+      title: "openSenseMap API",
       version: "1.0.0",
       description: `## Documentation of the routes and methods to manage users, stations (also called boxes or senseBoxes), and measurements in the openSenseMap API. You can find the API running at [https://opensensemap.org/api/](https://opensensemap.org/api/).
 # Timestamps
