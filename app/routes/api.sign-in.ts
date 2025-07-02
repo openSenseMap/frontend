@@ -28,7 +28,7 @@ import { signIn } from "~/lib/user-service.server";
  *                 type: string
  *                 format: password
  *                 description: User's password
- *                 minLength: 1
+ *                 minLength: 8
  *                 example: mySecurePassword123
  *     responses:
  *       200:
