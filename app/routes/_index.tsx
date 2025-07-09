@@ -1,7 +1,13 @@
 import { useMediaQuery } from "@mantine/hooks";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import  { type LoaderFunctionArgs, data, Link, useLoaderData  } from "react-router";
+import {
+  type LoaderFunctionArgs,
+  data,
+  Link,
+  useLoaderData,
+} from "react-router";
 import Footer from "~/components/landing/footer";
 import { GlobeComponent } from "~/components/landing/globe.client";
 import Header from "~/components/landing/header/header";
@@ -12,7 +18,7 @@ import Partners from "~/components/landing/sections/partners";
 import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Stats from "~/components/landing/stats";
 import i18next from "~/i18next.server";
-import  { type Partner, getDirectusClient  } from "~/lib/directus";
+import { type Partner, getDirectusClient } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
 import { getUserId, getUserName } from "~/utils/session.server";
 
@@ -99,12 +105,25 @@ export default function Index() {
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  /**
+   * Stupid workaround for chromium and webkit that both render double
+   * scroll bars when using scrollSnapType.
+   * Simply setting overflow hidden on the html element fixes it and
+   * the rest of the pages stay untouched from this.
+   */
+  useEffect(() => {
+    document.documentElement.style.setProperty("overflow", "hidden");
+    return () => {
+      document.documentElement.style.removeProperty("overflow");
+    };
+  }, []);
+
   return (
     <div
-      className="h-screen bg-white dark:bg-black"
+      className="max-h-screen bg-white dark:bg-black"
       style={{
         scrollSnapType: "y mandatory",
-        overflowY: "auto"
+        overflowY: "auto",
       }}
     >
       <header className="z-10">
@@ -194,7 +213,7 @@ export default function Index() {
             </div>
             {isDesktop && (
               <div className="w-1/3 cursor-pointer">
-                <GlobeComponent latestDevices={latestDevices}/>
+                <GlobeComponent latestDevices={latestDevices} />
               </div>
             )}
           </div>
