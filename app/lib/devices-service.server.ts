@@ -5,20 +5,21 @@ import {
 import { verifyLogin } from '~/models/user.server'
 
 export interface BoxesQueryParams {
-	name?: string
+	name?: string 
 	limit?: string
-	date?: string
+	date?: string[]
 	phenomenon?: string
 	format?: 'json' | 'geojson'
 	grouptag?: string
 	model?: string
-	classify?: 'true' | 'false'
 	minimal?: 'true' | 'false'
 	full?: 'true' | 'false'
 	near?: string
 	maxDistance?: string
 	bbox?: string
 	exposure?: string
+	fromDate: any
+	toDate: any
 }
 
 /**

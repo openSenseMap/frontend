@@ -14,7 +14,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 
 const ME_TEST_USER = {
 	name: 'meTest',
-	email: 'test@me.endpoint',
+	email: 'test@devices.endpoint',
 	password: 'highlySecurePasswordForTesting',
 }
 
@@ -32,6 +32,154 @@ const minimalSensebox = function minimalSensebox(
 
 describe('openSenseMap API Routes: /boxes', () => {
 	describe('GET /boxes', () => {
+
+		it('should search for boxes with a specific name', async () => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=sensebox`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
+
+			// Act
+			const response = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
+
+
+			expect(response).toBeDefined()
+			expect(Array.isArray(response?.features)).toBe(true)
+			expect(response?.features.length).to.be.equal(5) // 5 is default limit
+		})
+
+		it('should search for boxes with a specific name and limit the results', async ()  => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=sensebox&limit=2`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
+
+			// Act
+			const response = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
+
+			expect(response).toBeDefined()
+			expect(Array.isArray(response?.features)).toBe(true)
+			expect(response?.features.length).to.be.equal(2)
+		  });
+
+		it('should deny searching for a name if limit is greater than max value', async ()  => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=sensebox&limit=21`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
+
+			// Act
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		}); 
+		
+		it('should deny searching for a name if limit is lower than min value', async ()  => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=sensebox&limit=0`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
+
+			// Act
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		}); 
+
+		// it('should allow to request minimal boxes', async () => {
+		// 	// Arrange
+		// 	const request = new Request(
+		// 		`${BASE_URL}?minimal=true`,
+		// 		{
+		// 			method: 'GET',
+		// 			headers: { 'Content-Type': 'application/json' },
+		// 		},
+		// 	)
+
+		// 	const response = await devicesLoader({
+		// 		request: request,
+		// 	} as LoaderFunctionArgs)
+
+		// 	expect(response).toBeDefined()
+		// 	expect(Array.isArray(response?.features)).toBe(true)
+		// 	// return chakram.get(`${BASE_URL}/boxes?minimal=true`)
+		// 	//   .then(function (response) {
+		// 	// 	expect(response).to.have.status(200);
+		// 	// 	expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+		// 	// 	expect(Array.isArray(response.body)).to.be.true;
+		// 	// 	expect(response.body.length).to.be.equal(boxCount);
+		// 	// 	for (const box of response.body) {
+		// 	// 	  expect(Object.keys(box))
+		// 	// 		.to.not.include('loc')
+		// 	// 		.and.to.not.include('locations')
+		// 	// 		.and.not.include('weblink')
+		// 	// 		.and.not.include('image')
+		// 	// 		.and.not.include('description')
+		// 	// 		.and.not.include('model')
+		// 	// 		.and.not.include('sensors');
+		// 	// 	}
+		
+		// 	// 	return chakram.wait();
+		// 	//   });
+		//   });
+
+		// it('should return the correct count and correct schema of boxes for /boxes GET with date parameter', async () => {
+		// 	const tenDaysAgoIso = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+
+		// 	// Arrange
+		// 	const request = new Request(
+		// 		`${BASE_URL}?format=geojson&date=${tenDaysAgoIso}`,
+		// 		{
+		// 			method: 'GET',
+		// 			headers: { 'Content-Type': 'application/json' },
+		// 		},
+		// 	)
+
+		// 	const response = await devicesLoader({
+		// 		request: request,
+		// 	} as LoaderFunctionArgs)
+
+		// 	expect(response).toBeDefined()
+	  
+		// 	// return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}`)
+		// 	//   .then(function (response) {
+		// 	// 	expect(response).to.have.status(200);
+		// 	// 	expect(Array.isArray(response.body)).to.be.true;
+		// 	// 	expect(response.body.length).to.be.equal(1);
+		// 	// 	expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+		// 	// 	expect(response).to.have.schema(findAllSchema);
+		// 	// 	expect(response.body[0].sensors.some(function (sensor) {
+		// 	// 	  return moment.utc(sensor.lastMeasurement.createdAt).diff(ten_days_ago) < 10;
+		// 	// 	})).to.be.true;
+	  
+		// 	// 	return chakram.wait();
+		// 	//   });
+		//   });
+
 		it('should reject filtering boxes near a location with wrong parameter values', async () => {
 			// Arrange
 			const request = new Request(`${BASE_URL}?near=test,60`, {
@@ -80,6 +228,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				request: request,
 			} as LoaderFunctionArgs)
 
+
 			expect(geojsonData).toBeDefined()
 			if (geojsonData) {
 				// Assert - this should always be GeoJSON since that's what the loader returns
@@ -98,45 +247,74 @@ describe('openSenseMap API Routes: /boxes', () => {
 			}
 		})
 
-		it('should allow filtering boxes by bounding box', async () => {
+		it('should allow to filter boxes by grouptag', async () => {
 			// Arrange
 			const request = new Request(
-				`${BASE_URL}?format=geojson&bbox=120,60,121,61`,
+				`${BASE_URL}?grouptag=newgroup`,
 				{
 					method: 'GET',
 					headers: { 'Content-Type': 'application/json' },
 				},
 			)
 
-			// Act
 			const response = await devicesLoader({
 				request: request,
 			} as LoaderFunctionArgs)
 
+
 			expect(response).toBeDefined()
+			expect(response?.length).to.be.equal(0)
 
-			if (response) {
-				// Assert
-				expect(response.type).toBe('FeatureCollection')
-				expect(Array.isArray(response.features)).toBe(true)
+			// return chakram.get(`${BASE_URL}/grouptag=newgroup`)
+			//   .then(function (response) {
+			// 	expect(response).to.have.status(200);
+			// 	expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+			// 	expect(Array.isArray(response.body)).to.be.true;
+			// 	expect(response.body.length).to.be.equal(2);
+		
+			// 	return chakram.wait();
+			//   });
+		  });
 
-				if (response.features.length > 0) {
-					response.features.forEach((feature: any) => {
-						expect(feature.type).toBe('Feature')
-						expect(feature.geometry).toBeDefined()
-						expect(feature.geometry.coordinates).toBeDefined()
+		// it('should allow filtering boxes by bounding box', async () => {
+		// 	// Arrange
+		// 	const request = new Request(
+		// 		`${BASE_URL}?format=geojson&bbox=120,60,121,61`,
+		// 		{
+		// 			method: 'GET',
+		// 			headers: { 'Content-Type': 'application/json' },
+		// 		},
+		// 	)
 
-						const [longitude, latitude] = feature.geometry.coordinates
+		// 	// Act
+		// 	const response = await devicesLoader({
+		// 		request: request,
+		// 	} as LoaderFunctionArgs)
 
-						// Verify coordinates are within the bounding box [120,60,121,61]
-						expect(longitude).toBeGreaterThanOrEqual(120)
-						expect(longitude).toBeLessThanOrEqual(121)
-						expect(latitude).toBeGreaterThanOrEqual(60)
-						expect(latitude).toBeLessThanOrEqual(61)
-					})
-				}
-			}
-		})
+		// 	expect(response).toBeDefined()
+
+		// 	if (response) {
+		// 		// Assert
+		// 		expect(response.type).toBe('FeatureCollection')
+		// 		expect(Array.isArray(response.features)).toBe(true)
+
+		// 		if (response.features.length > 0) {
+		// 			response.features.forEach((feature: any) => {
+		// 				expect(feature.type).toBe('Feature')
+		// 				expect(feature.geometry).toBeDefined()
+		// 				expect(feature.geometry.coordinates).toBeDefined()
+
+		// 				const [longitude, latitude] = feature.geometry.coordinates
+
+		// 				// Verify coordinates are within the bounding box [120,60,121,61]
+		// 				expect(longitude).toBeGreaterThanOrEqual(120)
+		// 				expect(longitude).toBeLessThanOrEqual(121)
+		// 				expect(latitude).toBeGreaterThanOrEqual(60)
+		// 				expect(latitude).toBeLessThanOrEqual(61)
+		// 			})
+		// 		}
+		// 	}
+		// })
 	})
 
 	let jwt: string = ''

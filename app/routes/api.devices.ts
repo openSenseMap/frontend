@@ -1,9 +1,12 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import {
 	createDevice,
+	findDevices,
+	FindDevicesOptions,
 	// deleteDevice,
 	getDevice,
 	getDevices,
+	getDevicesWithSensors,
 } from '~/models/device.server'
 import { ActionFunctionArgs } from 'react-router'
 import { getUserFromJwt } from '~/lib/jwt'
@@ -11,117 +14,483 @@ import {
 	deleteDevice,
 	type BoxesQueryParams,
 } from '~/lib/devices-service.server'
-import { Device, User } from '~/schema'
+import { Device, DeviceExposureType, User } from '~/schema'
+import { Point } from 'geojson'
 
+function fromToTimeParamsSanityCheck(fromDate: Date | null, toDate: Date | null) {
+	if ((fromDate && !toDate) || (toDate && !fromDate)) {
+	  throw json(
+		{ error: 'fromDate and toDate need to be specified simultaneously' },
+		{ status: 400 }
+	  );
+	}
+  
+	if (fromDate && toDate) {
+	  if (fromDate.getTime() > toDate.getTime()) {
+		throw json(
+		  { error: `Invalid time frame specified: fromDate (${fromDate.toISOString()}) is after toDate (${toDate.toISOString()})` },
+		  { status: 422 }
+		);
+	  }
+	}
+  }
+  
+  function parseAndValidateTimeParams(searchParams: URLSearchParams) {
+	const dateParams = searchParams.getAll('date');
+	
+	if (dateParams.length === 0) {
+	  return { fromDate: null, toDate: null };
+	}
+  
+	if (dateParams.length > 2) {
+	  throw json(
+		{ error: 'invalid number of dates for date parameter supplied' },
+		{ status: 422 }
+	  );
+	}
+  
+	const [fromDateStr, toDateStr] = dateParams;
+	
+	const fromDate = new Date(fromDateStr);
+	if (isNaN(fromDate.getTime())) {
+	  throw json(
+		{ error: `Invalid date format: ${fromDateStr}` },
+		{ status: 422 }
+	  );
+	}
+  
+	let toDate: Date;
+	
+	if (!toDateStr) {
+	  // If only one date provided, create a range of ±4 hours
+	  toDate = new Date(fromDate.getTime() + (4 * 60 * 60 * 1000)); // +4 hours
+	  const adjustedFromDate = new Date(fromDate.getTime() - (4 * 60 * 60 * 1000)); // -4 hours
+	  
+	  return { fromDate: adjustedFromDate, toDate };
+	} else {
+	  toDate = new Date(toDateStr);
+	  if (isNaN(toDate.getTime())) {
+		throw json(
+		  { error: `Invalid date format: ${toDateStr}` },
+		  { status: 422 }
+		);
+	  }
+	  
+	  fromToTimeParamsSanityCheck(fromDate, toDate);
+	  
+	  return { fromDate, toDate };
+	}
+  }
+
+/**
+ * @openapi
+ * /api/devices:
+ *   get:
+ *     tags:
+ *       - Devices
+ *     summary: Get devices with filtering options
+ *     description: Retrieves devices based on various filter criteria. Supports both JSON and GeoJSON formats.
+ *     parameters:
+ *       - name: format
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [json, geojson]
+ *           default: json
+ *         description: Response format
+ *       - name: minimal
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *           default: false
+ *         description: Return minimal device information
+ *       - name: full
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *           default: false
+ *         description: Return full device information
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 5
+ *         description: Maximum number of devices to return
+ *       - name: name
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Filter devices by name
+ *       - name: phenomenon
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Filter devices by phenomenon type
+ *       - name: fromDate
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter devices from this date
+ *         example: "2023-05-15T10:00:00Z"
+ *       - name: toDate
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter devices to this date
+ *         example: "2023-05-15T12:00:00Z"
+ *       - name: grouptag
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Filter devices by group tag
+ *       - name: exposure
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Filter devices by exposure type
+ *       - name: near
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           pattern: '^-?\d+\.?\d*,-?\d+\.?\d*$'
+ *         description: Find devices near coordinates (lat,lng)
+ *         example: "52.5200,13.4050"
+ *       - name: maxDistance
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: number
+ *           default: 1000
+ *         description: Maximum distance in meters when using 'near' parameter
+ *       - name: bbox
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           pattern: '^-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*$'
+ *         description: Bounding box coordinates (swLng,swLat,neLng,neLat)
+ *         example: "13.2,52.4,13.6,52.6"
+ *       - name: date
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Specific date filter (TODO - not implemented)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved devices
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Device'
+ *                 - $ref: '#/components/schemas/GeoJSONFeatureCollection'
+ *       400:
+ *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       422:
+ *         description: Invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               invalidFormat:
+ *                 summary: Invalid format parameter
+ *                 value:
+ *                   error: "Failed to fetch devices"
+ *               invalidLimit:
+ *                 summary: Invalid limit parameter
+ *                 value:
+ *                   error: "Limit must be at least 1"
+ *               exceedsLimit:
+ *                 summary: Limit exceeds maximum
+ *                 value:
+ *                   error: "Limit should not exceed 20"
+ *               invalidNear:
+ *                 summary: Invalid near parameter
+ *                 value:
+ *                   error: "Invalid 'near' parameter format. Expected: 'lat,lng'"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Failed to fetch devices"
+ *
+ * components:
+ *   schemas:
+ *     Device:
+ *       type: object
+ *       required:
+ *         - id
+ *         - latitude
+ *         - longitude
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique device identifier
+ *           example: "device-123"
+ *         name:
+ *           type: string
+ *           description: Device name
+ *           example: "Temperature Sensor A1"
+ *         latitude:
+ *           type: number
+ *           format: float
+ *           description: Device latitude coordinate
+ *           example: 52.5200
+ *         longitude:
+ *           type: number
+ *           format: float
+ *           description: Device longitude coordinate
+ *           example: 13.4050
+ *         phenomenon:
+ *           type: string
+ *           description: Type of phenomenon measured
+ *           example: "temperature"
+ *         grouptag:
+ *           type: string
+ *           description: Group tag for device categorization
+ *           example: "outdoor-sensors"
+ *         exposure:
+ *           type: string
+ *           description: Device exposure type
+ *           example: "outdoor"
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Device creation timestamp
+ *           example: "2023-05-15T10:00:00Z"
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Device last update timestamp
+ *           example: "2023-05-15T12:00:00Z"
+ *     
+ *     GeoJSONFeatureCollection:
+ *       type: object
+ *       required:
+ *         - type
+ *         - features
+ *       properties:
+ *         type:
+ *           type: string
+ *           enum: [FeatureCollection]
+ *           example: "FeatureCollection"
+ *         features:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/GeoJSONFeature'
+ *     
+ *     GeoJSONFeature:
+ *       type: object
+ *       required:
+ *         - type
+ *         - geometry
+ *         - properties
+ *       properties:
+ *         type:
+ *           type: string
+ *           enum: [Feature]
+ *           example: "Feature"
+ *         geometry:
+ *           $ref: '#/components/schemas/GeoJSONPoint'
+ *         properties:
+ *           $ref: '#/components/schemas/Device'
+ *     
+ *     GeoJSONPoint:
+ *       type: object
+ *       required:
+ *         - type
+ *         - coordinates
+ *       properties:
+ *         type:
+ *           type: string
+ *           enum: [Point]
+ *           example: "Point"
+ *         coordinates:
+ *           type: array
+ *           items:
+ *             type: number
+ *           minItems: 2
+ *           maxItems: 2
+ *           description: Longitude and latitude coordinates
+ *           example: [13.4050, 52.5200]
+ *     
+ *     ErrorResponse:
+ *       type: object
+ *       required:
+ *         - error
+ *       properties:
+ *         error:
+ *           type: string
+ *           description: Error message
+ *           example: "Failed to fetch devices"
+ */
 export async function loader({ request }: LoaderFunctionArgs) {
-	const url = new URL(request.url)
-	const searchParams = Object.fromEntries(url.searchParams) as BoxesQueryParams
-	const validFormats: BoxesQueryParams['format'] = 'geojson' // TODO: support json
+	const url = new URL(request.url);
+	const max_limit = 20;
+	const { fromDate, toDate } = parseAndValidateTimeParams(url.searchParams);
+
+	const searchParams = {
+		format: 'json',
+		minimal: 'false',
+		full: 'false',
+		limit: '5',
+		...Object.fromEntries(url.searchParams),
+		...(fromDate && { fromDate: fromDate.toISOString() }),
+		...(toDate && { toDate: toDate.toISOString() })
+	} as BoxesQueryParams;
+
+	const validFormats: BoxesQueryParams['format'][] = ['geojson', 'json'];
 
 	if (searchParams.format) {
 		if (!validFormats.includes(searchParams.format)) {
-			console.error('Error in loader:', 'invalid format parameter')
-			throw json({ error: 'Failed to fetch devices' }, { status: 422 })
+			console.error('Error in loader:', 'invalid format parameter');
+			throw json({ error: 'Failed to fetch devices' }, { status: 422 });
 		}
-		if (searchParams.format == 'geojson') {
+
+		if (searchParams.format === 'json') {
 			try {
-				let result: GeoJSON.FeatureCollection
+				if (searchParams.date) {
+					// TODO: handle date param
+					// let result = await getDevicesWithSensorsJson()
+				} else {
+					const findDevicesOpts: FindDevicesOptions = {
+						minimal: searchParams.minimal,
+						limit: searchParams.limit ? parseInt(searchParams.limit) : 5,
+						name: searchParams.name,
+						phenomenon: searchParams.phenomenon,
+						fromDate: searchParams.fromDate ? new Date(searchParams.fromDate) : undefined,
+						toDate: searchParams.toDate ? new Date(searchParams.toDate) : undefined,
+						grouptag: searchParams.grouptag ? [searchParams.grouptag] : undefined,
+						exposure: searchParams.exposure ? [searchParams.exposure as DeviceExposureType] : undefined,
+					};
 
-				result = await getDevices()
+					if (findDevicesOpts.limit) {
+						if(findDevicesOpts.limit < 1){
+							throw json({ error: 'Limit must be at least 1' }, { status: 422 });
+						}
+						else if (findDevicesOpts.limit > max_limit) {
+							throw json({ error: 'Limit should not exceed 20' }, { status: 422 });
+						} 
+					}
+					if (searchParams.near) {
+						const nearCoords = searchParams.near.split(',');
+						if (
+							nearCoords.length !== 2 ||
+							isNaN(Number(nearCoords[0])) ||
+							isNaN(Number(nearCoords[1]))
+						) {
+							throw json(
+								{ error: "Invalid 'near' parameter format. Expected: 'lat,lng'" },
+								{ status: 422 }
+							);
+						}
 
-				if (searchParams.bbox && result) {
-					const bboxCoords = searchParams.bbox
-						.split(',')
-						.map((coord) => Number(coord))
-					const [west, south, east, north] = bboxCoords // [minLon, minLat, maxLon, maxLat]
-					
-					if (
-						bboxCoords.length !== 4 ||
-						bboxCoords.some((coord) => isNaN(Number(coord)))
-					) {
-						throw json(
-							{
-								error:
-									"Invalid 'bbox' parameter format. Expected: 'west,south,east,north'",
-							},
-							{ status: 422 },
-						)
+						const [nearLat, nearLng] = nearCoords.map(Number);
+						findDevicesOpts.near = [nearLat, nearLng];
+						findDevicesOpts.maxDistance = searchParams.maxDistance 
+							? Number(searchParams.maxDistance) 
+							: 1000; 
 					}
 
-					if (
-						result &&
-						typeof result === 'object' &&
-						'type' in result &&
-						result.type === 'FeatureCollection'
-					) {
-						const filteredFeatures = result.features.filter((feature: any) => {
-							if (!feature.geometry || !feature.geometry.coordinates) {
-								return false
+					if (searchParams.bbox) {
+						try {
+							const bboxCoords = searchParams.bbox.split(',').map(Number);
+							if (bboxCoords.length === 4) {
+								const [swLng, swLat, neLng, neLat] = bboxCoords;
+								findDevicesOpts.bbox = {
+									coordinates: [[[swLat, swLng], [neLat, swLng], [neLat, neLng], [swLat, neLng], [swLat, swLng]]]
+								};
 							}
+						} catch (error) {
+							console.warn('Invalid bbox parameter:', searchParams.bbox);
+						}
+					}
 
-							const [longitude, latitude] = feature.geometry.coordinates
+					const result = await findDevices(findDevicesOpts);
 
-							const isInBounds =
-								longitude >= west &&
-								longitude <= east &&
-								latitude >= south &&
-								latitude <= north
+					return result;
+				}
+			} catch (error) {
+				console.error('Error in loader:', error);
+				throw json({ error: 'Failed to fetch devices' }, { status: 500 });
+			}
+		}
+		
+		if (searchParams.format === 'geojson') {
+			try {
+				const findDevicesOpts: FindDevicesOptions = {
+					minimal: searchParams.minimal,
+					limit: searchParams.limit ? parseInt(searchParams.limit) : 5,
+					name: searchParams.name,
+				};
 
-							return isInBounds
-						})
-
-						result = {
-							type: 'FeatureCollection',
-							features: filteredFeatures,
-						} as GeoJSON.FeatureCollection
+				if(!findDevicesOpts.limit){
+					throw json({ error: 'Limit must be at least 1' }, { status: 422 });
+				}
+				if (findDevicesOpts.limit) {
+					if(findDevicesOpts.limit < 1){
+						throw json({ error: 'Limit must be at least 1' }, { status: 422 });
+					}
+					else if (findDevicesOpts.limit > max_limit) {
+						throw json({ error: 'Limit should not exceed 20' }, { status: 422 });
 					} 
-					// else if (Array.isArray(result)) {
-					// 	result = result.filter((device: any) => {
-					// 		if (device.geometry && device.geometry.coordinates) {
-					// 			const [longitude, latitude] = device.geometry.coordinates
-					// 			return (
-					// 				longitude >= west &&
-					// 				longitude <= east &&
-					// 				latitude >= south &&
-					// 				latitude <= north
-					// 			)
-					// 		}
-
-					// 		if (device.longitude && device.latitude) {
-					// 			return (
-					// 				device.longitude >= west &&
-					// 				device.longitude <= east &&
-					// 				device.latitude >= south &&
-					// 				device.latitude <= north
-					// 			)
-					// 		}
-
-					// 		return false
-					// 	})
-					// }
 				}
 
-				return result
+				const devices = await findDevices(findDevicesOpts);
+				
+				const geojson = {
+					type: 'FeatureCollection',
+					features: devices.map((device: Device) => ({
+						type: 'Feature',
+						geometry: {
+							type: 'Point',
+							coordinates: [device.longitude, device.latitude]
+						},
+						properties: {
+							...device
+						}
+					}))
+				};
+
+				return geojson;
 			} catch (error) {
-				console.error('Error in loader:', error)
-				throw json({ error: 'Failed to fetch devices' }, { status: 500 })
+				console.error('Error in loader:', error);
+				throw json({ error: 'Failed to fetch devices' }, { status: 500 });
 			}
 		}
 	}
 
-	if (searchParams.near) {
-		const nearCoords = searchParams.near.split(',')
-		if (
-			nearCoords.length !== 2 ||
-			isNaN(Number(nearCoords[0])) ||
-			isNaN(Number(nearCoords[1]))
-		) {
-			throw json(
-				{ error: "Invalid 'near' parameter format. Expected: 'lng,lat'" },
-				{ status: 422 },
-			)
-		}
-	}
+	// Default fallback
+	throw json({ error: 'Invalid request' }, { status: 400 });
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
