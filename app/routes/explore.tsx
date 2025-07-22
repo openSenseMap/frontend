@@ -38,7 +38,7 @@ import { getCSV, getJSON, getTXT } from "~/utils/file-exports";
 import { getUser, getUserSession } from "~/utils/session.server";
 
 export async function action({ request }: { request: Request }) {
-  const deviceLimit = 50;
+  const deviceLimit = 100;
   const sensorIds: Array<string> = [];
   const measurements: Array<object> = [];
   const formdata = await request.formData();
