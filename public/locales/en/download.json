@@ -3,7 +3,7 @@
     "downloadOptions": "Download Options",
     "downloadDescription": "Choose your preferred format and select which fields to include in the download.",
     "devices": "Devices",
-    "error":"Too many devices selected. If you are looking for bulk data, please consider visiting our archive.",
+    "error":"Too many devices selected. Zoom in to select less devices. If you are looking for bulk data, please consider visiting our archive.",
     "selected": "selected",
     "format": "Format",
     "toast": "✔️ Download has started! Please Wait...",

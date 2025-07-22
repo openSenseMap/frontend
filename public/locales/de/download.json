@@ -3,7 +3,7 @@
     "downloadOptions": "Download-Optionen",
     "downloadDescription": "Wählen Sie Ihr bevorzugtes Format und die Felder, die im Download enthalten sein sollen.",
     "devices": "Geräte",
-    "error":"Zu viele Geräte ausgewählt. Wenn Sie auf der Suche nach Massendaten sind, sollten Sie unser Archiv besuchen.",
+    "error":"Zu viele Geräte ausgewählt. Vergrößern Sie die Ansicht, um weniger Geräte auszuwählen. Wenn Sie nach Massendaten suchen, besuchen Sie bitte unser Archiv.",
     "selected": "ausgewählt",
     "format": "Format",
     "toast": "✔️ Der Download hat begonnen. Bitte warten...",
