@@ -1,6 +1,5 @@
-import { getDevice, getDeviceWithoutSensors } from "~/models/device.server";
+import { getDeviceWithoutSensors } from "~/models/device.server";
 import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
-import { type Device } from "~/schema";
 
 /**
  *
@@ -10,7 +9,7 @@ import { type Device } from "~/schema";
  */
 export const getLatestMeasurements = async (
   boxId: string,
-  sensorId: number | undefined,
+  sensorId: string | undefined,
   count: number | undefined,
 ): Promise<any | null> => {
   const device = await getDeviceWithoutSensors({ id: boxId });
@@ -18,6 +17,7 @@ export const getLatestMeasurements = async (
 
   const sensorsWithMeasurements = await getSensorsWithLastMeasurement(
     device.id,
+    sensorId,
     count,
   );
   (device as any).sensors = sensorsWithMeasurements;

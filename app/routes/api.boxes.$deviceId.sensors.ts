@@ -1,5 +1,4 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getUserFromJwt } from "~/lib/jwt";
 import { getLatestMeasurements } from "~/lib/measurement-service.server";
 
 /**
@@ -35,23 +34,6 @@ export const loader: LoaderFunction = async ({
   params,
 }: LoaderFunctionArgs): Promise<Response> => {
   try {
-    const jwtResponse = await getUserFromJwt(request);
-
-    if (typeof jwtResponse === "string")
-      return Response.json(
-        {
-          code: "Forbidden",
-          message:
-            "Invalid JWT authorization. Please sign in to obtain new JWT.",
-        },
-        {
-          status: 403,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
-
     const deviceId = params.deviceId;
     if (deviceId === undefined)
       return Response.json(

@@ -1,6 +1,5 @@
 import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
-import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
@@ -43,7 +42,6 @@ const DEVICE_SENSOR_BOX = {
 };
 
 describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
-  let jwt: string = "";
   let deviceId: string = "";
 
   beforeAll(async () => {
@@ -53,8 +51,6 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       DEVICE_SENSORS_USER.password,
       "en_US",
     );
-    const { token: t } = await createToken(user as User);
-    jwt = t;
 
     const device = await createDevice(DEVICE_SENSOR_BOX, (user as User).id);
     deviceId = device.id;
@@ -65,7 +61,6 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       // Arrange
       const request = new Request(`${BASE_URL}/boxes/${deviceId}/sensors`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${jwt}` },
       });
 
       // Act
@@ -88,7 +83,7 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/sensors?count=3`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act

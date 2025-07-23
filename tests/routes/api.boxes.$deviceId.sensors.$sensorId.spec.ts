@@ -1,6 +1,5 @@
-import { type LoaderFunctionArgs } from "react-router";
+import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
-import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
 import { getSensors } from "~/models/sensor.server";
@@ -44,7 +43,6 @@ const DEVICE_SENSOR_ID_BOX = {
 };
 
 describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
-  let jwt: string = "";
   let device: Device;
   let deviceId: string = "";
   let sensors: Sensor[] = [];
@@ -56,8 +54,6 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       DEVICE_SENSORS_ID_USER.password,
       "en_US",
     );
-    const { token: t } = await createToken(user as User);
-    jwt = t;
 
     device = await createDevice(DEVICE_SENSOR_ID_BOX, (user as User).id);
     deviceId = device.id;
@@ -69,12 +65,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/data/${sensors[0].id}`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -95,12 +95,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?format=csv&download=true`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const text = await response?.text();
@@ -118,12 +122,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -158,12 +166,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
 
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?from-date=${future1.toISOString()}&to-date=${future2.toISOString()}`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -180,12 +192,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?outliers=mark`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -209,12 +225,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/data/${sensors[1].id}?outliers=replace`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -238,12 +258,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/sensors/${sensors[0].id}`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs); // Assuming a separate loader for single sensor
       const response = dataFunctionValue as Response;
       const body = await response?.json();
@@ -253,8 +277,6 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       expect(response.headers.get("content-type")).toBe(
         "application/json; charset=utf-8",
       );
-      // If you have a schema check: expect(body).toMatchSchema(sensorSchema);
-      // For now, just expect the body has the expected shape
       expect(body).toHaveProperty("_id");
     });
 
@@ -262,12 +284,16 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       // Arrange
       const request = new Request(
         `${BASE_URL}/boxes/${deviceId}/sensors/${sensors[0].id}?onlyValue=true`,
-        { method: "GET", headers: { Authorization: `Bearer ${jwt}` } },
+        { method: "GET" },
       );
 
       // Act
       const dataFunctionValue = await loader({
         request,
+        params: {
+          deviceId: `${deviceId}`,
+          sensorId: `${sensors[0].id}`,
+        } as Params<string>,
       } as LoaderFunctionArgs);
       const response = dataFunctionValue as Response;
       const body = await response?.json();

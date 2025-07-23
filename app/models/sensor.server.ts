@@ -70,27 +70,50 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
 }
 
 // LATERAL JOIN to get latest measurement for sensors belonging to a specific device, including device name
-export function getSensorsWithLastMeasurement(
+export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
+  sensorId: Sensor["id"] | undefined,
   count: number = 1,
 ) {
-  const result = drizzleClient.execute(
-    sql`SELECT s.*, d.name AS device_name, measure.*
-    FROM sensor s
-    JOIN device d ON s.device_id = d.id
-    LEFT JOIN LATERAL (
-      SELECT * FROM measurement m
-      WHERE m.sensor_id = s.id
-      ORDER BY m.time DESC
-      LIMIT ${count}
-    ) AS measure ON true
-    WHERE s.device_id = ${deviceId};`,
+  const result = await drizzleClient.execute(
+    sql`SELECT 
+        s.id,
+        s.title,
+        s.unit,
+        s.sensor_type,
+        json_agg(
+          json_build_object(
+            'value', measure.value,
+            'createdAt', measure.time
+          )
+        ) FILTER (
+          WHERE measure.value IS NOT NULL AND measure.time IS NOT NULL
+        ) AS "lastMeasurements"
+      FROM sensor s
+      JOIN device d ON s.device_id = d.id
+      LEFT JOIN LATERAL (
+        SELECT * FROM measurement m
+        WHERE m.sensor_id = s.id
+        ORDER BY m.time DESC
+        LIMIT ${count}
+      ) AS measure ON true
+      WHERE s.device_id = ${deviceId}
+      GROUP BY s.id;`,
   );
 
-  return result as unknown as SensorWithLatestMeasurement[];
+  const cast = [...result].map((r) => ({ ...r, lastMeasurement: null })) as any;
+  if (cast["lastMeasurements"] !== undefined)
+    cast["lastMeasurement"] =
+      cast["lastMeasurements"]["measurements"][0] ?? null;
+  if (count === 1) delete cast["lastMeasurements"];
+
+  if (sensorId !== undefined) return cast as SensorWithLatestMeasurement[];
+  else
+    return cast.filter(
+      (c: any) => c._id === sensorId,
+    ) as SensorWithLatestMeasurement;
 }
 
-//if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
 export async function registerSensor(newSensor: Sensor) {
   const insertedSensor = await drizzleClient
     .insert(sensor)
