@@ -107,10 +107,10 @@ export async function getSensorsWithLastMeasurement(
       cast["lastMeasurements"]["measurements"][0] ?? null;
   if (count === 1) delete cast["lastMeasurements"];
 
-  if (sensorId !== undefined) return cast as SensorWithLatestMeasurement[];
+  if (sensorId === undefined) return cast as SensorWithLatestMeasurement[];
   else
-    return cast.filter(
-      (c: any) => c._id === sensorId,
+    return cast.find(
+      (c: any) => c.id === sensorId,
     ) as SensorWithLatestMeasurement;
 }
 

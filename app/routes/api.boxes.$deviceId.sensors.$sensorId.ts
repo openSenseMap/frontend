@@ -36,12 +36,38 @@ export const loader: LoaderFunction = async ({
         },
       );
 
+    const searchParams = new URL(request.url).searchParams;
+    const onlyValue =
+      (searchParams.get("onlyValue")?.toLowerCase() ?? "") === "true";
+    if (sensorId === undefined && onlyValue)
+      return Response.json(
+        {
+          code: "Bad Request",
+          message: "onlyValue can only be used when a sensor id is specified",
+        },
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+          },
+        },
+      );
+
     const meas = await getLatestMeasurements(deviceId, sensorId, undefined);
 
-    return Response.json(meas, {
-      status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-    });
+    if (onlyValue)
+      return Response.json(meas.lastMeasurement.value, {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      });
+
+    return Response.json(
+      { ...meas, _id: meas.id }, // for legacy purposes
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      },
+    );
   } catch (err) {
     console.warn(err);
     return Response.json(

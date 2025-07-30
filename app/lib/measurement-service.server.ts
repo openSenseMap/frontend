@@ -20,7 +20,8 @@ export const getLatestMeasurements = async (
     sensorId,
     count,
   );
-  (device as any).sensors = sensorsWithMeasurements;
+  if (sensorId !== undefined) return sensorsWithMeasurements; // single sensor, no need for having info about device
 
+  (device as any).sensors = sensorsWithMeasurements;
   return device;
 };
