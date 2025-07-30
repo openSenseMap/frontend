@@ -110,7 +110,9 @@ describe("openSenseMap API Routes: /boxes/:deviceId/sensors/:sensorId", () => {
       expect(response.headers.get("content-type")).toBe(
         "application/json; charset=utf-8",
       );
-      expect(typeof body).toBe("number");
+
+      if (isNaN(Number.parseFloat(body))) expect(body).toBeNull();
+      else expect(typeof body).toBe("number");
     });
   });
 

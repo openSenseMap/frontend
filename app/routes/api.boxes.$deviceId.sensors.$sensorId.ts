@@ -56,7 +56,7 @@ export const loader: LoaderFunction = async ({
     const meas = await getLatestMeasurements(deviceId, sensorId, undefined);
 
     if (onlyValue)
-      return Response.json(meas.lastMeasurement.value, {
+      return Response.json(meas["lastMeasurement"]?.value ?? null, {
         status: 200,
         headers: { "Content-Type": "application/json; charset=utf-8" },
       });

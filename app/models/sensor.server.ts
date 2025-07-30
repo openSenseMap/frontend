@@ -101,11 +101,17 @@ export async function getSensorsWithLastMeasurement(
       GROUP BY s.id;`,
   );
 
-  const cast = [...result].map((r) => ({ ...r, lastMeasurement: null })) as any;
-  if (cast["lastMeasurements"] !== undefined)
-    cast["lastMeasurement"] =
-      cast["lastMeasurements"]["measurements"][0] ?? null;
-  if (count === 1) delete cast["lastMeasurements"];
+  const cast = [...result].map((r) => {
+    if (r["lastMeasurements"] !== null) {
+      const ret = {
+        ...r,
+        lastMeasurement:
+          (r as any)["lastMeasurements"]["measurements"][0] ?? null,
+      } as any;
+      if (count === 1) delete ret["lastMeasurements"];
+      return ret;
+    } else return { ...r, lastMeasurements: [] } as any;
+  }) as any;
 
   if (sensorId === undefined) return cast as SensorWithLatestMeasurement[];
   else
