@@ -69,10 +69,16 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
   });
 }
 
-// LATERAL JOIN to get latest measurement for sensors belonging to a specific device, including device name
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
-  sensorId: Sensor["id"] | undefined,
+): Promise<SensorWithLatestMeasurement[]>;
+export async function getSensorsWithLastMeasurement(
+  deviceId: Sensor["deviceId"],
+  sensorId: Sensor["id"],
+): Promise<SensorWithLatestMeasurement>;
+export async function getSensorsWithLastMeasurement(
+  deviceId: Sensor["deviceId"],
+  sensorId: Sensor["id"] | undefined = undefined,
   count: number = 1,
 ) {
   const result = await drizzleClient.execute(
