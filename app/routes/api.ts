@@ -8,14 +8,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: "/",
       method: "GET",
     },
-    // {
-    //   path: "/stats",
-    //   method: "GET",
-    // },
-    // {
-    //   path: "/tags",
-    //   method: "GET",
-    // },
+    {
+      path: "/stats",
+      method: "GET",
+    },
+    {
+      path: "/tags",
+      method: "GET",
+    },
     // {
     //   path: `statistics/idw`,
     //   method: "GET",
@@ -39,14 +39,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId`,
     //   method: "GET",
     // },
-    // {
-    //   path: `boxes/:boxId/sensors`,
-    //   method: "GET",
-    // },
-    // {
-    //   path: `boxes/:boxId/sensors/:sensorId`,
-    //   method: "GET",
-    // },
+    {
+      path: `boxes/:boxId/sensors`,
+      method: "GET",
+    },
+    {
+      path: `boxes/:boxId/sensors/:sensorId`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/:boxId/data/:sensorId`,
     //   method: "GET",
@@ -71,28 +71,28 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: `users/register`,
       method: "POST",
     },
-    // {
-    //   path: `users/request-password-reset`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `users/password-reset`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `users/confirm-email`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `users/sign-in`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/request-password-reset`,
+      method: "POST",
+    },
+    {
+      path: `users/password-reset`,
+      method: "POST",
+    },
+    {
+      path: `users/confirm-email`,
+      method: "POST",
+    },
+    {
+      path: `users/sign-in`,
+      method: "POST",
+    },
   ],
   auth: [
-    // {
-    //   path: `users/refresh-auth`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/refresh-auth`,
+      method: "POST",
+    },
     {
       path: `users/me`,
       method: "GET",
@@ -101,14 +101,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
       path: `users/me`,
       method: "PUT",
     },
-    // {
-    //   path: `users/me/boxes`,
-    //   method: "GET",
-    // },
-    // {
-    //   path: `users/me/boxes/:boxId`,
-    //   method: "GET",
-    // },
+    {
+      path: `users/me/boxes`,
+      method: "GET",
+    },
+    {
+      path: `users/me/boxes/:boxId`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/:boxId/script`,
     //   method: "GET",
@@ -149,18 +149,18 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId/:sensorId/measurements`,
     //   method: "DELETE",
     // },
-    // {
-    //   path: `users/sign-out`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/sign-out`,
+      method: "POST",
+    },
     {
       path: `users/me`,
       method: "DELETE",
     },
-    // {
-    //   path: `users/me/resend-email-confirmation`,
-    //   method: "POST",
-    // },
+    {
+      path: `users/me/resend-email-confirmation`,
+      method: "POST",
+    },
   ],
   // management: [
   //   {

@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 import { createProfile } from "./profile.server";
 import { drizzleClient } from "~/db.server";
 import {
@@ -54,13 +55,14 @@ export const updateUserEmail = (
   userToUpdate: User,
   newEmail: User["email"],
 ) => {
-  // TODO use email confirmation before changing the email over to the new one
-  // return drizzleClient
-  //   .update(user)
-  //   .set({
-  //     email: newEmail,
-  //   })
-  //   .where(eq(user.id, userToUpdate.id));
+  return drizzleClient
+    .update(user)
+    .set({
+      unconfirmedEmail: newEmail,
+      emailConfirmationToken: uuidv4(),
+    })
+    .where(eq(user.id, userToUpdate.id));
+  // TODO send out email for confirmation
 };
 
 export async function updateUserName(
@@ -107,7 +109,7 @@ export async function getUsers() {
   return drizzleClient.query.user.findMany();
 }
 
-const preparePasswordHash = function preparePasswordHash(
+export const preparePasswordHash = function preparePasswordHash(
   plaintextPassword: string,
 ) {
   // first round: hash plaintextPassword with sha512
@@ -134,6 +136,7 @@ export async function createUser(
       name,
       email,
       language,
+      unconfirmedEmail: email,
     })
     .returning();
 

@@ -31,6 +31,8 @@ const jwtVerifyOptions = {
   issuer: JWT_ISSUER,
 };
 
+const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+
 /**
  *
  * @param user
@@ -48,7 +50,6 @@ export const createToken = (
   invariant(typeof JWT_SECRET === "string");
 
   invariant(typeof REFRESH_TOKEN_VALIDITY_MS === "string");
-
   const payload = { role: user.role };
   const signOptions = Object.assign(
     { subject: user.email, jwtid: uuidv4() },
@@ -101,6 +102,14 @@ export const revokeToken = async (user: User, jwtString: string) => {
     });
 };
 
+export const revokeRefreshToken = async (refreshToken: string) => {
+  await drizzleClient.insert(tokenRevocation).values({
+    hash: refreshToken,
+    token: "",
+    expiresAt: new Date(Date.now() + ONE_DAY_IN_MS * 7),
+  });
+};
+
 /**
  *
  * @param r
@@ -124,7 +133,7 @@ export const getUserFromJwt = async (
   try {
     decodedJwt = await decodeJwtString(jwtString, JWT_SECRET, {
       ...jwtVerifyOptions,
-      ignoreExpiration: r.url === "/users/refresh-auth" ? true : false, // ignore expiration for refresh endpoint
+      ignoreExpiration: r.url.endsWith("/users/refresh-auth"), // ignore expiration for refresh endpoint
     });
   } catch (err: any) {
     if (typeof err === "string") return err as "verification_error";
@@ -214,11 +223,28 @@ const isTokenRevoked = async (token: JwtPayload, tokenString: string) => {
   return false;
 };
 
-const hashJwt = (jwt: string) => {
+export const hashJwt = (jwt: string) => {
   invariant(typeof REFRESH_TOKEN_ALGORITHM === "string");
   invariant(typeof REFRESH_TOKEN_SECRET === "string");
 
   return createHmac(REFRESH_TOKEN_ALGORITHM, REFRESH_TOKEN_SECRET)
     .update(jwt)
     .digest("base64");
+};
+
+export const refreshJwt = async (
+  u: User,
+  refreshToken: string,
+): Promise<{ token: string; refreshToken: string } | null> => {
+  // We have to check if the refresh token actually belongs to the user
+  const userForToken = await drizzleClient.query.refreshToken.findFirst({
+    where: (r, { eq }) => eq(r.token, refreshToken),
+    with: {
+      user: true,
+    },
+  });
+  if (userForToken == undefined || userForToken.userId !== u.id) return null;
+
+  await revokeRefreshToken(refreshToken);
+  return await createToken(u);
 };
