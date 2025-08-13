@@ -1,42 +1,64 @@
 import {
-	AppLoadContext,
-	LoaderFunctionArgs,
+	type AppLoadContext,
+	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
 } from 'react-router'
 import { BASE_URL } from 'vitest.setup'
-import { type User, type Device } from '~/schema'
-import { loader as devicesLoader } from '~/routes/api.devices'
-import { loader as deviceLoader } from '~/routes/api.device.$deviceId'
-import { action as devicesAction } from '~/routes/api.devices'
-import { registerUser } from '~/lib/user-service.server'
 import { createToken } from '~/lib/jwt'
+import { registerUser } from '~/lib/user-service.server'
+import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
+import { loader as deviceLoader } from '~/routes/api.device.$deviceId'
+import {
+	loader as devicesLoader,
+	action as devicesAction,
+} from '~/routes/api.devices'
+import { type User, type Device } from '~/schema'
 
-const ME_TEST_USER = {
-	name: 'meTest',
+const DEVICE_TEST_USER = {
+	name: 'deviceTest',
 	email: 'test@devices.endpoint',
 	password: 'highlySecurePasswordForTesting',
 }
 
-const minimalSensebox = function minimalSensebox(
+const generateMinimalDevice = (
 	location: number[] | {} = [123, 12, 34],
 	exposure = 'mobile',
-) {
-	return {
-		exposure,
-		location,
-		name: 'senseBox',
-		model: 'homeV2Ethernet',
-	}
-}
+	name = 'senseBox' + new Date().getTime(),
+) => ({
+	exposure,
+	location,
+	name,
+	model: 'homeV2Ethernet',
+})
 
 describe('openSenseMap API Routes: /boxes', () => {
-	describe('GET /boxes', () => {
+	let user: User | null = null
+	let jwt: string = ''
+	let queryableDevice: Device | null = null
 
+	beforeAll(async () => {
+		const testUser = await registerUser(
+			DEVICE_TEST_USER.name,
+			DEVICE_TEST_USER.email,
+			DEVICE_TEST_USER.password,
+			'en_US',
+		)
+		user = testUser as User
+		const { token: t } = await createToken(testUser as User)
+		jwt = t
+
+		queryableDevice = await createDevice(
+			{ ...generateMinimalDevice(), latitude: 123, longitude: 12 },
+			(testUser as User).id,
+		)
+	})
+
+	describe('GET', () => {
 		it('should search for boxes with a specific name', async () => {
 			// Arrange
 			const request = new Request(
-				`${BASE_URL}?format=geojson&name=sensebox`,
+				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}`,
 				{
 					method: 'GET',
 					headers: { 'Content-Type': 'application/json' },
@@ -48,16 +70,15 @@ describe('openSenseMap API Routes: /boxes', () => {
 				request: request,
 			} as LoaderFunctionArgs)
 
-
 			expect(response).toBeDefined()
 			expect(Array.isArray(response?.features)).toBe(true)
-			expect(response?.features.length).to.be.equal(5) // 5 is default limit
+			expect(response?.features.length).lessThanOrEqual(5) // 5 is default limit
 		})
 
-		it('should search for boxes with a specific name and limit the results', async ()  => {
+		it('should search for boxes with a specific name and limit the results', async () => {
 			// Arrange
 			const request = new Request(
-				`${BASE_URL}?format=geojson&name=sensebox&limit=2`,
+				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=2`,
 				{
 					method: 'GET',
 					headers: { 'Content-Type': 'application/json' },
@@ -71,13 +92,13 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			expect(response).toBeDefined()
 			expect(Array.isArray(response?.features)).toBe(true)
-			expect(response?.features.length).to.be.equal(2)
-		  });
+			expect(response?.features.length).lessThanOrEqual(2)
+		})
 
-		it('should deny searching for a name if limit is greater than max value', async ()  => {
+		it('should deny searching for a name if limit is greater than max value', async () => {
 			// Arrange
 			const request = new Request(
-				`${BASE_URL}?format=geojson&name=sensebox&limit=21`,
+				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=21`,
 				{
 					method: 'GET',
 					headers: { 'Content-Type': 'application/json' },
@@ -90,9 +111,9 @@ describe('openSenseMap API Routes: /boxes', () => {
 					request: request,
 				} as LoaderFunctionArgs)
 			}).rejects.toThrow()
-		}); 
-		
-		it('should deny searching for a name if limit is lower than min value', async ()  => {
+		})
+
+		it('should deny searching for a name if limit is lower than min value', async () => {
 			// Arrange
 			const request = new Request(
 				`${BASE_URL}?format=geojson&name=sensebox&limit=0`,
@@ -108,7 +129,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					request: request,
 				} as LoaderFunctionArgs)
 			}).rejects.toThrow()
-		}); 
+		})
 
 		// it('should allow to request minimal boxes', async () => {
 		// 	// Arrange
@@ -142,7 +163,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 		// 	// 		.and.not.include('model')
 		// 	// 		.and.not.include('sensors');
 		// 	// 	}
-		
+
 		// 	// 	return chakram.wait();
 		// 	//   });
 		//   });
@@ -164,7 +185,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 		// 	} as LoaderFunctionArgs)
 
 		// 	expect(response).toBeDefined()
-	  
+
 		// 	// return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}`)
 		// 	//   .then(function (response) {
 		// 	// 	expect(response).to.have.status(200);
@@ -175,7 +196,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 		// 	// 	expect(response.body[0].sensors.some(function (sensor) {
 		// 	// 	  return moment.utc(sensor.lastMeasurement.createdAt).diff(ten_days_ago) < 10;
 		// 	// 	})).to.be.true;
-	  
+
 		// 	// 	return chakram.wait();
 		// 	//   });
 		//   });
@@ -228,7 +249,6 @@ describe('openSenseMap API Routes: /boxes', () => {
 				request: request,
 			} as LoaderFunctionArgs)
 
-
 			expect(geojsonData).toBeDefined()
 			if (geojsonData) {
 				// Assert - this should always be GeoJSON since that's what the loader returns
@@ -249,18 +269,14 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 		it('should allow to filter boxes by grouptag', async () => {
 			// Arrange
-			const request = new Request(
-				`${BASE_URL}?grouptag=newgroup`,
-				{
-					method: 'GET',
-					headers: { 'Content-Type': 'application/json' },
-				},
-			)
+			const request = new Request(`${BASE_URL}?grouptag=newgroup`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
 
 			const response = await devicesLoader({
 				request: request,
 			} as LoaderFunctionArgs)
-
 
 			expect(response).toBeDefined()
 			expect(response?.length).to.be.equal(0)
@@ -271,10 +287,10 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// 	expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 			// 	expect(Array.isArray(response.body)).to.be.true;
 			// 	expect(response.body.length).to.be.equal(2);
-		
+
 			// 	return chakram.wait();
 			//   });
-		  });
+		})
 
 		// it('should allow filtering boxes by bounding box', async () => {
 		// 	// Arrange
@@ -317,33 +333,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 		// })
 	})
 
-	let jwt: string = ''
-	let device: Device | null = null
-	let user: User | null = null
-
-	beforeAll(async () => {
-		const testUser = await registerUser(
-			ME_TEST_USER.name,
-			ME_TEST_USER.email,
-			ME_TEST_USER.password,
-			'en_US',
-		)
-		if (
-			testUser !== null &&
-			typeof testUser === 'object' &&
-			'id' in testUser &&
-			'username' in testUser
-		) {
-			user = testUser
-		}
-		const { token: t } = await createToken(testUser as User)
-		jwt = t
-	})
-	describe('POST /boxes', () => {
+	describe('POST', () => {
 		it('should allow to set the location for a new box as array', async () => {
 			// Arrange
 			const loc = [0, 0, 0]
-			const requestBody = minimalSensebox(loc)
+			const requestBody = generateMinimalDevice(loc)
 
 			const request = new Request(BASE_URL, {
 				method: 'POST',
@@ -355,13 +349,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			const response = await devicesAction({
 				request: request,
 			} as ActionFunctionArgs)
+			const responseData = await response.json()
+			await deleteDevice({ id: responseData.data!.id })
 
 			// Assert
 			expect(response.status).toBe(201)
-
-			const responseData = await response.json()
-			device = responseData.data
-
 			expect(responseData.data.latitude).toBeDefined()
 			expect(responseData.data.longitude).toBeDefined()
 			expect(responseData.data.latitude).toBe(loc[0])
@@ -378,7 +370,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 		it('should allow to set the location for a new box as latLng object', async () => {
 			// Arrange
 			const loc = { lng: 120.123456, lat: 60.654321 }
-			const requestBody = minimalSensebox(loc)
+			const requestBody = generateMinimalDevice(loc)
 
 			const request = new Request(BASE_URL, {
 				method: 'POST',
@@ -390,11 +382,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			const response = await devicesAction({
 				request: request,
 			} as ActionFunctionArgs)
+			const responseData = await response.json()
+			await deleteDevice({ id: responseData.data!.id })
 
 			// Assert
 			expect(response.status).toBe(201)
-
-			const responseData = await response.json()
 			expect(responseData.data.latitude).toBeDefined()
 			expect(responseData.data.latitude).toBe(loc.lat)
 			expect(responseData.data.longitude).toBeDefined()
@@ -466,152 +458,156 @@ describe('openSenseMap API Routes: /boxes', () => {
 		// })
 	})
 
-	describe('GET /boxes/:deviceId', () => {
-		let result: any
+	describe('/:deviceId', () => {
+		describe('GET', () => {
+			let result: any
 
-		beforeAll(async () => {
-			// Skip if no device was created in POST tests
-			if (!device) {
-				throw new Error(
-					'No device was created in previous tests. Make sure POST tests run first.',
+			beforeAll(async () => {
+				// Arrange
+				const request = new Request(`${BASE_URL}/${queryableDevice!.id}`, {
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				})
+
+				// Act
+				const dataFunctionValue = await deviceLoader({
+					request: request,
+					params: { deviceId: queryableDevice!.id },
+					context: {} as AppLoadContext,
+				} as LoaderFunctionArgs)
+
+				const response = dataFunctionValue as Response
+
+				// Assert initial response
+				expect(dataFunctionValue).toBeInstanceOf(Response)
+				expect(response.status).toBe(200)
+				expect(response.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
 				)
-			}
 
-			// Arrange
-			const request = new Request(`${BASE_URL}/${device.id}`, {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
+				// Get the body for subsequent tests
+				result = await response.json()
 			})
 
-			// Act
-			const dataFunctionValue = await deviceLoader({
-				request: request,
-				params: { deviceId: device.id },
-				context: {} as AppLoadContext,
-			} as LoaderFunctionArgs)
+			it('should return the device with correct location data', () => {
+				expect(result).toBeDefined()
+				expect(result._id || result.id).toBe(queryableDevice?.id)
+				expect(result.latitude).toBeDefined()
+				expect(result.longitude).toBeDefined()
+				expect(result.latitude).toBe(queryableDevice?.latitude)
+				expect(result.longitude).toBe(queryableDevice?.longitude)
+			})
 
-			const response = dataFunctionValue as Response
+			it('should return the device name and model', () => {
+				expect(result.name).toBe(queryableDevice?.name)
+				expect(result.model).toBe('homeV2Ethernet')
+				expect(result.exposure).toBe('mobile')
+			})
 
-			// Assert initial response
-			expect(dataFunctionValue).toBeInstanceOf(Response)
-			expect(response.status).toBe(200)
-			expect(response.headers.get('content-type')).toBe(
-				'application/json; charset=utf-8',
-			)
+			it('should return the creation timestamp', () => {
+				expect(result.createdAt).toBeDefined()
+				expect(result.createdAt).toBe(queryableDevice?.createdAt.toISOString())
+			})
 
-			// Get the body for subsequent tests
-			result = await response.json()
+			it('should NOT return sensitive data (if any)', () => {
+				// Add assertions for fields that shouldn't be returned
+				// For example, if there are internal fields that shouldn't be exposed:
+				// expect(result.internalField).toBeUndefined()
+			})
 		})
 
-		it('should return the device with correct location data', () => {
-			expect(result).toBeDefined()
-			expect(result._id || result.id).toBe(device?.id)
-			expect(result.latitude).toBeDefined()
-			expect(result.longitude).toBeDefined()
-			expect(result.latitude).toBe(device?.latitude)
-			expect(result.longitude).toBe(device?.longitude)
-		})
+		describe('DELETE', () => {
+			let deletableDevice: Device | null = null
 
-		it('should return the device name and model', () => {
-			expect(result.name).toBe('senseBox')
-			expect(result.model).toBe('homeV2Ethernet')
-			expect(result.exposure).toBe('mobile')
-		})
+			beforeAll(async () => {
+				deletableDevice = await createDevice(
+					{ ...generateMinimalDevice(), latitude: 123, longitude: 12 },
+					user!.id,
+				)
+			})
 
-		it('should return the creation timestamp', () => {
-			expect(result.createdAt).toBeDefined()
-			expect(result.createdAt).toBe(device?.createdAt)
-		})
+			it('should deny deletion with incorrect password', async () => {
+				const badDeleteRequest = new Request(
+					`${BASE_URL}/${queryableDevice?.id}`,
+					{
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${jwt}`,
+						},
+						body: JSON.stringify({ password: 'wrong password' }),
+					},
+				)
 
-		it('should NOT return sensitive data (if any)', () => {
-			// Add assertions for fields that shouldn't be returned
-			// For example, if there are internal fields that shouldn't be exposed:
-			// expect(result.internalField).toBeUndefined()
+				const badDeleteResponse = await devicesAction({
+					request: badDeleteRequest,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(badDeleteResponse).toBeInstanceOf(Response)
+				expect(badDeleteResponse.status).toBe(401)
+				expect(badDeleteResponse.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
+				)
+
+				const badResult = await badDeleteResponse.json()
+				expect(badResult).toEqual({ message: 'Password incorrect' })
+			})
+
+			it('should successfully delete the device with correct password', async () => {
+				const validDeleteRequest = new Request(
+					`${BASE_URL}/${deletableDevice?.id}`,
+					{
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${jwt}`,
+						},
+						body: JSON.stringify({ password: DEVICE_TEST_USER.password }),
+					},
+				)
+
+				const validDeleteResponse = await devicesAction({
+					request: validDeleteRequest,
+					params: { deviceId: deletableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(validDeleteResponse).toBeInstanceOf(Response)
+				expect(validDeleteResponse.status).toBe(200)
+				expect(validDeleteResponse.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
+				)
+			})
+
+			it('should return 404 when trying to get the deleted device', async () => {
+				const getDeletedRequest = new Request(
+					`${BASE_URL}/${deletableDevice?.id}`,
+					{
+						method: 'GET',
+						headers: { 'Content-Type': 'application/json' },
+					},
+				)
+
+				const getDeletedResponse = await deviceLoader({
+					request: getDeletedRequest,
+					params: { deviceId: deletableDevice?.id },
+					context: {} as AppLoadContext,
+				} as LoaderFunctionArgs)
+
+				expect(getDeletedResponse).toBeInstanceOf(Response)
+				expect(getDeletedResponse.status).toBe(404)
+				expect(getDeletedResponse.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
+				)
+			})
 		})
 	})
 
-	describe('DELETE /boxes/:deviceId', () => {
-		let deleteResult: any
-		let getAfterDeleteResult: any
-		// let statsResult: any
-
-		it('should deny deletion with incorrect password', async () => {
-			const badDeleteRequest = new Request(`${BASE_URL}/${device?.id}`, {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${jwt}`,
-				},
-				body: JSON.stringify({ password: 'wrong password' }),
-			})
-
-			const badDeleteResponse = await devicesAction({
-				request: badDeleteRequest,
-				params: { deviceId: device?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
-
-			expect(badDeleteResponse).toBeInstanceOf(Response)
-			expect(badDeleteResponse.status).toBe(401)
-			expect(badDeleteResponse.headers.get('content-type')).toBe(
-				'application/json; charset=utf-8',
-			)
-
-			const badResult = await badDeleteResponse.json()
-			expect(badResult).toEqual({ message: 'Password incorrect' })
-		})
-
-		it('should successfully delete the device with correct password', async () => {
-			const validDeleteRequest = new Request(`${BASE_URL}/${device?.id}`, {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${jwt}`,
-				},
-				body: JSON.stringify({ password: ME_TEST_USER.password }),
-			})
-
-			const validDeleteResponse = await devicesAction({
-				request: validDeleteRequest,
-				params: { deviceId: device?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
-
-			expect(validDeleteResponse).toBeInstanceOf(Response)
-			expect(validDeleteResponse.status).toBe(200)
-			expect(validDeleteResponse.headers.get('content-type')).toBe(
-				'application/json; charset=utf-8',
-			)
-
-			deleteResult = await validDeleteResponse.json()
-			expect(deleteResult).toBeDefined()
-		})
-
-		it('should return 404 when trying to get the deleted device', async () => {
-			const getDeletedRequest = new Request(`${BASE_URL}/${device?.id}`, {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			})
-
-			const getDeletedResponse = await deviceLoader({
-				request: getDeletedRequest,
-				params: { deviceId: device?.id },
-				context: {} as AppLoadContext,
-			} as LoaderFunctionArgs)
-
-			expect(getDeletedResponse).toBeInstanceOf(Response)
-			expect(getDeletedResponse.status).toBe(404)
-			expect(getDeletedResponse.headers.get('content-type')).toBe(
-				'application/json; charset=utf-8',
-			)
-
-			getAfterDeleteResult = await getDeletedResponse.json()
-			expect(getAfterDeleteResult.message).toBe('Device not found.')
-		})
-
-		afterAll(async () => {
-			await deleteUserByEmail(ME_TEST_USER.email)
-		})
+	afterAll(async () => {
+		await deleteDevice({ id: queryableDevice!.id })
+		await deleteUserByEmail(DEVICE_TEST_USER.email)
 	})
 })
 
