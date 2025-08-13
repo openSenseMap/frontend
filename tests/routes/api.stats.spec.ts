@@ -1,12 +1,30 @@
 import { sql } from "drizzle-orm";
-import { type LoaderFunctionArgs } from "react-router";
+import { createStaticHandler, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { drizzleClient } from "~/db.server";
-import { loader } from "~/routes/api.stats";
+import { loader, unstable_middleware } from "~/routes/api.stats";
 
 describe("openSenseMap API Routes: /stats", () => {
   let boxCount: number = 0;
+  let queryRoute: (r: Request) => Promise<any>;
+
   beforeAll(async () => {
+    const { queryRoute: q } = createStaticHandler([
+      {
+        path: `stats`,
+        loader: loader,
+        unstable_middleware: unstable_middleware,
+      },
+    ]);
+    queryRoute = (request: Request) =>
+      q(request, {
+        unstable_generateMiddlewareResponse: async (query) => {
+          const res = await query(request);
+          if (res instanceof Response) return res;
+          return Response.json(res);
+        },
+      });
+
     const [count] = await drizzleClient.execute(
       sql`SELECT * FROM approximate_row_count('device');`,
     );
@@ -21,14 +39,15 @@ describe("openSenseMap API Routes: /stats", () => {
     });
 
     // Act
-    const dataFunctionValue = await loader({
-      request: request,
-    } as LoaderFunctionArgs);
-    const response = dataFunctionValue as Response;
+    const ctx = await queryRoute(request);
+    const response = ctx as Response;
     const body = await response.json();
 
     // Assert
     expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe(
+      "application/json; charset=utf-8",
+    );
     const [boxes, measurements] = body;
     expect(boxes).toBe(boxCount);
     expect(measurements).toBe(0);
@@ -42,10 +61,8 @@ describe("openSenseMap API Routes: /stats", () => {
     });
 
     // Act
-    const dataFunctionValue = await loader({
-      request: request,
-    } as LoaderFunctionArgs);
-    const response = dataFunctionValue as Response;
+    const ctx = await queryRoute(request);
+    const response = ctx as Response;
     const body = await response.json();
 
     // Assert
@@ -68,10 +85,8 @@ describe("openSenseMap API Routes: /stats", () => {
     });
 
     // Act
-    const dataFunctionValue = await loader({
-      request: request,
-    } as LoaderFunctionArgs);
-    const response = dataFunctionValue as Response;
+    const ctx = await queryRoute(request);
+    const response = ctx as Response;
     const body = await response.json();
 
     // Assert
@@ -94,10 +109,8 @@ describe("openSenseMap API Routes: /stats", () => {
     });
 
     // Act
-    const dataFunctionValue = await loader({
-      request: request,
-    } as LoaderFunctionArgs);
-    const response = dataFunctionValue as Response;
+    const ctx = await queryRoute(request);
+    const response = ctx as Response;
     const body = await response.json();
 
     // Assert
@@ -127,11 +140,7 @@ describe("openSenseMap API Routes: /stats", () => {
 
     // Act
     const responses = await Promise.all(
-      requests.map((request) =>
-        loader({
-          request: request,
-        } as LoaderFunctionArgs),
-      ),
+      requests.map((request) => queryRoute(request)),
     );
     const bodies = await Promise.all(responses.map((res) => res.json()));
 

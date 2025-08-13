@@ -1,4 +1,8 @@
-import { type LoaderFunctionArgs } from "react-router";
+import {
+  type unstable_MiddlewareFunction,
+  type LoaderFunctionArgs,
+} from "react-router";
+import { jsonResponseHeaders } from "~/lib/middleware";
 import { getStatistics } from "~/lib/statistics-service.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -20,9 +24,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
         {
           status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
         },
       );
 
@@ -31,9 +32,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const stats = await getStatistics(humanReadable);
     return Response.json(stats, {
       status: 200,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
     });
   } catch (e) {
     console.warn(e);
@@ -45,10 +43,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
       },
     );
   }
 }
+
+export const unstable_middleware: unstable_MiddlewareFunction[] = [
+  jsonResponseHeaders,
+];
