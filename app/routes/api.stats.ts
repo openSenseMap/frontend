@@ -48,6 +48,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-export const unstable_middleware: unstable_MiddlewareFunction[] = [
+export const unstable_middleware: unstable_MiddlewareFunction<Response>[] = [
   jsonResponseHeaders,
 ];

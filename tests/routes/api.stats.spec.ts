@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { createStaticHandler, type LoaderFunctionArgs } from "react-router";
+import { createStaticHandler } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { drizzleClient } from "~/db.server";
 import { loader, unstable_middleware } from "~/routes/api.stats";
