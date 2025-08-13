@@ -133,7 +133,7 @@ const DEFAULT_LANGUAGE: "de_DE" | "en_US" = "en_US";
  *             schema:
  *               type: string
  *               example: "Internal Server Error"
- * 
+ *
  * components:
  *   schemas:
  *     User:

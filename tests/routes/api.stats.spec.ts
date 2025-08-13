@@ -13,7 +13,7 @@ describe("openSenseMap API Routes: /stats", () => {
       {
         path: `stats`,
         loader: loader,
-        unstable_middleware: unstable_middleware,
+        unstable_middleware: unstable_middleware as any,
       },
     ]);
     queryRoute = (request: Request) =>

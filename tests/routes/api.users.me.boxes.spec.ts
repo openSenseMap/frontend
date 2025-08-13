@@ -1,10 +1,10 @@
-import { type LoaderFunctionArgs } from "react-router";
+import { createStaticHandler, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
-import { loader } from "~/routes/api.users.me.boxes";
+import { loader, unstable_middleware } from "~/routes/api.users.me.boxes";
 import { type User } from "~/schema";
 
 const BOXES_TEST_USER = {
@@ -27,10 +27,27 @@ const TEST_BOX = {
 describe("openSenseMap API Routes: /users", () => {
   let jwt: string = "";
   let deviceId = "";
+  let queryRoute: (r: Request) => Promise<any>;
 
   describe("/me/boxes", () => {
     describe("GET", async () => {
       beforeAll(async () => {
+        const { queryRoute: q } = createStaticHandler([
+          {
+            path: `/users/me/boxes`,
+            loader: loader as any,
+            unstable_middleware: unstable_middleware as any,
+          },
+        ]);
+        queryRoute = (request: Request) =>
+          q(request, {
+            unstable_generateMiddlewareResponse: async (query) => {
+              const res = await query(request);
+              if (res instanceof Response) return res;
+              return Response.json(res);
+            },
+          });
+
         const user = await registerUser(
           BOXES_TEST_USER.name,
           BOXES_TEST_USER.email,
@@ -50,9 +67,7 @@ describe("openSenseMap API Routes: /users", () => {
         });
 
         // Act
-        const response = (await loader({
-          request,
-        } as LoaderFunctionArgs)) as Response;
+        const response = await queryRoute(request);
         const body = await response?.json();
 
         // Assert
