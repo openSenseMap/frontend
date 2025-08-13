@@ -279,7 +279,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			} as LoaderFunctionArgs)
 
 			expect(response).toBeDefined()
-			expect(response?.length).to.be.equal(0)
+			expect(response?.length).toBe(0)
 
 			// return chakram.get(`${BASE_URL}/grouptag=newgroup`)
 			//   .then(function (response) {
