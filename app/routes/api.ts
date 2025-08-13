@@ -74,6 +74,7 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		{
 			path: `users/register`,
 			method: 'POST',
+			deprecationNotice: 'Use a POST to users/ instead',
 		},
 		{
 			path: `users/request-password-reset`,
@@ -89,6 +90,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		},
 		{
 			path: `users/sign-in`,
+			method: 'POST',
+		},
+		{
+			path: `users`,
 			method: 'POST',
 		},
 	],
