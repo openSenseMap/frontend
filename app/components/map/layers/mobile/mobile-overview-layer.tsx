@@ -14,8 +14,8 @@ import {
 const FIT_PADDING = 100
 
 // Clustering configuration
-const CLUSTER_DISTANCE_METERS = 50 // Distance threshold for clustering
-const MIN_CLUSTER_SIZE = 20 // Minimum points to form a cluster
+const CLUSTER_DISTANCE_METERS = 8 // Distance threshold for clustering
+const MIN_CLUSTER_SIZE = 15 // Minimum points to form a cluster
 
 // Function to calculate distance between two points in meters
 function calculateDistance(point1: LocationPoint, point2: LocationPoint): number {
