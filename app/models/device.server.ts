@@ -1,5 +1,5 @@
 import { point } from '@turf/helpers'
-import { eq, sql, desc, ilike, inArray, arrayContains } from 'drizzle-orm'
+import { eq, sql, desc, ilike, inArray, arrayContains, and } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
@@ -235,6 +235,7 @@ interface BuildWhereClauseOptions {
   export interface FindDevicesOptions extends BuildWhereClauseOptions {
 	minimal?: string | boolean;
 	limit?: number;
+	format?: "json" | "geojson"
   }
 
   interface WhereClauseResult {
@@ -253,11 +254,13 @@ interface BuildWhereClauseOptions {
 	  clause.push(ilike(device.name, `%${name}%`));
 	}
   
-	// if (phenomenon) {
-	//   columns['sensors'] = {
-	// 	where: (sensor, { ilike }) => ilike(sensorTable['title'], `%${phenomenon}%`)
-	//   };
-	// }
+	if (phenomenon) {
+	  // @ts-ignore
+	  columns['sensors'] = {
+	  // @ts-ignore
+		where: (sensor, { ilike }) => ilike(sensorTable['title'], `%${phenomenon}%`)
+	  };
+	}
   
 	// simple string parameters
 	// for (const param of ['exposure', 'model'] as const) {
@@ -292,11 +295,30 @@ interface BuildWhereClauseOptions {
 		);
 	  }
   
-	if (fromDate || toDate) {
-	  if (phenomenon) {
-		// TODO: implement
+	  if (phenomenon && (fromDate || toDate)) {
+		// @ts-ignore
+		columns["sensors"] = {
+		  include: {
+			measurements: {
+			  where: (measurement: any) => {
+				const conditions = [];
+	
+				if (fromDate && toDate) {
+				  conditions.push(
+					sql`${measurement.createdAt} BETWEEN ${fromDate} AND ${toDate}`
+				  );
+				} else if (fromDate) {
+				  conditions.push(sql`${measurement.createdAt} >= ${fromDate}`);
+				} else if (toDate) {
+				  conditions.push(sql`${measurement.createdAt} <= ${toDate}`);
+				}
+	
+				return and(...conditions);
+			  },
+			},
+		  },
+		};
 	  }
-	}
   
 	return {
 	  includeColumns: columns,
