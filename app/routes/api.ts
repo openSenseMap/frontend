@@ -121,22 +121,22 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/claim`,
     //   method: "POST",
     // },
-    // {
-    //   path: `boxes/transfer`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `boxes/transfer`,
-    //   method: "DELETE",
-    // },
-    // {
-    //   path: `boxes/transfer/:boxId`,
-    //   method: "GET",
-    // },
-    // {
-    //   path: `boxes/transfer/:boxId`,
-    //   method: "PUT",
-    // },
+    {
+      path: `boxes/transfer`,
+      method: "POST",
+    },
+    {
+      path: `boxes/transfer`,
+      method: "DELETE",
+    },
+    {
+      path: `boxes/transfer/:boxId`,
+      method: "GET",
+    },
+    {
+      path: `boxes/transfer/:boxId`,
+      method: "PUT",
+    },
     // {
     //   path: `boxes/:boxId`,
     //   method: "PUT",
