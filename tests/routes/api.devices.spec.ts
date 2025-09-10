@@ -233,7 +233,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				expect((error as Response).status).toBe(422)
 
 				const errorData = await (error as Response).json()
-				expect(errorData.error).toBe('Failed to fetch devices')
+				expect(errorData.error).toBe('Invalid format parameter')
 			}
 		})
 

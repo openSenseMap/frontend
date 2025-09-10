@@ -11,6 +11,7 @@ import {
 import { ActionFunctionArgs } from 'react-router'
 import { getUserFromJwt } from '~/lib/jwt'
 import {
+	BoxesQuerySchema,
 	deleteDevice,
 	type BoxesQueryParams,
 } from '~/lib/devices-service.server'
@@ -355,142 +356,50 @@ function fromToTimeParamsSanityCheck(fromDate: Date | null, toDate: Date | null)
  */
 export async function loader({ request }: LoaderFunctionArgs) {
 	const url = new URL(request.url);
+	const queryObj = Object.fromEntries(url.searchParams);
 	const max_limit = 20;
 	const { fromDate, toDate } = parseAndValidateTimeParams(url.searchParams);
 
-	const searchParams = {
-		format: 'json',
-		minimal: 'false',
-		full: 'false',
-		limit: '5',
-		...Object.fromEntries(url.searchParams),
-		...(fromDate && { fromDate: fromDate.toISOString() }),
-		...(toDate && { toDate: toDate.toISOString() })
-	} as BoxesQueryParams;
+	const parseResult = BoxesQuerySchema.safeParse(queryObj);
+	if (!parseResult.success) {
+		const { fieldErrors, formErrors } = parseResult.error.flatten();
+		if (fieldErrors.format) {
+			throw json(
+			  { error: "Invalid format parameter" },
+			  { status: 422 }
+			);
+		  }
 
-	const validFormats: BoxesQueryParams['format'][] = ['geojson', 'json'];
-
-	if (searchParams.format) {
-		if (!validFormats.includes(searchParams.format)) {
-			console.error('Error in loader:', 'invalid format parameter');
-			throw json({ error: 'Failed to fetch devices' }, { status: 422 });
-		}
-
-		if (searchParams.format === 'json') {
-			try {
-				if (searchParams.date) {
-					// TODO: handle date param
-					// let result = await getDevicesWithSensorsJson()
-				} else {
-					const findDevicesOpts: FindDevicesOptions = {
-						minimal: searchParams.minimal,
-						limit: searchParams.limit ? parseInt(searchParams.limit) : 5,
-						name: searchParams.name,
-						phenomenon: searchParams.phenomenon,
-						fromDate: searchParams.fromDate ? new Date(searchParams.fromDate) : undefined,
-						toDate: searchParams.toDate ? new Date(searchParams.toDate) : undefined,
-						grouptag: searchParams.grouptag ? [searchParams.grouptag] : undefined,
-						exposure: searchParams.exposure ? [searchParams.exposure as DeviceExposureType] : undefined,
-					};
-
-					if (findDevicesOpts.limit) {
-						if(findDevicesOpts.limit < 1){
-							throw json({ error: 'Limit must be at least 1' }, { status: 422 });
-						}
-						else if (findDevicesOpts.limit > max_limit) {
-							throw json({ error: 'Limit should not exceed 20' }, { status: 422 });
-						} 
-					}
-					if (searchParams.near) {
-						const nearCoords = searchParams.near.split(',');
-						if (
-							nearCoords.length !== 2 ||
-							isNaN(Number(nearCoords[0])) ||
-							isNaN(Number(nearCoords[1]))
-						) {
-							throw json(
-								{ error: "Invalid 'near' parameter format. Expected: 'lat,lng'" },
-								{ status: 422 }
-							);
-						}
-
-						const [nearLat, nearLng] = nearCoords.map(Number);
-						findDevicesOpts.near = [nearLat, nearLng];
-						findDevicesOpts.maxDistance = searchParams.maxDistance 
-							? Number(searchParams.maxDistance) 
-							: 1000; 
-					}
-
-					if (searchParams.bbox) {
-						try {
-							const bboxCoords = searchParams.bbox.split(',').map(Number);
-							if (bboxCoords.length === 4) {
-								const [swLng, swLat, neLng, neLat] = bboxCoords;
-								findDevicesOpts.bbox = {
-									coordinates: [[[swLat, swLng], [neLat, swLng], [neLat, neLng], [swLat, neLng], [swLat, swLng]]]
-								};
-							}
-						} catch (error) {
-							console.warn('Invalid bbox parameter:', searchParams.bbox);
-						}
-					}
-
-					const result = await findDevices(findDevicesOpts);
-
-					return result;
-				}
-			} catch (error) {
-				console.error('Error in loader:', error);
-				throw json({ error: 'Failed to fetch devices' }, { status: 500 });
-			}
-		}
-		
-		if (searchParams.format === 'geojson') {
-			try {
-				const findDevicesOpts: FindDevicesOptions = {
-					minimal: searchParams.minimal,
-					limit: searchParams.limit ? parseInt(searchParams.limit) : 5,
-					name: searchParams.name,
-				};
-
-				if(!findDevicesOpts.limit){
-					throw json({ error: 'Limit must be at least 1' }, { status: 422 });
-				}
-				if (findDevicesOpts.limit) {
-					if(findDevicesOpts.limit < 1){
-						throw json({ error: 'Limit must be at least 1' }, { status: 422 });
-					}
-					else if (findDevicesOpts.limit > max_limit) {
-						throw json({ error: 'Limit should not exceed 20' }, { status: 422 });
-					} 
-				}
-
-				const devices = await findDevices(findDevicesOpts);
-				
-				const geojson = {
-					type: 'FeatureCollection',
-					features: devices.map((device: Device) => ({
-						type: 'Feature',
-						geometry: {
-							type: 'Point',
-							coordinates: [device.longitude, device.latitude]
-						},
-						properties: {
-							...device
-						}
-					}))
-				};
-
-				return geojson;
-			} catch (error) {
-				console.error('Error in loader:', error);
-				throw json({ error: 'Failed to fetch devices' }, { status: 500 });
-			}
-		}
+		throw json(
+		{ error: parseResult.error.flatten() },
+		{ status: 422 }
+		);
 	}
 
-	// Default fallback
-	throw json({ error: 'Invalid request' }, { status: 400 });
+	const params: FindDevicesOptions = parseResult.data;
+
+	const devices = await findDevices(params)
+
+	if (params.format === "geojson"){		
+		const geojson = {
+			type: 'FeatureCollection',
+			features: devices.map((device: Device) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: [device.longitude, device.latitude]
+				},
+				properties: {
+					...device
+				}
+			}))
+		};
+
+		return geojson;
+	}
+	else {
+		return devices
+	}
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {

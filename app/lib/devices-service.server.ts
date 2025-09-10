@@ -3,24 +3,82 @@ import {
 	deleteDevice as deleteDeviceById,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
+import { z } from 'zod'
 
-export interface BoxesQueryParams {
-	name?: string 
-	limit?: string
-	date?: string[]
-	phenomenon?: string
-	format?: 'json' | 'geojson'
-	grouptag?: string
-	model?: string
-	minimal?: 'true' | 'false'
-	full?: 'true' | 'false'
-	near?: string
-	maxDistance?: string
-	bbox?: string
-	exposure?: string
-	fromDate: any
-	toDate: any
-}
+export const BoxesQuerySchema = z.object({
+	format: z.enum(["json", "geojson"]  ,{
+		errorMap: () => ({ message: "Format must be either 'json' or 'geojson'" }),
+	  }).default("json"),
+	minimal: z.enum(["true", "false"]).default("false")
+	  .transform((v) => v === "true"),
+	full: z.enum(["true", "false"]).default("false")
+	  .transform((v) => v === "true"),
+	limit: z
+	  .string()
+	  .default("5")
+	  .transform((val) => parseInt(val, 10))
+	  .refine((val) => !isNaN(val), { message: "Limit must be a number" })
+	  .refine((val) => val >= 1, { message: "Limit must be at least 1" })
+	  .refine((val) => val <= 20, { message: "Limit must not exceed 20" }),
+  
+	name: z.string().optional(),
+	date: z
+      .union([z.string().datetime(), z.array(z.string().datetime())])
+      .transform((val) => (Array.isArray(val) ? val : [val]))
+      .refine((arr) => arr.length >= 1 && arr.length <= 2, {
+        message: "Date must contain 1 or 2 timestamps",
+      })
+      .optional(),
+	phenomenon: z.string().optional(),
+	grouptag: z.string().transform((v) => [v]).optional(),
+	model: z.string().transform((v) => [v]).optional(),
+	exposure: z.string().transform((v) => [v]).optional(),
+  
+	near: z
+	  .string()
+	  .regex(/^[-+]?\d+(\.\d+)?,[-+]?\d+(\.\d+)?$/, {
+		message: "Invalid 'near' parameter format. Expected: 'lat,lng'",
+	  })
+	  .transform((val) => val.split(",").map(Number) as [number, number])
+	  .optional(),
+  
+	maxDistance: z.string().transform((v) => Number(v)).optional(),
+  
+	bbox: z
+	  .string()
+	  .transform((val) => {
+		const coords = val.split(",").map(Number);
+		if (coords.length !== 4 || coords.some((n) => isNaN(n))) {
+		  throw new Error("Invalid bbox parameter");
+		}
+		const [swLng, swLat, neLng, neLat] = coords;
+		return {
+		  coordinates: [
+			[
+			  [swLat, swLng],
+			  [neLat, swLng],
+			  [neLat, neLng],
+			  [swLat, neLng],
+			  [swLat, swLng],
+			],
+		  ],
+		};
+	  })
+	  .optional(),
+  
+	fromDate: z.string().datetime().transform((v) => new Date(v)).optional(),
+	toDate: z.string().datetime().transform((v) => new Date(v)).optional(),
+  }).refine(
+    (data) =>
+      !(data.date && !data.phenomenon) && !(data.phenomenon && !data.date),
+    {
+      message: "Date and phenomenon must be used together",
+      path: ["date"],
+    }
+  );
+    
+  
+  export type BoxesQueryParams = z.infer<typeof BoxesQuerySchema>;
 
 /**
  * Deletes a device after verifiying that the user is entitled by checking
