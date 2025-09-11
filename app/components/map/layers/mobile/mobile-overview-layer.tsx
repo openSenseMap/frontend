@@ -15,6 +15,7 @@ const FIT_PADDING = 100
 
 // Clustering configuration
 const CLUSTER_DISTANCE_METERS = 8 // Distance threshold for clustering
+const CLUSTER_TIME_THRESHOLD_MINUTES = 30 // Time threshold for clustering (30 minutes)
 const MIN_CLUSTER_SIZE = 15 // Minimum points to form a cluster
 
 // Function to calculate distance between two points in meters
@@ -33,24 +34,36 @@ function calculateDistance(point1: LocationPoint, point2: LocationPoint): number
 	return R * c
 }
 
-// Cluster points within a single trip
-function clusterTripPoints(points: LocationPoint[], distanceThreshold: number, minClusterSize: number) {
+// Function to calculate time difference in minutes
+function calculateTimeDifference(point1: LocationPoint, point2: LocationPoint): number {
+	const time1 = new Date(point1.time).getTime()
+	const time2 = new Date(point2.time).getTime()
+	return Math.abs(time2 - time1) / (1000 * 60) // Convert to minutes
+}
+
+function clusterTripPoints(
+	points: LocationPoint[], 
+	distanceThreshold: number, 
+	timeThresholdMinutes: number,
+	minClusterSize: number
+) {
 	const clusters: LocationPoint[][] = []
 	const visited = new Set<number>()
+	const sortedPoints = [...points].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
-	for (let i = 0; i < points.length; i++) {
+	for (let i = 0; i < sortedPoints.length; i++) {
 		if (visited.has(i)) continue
 
-		const cluster: LocationPoint[] = [points[i]]
+		const cluster: LocationPoint[] = [sortedPoints[i]]
 		visited.add(i)
-
-		// Find all points within distance threshold
-		for (let j = i + 1; j < points.length; j++) {
+		for (let j = i + 1; j < sortedPoints.length; j++) {
 			if (visited.has(j)) continue
 
-			const distance = calculateDistance(points[i], points[j])
-			if (distance <= distanceThreshold) {
-				cluster.push(points[j])
+			const spatialDistance = calculateDistance(sortedPoints[i], sortedPoints[j])
+			const temporalDistance = calculateTimeDifference(sortedPoints[i], sortedPoints[j])
+
+			if (spatialDistance <= distanceThreshold && temporalDistance <= timeThresholdMinutes) {
+				cluster.push(sortedPoints[j])
 				visited.add(j)
 			}
 		}
@@ -67,19 +80,99 @@ function clusterTripPoints(points: LocationPoint[], distanceThreshold: number, m
 	return clusters
 }
 
-// Calculate cluster center and metadata
+function dbscanClusterTripPoints(
+	points: LocationPoint[],
+	distanceThreshold: number,
+	timeThresholdMinutes: number,
+	minClusterSize: number
+) {
+	const clusters: LocationPoint[][] = []
+	const visited = new Set<number>()
+	const noise: LocationPoint[] = []
+
+	function findNeighbors(pointIndex: number): number[] {
+		const neighbors: number[] = []
+		const currentPoint = points[pointIndex]
+
+		for (let i = 0; i < points.length; i++) {
+			if (i === pointIndex) continue
+
+			const spatialDistance = calculateDistance(currentPoint, points[i])
+			const temporalDistance = calculateTimeDifference(currentPoint, points[i])
+
+			if (spatialDistance <= distanceThreshold && temporalDistance <= timeThresholdMinutes) {
+				neighbors.push(i)
+			}
+		}
+
+		return neighbors
+	}
+	// Helper function to expand cluster
+	function expandCluster(pointIndex: number, neighbors: number[], cluster: LocationPoint[]) {
+		cluster.push(points[pointIndex])
+		visited.add(pointIndex)
+
+		for (let i = 0; i < neighbors.length; i++) {
+			const neighborIndex = neighbors[i]
+
+			if (!visited.has(neighborIndex)) {
+				visited.add(neighborIndex)
+				const neighborNeighbors = findNeighbors(neighborIndex)
+
+				if (neighborNeighbors.length >= minClusterSize - 1) {
+					neighbors.push(...neighborNeighbors.filter(n => !neighbors.includes(n)))
+				}
+			}
+
+			// Add to cluster if not already in any cluster
+			if (!clusters.some(c => c.includes(points[neighborIndex])) && !cluster.includes(points[neighborIndex])) {
+				cluster.push(points[neighborIndex])
+			}
+		}
+	}
+
+	for (let i = 0; i < points.length; i++) {
+		if (visited.has(i)) continue
+
+		const neighbors = findNeighbors(i)
+
+		if (neighbors.length < minClusterSize - 1) {
+			// Mark as noise (will be individual points)
+			noise.push(points[i])
+			visited.add(i)
+		} else {
+			// Start new cluster
+			const cluster: LocationPoint[] = []
+			expandCluster(i, neighbors, cluster)
+			clusters.push(cluster)
+		}
+	}
+
+	// Add noise points as individual clusters
+	noise.forEach(point => clusters.push([point]))
+
+	return clusters
+}
+
+
 function calculateClusterCenter(cluster: LocationPoint[], clusterId: string) {
 	const centerX = cluster.reduce((sum, point) => sum + point.geometry.x, 0) / cluster.length
 	const centerY = cluster.reduce((sum, point) => sum + point.geometry.y, 0) / cluster.length
 	
-	// Sort by timestamp to get earliest and latest
+	// Sorting by timestamp to get earliest and latest
 	const sortedByTime = cluster.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+	
+	// Calculate duration for clusters
+	const startTime = sortedByTime[0].time
+	const endTime = sortedByTime[sortedByTime.length - 1].time
+	const duration = new Date(endTime).getTime() - new Date(startTime).getTime()
 	
 	return {
 		coordinates: [centerX, centerY],
 		pointCount: cluster.length,
-		startTime: sortedByTime[0].time,
-		endTime: sortedByTime[sortedByTime.length - 1].time,
+		startTime,
+		endTime,
+		duration, 
 		isCluster: cluster.length > 1,
 		clusterId: clusterId,
 		originalPoints: cluster // Keep reference to original points
@@ -115,8 +208,12 @@ export default function MobileOverviewLayer({
 		if (!trips || trips.length === 0) return []
 
 		return trips.map((trip, tripIndex) => {
-			const clusters = clusterTripPoints(trip.points, CLUSTER_DISTANCE_METERS, MIN_CLUSTER_SIZE)
-			
+			const clusters = clusterTripPoints(
+				trip.points, 
+				CLUSTER_DISTANCE_METERS, 
+				CLUSTER_TIME_THRESHOLD_MINUTES,
+				MIN_CLUSTER_SIZE
+			)			
 			return {
 				...trip,
 				clusters: clusters.map((cluster, clusterIndex) => 
@@ -136,6 +233,7 @@ export default function MobileOverviewLayer({
 			isCluster?: boolean
 			startTime?: string
 			endTime?: string
+			duration?: number
 			clusterId?: string
 		}
 	> | null>(null)
@@ -170,6 +268,7 @@ export default function MobileOverviewLayer({
 		startTime: string
 		endTime: string
 		pointCount?: number
+		duration?: number
 		isCluster?: boolean
 	} | null>(null)
 	
@@ -191,6 +290,7 @@ export default function MobileOverviewLayer({
 					isCluster: cluster.isCluster,
 					startTime: cluster.startTime,
 					endTime: cluster.endTime,
+					duration: cluster.duration,
 					clusterId: cluster.clusterId,
 				}),
 			),
@@ -253,7 +353,7 @@ export default function MobileOverviewLayer({
 
 			if (event.features && event.features.length > 0) {
 				const feature = event.features[0]
-				const { tripNumber, startTime, endTime, pointCount, isCluster, clusterId } = feature.properties
+				const { tripNumber, startTime, endTime, pointCount, duration, isCluster, clusterId } = feature.properties
 				setHighlightedTrip(tripNumber)
 
 				// Set hovered cluster if it's a cluster
@@ -270,6 +370,7 @@ export default function MobileOverviewLayer({
 					startTime, 
 					endTime, 
 					pointCount,
+					duration,
 					isCluster 
 				})
 			} else {
@@ -310,6 +411,18 @@ export default function MobileOverviewLayer({
 			mapRef.off('mouseleave', 'box-overview-layer', onMouseLeave)
 		}
 	}, [mapRef, handleHover, showOriginalColors])
+
+	// Helper function to format duration
+	const formatDuration = (durationMs: number): string => {
+		const minutes = Math.floor(durationMs / (1000 * 60))
+		const hours = Math.floor(minutes / 60)
+		
+		if (hours > 0) {
+			const remainingMinutes = minutes % 60
+			return `${hours}h ${remainingMinutes}m`
+		}
+		return `${minutes}m`
+	}
 
 	if (!sourceData) return null
 
@@ -425,6 +538,11 @@ export default function MobileOverviewLayer({
 								<p className="text-xs font-medium text-muted-foreground">
 									Cluster of {popupInfo.pointCount} points
 								</p>
+								{popupInfo.duration && (
+									<p className="text-xs text-muted-foreground">
+										Duration: {formatDuration(popupInfo.duration)}
+									</p>
+								)}
 							</div>
 						)}
 						<div>
@@ -462,4 +580,3 @@ export default function MobileOverviewLayer({
 		</>
 	)
 }
-
