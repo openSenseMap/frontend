@@ -17,3 +17,10 @@ services:
     volumes:
       # - ./pgdata:/home/postgres/pgdata
       - ./db/imports:/home/postgres/imports
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    platform: linux/amd64
+    ports:
+      - "8025:8025"
+      - "1025:1025"
