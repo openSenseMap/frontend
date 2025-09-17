@@ -1,9 +1,16 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
+import PasswordResetEmail, {
+  subject as PasswordResetEmailSubject,
+} from "emails/password-reset";
+import ResendEmailConfirmationEmail, {
+  subject as ResendEmailConfirmationSubject,
+} from "emails/resend-email-confirmation";
 import invariant from "tiny-invariant";
 import { v4 as uuidv4 } from "uuid";
 import { createToken, revokeToken } from "./jwt";
 
+import { sendMail } from "./mail.server";
 import {
   type EmailValidation,
   type PasswordValidation,
@@ -25,10 +32,6 @@ import {
   verifyLogin,
 } from "~/models/user.server";
 import { passwordResetRequest, user, type User } from "~/schema";
-import { sendMail } from "./mail.server";
-import PasswordResetEmail, {
-  subject as PasswordResetEmailSubject,
-} from "emails/password-reset";
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
@@ -362,15 +365,27 @@ export const resendEmailConfirmation = async (
   if (u.emailIsConfirmed && u.unconfirmedEmail?.trim().length === 0)
     return "already_confirmed";
 
+  const token = uuidv4();
   const savedUser = await drizzleClient
     .update(user)
     .set({
-      emailConfirmationToken: uuidv4(),
+      emailConfirmationToken: token,
     })
     .where(eq(user.id, u.id))
     .returning();
 
-  // TODO actually send the confirmation
+  await sendMail({
+    recipientAddress: savedUser[0].email,
+    recipientName: savedUser[0].name,
+    subject: ResendEmailConfirmationSubject["en"],
+    body: ResendEmailConfirmationEmail({
+      user: { name: savedUser[0].name },
+      email: savedUser[0].email,
+      token: token,
+      language: "en",
+    }),
+  });
+
   return savedUser[0];
 };
 
