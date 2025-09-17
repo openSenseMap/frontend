@@ -49,7 +49,6 @@ interface User {
 
 interface PasswordResetProps {
   user: User;
-  email: string;
   token: string;
   language: "de" | "en";
 }
@@ -60,7 +59,6 @@ const baseUrl = process.env.OSEM_URL
 
 export const PasswordResetEmail = ({
   user = { name: "Max Mustermann", email: "max.mustermann@example.com" },
-  email = "max.mustermann@example.com",
   token = "1234-5678-9012",
   language = "en",
 }: PasswordResetProps) => {
@@ -103,7 +101,7 @@ export const PasswordResetEmail = ({
             {intl.formatMessage({ id: "support" })} {}
             <Link
               href={`mailto:support@sensebox.de?Subject=Password%20Zur%C3%BCcksetzen%20f%C3%BCr%20${encodeURIComponent(
-                user.email
+                user.email,
               )}`}
             >
               support@sensebox.de

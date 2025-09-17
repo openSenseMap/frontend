@@ -25,6 +25,10 @@ import {
   verifyLogin,
 } from "~/models/user.server";
 import { passwordResetRequest, user, type User } from "~/schema";
+import { sendMail } from "./mail.server";
+import PasswordResetEmail, {
+  subject as PasswordResetEmailSubject,
+} from "emails/password-reset";
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
@@ -281,18 +285,28 @@ export const requestPasswordReset = async (email: string) => {
 
   if (!user) return;
 
+  const token = uuidv4();
   await drizzleClient
     .insert(passwordResetRequest)
     .values({ userId: user.id })
     .onConflictDoUpdate({
       target: passwordResetRequest.userId,
       set: {
-        token: uuidv4(),
+        token: token,
         expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS), // 12 hours from now
       },
     });
 
-  // TODO send out email
+  await sendMail({
+    recipientAddress: user.email,
+    recipientName: user.name,
+    subject: PasswordResetEmailSubject["en"],
+    body: PasswordResetEmail({
+      user: { email: user.email, name: user.name },
+      token: token,
+      language: "en",
+    }),
+  });
 };
 
 /**
@@ -382,4 +396,3 @@ export const signIn = async (
   const { token, refreshToken } = await createToken(user);
   return { user, jwt: token, refreshToken };
 };
-
