@@ -32,6 +32,7 @@ import {
   verifyLogin,
 } from "~/models/user.server";
 import { passwordResetRequest, user, type User } from "~/schema";
+import NewUserEmail, { subject as NewUserEmailSubject } from "emails/new-user";
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000;
 
@@ -73,6 +74,19 @@ export const registerUser = async (
     newUsers.length === 1,
     "Expected to only get a single user account returned",
   );
+
+  await sendMail({
+    recipientAddress: newUsers[0].email,
+    recipientName: newUsers[0].name,
+    subject: NewUserEmailSubject["en"],
+    body: NewUserEmail({
+      user: { name: newUsers[0].name },
+      email: newUsers[0].email,
+      token: newUsers[0].emailConfirmationToken ?? "",
+      language: "en",
+    }),
+  });
+
   return newUsers[0];
 };
 
