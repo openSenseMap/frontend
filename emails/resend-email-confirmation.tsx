@@ -1,14 +1,12 @@
-import { Html } from "@react-email/html";
+import { createIntl } from "@formatjs/intl";
 import { Body } from "@react-email/body";
 import { Container } from "@react-email/container";
 import { Head } from "@react-email/head";
 import { Heading } from "@react-email/heading";
+import { Html } from "@react-email/html";
 import { Link } from "@react-email/link";
 import { Preview } from "@react-email/preview";
 import { Text } from "@react-email/text";
-import * as React from "react";
-
-import { createIntl } from "@formatjs/intl";
 
 const messages = {
   en: {
@@ -73,7 +71,7 @@ export const ResendEmailConfirmationEmail = ({
           <Text>{intl.formatMessage({ id: "description" })}</Text>
           <Link
             href={`${baseUrl}/account/confirm-email?token=${token}&email=${encodeURIComponent(
-              email
+              email,
             )}`}
             target="_blank"
             style={{
@@ -90,7 +88,7 @@ export const ResendEmailConfirmationEmail = ({
           <code
             style={code}
           >{`${baseUrl}/account/confirm-email?token=${token}&email=${encodeURIComponent(
-            email
+            email,
           )}`}</code>
           <Text
             style={{

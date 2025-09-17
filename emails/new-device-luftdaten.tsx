@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { createIntl } from "@formatjs/intl";
 import {
   Body,
@@ -84,7 +82,7 @@ export const NewDeviceLuftdatenEmail = ({
           <Text>
             {intl.formatMessage(
               { id: "description" },
-              { deviceName: device.name }
+              { deviceName: device.name },
             )}
           </Text>
           <Text>
