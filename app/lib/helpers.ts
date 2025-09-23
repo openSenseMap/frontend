@@ -73,9 +73,9 @@ export async function parseUserRegistrationData(request: Request): Promise<{
   const data = await parseRequestData(request);
   
   return {
-    name: data.name,
-    email: data.email,
-    password: data.password,
+    name: data.name || "",
+    email: data.email || "",
+    password: data.password || "",
     language: data.language || "en_US"
   };
 }
