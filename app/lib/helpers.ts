@@ -94,7 +94,24 @@ export async function parseUserSignInData(request: Request): Promise<{
   const data = await parseRequestData(request);
   
   return {
-    email: data.email,
-    password: data.password
+    email: data.email || "",
+    password: data.password || ""
+  };
+}
+
+/**
+ * Convenience function to parse refresh token data.
+ * Handles both JSON and form data formats.
+ * 
+ * @param request - The incoming request
+ * @returns Parsed refresh token data
+ */
+export async function parseRefreshTokenData(request: Request): Promise<{
+  token: string;
+}> {
+  const data = await parseRequestData(request);
+  
+  return {
+    token: data.token || ""
   };
 }

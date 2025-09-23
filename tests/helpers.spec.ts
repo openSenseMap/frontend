@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseRequestData, parseUserRegistrationData, parseUserSignInData } from '~/lib/helpers';
+import { parseRequestData, parseUserRegistrationData, parseUserSignInData, parseRefreshTokenData } from '~/lib/helpers';
 
 describe('parseRequestData', () => {
   it('should parse JSON data when content-type is application/json', async () => {
@@ -110,6 +110,85 @@ describe('parseUserSignInData', () => {
     expect(result).toEqual({
       email: 'john@example.com',
       password: 'password123'
+    });
+  });
+});
+
+describe('parseRefreshTokenData', () => {
+  it('should parse JSON refresh token data', async () => {
+    const jsonData = { token: 'refresh_token_123' };
+    const request = new Request('http://localhost', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(jsonData)
+    });
+
+    const result = await parseRefreshTokenData(request);
+    expect(result).toEqual({
+      token: 'refresh_token_123'
+    });
+  });
+
+  it('should parse form data refresh token', async () => {
+    const urlEncodedData = 'token=refresh_token_456';
+    
+    const request = new Request('http://localhost', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: urlEncodedData
+    });
+
+    const result = await parseRefreshTokenData(request);
+    expect(result).toEqual({
+      token: 'refresh_token_456'
+    });
+  });
+
+  it('should use default empty string for missing token field', async () => {
+    const jsonData = {};
+    const request = new Request('http://localhost', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(jsonData)
+    });
+
+    const result = await parseRefreshTokenData(request);
+    expect(result).toEqual({
+      token: ''
+    });
+  });
+
+  it('should handle multipart form data', async () => {
+    const boundary = '----WebKitFormBoundary7MA4YWxkTrZu0gW';
+    const body = `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="token"\r\n\r\n` +
+      `refresh_token_multipart\r\n` +
+      `--${boundary}--\r\n`;
+    
+    const request = new Request('http://localhost', {
+      method: 'POST',
+      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      body: body
+    });
+
+    const result = await parseRefreshTokenData(request);
+    expect(result).toEqual({
+      token: 'refresh_token_multipart'
+    });
+  });
+
+  it('should handle different field names and map to token', async () => {
+    const jsonData = { refreshToken: 'refresh_token_field_name' };
+    const request = new Request('http://localhost', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(jsonData)
+    });
+
+    const result = await parseRefreshTokenData(request);
+    // Should return empty string since we only look for 'token' field
+    expect(result).toEqual({
+      token: ''
     });
   });
 });
