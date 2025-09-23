@@ -1,8 +1,9 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { signIn } from "~/lib/user-service.server";
+import { parseUserSignInData } from "~/lib/helpers";
 /**
  * @openapi
- * /api/sign-in:
+ * /api/users/sign-in:
  *   post:
  *     tags:
  *       - Authentication
@@ -108,51 +109,40 @@ import { signIn } from "~/lib/user-service.server";
 export const action: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
-  let formData = new FormData();
   try {
-    formData = await request.formData();
-  } catch {
-    // Just continue, it will fail in the next check
-    // The try catch block handles an exception that occurs if the
-    // request was sent without x-www-form-urlencoded content-type header
-  }
+    // Parse request data - handles both JSON and form data automatically
+    const data = await parseUserSignInData(request);
+    
+    const email = data.email.trim();
+    const password = data.password.trim();
 
-  if (
-    !formData.has("email") ||
-    formData.get("email")?.toString().trim().length === 0
-  )
-    return Response.json(
-      {
-        code: "Unauthorized",
-        message: "You must specify either your email or your username",
-      },
-      {
-        status: 403,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
+    if (!email || email.length === 0) {
+      return Response.json(
+        {
+          code: "Unauthorized",
+          message: "You must specify either your email or your username",
+        },
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        },
+      );
+    }
 
-  if (
-    !formData.has("password") ||
-    formData.get("password")?.toString().trim().length === 0
-  )
-    return Response.json(
-      {
-        code: "Unauthorized",
-        message: "You must specify your password to sign in",
-      },
-      {
-        status: 403,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
+    if (!password || password.length === 0) {
+      return Response.json(
+        {
+          code: "Unauthorized",
+          message: "You must specify your password to sign in",
+        },
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        },
+      );
+    }
 
-  try {
-    const { user, jwt, refreshToken } =
-      (await signIn(
-        formData.get("email")!.toString(),
-        formData.get("password")!.toString(),
-      )) || {};
+    const { user, jwt, refreshToken } = (await signIn(email, password)) || {};
 
     if (user && jwt && refreshToken)
       return Response.json(
@@ -176,8 +166,23 @@ export const action: ActionFunction = async ({
           headers: { "Content-Type": "application/json; charset=utf-8" },
         },
       );
-  } catch (err) {
-    console.warn(err);
+  } catch (error) {
+    // Handle parsing errors
+    if (error instanceof Error && error.message.includes('Failed to parse')) {
+      return Response.json(
+        {
+          code: "Unauthorized",
+          message: `Invalid request format: ${error.message}`,
+        },
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        }
+      );
+    }
+    
+    // Handle other errors
+    console.warn(error);
     return new Response("Internal Server Error", {
       status: 500,
     });
