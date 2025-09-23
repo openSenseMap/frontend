@@ -1,27 +1,17 @@
 import { type ActionFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
-import { deleteUserByEmail } from "~/models/user.server";
 import { action as userAction } from "~/routes/api.users";
 
-const VALID_USER = {
-  name: "this is just a nickname",
-  email: "tester@test.test",
-  password: "some secure password",
-};
-const VALID_SECOND_USER = {
-  name: "mrtest",
-  email: "tester2@test.test",
-  password: "12345678",
-};
-
 describe("openSenseMap API Routes: /users", () => {
-  describe("/register", () => {
-    it("should allow to register an user via POST", async () => {
+  describe("/POST", () => {
+    it("should redirect POST requests to /users/register", async () => {
       // Arrange
-      const params = new URLSearchParams();
-      for (const [key, value] of Object.entries(VALID_USER))
-        params.append(key, value);
-      const request = new Request(`${BASE_URL}/users/register`, {
+      const params = new URLSearchParams({
+        name: "testuser",
+        email: "test@example.com",
+        password: "password123",
+      });
+      const request = new Request(`${BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
@@ -36,258 +26,18 @@ describe("openSenseMap API Routes: /users", () => {
 
       // Assert
       expect(dataFunctionValue).toBeInstanceOf(Response);
-      expect(body).toHaveProperty(
-        "message",
-        "Successfully registered new user",
-      );
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(308);
       expect(response.headers.get("content-type")).toBe(
         "application/json; charset=utf-8",
       );
-      expect(body).toHaveProperty("token");
-      expect(body).toHaveProperty("refreshToken");
+      expect(response.headers.get("Location")).toBe("/api/users/register");
+      expect(body).toHaveProperty("message", "User registration has been moved to /api/users/register");
     });
 
-    it("should deny registering a user with the same email", async () => {
+    it("should return 405 for non-POST requests", async () => {
       // Arrange
-      const params = new URLSearchParams();
-      for (const [key, value] of Object.entries(VALID_USER))
-        params.append(key, value);
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      // Act
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      // Assert
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty("message", "User already exists.");
-    });
-
-    it("should deny registering a user with too short password", async () => {
-      const params = new URLSearchParams({
-        name: "tester",
-        password: "short",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty(
-        "message",
-        "Password must be at least 8 characters long.",
-      );
-    });
-
-    it("should deny registering a user with no name", async () => {
-      const params = new URLSearchParams({
-        name: "",
-        password: "longenough",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty("message", "Username is required.");
-    });
-
-    it("should deny registering a user with missing name parameter", async () => {
-      const params = new URLSearchParams({
-        password: "longenough",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty("message", "Username is required.");
-    });
-
-    it("should deny registering a user with invalid email address", async () => {
-      const params = new URLSearchParams({
-        name: "tester mc testmann",
-        password: "longenough",
-        email: "invalid",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty("message", "Invalid email format.");
-    });
-
-    it("should deny registering a too short username", async () => {
-      const params = new URLSearchParams({
-        name: "t",
-        password: "longenough",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty(
-        "message",
-        "Username must be at least 3 characters long and not more than 40.",
-      );
-    });
-
-    it("should deny registering a user with username not starting with a letter or number", async () => {
-      const params = new URLSearchParams({
-        name: " username",
-        password: "longenough",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty(
-        "message",
-        "Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.",
-      );
-    });
-
-    it("should deny registering a user with username with invalid characters", async () => {
-      const params = new URLSearchParams({
-        name: "user () name",
-        password: "longenough",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty(
-        "message",
-        "Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.",
-      );
-    });
-
-    it("should deny registering a too long username", async () => {
-      const params = new URLSearchParams({
-        name: "Really Long User Name which is definetely too long to be accepted",
-        password: "longenough",
-        email: "address@email.com",
-      });
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const response = (await userAction({
-        request,
-      } as ActionFunctionArgs)) as Response;
-      const body = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty(
-        "message",
-        "Username must be at least 3 characters long and not more than 40.",
-      );
-    });
-
-    it("should allow registering a second user via POST", async () => {
-      // Arrange
-      const params = new URLSearchParams();
-      for (const [key, value] of Object.entries(VALID_SECOND_USER))
-        params.append(key, value);
-      const request = new Request(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
+      const request = new Request(`${BASE_URL}/users`, {
+        method: "GET",
       });
 
       // Act
@@ -295,158 +45,10 @@ describe("openSenseMap API Routes: /users", () => {
         request: request,
       } as ActionFunctionArgs);
       const response = dataFunctionValue as Response;
-      const body = await response?.json();
 
       // Assert
       expect(dataFunctionValue).toBeInstanceOf(Response);
-      expect(body).toHaveProperty(
-        "message",
-        "Successfully registered new user",
-      );
-      expect(response.status).toBe(201);
-      expect(response.headers.get("content-type")).toBe(
-        "application/json; charset=utf-8",
-      );
-      expect(body).toHaveProperty("token");
-      expect(body).toHaveProperty("refreshToken");
+      expect(response.status).toBe(405);
     });
-  });
-
-  // it('should allow to register a new user with password leading and trailing spaces', () => {
-  //   return chakram.post(`${BASE_URL}/users/register`, { name: 'spaces_tester', password: ' leading and trailing spaces ', email: 'leading_spacesaddress@email.com' })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(201);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'leading_spacesaddress@email.com', password: ' leading and trailing spaces ' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-
-  //       return chakram.post(`${BASE_URL}/users/request-password-reset`, { email: 'leading_spacesaddress@email.com' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should allow to change to a password with leading and trailing spaces', () => {
-  //   return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
-
-  //       // try to log in with old token
-  //       return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       // try to sign in with new password
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: ' leading and trailing spaces ' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('data', function (data) {
-  //         expect(data.user.email).to.equal('tester2@test.test');
-  //       });
-  //       expect(response.body.token).to.exist;
-
-  //       jwt = response.body.token;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should allow to change password with correct current password', () => {
-  //   return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
-
-  //       // try to log in with old token
-  //       return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       // try to sign in with new password
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('data', function (data) {
-  //         expect(data.user.email).to.equal('tester2@test.test');
-  //       });
-  //       expect(response.body.token).to.exist;
-
-  //       jwt = response.body.token;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should deny to use revoked jwt', () => {
-  //   return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-  //       expect(response.body.refreshToken).to.exist;
-
-  //       jwt = response.body.token;
-  //       refreshToken = response.body.refreshToken;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should deny to use an old jwt after using a refresh token', () => {
-  //   return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-  //       expect(response.body.refreshToken).to.exist;
-
-  //       jwt = response.body.token;
-  //       refreshToken = response.body.refreshToken;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should deny to register with multiline username', () => {
-  //   return chakram.post(`${BASE_URL}/users/register`, {
-  //     name: `multi
-  //   line name`, email: 'tester5@test.test', password: '12345678'
-  //   })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(400);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  afterAll(async () => {
-    // delete the valid test user
-    await deleteUserByEmail(VALID_USER.email);
-    await deleteUserByEmail(VALID_SECOND_USER.email);
   });
 });
