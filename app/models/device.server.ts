@@ -3,6 +3,7 @@ import { eq, sql, desc } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
+import { accessToken } from '~/schema/accessToken'
 
 export function getDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
@@ -266,3 +267,13 @@ export async function getLatestDevices() {
 
 	return devices
 }
+
+export async function findAccessToken(deviceId: string): Promise<{ token: string } | null> {
+	const result = await drizzleClient.query.accessToken.findFirst({
+	  where: (token, { eq }) => eq(token.deviceId, deviceId)
+	});
+  
+	if (!result || !result.token) return null;
+	
+	return { token: result.token };
+  }

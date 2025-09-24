@@ -163,3 +163,50 @@ export function getMeasurement(
     limit: 3600, // 60 measurements per hour * 24 hours * 2.5 days
   });
 }
+
+
+export async function saveMeasurements(device: any, measurements: any[]): Promise<void> {
+  if (!Array.isArray(measurements)) {
+    throw new Error('Array expected');
+  }
+
+  const sensorIds = device.sensors.map((sensor: any) => sensor.id);
+  const lastMeasurements: { [key: string]: any } = {};
+
+  // TODO: refactor
+  // find new lastMeasurements
+  // check if all the measurements belong to this box
+  for (let i = measurements.length - 1; i >= 0; i--) {
+    if (!sensorIds.includes(measurements[i].sensor_id)) {
+      const error = new Error(`Measurement for sensor with id ${measurements[i].sensor_id} does not belong to box`);
+      error.name = "ModelError";
+      throw error;
+    }
+
+    if (!lastMeasurements[measurements[i].sensor_id]) {
+      lastMeasurements[measurements[i].sensor_id] = measurements[i];
+    }
+  }
+
+  // TODO: check if we can merge this with `saveMeasurement`
+  await insertMeasurements(measurements);
+}
+
+async function insertMeasurements(measurements: any[]): Promise<void> {
+  const measurementInserts = measurements.map(measurement => ({
+    sensorId: measurement.sensor_id,
+    value: measurement.value,
+    time: measurement.createdAt || new Date(),
+  }));
+
+  await drizzleClient.insert(measurement).values(measurementInserts);
+}
+
+async function insertMeasurement(measurement: any): Promise<any> {
+  return drizzleClient.insert(measurement).values({
+    sensorId: measurement.sensor_id,
+    value: measurement.value,
+    time: measurement.createdAt
+  });
+}
+
