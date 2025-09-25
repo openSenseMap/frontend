@@ -2,7 +2,6 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
     'application/json': {
       decodeMessage: (body: any, { sensors }: { sensors: any[] }) => {
         if (Array.isArray(body)) {
-          // JSON Array format
           return body.map(measurement => ({
             sensor_id: measurement.sensor,
             value: parseFloat(measurement.value),
@@ -10,7 +9,6 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
             location: measurement.location || null,
           }));
         } else {
-          // JSON Object format
           return Object.entries(body).map(([sensorId, value]: [string, any]) => {
             let measurementValue, createdAt, location;
             
@@ -212,7 +210,7 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
       .join('')
       .replace(/0+$/, ''); // Remove trailing zeros
   
-    // Convert hex back to sensor ID format (this might need adjustment based on your ID format)
+    // Convert hex back to sensor ID format
     let sensorId = sensorIdHex;
     
     // Try to find matching sensor by ID
@@ -223,7 +221,6 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
     });
   
     if (!matchingSensor) {
-      // If we can't find a matching sensor, skip this measurement
       console.warn(`No matching sensor found for hex ID: ${sensorIdHex}`);
       return null;
     }

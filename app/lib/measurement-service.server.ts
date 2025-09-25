@@ -17,7 +17,6 @@ export const postNewMeasurements = async (
   const { luftdaten, hackair, authorization } = options;
   let { contentType } = options;
 
-  // Override content type based on query parameters
   if (hackair) {
     contentType = "hackair";
   } else if (luftdaten) {
@@ -28,16 +27,13 @@ export const postNewMeasurements = async (
     throw new Error("UnsupportedMediaTypeError: Unsupported content-type.");
   }
 
-  // Get device with sensors
   const device = await getDevice({id: deviceId});
   if (!device) {
     throw new Error("NotFoundError: Device not found");
   }
 
-  // Get device access token
   const deviceAccessToken = await findAccessToken(deviceId);
 
-  // Authorization check for boxes that have auth enabled or hackair format
   if (
     (contentType === "hackair") &&
     deviceAccessToken?.token &&
@@ -48,7 +44,6 @@ export const postNewMeasurements = async (
     throw error;
   }
 
-  // Decode measurements based on content type and sensors
   const measurements = await decodeMeasurements(body, {
     contentType,
     sensors: device.sensors,
