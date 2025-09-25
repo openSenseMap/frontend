@@ -335,28 +335,119 @@ describe("multiple CSV POST /boxes/:id/data", () => {
 //     });
 //   });
 
-  // ---------------------------------------------------
-  // Stats endpoint
-  // ---------------------------------------------------
-//   describe("stats endpoint", () => {
-//     it("should return stats correctly", async () => {
-//       const request = new Request(`${BASE_URL}/api/stats`, {
-//         headers: { "x-apicache-bypass": "true" },
-//       });
+describe("multiple JSON POST /boxes/:id/data", () => {
+  it("should accept multiple measurements with timestamps as JSON object via POST (content-type: json)", async () => {
+    const submitData = jsonSubmitData.jsonObj(sensors);
 
-//       const response = await statsLoader({ request, params: {} });
+    const request = new Request(
+      `${BASE_URL}/api/boxes/${deviceId}/data`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: mockAccessToken,
+        },
+        body: JSON.stringify(submitData),
+      }
+    );
 
-//       expect(response).toBeInstanceOf(Response);
-//       expect(response.status).toBe(200);
+    const before = new Date();
 
-//       const body = await response.json();
-//       expect(Array.isArray(body)).toBe(true);
-//       const [boxes, measurements] = body;
-//       expect(typeof boxes).toBe("number");
-//       expect(typeof measurements).toBe("number");
-//     });
-//   });
-  // })
+    const response = await postMeasurementsAction({
+      request,
+      params: { deviceId },
+      context: {} as AppLoadContext,
+    } satisfies ActionFunctionArgs);
+
+    const after = new Date();
+
+    expect(response.status).toBe(201);
+    expect(await response.text()).toContain("Measurements saved in box");
+
+    // Verify sensors got updated
+    const updatedDevice = await getDevice({ id: deviceId });
+    for (const sensor of updatedDevice?.sensors || []) {
+      expect(sensor.lastMeasurement).toBeTruthy();
+      expect(new Date(sensor.lastMeasurement.createdAt).getTime())
+        .toBeGreaterThanOrEqual(before.getTime() - 1000);
+      expect(new Date(sensor.lastMeasurement.createdAt).getTime())
+        .toBeLessThanOrEqual(after.getTime() + 1000 * 60 * 4); // within ~4 min
+    }
+  });
+
+  it("should accept multiple measurements with timestamps as JSON object via POST", async () => {
+    const submitData = jsonSubmitData.jsonObj(sensors);
+
+    const request = new Request(
+      `${BASE_URL}/api/boxes/${deviceId}/data`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: mockAccessToken,
+          // TODO: remove header here
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
+      }
+    );
+
+    const before = new Date();
+    const response = await postMeasurementsAction({
+      request,
+      params: { deviceId },
+      context: {} as AppLoadContext,
+    } satisfies ActionFunctionArgs);
+    const after = new Date();
+
+    expect(response.status).toBe(201);
+    expect(await response.text()).toContain("Measurements saved in box");
+
+    const updatedDevice = await getDevice({ id: deviceId });
+    for (const sensor of updatedDevice?.sensors || []) {
+      expect(sensor.lastMeasurement).toBeTruthy();
+      const createdAt = new Date(sensor.lastMeasurement.createdAt);
+      expect(createdAt.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
+      expect(createdAt.getTime()).toBeLessThanOrEqual(after.getTime() + 1000 * 60 * 4);
+    }
+  });
+
+  it("should accept multiple measurements with timestamps as JSON array via POST", async () => {
+    const submitData = jsonSubmitData.jsonArr(sensors);
+
+    const request = new Request(
+      `${BASE_URL}/api/boxes/${deviceId}/data`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: mockAccessToken,
+        },
+        body: JSON.stringify(submitData),
+      }
+    );
+
+    const before = new Date();
+    const response = await postMeasurementsAction({
+      request,
+      params: { deviceId },
+      context: {} as AppLoadContext,
+    } satisfies ActionFunctionArgs);
+    const after = new Date();
+
+    expect(response.status).toBe(201);
+    expect(await response.text()).toContain("Measurements saved in box");
+
+    const updatedDevice = await getDevice({ id: deviceId });
+    for (const sensor of updatedDevice?.sensors || []) {
+      expect(sensor.lastMeasurement).toBeTruthy();
+      const createdAt = new Date(sensor.lastMeasurement.createdAt);
+      expect(createdAt.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
+      expect(createdAt.getTime()).toBeLessThanOrEqual(after.getTime() + 1000 * 60 * 4);
+    }
+  });
+});
+
+
   afterAll(async () => {
       // delete the valid test user
       await deleteUserByEmail(TEST_USER.email);

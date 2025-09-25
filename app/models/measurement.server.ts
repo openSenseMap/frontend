@@ -8,6 +8,7 @@ import {
   measurements1hourView,
   measurements1monthView,
   measurements1yearView,
+  sensor,
 } from "~/schema";
 
 // This function retrieves measurements from the database based on the provided parameters.
@@ -166,27 +167,27 @@ export function getMeasurement(
 
 
 export async function saveMeasurements(device: any, measurements: any[]): Promise<void> {
-  if (!Array.isArray(measurements)) {
-    throw new Error('Array expected');
-  }
+  if (!Array.isArray(measurements)) throw new Error("Array expected");
 
-  const sensorIds = device.sensors.map((sensor: any) => sensor.id);
-  const lastMeasurements: { [key: string]: any } = {};
+  const sensorIds = device.sensors.map((s: any) => s.id);
+  const lastMeasurements: Record<string, any> = {};
 
-  // TODO: refactor
-  // find new lastMeasurements
-  // check if all the measurements belong to this box
+
+
+  // find new lastMeasurements (iterate from end to keep latest)
   for (let i = measurements.length - 1; i >= 0; i--) {
-    if (!sensorIds.includes(measurements[i].sensor_id)) {
-      const error = new Error(`Measurement for sensor with id ${measurements[i].sensor_id} does not belong to box`);
+    const m = measurements[i];
+
+    if (!sensorIds.includes(m.sensor_id)) {
+      const error = new Error(`Measurement for sensor with id ${m.sensor_id} does not belong to box`);
       error.name = "ModelError";
       throw error;
     }
 
     const now = new Date();
-    const maxFutureTime = 30 * 1000; // Allow 30 seconds in the future for clock skew
+    const maxFutureTime = 30 * 1000; // 30 seconds
 
-    const measurementTime = new Date(measurements[i].createdAt);
+    const measurementTime = new Date(m.createdAt || Date.now());
     if (measurementTime.getTime() > now.getTime() + maxFutureTime) {
       const error = new Error(`Measurement timestamp is too far in the future: ${measurementTime.toISOString()}`);
       error.name = "ModelError";
@@ -194,13 +195,36 @@ export async function saveMeasurements(device: any, measurements: any[]): Promis
       throw error;
     }
 
-    if (!lastMeasurements[measurements[i].sensor_id]) {
-      lastMeasurements[measurements[i].sensor_id] = measurements[i];
+    if (!lastMeasurements[m.sensor_id]) {
+      lastMeasurements[m.sensor_id] = {
+        value: m.value,
+        createdAt: measurementTime.toISOString(),
+        sensorId: m.sensor_id,
+      };
     }
   }
 
-  // TODO: check if we can merge this with `saveMeasurement`
-  await insertMeasurements(measurements);
+  // Prepare inserts for the measurement table
+  const measurementInserts = measurements.map((m) => ({
+    sensorId: m.sensor_id,
+    value: m.value,
+    time: m.createdAt ? new Date(m.createdAt) : new Date(),
+  }));
+
+
+  await drizzleClient.transaction(async (tx) => {
+    await tx.insert(measurement).values(measurementInserts);
+
+    const updatePromises = Object.entries(lastMeasurements).map(([sensorId, lastMeasurement]) =>
+      tx
+        .update(sensor)
+        .set({ lastMeasurement: JSON.stringify(lastMeasurement) })
+        .where(eq(sensor.id, sensorId))
+    );
+
+    await Promise.all(updatePromises);
+
+  });
 }
 
 async function insertMeasurements(measurements: any[]): Promise<void> {

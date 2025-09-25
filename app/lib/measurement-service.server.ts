@@ -54,7 +54,5 @@ export const postNewMeasurements = async (
     sensors: device.sensors,
   });
 
-
-  // Save measurements
   await saveMeasurements(device, measurements);
 };

@@ -179,7 +179,8 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
     return Object.prototype.hasOwnProperty.call(decodeHandlers, contentType) || 
            contentType.includes('application/json') || 
            contentType.includes('text/csv') || 
-           contentType.includes('application/sbx-bytes');
+           contentType.includes('application/sbx-bytes') || 
+           contentType.includes('text/plain;charset=UTF-8'); // TODO: implement
   }
   
   export async function decodeMeasurements(
