@@ -70,6 +70,16 @@ export const action: ActionFunction = async ({
       );
     }
 
+    if (err.name === "ModelError" && err.type === "UnprocessableEntityError") {
+      return Response.json(
+        {
+          code: "UnprocessableEntity",
+          message: err.message,
+        },
+        { status: 422 }
+      );
+    }
+
     if (err.name === "UnsupportedMediaTypeError") {
       return Response.json(
         {

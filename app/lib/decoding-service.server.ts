@@ -115,19 +115,64 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
     },
   
     'application/sbx-bytes': {
-      decodeMessage: (body: ArrayBuffer, { sensors }: { sensors: any[] }) => {
-        // Binary format handling would go here
-        // This is more complex and would require proper binary parsing
-        throw new Error('Binary format decoding not yet implemented');
-      }
-    },
-  
-    'application/sbx-bytes-ts': {
-      decodeMessage: (body: ArrayBuffer, { sensors }: { sensors: any[] }) => {
-        // Binary format with timestamp handling would go here
-        throw new Error('Binary format with timestamp decoding not yet implemented');
+  decodeMessage: (body: ArrayBuffer, { sensors }: { sensors: any[] }) => {
+    const DATA_LENGTH_NO_TIMESTAMP = 16; // 12 bytes sensorId + 4 bytes float32
+    const bytes = new Uint8Array(body);
+    const measurements = [];
+
+    if (bytes.length % DATA_LENGTH_NO_TIMESTAMP !== 0) {
+      throw new Error('Invalid data length for sbx-bytes format');
+    }
+
+    const measurementCount = bytes.length / DATA_LENGTH_NO_TIMESTAMP;
+    if (measurementCount > 2500) {
+      throw new Error('Too many measurements. Please submit at most 2500 measurements at once.');
+    }
+
+    if (measurementCount === 0) {
+      throw new Error('Cannot save empty measurements.');
+    }
+
+    for (let first = 0; first < bytes.length; first += DATA_LENGTH_NO_TIMESTAMP) {
+      const measurement = extractMeasurement(bytes, first, sensors, false);
+      if (measurement) {
+        measurements.push(measurement);
       }
     }
+
+    return measurements;
+  }
+},
+
+'application/sbx-bytes-ts': {
+  decodeMessage: (body: ArrayBuffer, { sensors }: { sensors: any[] }) => {
+    const DATA_LENGTH_WITH_TIMESTAMP = 20; // 12 bytes sensorId + 4 bytes float32 + 4 bytes timestamp
+    const bytes = new Uint8Array(body);
+    const measurements = [];
+
+    if (bytes.length % DATA_LENGTH_WITH_TIMESTAMP !== 0) {
+      throw new Error('Invalid data length for sbx-bytes-ts format');
+    }
+
+    const measurementCount = bytes.length / DATA_LENGTH_WITH_TIMESTAMP;
+    if (measurementCount > 2500) {
+      throw new Error('Too many measurements. Please submit at most 2500 measurements at once.');
+    }
+
+    if (measurementCount === 0) {
+      throw new Error('Cannot save empty measurements.');
+    }
+
+    for (let first = 0; first < bytes.length; first += DATA_LENGTH_WITH_TIMESTAMP) {
+      const measurement = extractMeasurement(bytes, first, sensors, true);
+      if (measurement) {
+        measurements.push(measurement);
+      }
+    }
+
+    return measurements;
+  }
+}
   };
 
   export function hasDecoder(contentType: string): boolean {
@@ -149,4 +194,62 @@ const decodeHandlers: { [key: string]: { decodeMessage: (data: any, options: any
       (error as any).type = "UnprocessableEntityError";
       throw error;
     }
+  }
+
+  function extractMeasurement(
+    bytes: Uint8Array, 
+    offset: number, 
+    sensors: any[], 
+    withTimestamp: boolean
+  ): any | null {
+    const view = new DataView(bytes.buffer, bytes.byteOffset + offset);
+  
+    // Extract sensor ID (first 12 bytes as hex string)
+    const sensorIdBytes = bytes.slice(offset, offset + 12);
+    const sensorIdHex = Array.from(sensorIdBytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+      .replace(/0+$/, ''); // Remove trailing zeros
+  
+    // Convert hex back to sensor ID format (this might need adjustment based on your ID format)
+    let sensorId = sensorIdHex;
+    
+    // Try to find matching sensor by ID
+    const matchingSensor = sensors.find(s => {
+      const cleanId = s.id.replace(/^0x/, '').toLowerCase();
+      return cleanId.startsWith(sensorIdHex.toLowerCase()) || 
+             sensorIdHex.toLowerCase().startsWith(cleanId);
+    });
+  
+    if (!matchingSensor) {
+      // If we can't find a matching sensor, skip this measurement
+      console.warn(`No matching sensor found for hex ID: ${sensorIdHex}`);
+      return null;
+    }
+  
+    sensorId = matchingSensor.id;
+  
+    // Extract value (4 bytes float32, little endian)
+    const value = view.getFloat32(12, true);
+  
+    // Extract timestamp if present
+    let createdAt = new Date();
+    if (withTimestamp) {
+      const timestampSeconds = view.getUint32(16, true);
+      createdAt = new Date(timestampSeconds * 1000);
+      
+      // Validate timestamp is not too far in the future
+      const now = new Date();
+      const maxFutureTime = 5 * 60 * 1000; // 5 minutes
+      if (createdAt.getTime() > now.getTime() + maxFutureTime) {
+        throw new Error(`Timestamp ${createdAt.toISOString()} is too far into the future.`);
+      }
+    }
+  
+    return {
+      sensor_id: sensorId,
+      value: value,
+      createdAt: createdAt,
+      location: null,
+    };
   }

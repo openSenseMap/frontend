@@ -183,6 +183,17 @@ export async function saveMeasurements(device: any, measurements: any[]): Promis
       throw error;
     }
 
+    const now = new Date();
+    const maxFutureTime = 30 * 1000; // Allow 30 seconds in the future for clock skew
+
+    const measurementTime = new Date(measurements[i].createdAt);
+    if (measurementTime.getTime() > now.getTime() + maxFutureTime) {
+      const error = new Error(`Measurement timestamp is too far in the future: ${measurementTime.toISOString()}`);
+      error.name = "ModelError";
+      (error as any).type = "UnprocessableEntityError";
+      throw error;
+    }
+
     if (!lastMeasurements[measurements[i].sensor_id]) {
       lastMeasurements[measurements[i].sensor_id] = measurements[i];
     }
@@ -198,6 +209,8 @@ async function insertMeasurements(measurements: any[]): Promise<void> {
     value: measurement.value,
     time: measurement.createdAt || new Date(),
   }));
+
+
 
   await drizzleClient.insert(measurement).values(measurementInserts);
 }

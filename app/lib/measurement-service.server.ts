@@ -17,9 +17,6 @@ export const postNewMeasurements = async (
   const { luftdaten, hackair, authorization } = options;
   let { contentType } = options;
 
-  console.log("contentType", contentType)
-  console.log("options", options)
-
   // Override content type based on query parameters
   if (hackair) {
     contentType = "hackair";
@@ -37,10 +34,8 @@ export const postNewMeasurements = async (
     throw new Error("NotFoundError: Device not found");
   }
 
-  console.log("get access token")
   // Get device access token
   const deviceAccessToken = await findAccessToken(deviceId);
-  console.log("access token", deviceAccessToken)
 
   // Authorization check for boxes that have auth enabled or hackair format
   if (
@@ -56,9 +51,9 @@ export const postNewMeasurements = async (
   // Decode measurements based on content type and sensors
   const measurements = await decodeMeasurements(body, {
     contentType,
-    sensors: []
-    // sensors: device.sensors,
+    sensors: device.sensors,
   });
+
 
   // Save measurements
   await saveMeasurements(device, measurements);

@@ -63,6 +63,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 				// limit: 1000,
 			},
+			sensors: true
 		},
 	})
 }

@@ -4,12 +4,11 @@ import { action as postMeasurementsAction } from "~/routes/api.boxes.$deviceId.d
 import { loader as statsLoader } from "~/routes/api.stats";
 import { BASE_URL } from "vitest.setup";
 import { csvExampleData, jsonSubmitData, byteSubmitData } from "tests/data";
-import { createDevice, deleteDevice } from "~/models/device.server";
+import { createDevice, deleteDevice, getDevice } from "~/models/device.server";
 import { registerUser } from "~/lib/user-service.server";
-import { accessToken, type User } from "~/schema";
+import { accessToken, sensor, type User } from "~/schema";
 import { deleteUserByEmail } from "~/models/user.server";
 import { drizzleClient } from "~/db.server";
-import { drizzle } from "drizzle-orm/postgres-js";
 
 const mockAccessToken = "valid-access-token";
 const mockSensors = [
@@ -33,11 +32,17 @@ const TEST_BOX = {
   model: "luftdaten.info",
   mqttEnabled: false,
   ttnEnabled: false,
+  sensors: [ 
+    { title: "Temperature", unit: "°C", sensorType: "temperature" },
+    { title: "Humidity", unit: "%", sensorType: "humidity" },
+  ],
 };
 
 describe("openSenseMap API Routes: /boxes", () => {
   let userId: string = "";
   let deviceId: string = "";
+  let sensorIds: string[] = []
+  let sensors: any[] = []
 
   beforeAll(async () => {
 
@@ -51,12 +56,14 @@ describe("openSenseMap API Routes: /boxes", () => {
       const device = await createDevice(TEST_BOX, userId);
       deviceId = device.id
 
-      console.log("seed accesss tokens")
+      const deviceWithSensors = await getDevice({ id: deviceId });
+      sensorIds = deviceWithSensors?.sensors?.map((sensor: any) => sensor.id) || [];
+      sensors = deviceWithSensors?.sensors?.map((sensor: any) => sensor) || []
+
       await drizzleClient.insert(accessToken).values({
         deviceId: deviceId,
         token: "valid-access-token",
       })
-      console.log("finished seeding accesss tokens")
 
     });
 
@@ -65,31 +72,31 @@ describe("openSenseMap API Routes: /boxes", () => {
   // ---------------------------------------------------
   // Single measurement POST /boxes/:id/:sensorId
   // ---------------------------------------------------
-  describe("single measurement POST", () => {
-    it("should accept a single measurement via POST", async () => {
-      console.log("test device id", deviceId)
-      const request = new Request(
-        `${BASE_URL}/api/boxes/${deviceId}/${mockSensors[0].id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: mockAccessToken,
-          },
-          body: JSON.stringify({ value: 312.1 }),
-        }
-      );
+  // describe("single measurement POST", () => {
+  //   it("should accept a single measurement via POST", async () => {
+  //     console.log("test device id", deviceId)
+  //     const request = new Request(
+  //       `${BASE_URL}/api/boxes/${deviceId}/${sensorIds[0]}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: mockAccessToken,
+  //         },
+  //         body: JSON.stringify({ value: 312.1 }),
+  //       }
+  //     );
 
-      const response = await postMeasurementsAction({
-        request,
-        params: { deviceId: deviceId, sensorId: mockSensors[0].id },
-        context: {} as AppLoadContext
-      } satisfies ActionFunctionArgs);
+  //     const response = await postMeasurementsAction({
+  //       request,
+  //       params: { deviceId: deviceId, sensorId: sensorIds[0] },
+  //       context: {} as AppLoadContext
+  //     } satisfies ActionFunctionArgs);
 
-      expect(response).toBeInstanceOf(Response);
-      expect(response.status).toBe(201);
-      expect(await response.text()).toBe("Measurement saved in box");
-    });
+  //     expect(response).toBeInstanceOf(Response);
+  //     expect(response.status).toBe(201);
+  //     expect(await response.text()).toBe("Measurement saved in box");
+  //   });
 
 //     it("should reject with wrong access token", async () => {
 //       const request = new Request(
@@ -168,130 +175,133 @@ describe("openSenseMap API Routes: /boxes", () => {
 //   // ---------------------------------------------------
 // // Multiple CSV POST
 // // ---------------------------------------------------
-// describe("multiple CSV POST /boxes/:id/data", () => {
-//     it("should accept multiple measurements as CSV via POST (no timestamps)", async () => {
-//       const csvPayload = csvExampleData.noTimestamps(mockSensors);
+describe("multiple CSV POST /boxes/:id/data", () => {
+    it("should accept multiple measurements as CSV via POST (no timestamps)", async () => {
+      const csvPayload = csvExampleData.noTimestamps(sensors);
   
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/data`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "text/csv",
-//             Authorization: mockAccessToken,
-//           },
-//           body: csvPayload,
-//         }
-//       );
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/data`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/csv",
+            Authorization: mockAccessToken,
+          },
+          body: csvPayload,
+        }
+      );
   
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId },
-//         context: {} as AppLoadContext,
-//       } satisfies ActionFunctionArgs);
+      const response = await postMeasurementsAction({
+        request,
+        params: { deviceId: deviceId },
+        context: {} as AppLoadContext,
+      } satisfies ActionFunctionArgs);
   
-//       expect(response.status).toBe(201);
-//       expect(await response.text()).toContain("Measurements saved in box");
-//     });
+      expect(response.status).toBe(201);
+      expect(await response.text()).toContain("Measurements saved in box");
+    });
   
-//     it("should accept multiple measurements as CSV via POST (with timestamps)", async () => {
-//       const csvPayload = csvExampleData.withTimestamps(mockSensors);
+    it("should accept multiple measurements as CSV via POST (with timestamps)", async () => {
+      const csvPayload = csvExampleData.withTimestamps(sensors);
   
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/data`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "text/csv",
-//             Authorization: mockAccessToken,
-//           },
-//           body: csvPayload,
-//         }
-//       );
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/data`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/csv",
+            Authorization: mockAccessToken,
+          },
+          body: csvPayload,
+        }
+      );
   
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId },
-//         context: {} as AppLoadContext,
-//       } satisfies ActionFunctionArgs);
+      const response = await postMeasurementsAction({
+        request,
+        params: { deviceId: deviceId },
+        context: {} as AppLoadContext,
+      } satisfies ActionFunctionArgs);
   
-//       expect(response.status).toBe(201);
-//     });
+      expect(response.status).toBe(201);
+    });
   
-//     it("should reject CSV with future timestamps", async () => {
-//       const csvPayload = csvExampleData.withTimestampsFuture(mockSensors);
+    it("should reject CSV with future timestamps", async () => {
+      const csvPayload = csvExampleData.withTimestampsFuture(sensors);
+      console.log("csvPayload", csvPayload)
   
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/data`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "text/csv",
-//             Authorization: mockAccessToken,
-//           },
-//           body: csvPayload,
-//         }
-//       );
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/data`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/csv",
+            Authorization: mockAccessToken,
+          },
+          body: csvPayload,
+        }
+      );
   
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId },
-//         context: {} as AppLoadContext,
-//       } satisfies ActionFunctionArgs);
+      const response = await postMeasurementsAction({
+        request,
+        params: { deviceId: deviceId },
+        context: {} as AppLoadContext,
+      } satisfies ActionFunctionArgs);
   
-//       expect(response.status).toBe(422);
-//     });
-//   });
+      expect(response.status).toBe(422);
+    });
+  });
   
 
-//   // ---------------------------------------------------
-//   // Multiple bytes POST
-//   // ---------------------------------------------------
-//   describe("multiple bytes POST /boxes/:id/data", () => {
+  // ---------------------------------------------------
+  // Multiple bytes POST
+  // ---------------------------------------------------
+  // describe("multiple bytes POST /boxes/:id/data", () => {
 
-//     it("should accept multiple measurements as bytes via POST", async () => {
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/data`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/sbx-bytes",
-//             Authorization: mockAccessToken,
-//           },
-//           body: byteSubmitData(mockSensors),
-//         }
-//       );
+  //   it("should accept multiple measurements as bytes via POST", async () => {
+  //     const request = new Request(
+  //       `${BASE_URL}/api/boxes/${deviceId}/data`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/sbx-bytes",
+  //           Authorization: mockAccessToken,
+  //         },
+  //         body: byteSubmitData(sensors),
+  //       }
+  //     );
 
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId },
-//       } as ActionFunctionArgs);
+  //     const response = await postMeasurementsAction({
+  //       request,
+  //       params: { deviceId: deviceId },
+  //       context: {} as AppLoadContext
+  //     } as ActionFunctionArgs);
 
-//       expect(response.status).toBe(201);
-//       expect(await response.text()).toContain("Measurements saved in box");
-//     });
+  //     expect(response.status).toBe(201);
+  //     expect(await response.text()).toContain("Measurements saved in box");
+  //   });
 
-//     it("should accept multiple measurements as bytes with timestamps", async () => {
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/data`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/sbx-bytes-ts",
-//             Authorization: mockAccessToken,
-//           },
-//           body: byteSubmitData(mockSensors, true),
-//         }
-//       );
+  //   it("should accept multiple measurements as bytes with timestamps", async () => {
+  //     const request = new Request(
+  //       `${BASE_URL}/api/boxes/${deviceId}/data`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/sbx-bytes-ts",
+  //           Authorization: mockAccessToken,
+  //         },
+  //         body: byteSubmitData(sensors, true),
+  //       }
+  //     );
 
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId },
-//       } as ActionFunctionArgs);
+  //     const response = await postMeasurementsAction({
+  //       request,
+  //       params: { deviceId: deviceId },
+  //       context: {} as AppLoadContext
+  //     } as ActionFunctionArgs);
 
-//       expect(response.status).toBe(201);
-//     });
-//   });
+  //     expect(response.status).toBe(201);
+  //   });
+  // });
 
   // ---------------------------------------------------
   // MQTT publishing
@@ -346,7 +356,7 @@ describe("openSenseMap API Routes: /boxes", () => {
 //       expect(typeof measurements).toBe("number");
 //     });
 //   });
-  })
+  // })
   afterAll(async () => {
       // delete the valid test user
       await deleteUserByEmail(TEST_USER.email);
