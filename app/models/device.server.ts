@@ -105,19 +105,35 @@ export function updateDeviceLocation({
 export function deleteDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.delete(device).where(eq(device.id, id))
 }
+const DEVICE_COLUMNS_WITH_SENSORS = {
+	id: true,
+	name: true,
+	description: true,
+	image: true,
+	link: true,
+	tags: true,
+	exposure: true,
+	model: true,
+	latitude: true,
+	longitude: true,
+	useAuth: true,
+	public: true,
+	status: true,
+	createdAt: true,
+	updatedAt: true,
+	expiresAt: true,
+	userId: true,
+} as const;
 
 export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
 		where: (device, { eq }) => eq(device.userId, userId),
-		columns: {
-			id: true,
-			name: true,
-			latitude: true,
-			longitude: true,
-			exposure: true,
-			model: true,
-			createdAt: true,
-			updatedAt: true,
+		columns: DEVICE_COLUMNS_WITH_SENSORS,
+		with: {
+			sensors: true,
+		},
+	})
+}
 		},
 	})
 }
