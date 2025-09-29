@@ -105,6 +105,7 @@ export function updateDeviceLocation({
 export function deleteDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.delete(device).where(eq(device.id, id))
 }
+
 const DEVICE_COLUMNS_WITH_SENSORS = {
 	id: true,
 	name: true,
@@ -134,6 +135,12 @@ export function getUserDevices(userId: Device['userId']) {
 		},
 	})
 }
+
+export function getAllDevicesWithSensors() {
+	return drizzleClient.query.device.findMany({
+		columns: DEVICE_COLUMNS_WITH_SENSORS,
+		with: {
+			sensors: true,
 		},
 	})
 }
@@ -404,7 +411,11 @@ export async function createDevice(deviceData: any, userId: string) {
 					tags: deviceData.tags,
 					userId: userId,
 					name: deviceData.name,
+					description: deviceData.description,
+					image: deviceData.image,
+					link: deviceData.link,
 					exposure: deviceData.exposure,
+					public: deviceData.public ?? false,
 					expiresAt: deviceData.expiresAt
 						? new Date(deviceData.expiresAt)
 						: null,
