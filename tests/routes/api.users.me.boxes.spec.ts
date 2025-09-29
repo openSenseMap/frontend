@@ -55,19 +55,114 @@ describe("openSenseMap API Routes: /users", () => {
         } as LoaderFunctionArgs)) as Response;
         const body = await response?.json();
 
-        // Assert
         expect(response.status).toBe(200);
-        /** TODO(integrations): readd this once integrations have been implemented */
-        // expect(body.data.boxes[0].integrations.mqtt).toEqual({
-        //   enabled: false,
-        // });
-        // expect(body.data.sharedBoxes[0].integrations.mqtt).toEqual({
-        //   enabled: false,
-        // });
+        expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+        
+        expect(body).toHaveProperty("code", "Ok");
+        expect(body).toHaveProperty("data");
+        expect(body.data).toHaveProperty("boxes");
+        expect(body.data).toHaveProperty("boxes_count");
+        expect(body.data).toHaveProperty("sharedBoxes");
+        
+        expect(Array.isArray(body.data.boxes)).toBe(true);
+        expect(body.data.boxes_count).toBe(body.data.boxes.length);
+        expect(Array.isArray(body.data.sharedBoxes)).toBe(true);
+        
+        if (body.data.boxes.length > 0) {
+          const box = body.data.boxes[0];
+          
+          expect(box).toHaveProperty("_id");
+          expect(box).toHaveProperty("name");
+          expect(box).toHaveProperty("exposure");
+          expect(box).toHaveProperty("model");
+          expect(box).toHaveProperty("grouptag");
+          expect(box).toHaveProperty("createdAt");
+          expect(box).toHaveProperty("updatedAt");
+          expect(box).toHaveProperty("useAuth");
+          
+          expect(box).toHaveProperty("currentLocation");
+          expect(box.currentLocation).toHaveProperty("type", "Point");
+          expect(box.currentLocation).toHaveProperty("coordinates");
+          expect(box.currentLocation).toHaveProperty("timestamp");
+          expect(Array.isArray(box.currentLocation.coordinates)).toBe(true);
+          expect(box.currentLocation.coordinates).toHaveLength(2);
+          
+          expect(box).toHaveProperty("lastMeasurementAt");
+          expect(box).toHaveProperty("loc");
+          expect(Array.isArray(box.loc)).toBe(true);
+          expect(box.loc[0]).toHaveProperty("geometry");
+          expect(box.loc[0]).toHaveProperty("type", "Feature");
+          
+          expect(box).toHaveProperty("integrations");
+          expect(box.integrations).toHaveProperty("mqtt");
+          expect(box.integrations.mqtt).toHaveProperty("enabled", false);
+          
+          expect(box).toHaveProperty("access_token");
+          expect(box.access_token).toBe(box._id);
+          
+          expect(box).toHaveProperty("sensors");
+          expect(Array.isArray(box.sensors)).toBe(true);
+        }
+      });
+
+      it("should return empty boxes array for user with no devices", async () => {
+        const userWithNoDevices = await registerUser(
+          "No Devices User",
+          "nodevices@test.com",
+          "password123",
+          "en_US",
+        );
+        const { token: noDevicesJwt } = await createToken(userWithNoDevices as User);
+
+        const request = new Request(`${BASE_URL}/users/me/boxes`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${noDevicesJwt}` },
+        });
+
+        const response = (await loader({
+          request,
+        } as LoaderFunctionArgs)) as Response;
+        const body = await response?.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data.boxes).toHaveLength(0);
+        expect(body.data.boxes_count).toBe(0);
+        expect(body.data.sharedBoxes).toHaveLength(0);
+
+        await deleteUserByEmail("nodevices@test.com");
+      });
+
+      it("should handle invalid JWT token", async () => {
+        const request = new Request(`${BASE_URL}/users/me/boxes`, {
+          method: "GET",
+          headers: { Authorization: `Bearer invalid-token` },
+        });
+
+        const response = (await loader({
+          request,
+        } as LoaderFunctionArgs)) as Response;
+        const body = await response?.json();
+
+        expect(response.status).toBe(403);
+        expect(body.code).toBe("Forbidden");
+        expect(body.message).toContain("Invalid JWT authorization");
+      });
+
+      it("should handle missing authorization header", async () => {
+        const request = new Request(`${BASE_URL}/users/me/boxes`, {
+          method: "GET",
+        });
+
+        const response = (await loader({
+          request,
+        } as LoaderFunctionArgs)) as Response;
+        const body = await response?.json();
+
+        expect(response.status).toBe(403);
+        expect(body.code).toBe("Forbidden");
       });
 
       afterAll(async () => {
-        // delete the valid test user
         await deleteUserByEmail(BOXES_TEST_USER.email);
         await deleteDevice({ id: deviceId });
       });

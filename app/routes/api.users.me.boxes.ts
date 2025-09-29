@@ -21,8 +21,11 @@ export const loader: LoaderFunction = async ({
         },
       );
 
+    const rawAuthorizationHeader = request.headers.get("authorization");
+    const [, jwtString] = rawAuthorizationHeader!.split(" ");
+
     const userBoxes = await getUserDevices(jwtResponse.id);
-    const cleanedBoxes = userBoxes.map(transformDeviceToApiFormat);
+    const cleanedBoxes = userBoxes.map((box) => transformDeviceToApiFormat(box, jwtString));
 
     return Response.json(
       {

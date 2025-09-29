@@ -41,12 +41,12 @@ describe("transformDeviceToApiFormat", () => {
   };
 
   test("transforms device with all fields", () => {
-    const result = transformDeviceToApiFormat(mockDevice);
+    const result = transformDeviceToApiFormat(mockDevice, "test-jwt-token");
 
     expect(result).toEqual({
       _id: "test-device-id",
       grouptag: ["bike", "outdoor"],
-      access_token: "test-device-id",
+      access_token: "test-jwt-token",
       name: "Test Device",
       description: "A test device",
       image: "https://example.com/image.jpg",
@@ -105,34 +105,34 @@ describe("transformDeviceToApiFormat", () => {
 
   test("handles null tags by defaulting to empty array", () => {
     const deviceWithNullTags = { ...mockDevice, tags: null };
-    const result = transformDeviceToApiFormat(deviceWithNullTags);
+    const result = transformDeviceToApiFormat(deviceWithNullTags, "test-jwt-token");
 
     expect(result.grouptag).toEqual([]);
   });
 
   test("handles undefined tags by defaulting to empty array", () => {
     const deviceWithUndefinedTags = { ...mockDevice, tags: undefined };
-    const result = transformDeviceToApiFormat(deviceWithUndefinedTags);
+    const result = transformDeviceToApiFormat(deviceWithUndefinedTags, "test-jwt-token");
 
     expect(result.grouptag).toEqual([]);
   });
 
   test("handles missing sensors by defaulting to empty array", () => {
     const deviceWithoutSensors = { ...mockDevice, sensors: undefined };
-    const result = transformDeviceToApiFormat(deviceWithoutSensors);
+    const result = transformDeviceToApiFormat(deviceWithoutSensors, "test-jwt-token");
 
     expect(result.sensors).toEqual([]);
   });
 
   test("handles null sensors by defaulting to empty array", () => {
     const deviceWithNullSensors = { ...mockDevice, sensors: null };
-    const result = transformDeviceToApiFormat(deviceWithNullSensors);
+    const result = transformDeviceToApiFormat(deviceWithNullSensors, "test-jwt-token");
 
     expect(result.sensors).toEqual([]);
   });
 
   test("transforms sensors correctly", () => {
-    const result = transformDeviceToApiFormat(mockDevice);
+    const result = transformDeviceToApiFormat(mockDevice, "test-jwt-token");
 
     expect(result.sensors).toHaveLength(2);
     expect(result.sensors[0]).toEqual({
@@ -155,7 +155,7 @@ describe("transformDeviceToApiFormat", () => {
   });
 
   test("generates correct currentLocation structure", () => {
-    const result = transformDeviceToApiFormat(mockDevice);
+    const result = transformDeviceToApiFormat(mockDevice, "test-jwt-token");
 
     expect(result.currentLocation).toEqual({
       type: "Point",
@@ -165,7 +165,7 @@ describe("transformDeviceToApiFormat", () => {
   });
 
   test("generates correct loc array structure", () => {
-    const result = transformDeviceToApiFormat(mockDevice);
+    const result = transformDeviceToApiFormat(mockDevice, "test-jwt-token");
 
     expect(result.loc).toEqual([{
       geometry: {
@@ -178,7 +178,7 @@ describe("transformDeviceToApiFormat", () => {
   });
 
   test("sets correct integrations structure", () => {
-    const result = transformDeviceToApiFormat(mockDevice);
+    const result = transformDeviceToApiFormat(mockDevice, "test-jwt-token");
 
     expect(result.integrations).toEqual({
       mqtt: {
@@ -196,7 +196,7 @@ describe("transformDeviceToApiFormat", () => {
       updatedAt: new Date("2024-01-01T00:00:00Z")
     };
 
-    const result = transformDeviceToApiFormat(minimalDevice);
+    const result = transformDeviceToApiFormat(minimalDevice, "test-jwt-token");
 
     expect(result._id).toBe("minimal-id");
     expect(result.name).toBe("Minimal Device");
@@ -207,7 +207,7 @@ describe("transformDeviceToApiFormat", () => {
   });
 
   test("preserves all original device fields", () => {
-    const result = transformDeviceToApiFormat(mockDevice);
+    const result = transformDeviceToApiFormat(mockDevice, "test-jwt-token");
 
     // Check that all original fields are preserved
     expect(result.name).toBe(mockDevice.name);
@@ -225,5 +225,13 @@ describe("transformDeviceToApiFormat", () => {
     expect(result.updatedAt).toBe(mockDevice.updatedAt);
     expect(result.expiresAt).toBe(mockDevice.expiresAt);
     expect(result.userId).toBe(mockDevice.userId);
+  });
+
+  test("uses JWT token as access_token when provided", () => {
+    const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token";
+    const result = transformDeviceToApiFormat(mockDevice, jwtToken);
+
+    expect(result.access_token).toBe(jwtToken);
+    expect(result._id).toBe("test-device-id");
   });
 });

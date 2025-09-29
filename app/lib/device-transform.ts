@@ -1,4 +1,4 @@
-export function transformDeviceToApiFormat(box: any) {
+export function transformDeviceToApiFormat(box: any, jwtString: string) {
   const { id, tags, sensors, ...rest } = box;
   const timestamp = box.updatedAt.toISOString();
   const coordinates = [box.longitude, box.latitude];
@@ -6,7 +6,7 @@ export function transformDeviceToApiFormat(box: any) {
   return {
     _id: id,
     grouptag: tags || [],
-    access_token: id,
+    access_token: jwtString,
     ...rest,
     currentLocation: {
       type: "Point",
