@@ -1,8 +1,13 @@
 import type { Device, Sensor } from '~/schema';
 
-export type DeviceWithSensors = Omit<Device, 'sensorWikiModel'> & {
-  sensors: Sensor[];
-  sensorWikiModel?: string | null;
+export type DeviceWithSensors = Device & {
+  sensors: (Sensor & {
+    lastMeasurement?: {
+      value: number | string;
+      createdAt: string;
+      sensorId?: string;
+    } | null;
+  })[];
 };
 
 export type TransformedDevice = {
@@ -49,7 +54,10 @@ export type TransformedDevice = {
     title: string | null;
     unit: string | null;
     sensorType: string | null;
-    lastMeasurement: unknown;
+    lastMeasurement: {
+      value: string;
+      createdAt: string;
+    } | null;
   }>;
 };
 
@@ -58,6 +66,8 @@ export type TransformedDevice = {
  * @param box - Device object with sensors from database
  * @param jwtString - JWT token to include as access_token
  * @returns Transformed device in openSenseMap API format
+ * 
+ * Note: Converts lastMeasurement.value from number to string to match API specification
  */
 export function transformDeviceToApiFormat(
   box: DeviceWithSensors,
@@ -83,12 +93,24 @@ export function transformDeviceToApiFormat(
       type: "Feature"
     }],
     integrations: { mqtt: { enabled: false } },
-    sensors: sensors?.map((sensor) => ({
-      _id: sensor.id,
-      title: sensor.title,
-      unit: sensor.unit,
-      sensorType: sensor.sensorType,
-      lastMeasurement: sensor.lastMeasurement,
-    })) || [],
+    sensors: sensors?.map((sensor) => {
+      const measurement = sensor.lastMeasurement as any;
+      return {
+        _id: sensor.id,
+        title: sensor.title,
+        unit: sensor.unit,
+        sensorType: sensor.sensorType,
+        lastMeasurement: measurement 
+          ? {
+              createdAt: measurement.createdAt,
+              // Convert numeric values to string to match API specification
+              value: typeof measurement.value === 'number' 
+                ? String(measurement.value) 
+                : measurement.value,
+              ...(measurement.sensorId && { sensorId: measurement.sensorId })
+            }
+          : null,
+      };
+    }) || [],
   };
 }

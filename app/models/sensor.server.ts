@@ -89,7 +89,7 @@ export async function getSensorsWithLastMeasurement(
         s.sensor_type,
         json_agg(
           json_build_object(
-            'value', measure.value,
+            'value', measure.value::text,
             'createdAt', measure.time
           )
         ) FILTER (
