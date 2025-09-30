@@ -1,7 +1,7 @@
-import { ActionFunction, ActionFunctionArgs } from "react-router";
-import { getUserFromJwt, hashJwt, refreshJwt, revokeToken } from "~/lib/jwt";
-import { User, refreshToken } from "~/schema";
+import type { ActionFunction, ActionFunctionArgs } from "react-router";
 import { parseRefreshTokenData } from "~/lib/helpers";
+import { getUserFromJwt, hashJwt, refreshJwt } from "~/lib/jwt";
+import type { User } from "~/schema";
 
 /**
  * @openapi
