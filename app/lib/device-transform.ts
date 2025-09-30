@@ -1,13 +1,7 @@
-import type { Device, Sensor } from '~/schema';
+import { type Device, type Sensor } from '~/schema';
 
 export type DeviceWithSensors = Device & {
-  sensors: (Sensor & {
-    lastMeasurement?: {
-      value: number | string;
-      createdAt: string;
-      sensorId?: string;
-    } | null;
-  })[];
+  sensors: Sensor[];
 };
 
 export type TransformedDevice = {
@@ -93,24 +87,20 @@ export function transformDeviceToApiFormat(
       type: "Feature"
     }],
     integrations: { mqtt: { enabled: false } },
-    sensors: sensors?.map((sensor) => {
-      const measurement = sensor.lastMeasurement as any;
-      return {
-        _id: sensor.id,
-        title: sensor.title,
-        unit: sensor.unit,
-        sensorType: sensor.sensorType,
-        lastMeasurement: measurement 
-          ? {
-              createdAt: measurement.createdAt,
-              // Convert numeric values to string to match API specification
-              value: typeof measurement.value === 'number' 
-                ? String(measurement.value) 
-                : measurement.value,
-              ...(measurement.sensorId && { sensorId: measurement.sensorId })
-            }
-          : null,
-      };
-    }) || [],
+    sensors: sensors?.map((sensor) => ({
+      _id: sensor.id,
+      title: sensor.title,
+      unit: sensor.unit,
+      sensorType: sensor.sensorType,
+      lastMeasurement: sensor.lastMeasurement 
+        ? {
+            createdAt: sensor.lastMeasurement.createdAt,
+            // Convert numeric values to string to match API specification
+            value: typeof sensor.lastMeasurement.value === 'number' 
+              ? String(sensor.lastMeasurement.value) 
+              : sensor.lastMeasurement.value,
+          }
+        : null,
+    })) || [],
   };
 }
