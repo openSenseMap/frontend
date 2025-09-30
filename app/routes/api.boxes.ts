@@ -1,9 +1,9 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { getUserFromJwt } from "~/lib/jwt";
-import { createDevice } from "~/models/device.server";
 import { drizzleClient } from "~/db.server";
 import { transformDeviceToApiFormat } from "~/lib/device-transform";
 import { CreateBoxSchema } from "~/lib/devices-service.server";
+import { getUserFromJwt } from "~/lib/jwt";
+import { createDevice } from "~/models/device.server";
 
 /**
  * @openapi
@@ -315,12 +315,11 @@ export const action: ActionFunction = async ({
       }, { status: 403 });
     }
 
-
     // Parse and validate request body
     let requestData;
     try {
       requestData = await request.json();
-    } catch (error) {
+    } catch {
       return Response.json({
         code: "Bad Request",
         message: "Invalid JSON in request body",
@@ -357,10 +356,9 @@ export const action: ActionFunction = async ({
       })),
     }, jwtResponse.id);
 
-
     // Fetch the sensors for the created device
     const deviceWithSensors = await drizzleClient.query.device.findFirst({
-      where: (device, { eq }) => eq(device.id, newBox.id),
+      where: (devices, { eq }) => eq(devices.id, newBox.id),
       with: {
         sensors: true,
       },
@@ -375,7 +373,6 @@ export const action: ActionFunction = async ({
     }
     
     const responseData = transformDeviceToApiFormat(deviceWithSensors, deviceWithSensors.id);
-
 
     return Response.json(responseData, {
       status: 201,
