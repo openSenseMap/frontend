@@ -1,59 +1,13 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { getUserFromJwt } from "~/lib/jwt";
-import { createDevice, getDevice, getAllDevicesWithSensors } from "~/models/device.server";
+import { createDevice } from "~/models/device.server";
 import { drizzleClient } from "~/db.server";
-import { device } from "~/schema";
-import { z } from "zod";
 import { transformDeviceToApiFormat } from "~/lib/device-transform";
-
-// Validation schema for box creation based on openSenseMap API format
-const CreateBoxSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name too long"),
-  exposure: z.enum(["indoor", "outdoor", "mobile", "unknown"]).optional().default("unknown"),
-  location: z.array(z.number()).length(2, "Location must be [longitude, latitude]"),
-  grouptag: z.array(z.string()).optional().default([]),
-  model: z.enum(["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]).optional().default("Custom"),
-  sensors: z.array(z.object({
-    id: z.string(),
-    icon: z.string().optional(),
-    title: z.string().min(1, "Sensor title is required"),
-    unit: z.string().min(1, "Sensor unit is required"),
-    sensorType: z.string().min(1, "Sensor type is required"),
-  })).optional().default([]),
-});
+import { CreateBoxSchema } from "~/lib/devices-service.server";
 
 /**
  * @openapi
  * /api/boxes:
- *   get:
- *     tags:
- *       - Boxes
- *     summary: Get all boxes
- *     description: Retrieves a list of all public boxes/devices
- *     operationId: getBoxes
- *     responses:
- *       200:
- *         description: Successfully retrieved boxes
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 code:
- *                   type: string
- *                   example: "Ok"
- *                 data:
- *                   type: object
- *                   properties:
- *                     boxes:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Box'
- *                     boxes_count:
- *                       type: integer
- *                       example: 25
- *       500:
- *         description: Internal server error
  *   post:
  *     tags:
  *       - Boxes
@@ -346,109 +300,6 @@ const CreateBoxSchema = z.object({
  *                     type: string
  *                     example: "25.13"
  */
-
-export const loader: LoaderFunction = async ({
-  request,
-}: LoaderFunctionArgs) => {
-  try {
-    const url = new URL(request.url);
-    const bbox = url.searchParams.get('bbox');
-    const grouptag = url.searchParams.get('grouptag');
-    const model = url.searchParams.get('model');
-    const exposure = url.searchParams.get('exposure');
-    const near = url.searchParams.get('near');
-    const maxDistance = url.searchParams.get('maxDistance');
-    const format = url.searchParams.get('format') || 'json';
-    const limit = parseInt(url.searchParams.get('limit') || '100');
-
-    const devicesWithSensors = await getAllDevicesWithSensors();
-
-    // Apply filters based on query parameters
-    let filteredBoxes = devicesWithSensors;
-
-    // Filter by grouptag
-    if (grouptag) {
-      const tags = grouptag.split(',');
-      filteredBoxes = filteredBoxes.filter(device => 
-        device.tags && tags.some(tag => device.tags!.includes(tag))
-      );
-    }
-
-    // Filter by model
-    if (model) {
-      filteredBoxes = filteredBoxes.filter(device => 
-        device.model && device.model.toLowerCase().includes(model.toLowerCase())
-      );
-    }
-
-    // Filter by exposure
-    if (exposure) {
-      filteredBoxes = filteredBoxes.filter(device => 
-        device.exposure === exposure
-      );
-    }
-
-    // Filter by bounding box (bbox format: minLon,minLat,maxLon,maxLat)
-    if (bbox) {
-      const [minLon, minLat, maxLon, maxLat] = bbox.split(',').map(Number);
-      filteredBoxes = filteredBoxes.filter(device => 
-        device.longitude >= minLon && 
-        device.longitude <= maxLon && 
-        device.latitude >= minLat && 
-        device.latitude <= maxLat
-      );
-    }
-
-    // Apply limit (no offset/pagination in original API)
-    const limitedBoxes = filteredBoxes.slice(0, limit);
-
-    // Transform boxes data using helper function
-    const cleanedBoxes = limitedBoxes.map(box => transformDeviceToApiFormat(box, box.id));
-
-    // Return response based on format
-    if (format === 'geojson') {
-      return Response.json({
-        type: "FeatureCollection",
-        features: cleanedBoxes.map(box => ({
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [box.longitude, box.latitude]
-          },
-          properties: {
-            _id: box._id,
-            name: box.name,
-            grouptag: box.grouptag,
-            model: box.model,
-            exposure: box.exposure,
-            sensors: box.sensors
-          }
-        }))
-      }, {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Default JSON format
-    return Response.json({
-      code: "Ok",
-      data: {
-        boxes: cleanedBoxes,
-        boxes_count: filteredBoxes.length
-      },
-    }, {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.warn("Error getting boxes:", err);
-    return Response.json({
-      code: "Internal Server Error",
-      message: "The server was unable to complete your request. Please try again later.",
-    }, { status: 500 });
-  }
-};
 
 export const action: ActionFunction = async ({
   request,
