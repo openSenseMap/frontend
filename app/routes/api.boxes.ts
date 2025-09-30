@@ -207,6 +207,11 @@ import { createDevice } from "~/models/device.server";
  *           type: string
  *           description: Owner user ID
  *           example: "user_123456"
+ *         sensorWikiModel:
+ *           type: string
+ *           nullable: true
+ *           description: Sensor Wiki model identifier
+ *           example: "homeV2Wifi"
  *         currentLocation:
  *           type: object
  *           description: Current location as GeoJSON Point
@@ -264,8 +269,8 @@ import { createDevice } from "~/models/device.server";
  *                   example: false
  *         access_token:
  *           type: string
- *           description: Box access token
- *           example: "abc123def456"
+ *           description: JWT authentication token for the authenticated user
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidXNlciJ9..."
  *         sensors:
  *           type: array
  *           items:
