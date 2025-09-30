@@ -4,26 +4,35 @@ import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
 
+const BASE_DEVICE_COLUMNS = {
+	id: true,
+	name: true,
+	description: true,
+	image: true,
+	link: true,
+	tags: true,
+	exposure: true,
+	model: true,
+	latitude: true,
+	longitude: true,
+	status: true,
+	createdAt: true,
+	updatedAt: true,
+	expiresAt: true,
+	sensorWikiModel: true,
+} as const;
+
+const DEVICE_COLUMNS_WITH_SENSORS = {
+	...BASE_DEVICE_COLUMNS,
+	useAuth: true,
+	public: true,
+	userId: true,
+} as const;
+
 export function getDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
 		where: (device, { eq }) => eq(device.id, id),
-		columns: {
-			createdAt: true,
-			description: true,
-			exposure: true,
-			id: true,
-			image: true,
-			latitude: true,
-			longitude: true,
-			link: true,
-			model: true,
-			name: true,
-			sensorWikiModel: true,
-			status: true,
-			updatedAt: true,
-			tags: true,
-			expiresAt: true,
-		},
+		columns: BASE_DEVICE_COLUMNS,
 		with: {
 			user: {
 				columns: {
@@ -106,38 +115,9 @@ export function deleteDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.delete(device).where(eq(device.id, id))
 }
 
-const DEVICE_COLUMNS_WITH_SENSORS = {
-	id: true,
-	name: true,
-	description: true,
-	image: true,
-	link: true,
-	tags: true,
-	exposure: true,
-	model: true,
-	latitude: true,
-	longitude: true,
-	useAuth: true,
-	public: true,
-	status: true,
-	createdAt: true,
-	updatedAt: true,
-	expiresAt: true,
-	userId: true,
-} as const;
-
 export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
 		where: (device, { eq }) => eq(device.userId, userId),
-		columns: DEVICE_COLUMNS_WITH_SENSORS,
-		with: {
-			sensors: true,
-		},
-	})
-}
-
-export function getAllDevicesWithSensors() {
-	return drizzleClient.query.device.findMany({
 		columns: DEVICE_COLUMNS_WITH_SENSORS,
 		with: {
 			sensors: true,
