@@ -1,11 +1,11 @@
-import { type ActionFunctionArgs } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { deleteDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { action } from "~/routes/api.boxes";
-import { type User } from "~/schema";
+import type { User } from "~/schema";
 
 const BOXES_POST_TEST_USER = {
   name: "testing post boxes",
