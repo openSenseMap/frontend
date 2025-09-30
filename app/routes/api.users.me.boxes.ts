@@ -22,7 +22,16 @@ export const loader: LoaderFunction = async ({
       );
 
     const rawAuthorizationHeader = request.headers.get("authorization");
-    const [, jwtString] = rawAuthorizationHeader!.split(" ");
+    if (!rawAuthorizationHeader) {
+      return Response.json(
+        {
+          code: "Forbidden",
+          message: "Missing authorization header",
+        },
+        { status: 403 }
+      );
+    }
+    const [, jwtString] = rawAuthorizationHeader.split(" ");
 
     const userBoxes = await getUserDevices(jwtResponse.id);
     const cleanedBoxes = userBoxes.map((box) => transformDeviceToApiFormat(box, jwtString));
