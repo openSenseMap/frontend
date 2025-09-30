@@ -1,7 +1,7 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { transformDeviceToApiFormat } from "~/lib/device-transform";
 import { getUserFromJwt } from "~/lib/jwt";
 import { getUserDevices } from "~/models/device.server";
-import { transformDeviceToApiFormat } from "~/lib/device-transform";
 
 export const loader: LoaderFunction = async ({
   request,

@@ -1,8 +1,7 @@
-import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
-import type { User } from "~/schema";
+import { type User } from "~/schema";
 
 const DEVICE_MODEL_TEST_USER = {
   name: "device model tester",
