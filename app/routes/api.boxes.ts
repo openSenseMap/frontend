@@ -1,5 +1,4 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { drizzleClient } from "~/db.server";
 import { transformDeviceToApiFormat } from "~/lib/device-transform";
 import { CreateBoxSchema } from "~/lib/devices-service.server";
 import { getUserFromJwt } from "~/lib/jwt";
@@ -340,8 +339,6 @@ export const action: ActionFunction = async ({
 
     // Extract longitude and latitude from location array [longitude, latitude]
     const [longitude, latitude] = validatedData.location;
-
-    // Create the box using the existing createDevice function
     const newBox = await createDevice({
       name: validatedData.name,
       exposure: validatedData.exposure,
@@ -356,23 +353,8 @@ export const action: ActionFunction = async ({
       })),
     }, jwtResponse.id);
 
-    // Fetch the sensors for the created device
-    const deviceWithSensors = await drizzleClient.query.device.findFirst({
-      where: (devices, { eq }) => eq(devices.id, newBox.id),
-      with: {
-        sensors: true,
-      },
-    });
-
     // Build response object using helper function
-    if (!deviceWithSensors) {
-      return Response.json({
-        code: "Internal Server Error",
-        message: "Failed to retrieve created device",
-      }, { status: 500 });
-    }
-    
-    const responseData = transformDeviceToApiFormat(deviceWithSensors, deviceWithSensors.id);
+    const responseData = transformDeviceToApiFormat(newBox, newBox.id);
 
     return Response.json(responseData, {
       status: 201,

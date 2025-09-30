@@ -427,18 +427,31 @@ export async function createDevice(deviceData: any, userId: string) {
 			if (!createdDevice) {
 				throw new Error('Failed to create device.')
 			}
-			// Add sensors in the same transaction
+			
+			// Add sensors in the same transaction and collect them
+			const createdSensors = [];
 			if (deviceData.sensors && Array.isArray(deviceData.sensors)) {
 				for (const sensorData of deviceData.sensors) {
-					await tx.insert(sensor).values({
-						title: sensorData.title,
-						unit: sensorData.unit,
-						sensorType: sensorData.sensorType,
-						deviceId: createdDevice.id, // Reference the created device ID
-					})
+					const [newSensor] = await tx.insert(sensor)
+						.values({
+							title: sensorData.title,
+							unit: sensorData.unit,
+							sensorType: sensorData.sensorType,
+							deviceId: createdDevice.id, // Reference the created device ID
+						})
+						.returning();
+					
+					if (newSensor) {
+						createdSensors.push(newSensor);
+					}
 				}
 			}
-			return createdDevice
+			
+			// Return device with sensors
+			return {
+				...createdDevice,
+				sensors: createdSensors
+			};
 		})
 		return newDevice
 	} catch (error) {
