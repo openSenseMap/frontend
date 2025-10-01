@@ -51,7 +51,6 @@ function calculateDensityScore(points: LocationPoint[], pointIndex: number, dist
 	}
 
 	// Higher score = more dense (more neighbors, closer together)
-	// Avoid division by zero
 	if (nearbyCount === 0) return 0
 	
 	// Score combines neighbor count with average proximity
@@ -165,22 +164,20 @@ function findOptimalClusterCenter(points: LocationPoint[], candidateIndices: num
 	}
 }
 
-// Enhanced clustering algorithm that finds truly optimal spatial centers
+// clustering algorithm that finds truly optimal spatial centers
 function spatiallyOptimizedClustering(points: LocationPoint[], distanceThreshold: number, minClusterSize: number) {
 	const clusters: LocationPoint[][] = []
 	const visited = new Set<number>()
 	
-	// Find all dense regions (areas with enough points for clustering)
-	const denseRegions: Array<{
+	// Evaluate ALL points as potential cluster centers
+	const allPotentialClusters: Array<{
 		centerIndex: number
 		clusterIndices: number[]
 		quality: number
 	}> = []
 
-	// First pass: identify all potential dense regions
+	// First pass: evaluate EVERY point as a potential cluster center
 	for (let i = 0; i < points.length; i++) {
-		if (visited.has(i)) continue
-		
 		const pointsInRadius = findPointsInRadius(points, i, distanceThreshold)
 		
 		if (pointsInRadius.length >= minClusterSize) {
@@ -189,26 +186,25 @@ function spatiallyOptimizedClustering(points: LocationPoint[], distanceThreshold
 			
 			// Only add if we found a valid cluster
 			if (optimalCenter.clusterIndices.length >= minClusterSize) {
-				denseRegions.push(optimalCenter)
+				allPotentialClusters.push(optimalCenter)
 			}
 		}
 	}
 	
-	// Sort dense regions by quality (better spatial centrality first)
-	denseRegions.sort((a, b) => a.quality - b.quality)
+	//Sort ALL potential clusters by quality (better spatial centrality first)
+	allPotentialClusters.sort((a, b) => a.quality - b.quality)
 	
-	// Second pass: greedily select non-overlapping clusters starting with best spatial centers
-	for (const region of denseRegions) {
+	for (const potentialCluster of allPotentialClusters) {
 		// Check if any points in this cluster are already assigned
-		if (region.clusterIndices.some(idx => visited.has(idx))) {
+		if (potentialCluster.clusterIndices.some(idx => visited.has(idx))) {
 			continue
 		}
 		
 		// Mark all points in this cluster as visited
-		region.clusterIndices.forEach(idx => visited.add(idx))
+		potentialCluster.clusterIndices.forEach(idx => visited.add(idx))
 		
 		// Create the cluster using the optimal center's point collection
-		const cluster = region.clusterIndices.map(idx => points[idx])
+		const cluster = potentialCluster.clusterIndices.map(idx => points[idx])
 		clusters.push(cluster)
 	}
 	
