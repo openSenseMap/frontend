@@ -36,53 +36,6 @@ function fromToTimeParamsSanityCheck(fromDate: Date | null, toDate: Date | null)
 	}
   }
   
-  function parseAndValidateTimeParams(searchParams: URLSearchParams) {
-	const dateParams = searchParams.getAll('date');
-	
-	if (dateParams.length === 0) {
-	  return { fromDate: null, toDate: null };
-	}
-  
-	if (dateParams.length > 2) {
-	  throw json(
-		{ error: 'invalid number of dates for date parameter supplied' },
-		{ status: 422 }
-	  );
-	}
-  
-	const [fromDateStr, toDateStr] = dateParams;
-	
-	const fromDate = new Date(fromDateStr);
-	if (isNaN(fromDate.getTime())) {
-	  throw json(
-		{ error: `Invalid date format: ${fromDateStr}` },
-		{ status: 422 }
-	  );
-	}
-  
-	let toDate: Date;
-	
-	if (!toDateStr) {
-	  // If only one date provided, create a range of ±4 hours
-	  toDate = new Date(fromDate.getTime() + (4 * 60 * 60 * 1000)); // +4 hours
-	  const adjustedFromDate = new Date(fromDate.getTime() - (4 * 60 * 60 * 1000)); // -4 hours
-	  
-	  return { fromDate: adjustedFromDate, toDate };
-	} else {
-	  toDate = new Date(toDateStr);
-	  if (isNaN(toDate.getTime())) {
-		throw json(
-		  { error: `Invalid date format: ${toDateStr}` },
-		  { status: 422 }
-		);
-	  }
-	  
-	  fromToTimeParamsSanityCheck(fromDate, toDate);
-	  
-	  return { fromDate, toDate };
-	}
-  }
-
 /**
  * @openapi
  * /api/devices:
@@ -358,7 +311,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const url = new URL(request.url);
 	const queryObj = Object.fromEntries(url.searchParams);
 	const max_limit = 20;
-	const { fromDate, toDate } = parseAndValidateTimeParams(url.searchParams);
 
 	const parseResult = BoxesQuerySchema.safeParse(queryObj);
 	if (!parseResult.success) {

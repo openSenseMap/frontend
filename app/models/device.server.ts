@@ -357,7 +357,7 @@ interface BuildWhereClauseOptions {
 	const { minimal, limit } = opts;
 	const { includeColumns, whereClause } = buildWhereClause(opts);
   
-	columns = (minimal === 'true') ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
+	columns = minimal ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
   
 	relations = {
 	  ...relations,
