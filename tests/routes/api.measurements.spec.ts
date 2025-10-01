@@ -1,20 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { AppLoadContext, type ActionFunctionArgs } from "react-router";
 import { action as postMeasurementsAction } from "~/routes/api.boxes.$deviceId.data";
-import { loader as statsLoader } from "~/routes/api.stats";
+import { action as postSingleMeasurementAction } from "~/routes/api.boxes.$deviceId.$sensorId";
 import { BASE_URL } from "vitest.setup";
 import { csvExampleData, jsonSubmitData, byteSubmitData } from "tests/data";
 import { createDevice, deleteDevice, getDevice } from "~/models/device.server";
 import { registerUser } from "~/lib/user-service.server";
-import { accessToken, sensor, type User } from "~/schema";
+import { accessToken, type User } from "~/schema";
 import { deleteUserByEmail } from "~/models/user.server";
 import { drizzleClient } from "~/db.server";
 
 const mockAccessToken = "valid-access-token";
-const mockSensors = [
-  { id: "sensor1", title: "Temperature", unit: "°C" },
-  { id: "sensor2", title: "Humidity", unit: "%" },
-];
 
 const TEST_USER = {
   name: "testing measurement submit",
@@ -70,111 +66,110 @@ describe("openSenseMap API Routes: /boxes", () => {
 
     
   // ---------------------------------------------------
-  // Single measurement POST /boxes/:id/:sensorId
+  // Single measurement POST /boxes/:boxId/:sensorId
   // ---------------------------------------------------
-  // describe("single measurement POST", () => {
-  //   it("should accept a single measurement via POST", async () => {
-  //     console.log("test device id", deviceId)
-  //     const request = new Request(
-  //       `${BASE_URL}/api/boxes/${deviceId}/${sensorIds[0]}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: mockAccessToken,
-  //         },
-  //         body: JSON.stringify({ value: 312.1 }),
-  //       }
-  //     );
+  describe("single measurement POST", () => {
+    it("should accept a single measurement via POST", async () => {
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/${sensorIds[0]}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: mockAccessToken,
+          },
+          body: JSON.stringify({ value: 312.1 }),
+        }
+      );
 
-  //     const response = await postMeasurementsAction({
-  //       request,
-  //       params: { deviceId: deviceId, sensorId: sensorIds[0] },
-  //       context: {} as AppLoadContext
-  //     } satisfies ActionFunctionArgs);
+      const response: any = await postSingleMeasurementAction({
+        request,
+        params: { deviceId: deviceId, sensorId: sensorIds[0] },
+        context: {} as AppLoadContext
+      } satisfies ActionFunctionArgs);
 
-  //     expect(response).toBeInstanceOf(Response);
-  //     expect(response.status).toBe(201);
-  //     expect(await response.text()).toBe("Measurement saved in box");
-  //   });
+      expect(response).toBeInstanceOf(Response);
+      expect(response.status).toBe(201);
+      expect(await response.text()).toBe("Measurement saved in box");
+    });
 
-//     it("should reject with wrong access token", async () => {
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/${mockSensors[0].id}`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: "wrongAccessToken",
-//           },
-//           body: JSON.stringify({ value: 312.1 }),
-//         }
-//       );
+    it("should reject with wrong access token", async () => {
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/${sensorIds[0]}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "wrongAccessToken",
+          },
+          body: JSON.stringify({ value: 312.1 }),
+        }
+      );
 
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId, sensorId: mockSensors[0].id },
-//         context: {} as AppLoadContext,
-//       } satisfies ActionFunctionArgs);
+      const response: any = await postSingleMeasurementAction({
+        request,
+        params: { deviceId: deviceId, sensorId: sensorIds[0] },
+        context: {} as AppLoadContext,
+      } satisfies ActionFunctionArgs);
 
-//       expect(response.status).toBe(401);
-//       const body = await response.json();
-//       expect(body.message).toBe("Device access token not valid!");
-//     });
+      expect(response.status).toBe(401);
+      const body = await response.json();
+      expect(body.message).toBe("Device access token not valid!");
+    });
 
-//     it("should accept a single measurement with timestamp", async () => {
-//       const timestamp = new Date().toISOString();
+    it("should accept a single measurement with timestamp", async () => {
+      const timestamp = new Date().toISOString();
 
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/${mockSensors[1].id}`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: mockAccessToken,
-//           },
-//           body: JSON.stringify({ value: 123.4, createdAt: timestamp }),
-//         }
-//       );
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/${sensorIds[1]}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: mockAccessToken,
+          },
+          body: JSON.stringify({ value: 123.4, createdAt: timestamp }),
+        }
+      );
 
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId, sensorId: mockSensors[1].id },
-//         context: {} as AppLoadContext
-//       } satisfies ActionFunctionArgs);
+      const response: any = await postSingleMeasurementAction({
+        request,
+        params: { deviceId: deviceId, sensorId: sensorIds[1] },
+        context: {} as AppLoadContext
+      } satisfies ActionFunctionArgs);
 
-//       expect(response.status).toBe(201);
-//       expect(await response.text()).toBe("Measurement saved in box");
-//     });
+      expect(response.status).toBe(201);
+      expect(await response.text()).toBe("Measurement saved in box");
+    });
 
-//     it("should reject measurement with timestamp too far into the future", async () => {
-//       const future = new Date(Date.now() + 90_000).toISOString(); // 1.5 min future
+    it("should reject measurement with timestamp too far into the future", async () => {
+      const future = new Date(Date.now() + 90_000).toISOString(); // 1.5 min future
 
-//       const request = new Request(
-//         `${BASE_URL}/api/boxes/${deviceId}/${mockSensors[1].id}`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: mockAccessToken,
-//           },
-//           body: JSON.stringify({ value: 123.4, createdAt: future }),
-//         }
-//       );
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/${sensorIds[1]}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: mockAccessToken,
+          },
+          body: JSON.stringify({ value: 123.4, createdAt: future }),
+        }
+      );
 
-//       const response = await postMeasurementsAction({
-//         request,
-//         params: { deviceId: deviceId, sensorId: mockSensors[1].id },
-//         context: {} as AppLoadContext
-//       } satisfies ActionFunctionArgs);
+      const response: any = await postSingleMeasurementAction({
+        request,
+        params: { deviceId: deviceId, sensorId: sensorIds[1] },
+        context: {} as AppLoadContext
+      } satisfies ActionFunctionArgs);
 
-//       expect(response.status).toBe(422);
-//     });
-//   });
+      expect(response.status).toBe(422);
+    });
+  });
 
-//   // ---------------------------------------------------
-// // Multiple CSV POST
-// // ---------------------------------------------------
+  // ---------------------------------------------------
+// Multiple CSV POST
+// ---------------------------------------------------
 describe("multiple CSV POST /boxes/:id/data", () => {
     it("should accept multiple measurements as CSV via POST (no timestamps)", async () => {
       const csvPayload = csvExampleData.noTimestamps(sensors);
@@ -191,7 +186,7 @@ describe("multiple CSV POST /boxes/:id/data", () => {
         }
       );
   
-      const response = await postMeasurementsAction({
+      const response: any = await postMeasurementsAction({
         request,
         params: { deviceId: deviceId },
         context: {} as AppLoadContext,
@@ -216,7 +211,7 @@ describe("multiple CSV POST /boxes/:id/data", () => {
         }
       );
   
-      const response = await postMeasurementsAction({
+      const response: any = await postMeasurementsAction({
         request,
         params: { deviceId: deviceId },
         context: {} as AppLoadContext,
@@ -227,7 +222,6 @@ describe("multiple CSV POST /boxes/:id/data", () => {
   
     it("should reject CSV with future timestamps", async () => {
       const csvPayload = csvExampleData.withTimestampsFuture(sensors);
-      console.log("csvPayload", csvPayload)
   
       const request = new Request(
         `${BASE_URL}/api/boxes/${deviceId}/data`,
@@ -241,7 +235,7 @@ describe("multiple CSV POST /boxes/:id/data", () => {
         }
       );
   
-      const response = await postMeasurementsAction({
+      const response: any = await postMeasurementsAction({
         request,
         params: { deviceId: deviceId },
         context: {} as AppLoadContext,
@@ -353,7 +347,7 @@ describe("multiple JSON POST /boxes/:id/data", () => {
 
     const before = new Date();
 
-    const response = await postMeasurementsAction({
+    const response: any = await postMeasurementsAction({
       request,
       params: { deviceId },
       context: {} as AppLoadContext,
@@ -368,9 +362,9 @@ describe("multiple JSON POST /boxes/:id/data", () => {
     const updatedDevice = await getDevice({ id: deviceId });
     for (const sensor of updatedDevice?.sensors || []) {
       expect(sensor.lastMeasurement).toBeTruthy();
-      expect(new Date(sensor.lastMeasurement.createdAt).getTime())
+      expect(new Date((sensor.lastMeasurement as any).createdAt).getTime())
         .toBeGreaterThanOrEqual(before.getTime() - 1000);
-      expect(new Date(sensor.lastMeasurement.createdAt).getTime())
+      expect(new Date((sensor.lastMeasurement as any).createdAt).getTime())
         .toBeLessThanOrEqual(after.getTime() + 1000 * 60 * 4); // within ~4 min
     }
   });
@@ -392,7 +386,7 @@ describe("multiple JSON POST /boxes/:id/data", () => {
     );
 
     const before = new Date();
-    const response = await postMeasurementsAction({
+    const response: any = await postMeasurementsAction({
       request,
       params: { deviceId },
       context: {} as AppLoadContext,
@@ -405,7 +399,7 @@ describe("multiple JSON POST /boxes/:id/data", () => {
     const updatedDevice = await getDevice({ id: deviceId });
     for (const sensor of updatedDevice?.sensors || []) {
       expect(sensor.lastMeasurement).toBeTruthy();
-      const createdAt = new Date(sensor.lastMeasurement.createdAt);
+      const createdAt = new Date((sensor.lastMeasurement as any).createdAt);
       expect(createdAt.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
       expect(createdAt.getTime()).toBeLessThanOrEqual(after.getTime() + 1000 * 60 * 4);
     }
@@ -427,7 +421,7 @@ describe("multiple JSON POST /boxes/:id/data", () => {
     );
 
     const before = new Date();
-    const response = await postMeasurementsAction({
+    const response: any = await postMeasurementsAction({
       request,
       params: { deviceId },
       context: {} as AppLoadContext,
@@ -440,7 +434,7 @@ describe("multiple JSON POST /boxes/:id/data", () => {
     const updatedDevice = await getDevice({ id: deviceId });
     for (const sensor of updatedDevice?.sensors || []) {
       expect(sensor.lastMeasurement).toBeTruthy();
-      const createdAt = new Date(sensor.lastMeasurement.createdAt);
+      const createdAt = new Date((sensor.lastMeasurement as any).createdAt);
       expect(createdAt.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
       expect(createdAt.getTime()).toBeLessThanOrEqual(after.getTime() + 1000 * 60 * 4);
     }
@@ -449,7 +443,6 @@ describe("multiple JSON POST /boxes/:id/data", () => {
 
 
   afterAll(async () => {
-      // delete the valid test user
       await deleteUserByEmail(TEST_USER.email);
       await deleteDevice({ id: deviceId });
     });
