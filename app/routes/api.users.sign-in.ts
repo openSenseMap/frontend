@@ -1,6 +1,6 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { signIn } from "~/lib/user-service.server";
-import { parseUserSignInData } from "~/lib/helpers";
+import { parseUserSignInData } from "~/lib/request-parsing";
 /**
  * @openapi
  * /api/users/sign-in:

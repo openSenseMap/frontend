@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseRequestData, parseUserRegistrationData, parseUserSignInData, parseRefreshTokenData } from '~/lib/helpers';
+import { parseRequestData, parseUserRegistrationData, parseUserSignInData, parseRefreshTokenData } from '~/lib/request-parsing';
 
 describe('parseRequestData', () => {
   it('should parse JSON data when content-type is application/json', async () => {

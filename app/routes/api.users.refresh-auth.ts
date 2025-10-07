@@ -1,5 +1,5 @@
 import type { ActionFunction, ActionFunctionArgs } from "react-router";
-import { parseRefreshTokenData } from "~/lib/helpers";
+import { parseRefreshTokenData } from "~/lib/request-parsing";
 import { getUserFromJwt, hashJwt, refreshJwt } from "~/lib/jwt";
 import type { User } from "~/schema";
 
