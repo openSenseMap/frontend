@@ -26,10 +26,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   method: "GET",
 
     // },
-    // {
-    //   path: `boxes`,
-    //   method: "GET",
-    // },
+    {
+      path: `boxes`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/data`,
     //   method: "GET",
@@ -141,10 +141,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId`,
     //   method: "PUT",
     // },
-    // {
-    //   path: `boxes/:boxId`,
-    //   method: "DELETE",
-    // },
+    {
+      path: `boxes/:boxId`,
+      method: "DELETE",
+    },
     // {
     //   path: `boxes/:boxId/:sensorId/measurements`,
     //   method: "DELETE",

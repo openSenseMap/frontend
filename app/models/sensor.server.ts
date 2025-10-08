@@ -70,16 +70,16 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
 }
 
 export async function getSensorsWithLastMeasurement(
-  deviceId: Sensor["deviceId"],
+  deviceId: Sensor["deviceId"]
 ): Promise<SensorWithLatestMeasurement[]>;
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
-  sensorId: Sensor["id"],
+  sensorId: Sensor["id"]
 ): Promise<SensorWithLatestMeasurement>;
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
   sensorId: Sensor["id"] | undefined = undefined,
-  count: number = 1,
+  count: number = 1
 ) {
   const result = await drizzleClient.execute(
     sql`SELECT 
@@ -104,7 +104,7 @@ export async function getSensorsWithLastMeasurement(
         LIMIT ${count}
       ) AS measure ON true
       WHERE s.device_id = ${deviceId}
-      GROUP BY s.id;`,
+      GROUP BY s.id;`
   );
 
   const cast = [...result].map((r) => {
@@ -122,7 +122,7 @@ export async function getSensorsWithLastMeasurement(
   if (sensorId === undefined) return cast as SensorWithLatestMeasurement[];
   else
     return cast.find(
-      (c: any) => c.id === sensorId,
+      (c: any) => c.id === sensorId
     ) as SensorWithLatestMeasurement;
 }
 

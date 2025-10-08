@@ -107,8 +107,8 @@ export default function DeviceDetailBox() {
 
   const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>();
   useEffect(() => {
-    const sortedSensors = [...data.sensors].sort(
-      (a, b) => (a.id as unknown as number) - (b.id as unknown as number),
+    const sortedSensors = [...(data.sensors as any)].sort(
+      (a, b) => (a.id as unknown as number) - (b.id as unknown as number)
     );
     setSensors(sortedSensors);
   }, [data]);
@@ -373,13 +373,13 @@ export default function DeviceDetailBox() {
                                   ?.split(",")
                                   .includes(tag)
                                   ? "bg-green-100 dark:bg-dark-green"
-                                  : "",
+                                  : ""
                               )}
                               onClick={(event) => {
                                 event.stopPropagation();
 
                                 const currentParams = new URLSearchParams(
-                                  searchParams.toString(),
+                                  searchParams.toString()
                                 );
 
                                 // Safely retrieve and parse the current tags
@@ -395,7 +395,7 @@ export default function DeviceDetailBox() {
                                 if (updatedTags.length > 0) {
                                   currentParams.set(
                                     "tags",
-                                    updatedTags.join(","),
+                                    updatedTags.join(",")
                                   );
                                 } else {
                                   currentParams.delete("tags");
@@ -494,7 +494,7 @@ export default function DeviceDetailBox() {
                                           id={sensor.id}
                                           value={sensor.id}
                                           defaultChecked={sensorIds.has(
-                                            sensor.id,
+                                            sensor.id
                                           )}
                                         />
                                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -528,7 +528,7 @@ export default function DeviceDetailBox() {
                                             ></div>
                                             <p className="text-xs text-muted-foreground">
                                               {formatDistanceToNow(
-                                                new Date(sensor.time),
+                                                new Date(sensor.time)
                                               )}{" "}
                                               ago
                                             </p>
@@ -561,7 +561,7 @@ export default function DeviceDetailBox() {
                                           id={sensor.id}
                                           value={sensor.id}
                                           defaultChecked={sensorIds.has(
-                                            sensor.id,
+                                            sensor.id
                                           )}
                                         />
                                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -595,7 +595,7 @@ export default function DeviceDetailBox() {
                                             ></div>
                                             <p className="text-xs text-muted-foreground">
                                               {formatDistanceToNow(
-                                                new Date(sensor.time),
+                                                new Date(sensor.time)
                                               )}{" "}
                                               ago
                                             </p>
@@ -605,7 +605,7 @@ export default function DeviceDetailBox() {
                                     </Card>
                                   </Link>
                                 );
-                              },
+                              }
                             )}
                         </div>
                       </div>
