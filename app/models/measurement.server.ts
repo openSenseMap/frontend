@@ -230,6 +230,7 @@ async function findOrCreateLocation(
     )
     .limit(1);
 
+
   if (existingLocation.length > 0) {
     return existingLocation[0].id;
   }
@@ -240,7 +241,7 @@ async function findOrCreateLocation(
       location: sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`,
     })
     .returning();
-  
+
   return newLocation.id;
 }
 
@@ -368,7 +369,8 @@ export async function saveMeasurements(
         value: m.value,
         time: measurementTime,
         locationId: locationId,
-      });
+      }).onConflictDoNothing();
+
     }
 
     // Update sensor lastMeasurement values
@@ -380,7 +382,9 @@ export async function saveMeasurements(
           .where(eq(sensor.id, sensorId))
     );
 
+
     await Promise.all(updatePromises);
+    
   });
 }
 
