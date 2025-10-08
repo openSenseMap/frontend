@@ -1,6 +1,32 @@
-import { getDevice, findAccessToken, getDevicesWithSensors } from "~/models/device.server";
-import { saveMeasurements } from "~/models/measurement.server";
 import { decodeMeasurements, hasDecoder } from "~/lib/decoding-service.server";
+import { getDeviceWithoutSensors, getDevice, findAccessToken } from "~/models/device.server";
+import { saveMeasurements } from "~/models/measurement.server";
+import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
+
+/**
+ *
+ * @param boxId
+ * @param sensorId
+ * @param count
+ */
+export const getLatestMeasurements = async (
+  boxId: string,
+  sensorId: string | undefined,
+  count: number | undefined,
+): Promise<any | null> => {
+  const device = await getDeviceWithoutSensors({ id: boxId });
+  if (!device) return null;
+
+  const sensorsWithMeasurements = await getSensorsWithLastMeasurement(
+    device.id,
+    sensorId,
+    count,
+  );
+  if (sensorId !== undefined) return sensorsWithMeasurements; // single sensor, no need for having info about device
+
+  (device as any).sensors = sensorsWithMeasurements;
+  return device;
+};
 
 interface PostMeasurementsOptions {
   contentType: string;

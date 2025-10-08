@@ -1,6 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
-import { sensor, type Sensor, type SensorWithLatestMeasurement  } from "~/schema";
+import {
+  sensor,
+  type Sensor,
+  type SensorWithLatestMeasurement,
+} from "~/schema";
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 
@@ -65,25 +69,63 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
   });
 }
 
-// LATERAL JOIN to get latest measurement for sensors belonging to a specific device, including device name
-export function getSensorsWithLastMeasurement(deviceId: Sensor["deviceId"]) {
-  const result = drizzleClient.execute(
-    sql`SELECT s.*, d.name AS device_name, measure.*
-    FROM sensor s
-    JOIN device d ON s.device_id = d.id
-    LEFT JOIN LATERAL (
-      SELECT * FROM measurement m
-      WHERE m.sensor_id = s.id
-      ORDER BY m.time DESC
-      LIMIT 1
-    ) AS measure ON true
-    WHERE s.device_id = ${deviceId};`,
+export async function getSensorsWithLastMeasurement(
+  deviceId: Sensor["deviceId"],
+  sensorId?: Sensor["id"],
+  count?: number,
+): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]>;
+
+
+export async function getSensorsWithLastMeasurement(
+  deviceId: Sensor["deviceId"],
+  sensorId: Sensor["id"] | undefined = undefined,
+  count: number = 1,
+): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]> {
+  const result = await drizzleClient.execute(
+    sql`SELECT 
+        s.id,
+        s.title,
+        s.unit,
+        s.sensor_type,
+        json_agg(
+          json_build_object(
+            'value', measure.value,
+            'createdAt', measure.time
+          )
+        ) FILTER (
+          WHERE measure.value IS NOT NULL AND measure.time IS NOT NULL
+        ) AS "lastMeasurements"
+      FROM sensor s
+      JOIN device d ON s.device_id = d.id
+      LEFT JOIN LATERAL (
+        SELECT * FROM measurement m
+        WHERE m.sensor_id = s.id
+        ORDER BY m.time DESC
+        LIMIT ${count}
+      ) AS measure ON true
+      WHERE s.device_id = ${deviceId}
+      GROUP BY s.id;`,
   );
 
-  return result as unknown as SensorWithLatestMeasurement[];
+  const cast = [...result].map((r) => {
+    if (r["lastMeasurements"] !== null) {
+      const ret = {
+        ...r,
+        lastMeasurement:
+          (r as any)["lastMeasurements"]["measurements"][0] ?? null,
+      } as any;
+      if (count === 1) delete ret["lastMeasurements"];
+      return ret;
+    } else return { ...r, lastMeasurements: [] } as any;
+  }) as any;
+
+  if (sensorId === undefined) return cast as SensorWithLatestMeasurement[];
+  else
+    return cast.find(
+      (c: any) => c.id === sensorId,
+    ) as SensorWithLatestMeasurement;
 }
 
-//if sensor was registered through osem-frontend the input sensor will have correct sensor-wiki connotations
 export async function registerSensor(newSensor: Sensor) {
   const insertedSensor = await drizzleClient
     .insert(sensor)

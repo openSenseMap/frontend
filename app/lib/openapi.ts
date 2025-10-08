@@ -1,10 +1,15 @@
 import swaggerJsdoc from "swagger-jsdoc";
 
+const DEV_SERVER = {
+  url: "http://localhost:3000",
+  description: "Development server",
+};
+
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "",
+      title: "openSenseMap API",
       version: "1.0.0",
       description: `## Documentation of the routes and methods to manage users, stations (also called boxes or senseBoxes), and measurements in the openSenseMap API. You can find the API running at [https://opensensemap.org/api/](https://opensensemap.org/api/).
 # Timestamps
@@ -46,13 +51,10 @@ const options: swaggerJsdoc.Options = {
 ## If there is something unclear or there is a mistake in this documentation please open an [issue](https://github.com/openSenseMap/frontend/issues/new) in the GitHub repository.`,
     },
     servers: [
+      ...(process.env.NODE_ENV !== "production" ? [DEV_SERVER] : []),
       {
         url: process.env.OSEM_API_URL || "https://opensensemap.org/api", // Uses environment variable or defaults to production URL
         description: "Production server",
-      },
-      {
-        url: "http://localhost:3000",
-        description: "Development server",
       },
     ],
     components: {
