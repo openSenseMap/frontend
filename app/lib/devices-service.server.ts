@@ -3,7 +3,7 @@ import {
 	deleteDevice as deleteDeviceById,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
-import type { Device, User } from '~/schema'
+import { type Device, type User } from '~/schema'
 
 export const CreateBoxSchema = z.object({
 	name: z.string().min(1, "Name is required").max(100, "Name too long"),
