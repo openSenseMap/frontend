@@ -42,7 +42,6 @@ export type TransformedDevice = {
       enabled: boolean;
     };
   };
-  access_token: string;
   sensors: Array<{
     _id: string;
     title: string | null;
@@ -58,14 +57,12 @@ export type TransformedDevice = {
 /**
  * Transforms a device with sensors from database format to openSenseMap API format
  * @param box - Device object with sensors from database
- * @param jwtString - JWT token to include as access_token
  * @returns Transformed device in openSenseMap API format
  * 
  * Note: Converts lastMeasurement.value from number to string to match API specification
  */
 export function transformDeviceToApiFormat(
-  box: DeviceWithSensors,
-  jwtString: string
+  box: DeviceWithSensors
 ): TransformedDevice {
   const { id, tags, sensors, ...rest } = box;
   const timestamp = box.updatedAt.toISOString();
@@ -74,7 +71,6 @@ export function transformDeviceToApiFormat(
   return {
     _id: id,
     grouptag: tags || [],
-    access_token: jwtString,
     ...rest,
     currentLocation: {
       type: "Point",

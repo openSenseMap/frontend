@@ -556,7 +556,6 @@ async function post(request: Request, user: User) {
 			{
 				data: {
 					...newDevice,
-					access_token: jwtString,
 					createdAt: newDevice.createdAt || new Date(),
 				},
 			},

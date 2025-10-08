@@ -97,10 +97,6 @@ describe("openSenseMap API Routes: /users", () => {
           expect(box.integrations).toHaveProperty("mqtt");
           expect(box.integrations.mqtt).toHaveProperty("enabled", false);
           
-          expect(box).toHaveProperty("access_token");
-          expect(typeof box.access_token).toBe("string");
-          expect(box.access_token.length).toBeGreaterThan(0);
-          
           expect(box).toHaveProperty("sensors");
           expect(Array.isArray(box.sensors)).toBe(true);
         }

@@ -267,10 +267,6 @@ import { createDevice } from "~/models/device.server";
  *                 enabled:
  *                   type: boolean
  *                   example: false
- *         access_token:
- *           type: string
- *           description: JWT authentication token for the authenticated user
- *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidXNlciJ9..."
  *         sensors:
  *           type: array
  *           items:
@@ -359,7 +355,7 @@ export const action: ActionFunction = async ({
     }, jwtResponse.id);
 
     // Build response object using helper function
-    const responseData = transformDeviceToApiFormat(newBox, newBox.id);
+    const responseData = transformDeviceToApiFormat(newBox);
 
     return Response.json(responseData, {
       status: 201,
