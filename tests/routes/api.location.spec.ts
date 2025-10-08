@@ -7,7 +7,8 @@ import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice, getDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { action as postSingleMeasurementAction } from "~/routes/api.boxes.$deviceId.$sensorId";
-import { accessToken, location, deviceToLocation, measurement, type User } from "~/schema";
+import { action as postMeasurementsAction} from "~/routes/api.boxes.$deviceId.data";
+import { location, deviceToLocation, measurement, type User, device } from "~/schema";
 
 const mockAccessToken = "valid-access-token-location-tests";
 
@@ -30,6 +31,7 @@ const TEST_BOX = {
   sensors: [
     { title: "Temperature", unit: "°C", sensorType: "temperature" },
     { title: "Humidity", unit: "%", sensorType: "humidity" },
+    { title: "Pressure", unit: "hPa", sensorType: "pressure" }
   ],
 };
 
@@ -125,11 +127,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
     const deviceWithSensors = await getDevice({ id: deviceId });
     sensorIds = deviceWithSensors?.sensors?.map((sensor: any) => sensor.id) || [];
     sensors = deviceWithSensors?.sensors?.map((sensor: any) => sensor) || [];
-
-    await drizzleClient.insert(accessToken).values({
-      deviceId: deviceId,
-      token: mockAccessToken,
-    });
   });
 
   afterAll(async () => {
@@ -275,11 +272,7 @@ describe("openSenseMap API Routes: Location Measurements", () => {
         ...TEST_BOX,
         name: "Location Predate Test Box"
       }, userId);
-      
-      await drizzleClient.insert(accessToken).values({
-        deviceId: testDevice.id,
-        token: mockAccessToken,
-      });
+    
 
       const testDeviceData = await getDevice({ id: testDevice.id });
       const testSensorId = testDeviceData?.sensors?.[0]?.id;
@@ -324,11 +317,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
         ...TEST_BOX,
         name: "Location Inference Test Box"
       }, userId);
-      
-      await drizzleClient.insert(accessToken).values({
-        deviceId: testDevice.id,
-        token: mockAccessToken,
-      });
 
       const testDeviceData = await getDevice({ id: testDevice.id });
       const testSensorId = testDeviceData?.sensors?.[0]?.id;
@@ -435,11 +423,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
         ...TEST_BOX,
         name: "Retroactive Measurements Test Box"
       }, userId);
-      
-      await drizzleClient.insert(accessToken).values({
-        deviceId: testDevice.id,
-        token: mockAccessToken,
-      });
 
       const testDeviceData = await getDevice({ id: testDevice.id });
       const testSensorId = testDeviceData?.sensors?.[0]?.id;
@@ -609,5 +592,89 @@ describe("openSenseMap API Routes: Location Measurements", () => {
       expect(errorData.code).toBe("Unprocessable Entity");
       expect(errorData.message).toBe("Invalid location coordinates");
     });
+  });
+
+  describe("openSenseMap API Routes: POST /boxes/:deviceId/data (application/json)", () => {  
+  
+    it("should accept location in measurement object with [value, time, loc]", async () => {
+      const now = new Date();
+      const body = {
+        [sensorIds[0]]: [7, new Date(now.getTime() - 2).toISOString(), [7, 7, 7]],
+        [sensorIds[1]]: [8, now.toISOString(), { lat: 8, lng: 8, height: 8 }],
+      };  
+      const request = new Request(`${BASE_URL}/api/boxes/${deviceId}/data`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: mockAccessToken,
+        },
+        body: JSON.stringify(body),
+      });
+  
+      const response: any = await postMeasurementsAction({
+        request,
+        params: { deviceId },
+        context: {} as AppLoadContext,
+      } satisfies ActionFunctionArgs);
+  
+      expect(response).toBeInstanceOf(Response);
+      expect(response.status).toBe(201);
+  
+      const currentLocation = await getDeviceCurrentLocation(deviceId);
+      expect(currentLocation).not.toBeNull();
+      expect(currentLocation!.coordinates).toEqual([8, 8, 0]);
+    });
+  
+    it("should accept location in measurement array", async () => {
+      const sensor = sensorIds[2];
+      const measurements = [
+        { sensor: sensor, value: 9.6 },
+        { sensor: sensor, value: 10, location: { lat: 10, lng: 10, height: 10 } },
+        { sensor: sensor, value: 9.5, createdAt: new Date().toISOString() },
+        {
+          sensor: sensor,
+          value: 9,
+          createdAt: new Date(Date.now() - 2).toISOString(),
+          location: [9, 9, 9],
+        },
+        { sensor: sensor, value: 10.5 },
+      ];
+  
+      const request = new Request(`${BASE_URL}/api/boxes/${deviceId}/data`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: mockAccessToken,
+        },
+        body: JSON.stringify(measurements),
+      });
+  
+      const response: any = await postMeasurementsAction({
+        request,
+        params: { deviceId },
+        context: {} as AppLoadContext,
+      } satisfies ActionFunctionArgs);
+  
+      expect(response.status).toBe(201);
+  
+      const currentLocation = await getDeviceCurrentLocation(deviceId);
+      expect(currentLocation).not.toBeNull();
+      expect(currentLocation!.coordinates).toEqual([10, 10, 0]);
+    });
+  
+    // it("should set & infer locations correctly for measurements", async () => {
+    //   const sensor = sensorIds[2];
+    //   const measurements = await getSensorMeasurements(sensor);
+      
+    //   expect(measurements.length).toBeGreaterThanOrEqual(5);
+  
+    //   for (const m of measurements) {
+    //     // For this dataset, value should roghly match coordinate
+    //     const v = parseInt(m.value, 10);
+    //     if (m.location) {
+    //       expect(m.location).toEqual([v, v, 0]);
+    //     }
+    //   }
+    // });
   });
 });
