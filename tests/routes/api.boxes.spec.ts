@@ -275,4 +275,78 @@ describe("openSenseMap API Routes: /boxes", () => {
       expect(body.grouptag).toEqual([]);
     });
   });
+
+  describe("Method Not Allowed", () => {
+    it("should return 405 for GET requests", async () => {
+      const request = new Request(`${BASE_URL}/boxes`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+
+      const response = (await action({
+        request,
+      } as ActionFunctionArgs)) as Response;
+      const body = await response.json();
+
+      expect(response.status).toBe(405);
+      expect(body).toHaveProperty("message", "Method Not Allowed");
+    });
+
+    it("should return 405 for PUT requests", async () => {
+      const request = new Request(`${BASE_URL}/boxes`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: "Test" }),
+      });
+
+      const response = (await action({
+        request,
+      } as ActionFunctionArgs)) as Response;
+      const body = await response.json();
+
+      expect(response.status).toBe(405);
+      expect(body).toHaveProperty("message", "Method Not Allowed");
+    });
+
+    it("should return 405 for DELETE requests", async () => {
+      const request = new Request(`${BASE_URL}/boxes`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+
+      const response = (await action({
+        request,
+      } as ActionFunctionArgs)) as Response;
+      const body = await response.json();
+
+      expect(response.status).toBe(405);
+      expect(body).toHaveProperty("message", "Method Not Allowed");
+    });
+
+    it("should return 405 for PATCH requests", async () => {
+      const request = new Request(`${BASE_URL}/boxes`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: "Test" }),
+      });
+
+      const response = (await action({
+        request,
+      } as ActionFunctionArgs)) as Response;
+      const body = await response.json();
+
+      expect(response.status).toBe(405);
+      expect(body).toHaveProperty("message", "Method Not Allowed");
+    });
+  });
 });

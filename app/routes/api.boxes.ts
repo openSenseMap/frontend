@@ -3,6 +3,7 @@ import { transformDeviceToApiFormat } from "~/lib/device-transform";
 import { CreateBoxSchema } from "~/lib/devices-service.server";
 import { getUserFromJwt } from "~/lib/jwt";
 import { createDevice } from "~/models/device.server";
+import { type User } from "~/schema";
 
 /**
  * @openapi
@@ -315,6 +316,23 @@ export const action: ActionFunction = async ({
       }, { status: 403 });
     }
 
+    switch (request.method) {
+      case "POST":
+        return await post(request, jwtResponse);
+      default:
+        return Response.json({ message: "Method Not Allowed" }, { status: 405 });
+    }
+  } catch (err) {
+    console.error("Error in action:", err);
+    return Response.json({
+      code: "Internal Server Error",
+      message: "The server was unable to complete your request. Please try again later.",
+    }, { status: 500 });
+  }
+};
+
+async function post(request: Request, user: User) {
+  try {
     // Parse and validate request body
     let requestData;
     try {
@@ -352,7 +370,7 @@ export const action: ActionFunction = async ({
         sensorType: sensor.sensorType,
         unit: sensor.unit,
       })),
-    }, jwtResponse.id);
+    }, user.id);
 
     // Build response object using helper function
     const responseData = transformDeviceToApiFormat(newBox);
@@ -361,7 +379,6 @@ export const action: ActionFunction = async ({
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (err) {
     console.error("Error creating box:", err);
     return Response.json({
@@ -369,4 +386,4 @@ export const action: ActionFunction = async ({
       message: "The server was unable to create the box. Please try again later.",
     }, { status: 500 });
   }
-};
+}
