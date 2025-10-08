@@ -121,8 +121,29 @@ import { type User } from "~/schema";
  *                 message:
  *                   type: string
  *                   example: "Invalid JWT authorization. Please sign in to obtain new JWT."
+ *       405:
+ *         description: Method not allowed - only POST is supported
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Method Not Allowed"
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 message:
+ *                   type: string
+ *                   example: "The server was unable to create the box. Please try again later."
  * components:
  *   schemas:
  *     Box:
