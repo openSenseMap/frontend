@@ -75,7 +75,6 @@ export async function getSensorsWithLastMeasurement(
   count?: number,
 ): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]>;
 
-
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
   sensorId: Sensor["id"] | undefined = undefined,
