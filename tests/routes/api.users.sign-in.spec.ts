@@ -2,7 +2,7 @@ import { type ActionFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { registerUser } from "~/lib/user-service.server";
 import { deleteUserByEmail } from "~/models/user.server";
-import { action } from "~/routes/api.sign-in";
+import { action } from "~/routes/api.users.sign-in";
 
 const VALID_SIGN_IN_TEST_USER = {
   name: "signing in",
