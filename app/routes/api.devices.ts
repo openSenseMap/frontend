@@ -2,12 +2,9 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import {
 	createDevice,
 	findDevices,
-	FindDevicesOptions,
-	// deleteDevice,
 	getDevice,
-	getDevices,
-	getDevicesWithSensors,
 } from '~/models/device.server'
+import type { FindDevicesOptions } from '~/models/device.server'
 import { ActionFunctionArgs } from 'react-router'
 import { getUserFromJwt } from '~/lib/jwt'
 import {
