@@ -1,6 +1,6 @@
 {
-  "id": "19763678-a340-48a5-8bf0-f511c3cd1a47",
-  "prevId": "bb2a0f36-9e21-4553-b71c-b1cd1ba035f4",
+  "id": "85481101-dd0d-4e15-9158-11971b8ba509",
+  "prevId": "9d89599f-78ef-4878-85a7-91a31bf984dc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -861,6 +861,45 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.access_token": {
+      "name": "access_token",
+      "schema": "",
+      "columns": {
+        "device_id": {
+          "name": "device_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "access_token_device_id_device_id_fk": {
+          "name": "access_token_device_id_device_id_fk",
+          "tableFrom": "access_token",
+          "tableTo": "device",
+          "columnsFrom": [
+            "device_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
