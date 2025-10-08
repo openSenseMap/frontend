@@ -38,7 +38,42 @@ interface PostMeasurementsOptions {
 interface SingleMeasurementBody {
   value: number;
   createdAt?: string;
+  location?: [number, number, number] | { lat: number; lng: number; height?: number };
 }
+
+interface LocationData {
+  lng: number;
+  lat: number;
+  height?: number;
+}
+
+const normalizeLocation = (location: SingleMeasurementBody['location']): LocationData | null => {
+  if (!location) return null;
+  
+  if (Array.isArray(location)) {
+    if (location.length < 2) return null;
+    return {
+      lng: location[0],
+      lat: location[1],
+      height: location[2],
+    };
+  }
+  
+  if (typeof location === 'object' && 'lat' in location && 'lng' in location) {
+    return {
+      lng: location.lng,
+      lat: location.lat,
+      height: location.height,
+    };
+  }
+  
+  return null;
+};
+
+const validateLocationCoordinates = (loc: LocationData): boolean => {
+  return loc.lng >= -180 && loc.lng <= 180 && 
+         loc.lat >= -90 && loc.lat <= 90;
+};
 
 export const postNewMeasurements = async (
   deviceId: string,
@@ -97,7 +132,7 @@ export const postSingleMeasurement = async (
     }
 
     const device = await getDevice({ id: deviceId });
-    
+        
     if (!device) {
       const error = new Error("Device not found");
       error.name = "NotFoundError";
@@ -121,7 +156,7 @@ export const postSingleMeasurement = async (
     let timestamp: Date | undefined;
     if (body.createdAt) {
       timestamp = new Date(body.createdAt);
-      
+            
       if (isNaN(timestamp.getTime())) {
         const error = new Error("Invalid timestamp format");
         error.name = "UnprocessableEntityError";
@@ -129,22 +164,31 @@ export const postSingleMeasurement = async (
       }
     }
 
-    // Create measurement object matching the format expected by saveMeasurements
-    // Note: createdAt can be undefined (will use current time) or a Date object
+    let locationData: LocationData | null = null;
+    if (body.location) {
+      locationData = normalizeLocation(body.location);
+      
+      if (locationData && !validateLocationCoordinates(locationData)) {
+        const error = new Error("Invalid location coordinates");
+        error.name = "UnprocessableEntityError";
+        throw error;
+      }
+    }
+
     const measurements = [{
       sensor_id: sensorId,
       value: body.value,
       createdAt: timestamp,
+      location: locationData,
     }];
 
     await saveMeasurements(device, measurements);
   } catch (error) {
-    // Re-throw errors that already have proper names
     if (error instanceof Error && 
         ['UnauthorizedError', 'NotFoundError', 'UnprocessableEntityError'].includes(error.name)) {
       throw error;
     }
-    
+        
     console.error('Error in postSingleMeasurement:', error);
     throw error;
   }
