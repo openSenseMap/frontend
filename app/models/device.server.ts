@@ -1,5 +1,5 @@
 import { point } from '@turf/helpers'
-import { eq, sql, desc, ilike, arrayContains, and } from 'drizzle-orm'
+import { eq, sql, desc, ilike, inArray, arrayContains, and } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
@@ -359,9 +359,7 @@ interface BuildWhereClauseOptions {
   ) {
 	const { minimal, limit } = opts;
 	const { includeColumns, whereClause } = buildWhereClause(opts);
-  
-	columns = (minimal === 'true') ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
-  
+	columns = minimal ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
 	relations = {
 	  ...relations,
 	  ...includeColumns

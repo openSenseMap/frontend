@@ -330,7 +330,7 @@ export default function Explore() {
   var deviceLoc: any;
   let selectedDevice: any;
   if (deviceId) {
-    selectedDevice = devices.features.find(
+    selectedDevice = (devices as any).features.find(
       (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [

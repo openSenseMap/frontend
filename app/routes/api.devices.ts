@@ -359,8 +359,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const queryObj = Object.fromEntries(url.searchParams);
 	const max_limit = 20;
 	const { fromDate, toDate } = parseAndValidateTimeParams(url.searchParams);
-
 	const parseResult = BoxesQuerySchema.safeParse(queryObj);
+  
 	if (!parseResult.success) {
 		const { fieldErrors, formErrors } = parseResult.error.flatten();
 		if (fieldErrors.format) {

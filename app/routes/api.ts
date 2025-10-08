@@ -26,10 +26,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   method: "GET",
 
     // },
-    // {
-    //   path: `boxes`,
-    //   method: "GET",
-    // },
+    {
+      path: `boxes`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/data`,
     //   method: "GET",
