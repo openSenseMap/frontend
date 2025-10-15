@@ -2,7 +2,7 @@ import { point } from '@turf/helpers'
 import { eq, sql, desc, ilike, arrayContains, and } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
-import { device, location, sensor, type Device, type Sensor } from '~/schema'
+import { device, deviceToLocation, location, sensor, type Device, type Sensor } from '~/schema'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -71,6 +71,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 				// limit: 1000,
 			},
+			sensors: true
 		},
 	})
 }
@@ -109,6 +110,90 @@ export function updateDeviceLocation({
 		.update(device)
 		.set({ latitude: latitude, longitude: longitude })
 		.where(eq(device.id, id))
+}
+
+export type UpdateDeviceArgs = {
+	name?: string
+	exposure?: string
+	grouptag?: string
+	description?: string
+	link?: string
+	image?: string
+	model?: string
+	useAuth?: boolean
+	location?: { lat: number; lng: number }
+}
+
+export async function updateDevice(
+	deviceId: string,
+	args: UpdateDeviceArgs,
+): Promise<Device> {
+	const setColumns: Record<string, any> = {}
+	const updatableFields: (keyof UpdateDeviceArgs)[] = [
+		'name',
+		'exposure',
+		'description',
+		'image',
+		'model',
+		'useAuth',
+		'link',
+	]
+
+	for (const field of updatableFields) {
+		if (args[field] !== undefined) {
+			setColumns[field] = args[field]
+		}
+	}
+
+	if (args.grouptag) {
+		setColumns['tags'] = [args.grouptag]
+	}
+
+	if (args.location) {
+		const { lat, lng } = args.location
+
+		const [geometry] = await drizzleClient
+			.insert(location)
+			.values({
+				location: sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`,
+			})
+			.onConflictDoNothing()
+			.returning({ id: location.id })
+
+		let locationId = geometry?.id
+		if (!locationId) {
+			const existing = await drizzleClient.query.location.findFirst({
+				columns: { id: true },
+				where: sql`ST_Equals(${location.location}, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))`,
+			})
+			if (existing) locationId = existing?.id
+		}
+
+		if (locationId) {
+			await drizzleClient.insert(deviceToLocation).values({
+				deviceId,
+				locationId,
+			})
+		}
+
+		setColumns['latitude'] = lat
+		setColumns['longitude'] = lng
+	}
+
+	const [updated] = await drizzleClient
+		.update(device)
+		.set({
+			...setColumns,
+			updatedAt: sql`NOW()`,
+		})
+		.where(eq(device.id, deviceId))
+		.returning()
+
+	if (!updated) {
+		throw new Error(`Device ${deviceId} not found or could not be updated`)
+	}
+
+	return updated as Device
 }
 
 export function deleteDevice({ id }: Pick<Device, 'id'>) {
