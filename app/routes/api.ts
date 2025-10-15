@@ -137,10 +137,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/transfer/:boxId`,
     //   method: "PUT",
     // },
-    // {
-    //   path: `boxes/:boxId`,
-    //   method: "PUT",
-    // },
+    {
+      path: `boxes/:boxId`,
+      method: "PUT",
+    },
     {
       path: `boxes/:boxId`,
       method: "DELETE",
