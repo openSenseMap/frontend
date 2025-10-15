@@ -1,6 +1,7 @@
 import { readItems } from "@directus/sdk";
 import { useMediaQuery } from "@mantine/hooks";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   type LoaderFunctionArgs,
@@ -114,9 +115,22 @@ export default function Index() {
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  /**
+   * Stupid workaround for chromium and webkit that both render double
+   * scroll bars when using scrollSnapType.
+   * Simply setting overflow hidden on the html element fixes it and
+   * the rest of the pages stay untouched from this.
+   */
+  useEffect(() => {
+    document.documentElement.style.setProperty("overflow", "hidden");
+    return () => {
+      document.documentElement.style.removeProperty("overflow");
+    };
+  }, []);
+
   return (
     <div
-      className="h-screen bg-white dark:bg-black"
+      className="max-h-screen bg-white dark:bg-black"
       style={{
         scrollSnapType: "y mandatory",
         overflowY: "auto",

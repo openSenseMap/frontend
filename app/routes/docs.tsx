@@ -16,20 +16,18 @@ export const loader = async () => {
 };
 
 export default function ApiDocumentation() {
-  const spec = useLoaderData<typeof loader>();
+  const spec = useLoaderData();
   return (
-    <div style={{ height: "100vh", overflow: "auto", scrollbarWidth: "thin" }}>
-      <div>
-        <div className="flex items-center justify-center p-3">
-          <img
-            src="./openSenseMap_API.png"
-            alt="API Image"
-            height={350}
-            width={350}
-          />
-        </div>
-        <SwaggerUI spec={spec} />
+    <main>
+      <div className="flex items-center justify-center p-3">
+        <img
+          src="./openSenseMap_API.png"
+          alt="API Image"
+          height={350}
+          width={350}
+        />
       </div>
-    </div>
+      <SwaggerUI spec={spec} />
+    </main>
   );
 }
