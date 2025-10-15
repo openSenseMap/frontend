@@ -13,7 +13,7 @@ import {
 import 'chartjs-adapter-date-fns'
 // import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
-import { useMemo, useRef, useState, useEffect, useContext, RefObject } from 'react'
+import { useMemo, useRef, useState, useEffect, useContext,type RefObject } from 'react'
 import { Scatter } from 'react-chartjs-2'
 import { isBrowser, isTablet } from 'react-device-detect'
 import Draggable, { type DraggableData } from 'react-draggable'

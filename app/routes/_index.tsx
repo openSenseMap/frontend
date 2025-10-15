@@ -103,27 +103,27 @@ export default function Index() {
 
   return (
     <div
-      className="w-screen h-screen bg-white dark:bg-black scroll-snap-container"
+      className="h-screen bg-white dark:bg-black"
       style={{
         scrollSnapType: "y mandatory",
-        overflowY: "scroll",
-        height: "100vh",
+        overflowY: "auto"
       }}
     >
-      <header className="w-full z-10">
+      <header className="z-10">
         <Header />
       </header>
       <main>
         <div
           id="firstSection"
-          className="min-h-[calc(100vh-8rem)] flex flex-col justify-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 scroll-snap-section"
+          className="flex flex-col justify-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
           style={{
+            /** for some reasons not really worth debugging tailwind does not apply min-h-[calc(100vh-8rem)], so we have to use element styles here */
             minHeight: "calc(100vh - 8rem)",
             scrollSnapAlign: "center",
           }}
         >
-          <div className="flex items-center justify-between w-full px-8">
-            <div className="w-full md:w-1/2">
+          <div className="flex items-center justify-between px-8">
+            <div className="md:w-1/2">
               <h1 className="text-5xl font-bold tracking-tight text-light-green dark:text-dark-green">
                 openSenseMap
               </h1>
@@ -201,7 +201,7 @@ export default function Index() {
             )}
           </div>
           {isDesktop && (
-            <div className="w-full">
+            <div>
               <Stats {...stats} />
             </div>
           )}
@@ -211,7 +211,7 @@ export default function Index() {
           return (
             <div
               key={section.title}
-              className="h-screen flex justify-center items-center mx-32 scroll-snap-section"
+              className="h-screen flex justify-center items-center mx-32"
               style={{
                 scrollSnapAlign: "center",
               }}
@@ -221,7 +221,7 @@ export default function Index() {
           );
         })}
         <div
-          className="h-screen flex flex-col justify-center items-center mx-32 scroll-snap-section"
+          className="h-screen flex flex-col justify-center items-center mx-32"
           style={{
             scrollSnapAlign: "center",
           }}

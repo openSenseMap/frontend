@@ -1,10 +1,15 @@
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 import { createProfile } from "./profile.server";
 import { drizzleClient } from "~/db.server";
-import { type Password, type User, password as passwordTable, user  } from "~/schema";
-
+import {
+  type Password,
+  type User,
+  password as passwordTable,
+  user,
+} from "~/schema";
 
 export async function getUserById(id: User["id"]) {
   return drizzleClient.query.user.findFirst({
@@ -46,7 +51,24 @@ export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { name } });
 } */
 
-export async function updateUserName(email: User["email"], newUserName: string){
+export const updateUserEmail = (
+  userToUpdate: User,
+  newEmail: User["email"],
+) => {
+  return drizzleClient
+    .update(user)
+    .set({
+      unconfirmedEmail: newEmail,
+      emailConfirmationToken: uuidv4(),
+    })
+    .where(eq(user.id, userToUpdate.id));
+  // TODO send out email for confirmation
+};
+
+export async function updateUserName(
+  email: User["email"],
+  newUserName: string,
+) {
   return drizzleClient
     .update(user)
     .set({
@@ -57,7 +79,7 @@ export async function updateUserName(email: User["email"], newUserName: string){
 
 export async function updateUserPassword(
   userId: Password["userId"],
-  newPassword: string
+  newPassword: string,
 ) {
   const hashedPassword = await bcrypt.hash(
     preparePasswordHash(newPassword),
@@ -73,7 +95,7 @@ export async function updateUserPassword(
 
 export async function updateUserlocale(
   email: User["email"],
-  language: User["language"]
+  language: User["language"],
 ) {
   return drizzleClient
     .update(user)
@@ -87,8 +109,8 @@ export async function getUsers() {
   return drizzleClient.query.user.findMany();
 }
 
-const preparePasswordHash = function preparePasswordHash(
-  plaintextPassword: string
+export const preparePasswordHash = function preparePasswordHash(
+  plaintextPassword: string,
 ) {
   // first round: hash plaintextPassword with sha512
   const hash = crypto.createHash("sha512");
@@ -102,7 +124,7 @@ export async function createUser(
   name: User["name"],
   email: User["email"],
   language: User["language"],
-  password: string
+  password: string,
 ) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
@@ -114,6 +136,7 @@ export async function createUser(
       name,
       email,
       language,
+      unconfirmedEmail: email,
     })
     .returning();
 
@@ -129,7 +152,7 @@ export async function createUser(
 
 export async function verifyLogin(
   email: User["email"],
-  password: Password["hash"]
+  password: Password["hash"],
 ) {
   const userWithPassword = await drizzleClient.query.user.findFirst({
     where: (user, { eq }) => eq(user.email, email),
@@ -146,7 +169,7 @@ export async function verifyLogin(
   //* compare stored password with entered one
   const isValid = await bcrypt.compare(
     preparePasswordHash(password),
-    userWithPassword.password.hash
+    userWithPassword.password.hash,
   );
 
   if (!isValid) {
