@@ -1,6 +1,7 @@
-import { type LoaderFunctionArgs } from "react-router";
-import { getDevice } from "~/models/device.server";
-
+import { type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
+import { transformDeviceToApiFormat } from "~/lib/device-transform";
+import { getUserFromJwt } from '~/lib/jwt'
+import { getDevice, updateDevice, type UpdateDeviceArgs } from "~/models/device.server";
 /**
  * @openapi
  * /api/device/{deviceId}:
@@ -107,4 +108,67 @@ export async function loader({ params }: LoaderFunctionArgs) {
       },
     );
   }
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+	const { deviceId } = params
+
+	if (!deviceId) {
+		return Response.json({ error: 'Device ID is required.' }, { status: 400 })
+	}
+
+	try {
+		const jwtResponse = await getUserFromJwt(request)
+
+		if (typeof jwtResponse === 'string') {
+			return Response.json(
+				{
+					code: 'Forbidden',
+					message: 'Invalid JWT authorization. Please sign in to obtain a new JWT.',
+				},
+				{ status: 403 },
+			)
+		}
+
+		switch (request.method) {
+			case 'PUT':
+				return await put(request, jwtResponse, deviceId)
+			default:
+				return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
+		}
+	} catch (error) {
+		console.error('Error in device action:', error)
+		return Response.json({ error: 'Internal server error' }, { status: 500 })
+	}
+}
+
+async function put(request: Request, user: any, deviceId: string) {
+	try {
+		const body = await request.json()
+
+		const updateArgs: UpdateDeviceArgs = {
+			name: body.name,
+			exposure: body.exposure,
+			description: body.description,
+			image: body.image,
+			model: body.model,
+			useAuth: body.useAuth,
+			link: body.weblink,
+			location: body.location,
+			grouptag: Array.isArray(body.grouptag)
+				? body.grouptag[0]
+				: body.grouptag,
+		}
+
+		const updatedDevice = await updateDevice(deviceId, updateArgs)
+
+		const deviceWithSensors = await getDevice({id: updatedDevice.id})
+
+		const apiResponse = transformDeviceToApiFormat(deviceWithSensors as any)
+
+		return Response.json(apiResponse, { status: 200 })
+	} catch (error) {
+		console.error('Error updating device:', error)
+		return Response.json({ error: 'Failed to update device' }, { status: 500 })
+	}
 }
