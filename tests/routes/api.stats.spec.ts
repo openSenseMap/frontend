@@ -6,11 +6,17 @@ import { loader } from "~/routes/api.stats";
 
 describe("openSenseMap API Routes: /stats", () => {
   let boxCount: number = 0;
+  let measurementsCount: number = 0;
   beforeAll(async () => {
     const [count] = await drizzleClient.execute(
       sql`SELECT * FROM approximate_row_count('device');`,
     );
     boxCount = Number(count.approximate_row_count);
+
+    const [count2] = await drizzleClient.execute(
+      sql`SELECT * FROM approximate_row_count('measurement');`,
+    );
+    measurementsCount = Number(count2.approximate_row_count);
   });
 
   it("should return /stats correctly", async () => {
@@ -31,7 +37,7 @@ describe("openSenseMap API Routes: /stats", () => {
     expect(response.status).toBe(200);
     const [boxes, measurements] = body;
     expect(boxes).toBe(boxCount);
-    expect(measurements).toBe(0);
+    expect(measurements).toBe(measurementsCount);
   });
 
   it("should return a json array with three numbers", async () => {

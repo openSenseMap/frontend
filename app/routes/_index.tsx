@@ -17,6 +17,7 @@ import Integrations from "~/components/landing/sections/integrations";
 import Partners from "~/components/landing/sections/partners";
 import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Stats from "~/components/landing/stats";
+import { type supportedLanguages } from "~/i18next-options";
 import i18next from "~/i18next.server";
 import { type Partner, getDirectusClient } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
@@ -50,8 +51,10 @@ const sections = [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  let locale = await i18next.getLocale(request);
-  const directus = await getDirectusClient();
+  const locale = (await i18next.getLocale(
+    request
+  )) as (typeof supportedLanguages)[number];
+  const directus = getDirectusClient();
 
   const useCasesResponse = await directus.request(
     readItems("use_cases", {
@@ -59,7 +62,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       filter: {
         language: locale,
       },
-    }),
+    })
   );
 
   const featuresResponse = await directus.request(
@@ -68,13 +71,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       filter: {
         language: locale,
       },
-    }),
+    })
   );
 
   const partnersResponse = await directus.request(
     readItems("partners", {
       fields: ["*"],
-    }),
+    })
   );
 
   //* Get user Id from session
@@ -84,7 +87,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const stats = await fetch("https://api.opensensemap.org/stats").then(
     (res) => {
       return res.json();
-    },
+    }
   );
 
   const latestDevices = await getLatestDevices();

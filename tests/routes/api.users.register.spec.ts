@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { deleteUserByEmail } from "~/models/user.server";
-import { action as userAction } from "~/routes/api.users";
+import { action as registerAction } from "~/routes/api.users.register";
 
 const VALID_USER = {
   name: "this is just a nickname",
@@ -14,8 +14,8 @@ const VALID_SECOND_USER = {
   password: "12345678",
 };
 
-describe("openSenseMap API Routes: /users", () => {
-  describe("/register", () => {
+describe("openSenseMap API Routes: /users/register", () => {
+  describe("/POST", () => {
     it("should allow to register an user via POST", async () => {
       // Arrange
       const params = new URLSearchParams();
@@ -28,7 +28,7 @@ describe("openSenseMap API Routes: /users", () => {
       });
 
       // Act
-      const dataFunctionValue = await userAction({
+      const dataFunctionValue = await registerAction({
         request: request,
       } as ActionFunctionArgs);
       const response = dataFunctionValue as Response;
@@ -60,7 +60,7 @@ describe("openSenseMap API Routes: /users", () => {
       });
 
       // Act
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -85,7 +85,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -112,7 +112,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -135,7 +135,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -159,7 +159,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -183,7 +183,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -210,7 +210,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -237,7 +237,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -264,7 +264,7 @@ describe("openSenseMap API Routes: /users", () => {
         body: params.toString(),
       });
 
-      const response = (await userAction({
+      const response = (await registerAction({
         request,
       } as ActionFunctionArgs)) as Response;
       const body = await response.json();
@@ -291,7 +291,7 @@ describe("openSenseMap API Routes: /users", () => {
       });
 
       // Act
-      const dataFunctionValue = await userAction({
+      const dataFunctionValue = await registerAction({
         request: request,
       } as ActionFunctionArgs);
       const response = dataFunctionValue as Response;
@@ -311,138 +311,6 @@ describe("openSenseMap API Routes: /users", () => {
       expect(body).toHaveProperty("refreshToken");
     });
   });
-
-  // it('should allow to register a new user with password leading and trailing spaces', () => {
-  //   return chakram.post(`${BASE_URL}/users/register`, { name: 'spaces_tester', password: ' leading and trailing spaces ', email: 'leading_spacesaddress@email.com' })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(201);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'leading_spacesaddress@email.com', password: ' leading and trailing spaces ' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-
-  //       return chakram.post(`${BASE_URL}/users/request-password-reset`, { email: 'leading_spacesaddress@email.com' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should allow to change to a password with leading and trailing spaces', () => {
-  //   return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
-
-  //       // try to log in with old token
-  //       return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       // try to sign in with new password
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: ' leading and trailing spaces ' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('data', function (data) {
-  //         expect(data.user.email).to.equal('tester2@test.test');
-  //       });
-  //       expect(response.body.token).to.exist;
-
-  //       jwt = response.body.token;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should allow to change password with correct current password', () => {
-  //   return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
-
-  //       // try to log in with old token
-  //       return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       // try to sign in with new password
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.json('data', function (data) {
-  //         expect(data.user.email).to.equal('tester2@test.test');
-  //       });
-  //       expect(response.body.token).to.exist;
-
-  //       jwt = response.body.token;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should deny to use revoked jwt', () => {
-  //   return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-  //       expect(response.body.refreshToken).to.exist;
-
-  //       jwt = response.body.token;
-  //       refreshToken = response.body.refreshToken;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should deny to use an old jwt after using a refresh token', () => {
-  //   return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(403);
-
-  //       return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
-  //     })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(200);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-  //       expect(response.body.token).to.exist;
-  //       expect(response.body.refreshToken).to.exist;
-
-  //       jwt = response.body.token;
-  //       refreshToken = response.body.refreshToken;
-
-  //       return chakram.wait();
-  //     });
-  // });
-
-  // it('should deny to register with multiline username', () => {
-  //   return chakram.post(`${BASE_URL}/users/register`, {
-  //     name: `multi
-  //   line name`, email: 'tester5@test.test', password: '12345678'
-  //   })
-  //     .then(function (response) {
-  //       expect(response).to.have.status(400);
-  //       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-  //       return chakram.wait();
-  //     });
-  // });
 
   afterAll(async () => {
     // delete the valid test user

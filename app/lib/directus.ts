@@ -1,9 +1,14 @@
-import { createDirectus, rest } from "@directus/sdk";
+import {
+  createDirectus,
+  type DirectusClient,
+  rest,
+  type RestClient,
+} from "@directus/sdk";
 
 const directusUrl = process.env.DIRECTUS_URL || "http://localhost:8055";
 
 export type UseCase = {
-  id: string;
+  id: number | string;
   status: string;
   image: string;
   title: string;
@@ -13,7 +18,7 @@ export type UseCase = {
 };
 
 export type Feature = {
-  id: string;
+  id: number | string;
   title: string;
   description: string;
   icon: string;
@@ -21,20 +26,21 @@ export type Feature = {
 };
 
 export type Partner = {
-  id: string;
+  id: number | string;
   name: string;
   logo: string;
   link: string;
 };
 
 type DirectusCollection = {
-  use_cases: UseCase;
-  features: Feature;
-  partners: Partner;
+  use_cases: UseCase[];
+  features: Feature[];
+  partners: Partner[];
 };
 
-const directus = createDirectus(directusUrl).with(rest());
+const directus = createDirectus<DirectusCollection>(directusUrl).with(rest());
 
-export async function getDirectusClient() {
+export function getDirectusClient(): DirectusClient<DirectusCollection> &
+  RestClient<DirectusCollection> {
   return directus;
 }
