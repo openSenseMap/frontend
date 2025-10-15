@@ -38,25 +38,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     } else {
       const profileMail = profile?.user?.email || "";
       // Get the access token using the getMyBadgesAccessToken function
-      const authToken = await getMyBadgesAccessToken().then((authData) => {
-        return authData.access_token;
-      });
+      // const authToken = await getMyBadgesAccessToken().then((authData) => {
+      //   return authData.access_token;
+      // });
 
-      // Retrieve the user's backpack data and all available badges from the server
-      const backpackData = await getUserBackpack(profileMail, authToken).then(
-        (backpackData: MyBadge[]) => {
-          return getUniqueActiveBadges(backpackData);
-        },
-      );
+      // // Retrieve the user's backpack data and all available badges from the server
+      // const backpackData = await getUserBackpack(profileMail, authToken).then(
+      //   (backpackData: MyBadge[]) => {
+      //     return getUniqueActiveBadges(backpackData);
+      //   },
+      // );
 
-      const allBadges = await getAllBadges(authToken).then((allBadges) => {
-        return allBadges.result as BadgeClass[];
-      });
+      // const allBadges = await getAllBadges(authToken).then((allBadges) => {
+      //   return allBadges.result as BadgeClass[];
+      // });
 
       // Return the fetched data as JSON
       return {
-        userBackpack: backpackData || [],
-        allBadges: allBadges,
+        // userBackpack: backpackData || [],
+        // allBadges: allBadges,
         profile: profile,
         requestingUserId: requestingUserId,
       };
@@ -65,8 +65,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // If the user data couldn't be fetched, return an empty JSON response
   return {
-    userBackpack: [],
-    allBadges: [],
+    // userBackpack: [],
+    // allBadges: [],
     profile: null,
     requestingUserId: requestingUserId,
   };
@@ -74,9 +74,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function () {
   // Get the data from the loader function using the useLoaderData hook
-  const { allBadges, userBackpack, profile } = useLoaderData<typeof loader>();
+  const { profile } = useLoaderData<typeof loader>();
 
-  const sortedBadges = sortBadges(allBadges, userBackpack);
+  // const sortedBadges = sortBadges(allBadges, userBackpack);
 
   return (
     <div className="h-full bg-slate-100">
@@ -128,14 +128,14 @@ export default function () {
                 Measurements
               </span>
             </div>
-            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
+            {/* <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
               <span className="text-2xl font-bold dark:text-dark-green">
                 {userBackpack.length}
               </span>
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 Badges
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="flex flex-col gap-6 w-full md:w-2/3">
@@ -143,7 +143,7 @@ export default function () {
             <div className="text-3xl font-semibold mb-4 text-light-green dark:text-dark-green">
               Badges
             </div>
-            <section className="w-full py-12 md:py-16 lg:py-20">
+            {/* <section className="w-full py-12 md:py-16 lg:py-20">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {sortedBadges.map((badge: BadgeClass) => {
                   return (
@@ -186,7 +186,7 @@ export default function () {
                   );
                 })}
               </div>
-            </section>
+            </section> */}
           </div>
           <div className="bg-white dark:bg-dark-background shadow-lg p-6 rounded-xl">
             {profile?.user?.devices && (
