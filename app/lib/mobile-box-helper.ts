@@ -1,5 +1,3 @@
-import { getDistance } from "geolib";
-
 export interface LocationPoint {
   geometry: {
     x: number;

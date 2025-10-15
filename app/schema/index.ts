@@ -9,3 +9,4 @@ export * from "./sensor";
 export * from "./user";
 export * from "./location";
 export * from "./log-entry";
+export * from "./refreshToken";

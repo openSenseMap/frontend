@@ -10,7 +10,9 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData, type LoaderFunctionArgs, type MetaFunction 
+  useLoaderData,
+  type LoaderFunctionArgs,
+  type MetaFunction,
 } from "react-router";
 import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
@@ -109,13 +111,17 @@ export function App() {
   useChangeLanguage(data.locale);
 
   return (
-    <html lang={data.locale} dir={i18n.dir()} className={clsx("light")}>
+    <html
+      lang={data.locale}
+      dir={i18n.dir()}
+      className={clsx("light", "overflow-hidden")}
+    >
       <head>
         <Meta />
         {/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
         <Links />
       </head>
-      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text">
+      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text overflow-visible overflow-auto">
         <Outlet />
         <Toaster />
         <ScrollRestoration />

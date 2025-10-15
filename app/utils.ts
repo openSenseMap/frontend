@@ -1,8 +1,12 @@
 import moment from "moment";
 import { useMemo } from "react";
 import { useMatches } from "react-router";
-import  { type MyBadge } from "./models/badge.server";
-import  { type User } from "~/schema";
+import {
+  validateUsername,
+  validateEmail as validateEmailNew,
+} from "./lib/user-service";
+import { type MyBadge } from "./models/badge.server";
+import { type User } from "./schema/user";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -48,50 +52,18 @@ export function safeRedirect(
 }
 
 /**
- * This base hook is used in other hooks to quickly search for specific data
- * across all loader data using useMatches.
- * @param {string} id The route id
- * @returns {JSON|undefined} The router data or undefined if not found
+ * Validates an email against common criteria.
+ * @deprecated Use {@link validateEmailNew} instead
  */
-export function useMatchesData(
-  id: string,
-): Record<string, unknown> | undefined {
-  const matchingRoutes = useMatches();
-  const route = useMemo(
-    () => matchingRoutes.find((route) => route.id === id),
-    [matchingRoutes, id],
-  );
-
-  return route?.data as Record<string, unknown>;
-}
-
-function isUser(user: any): user is User {
-  return user && typeof user === "object" && typeof user.email === "string";
-}
-
-export function useOptionalUser(): User | undefined {
-  const data = useMatchesData("root");
-  if (!data || !isUser(data.user)) {
-    return undefined;
-  }
-  return data.user;
-}
-
-export function useUser(): User {
-  const maybeUser = useOptionalUser();
-  if (!maybeUser) {
-    throw new Error(
-      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead.",
-    );
-  }
-  return maybeUser;
-}
-
 export function validateEmail(email: unknown): email is string {
-  return typeof email === "string" && email.length > 3 && email.includes("@");
+  if (typeof email !== "string") return false;
+  return validateEmailNew(email).isValid;
 }
 
-//* validate user name in join page
+/**
+ * Validates a username against set criteria.
+ * @deprecated Use {@link validateUsername} instead
+ */
 export function validateName(name: string) {
   if (name.length === 0) {
     return { isValid: false, errorMsg: "username_required" };
@@ -146,7 +118,7 @@ export function getFilteredDevices(
 
     return (
       // If "all" is selected, include all exposures; otherwise, check for matches
-      (// If tags are provided, check if the device contains any of the selected tags
+      // If tags are provided, check if the device contains any of the selected tags
       (exposureFilter.includes("all") ||
         exposureFilter.includes(device.properties.exposure.toLowerCase())) &&
       // If "all" is selected, include all statuses; otherwise, check for matches
@@ -154,7 +126,9 @@ export function getFilteredDevices(
         statusFilter.includes(device.properties.status.toLowerCase())) &&
       // If phenomenon is provided, check if any sensor matches the selected phenomenon
       (!filterParams.get("phenomenon") ||
-        sensorsList.some((s: any) => phenomenonList?.includes(s))) && (tagsFilter.length === 0 || tagsFilter.some((tag) => deviceTags.includes(tag))))
+        sensorsList.some((s: any) => phenomenonList?.includes(s))) &&
+      (tagsFilter.length === 0 ||
+        tagsFilter.some((tag) => deviceTags.includes(tag)))
     );
   });
 
@@ -243,4 +217,44 @@ export function sortBadges(
     const bOwned = ownedBadgeClassIds.has(b.openBadgeId);
     return aOwned === bOwned ? 0 : aOwned ? -1 : 1;
   });
+}
+
+/**
+ * This base hook is used in other hooks to quickly search for specific data
+ * across all loader data using useMatches.
+ * @param {string} id The route id
+ * @returns {JSON|undefined} The router data or undefined if not found
+ */
+export function useMatchesData(
+  id: string,
+): Record<string, unknown> | undefined {
+  const matchingRoutes = useMatches();
+  const route = useMemo(
+    () => matchingRoutes.find((route) => route.id === id),
+    [matchingRoutes, id],
+  );
+
+  return route?.data as Record<string, unknown>;
+}
+
+function isUser(user: any): user is User {
+  return user && typeof user === "object" && typeof user.email === "string";
+}
+
+export function useOptionalUser(): User | undefined {
+  const data = useMatchesData("root");
+  if (!data || !isUser(data.user)) {
+    return undefined;
+  }
+  return data.user;
+}
+
+export function useUser(): User {
+  const maybeUser = useOptionalUser();
+  if (!maybeUser) {
+    throw new Error(
+      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead.",
+    );
+  }
+  return maybeUser;
 }

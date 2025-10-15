@@ -8,7 +8,8 @@
 /.github
 /.vscode
 /mocks
-/db
+/db/imports
+/db/seeds
 docker-compose.ci.yml
 docker-compose.yml
 .env.example
