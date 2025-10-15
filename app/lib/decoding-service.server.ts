@@ -260,7 +260,7 @@ export function hasDecoder(contentType: string): boolean {
 		contentType.includes('text/csv') ||
 		contentType.includes('application/sbx-bytes') ||
 		contentType.includes('text/plain;charset=UTF-8')
-	) // TODO: implement
+	) 
 }
 
 function normalizeContentType(contentType: string): string {
@@ -310,58 +310,46 @@ function extractMeasurement(
 	offset: number,
 	sensors: any[],
 	withTimestamp: boolean,
-): any | null {
-	const view = new DataView(bytes.buffer, bytes.byteOffset + offset)
-
-	// Extract sensor ID (first 12 bytes as hex string)
-	const sensorIdBytes = bytes.slice(offset, offset + 12)
-	const sensorIdHex = Array.from(sensorIdBytes)
-		.map((b) => b.toString(16).padStart(2, '0'))
-		.join('')
-		.replace(/0+$/, '') // Remove trailing zeros
-
-	// Convert hex back to sensor ID format
-	let sensorId = sensorIdHex
-
-	// Try to find matching sensor by ID
-	const matchingSensor = sensors.find((s) => {
-		const cleanId = s.id.replace(/^0x/, '').toLowerCase()
-		return (
-			cleanId.startsWith(sensorIdHex.toLowerCase()) ||
-			sensorIdHex.toLowerCase().startsWith(cleanId)
-		)
-	})
-
+  ): any | null {
+	const view = new DataView(bytes.buffer, bytes.byteOffset + offset);
+	
+	// Extract sensor ID (first 12 bytes as hex string) 
+	const sensorIdBytes = bytes.slice(offset, offset + 12);
+	const sensorId = Array.from(sensorIdBytes)
+	  .map((b) => b.toString(16).padStart(2, '0'))
+	  .join('');
+	
+	const matchingSensor = sensors.find((s) => 
+	  s.id.toLowerCase() === sensorId.toLowerCase()
+	);
+	
 	if (!matchingSensor) {
-		console.warn(`No matching sensor found for hex ID: ${sensorIdHex}`)
-		return null
+	  console.warn(`No matching sensor found for ID: ${sensorId}`);
+	  return null;
 	}
-
-	sensorId = matchingSensor.id
-
+	
 	// Extract value (4 bytes float32, little endian)
-	const value = view.getFloat32(12, true)
-
+	const value = view.getFloat32(12, true);
+	
 	// Extract timestamp if present
-	let createdAt = new Date()
+	let createdAt = new Date();
 	if (withTimestamp) {
-		const timestampSeconds = view.getUint32(16, true)
-		createdAt = new Date(timestampSeconds * 1000)
-
-		// Validate timestamp is not too far in the future
-		const now = new Date()
-		const maxFutureTime = 5 * 60 * 1000 // 5 minutes
-		if (createdAt.getTime() > now.getTime() + maxFutureTime) {
-			throw new Error(
-				`Timestamp ${createdAt.toISOString()} is too far into the future.`,
-			)
-		}
+	  const timestampSeconds = view.getUint32(16, true);
+	  createdAt = new Date(timestampSeconds * 1000);
+	  
+	  const now = new Date();
+	  const maxFutureTime = 5 * 60 * 1000;
+	  if (createdAt.getTime() > now.getTime() + maxFutureTime) {
+		throw new Error(
+		  `Timestamp ${createdAt.toISOString()} is too far into the future.`,
+		);
+	  }
 	}
-
+	
 	return {
-		sensor_id: sensorId,
-		value: value,
-		createdAt: createdAt,
-		location: null,
-	}
-}
+	  sensor_id: matchingSensor.id,
+	  value: value,
+	  createdAt: createdAt,
+	  location: null,
+	};
+  }

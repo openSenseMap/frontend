@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { createId } from "@paralleldrive/cuid2";
 import {
   relations,
@@ -9,6 +10,10 @@ import { device } from "./device";
 import { DeviceStatusEnum } from "./enum";
 import  { type Measurement } from "./measurement";
 
+function generateHexId(): string {
+  return randomBytes(12).toString('hex');
+}
+
 /**
  * Table
  */
@@ -16,7 +21,7 @@ export const sensor = pgTable("sensor", {
   id: text("id")
     .primaryKey()
     .notNull()
-    .$defaultFn(() => createId()),
+    .$defaultFn(() => generateHexId()), // store as hex strings to maintain compatibility with the byte protocol
   title: text("title"),
   unit: text("unit"),
   sensorType: text("sensor_type"),

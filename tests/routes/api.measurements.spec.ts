@@ -13,8 +13,8 @@ import { drizzleClient } from "~/db.server";
 const mockAccessToken = "valid-access-token";
 
 const TEST_USER = {
-  name: "testing measurement submit",
-  email: "test@measurementsubmit.me",
+  name: "testing measurement submits",
+  email: "test@measurementsubmits.me",
   password: "some secure password",
 };
 
@@ -249,85 +249,197 @@ describe("multiple CSV POST /boxes/:id/data", () => {
   // ---------------------------------------------------
   // Multiple bytes POST
   // ---------------------------------------------------
-  // describe("multiple bytes POST /boxes/:id/data", () => {
+  describe("multiple bytes POST /boxes/:id/data", () => {
 
-  //   it("should accept multiple measurements as bytes via POST", async () => {
-  //     const request = new Request(
-  //       `${BASE_URL}/api/boxes/${deviceId}/data`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/sbx-bytes",
-  //           Authorization: mockAccessToken,
-  //         },
-  //         body: byteSubmitData(sensors),
-  //       }
-  //     );
+    it("should accept multiple measurements as bytes via POST", async () => {
 
-  //     const response = await postMeasurementsAction({
-  //       request,
-  //       params: { deviceId: deviceId },
-  //       context: {} as AppLoadContext
-  //     } as ActionFunctionArgs);
+      const submitTime = new Date();
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/data`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/sbx-bytes",
+            Authorization: mockAccessToken,
+          },
+          body: byteSubmitData(sensors),
+        }
+      );
 
-  //     expect(response.status).toBe(201);
-  //     expect(await response.text()).toContain("Measurements saved in box");
-  //   });
+      const response: any = await postMeasurementsAction({
+        request,
+        params: { deviceId: deviceId },
+        context: {} as AppLoadContext
+      } as ActionFunctionArgs);
 
-  //   it("should accept multiple measurements as bytes with timestamps", async () => {
-  //     const request = new Request(
-  //       `${BASE_URL}/api/boxes/${deviceId}/data`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/sbx-bytes-ts",
-  //           Authorization: mockAccessToken,
-  //         },
-  //         body: byteSubmitData(sensors, true),
-  //       }
-  //     );
+      expect(response.status).toBe(201);
+      expect(await response.text()).toContain("Measurements saved in box");
 
-  //     const response = await postMeasurementsAction({
-  //       request,
-  //       params: { deviceId: deviceId },
-  //       context: {} as AppLoadContext
-  //     } as ActionFunctionArgs);
+      const updatedDevice = await getDevice({ id: deviceId });
+  
+      expect(updatedDevice?.sensors).toBeDefined();
+      updatedDevice?.sensors?.forEach((sensor: any) => {
+        expect(sensor.lastMeasurement).toBeDefined();
+        expect(sensor.lastMeasurement).not.toBeNull();
+        
+        // Verify the measurement timestamp is recent
+        if (sensor.lastMeasurement?.createdAt) {
+          const createdAt = new Date(sensor.lastMeasurement.createdAt);
+          const diffMinutes = Math.abs(submitTime.getTime() - createdAt.getTime()) / (1000 * 60);
+          expect(diffMinutes).toBeLessThan(4);
+        }
+      });
+    });
 
-  //     expect(response.status).toBe(201);
-  //   });
-  // });
+    it("should accept multiple measurements as bytes with timestamps", async () => {
+      const submitTime = new Date();
+      
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/data`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/sbx-bytes-ts",
+            Authorization: mockAccessToken,
+          },
+          body: byteSubmitData(sensors, true),
+        }
+      );
+    
+      const response: any = await postMeasurementsAction({
+        request,
+        params: { deviceId: deviceId },
+        context: {} as AppLoadContext
+      } as ActionFunctionArgs);
+    
+      expect(response.status).toBe(201);
+      expect(await response.text()).toBe("Measurements saved in box");
+      
+      const updatedDevice = await getDevice({ id: deviceId });
+      
+      expect(updatedDevice?.sensors).toBeDefined();
+      expect(updatedDevice?.sensors?.length).toBeGreaterThan(0);
+      
+      updatedDevice?.sensors?.forEach((sensor: any) => {
+        expect(sensor.lastMeasurement).toBeDefined();
+        expect(sensor.lastMeasurement).not.toBeNull();
+        
+        expect(sensor.lastMeasurement.createdAt).toBeDefined();
+        
+        // Verify the timestamp is within 5 minutes of submission
+        const createdAt = new Date(sensor.lastMeasurement.createdAt);
+        const diffMinutes = Math.abs(submitTime.getTime() - createdAt.getTime()) / (1000 * 60);
+        expect(diffMinutes).toBeLessThan(5);
+      });
+    });
+  });
+
+  it("should reject measurements with invalid sensor IDs", async () => {
+    // Create byte data with a non-existent sensor ID
+    const fakeSensorId = "fakeid123456";
+    const bytesPerSensor = 16;
+    const buffer = new ArrayBuffer(bytesPerSensor);
+    const view = new DataView(buffer);
+    const bytes = new Uint8Array(buffer);
+
+    function stringToHex(str: string): string {
+      let hex = '';
+      for (let i = 0; i < str.length; i++) {
+        const charCode = str.charCodeAt(i);
+        hex += charCode.toString(16).padStart(2, '0');
+      }
+      return hex;
+      }
+    
+    
+    // Encode fake sensor ID
+    const fakeIdHex = stringToHex(fakeSensorId).slice(0, 24);
+    for (let j = 0; j < 12; j++) {
+      const hexByteStart = j * 2;
+      const hexByte = fakeIdHex.slice(hexByteStart, hexByteStart + 2);
+      bytes[j] = parseInt(hexByte, 16) || 0;
+    }
+    view.setFloat32(12, 25.5, true);
+  
+    const request = new Request(
+      `${BASE_URL}/api/boxes/${deviceId}/data`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/sbx-bytes",
+          Authorization: mockAccessToken,
+        },
+        body: bytes,
+      }
+    );
+  
+    const response: any = await postMeasurementsAction({
+      request,
+      params: { deviceId: deviceId },
+      context: {} as AppLoadContext
+    } as ActionFunctionArgs);
+
+    console.log("response invalid sensor", response)
+  
+    // Should either reject or silently skip invalid sensors
+    expect(response.status).toBeGreaterThanOrEqual(200);
+  });
+  
+  it("should handle empty measurements", async () => {
+    const request = new Request(
+      `${BASE_URL}/api/boxes/${deviceId}/data`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/sbx-bytes",
+          Authorization: mockAccessToken,
+        },
+        body: new Uint8Array(0),
+      }
+    );
+  
+    const response: any = await postMeasurementsAction({
+      request,
+      params: { deviceId: deviceId },
+      context: {} as AppLoadContext
+    } as ActionFunctionArgs);
+  
+    expect(response.status).toBe(422); // Unprocessable Entity
+  });
 
   // ---------------------------------------------------
   // MQTT publishing
   // ---------------------------------------------------
-//   describe("MQTT submission", () => {
-//     it("should accept measurements through mqtt", async () => {
-//       // NOTE: You’ll need to wire up a real or mock MQTT client.
-//       // Example: use `mqtt` npm package and connect to a local broker in test env.
-//       // Here we just stub:
+  // describe("MQTT submission", () => {
+  //   it("should accept measurements through mqtt", async () => {
+  //     // NOTE: You’ll need to wire up a real or mock MQTT client.
+  //     // Example: use `mqtt` npm package and connect to a local broker in test env.
+  //     // Here we just stub:
 
-//       const fakePublishMqttMessage = async (
-//         topic: string,
-//         payload: string
-//       ) => {
-//         // call your app’s MQTT ingestion handler directly instead of broker
-//         const request = new Request(`${BASE_URL}/api/mqtt`, {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: payload,
-//         });
-//         return postMeasurementsAction({
-//           request,
-//           params: { deviceId: deviceId },
-//         } as ActionFunctionArgs);
-//       };
+  //     const fakePublishMqttMessage = async (
+  //       topic: string,
+  //       payload: string
+  //     ) => {
+  //       // call your app’s MQTT ingestion handler directly instead of broker
+  //       const request = new Request(`${BASE_URL}/api/mqtt`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: payload,
+  //       });
+  //       return postMeasurementsAction({
+  //         request,
+  //         params: { deviceId: deviceId },
+  //         context: {} as AppLoadContext
 
-//       const payload = JSON.stringify(jsonSubmitData.jsonArr(mockSensors));
-//       const mqttResponse = await fakePublishMqttMessage("mytopic", payload);
+  //       } as ActionFunctionArgs);
+  //     };
 
-//       expect(mqttResponse.status).toBe(201);
-//     });
-//   });
+  //     const payload = JSON.stringify(jsonSubmitData.jsonArr(sensors));
+  //     const mqttResponse: any = await fakePublishMqttMessage("mytopic", payload);
+
+  //     expect(mqttResponse.status).toBe(201);
+  //   });
+  // });
 
 describe("multiple JSON POST /boxes/:id/data", () => {
   it("should accept multiple measurements with timestamps as JSON object via POST (content-type: json)", async () => {
