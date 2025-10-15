@@ -1,3 +1,4 @@
+import { readItems } from "@directus/sdk";
 import { useMediaQuery } from "@mantine/hooks";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -17,6 +18,7 @@ import Integrations from "~/components/landing/sections/integrations";
 import Partners from "~/components/landing/sections/partners";
 import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Stats from "~/components/landing/stats";
+import { type supportedLanguages } from "~/i18next-options";
 import i18next from "~/i18next.server";
 import { type Partner, getDirectusClient } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
@@ -50,26 +52,34 @@ const sections = [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  let locale = await i18next.getLocale(request);
-  const directus = await getDirectusClient();
+  const locale = (await i18next.getLocale(
+    request,
+  )) as (typeof supportedLanguages)[number];
+  const directus = getDirectusClient();
 
-  const useCasesResponse = await directus.items("use_cases").readByQuery({
-    fields: ["*"],
-    filter: {
-      language: locale,
-    },
-  });
+  const useCasesResponse = await directus.request(
+    readItems("use_cases", {
+      fields: ["*"],
+      filter: {
+        language: { _eq: locale },
+      },
+    }),
+  );
 
-  const featuresResponse = await directus.items("features").readByQuery({
-    fields: ["*"],
-    filter: {
-      language: locale,
-    },
-  });
+  const featuresResponse = await directus.request(
+    readItems("features", {
+      fields: ["*"],
+      filter: {
+        language: { _eq: locale },
+      },
+    }),
+  );
 
-  const partnersResponse = await directus.items("partners").readByQuery({
-    fields: ["*"],
-  });
+  const partnersResponse = await directus.request(
+    readItems("partners", {
+      fields: ["*"],
+    }),
+  );
 
   //* Get user Id from session
   const userId = await getUserId(request);
@@ -84,9 +94,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const latestDevices = await getLatestDevices();
 
   return data({
-    useCases: useCasesResponse.data,
-    features: featuresResponse.data,
-    partners: partnersResponse.data,
+    useCases: useCasesResponse,
+    features: featuresResponse,
+    partners: partnersResponse,
     stats: stats,
     header: { userId: userId, userName: userName },
     locale: locale,
