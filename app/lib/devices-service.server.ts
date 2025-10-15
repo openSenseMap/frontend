@@ -1,9 +1,24 @@
-import { Device, User } from '~/schema'
+import { z } from 'zod'
 import {
 	deleteDevice as deleteDeviceById,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
-import { z } from 'zod'
+import { type Device, type User } from '~/schema'
+
+export const CreateBoxSchema = z.object({
+	name: z.string().min(1, "Name is required").max(100, "Name too long"),
+	exposure: z.enum(["indoor", "outdoor", "mobile", "unknown"]).optional().default("unknown"),
+	location: z.array(z.number()).length(2, "Location must be [longitude, latitude]"),
+	grouptag: z.array(z.string()).optional().default([]),
+	model: z.enum(["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]).optional().default("Custom"),
+	sensors: z.array(z.object({
+		id: z.string(),
+		icon: z.string().optional(),
+		title: z.string().min(1, "Sensor title is required"),
+		unit: z.string().min(1, "Sensor unit is required"),
+		sensorType: z.string().min(1, "Sensor type is required"),
+	})).optional().default([]),
+});
 
 export const BoxesQuerySchema = z.object({
 	format: z.enum(["json", "geojson"]  ,{

@@ -1,7 +1,14 @@
+import { readItems } from "@directus/sdk";
 import { useMediaQuery } from "@mantine/hooks";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import  { type LoaderFunctionArgs, data, Link, useLoaderData  } from "react-router";
+import {
+  type LoaderFunctionArgs,
+  data,
+  Link,
+  useLoaderData,
+} from "react-router";
 import Footer from "~/components/landing/footer";
 import { GlobeComponent } from "~/components/landing/globe.client";
 import Header from "~/components/landing/header/header";
@@ -11,8 +18,9 @@ import Integrations from "~/components/landing/sections/integrations";
 import Partners from "~/components/landing/sections/partners";
 import PricingPlans from "~/components/landing/sections/pricing-plans";
 import Stats from "~/components/landing/stats";
+import { type supportedLanguages } from "~/i18next-options";
 import i18next from "~/i18next.server";
-import  { type Partner, getDirectusClient  } from "~/lib/directus";
+import { type Partner, getDirectusClient } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
 import { getUserId, getUserName } from "~/utils/session.server";
 
@@ -44,26 +52,34 @@ const sections = [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  let locale = await i18next.getLocale(request);
-  const directus = await getDirectusClient();
+  const locale = (await i18next.getLocale(
+    request,
+  )) as (typeof supportedLanguages)[number];
+  const directus = getDirectusClient();
 
-  const useCasesResponse = await directus.items("use_cases").readByQuery({
-    fields: ["*"],
-    filter: {
-      language: locale,
-    },
-  });
+  const useCasesResponse = await directus.request(
+    readItems("use_cases", {
+      fields: ["*"],
+      filter: {
+        language: { _eq: locale },
+      },
+    }),
+  );
 
-  const featuresResponse = await directus.items("features").readByQuery({
-    fields: ["*"],
-    filter: {
-      language: locale,
-    },
-  });
+  const featuresResponse = await directus.request(
+    readItems("features", {
+      fields: ["*"],
+      filter: {
+        language: { _eq: locale },
+      },
+    }),
+  );
 
-  const partnersResponse = await directus.items("partners").readByQuery({
-    fields: ["*"],
-  });
+  const partnersResponse = await directus.request(
+    readItems("partners", {
+      fields: ["*"],
+    }),
+  );
 
   //* Get user Id from session
   const userId = await getUserId(request);
@@ -78,9 +94,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const latestDevices = await getLatestDevices();
 
   return data({
-    useCases: useCasesResponse.data,
-    features: featuresResponse.data,
-    partners: partnersResponse.data,
+    useCases: useCasesResponse,
+    features: featuresResponse,
+    partners: partnersResponse,
     stats: stats,
     header: { userId: userId, userName: userName },
     locale: locale,
@@ -99,12 +115,25 @@ export default function Index() {
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  /**
+   * Stupid workaround for chromium and webkit that both render double
+   * scroll bars when using scrollSnapType.
+   * Simply setting overflow hidden on the html element fixes it and
+   * the rest of the pages stay untouched from this.
+   */
+  useEffect(() => {
+    document.documentElement.style.setProperty("overflow", "hidden");
+    return () => {
+      document.documentElement.style.removeProperty("overflow");
+    };
+  }, []);
+
   return (
     <div
-      className="h-screen bg-white dark:bg-black"
+      className="max-h-screen bg-white dark:bg-black"
       style={{
         scrollSnapType: "y mandatory",
-        overflowY: "auto"
+        overflowY: "auto",
       }}
     >
       <header className="z-10">
@@ -194,7 +223,7 @@ export default function Index() {
             </div>
             {isDesktop && (
               <div className="w-1/3 cursor-pointer">
-                <GlobeComponent latestDevices={latestDevices}/>
+                <GlobeComponent latestDevices={latestDevices} />
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { transformDeviceToApiFormat } from "~/lib/device-transform";
 import { getUserFromJwt } from "~/lib/jwt";
 import { getUserDevices } from "~/models/device.server";
 
@@ -21,13 +22,14 @@ export const loader: LoaderFunction = async ({
       );
 
     const userBoxes = await getUserDevices(jwtResponse.id);
+    const cleanedBoxes = userBoxes.map((box) => transformDeviceToApiFormat(box));
 
     return Response.json(
       {
         code: "Ok",
         data: {
-          boxes: userBoxes,
-          boxes_count: userBoxes.length,
+          boxes: cleanedBoxes,
+          boxes_count: cleanedBoxes.length,
           sharedBoxes: [],
         },
       },
