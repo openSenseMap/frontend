@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { type ActionFunctionArgs } from "react-router";
+import { type LoaderFunctionArgs, type ActionFunctionArgs } from "react-router";
 import { BoxesQuerySchema, deleteDevice } from "~/lib/devices-service.server";
 import { getUserFromJwt } from "~/lib/jwt";
 import {
@@ -290,10 +289,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!parseResult.success) {
     const { fieldErrors, formErrors } = parseResult.error.flatten();
     if (fieldErrors.format) {
-      throw json({ error: "Invalid format parameter" }, { status: 422 });
+      throw Response.json(
+        { error: "Invalid format parameter" },
+        { status: 422 },
+      );
     }
 
-    throw json({ error: parseResult.error.flatten() }, { status: 422 });
+    throw Response.json(
+      { error: parseResult.error.flatten() },
+      { status: 422 },
+    );
   }
 
   const params: FindDevicesOptions = parseResult.data;
@@ -363,19 +368,19 @@ async function del(request: Request, user: User, params: any) {
   const { deviceId } = params;
 
   if (!deviceId) {
-    throw json({ message: "Device ID is required" }, { status: 400 });
+    throw Response.json({ message: "Device ID is required" }, { status: 400 });
   }
 
   const device = (await getDevice({ id: deviceId })) as unknown as Device;
 
   if (!device) {
-    throw json({ message: "Device not found" }, { status: 404 });
+    throw Response.json({ message: "Device not found" }, { status: 404 });
   }
 
   const body = await request.json();
 
   if (!body.password) {
-    throw json(
+    throw Response.json(
       { message: "Password is required for device deletion" },
       { status: 400 },
     );
@@ -408,7 +413,7 @@ async function post(request: Request, user: User) {
     const body = await request.json();
 
     if (!body.location) {
-      throw json(
+      throw Response.json(
         { message: "missing required parameter location" },
         { status: 400 },
       );
@@ -419,7 +424,7 @@ async function post(request: Request, user: User) {
     if (Array.isArray(body.location)) {
       // Handle array format [lat, lng, height?]
       if (body.location.length < 2) {
-        throw json(
+        throw Response.json(
           {
             message: `Illegal value for parameter location. missing latitude or longitude in location [${body.location.join(",")}]`,
           },
@@ -432,7 +437,7 @@ async function post(request: Request, user: User) {
     } else if (typeof body.location === "object" && body.location !== null) {
       // Handle object format { lat, lng, height? }
       if (!("lat" in body.location) || !("lng" in body.location)) {
-        throw json(
+        throw Response.json(
           {
             message:
               "Illegal value for parameter location. missing latitude or longitude",
@@ -444,7 +449,7 @@ async function post(request: Request, user: User) {
       longitude = Number(body.location.lng);
       height = body.location.height ? Number(body.location.height) : undefined;
     } else {
-      throw json(
+      throw Response.json(
         {
           message:
             "Illegal value for parameter location. Expected array or object",
@@ -454,7 +459,7 @@ async function post(request: Request, user: User) {
     }
 
     if (isNaN(latitude) || isNaN(longitude)) {
-      throw json(
+      throw Response.json(
         { message: "Invalid latitude or longitude values" },
         { status: 422 },
       );
@@ -462,7 +467,10 @@ async function post(request: Request, user: User) {
 
     const rawAuthorizationHeader = request.headers.get("authorization");
     if (!rawAuthorizationHeader) {
-      throw json({ message: "Authorization header required" }, { status: 401 });
+      throw Response.json(
+        { message: "Authorization header required" },
+        { status: 401 },
+      );
     }
     const [, jwtString] = rawAuthorizationHeader.split(" ");
 
@@ -474,7 +482,7 @@ async function post(request: Request, user: User) {
 
     const newDevice = await createDevice(deviceData, user.id);
 
-    return json(
+    return Response.json(
       {
         data: {
           ...newDevice,
@@ -490,6 +498,6 @@ async function post(request: Request, user: User) {
       throw error;
     }
 
-    throw json({ message: "Internal server error" }, { status: 500 });
+    throw Response.json({ message: "Internal server error" }, { status: 500 });
   }
 }
