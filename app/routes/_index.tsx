@@ -63,7 +63,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       filter: {
         language: { _eq: locale },
       },
-    }),
+    })
   );
 
   const featuresResponse = await directus.request(
@@ -72,13 +72,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       filter: {
         language: { _eq: locale },
       },
-    }),
+    })
   );
 
   const partnersResponse = await directus.request(
     readItems("partners", {
       fields: ["*"],
-    }),
+    })
   );
 
   //* Get user Id from session
