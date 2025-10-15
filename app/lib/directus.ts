@@ -40,6 +40,7 @@ type DirectusCollection = {
 
 const directus = createDirectus<DirectusCollection>(directusUrl).with(rest());
 
-export function getDirectusClient(): DirectusClient<DirectusCollection> & RestClient<DirectusCollection> {
+export function getDirectusClient(): DirectusClient<DirectusCollection> &
+  RestClient<DirectusCollection> {
   return directus;
 }
