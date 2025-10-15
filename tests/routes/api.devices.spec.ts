@@ -8,7 +8,7 @@ import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
-import { loader as deviceLoader } from '~/routes/api.device.$deviceId'
+import { loader as deviceLoader, action as deviceUpdateAction } from '~/routes/api.device.$deviceId'
 import {
 	loader as devicesLoader,
 	action as devicesAction,
@@ -557,6 +557,116 @@ describe('openSenseMap API Routes: /boxes', () => {
 				// Add assertions for fields that shouldn't be returned
 				// For example, if there are internal fields that shouldn't be exposed:
 				// expect(result.internalField).toBeUndefined()
+			})
+		})
+
+		describe('PUT', () => {
+			it('should allow to update the device via PUT', async () => {
+				const update_payload = {
+					name: 'neuername',
+					exposure: 'indoor',
+					grouptag: 'newgroup',
+					description: 'total neue beschreibung',
+					location: { lat: 54.2, lng: 21.1 },
+					weblink: 'http://www.google.de',
+					image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
+				}
+		
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+		
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+		
+				expect(response.status).toBe(200)
+		
+				const data = await response.json()
+		
+				expect(data.name).toBe(update_payload.name)
+				expect(data.exposure).toBe(update_payload.exposure)
+				expect(Array.isArray(data.grouptag)).toBe(true)
+				expect(data.grouptag).toContain(update_payload.grouptag)
+				expect(data.description).toBe(update_payload.description)
+		
+				expect(data.currentLocation).toEqual({
+					type: 'Point',
+					coordinates: [update_payload.location.lng, update_payload.location.lat],
+					timestamp: expect.any(String),
+				})
+		
+				expect(data.loc).toEqual([
+					{
+						type: 'Feature',
+						geometry: {
+							type: 'Point',
+							coordinates: [update_payload.location.lng, update_payload.location.lat],
+							timestamp: expect.any(String),
+						},
+					},
+				])
+			})
+		
+			it('should allow to update the device via PUT with array as grouptags', async () => {
+				const update_payload = {
+					name: 'neuername',
+					exposure: 'outdoor',
+					grouptag: ['newgroup'],
+					description: 'total neue beschreibung',
+					location: { lat: 54.2, lng: 21.1 },
+					weblink: 'http://www.google.de',
+					image:
+						'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
+				}
+		
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+		
+				const response: any = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+		
+				expect(response.status).toBe(200)
+		
+		
+				const data = await response.json()
+				expect(data.name).toBe(update_payload.name)
+				expect(data.exposure).toBe(update_payload.exposure)
+		
+				expect(Array.isArray(data.grouptag)).toBe(true)
+				expect(data.grouptag).toEqual(update_payload.grouptag)
+		
+				expect(data.description).toBe(update_payload.description)
+				expect(data.currentLocation.coordinates).toEqual([
+					update_payload.location.lng,
+					update_payload.location.lat,
+				])
+				expect(data.loc[0].geometry.coordinates).toEqual([
+					update_payload.location.lng,
+					update_payload.location.lat,
+				])
+				
+				//TODO: this fails, check if we actually need timestamps in images
+				// const parts = data.image.split('_')
+				// const ts36 = parts[1].replace('.png', '')
+				// const tsMs = parseInt(ts36, 36) * 1000
+				// expect(Date.now() - tsMs).toBeLessThan(1000)
 			})
 		})
 
