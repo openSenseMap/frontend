@@ -378,7 +378,7 @@ export async function saveMeasurements(
       ([sensorId, lastMeasurement]) =>
         tx
           .update(sensor)
-          .set({ lastMeasurement: JSON.stringify(lastMeasurement) })
+          .set({ lastMeasurement })
           .where(eq(sensor.id, sensorId))
     );
 
