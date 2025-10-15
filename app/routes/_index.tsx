@@ -52,7 +52,7 @@ const sections = [
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const locale = (await i18next.getLocale(
-    request
+    request,
   )) as (typeof supportedLanguages)[number];
   const directus = getDirectusClient();
 
@@ -60,24 +60,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     readItems("use_cases", {
       fields: ["*"],
       filter: {
-        language: locale,
+        language: { _eq: locale },
       },
-    })
+    }),
   );
 
   const featuresResponse = await directus.request(
     readItems("features", {
       fields: ["*"],
       filter: {
-        language: locale,
+        language: { _eq: locale },
       },
-    })
+    }),
   );
 
   const partnersResponse = await directus.request(
     readItems("partners", {
       fields: ["*"],
-    })
+    }),
   );
 
   //* Get user Id from session
@@ -87,7 +87,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const stats = await fetch("https://api.opensensemap.org/stats").then(
     (res) => {
       return res.json();
-    }
+    },
   );
 
   const latestDevices = await getLatestDevices();
