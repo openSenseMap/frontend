@@ -98,16 +98,14 @@ export const postNewMeasurements = async (
     throw new Error("NotFoundError: Device not found");
   }
 
-  const deviceAccessToken = await findAccessToken(deviceId);
-
-  if (
-    (contentType === "hackair") &&
-    deviceAccessToken?.token &&
-    deviceAccessToken.token !== authorization
-  ) {
-    const error = new Error("Device access token not valid!");
-    error.name = "UnauthorizedError";
-    throw error;
+  if (device.useAuth) {
+    const deviceAccessToken = await findAccessToken(deviceId);
+    
+    if (deviceAccessToken?.token && deviceAccessToken.token !== authorization) {
+      const error = new Error("Device access token not valid!");
+      error.name = "UnauthorizedError";
+      throw error;
+    }
   }
 
   const measurements = await decodeMeasurements(body, {
@@ -146,11 +144,14 @@ export const postSingleMeasurement = async (
       throw error;
     }
 
-    const deviceAccessToken = await findAccessToken(deviceId);
-    if (deviceAccessToken?.token && deviceAccessToken.token !== authorization) {
-      const error = new Error("Device access token not valid!");
-      error.name = "UnauthorizedError";
-      throw error;
+    if (device.useAuth) {
+      const deviceAccessToken = await findAccessToken(deviceId);
+      
+      if (deviceAccessToken?.token && deviceAccessToken.token !== authorization) {
+        const error = new Error("Device access token not valid!");
+        error.name = "UnauthorizedError";
+        throw error;
+      }
     }
 
     let timestamp: Date | undefined;

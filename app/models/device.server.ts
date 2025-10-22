@@ -24,6 +24,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 			updatedAt: true,
 			tags: true,
 			expiresAt: true,
+			useAuth: true,
 		},
 		with: {
 			user: {
