@@ -113,17 +113,23 @@ export const removeBoxTransfer = async (
       throw new Error("Device not found");
     }
   
-    await drizzleClient
-      .update(device)
-      .set({ userId })
-      .where(eq(device.id, activeClaim.boxId));
+    if (box.userId === userId) {
+      throw new Error("You already own this device");
+    }
   
-    await drizzleClient
-      .delete(claim)
-      .where(eq(claim.id, activeClaim.id));
+    await drizzleClient.transaction(async (tx) => {
+      await tx
+        .update(device)
+        .set({ userId, updatedAt: new Date() })
+        .where(eq(device.id, activeClaim.boxId));
+  
+      await tx
+        .delete(claim)
+        .where(eq(claim.id, activeClaim.id));
+    });
   
     return { message: "Device successfully claimed!", boxId: activeClaim.boxId };
-  };  
+  }; 
   
 export const validateTransferParams = (
     boxId?: string,
