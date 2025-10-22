@@ -84,15 +84,17 @@ export default function () {
 			<div className="flex w-full flex-col gap-6 p-8 md:flex-row md:gap-8 md:pt-4">
 				<div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background md:w-1/3">
 					<div className="flex items-center gap-4 dark:text-dark-text">
-						<Avatar className="h-16 w-16">
-							<AvatarImage
-								className="aspect-auto h-full w-full rounded-full object-cover"
-								src={'/resources/file/' + profile?.profileImage?.id}
-							/>
-							<AvatarFallback>
-								{getInitials(profile?.username ?? '')}
-							</AvatarFallback>
-						</Avatar>
+            <Avatar className="h-16 w-16">
+              {profile?.profileImage?.id ? (
+                <AvatarImage
+                  className="aspect-auto w-full h-full rounded-full object-cover"
+                  src={`/resources/file/${profile.profileImage.id}`}
+                />
+              ) : null}
+              <AvatarFallback>
+                {getInitials(profile?.username ?? '')}
+              </AvatarFallback>
+            </Avatar>
 						<div>
 							<h3 className="text-2xl font-semibold dark:text-dark-text">
 								{profile?.user?.name || ''}
