@@ -1,4 +1,4 @@
-import  { type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import  { type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { getUserFromJwt } from "~/lib/jwt";
 import {
   getBoxTransfer,
