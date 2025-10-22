@@ -20,6 +20,7 @@ const BASE_DEVICE_COLUMNS = {
 	createdAt: true,
 	updatedAt: true,
 	expiresAt: true,
+	useAuth: true,
 	sensorWikiModel: true,
 } as const;
 
