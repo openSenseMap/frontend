@@ -146,6 +146,27 @@ async function put(request: Request, user: any, deviceId: string) {
 	try {
 		const body = await request.json()
 
+		if (body.deleteImage === true) {
+			body.image = null
+		}
+
+		// --- Normalize empty string fields ---
+		const nullableStringFields = ['description', 'weblink']
+		for (const field of nullableStringFields) {
+			if (body[field] === '') {
+				body[field] = null
+			}
+		}
+
+		if (Array.isArray(body.grouptag) && body.grouptag.length === 0) {
+			body.grouptag = []
+		}
+
+		if (body.addons?.add) {		  
+			body.grouptag = Array.from(new Set([...body.grouptag, body.addons.add]))
+		  }
+		  
+
 		const updateArgs: UpdateDeviceArgs = {
 			name: body.name,
 			exposure: body.exposure,
@@ -155,9 +176,7 @@ async function put(request: Request, user: any, deviceId: string) {
 			useAuth: body.useAuth,
 			link: body.weblink,
 			location: body.location,
-			grouptag: Array.isArray(body.grouptag)
-				? body.grouptag[0]
-				: body.grouptag,
+			grouptag: body.grouptag
 		}
 
 		const updatedDevice = await updateDevice(deviceId, updateArgs)

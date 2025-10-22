@@ -668,6 +668,134 @@ describe('openSenseMap API Routes: /boxes', () => {
 				// const tsMs = parseInt(ts36, 36) * 1000
 				// expect(Date.now() - tsMs).toBeLessThan(1000)
 			})
+			it('should remove image when deleteImage=true', async () => {
+				const update_payload = {
+					deleteImage: true,
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.image).toBeNull()
+			})
+
+			it('should nullify description when set to empty string', async () => {
+				const update_payload = {
+					description: '',
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.description).toBeNull()
+			})
+
+			it('should clear group tags when empty array provided', async () => {
+				const update_payload = {
+					grouptag: [],
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.grouptag).toHaveLength(0)
+			})
+
+			it('should merge addons.add into grouptags', async () => {
+				const update_payload = {
+					addons: { add: 'feinstaub' },
+					grouptag: ['existinggroup'],
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+
+				expect(Array.isArray(data.grouptag)).toBe(true)
+				expect(data.grouptag).toContain('existinggroup')
+				expect(data.grouptag).toContain('feinstaub')
+			})
+
+			it('should accept multi-valued grouptag array', async () => {
+				const update_payload = {
+					grouptag: ['tag1', 'tag2', 'tag3'],
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.grouptag).toEqual(expect.arrayContaining(['tag1', 'tag2', 'tag3']))
+			})
 		})
 
 		describe('DELETE', () => {

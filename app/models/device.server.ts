@@ -147,9 +147,15 @@ export async function updateDevice(
 		}
 	}
 
-	if (args.grouptag) {
-		setColumns['tags'] = [args.grouptag]
-	}
+	if ('grouptag' in args) {
+		if (Array.isArray(args.grouptag)) {
+		  setColumns['tags'] = args.grouptag
+		} else if (args.grouptag != null) {
+		  setColumns['tags'] = [args.grouptag]
+		} else {
+		  setColumns['tags'] = []
+		}
+	  }	
 
 	if (args.location) {
 		const { lat, lng } = args.location
