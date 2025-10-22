@@ -1,17 +1,16 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type ActionFunctionArgs } from "@remix-run/node";
+import { getUserFromJwt } from "~/lib/jwt";
 import {
   createBoxTransfer,
   removeBoxTransfer,
   validateTransferParams,
 } from "~/lib/transfer-service.server";
-import { getUserFromJwt } from "~/lib/jwt";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const jwtResponse = await getUserFromJwt(request);
 
   if (typeof jwtResponse === "string") {
-    return json(
+    return Response.json(
       {
         code: "Forbidden",
         message:
@@ -55,12 +54,12 @@ const handleCreateTransfer = async (request: Request, user: any) => {
 
     const validation = validateTransferParams(boxId, expiresAt);
     if (!validation.isValid) {
-      return json({ error: validation.error }, { status: 400 });
+      return Response.json({ error: validation.error }, { status: 400 });
     }
 
     const transferCode = await createBoxTransfer(user.id, boxId!, expiresAt);
 
-    return json(
+    return Response.json(
       {
         message: "Box successfully prepared for transfer",
         data: transferCode,
@@ -90,11 +89,11 @@ const handleRemoveTransfer = async (request: Request, user: any) => {
     }
 
     if (!boxId) {
-      return json({ error: "boxId is required" }, { status: 400 });
+      return Response.json({ error: "boxId is required" }, { status: 400 });
     }
 
     if (!token) {
-      return json({ error: "token is required" }, { status: 400 });
+      return Response.json({ error: "token is required" }, { status: 400 });
     }
 
     await removeBoxTransfer(user.id, boxId, token);
@@ -111,7 +110,7 @@ const handleTransferError = (err: unknown) => {
     const message = err.message;
 
     if (message.includes("not found")) {
-      return json({ error: message }, { status: 404 });
+      return Response.json({ error: message }, { status: 404 });
     }
 
     if (
@@ -119,7 +118,7 @@ const handleTransferError = (err: unknown) => {
       message.includes("don't have") ||
       message.includes("not the owner")
     ) {
-      return json({ error: message }, { status: 403 });
+      return Response.json({ error: message }, { status: 403 });
     }
 
     if (
@@ -129,11 +128,11 @@ const handleTransferError = (err: unknown) => {
       message.includes("format") ||
       message.includes("future")
     ) {
-      return json({ error: message }, { status: 400 });
+      return Response.json({ error: message }, { status: 400 });
     }
   }
 
-  return json(
+  return Response.json(
     { error: "Internal server error" },
     { status: 500 }
   );
