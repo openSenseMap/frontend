@@ -1,31 +1,39 @@
 import { point } from '@turf/helpers'
-import { eq, sql, desc, ilike, inArray, arrayContains, and } from 'drizzle-orm'
+import { eq, sql, desc, ilike, arrayContains, and } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
 import { accessToken } from '~/schema/accessToken'
 
+const BASE_DEVICE_COLUMNS = {
+	id: true,
+	name: true,
+	description: true,
+	image: true,
+	link: true,
+	tags: true,
+	exposure: true,
+	model: true,
+	latitude: true,
+	longitude: true,
+	status: true,
+	createdAt: true,
+	updatedAt: true,
+	expiresAt: true,
+	sensorWikiModel: true,
+} as const;
+
+const DEVICE_COLUMNS_WITH_SENSORS = {
+	...BASE_DEVICE_COLUMNS,
+	useAuth: true,
+	public: true,
+	userId: true,
+} as const;
+
 export function getDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
 		where: (device, { eq }) => eq(device.id, id),
-		columns: {
-			createdAt: true,
-			description: true,
-			exposure: true,
-			id: true,
-			image: true,
-			latitude: true,
-			longitude: true,
-			link: true,
-			model: true,
-			name: true,
-			sensorWikiModel: true,
-			status: true,
-			updatedAt: true,
-			tags: true,
-			expiresAt: true,
-			useAuth: true,
-		},
+		columns: BASE_DEVICE_COLUMNS,
 		with: {
 			user: {
 				columns: {
@@ -112,15 +120,9 @@ export function deleteDevice({ id }: Pick<Device, 'id'>) {
 export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
 		where: (device, { eq }) => eq(device.userId, userId),
-		columns: {
-			id: true,
-			name: true,
-			latitude: true,
-			longitude: true,
-			exposure: true,
-			model: true,
-			createdAt: true,
-			updatedAt: true,
+		columns: DEVICE_COLUMNS_WITH_SENSORS,
+		with: {
+			sensors: true,
 		},
 	})
 }
@@ -359,9 +361,7 @@ interface BuildWhereClauseOptions {
   ) {
 	const { minimal, limit } = opts;
 	const { includeColumns, whereClause } = buildWhereClause(opts);
-  
 	columns = minimal ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
-  
 	relations = {
 	  ...relations,
 	  ...includeColumns
@@ -391,7 +391,11 @@ export async function createDevice(deviceData: any, userId: string) {
 					tags: deviceData.tags,
 					userId: userId,
 					name: deviceData.name,
+					description: deviceData.description,
+					image: deviceData.image,
+					link: deviceData.link,
 					exposure: deviceData.exposure,
+					public: deviceData.public ?? false,
 					expiresAt: deviceData.expiresAt
 						? new Date(deviceData.expiresAt)
 						: null,
@@ -403,18 +407,31 @@ export async function createDevice(deviceData: any, userId: string) {
 			if (!createdDevice) {
 				throw new Error('Failed to create device.')
 			}
-			// Add sensors in the same transaction
+			
+			// Add sensors in the same transaction and collect them
+			const createdSensors = [];
 			if (deviceData.sensors && Array.isArray(deviceData.sensors)) {
 				for (const sensorData of deviceData.sensors) {
-					await tx.insert(sensor).values({
-						title: sensorData.title,
-						unit: sensorData.unit,
-						sensorType: sensorData.sensorType,
-						deviceId: createdDevice.id, // Reference the created device ID
-					})
+					const [newSensor] = await tx.insert(sensor)
+						.values({
+							title: sensorData.title,
+							unit: sensorData.unit,
+							sensorType: sensorData.sensorType,
+							deviceId: createdDevice.id, // Reference the created device ID
+						})
+						.returning();
+					
+					if (newSensor) {
+						createdSensors.push(newSensor);
+					}
 				}
 			}
-			return createdDevice
+			
+			// Return device with sensors
+			return {
+				...createdDevice,
+				sensors: createdSensors
+			};
 		})
 		return newDevice
 	} catch (error) {

@@ -15,6 +15,15 @@ function generateHexId(): string {
 }
 
 /**
+ * Type for lastMeasurement JSON field
+ */
+export type LastMeasurement = {
+  value: number | string;
+  createdAt: string;
+  sensorId?: string;
+} | null;
+
+/**
  * Table
  */
 export const sensor = pgTable("sensor", {
@@ -36,7 +45,7 @@ export const sensor = pgTable("sensor", {
   sensorWikiType: text("sensor_wiki_type"),
   sensorWikiPhenomenon: text("sensor_wiki_phenomenon"),
   sensorWikiUnit: text("sensor_wiki_unit"),
-  lastMeasurement: json("lastMeasurement"),
+  lastMeasurement: json("lastMeasurement").$type<LastMeasurement>(),
   data: json("data"),
 });
 

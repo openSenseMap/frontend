@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import { createProfile } from "./profile.server";
+import { createProfileWithTransaction } from "./profile.server";
 import { drizzleClient } from "~/db.server";
 import {
   type Password,
@@ -20,6 +20,12 @@ export async function getUserById(id: User["id"]) {
 export async function getUserByEmail(email: User["email"]) {
   return drizzleClient.query.user.findFirst({
     where: (user, { eq }) => eq(user.email, email),
+  });
+}
+
+export async function getUserByUsername(username: User["name"]) {
+  return drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.name, username),
   });
 }
 
@@ -128,26 +134,23 @@ export async function createUser(
 ) {
   const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13); // make salt_factor configurable oSeM API uses 13 by default
 
-  // Maybe wrap in a transaction
-  // https://stackoverflow.com/questions/76082778/drizzle-orm-how-do-you-insert-in-a-parent-and-child-table
-  const newUser = await drizzleClient
-    .insert(user)
-    .values({
-      name,
-      email,
-      language,
-      unconfirmedEmail: email,
-    })
-    .returning();
-
-  await drizzleClient.insert(passwordTable).values({
-    hash: hashedPassword,
-    userId: newUser[0].id,
+  return await drizzleClient.transaction(async (t) => {
+    const newUser = await t
+      .insert(user)
+      .values({
+        name,
+        email,
+        language,
+        unconfirmedEmail: email,
+      })
+      .returning();
+    await t.insert(passwordTable).values({
+      hash: hashedPassword,
+      userId: newUser[0].id,
+    });
+    await createProfileWithTransaction(t, newUser[0].id, name);
+    return newUser;
   });
-
-  await createProfile(newUser[0].id, name);
-
-  return newUser;
 }
 
 export async function verifyLogin(

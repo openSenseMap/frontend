@@ -312,7 +312,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(data).toBeDefined();
 			expect(Array.isArray(data)).toBe(true);
 		  
-			expect(data.length).toBe(1);
+			expect(data).toHaveLength(1);
 		  
 			if (response instanceof Response) {
 			  expect(response.status).toBe(200);

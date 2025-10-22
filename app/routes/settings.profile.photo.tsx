@@ -1,9 +1,9 @@
 import { conform, useForm } from "@conform-to/react";
 import { getFieldsetConstraint, parse } from "@conform-to/zod";
-import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
+import { type FileUpload, parseFormData } from "@mjackson/form-data-parser";
 import { eq } from "drizzle-orm";
 import { useState } from "react";
-import  {
+import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   data,
@@ -11,7 +11,7 @@ import  {
   Form,
   useActionData,
   useLoaderData,
-  useNavigate
+  useNavigate,
 } from "react-router";
 import { z } from "zod";
 import ErrorMessage from "~/components/error-message";
@@ -69,9 +69,9 @@ export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUserId(request);
   const formData = await parseFormData(
     request,
-    async (file: FileUpload) => uploadHandler(file),
     { maxFileSize: MAX_SIZE },
-)
+    async (file: FileUpload) => uploadHandler(file),
+  );
 
   const submission = parse(formData, { schema: PhotoFormSchema });
 
