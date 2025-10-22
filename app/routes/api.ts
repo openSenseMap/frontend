@@ -117,10 +117,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes`,
     //   method: "POST",
     // },
-    // {
-    //   path: `boxes/claim`,
-    //   method: "POST",
-    // },
+    {
+      path: `boxes/claim`,
+      method: "POST",
+    },
     {
       path: `boxes/transfer`,
       method: "POST",
