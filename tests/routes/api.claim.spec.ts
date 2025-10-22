@@ -172,7 +172,7 @@ describe("openSenseMap API Routes: /boxes/claim", () => {
 
       expect(claimResponse.status).toBe(415);
       const body = await claimResponse.json();
-      expect(body.code).toBe("NotAuthorized");
+      expect(body.code).toBe("UnsupportedMediaType");
       expect(body.message).toContain("application/json");
     });
 

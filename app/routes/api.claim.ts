@@ -7,11 +7,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!contentType || !contentType.includes("application/json")) {
     return Response.json(
       {
-        code: "NotAuthorized",
+        code: "UnsupportedMediaType",
         message: "Unsupported content-type. Try application/json",
       },
       {
-        status: 415,
+        status: 415, 
         headers: {
           "content-type": "application/json; charset=utf-8",
         },
