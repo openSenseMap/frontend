@@ -528,7 +528,7 @@ export default function DeviceDetailBox() {
                                             ></div>
                                           <p className="text-xs text-muted-foreground">
                                             {sensor.time
-                                              ? `${formatDistanceToNow(new Date(sensor.time))} ago`
+                                              ? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
                                               : "No recent data"}
                                           </p>
                                           </div>
