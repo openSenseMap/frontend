@@ -59,14 +59,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/data`,
     //   method: "POST",
     // },
-    // {
-    //   path: `boxes/:boxId/data`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `boxes/:boxId/:sensorId`,
-    //   method: "POST",
-    // },
+    {
+      path: `boxes/:boxId/data`,
+      method: "POST",
+    },
+    {
+      path: `boxes/:boxId/:sensorId`,
+      method: "POST",
+    },
     {
       path: `users/register`,
       method: "POST",

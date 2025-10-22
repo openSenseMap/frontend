@@ -1,5 +1,5 @@
 {
-  "id": "7442dc5e-36d6-41a9-9f33-f14b97a879eb",
+  "id": "85481101-dd0d-4e15-9158-11971b8ba509",
   "prevId": "9d89599f-78ef-4878-85a7-91a31bf984dc",
   "version": "7",
   "dialect": "postgresql",
@@ -867,18 +867,12 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.claim": {
-      "name": "claim",
+    "public.access_token": {
+      "name": "access_token",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "box_id": {
-          "name": "box_id",
+        "device_id": {
+          "name": "device_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -887,53 +881,17 @@
           "name": "token",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
           "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
-      "indexes": {
-        "claim_expires_at_idx": {
-          "name": "claim_expires_at_idx",
-          "columns": [
-            {
-              "expression": "expires_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "claim_box_id_device_id_fk": {
-          "name": "claim_box_id_device_id_fk",
-          "tableFrom": "claim",
+        "access_token_device_id_device_id_fk": {
+          "name": "access_token_device_id_device_id_fk",
+          "tableFrom": "access_token",
           "tableTo": "device",
           "columnsFrom": [
-            "box_id"
+            "device_id"
           ],
           "columnsTo": [
             "id"
@@ -943,15 +901,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "unique_box_id": {
-          "name": "unique_box_id",
-          "nullsNotDistinct": false,
-          "columns": [
-            "box_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
