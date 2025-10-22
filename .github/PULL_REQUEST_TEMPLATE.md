@@ -6,6 +6,7 @@
 
 <!--
     Try sticking to one type of change per pull request for easier and faster code reviews.
+    Just put an x between the [] to check the box.
 -->
 
 - [ ] Dependency upgrade
