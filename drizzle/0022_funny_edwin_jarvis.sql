@@ -1,0 +1,1 @@
+ALTER TABLE "sensor" ADD COLUMN "icon" text;
