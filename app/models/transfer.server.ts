@@ -122,44 +122,4 @@ export const getTransferByToken = async (
 
   return result || null;
 };
-
-export const claimBoxTransfer = async (
-  newOwnerId: string,
-  token: string
-): Promise<{ boxId: string }> => {
-  const transfer = await getTransferByToken(token);
-
-  if (!transfer) {
-    throw new Error("Invalid or expired transfer token");
-  }
-
-  if (isClaimExpired(transfer.expiresAt)) {
-    throw new Error("Transfer token has expired");
-  }
-
-  const box = await drizzleClient.query.device.findFirst({
-    where: (device, { eq }) => eq(device.id, transfer.boxId),
-    columns: {
-      id: true,
-      userId: true,
-    },
-  });
-
-  if (!box) {
-    throw new Error("Device not found");
-  }
-
-  if (box.userId === newOwnerId) {
-    throw new Error("You already own this device");
-  }
-
-  await drizzleClient
-    .update(device)
-    .set({ userId: newOwnerId, updatedAt: new Date() })
-    .where(eq(device.id, transfer.boxId));
-
-  await deleteClaimById(transfer.id);
-
-  return { boxId: transfer.boxId };
-};
   

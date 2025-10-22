@@ -1,13 +1,12 @@
-import { LoaderFunctionArgs, type ActionFunctionArgs } from "react-router";
+import { type LoaderFunctionArgs, type ActionFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from '~/lib/user-service.server'
-import { type Device, type User } from "~/schema";
-import { createDevice, getDevice } from "~/models/device.server";
+import { createDevice } from "~/models/device.server";
+import { deleteUserByEmail } from "~/models/user.server";
 import {action as transferAction} from "~/routes/api.transfer"
 import {action as transferUpdateAction, loader as transferLoader} from "~/routes/api.transfer.$deviceId"
-import {action as claimAction} from "~/routes/api.claim"
-import { deleteUserByEmail } from "~/models/user.server";
+import { type Device, type User } from "~/schema";
 
 const TRANSFER_TEST_USER = {
 	name: 'asdfhwerskdfsdfnxmcv',
@@ -379,144 +378,6 @@ describe("openSenseMap API Routes: /boxes/transfer and /boxes/claim", () => {
           expect(verifyBody.error).toContain("not found");
       });
     });
-
-    describe('POST /boxes/claim', () => {
-        it("should claim a device and transfer ownership from one user to another", async () => {
-            // Create a new transfer for the claim test
-            const createTransferRequest = new Request(`${BASE_URL}/boxes/transfer`, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": `Bearer ${jwt}` 
-                },
-                body: new URLSearchParams({ boxId: queryableDevice!.id }),
-            });
-        
-            const transferResponse = (await transferAction({
-                request: createTransferRequest,
-            } as ActionFunctionArgs)) as Response;
-            
-            const transferBody = await transferResponse.json();
-            const claimToken = transferBody.data.token;
-  
-            const newUser = await createTestUser(Date.now().toString());
-            const { token: newUserJwt } = await createToken(newUser);
-  
-            // Claim the device
-            const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${newUserJwt}`,
-                },
-                body: JSON.stringify({ token: claimToken }),
-            });
-  
-            const claimResponse = (await claimAction({
-                request: claimRequest,
-            } as ActionFunctionArgs)) as Response;
-  
-            expect(claimResponse.status).toBe(200);
-            const claimBody = await claimResponse.json();
-            expect(claimBody.message).toBe("Device successfully claimed!");
-            expect(claimBody.data.boxId).toBe(queryableDevice!.id);
-  
-            // Verify the device is now owned by the new user
-            // (You would need a GET /users/me endpoint or similar to verify this)
-            // For now, verify that the device's userId has been updated by querying it
-            const updatedDevice = await getDevice({ id: queryableDevice!.id });
-            expect(updatedDevice?.user.id).toBe(newUser?.id);
-  
-            // Verify the transfer token is deleted (can't be used again)
-            const reusedClaimRequest = new Request(`${BASE_URL}/boxes/claim`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${newUserJwt}`,
-                },
-                body: JSON.stringify({ token: claimToken }),
-            });
-  
-            const reusedResponse = (await claimAction({
-                request: reusedClaimRequest,
-            } as ActionFunctionArgs)) as Response;
-  
-            expect(reusedResponse.status).toBe(410);
-  
-            // Cleanup
-            await deleteUserByEmail((newUser as User).email);
-        });
-  
-        it("should reject claim with invalid content-type", async () => {
-            const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    Authorization: `Bearer ${jwt}`,
-                },
-                body: new URLSearchParams({ token: "some-token" }),
-            });
-  
-            const claimResponse = (await claimAction({
-                request: claimRequest,
-            } as ActionFunctionArgs)) as Response;
-  
-            expect(claimResponse.status).toBe(415);
-            const body = await claimResponse.json();
-            expect(body.code).toBe("NotAuthorized");
-            expect(body.message).toContain("application/json");
-        });
-  
-        it("should reject claim without Authorization header", async () => {
-            const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ token: "some-token" }),
-            });
-  
-            const claimResponse = (await claimAction({
-                request: claimRequest,
-            } as ActionFunctionArgs)) as Response;
-  
-            expect(claimResponse.status).toBe(403);
-            const body = await claimResponse.json();
-            expect(body.code).toBe("Forbidden");
-        });
-  
-        it("should reject claim with expired transfer token", async () => {
-            // Create a new user to attempt the claim
-            const newUser = await registerUser(
-                "claimer" + Date.now(),
-                `claimer${Date.now()}@test.com`,
-                "password123",
-                "en_US"
-            );
-            const { token: newUserJwt } = await createToken(newUser as User);
-  
-            const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${newUserJwt}`,
-                },
-                body: JSON.stringify({ token: "invalid-or-expired-token" }),
-            });
-  
-            const claimResponse = (await claimAction({
-                request: claimRequest,
-            } as ActionFunctionArgs)) as Response;
-  
-            expect(claimResponse.status).toBe(410);
-            const body = await claimResponse.json();
-            expect(body.error).toContain("expired");
-  
-            // Cleanup
-            await deleteUserByEmail((newUser as User).email);
-        });
-      });
-
     afterAll(async () => {
             await deleteUserByEmail(TRANSFER_TEST_USER.email);
     });
