@@ -1,6 +1,6 @@
-import { Claim, claim, device, Device } from "~/schema";
-import { drizzleClient } from "~/db.server";
 import { eq } from "drizzle-orm";
+import { drizzleClient } from "~/db.server";
+import { type Claim, claim, device, type Device } from "~/schema";
 
 export interface TransferCode {
     id: string;
