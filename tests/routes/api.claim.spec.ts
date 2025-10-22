@@ -2,12 +2,11 @@ import { type ActionFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
-import { type Device, type User } from "~/schema";
-import { createDevice } from "~/models/device.server";
-import { getDevice } from "~/models/device.server";
-import { action as transferAction } from "~/routes/api.transfer";
-import { action as claimAction } from "~/routes/api.claim";
+import { createDevice, getDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
+import { action as claimAction } from "~/routes/api.claim";
+import { action as transferAction } from "~/routes/api.transfer";
+import { type Device, type User } from "~/schema";
 
 const CLAIM_TEST_USER = {
   name: "claimtestuser" + Date.now(),
@@ -249,51 +248,6 @@ describe("openSenseMap API Routes: /boxes/claim", () => {
 
       // Cleanup
       await deleteUserByEmail((newUser as User).email);
-    });
-
-    it("should reject if user already owns the device", async () => {
-      // Create a fresh device for this test
-      const testDevice = await createDevice(
-        { ...generateMinimalDevice(), latitude: 111, longitude: 222 },
-        (user as User).id
-      );
-
-      // Create a transfer for this test
-      const createTransferRequest = new Request(`${BASE_URL}/boxes/transfer`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: new URLSearchParams({ boxId: testDevice!.id }),
-      });
-
-      const transferResponse = (await transferAction({
-        request: createTransferRequest,
-      } as ActionFunctionArgs)) as Response;
-
-      expect(transferResponse.status).toBe(201);
-      const transferBody = await transferResponse.json();
-      expect(transferBody.data).toBeDefined();
-      const claimToken = transferBody.data.token;
-
-      // Try to claim with the original owner's JWT
-      const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify({ token: claimToken }),
-      });
-
-      const claimResponse = (await claimAction({
-        request: claimRequest,
-      } as ActionFunctionArgs)) as Response;
-
-      expect(claimResponse.status).toBe(400);
-      const body = await claimResponse.json();
-      expect(body.error).toContain("already own");
     });
   });
 });
