@@ -71,16 +71,15 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
 
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
-): Promise<SensorWithLatestMeasurement[]>;
-export async function getSensorsWithLastMeasurement(
-  deviceId: Sensor["deviceId"],
-  sensorId: Sensor["id"],
-): Promise<SensorWithLatestMeasurement>;
+  sensorId?: Sensor["id"],
+  count?: number,
+): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]>;
+
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
   sensorId: Sensor["id"] | undefined = undefined,
   count: number = 1,
-) {
+): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]> {
   const result = await drizzleClient.execute(
     sql`SELECT 
         s.id,

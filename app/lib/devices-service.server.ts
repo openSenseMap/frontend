@@ -1,9 +1,24 @@
-import { Device, User } from '~/schema'
+import { z } from 'zod'
 import {
 	deleteDevice as deleteDeviceById,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
-import { z } from 'zod'
+import { type Device, type User } from '~/schema'
+
+export const CreateBoxSchema = z.object({
+	name: z.string().min(1, "Name is required").max(100, "Name too long"),
+	exposure: z.enum(["indoor", "outdoor", "mobile", "unknown"]).optional().default("unknown"),
+	location: z.array(z.number()).length(2, "Location must be [longitude, latitude]"),
+	grouptag: z.array(z.string()).optional().default([]),
+	model: z.enum(["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]).optional().default("Custom"),
+	sensors: z.array(z.object({
+		id: z.string(),
+		icon: z.string().optional(),
+		title: z.string().min(1, "Sensor title is required"),
+		unit: z.string().min(1, "Sensor unit is required"),
+		sensorType: z.string().min(1, "Sensor type is required"),
+	})).optional().default([]),
+});
 
 export const BoxesQuerySchema = z.object({
 	format: z.enum(["json", "geojson"]  ,{
@@ -22,13 +37,32 @@ export const BoxesQuerySchema = z.object({
 	  .refine((val) => val <= 20, { message: "Limit must not exceed 20" }),
   
 	name: z.string().optional(),
-	date: z
-      .union([z.string().datetime(), z.array(z.string().datetime())])
-      .transform((val) => (Array.isArray(val) ? val : [val]))
-      .refine((arr) => arr.length >= 1 && arr.length <= 2, {
-        message: "Date must contain 1 or 2 timestamps",
-      })
-      .optional(),
+	date: z.preprocess(
+		(val) => {
+		  if (typeof val === "string") return [val];
+		  if (Array.isArray(val)) return val;
+		  return val; 
+		},
+		z.array(z.string())
+		  .min(1, "At least one date required")
+		  .max(2, "At most two dates allowed")
+		  .transform((arr) => {
+			const [fromDateStr, toDateStr] = arr;
+			const fromDate = new Date(fromDateStr);
+			if (isNaN(fromDate.getTime())) throw new Error(`Invalid date: ${fromDateStr}`);
+	  
+			if (!toDateStr) {
+			  return {
+				fromDate: new Date(fromDate.getTime() - 4 * 60 * 60 * 1000),
+				toDate: new Date(fromDate.getTime() + 4 * 60 * 60 * 1000),
+			  };
+			}
+	  
+			const toDate = new Date(toDateStr);
+			if (isNaN(toDate.getTime())) throw new Error(`Invalid date: ${toDateStr}`);
+			return { fromDate, toDate };
+		  })
+	  ).optional(),
 	phenomenon: z.string().optional(),
 	grouptag: z.string().transform((v) => [v]).optional(),
 	model: z.string().transform((v) => [v]).optional(),
@@ -68,14 +102,15 @@ export const BoxesQuerySchema = z.object({
   
 	fromDate: z.string().datetime().transform((v) => new Date(v)).optional(),
 	toDate: z.string().datetime().transform((v) => new Date(v)).optional(),
-  }).refine(
-    (data) =>
-      !(data.date && !data.phenomenon) && !(data.phenomenon && !data.date),
-    {
-      message: "Date and phenomenon must be used together",
-      path: ["date"],
-    }
-  );
+  })
+//   .refine(
+//     (data) =>
+//       !(data.date && !data.phenomenon) && !(data.phenomenon && !data.date),
+//     {
+//       message: "Date and phenomenon must be used together",
+//       path: ["date"],
+//     }
+//   );
     
   
   export type BoxesQueryParams = z.infer<typeof BoxesQuerySchema>;

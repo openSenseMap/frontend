@@ -113,10 +113,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId/script`,
     //   method: "GET",
     // },
-    // {
-    //   path: `boxes`,
-    //   method: "POST",
-    // },
+    {
+      path: `boxes`,
+      method: "POST",
+    },
     {
       path: `boxes/claim`,
       method: "POST",
