@@ -305,7 +305,7 @@ describe("openSenseMap API Routes: Location Measurements", () => {
 
       // Get device locations - should be empty since no location was provided
       const locations = await getDeviceLocations(testDevice.id);
-      expect(locations.length).toBe(0);
+      expect(locations).toHaveLength(0);
 
       // Cleanup
       await deleteDevice({ id: testDevice.id });
