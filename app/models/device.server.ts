@@ -3,6 +3,7 @@ import { eq, sql, desc, ilike, arrayContains, and, ReturnTypeOrValue } from 'dri
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
+import { accessToken } from '~/schema/accessToken'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -19,6 +20,7 @@ const BASE_DEVICE_COLUMNS = {
 	createdAt: true,
 	updatedAt: true,
 	expiresAt: true,
+	useAuth: true,
 	sensorWikiModel: true,
 } as const;
 
@@ -71,6 +73,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 				// limit: 1000,
 			},
+			sensors: true
 		},
 	})
 }
@@ -455,3 +458,13 @@ export async function getLatestDevices() {
 
 	return devices
 }
+
+export async function findAccessToken(deviceId: string): Promise<{ token: string } | null> {
+	const result = await drizzleClient.query.accessToken.findFirst({
+	  where: (token, { eq }) => eq(token.deviceId, deviceId)
+	});
+  
+	if (!result || !result.token) return null;
+	
+	return { token: result.token };
+  }

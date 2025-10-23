@@ -526,12 +526,11 @@ export default function DeviceDetailBox() {
                                                   : "h-2 w-2 rounded-full bg-red-500"
                                               }
                                             ></div>
-                                            <p className="text-xs text-muted-foreground">
-                                              {formatDistanceToNow(
-                                                new Date(sensor.time),
-                                              )}{" "}
-                                              ago
-                                            </p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {sensor.time
+                                              ? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
+                                              : "No recent data"}
+                                          </p>
                                           </div>
                                         </CardFooter>
                                       </label>
@@ -593,12 +592,11 @@ export default function DeviceDetailBox() {
                                                   : "h-2 w-2 rounded-full bg-red-500"
                                               }
                                             ></div>
-                                            <p className="text-xs text-muted-foreground">
-                                              {formatDistanceToNow(
-                                                new Date(sensor.time),
-                                              )}{" "}
-                                              ago
-                                            </p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {sensor.time
+                                            ? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
+                                            : "No recent data"}
+                                          </p>
                                           </div>
                                         </CardFooter>
                                       </label>
