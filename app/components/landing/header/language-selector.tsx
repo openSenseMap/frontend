@@ -1,4 +1,5 @@
 import i18next from "i18next";
+import { Globe } from "lucide-react";
 import { useState } from "react";
 import { useFetcher, useLoaderData } from "react-router";
 import { Button } from "~/components/ui/button";
@@ -26,7 +27,7 @@ export default function LanguageSelector() {
       onClick={toggleLanguage}
       className="hover:bg-transparent dark:hover:text-white hover:text-black"
     >
-      {locale === "de" ? <p>DE</p> : <p>EN</p>}
+      <Globe/>{locale === "de" ? <p>DE</p> : <p>EN</p>}
     </Button>
   );
 }

@@ -1,3 +1,5 @@
+import { Globe } from "lucide-react";
+import LanguageSelector from "../landing/header/language-selector";
 import Download from "./download";
 import Home from "./home";
 import Menu from "./menu";
@@ -17,6 +19,9 @@ export default function Header(props: HeaderProps) {
       <Home />
       <NavBar devices={props.devices} />
       <div className="flex gap-2">
+        <div className="flex pointer-events-auto items-center text-white">
+          <LanguageSelector/>
+        </div>
         <Download devices={props.devices} />
         {/* {data?.user?.email ? <Notification /> : null} */}
         <Menu />
