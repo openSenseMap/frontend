@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
+  Measurement,
   sensor,
   type Sensor,
   type SensorWithLatestMeasurement,
@@ -123,6 +124,22 @@ export async function getSensorsWithLastMeasurement(
   }) as any;
 
   return cast as SensorWithLatestMeasurement[];
+}
+
+export async function getMeasurements(
+  sensorId: Measurement["sensorId"],
+  fromDate: string,
+  toDate: string,
+  count: number = 10000): Promise<Measurement[]> {
+    return await drizzleClient.execute(
+      sql`SELECT *
+          FROM measurement
+          WHERE sensor_id = ${sensorId} AND
+          time >= ${fromDate} AND
+          time <= ${toDate}
+          ORDER BY time DESC
+          LIMIT ${count}`
+    ) as Measurement[];
 }
 
 export async function registerSensor(newSensor: Sensor) {

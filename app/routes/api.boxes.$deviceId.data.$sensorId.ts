@@ -1,5 +1,5 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLatestMeasurementsForSensor } from "~/lib/measurement-service.server";
+import { getMeasurements } from "~/models/sensor.server";
 
 /**
  * @openapi
@@ -129,7 +129,7 @@ export const loader: LoaderFunction = async ({
       return outliers;
 
     const outlierWindowParam = url.searchParams.get("outlier-window")
-    let outlierWindow: undefined | number = undefined;
+    let outlierWindow: number = 15;
     if (outlierWindowParam !== null) {
       if (Number.isNaN(outlierWindowParam) || Number(outlierWindowParam) < 1 || Number(outlierWindowParam) > 50)
         return Response.json(
@@ -146,8 +146,6 @@ export const loader: LoaderFunction = async ({
         );
       outlierWindow = Number(outlierWindowParam);
     }
-    else
-      outlierWindow = 15
 
     const fromDate = parseDateParam(url, "from-date", new Date(new Date().setDate(new Date().getDate() - 2)))
     if (fromDate instanceof Response)
@@ -172,7 +170,14 @@ export const loader: LoaderFunction = async ({
     if (delimiter instanceof Response)
       return delimiter;
 
-    const meas = await getLatestMeasurementsForSensor(deviceId, sensorId, undefined);
+    const meas = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
+    if (meas == null)
+      return new Response(JSON.stringify({ message: "Device not found." }), {
+        status: 404,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+        },
+      });
 
     return Response.json(meas, {
       status: 200,
