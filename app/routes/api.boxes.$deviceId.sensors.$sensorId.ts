@@ -1,5 +1,5 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLatestMeasurements } from "~/lib/measurement-service.server";
+import { getLatestMeasurements, getLatestMeasurementsForSensor } from "~/lib/measurement-service.server";
 
 export const loader: LoaderFunction = async ({
   request,
@@ -53,7 +53,15 @@ export const loader: LoaderFunction = async ({
         },
       );
 
-    const meas = await getLatestMeasurements(deviceId, sensorId, undefined);
+    const meas = await getLatestMeasurementsForSensor(deviceId, sensorId, undefined);
+
+    if (meas == null)
+      return new Response(JSON.stringify({ message: "Device not found." }), {
+        status: 404,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+        },
+      });
 
     if (onlyValue)
       return Response.json(meas["lastMeasurement"]?.value ?? null, {

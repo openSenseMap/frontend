@@ -1,5 +1,18 @@
-import { getDeviceWithoutSensors } from "~/models/device.server";
-import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
+import { DeviceWithoutSensors, getDeviceWithoutSensors } from "~/models/device.server";
+import { getSensorsWithLastMeasurement, getSensorWithLastMeasurement } from "~/models/sensor.server";
+import { SensorWithLatestMeasurement } from "~/schema";
+
+export type DeviceWithSensors = DeviceWithoutSensors & {sensors: SensorWithLatestMeasurement[]}
+
+export async function getLatestMeasurementsForSensor(boxId: string, sensorId: string, count?: number):
+  Promise<SensorWithLatestMeasurement | null> {
+
+  const device: DeviceWithoutSensors = await getDeviceWithoutSensors({ id: boxId });
+  if (!device) return null;
+
+  // single sensor, no need for having info about device
+  return await getSensorWithLastMeasurement(device.id, sensorId, count);
+}
 
 /**
  *
@@ -7,21 +20,17 @@ import { getSensorsWithLastMeasurement } from "~/models/sensor.server";
  * @param sensorId
  * @param count
  */
-export const getLatestMeasurements = async (
+export async function getLatestMeasurements (
   boxId: string,
-  sensorId: string | undefined,
-  count: number | undefined,
-): Promise<any | null> => {
-  const device = await getDeviceWithoutSensors({ id: boxId });
+  count?: number,
+): Promise<DeviceWithSensors | null> {
+  const device: DeviceWithoutSensors = await getDeviceWithoutSensors({ id: boxId });
   if (!device) return null;
 
   const sensorsWithMeasurements = await getSensorsWithLastMeasurement(
-    device.id,
-    sensorId,
-    count,
-  );
-  if (sensorId !== undefined) return sensorsWithMeasurements; // single sensor, no need for having info about device
+    device.id, count);
 
-  (device as any).sensors = sensorsWithMeasurements;
-  return device;
+  const deviceWithSensors: DeviceWithSensors = device as DeviceWithSensors
+  deviceWithSensors.sensors = sensorsWithMeasurements;
+  return deviceWithSensors;
 };

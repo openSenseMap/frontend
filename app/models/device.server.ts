@@ -1,5 +1,5 @@
 import { point } from '@turf/helpers'
-import { eq, sql, desc, ilike, arrayContains, and } from 'drizzle-orm'
+import { eq, sql, desc, ilike, arrayContains, and, ReturnTypeOrValue } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, location, sensor, type Device, type Sensor } from '~/schema'
@@ -88,6 +88,8 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 		},
 	})
 }
+
+export type DeviceWithoutSensors = Awaited<ReturnType<typeof getDeviceWithoutSensors>>
 
 export function updateDeviceInfo({
 	id,

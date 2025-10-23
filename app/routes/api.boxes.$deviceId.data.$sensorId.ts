@@ -1,6 +1,5 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { ESModulesEvaluator } from "vite/module-runner";
-import { getLatestMeasurements } from "~/lib/measurement-service.server";
+import { getLatestMeasurementsForSensor } from "~/lib/measurement-service.server";
 
 /**
  * @openapi
@@ -173,7 +172,7 @@ export const loader: LoaderFunction = async ({
     if (delimiter instanceof Response)
       return delimiter;
 
-    const meas = await getLatestMeasurements(deviceId, sensorId, undefined);
+    const meas = await getLatestMeasurementsForSensor(deviceId, sensorId, undefined);
 
     return Response.json(meas, {
       status: 200,
