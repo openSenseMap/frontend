@@ -1,5 +1,5 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLatestMeasurements, getLatestMeasurementsForSensor } from "~/lib/measurement-service.server";
+import { getLatestMeasurementsForSensor } from "~/lib/measurement-service.server";
 
 export const loader: LoaderFunction = async ({
   request,
