@@ -1,5 +1,7 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { TransformedMeasurement, transformOutliers } from "~/lib/outlier-transform";
 import { getMeasurements } from "~/models/sensor.server";
+import { Measurement } from "~/schema";
 
 /**
  * @openapi
@@ -93,6 +95,7 @@ export const loader: LoaderFunction = async ({
   params,
 }: LoaderFunctionArgs): Promise<Response> => {
   try {
+    // TODO: What do we even need the deviceId for?
     const deviceId = params.deviceId;
     if (deviceId === undefined)
       return Response.json(
@@ -124,7 +127,7 @@ export const loader: LoaderFunction = async ({
 
     const url = new URL(request.url);
 
-    const outliers = parseEnumParam(url, "outliers", ["outliers", "mark"], null)
+    const outliers = parseEnumParam(url, "outliers", ["replace", "mark"], null)
     if (outliers instanceof Response)
       return outliers;
 
@@ -155,6 +158,7 @@ export const loader: LoaderFunction = async ({
     if (toDate instanceof Response)
       return toDate
 
+    // TODO: Actually format output
     const format = parseEnumParam(url, "format", ["json", "csv"], "json");
     if (format instanceof Response)
       return format
@@ -170,7 +174,7 @@ export const loader: LoaderFunction = async ({
     if (delimiter instanceof Response)
       return delimiter;
 
-    const meas = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
+    let meas: Measurement[] | TransformedMeasurement[] = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
     if (meas == null)
       return new Response(JSON.stringify({ message: "Device not found." }), {
         status: 404,
@@ -178,11 +182,21 @@ export const loader: LoaderFunction = async ({
           "content-type": "application/json; charset=utf-8",
         },
       });
+    
+    if (outliers)
+      meas = transformOutliers(meas, outlierWindow, outliers == "replace");
+
+    let headers: HeadersInit = {
+        "content-type": format == "json" ? "application/json; charset=utf-8" : "text/csv",
+    };
+    if (download)
+      headers["Content-Disposition"] = `attachment; filename=${sensorId}.${format}`;
 
     return Response.json(meas, {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
+      headers: headers,
     });
+
   } catch (err) {
     console.warn(err);
     return Response.json(
