@@ -8,7 +8,8 @@ import { createDevice, deleteDevice, getDevice } from "~/models/device.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { action as postSingleMeasurementAction } from "~/routes/api.boxes.$deviceId.$sensorId";
 import { action as postMeasurementsAction} from "~/routes/api.boxes.$deviceId.data";
-import { location, deviceToLocation, measurement, type User, device } from "~/schema";
+import { loader as getLocationsLoader } from "~/routes/api.boxes.$deviceId.locations";
+import { location, deviceToLocation, measurement, type User } from "~/schema";
 
 const mockAccessToken = "valid-access-token-location-tests";
 
@@ -91,7 +92,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
     }));
   }
 
-  // Helper to get measurements for a sensor
   async function getSensorMeasurements(sensorId: string) {
     const results = await drizzleClient
       .select({
@@ -127,6 +127,12 @@ describe("openSenseMap API Routes: Location Measurements", () => {
     const deviceWithSensors = await getDevice({ id: deviceId });
     sensorIds = deviceWithSensors?.sensors?.map((sensor: any) => sensor.id) || [];
     sensors = deviceWithSensors?.sensors?.map((sensor: any) => sensor) || [];
+  });
+
+  afterEach(async () => {
+    await drizzleClient
+      .delete(deviceToLocation)
+      .where(eq(deviceToLocation.deviceId, deviceId));
   });
 
   afterAll(async () => {
@@ -203,7 +209,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
     });
 
     it("should not update box.currentLocation for an earlier timestamp", async () => {
-      // First, post a measurement with current time and location [4, 4]
       const currentMeasurement = {
         value: 4.1,
         location: [4, 4, 0]
@@ -227,12 +232,10 @@ describe("openSenseMap API Routes: Location Measurements", () => {
         context: {} as AppLoadContext
       } satisfies ActionFunctionArgs);
 
-      // Get current location after first post
       const locationAfterCurrent = await getDeviceCurrentLocation(deviceId);
       expect(locationAfterCurrent!.coordinates[0]).toBeCloseTo(4, 5);
       expect(locationAfterCurrent!.coordinates[1]).toBeCloseTo(4, 5);
 
-      // Now post a measurement with an earlier timestamp
       const pastTime = new Date(Date.now() - 60000); // 1 minute ago
       const pastMeasurement = {
         value: -1,
@@ -267,7 +270,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
     });
 
     it("should predate first location for measurement with timestamp and no location", async () => {
-      // Create a fresh device for this test to avoid interference
       const testDevice = await createDevice({
         ...TEST_BOX,
         name: "Location Predate Test Box"
@@ -303,11 +305,9 @@ describe("openSenseMap API Routes: Location Measurements", () => {
 
       expect(response.status).toBe(201);
 
-      // Get device locations - should be empty since no location was provided
       const locations = await getDeviceLocations(testDevice.id);
       expect(locations).toHaveLength(0);
 
-      // Cleanup
       await deleteDevice({ id: testDevice.id });
     });
 
@@ -398,7 +398,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
         context: {} as AppLoadContext
       } satisfies ActionFunctionArgs);
 
-      // Get all measurements and check their inferred locations
       const measurements = await getSensorMeasurements(testSensorId!);
 
       const m1 = measurements.find(m => m.value === '-0.5');
@@ -413,12 +412,10 @@ describe("openSenseMap API Routes: Location Measurements", () => {
       expect(m2!.location![0]).toBeCloseTo(1, 5);
       expect(m2!.location![1]).toBeCloseTo(1, 5);
 
-      // Cleanup
       await deleteDevice({ id: testDevice.id });
     });
 
     it("should not update location of measurements for retroactive measurements", async () => {
-      // Create a fresh device for this test
       const testDevice = await createDevice({
         ...TEST_BOX,
         name: "Retroactive Measurements Test Box"
@@ -506,7 +503,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
         context: {} as AppLoadContext
       } satisfies ActionFunctionArgs);
 
-      // Get all measurements and verify their locations
       const measurements = await getSensorMeasurements(testSensorId!);
 
       // measurement2 (value 4.5) at T-2ms should have no location
@@ -529,7 +525,6 @@ describe("openSenseMap API Routes: Location Measurements", () => {
       expect(m3!.location![0]).toBeCloseTo(6, 5);
       expect(m3!.location![1]).toBeCloseTo(6, 5);
 
-      // Cleanup
       await deleteDevice({ id: testDevice.id });
     });
 
@@ -662,19 +657,177 @@ describe("openSenseMap API Routes: Location Measurements", () => {
       expect(currentLocation!.coordinates).toEqual([10, 10, 0]);
     });
   
-    // it("should set & infer locations correctly for measurements", async () => {
-    //   const sensor = sensorIds[2];
-    //   const measurements = await getSensorMeasurements(sensor);
+    it("should set & infer locations correctly for measurements", async () => {
+      const sensor = sensorIds[2];
+      const measurements = await getSensorMeasurements(sensor);
       
-    //   expect(measurements.length).toBeGreaterThanOrEqual(5);
+      expect(measurements.length).toBeGreaterThanOrEqual(5);
   
-    //   for (const m of measurements) {
-    //     // For this dataset, value should roghly match coordinate
-    //     const v = parseInt(m.value, 10);
-    //     if (m.location) {
-    //       expect(m.location).toEqual([v, v, 0]);
-    //     }
-    //   }
-    // });
+      for (const m of measurements) {
+        // For this dataset, value should roghly match coordinate
+        const v = parseInt(m.value, 10);
+        if (m.location) {
+          expect(m.location).toEqual([v, v, 0]);
+        }
+      }
+    });
+  });
+
+  describe("GET /boxes/:deviceId/locations", () => {
+    it("should return all locations of a box sorted by date", async () => {
+
+      
+      const sensorId = sensorIds[0];
+  
+      const points = [
+        [0, 0],
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ];
+  
+      for (const [lng, lat] of points) {
+        const measurement = {
+          value: 10,
+          location: [lng, lat, 0],
+          createdAt: new Date(Date.now() + lng * 1000).toISOString(), // increasing timestamps
+        };
+  
+        const req = new Request(`${BASE_URL}/api/boxes/${deviceId}/${sensorId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: mockAccessToken,
+          },
+          body: JSON.stringify(measurement),
+        });
+  
+        await postSingleMeasurementAction({
+          request: req,
+          params: { deviceId, sensorId },
+          context: {} as AppLoadContext,
+        });
+      }
+  
+      const request = new Request(`${BASE_URL}/api/boxes/${deviceId}/locations`);
+      const response: any = await getLocationsLoader({
+        request,
+        params: { deviceId },
+        context: {} as AppLoadContext,
+      });
+  
+      expect(response).toBeInstanceOf(Response);
+      expect(response.status).toBe(200);
+  
+      const data = await response.json();
+      expect(Array.isArray(data)).toBe(true);
+      expect(data.length).toBe(points.length);
+  
+      // Ensure sorted ascending by timestamp
+      let prevTime = new Date(0);
+      for (const loc of data) {
+        expect(loc).toHaveProperty("type", "Point");
+        expect(Array.isArray(loc.coordinates)).toBe(true);
+        expect(typeof loc.timestamp).toBe("string");
+        const t = new Date(loc.timestamp);
+        expect(t.getTime()).toBeGreaterThan(prevTime.getTime());
+        prevTime = t;
+      }
+  
+      // Ensure coordinates match inserted ones
+      const coords = data.map((d: any) => d.coordinates.map(Math.round));
+      expect(coords).toEqual(points.map(([lng, lat]) => [lng, lat, 0]));
+    });
+  
+    it("should return all locations of a box as GeoJSON LineString", async () => {
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/locations?format=geojson`
+      );
+      const response: any = await getLocationsLoader({
+        request,
+        params: { deviceId },
+        context: {} as AppLoadContext,
+      });
+  
+      expect(response).toBeInstanceOf(Response);
+      expect(response.status).toBe(200);
+  
+      const geojson = await response.json();
+      expect(geojson).toHaveProperty("type", "Feature");
+      expect(geojson).toHaveProperty("geometry");
+      expect(geojson.geometry.type).toBe("LineString");
+      expect(Array.isArray(geojson.geometry.coordinates)).toBe(true);
+      expect(Array.isArray(geojson.properties.timestamps)).toBe(true);
+      expect(geojson.geometry.coordinates.length).toBe(
+        geojson.properties.timestamps.length
+      );
+    });
+  
+    it("should return locations of the last 48h by default", async () => {
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+      const sixDaysAgo = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+  
+      const sensorId = sensorIds[0];
+  
+      // Add 2 locations: one inside 48h, one outside (6 days ago)
+      const measurements = [
+        { value: 11, location: [-3, -3, -3], createdAt: threeDaysAgo.toISOString() },
+        { value: 12, location: [-4, -4, -4], createdAt: sixDaysAgo.toISOString() },
+      ];
+  
+      for (const m of measurements) {
+        const req = new Request(`${BASE_URL}/api/boxes/${deviceId}/${sensorId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: mockAccessToken,
+          },
+          body: JSON.stringify(m),
+        });
+        await postSingleMeasurementAction({
+          request: req,
+          params: { deviceId, sensorId },
+          context: {} as AppLoadContext,
+        });
+      }
+  
+      const request = new Request(`${BASE_URL}/api/boxes/${deviceId}/locations`);
+      const response: any = await getLocationsLoader({
+        request,
+        params: { deviceId },
+        context: {} as AppLoadContext,
+      });
+  
+      expect(response.status).toBe(200);
+      const data = await response.json();
+  
+      const nowMinus48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      for (const loc of data) {
+        const ts = new Date(loc.timestamp);
+        expect(ts >= nowMinus48h).toBe(true);
+      }
+    });
+  
+    it("should allow filtering locations by date params", async () => {
+      const toDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const request = new Request(
+        `${BASE_URL}/api/boxes/${deviceId}/locations?to-date=${toDate.toISOString()}`
+      );
+  
+      const response: any = await getLocationsLoader({
+        request,
+        params: { deviceId },
+        context: {} as AppLoadContext,
+      });
+  
+      expect(response.status).toBe(200);
+      const data = await response.json();
+  
+      for (const loc of data) {
+        const ts = new Date(loc.timestamp);
+        expect(ts <= toDate).toBe(true);
+      }
+    });
   });
 });

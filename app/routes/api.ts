@@ -51,10 +51,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId/data/:sensorId`,
     //   method: "GET",
     // },
-    // {
-    //   path: `boxes/:boxId/locations`,
-    //   method: "GET",
-    // },
+    {
+      path: `boxes/:boxId/locations`,
+      method: "GET",
+    },
     // {
     //   path: `boxes/data`,
     //   method: "POST",
