@@ -1,7 +1,12 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { transformDeviceToApiFormat } from "~/lib/device-transform";
+import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
-import { getDevice, updateDevice, type UpdateDeviceArgs } from "~/models/device.server";
+import {
+	DeviceUpdateError,
+	getDevice,
+	updateDevice,
+	type UpdateDeviceArgs,
+} from '~/models/device.server'
 /**
  * @openapi
  * /api/device/{deviceId}:
@@ -63,51 +68,51 @@ import { getDevice, updateDevice, type UpdateDeviceArgs } from "~/models/device.
  *         description: Internal server error
  */
 export async function loader({ params }: LoaderFunctionArgs) {
-  const { deviceId } = params;
+	const { deviceId } = params
 
-  if (!deviceId) {
-    return new Response(JSON.stringify({ message: "Device ID is required." }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json; charset=utf-8",
-      },
-    });
-  }
+	if (!deviceId) {
+		return new Response(JSON.stringify({ message: 'Device ID is required.' }), {
+			status: 400,
+			headers: {
+				'content-type': 'application/json; charset=utf-8',
+			},
+		})
+	}
 
-  try {
-    const device = await getDevice({ id: deviceId });
+	try {
+		const device = await getDevice({ id: deviceId })
 
-    if (!device) {
-      return new Response(JSON.stringify({ message: "Device not found." }), {
-        status: 404,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      });
-    }
+		if (!device) {
+			return new Response(JSON.stringify({ message: 'Device not found.' }), {
+				status: 404,
+				headers: {
+					'content-type': 'application/json; charset=utf-8',
+				},
+			})
+		}
 
-    return new Response(JSON.stringify(device), {
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching box:", error);
+		return new Response(JSON.stringify(device), {
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+			},
+		})
+	} catch (error) {
+		console.error('Error fetching box:', error)
 
-    if (error instanceof Response) {
-      throw error;
-    }
+		if (error instanceof Response) {
+			throw error
+		}
 
-    return new Response(
-      JSON.stringify({ error: "Internal server error while fetching box" }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
-  }
+		return new Response(
+			JSON.stringify({ error: 'Internal server error while fetching box' }),
+			{
+				status: 500,
+				headers: {
+					'Content-Type': 'application/json; charset=utf-8',
+				},
+			},
+		)
+	}
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -117,77 +122,107 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		return Response.json({ error: 'Device ID is required.' }, { status: 400 })
 	}
 
-	try {
-		const jwtResponse = await getUserFromJwt(request)
+	const jwtResponse = await getUserFromJwt(request)
 
-		if (typeof jwtResponse === 'string') {
-			return Response.json(
-				{
-					code: 'Forbidden',
-					message: 'Invalid JWT authorization. Please sign in to obtain a new JWT.',
-				},
-				{ status: 403 },
-			)
-		}
+	if (typeof jwtResponse === 'string') {
+		return Response.json(
+			{
+				code: 'Forbidden',
+				message:
+					'Invalid JWT authorization. Please sign in to obtain a new JWT.',
+			},
+			{ status: 403 },
+		)
+	}
 
-		switch (request.method) {
-			case 'PUT':
-				return await put(request, jwtResponse, deviceId)
-			default:
-				return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
-		}
-	} catch (error) {
-		console.error('Error in device action:', error)
-		return Response.json({ error: 'Internal server error' }, { status: 500 })
+	switch (request.method) {
+		case 'PUT':
+			return await put(request, jwtResponse, deviceId)
+		default:
+			return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
 	}
 }
 
 async function put(request: Request, user: any, deviceId: string) {
+	const body = await request.json()
+
+	// Check for conflicting parameters (backwards compatibility)
+	if (body.sensors && body.addons?.add) {
+		return Response.json(
+			{
+				code: 'BadRequest',
+				message: 'sensors and addons can not appear in the same request.',
+			},
+			{ status: 400 },
+		)
+	}
+
+	// Handle image deletion
+	if (body.deleteImage === true) {
+		body.image = ''
+	}
+
+	// Handle addons (merge with grouptag)
+	if (body.addons?.add) {
+		const currentTags = Array.isArray(body.grouptag) ? body.grouptag : []
+		body.grouptag = Array.from(new Set([...currentTags, body.addons.add]))
+	}
+
+	// Prepare location if provided
+	let locationData: { lat: number; lng: number; height?: number } | undefined
+	if (body.location) {
+		locationData = {
+			lat: body.location.lat,
+			lng: body.location.lng,
+		}
+		if (body.location.height !== undefined) {
+			locationData.height = body.location.height
+		}
+	}
+
+	const updateArgs: UpdateDeviceArgs = {
+		name: body.name,
+		exposure: body.exposure,
+		description: body.description,
+		image: body.image,
+		model: body.model,
+		useAuth: body.useAuth,
+		link: body.weblink,
+		location: locationData,
+		grouptag: body.grouptag,
+		sensors: body.sensors,
+	}
+
 	try {
-		const body = await request.json()
-
-		if (body.deleteImage === true) {
-			body.image = null
-		}
-
-		// --- Normalize empty string fields ---
-		const nullableStringFields = ['description', 'weblink']
-		for (const field of nullableStringFields) {
-			if (body[field] === '') {
-				body[field] = null
-			}
-		}
-
-		if (Array.isArray(body.grouptag) && body.grouptag.length === 0) {
-			body.grouptag = []
-		}
-
-		if (body.addons?.add) {		  
-			body.grouptag = Array.from(new Set([...body.grouptag, body.addons.add]))
-		  }
-		  
-
-		const updateArgs: UpdateDeviceArgs = {
-			name: body.name,
-			exposure: body.exposure,
-			description: body.description,
-			image: body.image,
-			model: body.model,
-			useAuth: body.useAuth,
-			link: body.weblink,
-			location: body.location,
-			grouptag: body.grouptag
-		}
-
 		const updatedDevice = await updateDevice(deviceId, updateArgs)
 
-		const deviceWithSensors = await getDevice({id: updatedDevice.id})
+		const deviceWithSensors = await getDevice({ id: updatedDevice.id })
 
 		const apiResponse = transformDeviceToApiFormat(deviceWithSensors as any)
 
 		return Response.json(apiResponse, { status: 200 })
 	} catch (error) {
 		console.error('Error updating device:', error)
-		return Response.json({ error: 'Failed to update device' }, { status: 500 })
+
+		// Handle specific device update errors
+		if (error instanceof DeviceUpdateError) {
+			return Response.json(
+				{
+					code: error.statusCode === 400 ? 'BadRequest' : 'NotFound',
+					message: error.message,
+				},
+				{ status: error.statusCode },
+			)
+		}
+
+		// Return generic error for unexpected errors
+		return Response.json(
+			{
+				code: 'InternalServerError',
+				message:
+					error instanceof Error ? error.message : 'Failed to update device',
+			},
+			{ status: 500 },
+		)
 	}
 }

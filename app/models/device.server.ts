@@ -2,7 +2,14 @@ import { point } from '@turf/helpers'
 import { eq, sql, desc, ilike, arrayContains, and } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
-import { device, deviceToLocation, location, sensor, type Device, type Sensor } from '~/schema'
+import {
+	device,
+	deviceToLocation,
+	location,
+	sensor,
+	type Device,
+	type Sensor,
+} from '~/schema'
 import { accessToken } from '~/schema/accessToken'
 
 const BASE_DEVICE_COLUMNS = {
@@ -22,14 +29,24 @@ const BASE_DEVICE_COLUMNS = {
 	expiresAt: true,
 	useAuth: true,
 	sensorWikiModel: true,
-} as const;
+} as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
 	...BASE_DEVICE_COLUMNS,
 	useAuth: true,
 	public: true,
 	userId: true,
-} as const;
+} as const
+
+export class DeviceUpdateError extends Error {
+	constructor(
+		message: string,
+		public statusCode: number = 400,
+	) {
+		super(message)
+		this.name = 'DeviceUpdateError'
+	}
+}
 
 export function getDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
@@ -38,8 +55,8 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 		with: {
 			user: {
 				columns: {
-					id: true
-				}
+					id: true,
+				},
 			},
 			logEntries: {
 				where: (entry, { eq }) => eq(entry.public, true),
@@ -73,7 +90,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 				// limit: 1000,
 			},
-			sensors: true
+			sensors: true,
 		},
 	})
 }
@@ -117,13 +134,25 @@ export function updateDeviceLocation({
 export type UpdateDeviceArgs = {
 	name?: string
 	exposure?: string
-	grouptag?: string
+	grouptag?: string | string[]
 	description?: string
 	link?: string
 	image?: string
 	model?: string
 	useAuth?: boolean
-	location?: { lat: number; lng: number }
+	location?: { lat: number; lng: number; height?: number }
+	sensors?: SensorUpdateArgs[]
+}
+
+type SensorUpdateArgs = {
+	_id?: string
+	title?: string
+	unit?: string
+	sensorType?: string
+	icon?: string
+	deleted?: any
+	edited?: any
+	new?: any
 }
 
 export async function updateDevice(
@@ -143,65 +172,183 @@ export async function updateDevice(
 
 	for (const field of updatableFields) {
 		if (args[field] !== undefined) {
-			setColumns[field] = args[field]
+			// Handle empty string -> null for specific fields (backwards compatibility)
+			if (
+				(field === 'description' || field === 'link' || field === 'image') &&
+				args[field] === ''
+			) {
+				setColumns[field] = null
+			} else {
+				setColumns[field] = args[field]
+			}
 		}
 	}
 
 	if ('grouptag' in args) {
 		if (Array.isArray(args.grouptag)) {
-		  setColumns['tags'] = args.grouptag
+			// Empty array -> null for backwards compatibility
+			setColumns['tags'] = args.grouptag.length === 0 ? null : args.grouptag
 		} else if (args.grouptag != null) {
-		  setColumns['tags'] = [args.grouptag]
+			// Empty string -> null
+			setColumns['tags'] = args.grouptag === '' ? null : [args.grouptag]
 		} else {
-		  setColumns['tags'] = []
+			setColumns['tags'] = null
 		}
-	  }	
-
-	if (args.location) {
-		const { lat, lng } = args.location
-
-		const [geometry] = await drizzleClient
-			.insert(location)
-			.values({
-				location: sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`,
-			})
-			.onConflictDoNothing()
-			.returning({ id: location.id })
-
-		let locationId = geometry?.id
-		if (!locationId) {
-			const existing = await drizzleClient.query.location.findFirst({
-				columns: { id: true },
-				where: sql`ST_Equals(${location.location}, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))`,
-			})
-			if (existing) locationId = existing?.id
-		}
-
-		if (locationId) {
-			await drizzleClient.insert(deviceToLocation).values({
-				deviceId,
-				locationId,
-			})
-		}
-
-		setColumns['latitude'] = lat
-		setColumns['longitude'] = lng
 	}
 
-	const [updated] = await drizzleClient
-		.update(device)
-		.set({
-			...setColumns,
-			updatedAt: sql`NOW()`,
-		})
-		.where(eq(device.id, deviceId))
-		.returning()
+	const result = await drizzleClient.transaction(async (tx) => {
+		if (args.location) {
+			const { lat, lng, height } = args.location
 
-	if (!updated) {
-		throw new Error(`Device ${deviceId} not found or could not be updated`)
-	}
+			const pointWKT = `POINT(${lng} ${lat})`
 
-	return updated as Device
+			const [existingLocation] = await tx
+				.select()
+				.from(location)
+				.where(sql`ST_Equals(location, ST_GeomFromText(${pointWKT}, 4326))`)
+				.limit(1)
+
+			let locationId: bigint
+
+			if (existingLocation) {
+				locationId = existingLocation.id
+			} else {
+				const [newLocation] = await tx
+					.insert(location)
+					.values({
+						location: sql`ST_GeomFromText(${pointWKT}, 4326)`,
+					})
+					.returning()
+				locationId = newLocation.id
+			}
+
+			await tx
+				.insert(deviceToLocation)
+				.values({
+					deviceId,
+					locationId,
+					time: sql`NOW()`,
+				})
+				.onConflictDoNothing()
+
+			setColumns['latitude'] = lat
+			setColumns['longitude'] = lng
+		}
+
+		let updatedDevice
+		if (Object.keys(setColumns).length > 0) {
+			;[updatedDevice] = await tx
+				.update(device)
+				.set({ ...setColumns, updatedAt: sql`NOW()` })
+				.where(eq(device.id, deviceId))
+				.returning()
+
+			if (!updatedDevice) {
+				throw new DeviceUpdateError(`Device ${deviceId} not found`, 404)
+			}
+		} else {
+			;[updatedDevice] = await tx
+				.select()
+				.from(device)
+				.where(eq(device.id, deviceId))
+
+			if (!updatedDevice) {
+				throw new DeviceUpdateError(`Device ${deviceId} not found`, 404)
+			}
+		}
+
+		if (args.sensors?.length) {
+			const existingSensors = await tx
+				.select()
+				.from(sensor)
+				.where(eq(sensor.deviceId, deviceId))
+
+			const sensorsToDelete = args.sensors.filter(
+				(s) => 'deleted' in s && s._id,
+			)
+			const remainingSensorCount =
+				existingSensors.length - sensorsToDelete.length
+
+			if (sensorsToDelete.length > 0 && remainingSensorCount < 1) {
+				throw new DeviceUpdateError(
+					'Unable to delete sensor(s). A box needs at least one sensor.',
+				)
+			}
+
+			for (const s of args.sensors) {
+				const hasDeleted = 'deleted' in s
+				const hasEdited = 'edited' in s
+				const hasNew = 'new' in s
+
+				if (!hasDeleted && !hasEdited && !hasNew) {
+					continue
+				}
+
+				if (hasDeleted) {
+					if (!s._id) {
+						throw new DeviceUpdateError('Sensor deletion requires _id')
+					}
+
+					const sensorExists = existingSensors.some(
+						(existing) => existing.id === s._id,
+					)
+
+					if (!sensorExists) {
+						throw new DeviceUpdateError(
+							`Sensor with id ${s._id} not found for deletion.`,
+						)
+					}
+
+					await tx.delete(sensor).where(eq(sensor.id, s._id))
+				} else if (hasEdited && hasNew) {
+					if (!s.title || !s.unit || !s.sensorType) {
+						throw new DeviceUpdateError(
+							'New sensor requires title, unit, and sensorType',
+						)
+					}
+
+					await tx.insert(sensor).values({
+						title: s.title,
+						unit: s.unit,
+						sensorType: s.sensorType,
+						icon: s.icon,
+						deviceId,
+					})
+				} else if (hasEdited && s._id) {
+					const sensorExists = existingSensors.some(
+						(existing) => existing.id === s._id,
+					)
+
+					if (!sensorExists) {
+						throw new DeviceUpdateError(
+							`Sensor with id ${s._id} not found for editing.`,
+						)
+					}
+
+					if (!s.title || !s.unit || !s.sensorType) {
+						throw new DeviceUpdateError(
+							'Editing sensor requires all properties: _id, title, unit, sensorType, icon',
+						)
+					}
+
+					await tx
+						.update(sensor)
+						.set({
+							title: s.title,
+							unit: s.unit,
+							sensorType: s.sensorType,
+							icon: s.icon,
+							updatedAt: sql`NOW()`,
+						})
+						.where(eq(sensor.id, s._id))
+				}
+			}
+		}
+
+		return updatedDevice
+	})
+
+	return result
 }
 
 export function deleteDevice({ id }: Pick<Device, 'id'>) {
@@ -221,8 +368,12 @@ export function getUserDevices(userId: Device['userId']) {
 type DevicesFormat = 'json' | 'geojson'
 
 export async function getDevices(format: 'json'): Promise<Device[]>
-export async function getDevices(format: 'geojson'): Promise<GeoJSON.FeatureCollection<Point>>
-export async function getDevices(format?: DevicesFormat): Promise<Device[] | GeoJSON.FeatureCollection<Point>>
+export async function getDevices(
+	format: 'geojson',
+): Promise<GeoJSON.FeatureCollection<Point>>
+export async function getDevices(
+	format?: DevicesFormat,
+): Promise<Device[] | GeoJSON.FeatureCollection<Point>>
 
 export async function getDevices(format: DevicesFormat = 'json') {
 	const devices = await drizzleClient.query.device.findMany({
@@ -314,123 +465,134 @@ export async function getDevicesWithSensors() {
 }
 
 interface BuildWhereClauseOptions {
-	name?: string;
-	phenomenon?: string;
-	fromDate?: string | Date;
-	toDate?: string | Date;
+	name?: string
+	phenomenon?: string
+	fromDate?: string | Date
+	toDate?: string | Date
 	bbox?: {
-	  coordinates: number[][][];
-	};
-	near?: [number, number]; // [lat, lng]
-	maxDistance?: number;
-	grouptag?: string[];
-	exposure?: string[];
-	model?: string[];
-  }
+		coordinates: number[][][]
+	}
+	near?: [number, number] // [lat, lng]
+	maxDistance?: number
+	grouptag?: string[]
+	exposure?: string[]
+	model?: string[]
+}
 
-  export interface FindDevicesOptions extends BuildWhereClauseOptions {
-	minimal?: string | boolean;
-	limit?: number;
-	format?: "json" | "geojson"
-  }
+export interface FindDevicesOptions extends BuildWhereClauseOptions {
+	minimal?: string | boolean
+	limit?: number
+	format?: 'json' | 'geojson'
+}
 
-  interface WhereClauseResult {
-	includeColumns: Record<string, any>;
-	whereClause: any[];
-  }
+interface WhereClauseResult {
+	includeColumns: Record<string, any>
+	whereClause: any[]
+}
 
-  const buildWhereClause = function buildWhereClause(
-	opts: BuildWhereClauseOptions = {}
-  ): WhereClauseResult  {
-	const { name, phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
-	const clause = [];
-	const columns = {};
-  
+const buildWhereClause = function buildWhereClause(
+	opts: BuildWhereClauseOptions = {},
+): WhereClauseResult {
+	const {
+		name,
+		phenomenon,
+		fromDate,
+		toDate,
+		bbox,
+		near,
+		maxDistance,
+		grouptag,
+	} = opts
+	const clause = []
+	const columns = {}
+
 	if (name) {
-	  clause.push(ilike(device.name, `%${name}%`));
+		clause.push(ilike(device.name, `%${name}%`))
 	}
-  
+
 	if (phenomenon) {
-	  // @ts-ignore
-	  columns['sensors'] = {
-	  // @ts-ignore
-		where: (sensor, { ilike }) => ilike(sensorTable['title'], `%${phenomenon}%`)
-	  };
+		// @ts-ignore
+		columns['sensors'] = {
+			// @ts-ignore
+			where: (sensor, { ilike }) =>
+				// @ts-ignore
+				ilike(sensorTable['title'], `%${phenomenon}%`),
+		}
 	}
-  
+
 	// simple string parameters
 	// for (const param of ['exposure', 'model'] as const) {
 	// 	if (opts[param]) {
 	// 	  clause.push(inArray(device[param], opts[param]!));
 	// 	}
 	// }
-  
+
 	if (grouptag) {
-	  clause.push(arrayContains(device.tags, grouptag));
+		clause.push(arrayContains(device.tags, grouptag))
 	}
-  
+
 	// https://orm.drizzle.team/learn/guides/postgis-geometry-point
 	if (bbox) {
-		const [latSW, lngSW] = bbox.coordinates[0][0];
-		const [latNE, lngNE] = bbox.coordinates[0][2];
+		const [latSW, lngSW] = bbox.coordinates[0][0]
+		const [latNE, lngNE] = bbox.coordinates[0][2]
 		clause.push(
-		  sql`ST_Contains(
+			sql`ST_Contains(
 			ST_MakeEnvelope(${lngSW}, ${latSW}, ${lngNE}, ${latNE}, 4326),
 			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)
-		  )`
-		);
-	  }
-  
-	  if (near && maxDistance !== undefined) {
+		  )`,
+		)
+	}
+
+	if (near && maxDistance !== undefined) {
 		clause.push(
-		  sql`ST_DWithin(
+			sql`ST_DWithin(
 			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326),
 			ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326),
 			${maxDistance}
-		  )`
-		);
-	  }
-  
-	  if (phenomenon && (fromDate || toDate)) {
-		// @ts-ignore
-		columns["sensors"] = {
-		  include: {
-			measurements: {
-			  where: (measurement: any) => {
-				const conditions = [];
-	
-				if (fromDate && toDate) {
-				  conditions.push(
-					sql`${measurement.createdAt} BETWEEN ${fromDate} AND ${toDate}`
-				  );
-				} else if (fromDate) {
-				  conditions.push(sql`${measurement.createdAt} >= ${fromDate}`);
-				} else if (toDate) {
-				  conditions.push(sql`${measurement.createdAt} <= ${toDate}`);
-				}
-	
-				return and(...conditions);
-			  },
-			},
-		  },
-		};
-	  }
-  
-	return {
-	  includeColumns: columns,
-	  whereClause: clause
-	};
-  };
+		  )`,
+		)
+	}
 
-  const MINIMAL_COLUMNS = {
+	if (phenomenon && (fromDate || toDate)) {
+		// @ts-ignore
+		columns['sensors'] = {
+			include: {
+				measurements: {
+					where: (measurement: any) => {
+						const conditions = []
+
+						if (fromDate && toDate) {
+							conditions.push(
+								sql`${measurement.createdAt} BETWEEN ${fromDate} AND ${toDate}`,
+							)
+						} else if (fromDate) {
+							conditions.push(sql`${measurement.createdAt} >= ${fromDate}`)
+						} else if (toDate) {
+							conditions.push(sql`${measurement.createdAt} <= ${toDate}`)
+						}
+
+						return and(...conditions)
+					},
+				},
+			},
+		}
+	}
+
+	return {
+		includeColumns: columns,
+		whereClause: clause,
+	}
+}
+
+const MINIMAL_COLUMNS = {
 	id: true,
 	name: true,
 	exposure: true,
 	longitude: true,
-	latitude: true
-  };
-  
-  const DEFAULT_COLUMNS = {
+	latitude: true,
+}
+
+const DEFAULT_COLUMNS = {
 	id: true,
 	name: true,
 	model: true,
@@ -442,32 +604,32 @@ interface BuildWhereClauseOptions {
 	createdAt: true,
 	updatedAt: true,
 	longitude: true,
-	latitude: true
-  };
+	latitude: true,
+}
 
-  export async function findDevices (
+export async function findDevices(
 	opts: FindDevicesOptions = {},
 	columns: Record<string, any> = {},
-	relations: Record<string, any> = {}
-  ) {
-	const { minimal, limit } = opts;
-	const { includeColumns, whereClause } = buildWhereClause(opts);
-	columns = minimal ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
+	relations: Record<string, any> = {},
+) {
+	const { minimal, limit } = opts
+	const { includeColumns, whereClause } = buildWhereClause(opts)
+	columns = minimal ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns }
 	relations = {
-	  ...relations,
-	  ...includeColumns
-	};
+		...relations,
+		...includeColumns,
+	}
 	const devices = await drizzleClient.query.device.findMany({
-	  ...(Object.keys(columns).length !== 0 && { columns }),
-	  ...(Object.keys(relations).length !== 0 && { with: relations }),
-	  ...(Object.keys(whereClause).length !== 0 && {
-		where: (_, { and }) => and(...whereClause)
-	  }),
-	  limit
-	});
-  
-	return devices;
-  };
+		...(Object.keys(columns).length !== 0 && { columns }),
+		...(Object.keys(relations).length !== 0 && { with: relations }),
+		...(Object.keys(whereClause).length !== 0 && {
+			where: (_, { and }) => and(...whereClause),
+		}),
+		limit,
+	})
+
+	return devices
+}
 
 export async function createDevice(deviceData: any, userId: string) {
 	try {
@@ -498,31 +660,32 @@ export async function createDevice(deviceData: any, userId: string) {
 			if (!createdDevice) {
 				throw new Error('Failed to create device.')
 			}
-			
+
 			// Add sensors in the same transaction and collect them
-			const createdSensors = [];
+			const createdSensors = []
 			if (deviceData.sensors && Array.isArray(deviceData.sensors)) {
 				for (const sensorData of deviceData.sensors) {
-					const [newSensor] = await tx.insert(sensor)
+					const [newSensor] = await tx
+						.insert(sensor)
 						.values({
 							title: sensorData.title,
 							unit: sensorData.unit,
 							sensorType: sensorData.sensorType,
 							deviceId: createdDevice.id, // Reference the created device ID
 						})
-						.returning();
-					
+						.returning()
+
 					if (newSensor) {
-						createdSensors.push(newSensor);
+						createdSensors.push(newSensor)
 					}
 				}
 			}
-			
+
 			// Return device with sensors
 			return {
 				...createdDevice,
-				sensors: createdSensors
-			};
+				sensors: createdSensors,
+			}
 		})
 		return newDevice
 	} catch (error) {
@@ -547,12 +710,14 @@ export async function getLatestDevices() {
 	return devices
 }
 
-export async function findAccessToken(deviceId: string): Promise<{ token: string } | null> {
+export async function findAccessToken(
+	deviceId: string,
+): Promise<{ token: string } | null> {
 	const result = await drizzleClient.query.accessToken.findFirst({
-	  where: (token, { eq }) => eq(token.deviceId, deviceId)
-	});
-  
-	if (!result || !result.token) return null;
-	
-	return { token: result.token };
-  }
+		where: (token, { eq }) => eq(token.deviceId, deviceId),
+	})
+
+	if (!result || !result.token) return null
+
+	return { token: result.token }
+}
