@@ -111,7 +111,7 @@ export async function getSensorsWithLastMeasurement(
       const ret = {
         ...r,
         lastMeasurement:
-          (r as any)["lastMeasurements"]["measurements"][0] ?? null,
+          (r as any)["lastMeasurements"]?.[0] ?? null,
       } as any;
       if (count === 1) delete ret["lastMeasurements"];
       return ret;
