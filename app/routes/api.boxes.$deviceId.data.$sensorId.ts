@@ -2,6 +2,7 @@ import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
 import { TransformedMeasurement, transformOutliers } from "~/lib/outlier-transform";
 import { getMeasurements } from "~/models/sensor.server";
 import { Measurement } from "~/schema";
+import { convertToCsv } from "~/utils/csv";
 
 /**
  * @openapi
@@ -187,15 +188,22 @@ export const loader: LoaderFunction = async ({
       meas = transformOutliers(meas, outlierWindow, outliers == "replace");
 
     let headers: HeadersInit = {
-        "content-type": format == "json" ? "application/json; charset=utf-8" : "text/csv",
+        "content-type": format == "json" ? "application/json; charset=utf-8" : "text/csv; charset=utf-8",
     };
     if (download)
       headers["Content-Disposition"] = `attachment; filename=${sensorId}.${format}`;
 
-    return Response.json(meas, {
+    let responseInit: ResponseInit = {
       status: 200,
       headers: headers,
-    });
+    };
+
+    if (format == "json")
+      return Response.json(meas, responseInit);
+    else if (format == "csv") {
+      const csv = getCsv(meas, delimiter == "comma" ? "," : ";");
+      return new Response(csv, responseInit)
+    }
 
   } catch (err) {
     console.warn(err);
@@ -214,6 +222,13 @@ export const loader: LoaderFunction = async ({
     );
   }
 };
+
+function getCsv(meas: Measurement[] | TransformedMeasurement[], delimiter: string): string {
+  return convertToCsv(["createdAt", "value"], meas, [
+    measurement => measurement.time.toString(),
+    measurement => measurement.value?.toString() ?? "null"
+  ], delimiter)
+}
 
 function parseDateParam(url: URL, paramName: string, defaultDate: Date): Response | Date {
   const param = url.searchParams.get(paramName)
