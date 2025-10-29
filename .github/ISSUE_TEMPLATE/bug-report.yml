@@ -18,6 +18,7 @@ body:
         - label: I have cleared my browsers cache and the issue still remains
         - label: I have tried a different browser to see if it is related
         - label: I have searched existing issues to avoid duplicates
+    validations:
       required: false
 
   - type: textarea
