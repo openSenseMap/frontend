@@ -1,0 +1,54 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ['enhancement']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your interest in openSenseMap! Please fill out the sections below – clear requests make it easier for the team to evaluate and implement them!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description:
+        Summarize what you would like to be implemented. Focus on what this
+        does, over the why you want it.
+      placeholder: |
+        A brief overview of the requested functionality.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description:
+        Explain the scenario or workflow that would benefit from this feature.
+      placeholder: |
+        Describe who would use it and how it improves their experience.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation ideas (optional)
+      description:
+        If you already have an idea on how to implement this, this is the place
+        to put your thoughts.
+      placeholder: |
+        Possible approaches, libraries, or design considerations.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional information (optional)
+      description:
+        Any other details, mockups, or links that help illustrate the request.
+    validations:
+      required: false
