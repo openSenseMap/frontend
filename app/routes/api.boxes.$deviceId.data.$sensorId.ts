@@ -1,7 +1,7 @@
-import { Params, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { TransformedMeasurement, transformOutliers } from "~/lib/outlier-transform";
+import { type Params, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { type TransformedMeasurement, transformOutliers } from "~/lib/outlier-transform";
 import { getMeasurements } from "~/models/sensor.server";
-import { Measurement } from "~/schema";
+import { type Measurement } from "~/schema";
 import { convertToCsv } from "~/utils/csv";
 
 const badRequestInit = {

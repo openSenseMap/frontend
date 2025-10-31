@@ -1,8 +1,8 @@
-import { DeviceWithoutSensors, getDeviceWithoutSensors, getDevice, findAccessToken } from "~/models/device.server";
-import { getSensorsWithLastMeasurement, getSensorWithLastMeasurement } from "~/models/sensor.server";
-import { SensorWithLatestMeasurement } from "~/schema";
 import { decodeMeasurements, hasDecoder } from "~/lib/decoding-service.server";
+import { type DeviceWithoutSensors, getDeviceWithoutSensors, getDevice, findAccessToken } from "~/models/device.server";
 import { saveMeasurements } from "~/models/measurement.server";
+import { getSensorsWithLastMeasurement, getSensorWithLastMeasurement } from "~/models/sensor.server";
+import { type SensorWithLatestMeasurement } from "~/schema";
 
 export type DeviceWithSensors = DeviceWithoutSensors & {sensors: SensorWithLatestMeasurement[]}
 

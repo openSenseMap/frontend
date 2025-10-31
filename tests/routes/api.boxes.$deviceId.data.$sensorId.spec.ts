@@ -74,7 +74,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/data/:sensorId", () => {
     sensors = await getSensors(deviceId);
 
     MEASUREMENTS.forEach(meas => meas.sensor_id = sensors[0].id)
-    insertMeasurements(MEASUREMENTS);
+    await insertMeasurements(MEASUREMENTS);
   });
 
   describe("GET", () => {
@@ -101,7 +101,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/data/:sensorId", () => {
       expect(response.headers.get("content-type")).toBe(
         "application/json; charset=utf-8",
       );
-      expect(body.length).toBe(2);
+      expect(body).toHaveLength(2);
       expect(body[0].sensor_id).toBe(sensors[0].id);
       expect(body[1].sensor_id).toBe(sensors[0].id);
       expect(body[0].time).toBe('1988-03-14 00:59:26+00');

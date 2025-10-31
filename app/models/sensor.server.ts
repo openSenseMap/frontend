@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
-  Measurement,
+  type Measurement,
   sensor,
   type Sensor,
   type SensorWithLatestMeasurement,

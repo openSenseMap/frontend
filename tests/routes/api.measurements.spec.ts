@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { AppLoadContext, type ActionFunctionArgs } from "react-router";
-import { action as postMeasurementsAction } from "~/routes/api.boxes.$deviceId.data";
-import { action as postSingleMeasurementAction } from "~/routes/api.boxes.$deviceId.$sensorId";
-import { BASE_URL } from "vitest.setup";
+import { type AppLoadContext, type ActionFunctionArgs } from "react-router";
 import { csvExampleData, jsonSubmitData, byteSubmitData } from "tests/data";
-import { createDevice, deleteDevice, getDevice } from "~/models/device.server";
-import { registerUser } from "~/lib/user-service.server";
-import { accessToken, type User } from "~/schema";
-import { deleteUserByEmail } from "~/models/user.server";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { BASE_URL } from "vitest.setup";
 import { drizzleClient } from "~/db.server";
+import { registerUser } from "~/lib/user-service.server";
+import { createDevice, deleteDevice, getDevice } from "~/models/device.server";
+import { deleteUserByEmail } from "~/models/user.server";
+import { action as postSingleMeasurementAction } from "~/routes/api.boxes.$deviceId.$sensorId";
+import { action as postMeasurementsAction } from "~/routes/api.boxes.$deviceId.data";
+import { accessToken, type User } from "~/schema";
 
 const mockAccessToken = "valid-access-token";
 
