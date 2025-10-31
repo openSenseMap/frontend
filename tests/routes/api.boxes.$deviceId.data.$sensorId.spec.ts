@@ -46,12 +46,12 @@ const DEVICE_SENSOR_ID_BOX = {
 const MEASUREMENTS = [
 	{
 		value: 1589625,
-		createdAt: new Date('1954-06-07 12:00:00'),
+		createdAt: new Date('1954-06-07 12:00:00+00'),
     sensor_id: ""
 	},
   {
     value: 3.14159,
-    createdAt: new Date('1988-03-14 1:59:26'),
+    createdAt: new Date('1988-03-14 1:59:26+00'),
     sensor_id: ""
   }
 ]
@@ -81,7 +81,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/data/:sensorId", () => {
     it("should return measurements for a single sensor of a box in json format", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/api/boxes/${deviceId}/data/${sensors[0].id}?from-date=${new Date('1954-06-07 11:00:00')}&to-date=${new Date('1988-03-14 1:59:27')}`,
+        `${BASE_URL}/api/boxes/${deviceId}/data/${sensors[0].id}?from-date=${new Date('1954-06-07 11:00:00+00')}&to-date=${new Date('1988-03-14 1:59:27+00')}`,
         { method: "GET" },
       );
 
@@ -104,8 +104,8 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/data/:sensorId", () => {
       expect(body).toHaveLength(2);
       expect(body[0].sensor_id).toBe(sensors[0].id);
       expect(body[1].sensor_id).toBe(sensors[0].id);
-      expect(body[0].time).toBe('1988-03-14 00:59:26+00');
-      expect(body[1].time).toBe('1954-06-07 11:00:00+00');
+      expect(body[0].time).toBe('1988-03-14 01:59:26+00');
+      expect(body[1].time).toBe('1954-06-07 12:00:00+00');
       expect(body[0].value).toBeCloseTo(3.14159);
       expect(body[1].value).toBe(1589625);
     });
@@ -113,7 +113,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/data/:sensorId", () => {
     it("should return measurements for a single sensor of a box in csv format", async () => {
       // Arrange
       const request = new Request(
-        `${BASE_URL}/api/boxes/${deviceId}/data/${sensors[0].id}?from-date=${new Date('1954-06-07 11:00:00')}&to-date=${new Date('1988-03-14 1:59:27')}&format=csv`,
+        `${BASE_URL}/api/boxes/${deviceId}/data/${sensors[0].id}?from-date=${new Date('1954-06-07 11:00:00+00')}&to-date=${new Date('1988-03-14 1:59:27+00')}&format=csv`,
         { method: "GET" },
       );
 
@@ -134,7 +134,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/data/:sensorId", () => {
         "text/csv; charset=utf-8",
       );
       expect(body).toBe(
-				'createdAt,value\n1988-03-14 00:59:26+00,3.14159\n1954-06-07 11:00:00+00,1589625',
+				'createdAt,value\n1988-03-14 01:59:26+00,3.14159\n1954-06-07 12:00:00+00,1589625',
 			)
     });
   });
