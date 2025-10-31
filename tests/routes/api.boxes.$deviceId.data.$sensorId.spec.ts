@@ -1,4 +1,3 @@
-// TODO: Implement (currently a copy of api.boxes.$deviceId.sensors.$sensorId.spec.ts)
 import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { registerUser } from "~/lib/user-service.server";
