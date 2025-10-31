@@ -388,16 +388,22 @@ export async function saveMeasurements(
   });
 }
 
-async function insertMeasurements(measurements: any[]): Promise<void> {
+export async function insertMeasurements(measurements: any[]): Promise<void> {
   const measurementInserts = measurements.map(measurement => ({
     sensorId: measurement.sensor_id,
     value: measurement.value,
     time: measurement.createdAt || new Date(),
   }));
 
-
-
   await drizzleClient.insert(measurement).values(measurementInserts);
+}
+
+export async function deleteMeasurementsForSensor(sensorId: string) {
+  return await drizzleClient.delete(measurement).where(eq(measurement.sensorId, sensorId));
+}
+
+export async function deleteMeasurementsForTime(date: Date) {
+  return await drizzleClient.delete(measurement).where(eq(measurement.time, date));
 }
 
 async function insertMeasurement(measurement: any): Promise<any> {
