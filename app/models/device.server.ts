@@ -11,6 +11,7 @@ import {
 	type Sensor,
 } from '~/schema'
 import { accessToken } from '~/schema/accessToken'
+import { addonDefinitions } from '~/utils/addon-definitions'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
