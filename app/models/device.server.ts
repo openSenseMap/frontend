@@ -473,26 +473,27 @@ export async function createDevice(deviceData: any, userId: string) {
 			]
 		})
 
+		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 		if (newDevice.model === 'luftdaten.info')
 			await sendMail({
 				recipientAddress: usr.email,
 				recipientName: usr.name,
-				subject: NewDeviceLuftdatenEmailSubject['en'],
+				subject: NewDeviceLuftdatenEmailSubject[lng],
 				body: NewDeviceLuftdatenEmail({
 					user: { name: usr.name },
 					device: newDevice,
-					language: 'en',
+					language: lng,
 				}),
 			})
 		else
 			await sendMail({
 				recipientAddress: usr.email,
 				recipientName: usr.name,
-				subject: NewDeviceEmailSubject['en'],
+				subject: NewDeviceEmailSubject[lng],
 				body: NewDeviceEmail({
 					user: { name: usr.name },
 					device: newDevice,
-					language: 'en',
+					language: lng,
 				}),
 			})
 

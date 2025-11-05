@@ -36,6 +36,9 @@ import { passwordResetRequest, user, type User } from '~/schema'
 import ConfirmEmailAddress, {
 	subject as ConfirmEmailAddressSubject,
 } from 'emails/confirm-email'
+import DeleteUserEmail, {
+	subject as DeleteUserEmailSubject,
+} from 'emails/delete-user'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -78,15 +81,16 @@ export const registerUser = async (
 		'Expected to only get a single user account returned',
 	)
 
+	const lng = (newUsers[0].language?.split('_')[0] as 'de' | 'en') ?? 'en'
 	await sendMail({
 		recipientAddress: newUsers[0].email,
 		recipientName: newUsers[0].name,
-		subject: NewUserEmailSubject['en'],
+		subject: NewUserEmailSubject[lng],
 		body: NewUserEmail({
 			user: { name: newUsers[0].name },
 			email: newUsers[0].email,
 			token: newUsers[0].emailConfirmationToken ?? '',
-			language: 'en',
+			language: lng,
 		}),
 	})
 
@@ -215,15 +219,16 @@ export const updateUserDetails = async (
 		)
 		hasChanges = true
 
+		const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 		await sendMail({
 			recipientAddress: user.email,
 			recipientName: user.name,
-			subject: ConfirmEmailAddressSubject['en'],
+			subject: ConfirmEmailAddressSubject[lng],
 			body: ConfirmEmailAddress({
 				user: { name: user.name },
 				email: user.email,
 				token: updatedUser.emailConfirmationToken || '',
-				language: 'en',
+				language: lng,
 			}),
 		})
 	}
@@ -271,7 +276,21 @@ export const deleteUser = async (
 	const verifiedUser = await verifyLogin(user.email, password)
 	if (verifiedUser === null) return 'unauthorized'
 	await revokeToken(user, jwtString)
-	return (await deleteUserByEmail(user.email)).count > 0
+	const userSuccessfullyDeleted =
+		(await deleteUserByEmail(user.email)).count > 0
+
+	const lng = (verifiedUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+	await sendMail({
+		recipientAddress: verifiedUser.email,
+		recipientName: verifiedUser.name,
+		subject: DeleteUserEmailSubject[lng],
+		body: DeleteUserEmail({
+			user: { name: verifiedUser.name },
+			language: lng,
+		}),
+	})
+
+	return userSuccessfullyDeleted
 }
 
 /**
@@ -329,14 +348,15 @@ export const requestPasswordReset = async (email: string) => {
 			},
 		})
 
+	const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 	await sendMail({
 		recipientAddress: user.email,
 		recipientName: user.name,
-		subject: PasswordResetEmailSubject['en'],
+		subject: PasswordResetEmailSubject[lng],
 		body: PasswordResetEmail({
 			user: { email: user.email, name: user.name },
 			token: token,
-			language: 'en',
+			language: lng,
 		}),
 	})
 }
@@ -403,15 +423,16 @@ export const resendEmailConfirmation = async (
 		.where(eq(user.id, u.id))
 		.returning()
 
+	const lng = (savedUser[0].language?.split('_')[0] as 'de' | 'en') ?? 'en'
 	await sendMail({
 		recipientAddress: savedUser[0].email,
 		recipientName: savedUser[0].name,
-		subject: ResendEmailConfirmationSubject['en'],
+		subject: ResendEmailConfirmationSubject[lng],
 		body: ResendEmailConfirmationEmail({
 			user: { name: savedUser[0].name },
 			email: savedUser[0].email,
 			token: token,
-			language: 'en',
+			language: lng,
 		}),
 	})
 
