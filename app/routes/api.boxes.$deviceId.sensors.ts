@@ -3,7 +3,7 @@ import { getLatestMeasurements } from "~/lib/measurement-service.server";
 
 /**
  * @openapi
- * /api/boxes/{deviceId}/sensors:
+ * /boxes/{deviceId}/sensors:
  *  get:
  *    tags:
  *      - Sensors

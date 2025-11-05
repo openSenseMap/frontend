@@ -3,6 +3,7 @@ import { type TransformedMeasurement, transformOutliers } from "~/lib/outlier-tr
 import { getMeasurements } from "~/models/sensor.server";
 import { type Measurement } from "~/schema";
 import { convertToCsv } from "~/utils/csv";
+import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
 
 const badRequestInit = {
   status: 400,
@@ -13,7 +14,7 @@ const badRequestInit = {
 
 /**
  * @openapi
- * /api/boxes/{deviceId}/data/{sensorId}:
+ * /boxes/{deviceId}/data/{sensorId}:
  *   get:
  *    tags:
  *      - Sensors
@@ -107,6 +108,7 @@ export const loader: LoaderFunction = async ({
     const collected = collectParameters(request, params);
     if (collected instanceof Response)
       return collected;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {deviceId, sensorId, outliers, outlierWindow, fromDate, toDate, format, download, delimiter} = collected;
 
     let meas: Measurement[] | TransformedMeasurement[] = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
@@ -169,7 +171,7 @@ function collectParameters(request: Request, params: Params<string>):
     download: boolean | null,
     delimiter: string
   } {
-  // TODO: What do we even need the deviceId for?
+  // deviceId is there for legacy reasons
   const deviceId = params.deviceId;
   if (deviceId === undefined)
     return Response.json(
@@ -247,35 +249,4 @@ function getCsv(meas: Measurement[] | TransformedMeasurement[], delimiter: strin
     measurement => measurement.time.toString(),
     measurement => measurement.value?.toString() ?? "null"
   ], delimiter)
-}
-
-function parseDateParam(url: URL, paramName: string, defaultDate: Date): Response | Date {
-  const param = url.searchParams.get(paramName)
-  if (param) {
-    const date = new Date(param)
-    if (Number.isNaN(date.valueOf()))
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: `Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`,
-        }, badRequestInit
-      );
-    return date
-  }
-  return defaultDate;
-}
-
-function parseEnumParam<DefaultType>(url: URL, paramName: string, allowedValues: string[], defaultValue: DefaultType): Response | string | DefaultType {
-  const param = url.searchParams.get(paramName);
-  if (param) {
-    if (!allowedValues.includes(param))
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: `Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`,
-        }, badRequestInit
-      );
-    return param;
-  }
-  return defaultValue
 }
