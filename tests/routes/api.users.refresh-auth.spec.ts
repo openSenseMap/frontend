@@ -3,10 +3,10 @@ import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { deleteUserByEmail } from "~/models/user.server";
-import { action } from "~/routes/api.users.refresh-auth";
-import { action as signInAction } from "~/routes/api.users.sign-in";
 import { action as signOutAction } from "~/routes/api.sign-out";
 import { action as meAction, loader as meLoader } from "~/routes/api.users.me";
+import { action } from "~/routes/api.users.refresh-auth";
+import { action as signInAction } from "~/routes/api.users.sign-in";
 import { type User } from "~/schema";
 
 const VALID_REFRESH_AUTH_TEST_USER = {

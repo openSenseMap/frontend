@@ -1,4 +1,4 @@
-import { Params, type LoaderFunctionArgs } from "react-router";
+import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
