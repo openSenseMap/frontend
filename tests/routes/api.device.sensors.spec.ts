@@ -261,7 +261,7 @@ describe('Device Sensors API: updating sensors', () => {
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
-		expect(data.sensors.length).toBe(initialSensorCount - 1)
+		expect(data.sensors).toHaveLength(initialSensorCount - 1)
 
 		const deletedSensorStillExists = data.sensors.some(
 			(s: any) => s._id === sensorToDelete.id,
@@ -305,7 +305,7 @@ describe('Device Sensors API: updating sensors', () => {
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
-		expect(data.sensors.length).toBe(initialSensorCount - 2)
+		expect(data.sensors).toHaveLength(initialSensorCount - 2)
 
 		const remainingSensors = data.sensors.map((s: any) => s._id)
 
