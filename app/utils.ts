@@ -65,12 +65,16 @@ export function validateEmail(email: unknown): email is string {
  * @deprecated Use {@link validateUsername} instead
  */
 export function validateName(name: string) {
-  const { required, length, invalidCharacters } = validateUsername(name);
-  if (required) return { isValid: false, errorMsg: "Name is required" };
-  else if (length)
-    return { isValid: false, errorMsg: "Please use at least 4 characters." };
-  else if (invalidCharacters)
-    return { isValid: false, errorMsg: "Name is invalid" };
+  if (name.length === 0) {
+    return { isValid: false, errorMsg: "username_required" };
+  } else if (name.length < 4) {
+    return { isValid: false, errorMsg: "username_min_characters" };
+  } else if (
+    name &&
+    !/^[a-zA-Z0-9][a-zA-Z0-9\s._-]+[a-zA-Z0-9-_.]$/.test(name.toString())
+  ) {
+    return { isValid: false, errorMsg: "username_invalid" };
+  }
 
   return { isValid: true };
 }

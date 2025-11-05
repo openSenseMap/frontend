@@ -1,0 +1,92 @@
+name: Bug Report
+description: Report a problem you are facing
+labels: ['bug']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping to improve openSenseMap! Please fill out the sections below. They help us to track down the issuer faster.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before You Proceed
+      description: Please verify these items before submitting.
+      options:
+        - label: I have cleared my browsers cache and the issue still remains
+        - label: I have tried a different browser to see if it is related
+        - label: I have searched existing issues to avoid duplicates
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description:
+        Please give us a detailed description of the issue you are seeing.
+        Screenshots and videos help as well.
+      placeholder: |
+        What went wrong and where? Can you provide screenshots?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: |
+        Please describe the correct/desired outcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Please provide a list of actions to trigger the bug.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, version, and any relevant extensions or plugins.
+      placeholder: |
+        e.g., Windows 11, Chrome 119.0.6045.105, no extensions
+    validations:
+      required: true
+
+  - type: textarea
+    id: console-logs
+    attributes:
+      label: Console Output
+      description:
+        If you come across any error logs, e.g., in your browser console please
+        provide them here.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Did you find a workaround?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Anything else that might help us investigate.
+    validations:
+      required: false

@@ -59,14 +59,14 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/data`,
     //   method: "POST",
     // },
-    // {
-    //   path: `boxes/:boxId/data`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `boxes/:boxId/:sensorId`,
-    //   method: "POST",
-    // },
+    {
+      path: `boxes/:boxId/data`,
+      method: "POST",
+    },
+    {
+      path: `boxes/:boxId/:sensorId`,
+      method: "POST",
+    },
     {
       path: `users/register`,
       method: "POST",
@@ -113,30 +113,30 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     //   path: `boxes/:boxId/script`,
     //   method: "GET",
     // },
-    // {
-    //   path: `boxes`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `boxes/claim`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `boxes/transfer`,
-    //   method: "POST",
-    // },
-    // {
-    //   path: `boxes/transfer`,
-    //   method: "DELETE",
-    // },
-    // {
-    //   path: `boxes/transfer/:boxId`,
-    //   method: "GET",
-    // },
-    // {
-    //   path: `boxes/transfer/:boxId`,
-    //   method: "PUT",
-    // },
+    {
+      path: `boxes`,
+      method: "POST",
+    },
+    {
+      path: `boxes/claim`,
+      method: "POST",
+    },
+    {
+      path: `boxes/transfer`,
+      method: "POST",
+    },
+    {
+      path: `boxes/transfer`,
+      method: "DELETE",
+    },
+    {
+      path: `boxes/transfer/:boxId`,
+      method: "GET",
+    },
+    {
+      path: `boxes/transfer/:boxId`,
+      method: "PUT",
+    },
     // {
     //   path: `boxes/:boxId`,
     //   method: "PUT",
