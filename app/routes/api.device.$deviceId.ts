@@ -146,6 +146,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 async function put(request: Request, user: any, deviceId: string) {
 	const body = await request.json()
 
+	const currentDevice = await getDevice({ id: deviceId })
+	if (!currentDevice) {
+		return Response.json(
+			{ code: 'NotFound', message: 'Device not found' },
+			{ status: 404 },
+		)
+	}
+
 	// Check for conflicting parameters (backwards compatibility)
 	if (body.sensors && body.addons?.add) {
 		return Response.json(
@@ -157,15 +165,49 @@ async function put(request: Request, user: any, deviceId: string) {
 		)
 	}
 
-	// Handle image deletion
-	if (body.deleteImage === true) {
-		body.image = ''
+	if (body.addons?.add === 'feinstaub') {
+		const homeModels = ['homeWifi', 'homeEthernet']
+		if (currentDevice.model && homeModels.includes(currentDevice.model)) {
+			body.model = `${currentDevice.model}Feinstaub`
+
+			const hasPM10 = currentDevice.sensors.some(
+				(s) => s.sensorType === 'SDS 011' && s.title === 'PM10',
+			)
+			const hasPM25 = currentDevice.sensors.some(
+				(s) => s.sensorType === 'SDS 011' && s.title === 'PM2.5',
+			)
+
+			if (!hasPM10 || !hasPM25) {
+				body.sensors = [
+					...(body.sensors ?? []),
+					!hasPM10 && {
+						new: true,
+						title: 'PM10',
+						unit: 'µg/m³',
+						sensorType: 'SDS 011',
+						// icon: 'osem-cloud',
+					},
+					!hasPM25 && {
+						new: true,
+						title: 'PM2.5',
+						unit: 'µg/m³',
+						sensorType: 'SDS 011',
+						// icon: 'osem-cloud',
+					},
+				].filter(Boolean)
+			}
+		}
 	}
 
 	// Handle addons (merge with grouptag)
 	if (body.addons?.add) {
 		const currentTags = Array.isArray(body.grouptag) ? body.grouptag : []
 		body.grouptag = Array.from(new Set([...currentTags, body.addons.add]))
+	}
+
+	// Handle image deletion
+	if (body.deleteImage === true) {
+		body.image = ''
 	}
 
 	// Prepare location if provided
