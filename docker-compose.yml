@@ -17,3 +17,27 @@ services:
     volumes:
       # - ./pgdata:/home/postgres/pgdata
       - ./db/imports:/home/postgres/imports
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  martin:
+    image: ghcr.io/maplibre/martin:latest
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/opensensemap?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
