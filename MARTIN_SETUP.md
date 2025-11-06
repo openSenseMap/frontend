@@ -59,44 +59,6 @@ Martin is accessible directly at `http://localhost:3001` (or your configured `MA
   - Returns vector tile data for a specific tile
   - Example: `http://localhost:3001/analysis_view/10/512/512.pbf`
 
-### Using in React Components
-
-Add Martin vector tiles to your map using the `Source` and `Layer` components from `react-map-gl`:
-
-```tsx
-import { Source, Layer } from "react-map-gl";
-import { MapProvider } from "react-map-gl";
-import Map from "~/components/map/map";
-
-function MyMapWithPoints() {
-  const martinUrl = window.ENV?.MARTIN_URL || "http://localhost:3001";
-  
-  // Construct the tile URL template directly
-  // Mapbox GL will replace {z}, {x}, {y} with actual tile coordinates
-  const tileUrl = `${martinUrl}/analysis_view/{z}/{x}/{y}.pbf`;
-
-  return (
-    <MapProvider>
-      <Map>
-        <Source id="points-source" type="vector" url={tileUrl}>
-          <Layer
-            id="points-layer"
-            type="circle"
-            source-layer="analysis_view"
-            paint={{
-              "circle-color": "#FF0000",
-              "circle-radius": 5,
-              "circle-stroke-color": "#FFFFFF",
-              "circle-stroke-width": 1,
-            }}
-          />
-        </Source>
-      </Map>
-    </MapProvider>
-  );
-}
-```
-
 ## Starting the Services
 
 1. **Start Docker services**:
@@ -132,67 +94,6 @@ function MyMapWithPoints() {
    ```bash
    npm run dev
    ```
-
-## Troubleshooting
-
-### Martin container keeps restarting
-
-- **PostGIS not enabled**: Ensure PostGIS extension is created in your database
-  ```bash
-  docker exec frontend-postgres-1 psql -U postgres -d opensensemap -c "CREATE EXTENSION IF NOT EXISTS postgis CASCADE;"
-  ```
-- **Database connection issues**: Check Martin logs for connection errors
-  ```bash
-  docker-compose logs martin
-  ```
-- **Wrong database name**: Ensure `DATABASE_URL` in `docker-compose.yml` matches your database name
-
-### Martin not accessible
-
-- Check if Martin container is running: `docker-compose ps`
-- Check Martin logs: `docker-compose logs martin`
-- Verify database connection in Martin logs
-
-### Tiles not loading / Catalog is empty
-
-- **SRID issue**: Martin requires geometry columns to have SRID 4326 (not 0). Check the view:
-  ```bash
-  docker exec frontend-postgres-1 psql -U postgres -d opensensemap -c "SELECT Find_SRID('public', 'analysis_view', 'geometry');"
-  ```
-  Should return `4326`. If it returns `0`, the view needs to be updated to ensure proper SRID casting.
-- **No data with geometry**: Martin only discovers views/tables that have at least one row with a non-null geometry. Check if the view has data:
-  ```bash
-  docker exec frontend-postgres-1 psql -U postgres -d opensensemap -c "SELECT COUNT(*) FROM analysis_view WHERE geometry IS NOT NULL;"
-  ```
-- Verify the view exists: `docker exec frontend-postgres-1 psql -U postgres -d opensensemap -c "\dv analysis_view"`
-- Check Martin catalog: `curl http://localhost:3001/catalog`
-- Check browser console for errors
-- Verify `MARTIN_URL` environment variable is set correctly
-- Check Martin logs for discovery errors: `docker-compose logs martin`
-
-### Port conflicts
-
-If port 3001 is already in use:
-- Change Martin's port in `docker-compose.yml`:
-  ```yaml
-  ports:
-    - "3002:3000"  # Use 3002 on host
-  ```
-- Update `MARTIN_URL` in `.env` to match: `MARTIN_URL=http://localhost:3002`
-
-## Direct Martin Access
-
-Martin is accessible directly and has CORS enabled, so you can use it from your frontend without any proxy:
-
-- **Catalog**: `http://localhost:3001/catalog` - Lists all available tile sources (automatically discovers views/tables with geometry columns)
-- **TileJSON**: `http://localhost:3001/analysis_view` - Metadata for the analysis_view source
-- **Tiles**: `http://localhost:3001/analysis_view/{z}/{x}/{y}.pbf` - Vector tile data
-
-**Important**: Martin only discovers views/tables that:
-- Have geometry columns with SRID 4326
-- Contain at least one row with a non-null geometry
-
-Martin automatically handles CORS, so you can use these URLs directly in your Mapbox GL sources.
 
 ## View Structure
 
