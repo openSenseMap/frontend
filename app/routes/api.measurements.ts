@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs } from "react-router";
 import { drizzleClient } from "~/db.server";
 import { measurement, type Measurement } from "~/schema";
+import { sql } from "drizzle-orm";
 
 /**
  * @openapi
@@ -96,6 +97,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }));
 
     await drizzleClient.insert(measurement).values(measurements);
+    
+    // Refresh the materialized view to include new measurements
+    // Use CONCURRENTLY to avoid locking (requires unique index)
+    try {
+      await drizzleClient.execute(
+        sql`REFRESH MATERIALIZED VIEW CONCURRENTLY analysis_view`
+      );
+    } catch (refreshError) {
+      // If concurrent refresh fails (e.g., no unique index), fall back to regular refresh
+      console.warn("Concurrent refresh failed, using regular refresh:", refreshError);
+      await drizzleClient.execute(
+        sql`REFRESH MATERIALIZED VIEW analysis_view`
+      );
+    }
     
     return Response.json({ message: "Measurements successfully stored" });
     

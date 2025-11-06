@@ -9,10 +9,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const offsetParam = url.searchParams.get("offset");
     const boxIdParam = url.searchParams.get("boxId");
     const hasGeometryParam = url.searchParams.get("hasGeometry");
+    const markAsReadParam = url.searchParams.get("markAsRead");
 
     const limit = limitParam ? Math.min(parseInt(limitParam, 10), 1000) : 100;
     const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
     const hasGeometry = hasGeometryParam?.toLowerCase() === "true";
+    const markAsRead = markAsReadParam?.toLowerCase() === "true";
 
     let query = sql`
       SELECT 
@@ -52,6 +54,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const [countResult] = await drizzleClient.execute(countQuery);
     const total = Number(countResult.total);
 
+    // If markAsRead is true, mark the returned items as processed
+    if (markAsRead && results.length > 0) {
+      // Mark each returned item as processed
+      // Using individual inserts with ON CONFLICT for reliability
+      for (const row of results) {
+        // Convert createdAt to ISO string format for PostgreSQL
+        const createdAt = row.createdAt instanceof Date 
+          ? row.createdAt.toISOString()
+          : typeof row.createdAt === 'string'
+          ? row.createdAt
+          : new Date(row.createdAt).toISOString();
+        
+        await drizzleClient.execute(
+          sql`
+            INSERT INTO processed_measurements (device_id, time, processed_at)
+            VALUES (${row.boxId}, ${createdAt}::timestamptz, NOW())
+            ON CONFLICT (device_id, time) DO NOTHING
+          `
+        );
+      }
+
+      // Refresh the materialized view to exclude processed measurements
+      // Use CONCURRENTLY to avoid locking (requires unique index)
+      await drizzleClient.execute(
+        sql`REFRESH MATERIALIZED VIEW CONCURRENTLY analysis_view`
+      );
+    }
+
     return Response.json(
       {
         data: results,
@@ -61,6 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           total,
           hasMore: offset + limit < total,
         },
+        markedAsRead: markAsRead ? results.length : 0,
       },
       {
         status: 200,
@@ -70,12 +101,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     );
   } catch (e) {
-    console.warn(e);
+    console.error("Error in /api/analysis:", e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
     return Response.json(
       {
         error: "Internal Server Error",
         message:
           "The server was unable to complete your request. Please try again later.",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
       {
         status: 500,
