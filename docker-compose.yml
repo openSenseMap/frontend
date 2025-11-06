@@ -29,7 +29,7 @@ services:
     image: ghcr.io/maplibre/martin:latest
     restart: always
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/opensensemap?sslmode=disable
     depends_on:

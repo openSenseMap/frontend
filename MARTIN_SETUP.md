@@ -27,7 +27,7 @@ The view provides a denormalized structure with:
 ### 2. Docker Configuration
 
 Martin is configured in `docker-compose.yml`:
-- Runs on port `3000`
+- Runs on port `3001` (host) mapped to port `3000` (container)
 - Connects to the database specified in your `DATABASE_URL` (defaults to `opensensemap`)
 - Uses the same Docker network (`app-network`)
 - Waits for Postgres to be healthy before starting
@@ -36,10 +36,12 @@ Martin is configured in `docker-compose.yml`:
 
 Add to your `.env` file (optional):
 ```bash
-MARTIN_URL=http://localhost:3000
+MARTIN_URL=http://localhost:3001
 ```
 
-If not set, it defaults to `http://localhost:3000`.
+If not set, it defaults to `http://localhost:3001`.
+
+**Note**: Martin runs on port `3001` to avoid conflicts with the frontend dev server (port `3000`).
 
 **Note**: Martin's `DATABASE_URL` in `docker-compose.yml` should match your application's database name. Currently configured for `opensensemap` database.
 
@@ -47,15 +49,15 @@ If not set, it defaults to `http://localhost:3000`.
 
 ### Accessing Martin
 
-Martin is accessible directly at `http://localhost:3000` (or your configured `MARTIN_URL`):
+Martin is accessible directly at `http://localhost:3001` (or your configured `MARTIN_URL`):
 
-- **TileJSON**: `http://localhost:3000/{source_name}`
+- **TileJSON**: `http://localhost:3001/{source_name}`
   - Returns metadata about the tile source
-  - Example: `http://localhost:3000/analysis_view`
+  - Example: `http://localhost:3001/analysis_view`
 
-- **Tiles**: `http://localhost:3000/{source_name}/{z}/{x}/{y}.pbf`
+- **Tiles**: `http://localhost:3001/{source_name}/{z}/{x}/{y}.pbf`
   - Returns vector tile data for a specific tile
-  - Example: `http://localhost:3000/analysis_view/10/512/512.pbf`
+  - Example: `http://localhost:3001/analysis_view/10/512/512.pbf`
 
 ### Using in React Components
 
@@ -67,7 +69,7 @@ import { MapProvider } from "react-map-gl";
 import Map from "~/components/map/map";
 
 function MyMapWithPoints() {
-  const martinUrl = window.ENV?.MARTIN_URL || "http://localhost:3000";
+  const martinUrl = window.ENV?.MARTIN_URL || "http://localhost:3001";
   
   // Construct the tile URL template directly
   // Mapbox GL will replace {z}, {x}, {y} with actual tile coordinates
@@ -116,7 +118,7 @@ function MyMapWithPoints() {
 
 4. **Verify Martin is running and discovering views**:
    ```bash
-   curl http://localhost:3000/catalog
+   curl http://localhost:3001/catalog
    ```
    Should return JSON with available tile sources in the `tiles` object. You should see `analysis_view` listed if it has data with geometry.
    
@@ -163,28 +165,28 @@ function MyMapWithPoints() {
   docker exec frontend-postgres-1 psql -U postgres -d opensensemap -c "SELECT COUNT(*) FROM analysis_view WHERE geometry IS NOT NULL;"
   ```
 - Verify the view exists: `docker exec frontend-postgres-1 psql -U postgres -d opensensemap -c "\dv analysis_view"`
-- Check Martin catalog: `curl http://localhost:3000/catalog`
+- Check Martin catalog: `curl http://localhost:3001/catalog`
 - Check browser console for errors
 - Verify `MARTIN_URL` environment variable is set correctly
 - Check Martin logs for discovery errors: `docker-compose logs martin`
 
 ### Port conflicts
 
-If port 3000 is already in use:
+If port 3001 is already in use:
 - Change Martin's port in `docker-compose.yml`:
   ```yaml
   ports:
-    - "3001:3000"  # Use 3001 on host
+    - "3002:3000"  # Use 3002 on host
   ```
-- Update `MARTIN_URL` in `.env` to match: `MARTIN_URL=http://localhost:3001`
+- Update `MARTIN_URL` in `.env` to match: `MARTIN_URL=http://localhost:3002`
 
 ## Direct Martin Access
 
 Martin is accessible directly and has CORS enabled, so you can use it from your frontend without any proxy:
 
-- **Catalog**: `http://localhost:3000/catalog` - Lists all available tile sources (automatically discovers views/tables with geometry columns)
-- **TileJSON**: `http://localhost:3000/analysis_view` - Metadata for the analysis_view source
-- **Tiles**: `http://localhost:3000/analysis_view/{z}/{x}/{y}.pbf` - Vector tile data
+- **Catalog**: `http://localhost:3001/catalog` - Lists all available tile sources (automatically discovers views/tables with geometry columns)
+- **TileJSON**: `http://localhost:3001/analysis_view` - Metadata for the analysis_view source
+- **Tiles**: `http://localhost:3001/analysis_view/{z}/{x}/{y}.pbf` - Vector tile data
 
 **Important**: Martin only discovers views/tables that:
 - Have geometry columns with SRID 4326

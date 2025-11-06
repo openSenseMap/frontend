@@ -46,7 +46,7 @@ export function getEnv() {
     MYBADGES_API_URL: process.env.MYBADGES_API_URL,
     MYBADGES_URL: process.env.MYBADGES_URL,
     SENSORWIKI_API_URL: process.env.SENSORWIKI_API_URL,
-    MARTIN_URL: process.env.MARTIN_URL || "http://localhost:3000",
+    MARTIN_URL: process.env.MARTIN_URL || "http://localhost:3001",
   };
 }
 
