@@ -1,11 +1,10 @@
 import { point } from '@turf/helpers'
 import { eq, sql, desc, ilike, arrayContains, and } from 'drizzle-orm'
-import NewDeviceEmail, {
-	subject as NewDeviceEmailSubject,
-} from 'emails/new-device'
-import NewDeviceLuftdatenEmail, {
-	subject as NewDeviceLuftdatenEmailSubject,
-} from 'emails/new-device-luftdaten'
+import BaseNewDeviceEmail, {
+	messages as BaseNewDeviceMessages,
+} from 'emails/base-new-device'
+import { messages as NewLufdatenDeviceMessages } from 'emails/new-device-luftdaten'
+import { messages as NewSenseboxDeviceMessages } from 'emails/new-device-sensebox'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { sendMail } from '~/lib/mail.server'
@@ -474,28 +473,50 @@ export async function createDevice(deviceData: any, userId: string) {
 		})
 
 		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-		if (newDevice.model === 'luftdaten.info')
-			await sendMail({
-				recipientAddress: usr.email,
-				recipientName: usr.name,
-				subject: NewDeviceLuftdatenEmailSubject[lng],
-				body: NewDeviceLuftdatenEmail({
-					user: { name: usr.name },
-					device: newDevice,
-					language: lng,
-				}),
-			})
-		else
-			await sendMail({
-				recipientAddress: usr.email,
-				recipientName: usr.name,
-				subject: NewDeviceEmailSubject[lng],
-				body: NewDeviceEmail({
-					user: { name: usr.name },
-					device: newDevice,
-					language: lng,
-				}),
-			})
+		switch (newDevice.model) {
+			case 'luftdaten.info':
+				await sendMail({
+					recipientAddress: usr.email,
+					recipientName: usr.name,
+					subject: NewLufdatenDeviceMessages[lng].heading,
+					body: BaseNewDeviceEmail({
+						user: { name: usr.name },
+						device: newDevice,
+						language: lng,
+						content: NewLufdatenDeviceMessages,
+					}),
+				})
+				break
+			case 'homeV2Ethernet':
+			case 'homeV2Lora':
+			case 'homeV2Wifi':
+			case 'senseBox:Edu':
+				await sendMail({
+					recipientAddress: usr.email,
+					recipientName: usr.name,
+					subject: NewSenseboxDeviceMessages[lng].heading,
+					body: BaseNewDeviceEmail({
+						user: { name: usr.name },
+						device: newDevice,
+						language: lng,
+						content: NewSenseboxDeviceMessages,
+					}),
+				})
+				break
+			default:
+				await sendMail({
+					recipientAddress: usr.email,
+					recipientName: usr.name,
+					subject: BaseNewDeviceMessages[lng].heading,
+					body: BaseNewDeviceEmail({
+						user: { name: usr.name },
+						device: newDevice,
+						language: lng,
+						content: BaseNewDeviceMessages,
+					}),
+				})
+				break
+		}
 
 		return newDevice
 	} catch (error) {
