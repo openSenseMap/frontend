@@ -294,6 +294,7 @@ const buildWhereClause = function buildWhereClause(
 		columns['sensors'] = {
 			// @ts-ignore
 			where: (sensor, { ilike }) =>
+				// @ts-ignore
 				ilike(sensorTable['title'], `%${phenomenon}%`),
 		}
 	}
