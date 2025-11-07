@@ -1,6 +1,6 @@
+import { type InferSelectModel, relations } from "drizzle-orm";
 import { pgTable, text } from "drizzle-orm/pg-core";
 import { device } from "./device";
-import { InferSelectModel, relations } from "drizzle-orm";
 
 export const accessToken = pgTable('access_token', {
     deviceId: text('device_id').notNull()
