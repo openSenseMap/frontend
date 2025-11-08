@@ -163,7 +163,7 @@ export const loader: LoaderFunction = async ({
     if (download)
       headers["Content-Disposition"] = `attachment; filename=${sensorId}.${format}`;
 
-    let responseInit: ResponseInit = {
+    const responseInit: ResponseInit = {
       status: 200,
       headers: headers,
     };
