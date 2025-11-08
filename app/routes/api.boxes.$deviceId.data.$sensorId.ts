@@ -91,6 +91,51 @@ import { badRequest, internalServerError, notFound } from "~/utils/response-util
  *       200:
  *         description: Success
  *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               example: '[{"sensor_id":"6649b23072c4c40007105953","time":"2025-11-06 23:59:57.189+00","value":4.78,"location_id":"5752066"},{"sensor_id":"6649b23072c4c40007105953","time":"2025-11-06 23:57:06.03+00","value":4.13,"location_id":"5752066"}]'
+ *           text/csv:
+ *             example: "createdAt,value
+ *                       2023-09-29T08:06:13.254Z,6.38
+ *                       2023-09-29T08:06:12.312Z,6.38
+ *                       2023-09-29T08:06:11.513Z,6.38
+ *                       2023-09-29T08:06:10.380Z,6.38
+ *                       2023-09-29T08:06:09.569Z,6.38
+ *                       2023-09-29T08:06:05.967Z,6.38"
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
  */
 
 export const loader: LoaderFunction = async ({
