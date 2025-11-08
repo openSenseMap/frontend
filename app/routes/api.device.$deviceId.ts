@@ -48,7 +48,7 @@ import { getDevice } from "~/models/device.server";
  *                 error:
  *                   type: string
  *                   example: "Device not found"
- * 		 400:
+ *       400:
  *         description: Device ID is required
  *         content:
  *           application/json:
