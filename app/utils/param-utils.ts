@@ -1,9 +1,4 @@
-const badRequestInit = {
-  status: 400,
-  headers: {
-    "Content-Type": "application/json; charset=utf-8",
-  },
-};
+import { badRequest } from "./response-utils";
 
 /**
  * Parses a parameter from the url search paramaters into a date.
@@ -19,12 +14,7 @@ export function parseDateParam(url: URL, paramName: string, defaultDate: Date): 
   if (param) {
     const date = new Date(param)
     if (Number.isNaN(date.valueOf()))
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: `Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`,
-        }, badRequestInit
-      );
+      return badRequest(`Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`);
     return date
   }
   return defaultDate;
@@ -44,12 +34,7 @@ export function parseEnumParam<DefaultType>(url: URL, paramName: string, allowed
   const param = url.searchParams.get(paramName);
   if (param) {
     if (!allowedValues.includes(param))
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: `Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`,
-        }, badRequestInit
-      );
+      return badRequest(`Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`);
     return param;
   }
   return defaultValue

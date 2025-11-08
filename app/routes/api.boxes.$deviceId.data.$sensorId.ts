@@ -4,13 +4,7 @@ import { getMeasurements } from "~/models/sensor.server";
 import { type Measurement } from "~/schema";
 import { convertToCsv } from "~/utils/csv";
 import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
-
-const badRequestInit = {
-  status: 400,
-  headers: {
-    "Content-Type": "application/json; charset=utf-8",
-  },
-};
+import { badRequest, internalServerError, notFound } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -113,12 +107,7 @@ export const loader: LoaderFunction = async ({
 
     let meas: Measurement[] | TransformedMeasurement[] = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
     if (meas == null)
-      return new Response(JSON.stringify({ message: "Device not found." }), {
-        status: 404,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      });
+      return notFound("Device not found.");
     
     if (outliers)
       meas = transformOutliers(meas, outlierWindow, outliers == "replace");
@@ -143,19 +132,7 @@ export const loader: LoaderFunction = async ({
 
   } catch (err) {
     console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
+    return internalServerError();
   }
 };
 
@@ -174,20 +151,10 @@ function collectParameters(request: Request, params: Params<string>):
   // deviceId is there for legacy reasons
   const deviceId = params.deviceId;
   if (deviceId === undefined)
-    return Response.json(
-      {
-        code: "Bad Request",
-        message: "Invalid device id specified",
-      }, badRequestInit
-    );
+    return badRequest("Invalid device id specified");
   const sensorId = params.sensorId;
   if (sensorId === undefined)
-    return Response.json(
-      {
-        code: "Bad Request",
-        message: "Invalid sensor id specified",
-      }, badRequestInit
-    );
+    return badRequest("Invalid sensor id specified");
 
   const url = new URL(request.url);
 
@@ -199,12 +166,7 @@ function collectParameters(request: Request, params: Params<string>):
   let outlierWindow: number = 15;
   if (outlierWindowParam !== null) {
     if (Number.isNaN(outlierWindowParam) || Number(outlierWindowParam) < 1 || Number(outlierWindowParam) > 50)
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: "Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50",
-        }, badRequestInit
-      );
+      return badRequest("Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50");
     outlierWindow = Number(outlierWindowParam);
   }
 
