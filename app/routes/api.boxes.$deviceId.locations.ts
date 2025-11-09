@@ -1,7 +1,6 @@
 import { type Params, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { type TransformedMeasurement, transformOutliers } from "~/lib/outlier-transform";
-import { getDevice } from "~/models/device.server";
-import { getMeasurements } from "~/models/sensor.server";
+import { type TransformedMeasurement } from "~/lib/outlier-transform";
+import { getLocations } from "~/models/device.server";
 import { type Measurement } from "~/schema";
 import { convertToCsv } from "~/utils/csv";
 import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
@@ -107,16 +106,13 @@ export const loader: LoaderFunction = async ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {deviceId, fromDate, toDate, format} = collected;
 
-    const device = await getDevice({ id: deviceId });
-    if (!device)
+    const locations = await getLocations({ id: deviceId}, fromDate, toDate);
+    if (!locations)
       return notFound("Device not found");
-
-    const locations = device.locations.filter(location =>
-      new Date(location.time) >= fromDate && new Date(location.time) <= toDate);
 
     const jsonLocations = locations.map((location) => {
       return {
-        coordinates: [location.geometry.x, location.geometry.y],
+        coordinates: [location.x, location.y],
         type: 'Point',
         timestamp: location.time,
       }
