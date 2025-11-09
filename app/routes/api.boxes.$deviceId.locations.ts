@@ -181,10 +181,3 @@ function collectParameters(request: Request, params: Params<string>):
     format
   };
 }
-
-function getCsv(meas: Measurement[] | TransformedMeasurement[], delimiter: string): string {
-  return convertToCsv(["createdAt", "value"], meas, [
-    measurement => measurement.time.toString(),
-    measurement => measurement.value?.toString() ?? "null"
-  ], delimiter)
-}
