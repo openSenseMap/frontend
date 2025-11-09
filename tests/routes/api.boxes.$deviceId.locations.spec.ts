@@ -173,8 +173,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
     //delete measurements
     if (sensors?.length > 0) {
       await deleteMeasurementsForSensor(sensors[0].id);
-      await deleteMeasurementsForTime(MEASUREMENTS[0].createdAt);
-      await deleteMeasurementsForTime(MEASUREMENTS[1].createdAt);
+      MEASUREMENTS.forEach(async (measurement) => await deleteMeasurementsForTime(measurement.createdAt));
     }
     // delete the valid test user
     await deleteUserByEmail(DEVICE_SENSORS_ID_USER.email);
