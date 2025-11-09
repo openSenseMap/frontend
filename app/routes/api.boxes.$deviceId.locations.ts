@@ -155,7 +155,6 @@ function collectParameters(request: Request, params: Params<string>):
     toDate: Date,
     format: string | null
   } {
-  // deviceId is there for legacy reasons
   const deviceId = params.deviceId;
   if (deviceId === undefined)
     return badRequest("Invalid device id specified");
