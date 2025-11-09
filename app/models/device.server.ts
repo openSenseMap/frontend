@@ -92,6 +92,7 @@ export function getLocations({ id }: Pick<Device, 'id'>, fromDate: Date, toDate:
 				between(deviceToLocation.time, fromDate, toDate)
 			)
 		)
+		.orderBy(desc(deviceToLocation.time));
 }
 export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({

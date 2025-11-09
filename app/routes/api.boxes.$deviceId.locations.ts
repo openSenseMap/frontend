@@ -56,7 +56,7 @@ import { badRequest, internalServerError, notFound } from "~/utils/response-util
  *           application/json:
  *             schema:
  *               type: array
- *               example: '[{ "coordinates": [7.68123, 51.9123], "type": "Point", "timestamp": "2017-07-27T12:00:00Z"},{ "coordinates": [7.68223, 51.9433, 66.6], "type": "Point", "timestamp": "2017-07-27T12:01:00Z"},{ "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02:00Z"}]'
+ *               example: '[{ "coordinates": [7.68123, 51.9123], "type": "Point", "timestamp": "2017-07-27T12:00.000Z"},{ "coordinates": [7.68223, 51.9433, 66.6], "type": "Point", "timestamp": "2017-07-27T12:01.000Z"},{ "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02.000Z"}]'
  *           application/geojson:
  *             example: ''
  *       400:
