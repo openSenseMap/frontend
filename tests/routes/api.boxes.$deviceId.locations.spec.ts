@@ -2,7 +2,7 @@ import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
-import { deleteMeasurementsForSensor, deleteMeasurementsForTime, insertMeasurements, saveMeasurements } from "~/models/measurement.server";
+import { deleteMeasurementsForSensor, deleteMeasurementsForTime, saveMeasurements } from "~/models/measurement.server";
 import { getSensors } from "~/models/sensor.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { loader } from "~/routes/api.boxes.$deviceId.locations";
