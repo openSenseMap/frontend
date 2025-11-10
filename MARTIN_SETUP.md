@@ -20,7 +20,8 @@ The view provides a denormalized structure with:
 - `boxId`: device ID
 - `tags`: device tags array
 - `geometry`: location point (SRID 4326)
-- `measurements`: JSONB object containing all sensor measurements
+- Scalar columns for common phenomena (e.g. `temperature`, `humidity`, `soil_moisture`, `pressure`, `pm1`, `pm2_5`, `pm4`, `pm10`, `wind_speed`, `light_intensity`, `uv_intensity`, `uv_index`, `sound_level`, `sound_level_eq`, `sound_level_min`, `sound_level_max`, `voc`, `co2`)
+- `measurements`: JSONB object containing the raw sensor payload (kept for debugging and future extensions)
 
 **Note**: Martin automatically discovers tables and views with geometry columns that have SRID 4326. The `analysis_view` geometry column is properly configured for Martin.
 
@@ -100,17 +101,32 @@ Martin is accessible directly at `http://localhost:3001` (or your configured `MA
 The `analysis_view` groups measurements by time and device, aggregating all sensor measurements into a JSONB object:
 
 ```sql
-SELECT 
-    "createdAt",      -- timestamp
-    "boxId",          -- device ID
-    tags,             -- device tags array
-    geometry,         -- PostGIS Point (SRID 4326)
-    measurements      -- JSONB: { "sensor_name": { "value": ..., "unit": ..., "sensor_id": ... } }
+SELECT
+    "createdAt",                -- timestamp
+    "boxId",                    -- device ID
+    tags,                        -- device tags array
+    geometry,                    -- PostGIS Point (SRID 4326)
+    temperature,
+    soil_temperature,
+    humidity,
+    soil_moisture,
+    pressure,
+    pm1,
+    pm2_5,
+    pm4,
+    pm10,
+    wind_speed,
+    light_intensity,
+    uv_intensity,
+    uv_index,
+    sound_level,
+    sound_level_eq,
+    sound_level_min,
+    sound_level_max,
+    voc,
+    co2
 FROM analysis_view;
 ```
 
-Each sensor measurement in the `measurements` JSONB object contains:
-- `value`: The measurement value
-- `unit`: The unit of measurement
-- `sensor_id`: The sensor ID
+> Martin consumes the scalar columns directly. The JSONB payload remains available in the view for troubleshooting, but it is no longer served through `/api/analysis` and is not used when generating vector tiles.
 

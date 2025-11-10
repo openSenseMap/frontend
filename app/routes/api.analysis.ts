@@ -26,7 +26,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
           THEN ST_AsGeoJSON(geometry)::jsonb
           ELSE NULL 
         END as geometry,
-        measurements
+        temperature,
+        soil_temperature,
+        humidity,
+        soil_moisture,
+        pressure,
+        pm1,
+        pm2_5,
+        pm4,
+        pm10,
+        wind_speed,
+        light_intensity,
+        uv_intensity,
+        uv_index,
+        sound_level,
+        sound_level_eq,
+        sound_level_min,
+        sound_level_max,
+        voc,
+        co2
       FROM analysis_view
       WHERE 1=1
     `;
@@ -41,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     query = sql`${query} ORDER BY "createdAt" DESC LIMIT ${limit} OFFSET ${offset}`;
 
-    const results = await drizzleClient.execute(query);
+    const results = await drizzleClient.execute<Record<string, any>>(query);
 
     // Get total count for pagination
     let countQuery = sql`SELECT COUNT(*) as total FROM analysis_view WHERE 1=1`;
