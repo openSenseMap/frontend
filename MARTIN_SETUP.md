@@ -21,9 +21,8 @@ The view provides a denormalized structure with:
 - `tags`: device tags array
 - `geometry`: location point (SRID 4326)
 - Scalar columns for common phenomena (e.g. `temperature`, `humidity`, `soil_moisture`, `pressure`, `pm1`, `pm2_5`, `pm4`, `pm10`, `wind_speed`, `light_intensity`, `uv_intensity`, `uv_index`, `sound_level`, `sound_level_eq`, `sound_level_min`, `sound_level_max`, `voc`, `co2`)
-- `measurements`: JSONB object containing the raw sensor payload (kept for debugging and future extensions)
 
-**Note**: Martin automatically discovers tables and views with geometry columns that have SRID 4326. The `analysis_view` geometry column is properly configured for Martin.
+**Note**: Martin automatically discovers tables and views with geometry columns that have SRID 4326, ( `analysis_view` in our case).
 
 ### 2. Docker Configuration
 
@@ -33,7 +32,7 @@ Martin is configured in `docker-compose.yml`:
 - Uses the same Docker network (`app-network`)
 - Waits for Postgres to be healthy before starting
 
-### 3. Environment Variables
+### 3. Local Environment Variables
 
 Add to your `.env` file (optional):
 ```bash
@@ -128,5 +127,4 @@ SELECT
 FROM analysis_view;
 ```
 
-> Martin consumes the scalar columns directly. The JSONB payload remains available in the view for troubleshooting, but it is no longer served through `/api/analysis` and is not used when generating vector tiles.
 
