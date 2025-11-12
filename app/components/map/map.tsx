@@ -18,11 +18,12 @@ const Map = forwardRef<MapRef, MapProps>(
       if (!style || !style.layers) return;
       
       style.layers.forEach((layer: AnyLayer) => {
-        const layerAny = layer as any;
-        const layout = layerAny.layout;
+        // Uses type guarding instead of casting to any
+        if (!("layout" in layer)) return;
+        
+        const layout = layer.layout;
         if (layout && typeof layout === "object" && 'text-field' in layout) {
-          const layerId = layerAny.id;
-          map.setLayoutProperty(layerId, 'text-field', [
+          map.setLayoutProperty(layer.id, 'text-field', [
             'coalesce',
             ['get', `name_${locale}`],
             ['get', 'name'],
