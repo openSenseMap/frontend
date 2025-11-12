@@ -114,8 +114,6 @@ export const modelDefinitions = {
 		sensorDefinitions.sds011_pm10,
 		sensorDefinitions.sds011_pm25,
 	],
-	// if custom, return all sensors
-	Custom: Object.values(sensorDefinitions),
 }
 
 // Exporting models
