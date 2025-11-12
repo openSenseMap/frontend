@@ -1,9 +1,9 @@
-import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { transformDeviceToApiFormat } from "~/lib/device-transform";
-import { CreateBoxSchema } from "~/lib/devices-service.server";
-import { getUserFromJwt } from "~/lib/jwt";
-import { createDevice } from "~/models/device.server";
-import { type User } from "~/schema";
+import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { CreateBoxSchema } from '~/lib/devices-service.server'
+import { getUserFromJwt } from '~/lib/jwt'
+import { createDevice } from '~/models/device.server'
+import { type User } from '~/schema'
 
 /**
  * @openapi
@@ -324,87 +324,112 @@ import { type User } from "~/schema";
  */
 
 export const action: ActionFunction = async ({
-  request,
+	request,
 }: ActionFunctionArgs) => {
-  try {
-    // Check authentication
-    const jwtResponse = await getUserFromJwt(request);
+	try {
+		// Check authentication
+		const jwtResponse = await getUserFromJwt(request)
 
-    if (typeof jwtResponse === "string") {
-      return Response.json({
-        code: "Forbidden",
-        message: "Invalid JWT authorization. Please sign in to obtain new JWT.",
-      }, { status: 403 });
-    }
+		if (typeof jwtResponse === 'string') {
+			return Response.json(
+				{
+					code: 'Forbidden',
+					message:
+						'Invalid JWT authorization. Please sign in to obtain new JWT.',
+				},
+				{ status: 403 },
+			)
+		}
 
-    switch (request.method) {
-      case "POST":
-        return await post(request, jwtResponse);
-      default:
-        return Response.json({ message: "Method Not Allowed" }, { status: 405 });
-    }
-  } catch (err) {
-    console.error("Error in action:", err);
-    return Response.json({
-      code: "Internal Server Error",
-      message: "The server was unable to complete your request. Please try again later.",
-    }, { status: 500 });
-  }
-};
+		switch (request.method) {
+			case 'POST':
+				return await post(request, jwtResponse)
+			default:
+				return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
+		}
+	} catch (err) {
+		console.error('Error in action:', err)
+		return Response.json(
+			{
+				code: 'Internal Server Error',
+				message:
+					'The server was unable to complete your request. Please try again later.',
+			},
+			{ status: 500 },
+		)
+	}
+}
 
 async function post(request: Request, user: User) {
-  try {
-    // Parse and validate request body
-    let requestData;
-    try {
-      requestData = await request.json();
-    } catch {
-      return Response.json({
-        code: "Bad Request",
-        message: "Invalid JSON in request body",
-      }, { status: 400 });
-    }
+	try {
+		// Parse and validate request body
+		let requestData
+		try {
+			requestData = await request.json()
+		} catch {
+			return Response.json(
+				{
+					code: 'Bad Request',
+					message: 'Invalid JSON in request body',
+				},
+				{ status: 400 },
+			)
+		}
 
-    // Validate request data
-    const validationResult = CreateBoxSchema.safeParse(requestData);
-    if (!validationResult.success) {
-      return Response.json({
-        code: "Bad Request",
-        message: "Invalid request data",
-        errors: validationResult.error.errors.map(err => `${err.path.join('.')}: ${err.message}`),
-      }, { status: 400 });
-    }
+		// Validate request data
+		const validationResult = CreateBoxSchema.safeParse(requestData)
+		if (!validationResult.success) {
+			return Response.json(
+				{
+					code: 'Bad Request',
+					message: 'Invalid request data',
+					errors: validationResult.error.errors.map(
+						(err) => `${err.path.join('.')}: ${err.message}`,
+					),
+				},
+				{ status: 400 },
+			)
+		}
 
-    const validatedData = validationResult.data;
+		const validatedData = validationResult.data
+		const sensorsProvided = validatedData.sensors?.length > 0
+		// Extract longitude and latitude from location array [longitude, latitude]
+		const [longitude, latitude] = validatedData.location
+		const newBox = await createDevice(
+			{
+				name: validatedData.name,
+				exposure: validatedData.exposure,
+				model: sensorsProvided ? undefined : validatedData.model,
+				latitude: latitude,
+				longitude: longitude,
+				tags: validatedData.grouptag,
+				sensors: sensorsProvided
+					? validatedData.sensors.map((s) => ({
+							title: s.title,
+							sensorType: s.sensorType,
+							unit: s.unit,
+						}))
+					: undefined,
+			},
+			user.id,
+		)
 
-    // Extract longitude and latitude from location array [longitude, latitude]
-    const [longitude, latitude] = validatedData.location;
-    const newBox = await createDevice({
-      name: validatedData.name,
-      exposure: validatedData.exposure,
-      model: validatedData.model,
-      latitude: latitude,
-      longitude: longitude,
-      tags: validatedData.grouptag,
-      sensors: validatedData.sensors.map(sensor => ({
-        title: sensor.title,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-      })),
-    }, user.id);
+		// Build response object using helper function
+		const responseData = transformDeviceToApiFormat(newBox)
 
-    // Build response object using helper function
-    const responseData = transformDeviceToApiFormat(newBox);
-
-    return Response.json(responseData, {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.error("Error creating box:", err);
-    return Response.json({
-      code: "Internal Server Error",
-      message: "The server was unable to create the box. Please try again later.",
-    }, { status: 500 });
-  }
+		return Response.json(responseData, {
+			status: 201,
+			headers: { 'Content-Type': 'application/json' },
+		})
+	} catch (err) {
+		console.error('Error creating box:', err)
+		return Response.json(
+			{
+				code: 'Internal Server Error',
+				message:
+					'The server was unable to create the box. Please try again later.',
+			},
+			{ status: 500 },
+		)
+	}
 }
