@@ -95,7 +95,7 @@ export function transformDeviceToApiFormat(
 				lastMeasurement: sensor.lastMeasurement
 					? {
 							createdAt: sensor.lastMeasurement.createdAt,
-							// Convert numeric values to string to match API specification
+							// Convert number to string to match API specification
 							value:
 								typeof sensor.lastMeasurement.value === 'number'
 									? String(sensor.lastMeasurement.value)
