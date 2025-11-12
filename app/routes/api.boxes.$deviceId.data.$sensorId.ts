@@ -4,13 +4,7 @@ import { getMeasurements } from "~/models/sensor.server";
 import { type Measurement } from "~/schema";
 import { convertToCsv } from "~/utils/csv";
 import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
-
-const badRequestInit = {
-  status: 400,
-  headers: {
-    "Content-Type": "application/json; charset=utf-8",
-  },
-};
+import { badRequest, internalServerError, notFound } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -97,6 +91,51 @@ const badRequestInit = {
  *       200:
  *         description: Success
  *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               example: '[{"sensor_id":"6649b23072c4c40007105953","time":"2025-11-06 23:59:57.189+00","value":4.78,"location_id":"5752066"},{"sensor_id":"6649b23072c4c40007105953","time":"2025-11-06 23:57:06.03+00","value":4.13,"location_id":"5752066"}]'
+ *           text/csv:
+ *             example: "createdAt,value
+ *                       2023-09-29T08:06:13.254Z,6.38
+ *                       2023-09-29T08:06:12.312Z,6.38
+ *                       2023-09-29T08:06:11.513Z,6.38
+ *                       2023-09-29T08:06:10.380Z,6.38
+ *                       2023-09-29T08:06:09.569Z,6.38
+ *                       2023-09-29T08:06:05.967Z,6.38"
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
  */
 
 export const loader: LoaderFunction = async ({
@@ -113,12 +152,7 @@ export const loader: LoaderFunction = async ({
 
     let meas: Measurement[] | TransformedMeasurement[] = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
     if (meas == null)
-      return new Response(JSON.stringify({ message: "Device not found." }), {
-        status: 404,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      });
+      return notFound("Device not found.");
     
     if (outliers)
       meas = transformOutliers(meas, outlierWindow, outliers == "replace");
@@ -129,7 +163,7 @@ export const loader: LoaderFunction = async ({
     if (download)
       headers["Content-Disposition"] = `attachment; filename=${sensorId}.${format}`;
 
-    let responseInit: ResponseInit = {
+    const responseInit: ResponseInit = {
       status: 200,
       headers: headers,
     };
@@ -143,19 +177,7 @@ export const loader: LoaderFunction = async ({
 
   } catch (err) {
     console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
+    return internalServerError();
   }
 };
 
@@ -174,20 +196,10 @@ function collectParameters(request: Request, params: Params<string>):
   // deviceId is there for legacy reasons
   const deviceId = params.deviceId;
   if (deviceId === undefined)
-    return Response.json(
-      {
-        code: "Bad Request",
-        message: "Invalid device id specified",
-      }, badRequestInit
-    );
+    return badRequest("Invalid device id specified");
   const sensorId = params.sensorId;
   if (sensorId === undefined)
-    return Response.json(
-      {
-        code: "Bad Request",
-        message: "Invalid sensor id specified",
-      }, badRequestInit
-    );
+    return badRequest("Invalid sensor id specified");
 
   const url = new URL(request.url);
 
@@ -199,12 +211,7 @@ function collectParameters(request: Request, params: Params<string>):
   let outlierWindow: number = 15;
   if (outlierWindowParam !== null) {
     if (Number.isNaN(outlierWindowParam) || Number(outlierWindowParam) < 1 || Number(outlierWindowParam) > 50)
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: "Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50",
-        }, badRequestInit
-      );
+      return badRequest("Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50");
     outlierWindow = Number(outlierWindowParam);
   }
 
