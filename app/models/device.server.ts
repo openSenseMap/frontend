@@ -214,6 +214,11 @@ export async function updateDevice(
 						location: sql`ST_GeomFromText(${pointWKT}, 4326)`,
 					})
 					.returning()
+
+				if (!newLocation) {
+					throw new Error('Failed to create location')
+				}
+
 				locationId = newLocation.id
 			}
 
@@ -464,7 +469,7 @@ interface BuildWhereClauseOptions {
 	fromDate?: string | Date
 	toDate?: string | Date
 	bbox?: {
-		coordinates: number[][][]
+		coordinates: (number | undefined)[][][]
 	}
 	near?: [number, number] // [lat, lng]
 	maxDistance?: number
@@ -526,7 +531,8 @@ const buildWhereClause = function buildWhereClause(
 	}
 
 	// https://orm.drizzle.team/learn/guides/postgis-geometry-point
-	if (bbox) {
+	if (bbox && bbox.coordinates[0]) {
+		//@ts-ignore
 		const [latSW, lngSW] = bbox.coordinates[0][0]
 		const [latNE, lngNE] = bbox.coordinates[0][2]
 		clause.push(

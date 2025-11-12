@@ -43,7 +43,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const { intent, name, exposure, passwordDelete } =
 		Object.fromEntries(formData)
 
-	const exposureLowerCase = exposure.toString().toLowerCase()
+	const exposureLowerCase = exposure?.toString().toLowerCase()
 
 	const errors = {
 		exposure: exposure ? null : 'Invalid exposure.',
