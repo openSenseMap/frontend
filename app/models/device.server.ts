@@ -12,6 +12,7 @@ import {
 } from '~/schema'
 import { accessToken } from '~/schema/accessToken'
 import { addonDefinitions } from '~/utils/addon-definitions'
+import { getSensorsForModel } from '~/utils/model-definitions'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -627,6 +628,24 @@ export async function findDevices(
 export async function createDevice(deviceData: any, userId: string) {
 	try {
 		const newDevice = await drizzleClient.transaction(async (tx) => {
+			// Determine sensors to use
+			let sensorsToAdd = deviceData.sensors
+
+			// If model and sensors are both specified, reject (backwards compatibility)
+			if (deviceData.model && deviceData.sensors) {
+				throw new Error(
+					'Parameters model and sensors cannot be specified at the same time.',
+				)
+			}
+
+			// If model is specified but sensors are not, get sensors from model layout
+			if (deviceData.model && !deviceData.sensors) {
+				const modelSensors = getSensorsForModel(deviceData.model as any)
+				if (modelSensors) {
+					sensorsToAdd = modelSensors
+				}
+			}
+
 			// Create the device
 			const [createdDevice] = await tx
 				.insert(device)
@@ -656,15 +675,20 @@ export async function createDevice(deviceData: any, userId: string) {
 
 			// Add sensors in the same transaction and collect them
 			const createdSensors = []
-			if (deviceData.sensors && Array.isArray(deviceData.sensors)) {
-				for (const sensorData of deviceData.sensors) {
+			if (
+				sensorsToAdd &&
+				Array.isArray(sensorsToAdd) &&
+				sensorsToAdd.length > 0
+			) {
+				for (const sensorData of sensorsToAdd) {
 					const [newSensor] = await tx
 						.insert(sensor)
 						.values({
 							title: sensorData.title,
 							unit: sensorData.unit,
 							sensorType: sensorData.sensorType,
-							deviceId: createdDevice.id, // Reference the created device ID
+							icon: sensorData.icon,
+							deviceId: createdDevice.id,
 						})
 						.returning()
 
@@ -683,7 +707,9 @@ export async function createDevice(deviceData: any, userId: string) {
 		return newDevice
 	} catch (error) {
 		console.error('Error creating device with sensors:', error)
-		throw new Error('Failed to create device and its sensors.')
+		throw new Error(
+			`Failed to create device and its sensors: ${error instanceof Error ? error.message : String(error)}`,
+		)
 	}
 }
 
