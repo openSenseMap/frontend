@@ -1,18 +1,16 @@
 import { forwardRef, useEffect } from "react";
 import { type MapProps, type MapRef, NavigationControl, Map as ReactMap } from "react-map-gl";
 import type { Map as MapboxMap, AnyLayer, MapboxEvent } from "mapbox-gl";
+import { useTranslation } from "react-i18next";
 
-interface CustomMapProps extends MapProps {
-  language?: string; // 'de', 'en', 'fr', etc.
-}
 
-const Map = forwardRef<MapRef, CustomMapProps>(
+const Map = forwardRef<MapRef, MapProps>(
   (
-    { children, mapStyle, language="en", fog = null, terrain = null, ...props },
+    { children, mapStyle, fog = null, terrain = null, ...props },
     ref,
   ) => {
     const [theme] = "light";
-    
+    const [, i18n] = useTranslation();
     const updateMapLanguage = (map: MapboxMap, locale: string) => {
       if (!map) return;
       
@@ -34,15 +32,15 @@ const Map = forwardRef<MapRef, CustomMapProps>(
     };
     
     const handleMapLoad = (event: MapboxEvent<undefined>) => {
-      updateMapLanguage(event.target as MapboxMap, language);
+      updateMapLanguage(event.target as MapboxMap, i18n.language);
     };
     
     // Update language when it changes
     useEffect(() => {
       if (ref && typeof ref !== 'function' && ref.current) {
-        updateMapLanguage(ref.current.getMap(), language);
+        updateMapLanguage(ref.current.getMap(), i18n.language);
       }
-    }, [language, ref]);
+    }, [i18n.language, ref]);
     
     return (
       <ReactMap

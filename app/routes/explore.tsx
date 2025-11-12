@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type FeatureCollection, type Point } from "geojson";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
-import { locale } from "moment";
 import { useState, useRef } from "react";
 import {
   type MapLayerMouseEvent,
@@ -139,7 +138,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       profile,
       filteredDevices,
       filterParams,
-      locale,
+      locale
       //phenomena
     };
   }
@@ -150,6 +149,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filterParams,
     filteredDevices,
     message,
+    locale
     //phenomena,
   };
 }
@@ -361,7 +361,6 @@ export default function Explore() {
           onClick={onMapClick}
           onMouseMove={handleMouseMove}
           ref={mapRef}
-          language={locale}
           initialViewState={
             deviceId
               ? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
