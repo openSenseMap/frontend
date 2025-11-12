@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
+  type Measurement,
   sensor,
   type Sensor,
   type SensorWithLatestMeasurement,
@@ -69,17 +70,21 @@ export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
   });
 }
 
-export async function getSensorsWithLastMeasurement(
+export async function getSensorWithLastMeasurement(
   deviceId: Sensor["deviceId"],
-  sensorId?: Sensor["id"],
-  count?: number,
-): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]>;
+  sensorId: Sensor["id"],
+  count: number = 1
+): Promise<SensorWithLatestMeasurement> {
+  const allSensors = await getSensorsWithLastMeasurement(deviceId, count);
+  return allSensors.find(
+    (c: any) => c.id === sensorId,
+  ) as SensorWithLatestMeasurement;
+}
 
 export async function getSensorsWithLastMeasurement(
   deviceId: Sensor["deviceId"],
-  sensorId: Sensor["id"] | undefined = undefined,
   count: number = 1,
-): Promise<SensorWithLatestMeasurement | SensorWithLatestMeasurement[]> {
+): Promise<SensorWithLatestMeasurement[]> {
   const result = await drizzleClient.execute(
     sql`SELECT 
         s.id,
@@ -118,11 +123,23 @@ export async function getSensorsWithLastMeasurement(
     } else return { ...r, lastMeasurements: [] } as any;
   }) as any;
 
-  if (sensorId === undefined) return cast as SensorWithLatestMeasurement[];
-  else
-    return cast.find(
-      (c: any) => c.id === sensorId,
-    ) as SensorWithLatestMeasurement;
+  return cast as SensorWithLatestMeasurement[];
+}
+
+export async function getMeasurements(
+  sensorId: Measurement["sensorId"],
+  fromDate: string,
+  toDate: string,
+  count: number = 10000): Promise<Measurement[]> {
+    return await drizzleClient.execute(
+      sql`SELECT *
+          FROM measurement
+          WHERE sensor_id = ${sensorId} AND
+          time >= ${fromDate} AND
+          time <= ${toDate}
+          ORDER BY time DESC
+          LIMIT ${count}`
+    ) as Measurement[];
 }
 
 export async function registerSensor(newSensor: Sensor) {
