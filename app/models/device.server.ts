@@ -110,6 +110,10 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 	})
 }
 
+export type DeviceWithoutSensors = Awaited<
+	ReturnType<typeof getDeviceWithoutSensors>
+>
+
 export function updateDeviceLocation({
 	id,
 	latitude,

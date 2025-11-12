@@ -1,7 +1,7 @@
-import type { ActionFunction, ActionFunctionArgs } from "react-router";
-import { parseRefreshTokenData } from "~/lib/request-parsing";
+import  { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { getUserFromJwt, hashJwt, refreshJwt } from "~/lib/jwt";
-import type { User } from "~/schema";
+import { parseRefreshTokenData } from "~/lib/request-parsing";
+import  { type User } from "~/schema";
 
 /**
  * @openapi

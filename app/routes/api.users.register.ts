@@ -1,6 +1,6 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { parseUserRegistrationData } from "~/lib/request-parsing";
 import { createToken } from "~/lib/jwt";
+import { parseUserRegistrationData } from "~/lib/request-parsing";
 import {
   type EmailValidation,
   type PasswordValidation,
