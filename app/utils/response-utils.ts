@@ -1,5 +1,3 @@
-// TODO: Proposal: Use these functions everywhere, to make the code shorter
-
 /**
  * Creates a response object for a bad request
  * @param message The message for the response
