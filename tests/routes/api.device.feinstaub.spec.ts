@@ -5,11 +5,11 @@ import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action as deviceUpdateAction } from '~/routes/api.device.$deviceId'
-import type { User, Device } from '~/schema'
+import { type User, type Device } from '~/schema'
 
 const TEST_USER = {
-	name: 'feinstaubAddonTestUser',
-	email: 'feinstaub.addon@test',
+	name: 'feinstaubAddonUpdateTestUser',
+	email: 'feinstaubUpdate.addon@test',
 	password: 'secureTestPassword123!',
 }
 
@@ -17,11 +17,12 @@ let user: User
 let jwt: string
 let baseDevice: Device
 
-const generateMinimalDevice = () => ({
+const generateMinimalDevice = (model = 'homeEthernetFeinstaub') => ({
 	exposure: 'mobile',
-	location: { lat: 12.34, lng: 56.78 },
+	latitude: 12.34,
+	longitude: 56.78,
 	name: 'senseBox' + Date.now(),
-	model: 'homeEthernetFeinstaub',
+	model: model,
 })
 
 describe('Device API: Feinstaub Addon behavior', () => {
@@ -73,7 +74,10 @@ describe('Device API: Feinstaub Addon behavior', () => {
 	})
 
 	it('should allow to register a homeWifiFeinstaub device and include SDS011 sensors', async () => {
-		const device = await createDevice(generateMinimalDevice(), user.id)
+		const device = await createDevice(
+			generateMinimalDevice('homeWifiFeinstaub'),
+			user.id,
+		)
 
 		const fetched = await getDevice({ id: device.id })
 		expect(fetched).toBeDefined()
@@ -92,7 +96,10 @@ describe('Device API: Feinstaub Addon behavior', () => {
 	})
 
 	it('should allow to add the feinstaub addon via PUT for a homeWifi device', async () => {
-		const device = await createDevice(generateMinimalDevice(), user.id)
+		const device = await createDevice(
+			generateMinimalDevice('homeWifiFeinstaub'),
+			user.id,
+		)
 
 		const updatePayload = { addons: { add: 'feinstaub' } }
 
@@ -126,9 +133,18 @@ describe('Device API: Feinstaub Addon behavior', () => {
 		expect(hasPM10).toBe(true)
 		expect(hasPM25).toBe(true)
 
+		const secondRequest = new Request(`${BASE_URL}/${device.id}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`,
+			},
+			body: JSON.stringify(updatePayload),
+		}) as unknown as Request
+
 		// Second PUT should be idempotent — same sensors
 		const secondResponse: any = await deviceUpdateAction({
-			request,
+			request: secondRequest,
 			params: { deviceId: device.id },
 			context: {} as any,
 		})
@@ -143,8 +159,8 @@ describe('Device API: Feinstaub Addon behavior', () => {
 	it('should do nothing when adding the feinstaub addon to a non-home device', async () => {
 		const device = await createDevice(
 			{
-				...generateMinimalDevice(),
-				sensors: [{ title: 'temp', unit: 'K', sensorType: 'some Sensor' }],
+				...generateMinimalDevice('Custom'),
+				// sensors: [{ title: 'temp', unit: 'K', sensorType: 'some Sensor' }],
 			},
 			user.id,
 		)
