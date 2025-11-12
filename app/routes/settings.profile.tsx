@@ -176,7 +176,7 @@ export default function EditUserProfilePage() {
               <Link
                 preventScrollReset
                 to="photo"
-                className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5 pointer-events-none"
+                className="border-night-700 bg-night-500 absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5 pointer-events-auto"
                 title="Change profile photo"
                 aria-label="Change profile photo"
               >

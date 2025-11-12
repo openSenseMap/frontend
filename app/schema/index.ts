@@ -10,4 +10,5 @@ export * from "./user";
 export * from "./location";
 export * from "./log-entry";
 export * from "./refreshToken";
+export * from "./claim";
 export * from "./accessToken";
