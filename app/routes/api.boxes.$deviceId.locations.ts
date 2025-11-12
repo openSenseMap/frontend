@@ -103,7 +103,6 @@ export const loader: LoaderFunction = async ({
     const collected = collectParameters(request, params);
     if (collected instanceof Response)
       return collected;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {deviceId, fromDate, toDate, format} = collected;
 
     const locations = await getLocations({ id: deviceId}, fromDate, toDate);
