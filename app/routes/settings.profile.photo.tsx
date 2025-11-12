@@ -136,7 +136,7 @@ export default function PhotoChooserModal() {
 
   const dismissModal = () => navigate("..", { preventScrollReset: true });
   return (
-    <Dialog open={true}>
+    <Dialog open={true} onOpenChange={dismissModal}>
       <DialogContent
         onEscapeKeyDown={dismissModal}
         onPointerDownOutside={dismissModal}
