@@ -19,7 +19,7 @@ export default function Header(props: HeaderProps) {
       <Home />
       <NavBar devices={props.devices} />
       <div className="flex gap-2">
-        <div className="flex pointer-events-auto items-center text-white">
+        <div className="flex pointer-events-auto items-center h-10 w-16 rounded-full bg-white justify-center shadow-md">
           <LanguageSelector/>
         </div>
         <Download devices={props.devices} />
