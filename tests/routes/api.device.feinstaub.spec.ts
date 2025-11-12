@@ -52,6 +52,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 
 	afterAll(async () => {
 		await deleteUserByEmail(TEST_USER.email)
+		await deleteDevice({ id: queryableDevice!.id })
 	})
 
 	it('should allow to register a homeEthernetFeinstaub device and include SDS011 sensors', async () => {
