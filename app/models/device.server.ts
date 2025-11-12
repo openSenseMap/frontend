@@ -110,17 +110,6 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 	})
 }
 
-export function updateDeviceInfo({
-	id,
-	name,
-	exposure,
-}: Pick<Device, 'id' | 'name' | 'exposure'>) {
-	return drizzleClient
-		.update(device)
-		.set({ name: name, exposure: exposure })
-		.where(eq(device.id, id))
-}
-
 export function updateDeviceLocation({
 	id,
 	latitude,
@@ -345,7 +334,6 @@ export async function updateDevice(
 				}
 			}
 		}
-
 		return updatedDevice
 	})
 
