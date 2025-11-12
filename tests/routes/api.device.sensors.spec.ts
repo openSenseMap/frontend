@@ -8,8 +8,8 @@ import { action as deviceUpdateAction } from '~/routes/api.device.$deviceId'
 import { type User, type Device } from '~/schema'
 
 const DEVICE_TEST_USER = {
-	name: 'deviceUpdateSensorsTest',
-	email: 'test@updateDeviceSensors.endpoint',
+	name: 'deviceTestUpdateSensors',
+	email: 'test@deviceSensorsUpdate.endpoint',
 	password: 'highlySecurePasswordForTesting',
 }
 
@@ -21,7 +21,6 @@ const generateMinimalDevice = () => ({
 	exposure: 'mobile',
 	location: { lat: 12.34, lng: 56.78 },
 	name: 'senseBox' + Date.now(),
-	model: 'homeV2Ethernet',
 })
 
 describe('Device Sensors API: updating sensors', () => {
