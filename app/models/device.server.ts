@@ -1,5 +1,5 @@
 import { point } from '@turf/helpers'
-import { eq, sql, desc, ilike, arrayContains, and, gte, lte, between } from 'drizzle-orm'
+import { eq, sql, desc, ilike, arrayContains, and, between } from 'drizzle-orm'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
 import { device, deviceToLocation, location, sensor, type Device, type Sensor } from '~/schema'
