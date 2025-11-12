@@ -93,23 +93,27 @@ export async function action({ request }: ActionFunctionArgs) {
   // Query user profile
   const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
     where: (profile, { eq }) => eq(profile.userId, userId),
-    with: {
-      profileImage: true,
-    },
+    with: { profileImage: true },
   });
 
-  // Insert new profile image
-  await drizzleClient.insert(profileImage).values({
-    blob: Buffer.from(await photoFile.arrayBuffer()),
-    contentType: photoFile.type,
-    profileId: previousProfileWithImage?.id,
-  });
+  // Store the old image ID before inserting new one
+  const oldImageId = previousProfileWithImage?.profileImage?.id;
 
-  // If an old profile image exists, delete it
-  if (previousProfileWithImage?.profileImage?.id) {
+  // Insert new profile image and get the new ID back
+  const [newImage] = await drizzleClient
+    .insert(profileImage)
+    .values({
+      blob: Buffer.from(await photoFile.arrayBuffer()),
+      contentType: photoFile.type,
+      profileId: previousProfileWithImage?.id,
+    })
+    .returning();
+
+  // Delete the OLD image (not the new one)
+  if (oldImageId && oldImageId !== newImage.id) {
     await drizzleClient
       .delete(profileImage)
-      .where(eq(profileImage.id, previousProfileWithImage.profileImage.id));
+      .where(eq(profileImage.id, oldImageId));
   }
 
   return redirect("/settings/profile");
@@ -132,7 +136,7 @@ export default function PhotoChooserModal() {
 
   const dismissModal = () => navigate("..", { preventScrollReset: true });
   return (
-    <Dialog open={true}>
+    <Dialog open={true} onOpenChange={dismissModal}>
       <DialogContent
         onEscapeKeyDown={dismissModal}
         onPointerDownOutside={dismissModal}
