@@ -50,18 +50,52 @@ const getConfig = (): Config => {
 }
 
 const config = getConfig()
-const transportOptions: SMTPTransport.Options = {
-	host: config.SMTP_HOST,
-	port: config.SMTP_PORT,
-	secure: config.SMTP_SECURE,
-}
-if (config.SMTP_USERNAME !== 'ignored' && config.SMTP_PASSWORD !== 'ignored') {
-	transportOptions['auth'] = {
-		user: config.SMTP_USERNAME,
-		pass: config.SMTP_PASSWORD,
+
+class OSEMTransporter {
+	private static _instance: nodemailer.Transporter | null = null
+	private constructor() {}
+	public static async getInstance(): Promise<nodemailer.Transporter> {
+		if (this._instance !== null) return this._instance
+
+		if (process.env.TEST) {
+			return await new Promise((resolve, reject) => {
+				nodemailer.createTestAccount((err, account) => {
+					if (err) reject(err)
+					else {
+						this._instance = nodemailer.createTransport({
+							host: 'smtp.ethereal.email',
+							port: 587,
+							secure: false,
+							auth: {
+								user: account.user,
+								pass: account.pass,
+							},
+						})
+						resolve(this._instance)
+					}
+				})
+			})
+		} else {
+			const transportOptions: SMTPTransport.Options = {
+				host: config.SMTP_HOST,
+				port: config.SMTP_PORT,
+				secure: config.SMTP_SECURE,
+			}
+			if (
+				config.SMTP_USERNAME !== 'ignored' &&
+				config.SMTP_PASSWORD !== 'ignored'
+			) {
+				transportOptions['auth'] = {
+					user: config.SMTP_USERNAME,
+					pass: config.SMTP_PASSWORD,
+				}
+			}
+			this._instance = nodemailer.createTransport(transportOptions)
+			return this._instance
+		}
 	}
 }
-const transporter = nodemailer.createTransport(transportOptions)
+void OSEMTransporter.getInstance() // eagerly initialize the transporter
 
 export interface MailAttachment {
 	filename: string
@@ -78,7 +112,9 @@ export const sendMail = async (mailConfig: {
 	try {
 		const mailHtml = await render(mailConfig.body)
 
-		await transporter.sendMail({
+		await (
+			await OSEMTransporter.getInstance()
+		).sendMail({
 			from: '"openSenseMap 🌍" <no-reply@opensensemap.org>',
 			to: mailConfig.recipientName
 				? `"${mailConfig.recipientName}" <${mailConfig.recipientAddress}>`
