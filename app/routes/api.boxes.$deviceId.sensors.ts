@@ -1,5 +1,6 @@
 import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
 import { getLatestMeasurements } from "~/lib/measurement-service.server";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -36,58 +37,22 @@ export const loader: LoaderFunction = async ({
   try {
     const deviceId = params.deviceId;
     if (deviceId === undefined)
-      return Response.json(
-        {
-          code: "Bad Request",
-          message: "Invalid device id specified",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+      return StandardResponse.badRequest("Invalid device id specified");
 
     const url = new URL(request.url);
     const countParam = url.searchParams.get("count");
 
     let count: undefined | number = undefined;
     if (countParam !== null && Number.isNaN(countParam))
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: "Illegal value for parameter count. allowed values: numbers",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+      return StandardResponse.badRequest("Illegal value for parameter count. allowed values: numbers");
+
     count = countParam === null ? undefined : Number(countParam);
 
     const meas = await getLatestMeasurements(deviceId, count);
 
-    return Response.json(meas, {
-      status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-    });
+    return StandardResponse.ok(meas);
   } catch (err) {
     console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
+    return StandardResponse.internalServerError();
   }
 };

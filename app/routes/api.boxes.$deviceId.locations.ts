@@ -1,7 +1,7 @@
 import { type Params, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
 import { getLocations } from "~/models/device.server";
 import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
-import { badRequest, internalServerError, notFound } from "~/utils/response-utils";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -104,7 +104,7 @@ export const loader: LoaderFunction = async ({
 
     const locations = await getLocations({ id: deviceId}, fromDate, toDate);
     if (!locations)
-      return notFound("Device not found");
+      return StandardResponse.notFound("Device not found");
 
     const jsonLocations = locations.map((location) => {
       return {
@@ -140,7 +140,7 @@ export const loader: LoaderFunction = async ({
 
   } catch (err) {
     console.warn(err);
-    return internalServerError();
+    return StandardResponse.internalServerError();
   }
 };
 
@@ -153,7 +153,7 @@ function collectParameters(request: Request, params: Params<string>):
   } {
   const deviceId = params.deviceId;
   if (deviceId === undefined)
-    return badRequest("Invalid device id specified");
+    return StandardResponse.badRequest("Invalid device id specified");
 
   const url = new URL(request.url);
 

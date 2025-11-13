@@ -1,5 +1,6 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { postNewMeasurements } from "~/lib/measurement-service.server";
+import { StandardResponse } from "~/utils/response-utils";
 
 export const action: ActionFunction = async ({
   request,
@@ -7,20 +8,8 @@ export const action: ActionFunction = async ({
 }: ActionFunctionArgs): Promise<Response> => {
   try {
     const deviceId = params.deviceId;
-    if (deviceId === undefined) {
-      return Response.json(
-        {
-          code: "Bad Request",
-          message: "Invalid device id specified",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
-    }
+    if (deviceId === undefined)
+      return StandardResponse.badRequest("Invalid device id specified");
 
     const searchParams = new URL(request.url).searchParams;
     const luftdaten = searchParams.get("luftdaten") !== null;
@@ -55,57 +44,15 @@ export const action: ActionFunction = async ({
     });
   } catch (err: any) {
     // Handle different error types
-    if (err.name === "UnauthorizedError") {
-      return Response.json(
-        {
-          code: "Unauthorized",
-          message: err.message,
-        },
-        {
-          status: 401,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
-    }
+    if (err.name === "UnauthorizedError")
+      return StandardResponse.unauthorized(err.message);
 
-    if (err.name === "ModelError" && err.type === "UnprocessableEntityError") {
-      return Response.json(
-        {
-          code: "UnprocessableEntity",
-          message: err.message,
-        },
-        { status: 422 }
-      );
-    }
+    if (err.name === "ModelError" && err.type === "UnprocessableEntityError")
+      return StandardResponse.unprocessableContent(err.message);
 
-    if (err.name === "UnsupportedMediaTypeError") {
-      return Response.json(
-        {
-          code: "Unsupported Media Type",
-          message: err.message,
-        },
-        {
-          status: 415,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
-    }
+    if (err.name === "UnsupportedMediaTypeError")
+      return StandardResponse.unsupportedMediaType(err.message);
 
-    return Response.json(
-      {
-        code: "Internal Server Error",
-        message: err.message || "An unexpected error occurred",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
+    return StandardResponse.internalServerError(err.message || "An unexpected error occurred");
   }
 };

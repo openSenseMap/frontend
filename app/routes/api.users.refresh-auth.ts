@@ -2,6 +2,7 @@ import  { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { getUserFromJwt, hashJwt, refreshJwt } from "~/lib/jwt";
 import { parseRefreshTokenData } from "~/lib/request-parsing";
 import  { type User } from "~/schema";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -117,18 +118,8 @@ export const action: ActionFunction = async ({
     // Parse request data - handles both JSON and form data automatically
     const data = await parseRefreshTokenData(request);
     
-    if (!data.token || data.token.trim().length === 0) {
-      return Response.json(
-        {
-          code: "Unauthorized",
-          message: "You must specify a token to refresh",
-        },
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
-    }
+    if (!data.token || data.token.trim().length === 0)
+      return StandardResponse.unauthorized("You must specify a token to refresh");
 
     // We deliberately make casts and stuff like that, so everything
     // but the happy path will result in an internal server error.
@@ -141,66 +132,28 @@ export const action: ActionFunction = async ({
     const [, jwtString = ""] = rawAuthorizationHeader.split(" ");
 
     if (data.token !== hashJwt(jwtString))
-      return Response.json(
-        {
-          code: "Unauthorized",
-          message:
-            "Refresh token invalid or too old. Please sign in with your username and password.",
-        },
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
+      return StandardResponse.unauthorized("Refresh token invalid or too old. Please sign in with your username and password.");
 
     const { token, refreshToken } =
       (await refreshJwt(user, data.token)) || {};
 
     if (token && refreshToken)
-      return Response.json(
-        {
+      return StandardResponse.ok({
           code: "Authorized",
           message: "Successfully refreshed auth",
           data: { user },
           token,
           refreshToken,
-        },
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
+        });
     else
-      return Response.json(
-        {
-          code: "Unauthorized",
-          message:
-            "Refresh token invalid or too old. Please sign in with your username and password.",
-        },
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
+      return StandardResponse.unauthorized("Refresh token invalid or too old. Please sign in with your username and password.");
   } catch (error) {
     // Handle parsing errors
-    if (error instanceof Error && error.message.includes('Failed to parse')) {
-      return Response.json(
-        {
-          code: "Unauthorized",
-          message: `Invalid request format: ${error.message}`,
-        },
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        }
-      );
-    }
+    if (error instanceof Error && error.message.includes('Failed to parse'))
+      return StandardResponse.unauthorized(`Invalid request format: ${error.message}`);
     
     // Handle other errors
     console.warn(error);
-    return new Response("Internal Server Error", {
-      status: 500,
-    });
+    return StandardResponse.internalServerError();
   }
 };
