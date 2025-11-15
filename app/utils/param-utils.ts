@@ -1,4 +1,4 @@
-import { badRequest } from "./response-utils";
+import { StandardResponse } from "./response-utils";
 
 /**
  * Parses a parameter from the url search paramaters into a date.
@@ -14,7 +14,7 @@ export function parseDateParam(url: URL, paramName: string, defaultDate: Date): 
   if (param) {
     const date = new Date(param)
     if (Number.isNaN(date.valueOf()))
-      return badRequest(`Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`);
+      return StandardResponse.badRequest(`Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`);
     return date
   }
   return defaultDate;
@@ -34,7 +34,7 @@ export function parseEnumParam<DefaultType>(url: URL, paramName: string, allowed
   const param = url.searchParams.get(paramName);
   if (param) {
     if (!allowedValues.includes(param))
-      return badRequest(`Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`);
+      return StandardResponse.badRequest(`Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`);
     return param;
   }
   return defaultValue
