@@ -74,7 +74,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (!device)
       return StandardResponse.notFound("Device not found.");
 
-    return StandardResponse.ok(JSON.stringify(device));
+    return StandardResponse.ok(device);
   } catch (error) {
     console.error("Error fetching box:", error);
 
