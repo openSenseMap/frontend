@@ -236,12 +236,12 @@ export const action: ActionFunction = async ({
     try {
       const { token, refreshToken } = await createToken(user);
 
-      return StandardResponse.created(JSON.stringify({
+      return StandardResponse.created({
           message: "Successfully registered new user",
           token: token,
           refreshToken: refreshToken,
           data: user,
-        }));
+        });
     } catch (err) {
       console.error("Unable to create JWT", err);
       return StandardResponse.internalServerError(`Unable to create jwt for newly created user: ${(err as Error)?.message}`);

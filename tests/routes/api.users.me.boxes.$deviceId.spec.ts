@@ -95,10 +95,8 @@ describe("openSenseMap API Routes: /users", () => {
         const forbiddenBody = await forbiddenResponse.json();
         // Assert: Forbidden response
         expect(forbiddenResponse.status).toBe(403);
-        expect(forbiddenBody).toEqual({
-          code: "Forbidden",
-          message: "User does not own this senseBox",
-        });
+        expect(forbiddenBody.code).toBe("Forbidden");
+        expect(forbiddenBody.message).toBe("User does not own this senseBox");
       });
 
       afterAll(async () => {

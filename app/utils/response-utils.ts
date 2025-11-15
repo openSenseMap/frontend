@@ -68,7 +68,7 @@ export class StandardResponse {
 	 * @returns The response
 	 */
 	public static notFound = (message: string): Response =>
-		this.errorResponse('Not found', message, 404)
+		this.errorResponse('Not Found', message, 404)
 
 	/**
 	 * Creates a response object for a request with a method that is not allowed
@@ -126,8 +126,9 @@ export class StandardResponse {
 	) =>
 		Response.json(
 			{
-				error: error,
+				code: error,
 				message: message,
+				error: message,
 			},
 			{
 				status: status,
