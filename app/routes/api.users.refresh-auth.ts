@@ -72,7 +72,7 @@ import { StandardResponse } from "~/utils/response-utils";
  *               properties:
  *                 code:
  *                   type: string
- *                   example: Unauthorized
+ *                   example: Forbidden
  *                 message:
  *                   type: string
  *                   enum:
@@ -119,7 +119,7 @@ export const action: ActionFunction = async ({
     const data = await parseRefreshTokenData(request);
     
     if (!data.token || data.token.trim().length === 0)
-      return StandardResponse.unauthorized("You must specify a token to refresh");
+      return StandardResponse.forbidden("You must specify a token to refresh");
 
     // We deliberately make casts and stuff like that, so everything
     // but the happy path will result in an internal server error.
@@ -132,7 +132,7 @@ export const action: ActionFunction = async ({
     const [, jwtString = ""] = rawAuthorizationHeader.split(" ");
 
     if (data.token !== hashJwt(jwtString))
-      return StandardResponse.unauthorized("Refresh token invalid or too old. Please sign in with your username and password.");
+      return StandardResponse.forbidden("Refresh token invalid or too old. Please sign in with your username and password.");
 
     const { token, refreshToken } =
       (await refreshJwt(user, data.token)) || {};
@@ -146,11 +146,11 @@ export const action: ActionFunction = async ({
           refreshToken,
         });
     else
-      return StandardResponse.unauthorized("Refresh token invalid or too old. Please sign in with your username and password.");
+      return StandardResponse.forbidden("Refresh token invalid or too old. Please sign in with your username and password.");
   } catch (error) {
     // Handle parsing errors
     if (error instanceof Error && error.message.includes('Failed to parse'))
-      return StandardResponse.unauthorized(`Invalid request format: ${error.message}`);
+      return StandardResponse.forbidden(`Invalid request format: ${error.message}`);
     
     // Handle other errors
     console.warn(error);

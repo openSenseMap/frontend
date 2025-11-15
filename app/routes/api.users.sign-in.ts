@@ -68,7 +68,7 @@ import { StandardResponse } from "~/utils/response-utils";
  *               properties:
  *                 code:
  *                   type: string
- *                   example: Unauthorized
+ *                   example: Forbidden
  *                 message:
  *                   type: string
  *                   enum:
@@ -118,10 +118,10 @@ export const action: ActionFunction = async ({
     const password = data.password.trim();
 
     if (!email || email.length === 0)
-      return StandardResponse.unauthorized("You must specify either your email or your username");
+      return StandardResponse.forbidden("You must specify either your email or your username");
 
     if (!password || password.length === 0) {
-      return StandardResponse.unauthorized("You must specify your password to sign in");
+      return StandardResponse.forbidden("You must specify your password to sign in");
     }
 
     const { user, jwt, refreshToken } = (await signIn(email, password)) || {};
@@ -135,11 +135,11 @@ export const action: ActionFunction = async ({
           refreshToken,
         });
     else
-      return StandardResponse.unauthorized("User and or password not valid!");
+      return StandardResponse.forbidden("User and or password not valid!");
   } catch (error) {
     // Handle parsing errors
     if (error instanceof Error && error.message.includes('Failed to parse')) {
-      return StandardResponse.unauthorized(`Invalid request format: ${error.message}`);
+      return StandardResponse.forbidden(`Invalid request format: ${error.message}`);
     }
     
     // Handle other errors

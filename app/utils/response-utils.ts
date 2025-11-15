@@ -56,6 +56,9 @@ export class StandardResponse {
 	 * @param message The message for the response
 	 * @returns The response
 	 */
+	// TODO: We often use this in cases where we previously returned the string
+	// "unuathorized" but with response code 403. For a future v2 API, reevaluate
+	// all places where this is returned and decide if 403 Forbidden or 401 Unauthorized should be returned.
 	public static forbidden = (message: string): Response =>
 		this.errorResponse('Forbidden', message, 403)
 
