@@ -10,8 +10,9 @@ CREATE TABLE IF NOT EXISTS processed_measurements (
 CREATE INDEX IF NOT EXISTS idx_processed_measurements_device_time 
   ON processed_measurements(device_id, time);
 
--- Create a materialized view that flattens measurements with device, location, and sensor data
+-- Create a view that flattens measurements with device, location, and sensor data
 -- This view provides a denormalized structure for data analysis
+-- Note: Regular view (not materialized) so it automatically reflects new data
 -- 
 -- Structure:
 -- - `createdAt`: measurement timestamp
@@ -25,7 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_processed_measurements_device_time
 -- Only includes measurements that have NOT been processed (not in processed_measurements table).
 DROP VIEW IF EXISTS analysis_view;
 DROP MATERIALIZED VIEW IF EXISTS analysis_view;
-CREATE MATERIALIZED VIEW analysis_view AS
+CREATE VIEW analysis_view AS
 WITH sensor_measurements AS (
     SELECT
         m.time,
@@ -189,23 +190,7 @@ LEFT JOIN processed_measurements pm
 WHERE pm.device_id IS NULL;  -- Only include unprocessed measurements
 
 -- Add comment to help identify this view
-COMMENT ON MATERIALIZED VIEW analysis_view IS 'Denormalized materialized view for data analysis combining measurements, devices, sensors, and locations. Derived columns expose common phenomena for vector tiles and API consumption. Only includes unprocessed measurements.';
-
--- Create unique index on materialized view for concurrent refresh
-CREATE UNIQUE INDEX IF NOT EXISTS analysis_view_created_at_boxid_unique 
-  ON analysis_view("createdAt", "boxId");
-
--- Create indexes on the materialized view for better query performance
-CREATE INDEX IF NOT EXISTS idx_analysis_view_created_at 
-  ON analysis_view("createdAt" DESC);
-CREATE INDEX IF NOT EXISTS idx_analysis_view_boxid 
-  ON analysis_view("boxId");
-CREATE INDEX IF NOT EXISTS idx_analysis_view_geometry 
-  ON analysis_view USING GIST(geometry) 
-  WHERE geometry IS NOT NULL;
-
--- Initial population of the materialized view
-REFRESH MATERIALIZED VIEW analysis_view;
+COMMENT ON VIEW analysis_view IS 'Denormalized view for data analysis combining measurements, devices, sensors, and locations. Derived columns expose common phenomena for vector tiles and API consumption. Only includes unprocessed measurements. Automatically reflects new data.';
 
 -- Note: You may also want to add indexes on the underlying tables:
 -- CREATE INDEX idx_measurement_time ON measurement(time);
