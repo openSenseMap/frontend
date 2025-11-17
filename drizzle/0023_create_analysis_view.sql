@@ -18,7 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_processed_measurements_device_time
 -- - `boxId`: device ID
 -- - `tags`: device tags array
 -- - `geometry`: location point (SRID 4326) if available
--- Derived columns for common phenomena (temperature, humidity, soil_moisture, pressure, pm values, wind_speed, light_intensity, UV, sound levels, VOC, CO₂) used by `/api/analysis` and Martin tiles
+-- Derived columns for common phenomena (temperature, humidity, soil_moisture, pressure, pm values, wind_speed, light_intensity, UV, sound levels, VOC, CO₂) used by Martin tiles
 --
 -- Note: Groups measurements by time and device. If multiple locations exist for the same
 -- time/device, uses the location from the first measurement with a location.
