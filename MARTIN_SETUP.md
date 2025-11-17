@@ -6,7 +6,7 @@ Martin tile server serves vector tiles from PostGIS database views.
 
 Martin automatically discovers tables and views with geometry columns (SRID 4326) and serves them as Mapbox Vector Tiles.
 
-## Setup
+## Local Setup
 
 ### 1. Docker Configuration
 
