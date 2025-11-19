@@ -1,15 +1,23 @@
 import i18next from "i18next";
 import { Globe } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher, useLoaderData } from "react-router";
 import { Button } from "~/components/ui/button";
-import  { type loader } from "~/root";
+// import  { type loader } from "~/root";
 
 export default function LanguageSelector() {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData();
   const fetcher = useFetcher();
   const [locale, setLocale] = useState(data.locale || "en");
-
+  console.log("Locale in LanguageSelector:", locale);
+  useEffect(() => {
+    setLocale(data.locale || "en");
+    i18next.changeLanguage(data.locale || "en");
+    void fetcher.submit(
+      { language: locale },
+      { method: "post", action: "/action/set-language" }, // Persist the new language
+    );
+  }, [data.locale,data.user]);
   const toggleLanguage = () => {
     const newLocale = locale === "en" ? "de" : "en"; // Toggle between "en" and "de"
     setLocale(newLocale);

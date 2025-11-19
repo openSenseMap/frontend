@@ -132,13 +132,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
+    const userLocale = user.language
+      ? user.language.split(/[_-]/)[0].toLowerCase()
+      : "en";
+    console.log("User locale:", userLocale);
     return {
       devices,
       user,
       profile,
       filteredDevices,
       filterParams,
-      locale
+      locale: userLocale,
       //phenomena
     };
   }
