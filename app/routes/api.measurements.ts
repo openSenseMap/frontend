@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs } from "react-router";
 import { drizzleClient } from "~/db.server";
 import { measurement, type Measurement } from "~/schema";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -82,9 +83,8 @@ import { measurement, type Measurement } from "~/schema";
  *           example: 25.4
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
-  if (request.method !== "POST") {
-    return Response.json({ message: "Method not allowed" }, { status: 405 });
-  }
+  if (request.method !== "POST")
+    return StandardResponse.methodNotAllowed("Method not allowed");
 
   try {
     const payload: Measurement[] = await request.json();
@@ -97,9 +97,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     await drizzleClient.insert(measurement).values(measurements);
     
-    return Response.json({ message: "Measurements successfully stored" });
+    return StandardResponse.ok("Measurements successfully stored");
     
   } catch (error) {
-    return Response.json({ message: error }, { status: 400 });
+    return StandardResponse.badRequest(`${error}`);
   }
 };

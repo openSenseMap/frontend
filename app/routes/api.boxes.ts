@@ -4,6 +4,7 @@ import { CreateBoxSchema } from '~/lib/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
 import { createDevice } from '~/models/device.server'
 import { type User } from '~/schema'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -330,33 +331,20 @@ export const action: ActionFunction = async ({
 		// Check authentication
 		const jwtResponse = await getUserFromJwt(request)
 
-		if (typeof jwtResponse === 'string') {
-			return Response.json(
-				{
-					code: 'Forbidden',
-					message:
-						'Invalid JWT authorization. Please sign in to obtain new JWT.',
-				},
-				{ status: 403 },
+		if (typeof jwtResponse === 'string')
+			return StandardResponse.forbidden(
+				'Invalid JWT authorization. Please sign in to obtain new JWT.',
 			)
-		}
 
 		switch (request.method) {
 			case 'POST':
 				return await post(request, jwtResponse)
 			default:
-				return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
+				return StandardResponse.methodNotAllowed('Method Not Allowed')
 		}
 	} catch (err) {
 		console.error('Error in action:', err)
-		return Response.json(
-			{
-				code: 'Internal Server Error',
-				message:
-					'The server was unable to complete your request. Please try again later.',
-			},
-			{ status: 500 },
-		)
+		return StandardResponse.internalServerError()
 	}
 }
 
@@ -367,13 +355,7 @@ async function post(request: Request, user: User) {
 		try {
 			requestData = await request.json()
 		} catch {
-			return Response.json(
-				{
-					code: 'Bad Request',
-					message: 'Invalid JSON in request body',
-				},
-				{ status: 400 },
-			)
+			return StandardResponse.badRequest('Invalid JSON in request body')
 		}
 
 		// Validate request data
@@ -417,19 +399,9 @@ async function post(request: Request, user: User) {
 		// Build response object using helper function
 		const responseData = transformDeviceToApiFormat(newBox)
 
-		return Response.json(responseData, {
-			status: 201,
-			headers: { 'Content-Type': 'application/json' },
-		})
+		return StandardResponse.created(responseData)
 	} catch (err) {
 		console.error('Error creating box:', err)
-		return Response.json(
-			{
-				code: 'Internal Server Error',
-				message:
-					'The server was unable to create the box. Please try again later.',
-			},
-			{ status: 500 },
-		)
+		return StandardResponse.internalServerError()
 	}
 }

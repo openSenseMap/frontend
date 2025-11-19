@@ -1,5 +1,6 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { requestPasswordReset } from "~/lib/user-service.server";
+import { StandardResponse } from "~/utils/response-utils";
 
 export const action: ActionFunction = async ({
   request,
@@ -17,30 +18,16 @@ export const action: ActionFunction = async ({
     !formData.has("email") ||
     formData.get("email")?.toString().trim().length === 0
   )
-    return Response.json(
-      { message: "No email address specified." },
-      {
-        status: 400,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      },
-    );
+  return StandardResponse.badRequest("No email address specified.");
 
   try {
     await requestPasswordReset(formData.get("email")!.toString());
 
     // We don't want to leak valid/ invalid emails, so we confirm
     // the initiation no matter what the return value above is
-    return Response.json(
-      { code: "Ok", message: "Password reset initiated" },
-      { status: 200 },
-    );
+    return StandardResponse.ok({ code: "Ok", message: "Password reset initiated" });
   } catch (err) {
     console.warn(err);
-    return Response.json("Internal Server Error", {
-      status: 500,
-      headers: { "Content-Type": "application/json; charset: utf-8" },
-    });
+    return StandardResponse.internalServerError();
   }
 };

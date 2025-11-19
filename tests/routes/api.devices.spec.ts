@@ -830,7 +830,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				)
 
 				const badResult = await badDeleteResponse.json()
-				expect(badResult).toEqual({ message: 'Password incorrect' })
+				expect(badResult.message).toBe('Password incorrect')
 			})
 
 			it('should successfully delete the device with correct password', async () => {
