@@ -1,12 +1,19 @@
 import { point } from '@turf/helpers'
 import { eq, sql, desc, ilike, arrayContains, and, between } from 'drizzle-orm'
+import BaseNewDeviceEmail, {
+	messages as BaseNewDeviceMessages,
+} from 'emails/base-new-device'
+import { messages as NewLufdatenDeviceMessages } from 'emails/new-device-luftdaten'
+import { messages as NewSenseboxDeviceMessages } from 'emails/new-device-sensebox'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
+import { sendMail } from '~/lib/mail.server'
 import {
 	device,
 	deviceToLocation,
 	location,
 	sensor,
+	user,
 	type Device,
 	type Sensor,
 } from '~/schema'
