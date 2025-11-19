@@ -1,5 +1,6 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getSensors } from "~/models/sensor.server";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -82,28 +83,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const url = new URL(request.url);
     const deviceId = url.searchParams.get("deviceId");
-    if (!deviceId) {
-        return new Response(JSON.stringify({ error: "deviceId is required" }), {
-            status: 400,
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-    }
+    if (!deviceId) 
+        return StandardResponse.badRequest("deviceId is required");
     try{
         const sensors = await getSensors(deviceId);
         return new Response(JSON.stringify(sensors), {
+            status: 200,
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json; charset=utf-8",
                 "Cache-Control": "no-cache",
             },
         });
     }catch(error){
-        return new Response(JSON.stringify({ error: "Failed to fetch sensors" }), {
-            status: 500,
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        return StandardResponse.internalServerError("Failed to fetch sensors");
     }
 }

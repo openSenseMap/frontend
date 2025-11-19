@@ -1,87 +1,44 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLatestMeasurements } from "~/lib/measurement-service.server";
+import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import { getLatestMeasurementsForSensor } from '~/lib/measurement-service.server'
+import { StandardResponse } from '~/utils/response-utils'
 
 export const loader: LoaderFunction = async ({
-  request,
-  params,
+	request,
+	params,
 }: LoaderFunctionArgs): Promise<Response> => {
-  try {
-    const deviceId = params.deviceId;
-    if (deviceId === undefined)
-      return Response.json(
-        {
-          code: "Bad Request",
-          message: "Invalid device id specified",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+	try {
+		const deviceId = params.deviceId
+		if (deviceId === undefined)
+			return StandardResponse.badRequest('Invalid device id specified')
 
-    const sensorId = params.sensorId;
-    if (sensorId === undefined)
-      return Response.json(
-        {
-          code: "Bad Request",
-          message: "Invalid sensor id specified",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+		const sensorId = params.sensorId
+		if (sensorId === undefined)
+			return StandardResponse.badRequest('Invalid sensor id specified')
 
-    const searchParams = new URL(request.url).searchParams;
-    const onlyValue =
-      (searchParams.get("onlyValue")?.toLowerCase() ?? "") === "true";
-    if (sensorId === undefined && onlyValue)
-      return Response.json(
-        {
-          code: "Bad Request",
-          message: "onlyValue can only be used when a sensor id is specified",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+		const searchParams = new URL(request.url).searchParams
+		const onlyValue =
+			(searchParams.get('onlyValue')?.toLowerCase() ?? '') === 'true'
+		if (sensorId === undefined && onlyValue)
+			return StandardResponse.badRequest(
+				'onlyValue can only be used when a sensor id is specified',
+			)
 
-    const meas = await getLatestMeasurements(deviceId, sensorId, undefined);
+		const meas = await getLatestMeasurementsForSensor(
+			deviceId,
+			sensorId,
+			undefined,
+		)
 
-    if (onlyValue)
-      return Response.json(meas["lastMeasurement"]?.value ?? null, {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      });
+		if (meas == null) return StandardResponse.notFound('Device not found.')
 
-    return Response.json(
-      { ...meas, _id: meas.id }, // for legacy purposes
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
-  } catch (err) {
-    console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
-  }
-};
+		if (onlyValue)
+			return StandardResponse.ok(meas['lastMeasurement']?.value ?? null)
+
+		return StandardResponse.ok(
+			{ ...meas, _id: meas.id } /* for legacy purposes */,
+		)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}

@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { createId } from "@paralleldrive/cuid2";
 import {
   relations,
@@ -9,6 +10,19 @@ import { device } from "./device";
 import { DeviceStatusEnum } from "./enum";
 import  { type Measurement } from "./measurement";
 
+function generateHexId(): string {
+  return randomBytes(12).toString('hex');
+}
+
+/**
+ * Type for lastMeasurement JSON field
+ */
+export type LastMeasurement = {
+  value: number | string;
+  createdAt: string;
+  sensorId?: string;
+} | null;
+
 /**
  * Table
  */
@@ -16,7 +30,7 @@ export const sensor = pgTable("sensor", {
   id: text("id")
     .primaryKey()
     .notNull()
-    .$defaultFn(() => createId()),
+    .$defaultFn(() => generateHexId()), // store as hex strings to maintain compatibility with the byte protocol
   title: text("title"),
   unit: text("unit"),
   sensorType: text("sensor_type"),
@@ -31,7 +45,7 @@ export const sensor = pgTable("sensor", {
   sensorWikiType: text("sensor_wiki_type"),
   sensorWikiPhenomenon: text("sensor_wiki_phenomenon"),
   sensorWikiUnit: text("sensor_wiki_unit"),
-  lastMeasurement: json("lastMeasurement"),
+  lastMeasurement: json("lastMeasurement").$type<LastMeasurement>(),
   data: json("data"),
 });
 

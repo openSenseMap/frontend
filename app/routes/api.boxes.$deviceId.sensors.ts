@@ -1,5 +1,6 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLatestMeasurements } from "~/lib/measurement-service.server";
+import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import { getLatestMeasurements } from '~/lib/measurement-service.server'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -30,64 +31,30 @@ import { getLatestMeasurements } from "~/lib/measurement-service.server";
  */
 
 export const loader: LoaderFunction = async ({
-  request,
-  params,
+	request,
+	params,
 }: LoaderFunctionArgs): Promise<Response> => {
-  try {
-    const deviceId = params.deviceId;
-    if (deviceId === undefined)
-      return Response.json(
-        {
-          code: "Bad Request",
-          message: "Invalid device id specified",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+	try {
+		const deviceId = params.deviceId
+		if (deviceId === undefined)
+			return StandardResponse.badRequest('Invalid device id specified')
 
-    const url = new URL(request.url);
-    const countParam = url.searchParams.get("count");
+		const url = new URL(request.url)
+		const countParam = url.searchParams.get('count')
 
-    let count: undefined | number = undefined;
-    if (countParam !== null && Number.isNaN(countParam))
-      return Response.json(
-        {
-          error: "Bad Request",
-          message: "Illegal value for parameter count. allowed values: numbers",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
-    count = countParam === null ? undefined : Number(countParam);
+		let count: undefined | number = undefined
+		if (countParam !== null && Number.isNaN(countParam))
+			return StandardResponse.badRequest(
+				'Illegal value for parameter count. allowed values: numbers',
+			)
 
-    const meas = await getLatestMeasurements(deviceId, undefined, count);
+		count = countParam === null ? undefined : Number(countParam)
 
-    return Response.json(meas, {
-      status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-    });
-  } catch (err) {
-    console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
-  }
-};
+		const meas = await getLatestMeasurements(deviceId, undefined, count)
+
+		return StandardResponse.ok(meas)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}

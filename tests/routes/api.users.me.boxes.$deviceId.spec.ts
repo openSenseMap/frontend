@@ -1,4 +1,4 @@
-import { Params, type LoaderFunctionArgs } from "react-router";
+import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
@@ -95,10 +95,8 @@ describe("openSenseMap API Routes: /users", () => {
         const forbiddenBody = await forbiddenResponse.json();
         // Assert: Forbidden response
         expect(forbiddenResponse.status).toBe(403);
-        expect(forbiddenBody).toEqual({
-          code: "Forbidden",
-          message: "User does not own this senseBox",
-        });
+        expect(forbiddenBody.code).toBe("Forbidden");
+        expect(forbiddenBody.message).toBe("User does not own this senseBox");
       });
 
       afterAll(async () => {

@@ -30,10 +30,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		//   method: "GET",
 
 		// },
-		// {
-		//   path: `boxes`,
-		//   method: "GET",
-		// },
+		{
+			path: `boxes`,
+			method: 'GET',
+		},
 		// {
 		//   path: `boxes/data`,
 		//   method: "GET",
@@ -63,18 +63,17 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		//   path: `boxes/data`,
 		//   method: "POST",
 		// },
-		// {
-		//   path: `boxes/:boxId/data`,
-		//   method: "POST",
-		// },
-		// {
-		//   path: `boxes/:boxId/:sensorId`,
-		//   method: "POST",
-		// },
+		{
+			path: `boxes/:boxId/data`,
+			method: 'POST',
+		},
+		{
+			path: `boxes/:boxId/:sensorId`,
+			method: 'POST',
+		},
 		{
 			path: `users/register`,
 			method: 'POST',
-			deprecationNotice: 'Use a POST to users/ instead',
 		},
 		{
 			path: `users/request-password-reset`,
@@ -90,10 +89,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		},
 		{
 			path: `users/sign-in`,
-			method: 'POST',
-		},
-		{
-			path: `users`,
 			method: 'POST',
 		},
 	],
@@ -122,38 +117,38 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		//   path: `boxes/:boxId/script`,
 		//   method: "GET",
 		// },
-		// {
-		//   path: `boxes`,
-		//   method: "POST",
-		// },
-		// {
-		//   path: `boxes/claim`,
-		//   method: "POST",
-		// },
-		// {
-		//   path: `boxes/transfer`,
-		//   method: "POST",
-		// },
-		// {
-		//   path: `boxes/transfer`,
-		//   method: "DELETE",
-		// },
-		// {
-		//   path: `boxes/transfer/:boxId`,
-		//   method: "GET",
-		// },
-		// {
-		//   path: `boxes/transfer/:boxId`,
-		//   method: "PUT",
-		// },
-		// {
-		//   path: `boxes/:boxId`,
-		//   method: "PUT",
-		// },
+		{
+			path: `boxes`,
+			method: 'POST',
+		},
+		{
+			path: `boxes/claim`,
+			method: 'POST',
+		},
+		{
+			path: `boxes/transfer`,
+			method: 'POST',
+		},
+		{
+			path: `boxes/transfer`,
+			method: 'DELETE',
+		},
+		{
+			path: `boxes/transfer/:boxId`,
+			method: 'GET',
+		},
+		{
+			path: `boxes/transfer/:boxId`,
+			method: 'PUT',
+		},
 		// {
 		//   path: `boxes/:boxId`,
-		//   method: "DELETE",
+		//   method: "PUT",
 		// },
+		{
+			path: `boxes/:boxId`,
+			method: 'DELETE',
+		},
 		{
 			path: `boxes/:boxId/:sensorId/measurements`,
 			method: 'DELETE',

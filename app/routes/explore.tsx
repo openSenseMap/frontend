@@ -119,7 +119,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
-    ? await getDevices()
+    ? await getDevices("geojson")
     : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
@@ -330,7 +330,7 @@ export default function Explore() {
   var deviceLoc: any;
   let selectedDevice: any;
   if (deviceId) {
-    selectedDevice = devices.features.find(
+    selectedDevice = (devices as any).features.find(
       (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [

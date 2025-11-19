@@ -1,5 +1,6 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getStatistics } from "~/lib/statistics-service.server";
+import { StandardResponse } from "~/utils/response-utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -12,43 +13,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       humanParam.toLowerCase() !== "true" &&
       humanParam.toLowerCase() !== "false"
     )
-      return Response.json(
-        {
-          error: "Bad Request",
-          message:
-            "Illegal value for parameter human. allowed values: true, false",
-        },
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        },
-      );
+    return StandardResponse.badRequest("Illegal value for parameter human. allowed values: true, false");
 
     humanReadable = humanParam?.toLowerCase() === "true" || false;
 
     const stats = await getStatistics(humanReadable);
-    return Response.json(stats, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-    });
+    return StandardResponse.ok(stats);
   } catch (e) {
     console.warn(e);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      },
-    );
+    return StandardResponse.internalServerError();
   }
 }

@@ -1,31 +1,32 @@
-import { eq, sql } from "drizzle-orm";
-import { drizzleClient } from "~/db.server";
+import { eq, sql } from 'drizzle-orm'
+import { drizzleClient } from '~/db.server'
 import {
-  sensor,
-  type Sensor,
-  type SensorWithLatestMeasurement,
-} from "~/schema";
+	type Measurement,
+	sensor,
+	type Sensor,
+	type SensorWithLatestMeasurement,
+} from '~/schema'
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 
-export function getSensors(deviceId: Sensor["deviceId"]) {
-  return drizzleClient.query.sensor.findMany({
-    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
-  });
+export function getSensors(deviceId: Sensor['deviceId']) {
+	return drizzleClient.query.sensor.findMany({
+		where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
+	})
 
-  // const geojson: GeoJSON.FeatureCollection<Point, any> = {
-  //   type: "FeatureCollection",
-  //   features: [],
-  // };
+	// const geojson: GeoJSON.FeatureCollection<Point, any> = {
+	//   type: "FeatureCollection",
+	//   features: [],
+	// };
 
-  // // return streamify(devices).pipe(jsonstringify(opts));
-  // for (const sensor of sensors) {
-  //   const coordinates = [sensor.device.longitude, sensor.device.latitude];
-  //   const feature = point(coordinates, sensor);
-  //   geojson.features.push(feature);
-  // }
+	// // return streamify(devices).pipe(jsonstringify(opts));
+	// for (const sensor of sensors) {
+	//   const coordinates = [sensor.device.longitude, sensor.device.latitude];
+	//   const feature = point(coordinates, sensor);
+	//   geojson.features.push(feature);
+	// }
 
-  // return sensors;
+	// return sensors;
 }
 
 // import jsonstringify from "stringify-stream";
@@ -63,26 +64,29 @@ export function getSensors(deviceId: Sensor["deviceId"]) {
 //   return sensors;
 // }
 
-export function getSensorsFromDevice(deviceId: Sensor["deviceId"]) {
-  return drizzleClient.query.sensor.findMany({
-    where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
-  });
+export function getSensorsFromDevice(deviceId: Sensor['deviceId']) {
+	return drizzleClient.query.sensor.findMany({
+		where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
+	})
+}
+
+export async function getSensorWithLastMeasurement(
+	deviceId: Sensor['deviceId'],
+	sensorId: Sensor['id'],
+	count: number = 1,
+): Promise<SensorWithLatestMeasurement> {
+	const allSensors = await getSensorsWithLastMeasurement(deviceId, count)
+	return allSensors.find(
+		(c: any) => c.id === sensorId,
+	) as SensorWithLatestMeasurement
 }
 
 export async function getSensorsWithLastMeasurement(
-  deviceId: Sensor["deviceId"],
-): Promise<SensorWithLatestMeasurement[]>;
-export async function getSensorsWithLastMeasurement(
-  deviceId: Sensor["deviceId"],
-  sensorId: Sensor["id"],
-): Promise<SensorWithLatestMeasurement>;
-export async function getSensorsWithLastMeasurement(
-  deviceId: Sensor["deviceId"],
-  sensorId: Sensor["id"] | undefined = undefined,
-  count: number = 1,
-) {
-  const result = await drizzleClient.execute(
-    sql`SELECT 
+	deviceId: Sensor['deviceId'],
+	count: number = 1,
+): Promise<SensorWithLatestMeasurement[]> {
+	const result = await drizzleClient.execute(
+		sql`SELECT 
         s.id,
         s.title,
         s.unit,
@@ -105,82 +109,94 @@ export async function getSensorsWithLastMeasurement(
       ) AS measure ON true
       WHERE s.device_id = ${deviceId}
       GROUP BY s.id;`,
-  );
+	)
 
-  const cast = [...result].map((r) => {
-    if (r["lastMeasurements"] !== null) {
-      const ret = {
-        ...r,
-        lastMeasurement:
-          (r as any)["lastMeasurements"]["measurements"][0] ?? null,
-      } as any;
-      if (count === 1) delete ret["lastMeasurements"];
-      return ret;
-    } else return { ...r, lastMeasurements: [] } as any;
-  }) as any;
+	const cast = [...result].map((r) => {
+		if (r['lastMeasurements'] !== null) {
+			const ret = {
+				...r,
+				lastMeasurement: (r as any)['lastMeasurements']?.[0] ?? null,
+			} as any
+			if (count === 1) delete ret['lastMeasurements']
+			return ret
+		} else return { ...r, lastMeasurements: [] } as any
+	}) as any
 
-  if (sensorId === undefined) return cast as SensorWithLatestMeasurement[];
-  else
-    return cast.find(
-      (c: any) => c.id === sensorId,
-    ) as SensorWithLatestMeasurement;
+	return cast as SensorWithLatestMeasurement[]
+}
+
+export async function getMeasurements(
+	sensorId: Measurement['sensorId'],
+	fromDate: string,
+	toDate: string,
+	count: number = 10000,
+): Promise<Measurement[]> {
+	return (await drizzleClient.execute(
+		sql`SELECT *
+          FROM measurement
+          WHERE sensor_id = ${sensorId} AND
+          time >= ${fromDate} AND
+          time <= ${toDate}
+          ORDER BY time DESC
+          LIMIT ${count}`,
+	)) as Measurement[]
 }
 
 export async function registerSensor(newSensor: Sensor) {
-  const insertedSensor = await drizzleClient
-    .insert(sensor)
-    .values({
-      id: newSensor.id,
-      deviceId: newSensor.deviceId,
-      title: newSensor.title,
-      sensorType: newSensor.sensorType,
-      unit: newSensor.unit,
-      sensorWikiType: newSensor.sensorType,
-      sensorWikiUnit: newSensor.unit,
-      sensorWikiPhenomenon: newSensor.title,
-    })
-    .returning();
+	const insertedSensor = await drizzleClient
+		.insert(sensor)
+		.values({
+			id: newSensor.id,
+			deviceId: newSensor.deviceId,
+			title: newSensor.title,
+			sensorType: newSensor.sensorType,
+			unit: newSensor.unit,
+			sensorWikiType: newSensor.sensorType,
+			sensorWikiUnit: newSensor.unit,
+			sensorWikiPhenomenon: newSensor.title,
+		})
+		.returning()
 
-  return insertedSensor;
+	return insertedSensor
 }
 
 export function addNewSensor({
-  title,
-  unit,
-  sensorType,
-  deviceId,
-}: Pick<Sensor, "title" | "unit" | "sensorType" | "deviceId">) {
-  return drizzleClient.insert(sensor).values({
-    title,
-    unit,
-    sensorType,
-    deviceId,
-  });
+	title,
+	unit,
+	sensorType,
+	deviceId,
+}: Pick<Sensor, 'title' | 'unit' | 'sensorType' | 'deviceId'>) {
+	return drizzleClient.insert(sensor).values({
+		title,
+		unit,
+		sensorType,
+		deviceId,
+	})
 }
 
 export function updateSensor({
-  id,
-  title,
-  unit,
-  sensorType, // icon,
-}: Pick<Sensor, "id" | "title" | "unit" | "sensorType">) {
-  return drizzleClient
-    .update(sensor)
-    .set({
-      title,
-      unit,
-      sensorType,
-    })
-    .where(eq(sensor.id, id));
+	id,
+	title,
+	unit,
+	sensorType, // icon,
+}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType'>) {
+	return drizzleClient
+		.update(sensor)
+		.set({
+			title,
+			unit,
+			sensorType,
+		})
+		.where(eq(sensor.id, id))
 }
 
 // return first sensor with its device name
-export function getSensor(id: Sensor["id"]) {
-  return drizzleClient.query.sensor.findFirst({
-    where: (sensor, { eq }) => eq(sensor.id, id),
-  });
+export function getSensor(id: Sensor['id']) {
+	return drizzleClient.query.sensor.findFirst({
+		where: (sensor, { eq }) => eq(sensor.id, id),
+	})
 }
 
-export function deleteSensor(id: Sensor["id"]) {
-  return drizzleClient.delete(sensor).where(eq(sensor.id, id));
+export function deleteSensor(id: Sensor['id']) {
+	return drizzleClient.delete(sensor).where(eq(sensor.id, id))
 }

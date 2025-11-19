@@ -3,10 +3,10 @@ import { BASE_URL } from "vitest.setup";
 import { createToken } from "~/lib/jwt";
 import { registerUser } from "~/lib/user-service.server";
 import { deleteUserByEmail } from "~/models/user.server";
-import { action } from "~/routes/api.refresh-auth";
-import { action as signInAction } from "~/routes/api.sign-in";
 import { action as signOutAction } from "~/routes/api.sign-out";
 import { action as meAction, loader as meLoader } from "~/routes/api.users.me";
+import { action } from "~/routes/api.users.refresh-auth";
+import { action as signInAction } from "~/routes/api.users.sign-in";
 import { type User } from "~/schema";
 
 const VALID_REFRESH_AUTH_TEST_USER = {
@@ -81,6 +81,51 @@ describe("openSenseMap API Routes: /users", () => {
           code: "Ok",
           data: { me: { email: VALID_REFRESH_AUTH_TEST_USER.email } },
         });
+      });
+
+      it("should allow to refresh jwt using JSON data", async () => {
+        // Arrange - First sign in to get a fresh refresh token
+        const signInParams = new URLSearchParams();
+        signInParams.append("email", VALID_REFRESH_AUTH_TEST_USER.email);
+        signInParams.append("password", VALID_REFRESH_AUTH_TEST_USER.password);
+        const signInRequest = new Request(`${BASE_URL}/users/sign-in`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: signInParams.toString(),
+        });
+
+        const signInResponse = (await signInAction({
+          request: signInRequest,
+        } as ActionFunctionArgs)) as Response;
+        const signInBody = await signInResponse?.json();
+        const freshJwt = signInBody.token;
+        const freshRefreshToken = signInBody.refreshToken;
+
+        // Now test JSON refresh
+        const request = new Request(`${BASE_URL}/users/refresh-auth`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${freshJwt}`,
+          },
+          body: JSON.stringify({ token: freshRefreshToken }),
+        });
+
+        // Act
+        const dataFunctionValue = await action({
+          request,
+        } as ActionFunctionArgs);
+        const response = dataFunctionValue as Response;
+        const body = await response?.json();
+
+        // Assert
+        expect(dataFunctionValue).toBeInstanceOf(Response);
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe(
+          "application/json; charset=utf-8",
+        );
+        expect(body).toHaveProperty("token");
+        expect(body).toHaveProperty("refreshToken");
       });
 
       it("should deny to use a refresh token twice", async () => {
