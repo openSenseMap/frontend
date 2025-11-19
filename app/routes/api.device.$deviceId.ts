@@ -6,7 +6,8 @@ import {
 	getDevice,
 	updateDevice,
 	type UpdateDeviceArgs,
-} from '~/models/device.server'import { StandardResponse } from "~/utils/response-utils";
+} from '~/models/device.server'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -71,18 +72,16 @@ import {
 export async function loader({ params }: LoaderFunctionArgs) {
 	const { deviceId } = params
 
-  if (!deviceId)
-    return StandardResponse.badRequest("Device ID is required.");
+	if (!deviceId) return StandardResponse.badRequest('Device ID is required.')
 
 	try {
 		const device = await getDevice({ id: deviceId })
 
-    if (!device)
-      return StandardResponse.notFound("Device not found.");
+		if (!device) return StandardResponse.notFound('Device not found.')
 
-    return StandardResponse.ok(device);
-  } catch (error) {
-    console.error("Error fetching box:", error);
+		return StandardResponse.ok(device)
+	} catch (error) {
+		console.error('Error fetching box:', error)
 
 		if (error instanceof Response) {
 			throw error
