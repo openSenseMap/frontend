@@ -5,24 +5,16 @@ import {
   removeBoxTransfer,
   validateTransferParams,
 } from "~/lib/transfer-service.server";
+import { StandardResponse } from "~/utils/response-utils";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const jwtResponse = await getUserFromJwt(request);
 
-  if (typeof jwtResponse === "string") {
-    return Response.json(
-      {
-        code: "Forbidden",
-        message:
-          "Invalid JWT authorization. Please sign in to obtain new JWT.",
-      },
-      { status: 403 }
-    );
-  }
+  if (typeof jwtResponse === "string")
+    return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
 
-  if (request.method !== "POST" && request.method !== "DELETE") {
-    return new Response(null, { status: 405 });
-  }
+  if (request.method !== "POST" && request.method !== "DELETE")
+    return StandardResponse.methodNotAllowed("");
 
   switch (request.method) {
     case "POST": {
@@ -53,19 +45,15 @@ const handleCreateTransfer = async (request: Request, user: any) => {
     }
 
     const validation = validateTransferParams(boxId, expiresAt);
-    if (!validation.isValid) {
-      return Response.json({ error: validation.error }, { status: 400 });
-    }
+    if (!validation.isValid)
+      return StandardResponse.badRequest(validation.error ?? "");
 
     const transferCode = await createBoxTransfer(user.id, boxId!, expiresAt);
 
-    return Response.json(
-      {
+    return StandardResponse.created({
         message: "Box successfully prepared for transfer",
         data: transferCode,
-      },
-      { status: 201 }
-    );
+      });
   } catch (err) {
     console.error("Error creating transfer:", err);
     return handleTransferError(err);
@@ -88,17 +76,15 @@ const handleRemoveTransfer = async (request: Request, user: any) => {
       token = formData.get("token")?.toString();
     }
 
-    if (!boxId) {
-      return Response.json({ error: "boxId is required" }, { status: 400 });
-    }
+    if (!boxId)
+      return StandardResponse.badRequest("boxId is required");
 
-    if (!token) {
-      return Response.json({ error: "token is required" }, { status: 400 });
-    }
+    if (!token)
+      return StandardResponse.badRequest("token is required");
 
     await removeBoxTransfer(user.id, boxId, token);
 
-    return new Response(null, { status: 204 });
+    return StandardResponse.noContent();
   } catch (err) {
     console.error("Error removing transfer:", err);
     return handleTransferError(err);
@@ -109,17 +95,15 @@ const handleTransferError = (err: unknown) => {
   if (err instanceof Error) {
     const message = err.message;
 
-    if (message.includes("not found")) {
-      return Response.json({ error: message }, { status: 404 });
-    }
+    if (message.includes("not found"))
+      return StandardResponse.notFound(message);
 
     if (
       message.includes("permission") ||
       message.includes("don't have") ||
       message.includes("not the owner")
-    ) {
-      return Response.json({ error: message }, { status: 403 });
-    }
+    )
+      return StandardResponse.forbidden(message);
 
     if (
       message.includes("expired") ||
@@ -127,13 +111,9 @@ const handleTransferError = (err: unknown) => {
       message.includes("required") ||
       message.includes("format") ||
       message.includes("future")
-    ) {
-      return Response.json({ error: message }, { status: 400 });
-    }
+    )
+      return StandardResponse.badRequest(message);
   }
 
-  return Response.json(
-    { error: "Internal server error" },
-    { status: 500 }
-  );
+  return StandardResponse.internalServerError();
 };

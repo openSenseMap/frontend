@@ -1,6 +1,7 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
 import { getUserFromJwt, revokeToken } from "~/lib/jwt";
 import { type User } from "~/schema";
+import { StandardResponse } from "~/utils/response-utils";
 
 export const action: ActionFunction = async ({
   request,
@@ -16,17 +17,9 @@ export const action: ActionFunction = async ({
       .toString();
     const [, jwtString = ""] = rawAuthorizationHeader.split(" ");
     await revokeToken(user, jwtString);
-    return Response.json(
-      { code: "Ok", message: "Successfully signed out" },
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
+    return StandardResponse.ok({ code: "Ok", message: "Successfully signed out" });
   } catch (err) {
     console.warn(err);
-    return new Response("Internal Server Error", {
-      status: 500,
-    });
+    return StandardResponse.internalServerError();
   }
 };
