@@ -4,7 +4,7 @@ import { getMeasurements } from "~/models/sensor.server";
 import { type Measurement } from "~/schema";
 import { convertToCsv } from "~/utils/csv";
 import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
-import { badRequest, internalServerError, notFound } from "~/utils/response-utils";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -152,7 +152,7 @@ export const loader: LoaderFunction = async ({
 
     let meas: Measurement[] | TransformedMeasurement[] = await getMeasurements(sensorId, fromDate.toISOString(), toDate.toISOString());
     if (meas == null)
-      return notFound("Device not found.");
+      return StandardResponse.notFound("Device not found.");
     
     if (outliers)
       meas = transformOutliers(meas, outlierWindow, outliers == "replace");
@@ -177,7 +177,7 @@ export const loader: LoaderFunction = async ({
 
   } catch (err) {
     console.warn(err);
-    return internalServerError();
+    return StandardResponse.internalServerError();
   }
 };
 
@@ -196,10 +196,10 @@ function collectParameters(request: Request, params: Params<string>):
   // deviceId is there for legacy reasons
   const deviceId = params.deviceId;
   if (deviceId === undefined)
-    return badRequest("Invalid device id specified");
+    return StandardResponse.badRequest("Invalid device id specified");
   const sensorId = params.sensorId;
   if (sensorId === undefined)
-    return badRequest("Invalid sensor id specified");
+    return StandardResponse.badRequest("Invalid sensor id specified");
 
   const url = new URL(request.url);
 
@@ -211,7 +211,7 @@ function collectParameters(request: Request, params: Params<string>):
   let outlierWindow: number = 15;
   if (outlierWindowParam !== null) {
     if (Number.isNaN(outlierWindowParam) || Number(outlierWindowParam) < 1 || Number(outlierWindowParam) > 50)
-      return badRequest("Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50");
+      return StandardResponse.badRequest("Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50");
     outlierWindow = Number(outlierWindowParam);
   }
 

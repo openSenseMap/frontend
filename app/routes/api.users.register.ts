@@ -8,6 +8,7 @@ import {
 } from "~/lib/user-service";
 import { registerUser } from "~/lib/user-service.server";
 import { type User } from "~/schema";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -180,7 +181,8 @@ export const action: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const method = request.method;
-  if (method !== "POST") return new Response(null, { status: 405 });
+  if (method !== "POST")
+    return StandardResponse.methodNotAllowed("");
 
   try {
     // Parse request data - handles both JSON and form data automatically
@@ -198,12 +200,7 @@ export const action: ActionFunction = async ({
     );
     if (!registration)
       // null is returned when no new user profile was created because it already exists
-      return new Response(JSON.stringify({ message: "User already exists." }), {
-        status: 400,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      });
+      return StandardResponse.badRequest("User already exists.");
 
     if ("validationKind" in registration) {
       // A validation was returned, therefore a bad request was sent in
@@ -231,12 +228,7 @@ export const action: ActionFunction = async ({
             msg = "Password must be at least 8 characters long.";
           break;
       }
-      return new Response(JSON.stringify({ message: msg }), {
-        status: 400,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      });
+      return StandardResponse.badRequest(msg);
     }
 
     const user = registration as User;
@@ -244,50 +236,24 @@ export const action: ActionFunction = async ({
     try {
       const { token, refreshToken } = await createToken(user);
 
-      return new Response(
-        JSON.stringify({
+      return StandardResponse.created({
           message: "Successfully registered new user",
           token: token,
           refreshToken: refreshToken,
           data: user,
-        }),
-        {
-          status: 201,
-          headers: {
-            "content-type": "application/json; charset=utf-8",
-          },
-        },
-      );
+        });
     } catch (err) {
       console.error("Unable to create JWT", err);
-      return new Response(
-        JSON.stringify({
-          message: `Unable to create jwt for newly created user: ${(err as Error)?.message}`,
-        }),
-        {
-          status: 500,
-          headers: {
-            "content-type": "application/json; charset=utf-8",
-          },
-        },
-      );
+      return StandardResponse.internalServerError(`Unable to create jwt for newly created user: ${(err as Error)?.message}`);
     }
   } catch (error) {
     // Handle parsing errors
     if (error instanceof Error && error.message.includes('Failed to parse')) {
-      return new Response(
-        JSON.stringify({ 
-          message: `Invalid request format: ${error.message}` 
-        }),
-        {
-          status: 400,
-          headers: { "content-type": "application/json; charset=utf-8" },
-        }
-      );
+      return StandardResponse.badRequest(`Invalid request format: ${error.message}`);
     }
     
     // Handle other errors
     console.error("Registration error:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    return StandardResponse.internalServerError();
   }
 };

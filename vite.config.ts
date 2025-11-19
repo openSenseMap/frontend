@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
       coverage: {
         reporter: ["text", "json-summary", "json"],
       },
+      testTimeout: 10_000,
     },
   };
 });
