@@ -560,7 +560,6 @@ const buildWhereClause = function buildWhereClause(
 
 	// https://orm.drizzle.team/learn/guides/postgis-geometry-point
 	if (bbox && bbox.coordinates[0]) {
-		//@ts-ignore
 		const [latSW, lngSW] = bbox.coordinates[0][0]
 		const [latNE, lngNE] = bbox.coordinates[0][2]
 		clause.push(
