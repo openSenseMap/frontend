@@ -4,10 +4,6 @@ import nodemailer from 'nodemailer'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 dotenv.config()
 
-// Interface to load env variables
-// Note these variables can possibly be undefined
-// as someone could skip these varibales or not setup a .env file at all
-
 /**
  * Interface for our configuration.
  * Note these variables can possibly be undefined,
