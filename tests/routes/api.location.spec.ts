@@ -559,7 +559,7 @@ describe("openSenseMap API Routes: Location Measurements", () => {
 
       expect(response.status).toBe(422);
       const errorData = await response.json();
-      expect(errorData.code).toBe("Unprocessable Entity");
+      expect(errorData.code).toBe("Unprocessable Content");
       expect(errorData.message).toBe("Invalid location coordinates");
     });
 
@@ -589,7 +589,7 @@ describe("openSenseMap API Routes: Location Measurements", () => {
 
       expect(response.status).toBe(422);
       const errorData = await response.json();
-      expect(errorData.code).toBe("Unprocessable Entity");
+      expect(errorData.code).toBe("Unprocessable Content");
       expect(errorData.message).toBe("Invalid location coordinates");
     });
   });

@@ -110,7 +110,6 @@
     "mqtt": "^5.13.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.6",
-    "npm": "^11.4.2",
     "pg": "^8.16.2",
     "postcss-import": "^16.1.1",
     "postgres": "^3.4.7",

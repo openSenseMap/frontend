@@ -8,6 +8,7 @@ import {
   type FindDevicesOptions,
 } from "~/models/device.server";
 import { type Device, type User } from "~/schema";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -288,17 +289,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (!parseResult.success) {
     const { fieldErrors, formErrors } = parseResult.error.flatten();
-    if (fieldErrors.format) {
-      throw Response.json(
-        { error: "Invalid format parameter" },
-        { status: 422 },
-      );
-    }
+    if (fieldErrors.format)
+      throw StandardResponse.unprocessableContent("Invalid format parameter");
 
-    throw Response.json(
-      { error: parseResult.error.flatten() },
-      { status: 422 },
-    );
+    throw StandardResponse.unprocessableContent(`${parseResult.error.flatten()}`);
   }
 
   const params: FindDevicesOptions = parseResult.data;
@@ -331,80 +325,47 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const jwtResponse = await getUserFromJwt(request);
 
     if (typeof jwtResponse === "string")
-      return Response.json(
-        {
-          code: "Forbidden",
-          message:
-            "Invalid JWT authorization. Please sign in to obtain new JWT.",
-        },
-        {
-          status: 403,
-        },
-      );
+      return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
     switch (request.method) {
       case "POST":
         return await post(request, jwtResponse);
       case "DELETE":
         return await del(request, jwtResponse, params);
       default:
-        return Response.json({ msg: "Method Not Allowed" }, { status: 405 });
+        return StandardResponse.methodNotAllowed("Method Not Allowed")
     }
   } catch (err) {
     console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-      },
-    );
+    return StandardResponse.internalServerError();
   }
 }
 
 async function del(request: Request, user: User, params: any) {
   const { deviceId } = params;
 
-  if (!deviceId) {
-    throw Response.json({ message: "Device ID is required" }, { status: 400 });
-  }
+  if (!deviceId)
+    throw StandardResponse.badRequest("Device ID is required");
 
   const device = (await getDevice({ id: deviceId })) as unknown as Device;
 
-  if (!device) {
-    throw Response.json({ message: "Device not found" }, { status: 404 });
-  }
+  if (!device)
+    throw StandardResponse.notFound("Device not found");
 
   const body = await request.json();
 
-  if (!body.password) {
-    throw Response.json(
-      { message: "Password is required for device deletion" },
-      { status: 400 },
-    );
-  }
+  if (!body.password)
+    throw StandardResponse.badRequest("Password is required for device deletion");
 
   try {
     const deleted = await deleteDevice(user, device, body.password);
 
     if (deleted === "unauthorized")
-      return Response.json(
-        { message: "Password incorrect" },
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
+      return StandardResponse.unauthorized("Password incorrect");
 
-    return Response.json(null, {
-      status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-    });
+    return StandardResponse.ok(null);
   } catch (err) {
     console.warn(err);
-    return new Response("Internal Server Error", { status: 500 });
+    return StandardResponse.internalServerError();
   }
 }
 
@@ -412,66 +373,39 @@ async function post(request: Request, user: User) {
   try {
     const body = await request.json();
 
-    if (!body.location) {
-      throw Response.json(
-        { message: "missing required parameter location" },
-        { status: 400 },
-      );
-    }
+    if (!body.location)
+      throw StandardResponse.badRequest("missing required parameter location");
 
     let latitude: number, longitude: number, height: number | undefined;
 
     if (Array.isArray(body.location)) {
       // Handle array format [lat, lng, height?]
-      if (body.location.length < 2) {
-        throw Response.json(
-          {
-            message: `Illegal value for parameter location. missing latitude or longitude in location [${body.location.join(",")}]`,
-          },
-          { status: 422 },
-        );
-      }
+      if (body.location.length < 2)
+        throw StandardResponse.unprocessableContent(
+					`Illegal value for parameter location. missing latitude or longitude in location [${body.location.join(',')}]`,
+				)
+
       latitude = Number(body.location[0]);
       longitude = Number(body.location[1]);
       height = body.location[2] ? Number(body.location[2]) : undefined;
     } else if (typeof body.location === "object" && body.location !== null) {
       // Handle object format { lat, lng, height? }
-      if (!("lat" in body.location) || !("lng" in body.location)) {
-        throw Response.json(
-          {
-            message:
-              "Illegal value for parameter location. missing latitude or longitude",
-          },
-          { status: 422 },
-        );
-      }
+      if (!("lat" in body.location) || !("lng" in body.location))
+        throw StandardResponse.unprocessableContent("Illegal value for parameter location. missing latitude or longitude");
+
       latitude = Number(body.location.lat);
       longitude = Number(body.location.lng);
       height = body.location.height ? Number(body.location.height) : undefined;
-    } else {
-      throw Response.json(
-        {
-          message:
-            "Illegal value for parameter location. Expected array or object",
-        },
-        { status: 422 },
-      );
-    }
+    } else
+      throw StandardResponse.unprocessableContent("Illegal value for parameter location. Expected array or object");
 
-    if (isNaN(latitude) || isNaN(longitude)) {
-      throw Response.json(
-        { message: "Invalid latitude or longitude values" },
-        { status: 422 },
-      );
-    }
+    if (isNaN(latitude) || isNaN(longitude))
+      throw StandardResponse.unprocessableContent("Invalid latitude or longitude values");
 
     const rawAuthorizationHeader = request.headers.get("authorization");
-    if (!rawAuthorizationHeader) {
-      throw Response.json(
-        { message: "Authorization header required" },
-        { status: 401 },
-      );
-    }
+    if (!rawAuthorizationHeader)
+      throw StandardResponse.unauthorized("Authorization header required");
+
     const [, jwtString] = rawAuthorizationHeader.split(" ");
 
     const deviceData = {
@@ -482,15 +416,12 @@ async function post(request: Request, user: User) {
 
     const newDevice = await createDevice(deviceData, user.id);
 
-    return Response.json(
-      {
+    return StandardResponse.created({
         data: {
           ...newDevice,
           createdAt: newDevice.createdAt || new Date(),
         },
-      },
-      { status: 201 },
-    );
+      });
   } catch (error) {
     console.error("Error creating device:", error);
 

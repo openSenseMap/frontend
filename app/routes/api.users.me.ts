@@ -7,6 +7,7 @@ import {
 import { getUserFromJwt } from "~/lib/jwt";
 import { deleteUser, updateUserDetails } from "~/lib/user-service.server";
 import { type User } from "~/schema/user";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -279,36 +280,12 @@ export const loader: LoaderFunction = async ({
     const jwtResponse = await getUserFromJwt(request);
 
     if (typeof jwtResponse === "string")
-      return Response.json(
-        {
-          code: "Forbidden",
-          message:
-            "Invalid JWT authorization. Please sign in to obtain new JWT.",
-        },
-        {
-          status: 403,
-        },
-      );
+      return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
 
-    return Response.json(
-      { code: "Ok", data: { me: jwtResponse } },
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
+    return StandardResponse.ok({ code: "Ok", data: { me: jwtResponse } });
   } catch (err) {
     console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-      },
-    );
+    return StandardResponse.internalServerError();
   }
 };
 
@@ -328,7 +305,7 @@ export const action: ActionFunction = async ({
     case "DELETE":
       return await del(user, request);
     default:
-      return Response.json({ msg: "Method Not Allowed" }, { status: 405 });
+      return StandardResponse.methodNotAllowed("Method Not Allowed");
   }
 };
 
@@ -355,53 +332,23 @@ const put = async (user: User, request: Request): Promise<Response> => {
 
     if (updated === false) {
       if (messages.length > 0) {
-        return Response.json(
-          {
-            code: "Bad Request",
-            message: messageText,
-          },
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          },
-        );
+        return StandardResponse.badRequest(messageText);
       }
 
-      return Response.json(
-        {
+      return StandardResponse.ok({
           code: "Ok",
           message: "No changed properties supplied. User remains unchanged.",
-        },
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
+        });
     }
 
-    return Response.json(
-      {
+    return StandardResponse.ok({
         code: "Ok",
         message: `User successfully saved. ${messageText}`,
         data: { me: updatedUser },
-      },
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      },
-    );
+      });
   } catch (err) {
     console.warn(err);
-    return Response.json(
-      {
-        error: "Internal Server Error",
-        message:
-          "The server was unable to complete your request. Please try again later.",
-      },
-      {
-        status: 500,
-      },
-    );
+    return StandardResponse.internalServerError();
   }
 };
 
@@ -418,7 +365,7 @@ const del = async (user: User, r: Request): Promise<Response> => {
       !formData.has("password") ||
       formData.get("password")?.toString().length === 0
     )
-      return new Response("Bad Request", { status: 400 });
+    return StandardResponse.badRequest("Bad Request");
 
     const rawAuthorizationHeader = r.headers.get("authorization");
     if (!rawAuthorizationHeader) throw new Error("no_token");
@@ -431,20 +378,11 @@ const del = async (user: User, r: Request): Promise<Response> => {
     );
 
     if (deleted === "unauthorized")
-      return Response.json(
-        { message: "Password incorrect" },
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        },
-      );
+      return StandardResponse.unauthorized("Password incorrect");
 
-    return Response.json(null, {
-      status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-    });
+    return StandardResponse.ok(null);
   } catch (err) {
     console.warn(err);
-    return new Response("Internal Server Error", { status: 500 });
+    return StandardResponse.internalServerError();
   }
 };
