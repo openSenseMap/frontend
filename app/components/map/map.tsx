@@ -1,12 +1,13 @@
-import { forwardRef, useEffect } from "react";
-import { type MapProps, type MapRef, NavigationControl, Map as ReactMap } from "react-map-gl";
 import type { Map as MapboxMap, AnyLayer, MapboxEvent } from "mapbox-gl";
+import { forwardRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { type MapProps, type MapRef, NavigationControl, Map as ReactMap } from "react-map-gl";
+
 
 
 const Map = forwardRef<MapRef, MapProps>(
   (
-    { children, mapStyle, fog = null, terrain = null, ...props },
+    { children, mapStyle, ...props },
     ref,
   ) => {
     const [theme] = "light";

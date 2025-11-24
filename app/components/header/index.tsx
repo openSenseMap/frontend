@@ -1,4 +1,3 @@
-import { Globe } from "lucide-react";
 import LanguageSelector from "../landing/header/language-selector";
 import Download from "./download";
 import Home from "./home";
