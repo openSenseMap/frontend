@@ -22,6 +22,7 @@ import { type supportedLanguages } from "~/i18next-options";
 import i18next from "~/i18next.server";
 import { type Partner, getDirectusClient } from "~/lib/directus";
 import { getLatestDevices } from "~/models/device.server";
+import { getUserByUsername } from "~/models/user.server";
 import { getUserId, getUserName } from "~/utils/session.server";
 
 const sections = [
@@ -52,7 +53,7 @@ const sections = [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const locale = (await i18next.getLocale(
+  let locale = (await i18next.getLocale(
     request,
   )) as (typeof supportedLanguages)[number];
   const directus = getDirectusClient();
@@ -84,7 +85,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   //* Get user Id from session
   const userId = await getUserId(request);
   const userName = await getUserName(request);
-
+  const user = userName ? await getUserByUsername(userName) : null;
+  if(user){
+    locale = user.language?.split(/[_-]/)[0].toLowerCase() as (typeof supportedLanguages)[number];
+  }//update the locale in the index route loader if user is logged in
   const stats = await fetch("https://api.opensensemap.org/stats").then(
     (res) => {
       return res.json();

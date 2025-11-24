@@ -135,7 +135,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const userLocale = user.language
       ? user.language.split(/[_-]/)[0].toLowerCase()
       : "en";
-    console.log("User locale:", userLocale);
     return {
       devices,
       user,

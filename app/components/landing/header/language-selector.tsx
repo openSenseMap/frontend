@@ -9,15 +9,13 @@ export default function LanguageSelector() {
   const data = useLoaderData();
   const fetcher = useFetcher();
   const [locale, setLocale] = useState(data.locale || "en");
-  console.log("Locale in LanguageSelector:", locale);
+  // When loader locale changes (e.g. after login), sync state
   useEffect(() => {
-    setLocale(data.locale || "en");
-    i18next.changeLanguage(data.locale || "en");
-    void fetcher.submit(
-      { language: locale },
-      { method: "post", action: "/action/set-language" }, // Persist the new language
-    );
-  }, [data.locale,data.user]);
+    if (data.locale) {
+      setLocale(data.locale);
+      i18next.changeLanguage(data.locale);
+    }
+  }, [data.locale]);
   const toggleLanguage = () => {
     const newLocale = locale === "en" ? "de" : "en"; // Toggle between "en" and "de"
     setLocale(newLocale);
