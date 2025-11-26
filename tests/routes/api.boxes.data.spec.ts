@@ -196,7 +196,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			context: {} as AppLoadContext,
 		})
 
-		const text = await response.text()
+		const text = (await response.text()).trim()
 		const lines = text.split('\n').slice(1)
 
 		expect(response.status).toBe(200)
@@ -220,7 +220,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			params: {},
 			context: {} as AppLoadContext,
 		})
-		const text = await res.text()
+		const text = (await res.text()).trim()
 		const [header, ...lines] = text.split('\n')
 
 		expect(res.status).toBe(200)
