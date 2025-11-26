@@ -15,11 +15,6 @@ export type BoxesDataColumn =
 	| 'unit'
 	| 'sensorType'
 
-const commaSeparatedStringArray = z.union([
-	z.string().transform((s) => s.split(',').map((x) => x.trim())),
-	z.array(z.string()).transform((arr) => arr.map((s) => String(s).trim())),
-])
-
 const optionalCommaSeparatedArray = z
 	.union([
 		z.string().transform((s) => s.split(',').map((x) => x.trim())),
