@@ -1,17 +1,22 @@
-/**
- * Converts data in any format to CSV
- * @param headers The headers of the resultant CSV. Order is important.
- * @param data The data as an array of arbitrary data rows
- * @param dataSelectors Selectors that picks data out of a data row and converts it into a string.
- * Order should be the same as for the headers.
- * @returns 
- */
-export const convertToCsv = <DataRow>(headers: string[], data: DataRow[],
-    dataSelectors: ((row: DataRow) => string)[], delimiter = ",") => {
+import { stringify } from 'csv-stringify/sync'
+import { type BoxesDataColumn } from '~/lib/api-schemas/boxes-data-query-schema'
 
-    const rows: string[] = data.map(dataRow => 
-        headers.map((_, i) => dataSelectors[i](dataRow)).join(delimiter)
-    )
+type Delimiter = 'comma' | 'semicolon'
 
-    return [headers.join(delimiter), ...rows].join("\n")
+export function formatAsCSV(
+	data: any[],
+	columns: BoxesDataColumn[],
+	delimiter: Delimiter,
+) {
+	const delimiterChar = delimiter === 'semicolon' ? ';' : ','
+	const csv = stringify(data, {
+		header: true,
+		columns: columns,
+		delimiter: delimiterChar,
+		cast: {
+			date: (d: Date) => d.toISOString(),
+		},
+	})
+
+	return csv.trimEnd()
 }
