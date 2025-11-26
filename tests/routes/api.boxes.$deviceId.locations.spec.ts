@@ -76,7 +76,7 @@ const MEASUREMENTS = [
 ]
 
 describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
-  let device: Device;
+  let device;
   let deviceId: string = "";
   let sensors: Sensor[];
 

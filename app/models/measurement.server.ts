@@ -225,10 +225,19 @@ type DeviceLocationUpdate = {
   time: Date;
 };
 
+type MinimalDevice = {
+  id: string,
+  sensors: Array<{
+    id: string
+  }>
+};
+
 export async function saveMeasurements(
-  device: any, 
+  device: MinimalDevice, 
   measurements: MeasurementWithLocation[]
 ): Promise<void> {
+  if (!device)
+    throw new Error("No device given!")
   if (!Array.isArray(measurements)) throw new Error("Array expected");
 
   const sensorIds = device.sensors.map((s: any) => s.id);
@@ -271,41 +280,12 @@ export async function saveMeasurements(
   // Track measurements that update device location (those with explicit locations)
   const deviceLocationUpdates = getLocationUpdates(measurements);
   const locationMap = await findOrCreateLocations(deviceLocationUpdates);
+  
+  // First, update device locations for all measurements with explicit locations
+  // This ensures the location history is complete before we infer locations
+  await addLocationUpdates(deviceLocationUpdates, device.id, locationMap);
 
   await drizzleClient.transaction(async (tx) => {
-    // First, update device locations for all measurements with explicit locations
-    // This ensures the location history is complete before we infer locations
-    for (const update of deviceLocationUpdates) {
-      const locationId = locationMap.get(update.location);
-      if (!locationId)
-        throw new Error(`Location ID for location ${update.location} not found,
-          even though it should've been inserted`)
-
-      // Check if we should add this to device location history
-      // Only add if it's newer than the current latest location
-      const currentLatestLocation = await tx
-        .select({ time: deviceToLocation.time })
-        .from(deviceToLocation)
-        .where(eq(deviceToLocation.deviceId, device.id))
-        .orderBy(desc(deviceToLocation.time))
-        .limit(1);
-
-      const shouldAdd = 
-        currentLatestLocation.length === 0 || 
-        update.time >= currentLatestLocation[0].time;
-
-      if (shouldAdd) {
-        await tx
-          .insert(deviceToLocation)
-          .values({
-            deviceId: device.id,
-            locationId: locationId,
-            time: update.time,
-          })
-          .onConflictDoNothing();
-      }
-    }
-
     // Now process each measurement and infer locations if needed
     for (const m of measurements) {
       const measurementTime = m.createdAt || new Date();
@@ -427,6 +407,55 @@ async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): P
   });
 
   return locationMap;
+}
+
+/**
+ * Filters the location updates to not add older updates than the newest already existing one,
+ * then inserts the filtered location updates
+ * @param deviceLocationUpdates The updates to add
+ * @param deviceId The device ID the updates are referring to
+ * @param locationMap The map with the IDs of the locations already in the database
+ */
+async function addLocationUpdates(deviceLocationUpdates: DeviceLocationUpdate[], deviceId: string, locationMap: Map<Location, bigint>) {
+  await drizzleClient.transaction(async (tx) => {
+    let filteredUpdates = await filterLocationUpdates(deviceLocationUpdates, deviceId, tx);
+
+    filteredUpdates
+			.filter((update) => !locationMap.has(update.location))
+			.forEach((update) => {
+				throw new Error(`Location ID for location ${update.location} not found,
+        even though it should've been inserted`)
+			})
+
+    await tx
+      .insert(deviceToLocation)
+      .values(filteredUpdates.map(update => {
+        return {
+          deviceId: deviceId,
+          locationId: locationMap.get(update.location) as bigint,
+          time: update.time
+        };
+      }))
+      .onConflictDoNothing();
+  })
+}
+
+/**
+ * Filters out location updates that don't need to be inserted because they're older than the latest update
+ * @param deviceLocationUpdates The device location updates to filter through
+ */
+async function filterLocationUpdates(deviceLocationUpdates: DeviceLocationUpdate[], deviceId: string, tx: any): Promise<DeviceLocationUpdate[]> {
+  const currentLatestLocation = await tx
+    .select({ time: deviceToLocation.time })
+    .from(deviceToLocation)
+    .where(eq(deviceToLocation.deviceId, deviceId))
+    .orderBy(desc(deviceToLocation.time))
+    .limit(1);
+
+  return deviceLocationUpdates
+    .filter(update => currentLatestLocation.length === 0 ||
+      update.time >= currentLatestLocation[0].time
+    );
 }
 
 export async function insertMeasurements(measurements: any[]): Promise<void> {
