@@ -208,7 +208,7 @@ export function deleteSensor(id: Sensor['id']) {
  * Returns sensorsMap (sensorId -> augmented sensor metadata) and sensorIds array.
  */
 export async function findMatchingSensors(params: BoxesDataQueryParams) {
-	const { boxId, exposure, phenomenon } = params
+	const { boxId, exposure, phenomenon, bbox } = params
 
 	// Build device-level conditions (applied when querying device JOIN sensor)
 	const conditions = []
@@ -219,6 +219,16 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 
 	if (exposure) {
 		conditions.push(inArray(device.exposure, exposure))
+	}
+
+	if (bbox) {
+		const [lngSW, latSW, lngNE, latNE] = bbox
+		conditions.push(
+			sql`ST_Contains(
+				ST_MakeEnvelope(${lngSW}, ${latSW}, ${lngNE}, ${latNE}, 4326),
+				ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)
+			)`,
+		)
 	}
 
 	// Query devices and their sensors that match phenomenon
