@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
   deviceToLocation,
@@ -214,37 +214,16 @@ async function getDeviceLocationAtTime(
   return locationAtTime.length > 0 ? locationAtTime[0].locationId : null;
 }
 
-async function findOrCreateLocation(
-  tx: any,
-  lng: number,
-  lat: number
-): Promise<bigint> {
-  const existingLocation = await tx
-    .select({ id: location.id })
-    .from(location)
-    .where(
-      sql`ST_Equals(
-        ${location.location}, 
-        ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)
-      )`
-    )
-    .limit(1);
+type Location = {
+  lng: number;
+  lat: number;
+  height?: number;
+};
 
-
-  if (existingLocation.length > 0) {
-    return existingLocation[0].id;
-  }
-
-  const [newLocation] = await tx
-    .insert(location)
-    .values({
-      location: sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`,
-    })
-    .returning();
-
-  return newLocation.id;
-}
-
+type DeviceLocationUpdate = {
+  location: Location;
+  time: Date;
+};
 
 export async function saveMeasurements(
   device: any, 
@@ -254,12 +233,6 @@ export async function saveMeasurements(
 
   const sensorIds = device.sensors.map((s: any) => s.id);
   const lastMeasurements: Record<string, any> = {};
-  
-  // Track measurements that update device location (those with explicit locations)
-  const deviceLocationUpdates: Array<{
-    location: { lng: number; lat: number; height?: number };
-    time: Date;
-  }> = [];
 
   // Validate and prepare measurements
   for (let i = measurements.length - 1; i >= 0; i--) {
@@ -293,28 +266,20 @@ export async function saveMeasurements(
         sensorId: m.sensor_id,
       };
     }
-
-    // Track measurements with explicit locations for device location updates
-    if (m.location) {
-      deviceLocationUpdates.push({
-        location: m.location,
-        time: measurementTime,
-      });
-    }
   }
 
-  // Sort device location updates by time (oldest first) to process in order
-  deviceLocationUpdates.sort((a, b) => a.time.getTime() - b.time.getTime());
+  // Track measurements that update device location (those with explicit locations)
+  const deviceLocationUpdates = getLocationUpdates(measurements);
+  const locationMap = await findOrCreateLocations(deviceLocationUpdates);
 
   await drizzleClient.transaction(async (tx) => {
     // First, update device locations for all measurements with explicit locations
     // This ensures the location history is complete before we infer locations
     for (const update of deviceLocationUpdates) {
-      const locationId = await findOrCreateLocation(
-        tx,
-        update.location.lng,
-        update.location.lat
-      );
+      const locationId = locationMap.get(update.location);
+      if (!locationId)
+        throw new Error(`Location ID for location ${update.location} not found,
+          even though it should've been inserted`)
 
       // Check if we should add this to device location history
       // Only add if it's newer than the current latest location
@@ -348,11 +313,11 @@ export async function saveMeasurements(
 
       if (m.location) {
         // Measurement has explicit location
-        locationId = await findOrCreateLocation(
-          tx,
-          m.location.lng,
-          m.location.lat
-        );
+        const foundLocationId = locationMap.get(m.location);
+        if (!foundLocationId)
+          throw new Error(`Location ID for location ${m.location} not found,
+            even though it should've been inserted`)
+        locationId = foundLocationId;
       } else {
         // No explicit location - infer from device location history
         locationId = await getDeviceLocationAtTime(
@@ -370,7 +335,6 @@ export async function saveMeasurements(
         time: measurementTime,
         locationId: locationId,
       }).onConflictDoNothing();
-
     }
 
     // Update sensor lastMeasurement values
@@ -386,6 +350,81 @@ export async function saveMeasurements(
     await Promise.all(updatePromises);
     
   });
+}
+
+/**
+ * Extracts location updates from measurements (with explicit locations)
+ * @param measurements The measurements with potential location udpates
+ * @returns The found location updates, sorted oldest first
+ */
+function getLocationUpdates(measurements: MeasurementWithLocation[]): DeviceLocationUpdate[] {
+  return (
+		measurements
+			.filter((measurement) => measurement.location)
+			.map((measurement) => {
+				return {
+					location: measurement.location as Location,
+					time: new Date(measurement.createdAt || Date.now()),
+				}
+			})
+			// Sort device location updates by time (oldest first) to process in order
+			.sort((a, b) => a.time.getTime() - b.time.getTime())
+	)
+}
+
+/**
+ * Makes sure all locations for the location updates are in the database
+ * @param locationUpdates The location updates from `getLocationUpdates`
+ * @returns A map of the IDs of the locations for the location updates
+ */
+async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): Promise<Map<Location, bigint>> {
+
+  const newLocations = locationUpdates.map(update => update.location);
+
+  let locationMap: Map<Location, bigint> = new Map;
+
+  await drizzleClient.transaction(async (tx) => {
+    const existingLocations = await tx
+      .select({ id: location.id, location: location.location})
+      .from(location)
+      .where(
+        or(
+          ...newLocations.map(newLocation =>
+            sql`ST_EQUALS(
+              ${location.location},
+              ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)
+            )`
+          )
+        )
+      );
+    
+    locationMap = new Map(existingLocations.map(location =>
+      [{lng: location.location.x, lat: location.location.y, height: undefined}, location.id]
+    ));
+
+    const toInsert = newLocations.filter(newLocation => !locationMap.has(newLocation));
+
+    const inserted = await tx
+			.insert(location)
+			.values(
+				toInsert.map((newLocation) => {
+					return {
+						location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
+					}
+				}),
+			)
+			.returning();
+
+    inserted.forEach((value) =>
+			locationMap.set(
+				{
+					lng: value.location.x,
+					lat: value.location.y,
+					height: undefined,
+				}, value.id))
+  });
+
+  return locationMap;
 }
 
 export async function insertMeasurements(measurements: any[]): Promise<void> {
