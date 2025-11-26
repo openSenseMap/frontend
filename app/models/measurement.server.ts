@@ -402,6 +402,8 @@ async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): P
       [{lng: location.location.x, lat: location.location.y, height: undefined}, location.id]
     ));
 
+    // TODO: Validate that the locations that already exist in the database are indeed filtered out that way
+    // (that is, validate that `locationMap.has` returns true for locations already existing in the db)
     const toInsert = newLocations.filter(newLocation => !locationMap.has(newLocation));
 
     const inserted = await tx
