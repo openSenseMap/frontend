@@ -14,11 +14,7 @@ export default function LanguageSelector() {
     if (!data?.locale) return;
     setLocale(data.locale);
     void (async () => {
-      try {
-        await i18next.changeLanguage(data.locale);
-      } catch (e) {
-        //  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler
-      }
+		await i18next.changeLanguage(data.locale);
     })();
   }, [data.locale]);
   const toggleLanguage = () => {
