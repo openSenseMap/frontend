@@ -1,4 +1,8 @@
-import type { Map as MapboxMap, AnyLayer, MapboxEvent } from 'mapbox-gl'
+import {
+	type Map as MapboxMap,
+	type AnyLayer,
+	type MapboxEvent,
+} from 'mapbox-gl'
 import { forwardRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
