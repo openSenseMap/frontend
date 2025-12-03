@@ -1,4 +1,5 @@
 import { and, desc, eq, gte, inArray, lte, or, SQL, sql } from "drizzle-orm";
+import { json } from "drizzle-orm/mysql-core";
 import { drizzleClient } from "~/db.server";
 import {
   deviceToLocation,
@@ -223,6 +224,8 @@ type Location = {
   height?: number;
 };
 
+type LocationWithId = Location & { id: bigint };
+
 type DeviceLocationUpdate = {
   location: Location;
   time: Date;
@@ -284,18 +287,18 @@ export async function saveMeasurements(
 
   // Track measurements that update device location (those with explicit locations)
   const deviceLocationUpdates = getLocationUpdates(measurements);
-  const locationMap = await findOrCreateLocations(deviceLocationUpdates);
+  const locations = await findOrCreateLocations(deviceLocationUpdates);
   
   // First, update device locations for all measurements with explicit locations
   // This ensures the location history is complete before we infer locations
-  await addLocationUpdates(deviceLocationUpdates, device.id, locationMap);
+  await addLocationUpdates(deviceLocationUpdates, device.id, locations);
 
   // Note that the insertion of measurements and update of sensors need to be in one
   // transaction, since otherwise other updates could get in between and the data would be
   // inconsistent. This shouldn't be a problem for the updates above.
   await drizzleClient.transaction(async (tx) => {
     // Now process each measurement and infer locations if needed
-    await insertMeasurementsWithLocation(measurements, locationMap, device.id, tx);
+    await insertMeasurementsWithLocation(measurements, locations, device.id, tx);
     // Update sensor lastMeasurement values
     await updateLastMeasurements(lastMeasurements, tx);
   });
@@ -326,11 +329,11 @@ function getLocationUpdates(measurements: MeasurementWithLocation[]): DeviceLoca
  * @param locationUpdates The location updates from `getLocationUpdates`
  * @returns A map of the IDs of the locations for the location updates
  */
-async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): Promise<Map<Location, bigint>> {
+async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): Promise<LocationWithId[]> {
 
   const newLocations = locationUpdates.map(update => update.location);
 
-  let locationMap: Map<Location, bigint> = new Map;
+  let foundLocations: LocationWithId[] = [];
 
   await drizzleClient.transaction(async (tx) => {
     const existingLocations = await tx
@@ -347,35 +350,56 @@ async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): P
         )
       );
     
-    locationMap = new Map(existingLocations.map(location =>
-      [{lng: location.location.x, lat: location.location.y, height: undefined}, location.id]
-    ));
+    foundLocations = existingLocations.map((location) => {
+			return {
+				lng: location.location.x,
+				lat: location.location.y,
+				height: undefined,
+				id: location.id,
+			}
+		})
 
     // TODO: Validate that the locations that already exist in the database are indeed filtered out that way
     // (that is, validate that `locationMap.has` returns true for locations already existing in the db)
-    const toInsert = newLocations.filter(newLocation => !locationMap.has(newLocation));
+    const toInsert = newLocations.filter(newLocation => !foundLocationsContain(foundLocations, newLocation));
 
-    const inserted = await tx
-			.insert(location)
-			.values(
-				toInsert.map((newLocation) => {
-					return {
-						location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
-					}
-				}),
-			)
-			.returning();
+    const inserted =
+			toInsert.length > 0
+				? await tx
+						.insert(location)
+						.values(
+							toInsert.map((newLocation) => {
+								return {
+									location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
+								}
+							}),
+						)
+						.returning()
+				: []
 
     inserted.forEach((value) =>
-			locationMap.set(
-				{
-					lng: value.location.x,
-					lat: value.location.y,
-					height: undefined,
-				}, value.id))
+			foundLocations.push({
+				lng: value.location.x,
+				lat: value.location.y,
+				height: undefined,
+				id: value.id,
+			}),
+		)
   });
 
-  return locationMap;
+  return foundLocations;
+}
+
+function foundLocationsContain(foundLocations: LocationWithId[], location: Location): boolean {
+  return foundLocations.some(found => foundLocationEquals(found, location));
+}
+
+function foundLocationsGet(foundLocations: LocationWithId[], location: Location): bigint | undefined {
+  return foundLocations.find(found => foundLocationEquals(found, location))?.id;
+}
+
+function foundLocationEquals(foundLocation: LocationWithId, location: Location): boolean {
+  return foundLocation.lat === location.lat && foundLocation.lng === location.lng;
 }
 
 /**
@@ -383,30 +407,40 @@ async function findOrCreateLocations(locationUpdates: DeviceLocationUpdate[]): P
  * then inserts the filtered location updates
  * @param deviceLocationUpdates The updates to add
  * @param deviceId The device ID the updates are referring to
- * @param locationMap The map with the IDs of the locations already in the database
+ * @param locations The found locations with the IDs of the locations already in the database
  */
-async function addLocationUpdates(deviceLocationUpdates: DeviceLocationUpdate[], deviceId: string, locationMap: Map<Location, bigint>) {
-  await drizzleClient.transaction(async (tx) => {
-    let filteredUpdates = await filterLocationUpdates(deviceLocationUpdates, deviceId, tx);
+async function addLocationUpdates(
+	deviceLocationUpdates: DeviceLocationUpdate[],
+	deviceId: string,
+	locations: LocationWithId[],
+) {
+	await drizzleClient.transaction(async (tx) => {
+		let filteredUpdates = await filterLocationUpdates(
+			deviceLocationUpdates,
+			deviceId,
+			tx,
+		)
 
-    filteredUpdates
-			.filter((update) => !locationMap.has(update.location))
+		filteredUpdates
+			.filter((update) => !foundLocationsContain(locations, update.location))
 			.forEach((update) => {
 				throw new Error(`Location ID for location ${update.location} not found,
         even though it should've been inserted`)
 			})
 
-    await tx
-      .insert(deviceToLocation)
-      .values(filteredUpdates.map(update => {
-        return {
-          deviceId: deviceId,
-          locationId: locationMap.get(update.location) as bigint,
-          time: update.time
-        };
-      }))
-      .onConflictDoNothing();
-  })
+		await tx
+			.insert(deviceToLocation)
+			.values(
+				filteredUpdates.map((update) => {
+					return {
+						deviceId: deviceId,
+						locationId: foundLocationsGet(locations, update.location) as bigint,
+						time: update.time,
+					}
+				}),
+			)
+			.onConflictDoNothing()
+	})
 }
 
 /**
@@ -432,12 +466,12 @@ async function filterLocationUpdates(deviceLocationUpdates: DeviceLocationUpdate
  * Inserts measurements with their evaluated locations (either from the explicit location, which is assumed to already be
  * in the location map), or from the last device location at the measurement time.
  * @param measurements The measurements to insert
- * @param locationMap The map with the location IDs for the explicit locations
+ * @param locations The locations with the location IDs for the explicit locations
  * @param deviceId The devices ID for the measurements
  * @param tx The current transaction to run the insert SQLs in
  */
 async function insertMeasurementsWithLocation(measurements: MeasurementWithLocation[],
-  locationMap: Map<Location, bigint>, deviceId: string, tx: any): Promise<Measurement[]> {
+  locations: LocationWithId[], deviceId: string, tx: any): Promise<Measurement[]> {
   const measuresWithLocationIdPromises = measurements.map(async (measurement) => {
       const measurementTime = measurement.createdAt || new Date();
       // TODO: Remove if the inline query works
@@ -463,7 +497,7 @@ async function insertMeasurementsWithLocation(measurements: MeasurementWithLocat
         value: measurement.value,
         time: measurementTime,
         locationId: measurement.location
-          ? locationMap.get(measurement.location)
+          ? foundLocationsGet(locations, measurement.location)
           // TODO: Does this really work?
           : sql`select ${deviceToLocation.locationId}
                 from ${deviceToLocation}
@@ -493,8 +527,8 @@ async function updateLastMeasurements(lastMeasurements: Record<string, NonNullab
   const sqlChunks: SQL[] = [
     sql`(case`,
     ...Object.entries(lastMeasurements).map(([sensorId, lastMeasurement]) =>
-      sql`when ${sensor.id} = ${sensorId} then ${ lastMeasurement }`
-    ),
+      [sql`when ${sensor.id} = ${sensorId} then`, sql<LastMeasurement>`${JSON.stringify(lastMeasurement)}`]
+    ).flat(),
     sql`end)`
   ];
 
@@ -502,7 +536,7 @@ async function updateLastMeasurements(lastMeasurements: Record<string, NonNullab
 
   await tx
     .update(sensor)
-    .set({ lastMeasurements: finalSql })
+    .set({ lastMeasurement: finalSql })
     .where(inArray(sensor.id, Object.keys(lastMeasurements)));
 }
 

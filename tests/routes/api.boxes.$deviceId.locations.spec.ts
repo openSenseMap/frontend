@@ -6,7 +6,7 @@ import { deleteMeasurementsForSensor, deleteMeasurementsForTime, saveMeasurement
 import { getSensors } from "~/models/sensor.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { loader } from "~/routes/api.boxes.$deviceId.locations";
-import { type Sensor, type Device, type User } from "~/schema";
+import { type Sensor, type User } from "~/schema";
 
 const DEVICE_SENSORS_ID_USER = {
   name: "meTestSensorsIds",
@@ -172,6 +172,7 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
   afterAll(async () => {
     //delete measurements
     if (sensors?.length > 0) {
+      // TODO: Also remove locations
       await deleteMeasurementsForSensor(sensors[0].id);
       MEASUREMENTS.forEach(async (measurement) => await deleteMeasurementsForTime(measurement.createdAt));
     }
