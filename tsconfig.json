@@ -1,28 +1,35 @@
 {
-  "exclude": [],
-  "include": ["./types", "env.d.ts", "**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
-  "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
-    "types": ["@react-router/node", "vite/client", "vitest/globals"],
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    "target": "ES2020",
-    "strict": true,
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["app/*"],
-      "@/*": ["app/*"]
-    },
-    "skipLibCheck": true,
-    "rootDirs": [".", "./.react-router/types"],
+	"exclude": [],
+	"include": [
+		"./types",
+		"env.ts",
+		"env.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+		".react-router/types/**/*"
+	],
+	"compilerOptions": {
+		"lib": ["DOM", "DOM.Iterable", "ES2020"],
+		"types": ["@react-router/node", "vite/client", "vitest/globals"],
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"jsx": "react-jsx",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"resolveJsonModule": true,
+		"target": "ES2020",
+		"strict": true,
+		"allowJs": true,
+		"forceConsistentCasingInFileNames": true,
+		"baseUrl": ".",
+		"paths": {
+			"~/*": ["app/*"],
+			"@/*": ["app/*"]
+		},
+		"skipLibCheck": true,
+		"rootDirs": [".", "./.react-router/types"],
 
-    // Remix takes care of building everything in `remix build`.
-    "noEmit": true
-  }
+		// Remix takes care of building everything in `remix build`.
+		"noEmit": true
+	}
 }
