@@ -3,9 +3,11 @@ import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteMeasurementsForSensor, deleteMeasurementsForTime } from '~/models/measurement.server'
+import { getSensors } from '~/models/sensor.server'
+import { deleteUserByEmail } from '~/models/user.server'
 import { deviceToLocation, location } from '~/schema'
-import { LastMeasurement, sensor, Sensor } from '~/schema/sensor'
-import { User } from '~/schema/user'
+import { type LastMeasurement, sensor, type Sensor } from '~/schema/sensor'
+import { type User } from '~/schema/user'
 import {
   addLocationUpdates,
   filterLocationUpdates,
@@ -14,12 +16,10 @@ import {
 	foundLocationsGet,
 	getLocationUpdates,
 	insertMeasurementsWithLocation,
-	Location,
-	LocationWithId,
+	type Location,
+	type LocationWithId,
 	updateLastMeasurements,
 } from '~/utils/measurement-server-helper'
-import { getSensors } from '~/models/sensor.server'
-import { deleteUserByEmail } from '~/models/user.server'
 
 const DEVICE_SENSORS_ID_USER = {
 	name: 'meTestSensorsIds',
@@ -132,14 +132,14 @@ describe('measurement server helper', () => {
 		deviceId = device.id
 		sensors = await getSensors(deviceId)
 
-		MEASUREMENTS.forEach((meas, i) => (meas.sensor_id = sensors[0].id))
+		MEASUREMENTS.forEach(meas => (meas.sensor_id = sensors[0].id))
 	})
 
 	it('should get location updates', async () => {
 		const result = getLocationUpdates(MEASUREMENTS)
 
 		// Check filtering
-		expect(result.length).toBe(2)
+		expect(result).toHaveLength(2)
 
 		// Check ordering
 		expect(result[0].time).toEqual(new Date('1954-06-07 12:00:00+00'))
@@ -155,7 +155,7 @@ describe('measurement server helper', () => {
 			})
 			.returning()
 
-		expect(inserted.length).toBe(1)
+		expect(inserted).toHaveLength(1)
 		const insertedId = inserted[0].id
     locationIds.push(insertedId)
 
@@ -164,7 +164,7 @@ describe('measurement server helper', () => {
     foundOrCreatedLocations = result
 
 		// Check locations
-		expect(result.length).toBe(2)
+		expect(result).toHaveLength(2)
 		expect(
 			result.some(
 				(location) => location.lng == 40293455 && location.lat == 598435,
@@ -190,7 +190,7 @@ describe('measurement server helper', () => {
 			.from(location)
 			.where(eq(location.id, otherId))
 
-		expect(databaseEntry.length).toBe(1)
+		expect(databaseEntry).toHaveLength(1)
 		expect(databaseEntry[0].location.x).toBe(40293455)
 		expect(databaseEntry[0].location.y).toBe(598435)
 	})
@@ -232,7 +232,7 @@ describe('measurement server helper', () => {
 				tx,
 			)
 
-      expect(result.length).toBe(1)
+      expect(result).toHaveLength(1)
       // The filtered udpates should only include the newer one
       expect(result[0].time).toEqual(new Date('1988-03-14 1:59:26+00'))
 		})
@@ -253,7 +253,7 @@ describe('measurement server helper', () => {
     
     // One location update was already added in the previous test,
     // one more should have been added by the tested function
-    expect(inserted.length).toBe(2)
+    expect(inserted).toHaveLength(2)
     expect(inserted[1].locationId).toBe(locationIds[1])
     expect(inserted[1].time).toEqual(new Date('1988-03-14 1:59:26+00'))
   })
@@ -268,7 +268,7 @@ describe('measurement server helper', () => {
 			)
 
       // All 3 should have been inserted
-      expect(result.length).toBe(3)
+      expect(result).toHaveLength(3)
 
       // Location IDs should have been fetched
       // The locationIds[1] is what was inserted in a previous test
@@ -316,7 +316,7 @@ describe('measurement server helper', () => {
       .from(sensor)
       .where(inArray(sensor.id, [sensors[0].id, sensors[1].id]))
 
-    expect(results.length).toBe(2)
+    expect(results).toHaveLength(2)
     expect(results.find(sensor => sensor.id == sensors[0].id)?.lastMeasurement).toEqual(lastMeasurements[sensors[0].id])
     expect(results.find(sensor => sensor.id == sensors[1].id)?.lastMeasurement).toEqual(lastMeasurements[sensors[1].id])
   })

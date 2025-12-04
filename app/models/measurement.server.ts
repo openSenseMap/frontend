@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
-  LastMeasurement,
+  type LastMeasurement,
   location,
   measurement,
   measurements10minView,
@@ -11,8 +11,8 @@ import {
   measurements1yearView,
 } from "~/schema";
 import {
-	MinimalDevice,
-	MeasurementWithLocation,
+	type MinimalDevice,
+	type MeasurementWithLocation,
 	getLocationUpdates,
 	findOrCreateLocations,
 	addLocationUpdates,

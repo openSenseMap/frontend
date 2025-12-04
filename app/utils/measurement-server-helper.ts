@@ -1,10 +1,10 @@
-import { desc, eq, inArray, or, SQL, sql } from 'drizzle-orm'
+import { desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
 import {
 	deviceToLocation,
-	LastMeasurement,
+	type LastMeasurement,
 	location,
-	Measurement,
+	type Measurement,
 	measurement,
 	sensor,
 } from '~/schema'
