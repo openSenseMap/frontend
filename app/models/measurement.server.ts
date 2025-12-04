@@ -527,7 +527,7 @@ async function updateLastMeasurements(lastMeasurements: Record<string, NonNullab
   const sqlChunks: SQL[] = [
     sql`(case`,
     ...Object.entries(lastMeasurements).map(([sensorId, lastMeasurement]) =>
-      [sql`when ${sensor.id} = ${sensorId} then`, sql<LastMeasurement>`${JSON.stringify(lastMeasurement)}`]
+      [sql`when ${sensor.id} = ${sensorId} then`, sql<LastMeasurement>`${JSON.stringify(lastMeasurement)}::json`]
     ).flat(),
     sql`end)`
   ];
