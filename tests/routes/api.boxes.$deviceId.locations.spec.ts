@@ -1,12 +1,14 @@
+import { or, sql } from "drizzle-orm";
 import { type Params, type LoaderFunctionArgs } from "react-router";
 import { BASE_URL } from "vitest.setup";
+import { drizzleClient } from "~/db.server";
 import { registerUser } from "~/lib/user-service.server";
 import { createDevice, deleteDevice } from "~/models/device.server";
 import { deleteMeasurementsForSensor, deleteMeasurementsForTime, saveMeasurements } from "~/models/measurement.server";
 import { getSensors } from "~/models/sensor.server";
 import { deleteUserByEmail } from "~/models/user.server";
 import { loader } from "~/routes/api.boxes.$deviceId.locations";
-import { type Sensor, type User } from "~/schema";
+import { location, type Sensor, type User } from "~/schema";
 
 const DEVICE_SENSORS_ID_USER = {
   name: "meTestSensorsIds",
@@ -49,8 +51,8 @@ const MEASUREMENTS = [
 		createdAt: new Date('1954-06-07 12:00:00+00'),
     sensor_id: "",
     location: {
-      lng: 1,
-      lat: 2,
+      lng: 6489,
+      lat: 2945,
       height: 3
     }
 	},
@@ -59,8 +61,8 @@ const MEASUREMENTS = [
     createdAt: new Date('1988-03-14 1:59:26+00'),
     sensor_id: "",
     location: {
-      lng: 4,
-      lat: 5,
+      lng: 40293455,
+      lat: 598435,
     }
   },
   {
@@ -68,8 +70,8 @@ const MEASUREMENTS = [
     createdAt: new Date('2000-05-25 11:11:11+00'),
     sensor_id: "",
     location: {
-      lng: 6,
-      lat: 7,
+      lng: 695345,
+      lat: 7989976,
       height: 8
     }
   }
@@ -122,10 +124,10 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
       expect(body).toHaveLength(2);
       expect(body[0].coordinates).toHaveLength(2);
       expect(body[1].coordinates).toHaveLength(2);
-      expect(body[0].coordinates[0]).toBe(4);
-      expect(body[0].coordinates[1]).toBe(5);
-      expect(body[1].coordinates[0]).toBe(1);
-      expect(body[1].coordinates[1]).toBe(2);
+      expect(body[0].coordinates[0]).toBe(40293455);
+      expect(body[0].coordinates[1]).toBe(598435);
+      expect(body[1].coordinates[0]).toBe(6489);
+      expect(body[1].coordinates[1]).toBe(2945);
       expect(body[0].type).toBe("Point");
       expect(body[1].type).toBe("Point");
       expect(body[0].timestamp).toBe('1988-03-14T01:59:26.000Z');
@@ -159,10 +161,10 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
       expect(body.geometry.coordinates).toHaveLength(2);
       expect(body.geometry.coordinates[0]).toHaveLength(2);
       expect(body.geometry.coordinates[1]).toHaveLength(2);
-      expect(body.geometry.coordinates[0][0]).toBe(4);
-      expect(body.geometry.coordinates[0][1]).toBe(5);
-      expect(body.geometry.coordinates[1][0]).toBe(1);
-      expect(body.geometry.coordinates[1][1]).toBe(2);
+      expect(body.geometry.coordinates[0][0]).toBe(40293455);
+      expect(body.geometry.coordinates[0][1]).toBe(598435);
+      expect(body.geometry.coordinates[1][0]).toBe(6489);
+      expect(body.geometry.coordinates[1][1]).toBe(2945);
       expect(body.properties.timestamps).toHaveLength(2);
       expect(body.properties.timestamps[0]).toBe('1988-03-14T01:59:26.000Z');
       expect(body.properties.timestamps[1]).toBe('1954-06-07T12:00:00.000Z');
@@ -172,7 +174,6 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
   afterAll(async () => {
     //delete measurements
     if (sensors?.length > 0) {
-      // TODO: Also remove locations
       await deleteMeasurementsForSensor(sensors[0].id);
       MEASUREMENTS.forEach(async (measurement) => await deleteMeasurementsForTime(measurement.createdAt));
     }
@@ -180,5 +181,22 @@ describe("openSenseMap API Routes: /api/boxes/:deviceId/locations", () => {
     await deleteUserByEmail(DEVICE_SENSORS_ID_USER.email);
     // delete the box
     await deleteDevice({ id: deviceId });
+    // delete created locations
+    await deleteLocations();
   });
 });
+
+async function deleteLocations() {
+  await drizzleClient
+    .delete(location)
+    .where(
+      or(
+        ...MEASUREMENTS.map(measurement =>
+          sql`ST_EQUALS(
+            ${location.location},
+            ST_SetSRID(ST_MakePoint(${measurement.location.lng}, ${measurement.location.lat}), 4326)
+          )`
+        )
+      )
+    );
+}
