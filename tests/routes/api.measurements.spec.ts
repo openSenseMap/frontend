@@ -262,7 +262,7 @@ describe("multiple CSV POST /boxes/:id/data", () => {
             "Content-Type": "application/sbx-bytes",
             Authorization: mockAccessToken,
           },
-          body: byteSubmitData(sensors),
+          body: byteSubmitData(sensors) as unknown as BodyInit,
         }
       );
 
@@ -302,7 +302,7 @@ describe("multiple CSV POST /boxes/:id/data", () => {
             "Content-Type": "application/sbx-bytes-ts",
             Authorization: mockAccessToken,
           },
-          body: byteSubmitData(sensors, true),
+          body: byteSubmitData(sensors, true) as unknown as BodyInit,
         }
       );
     
