@@ -1,18 +1,14 @@
-import { and, desc, eq, gte, inArray, lte, or, SQL, sql } from "drizzle-orm";
-import { json } from "drizzle-orm/mysql-core";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
 import {
-  deviceToLocation,
   LastMeasurement,
   location,
-  Measurement,
   measurement,
   measurements10minView,
   measurements1dayView,
   measurements1hourView,
   measurements1monthView,
   measurements1yearView,
-  sensor,
 } from "~/schema";
 import {
 	MinimalDevice,

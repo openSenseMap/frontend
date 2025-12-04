@@ -95,8 +95,6 @@ export async function findOrCreateLocations(
 			}
 		})
 
-		// TODO: Validate that the locations that already exist in the database are indeed filtered out that way
-		// (that is, validate that `locationMap.has` returns true for locations already existing in the db)
 		const toInsert = newLocations.filter(
 			(newLocation) => !foundLocationsContain(foundLocations, newLocation),
 		)
@@ -178,18 +176,22 @@ export async function addLocationUpdates(
         even though it should've been inserted`)
 			})
 
-		await tx
-			.insert(deviceToLocation)
-			.values(
-				filteredUpdates.map((update) => {
-					return {
-						deviceId: deviceId,
-						locationId: foundLocationsGet(locations, update.location) as bigint,
-						time: update.time,
-					}
-				}),
-			)
-			.onConflictDoNothing()
+		if (filteredUpdates.length > 0)
+			await tx
+				.insert(deviceToLocation)
+				.values(
+					filteredUpdates.map((update) => {
+						return {
+							deviceId: deviceId,
+							locationId: foundLocationsGet(
+								locations,
+								update.location,
+							) as bigint,
+							time: update.time,
+						}
+					}),
+				)
+				.onConflictDoNothing()
 	})
 }
 
@@ -230,55 +232,32 @@ export async function insertMeasurementsWithLocation(
 	deviceId: string,
 	tx: any,
 ): Promise<Measurement[]> {
-	const measuresWithLocationIdPromises = measurements.map(
-		async (measurement) => {
-			const measurementTime = measurement.createdAt || new Date()
-			// TODO: Remove if the inline query works
-			/*let locationId: bigint | null = null;
-
-      if (measurement.location) {
-        // Measurement has explicit location
-        const foundLocationId = locationMap.get(measurement.location);
-        if (!foundLocationId)
-          throw new Error(`Location ID for location ${measurement.location} not found,
-            even though it should've been inserted`)
-        locationId = foundLocationId;
-      } else
-        // No explicit location - infer from device location history
-        locationId = await getDeviceLocationAtTime(
-          tx,
-          deviceId,
-          measurementTime,
-        );*/
-
-			return {
-				sensorId: measurement.sensor_id,
-				value: measurement.value,
-				time: measurementTime,
-				locationId: measurement.location
-					? foundLocationsGet(locations, measurement.location)
-					: // TODO: Does this really work?
-						sql`(select ${deviceToLocation.locationId}
+	const measuresWithLocationId = measurements.map((measurement) => {
+		const measurementTime = measurement.createdAt || new Date()
+		return {
+			sensorId: measurement.sensor_id,
+			value: measurement.value,
+			time: measurementTime,
+			locationId: measurement.location
+				? foundLocationsGet(locations, measurement.location)
+				: sql`(select ${deviceToLocation.locationId}
                 from ${deviceToLocation}
                 where ${deviceToLocation.deviceId} = ${deviceId}
                   and ${deviceToLocation.time} <= ${measurementTime.toISOString()}
                 order by ${deviceToLocation.time} desc
                 limit 1)`,
-			}
-		},
-	)
-
-	const measuresWithLocationId = await Promise.all(
-		measuresWithLocationIdPromises,
-	)
+		}
+	})
 
 	// Insert measurements with locationIds (may be null for measurements
 	// without location and before any device location was set)
-	return await tx
-		.insert(measurement)
-		.values(measuresWithLocationId)
-		.onConflictDoNothing()
-		.returning()
+	return measuresWithLocationId.length > 0
+		? await tx
+				.insert(measurement)
+				.values(measuresWithLocationId)
+				.onConflictDoNothing()
+				.returning()
+		: []
 }
 
 /**

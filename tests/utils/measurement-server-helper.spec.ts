@@ -16,13 +16,10 @@ import {
 	insertMeasurementsWithLocation,
 	Location,
 	LocationWithId,
-	MeasurementWithLocation,
-  updateLastMeasurements,
+	updateLastMeasurements,
 } from '~/utils/measurement-server-helper'
 import { getSensors } from '~/models/sensor.server'
 import { deleteUserByEmail } from '~/models/user.server'
-import { bigint } from 'drizzle-orm/gel-core'
-import { s } from 'node_modules/react-router/dist/development/context-DSyS5mLj.mjs'
 
 const DEVICE_SENSORS_ID_USER = {
 	name: 'meTestSensorsIds',
