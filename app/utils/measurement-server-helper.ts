@@ -1,0 +1,310 @@
+import { desc, eq, inArray, or, SQL, sql } from 'drizzle-orm'
+import { drizzleClient } from '~/db.server'
+import {
+	deviceToLocation,
+	LastMeasurement,
+	location,
+	Measurement,
+	measurement,
+	sensor,
+} from '~/schema'
+
+export interface MeasurementWithLocation {
+	sensor_id: string
+	value: number
+	createdAt?: Date
+	location?: Location | null
+}
+
+export type Location = {
+	lng: number
+	lat: number
+	height?: number
+}
+
+export type LocationWithId = Location & { id: bigint }
+
+export type DeviceLocationUpdate = {
+	location: Location
+	time: Date
+}
+
+export type MinimalDevice = {
+	id: string
+	sensors: Array<{
+		id: string
+	}>
+}
+
+/**
+ * Extracts location updates from measurements (with explicit locations)
+ * @param measurements The measurements with potential location udpates
+ * @returns The found location updates, sorted oldest first
+ */
+export function getLocationUpdates(
+	measurements: MeasurementWithLocation[],
+): DeviceLocationUpdate[] {
+	return (
+		measurements
+			.filter((measurement) => measurement.location)
+			.map((measurement) => {
+				return {
+					location: measurement.location as Location,
+					time: new Date(measurement.createdAt || Date.now()),
+				}
+			})
+			// Sort device location updates by time (oldest first) to process in order
+			.sort((a, b) => a.time.getTime() - b.time.getTime())
+	)
+}
+
+/**
+ * Makes sure all locations for the location updates are in the database
+ * @param locationUpdates The location updates from `getLocationUpdates`
+ * @returns A map of the IDs of the locations for the location updates
+ */
+export async function findOrCreateLocations(
+	locationUpdates: DeviceLocationUpdate[],
+): Promise<LocationWithId[]> {
+	const newLocations = locationUpdates.map((update) => update.location)
+
+	let foundLocations: LocationWithId[] = []
+
+	await drizzleClient.transaction(async (tx) => {
+		const existingLocations = await tx
+			.select({ id: location.id, location: location.location })
+			.from(location)
+			.where(
+				or(
+					...newLocations.map(
+						(newLocation) =>
+							sql`ST_EQUALS(
+              ${location.location},
+              ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)
+            )`,
+					),
+				),
+			)
+
+		foundLocations = existingLocations.map((location) => {
+			return {
+				lng: location.location.x,
+				lat: location.location.y,
+				height: undefined,
+				id: location.id,
+			}
+		})
+
+		// TODO: Validate that the locations that already exist in the database are indeed filtered out that way
+		// (that is, validate that `locationMap.has` returns true for locations already existing in the db)
+		const toInsert = newLocations.filter(
+			(newLocation) => !foundLocationsContain(foundLocations, newLocation),
+		)
+
+		const inserted =
+			toInsert.length > 0
+				? await tx
+						.insert(location)
+						.values(
+							toInsert.map((newLocation) => {
+								return {
+									location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
+								}
+							}),
+						)
+						.returning()
+				: []
+
+		inserted.forEach((value) =>
+			foundLocations.push({
+				lng: value.location.x,
+				lat: value.location.y,
+				height: undefined,
+				id: value.id,
+			}),
+		)
+	})
+
+	return foundLocations
+}
+
+export function foundLocationsContain(
+	foundLocations: LocationWithId[],
+	location: Location,
+): boolean {
+	return foundLocations.some((found) => foundLocationEquals(found, location))
+}
+
+export function foundLocationsGet(
+	foundLocations: LocationWithId[],
+	location: Location,
+): bigint | undefined {
+	return foundLocations.find((found) => foundLocationEquals(found, location))
+		?.id
+}
+
+function foundLocationEquals(
+	foundLocation: LocationWithId,
+	location: Location,
+): boolean {
+	return (
+		foundLocation.lat === location.lat && foundLocation.lng === location.lng
+	)
+}
+
+/**
+ * Filters the location updates to not add older updates than the newest already existing one,
+ * then inserts the filtered location updates
+ * @param deviceLocationUpdates The updates to add
+ * @param deviceId The device ID the updates are referring to
+ * @param locations The found locations with the IDs of the locations already in the database
+ */
+export async function addLocationUpdates(
+	deviceLocationUpdates: DeviceLocationUpdate[],
+	deviceId: string,
+	locations: LocationWithId[],
+) {
+	await drizzleClient.transaction(async (tx) => {
+		let filteredUpdates = await filterLocationUpdates(
+			deviceLocationUpdates,
+			deviceId,
+			tx,
+		)
+
+		filteredUpdates
+			.filter((update) => !foundLocationsContain(locations, update.location))
+			.forEach((update) => {
+				throw new Error(`Location ID for location ${update.location} not found,
+        even though it should've been inserted`)
+			})
+
+		await tx
+			.insert(deviceToLocation)
+			.values(
+				filteredUpdates.map((update) => {
+					return {
+						deviceId: deviceId,
+						locationId: foundLocationsGet(locations, update.location) as bigint,
+						time: update.time,
+					}
+				}),
+			)
+			.onConflictDoNothing()
+	})
+}
+
+/**
+ * Filters out location updates that don't need to be inserted because they're older than the latest update
+ * @param deviceLocationUpdates The device location updates to filter through
+ */
+export async function filterLocationUpdates(
+	deviceLocationUpdates: DeviceLocationUpdate[],
+	deviceId: string,
+	tx: any,
+): Promise<DeviceLocationUpdate[]> {
+	const currentLatestLocation = await tx
+		.select({ time: deviceToLocation.time })
+		.from(deviceToLocation)
+		.where(eq(deviceToLocation.deviceId, deviceId))
+		.orderBy(desc(deviceToLocation.time))
+		.limit(1)
+
+	return deviceLocationUpdates.filter(
+		(update) =>
+			currentLatestLocation.length === 0 ||
+			update.time >= currentLatestLocation[0].time,
+	)
+}
+
+/**
+ * Inserts measurements with their evaluated locations (either from the explicit location, which is assumed to already be
+ * in the location map), or from the last device location at the measurement time.
+ * @param measurements The measurements to insert
+ * @param locations The locations with the location IDs for the explicit locations
+ * @param deviceId The devices ID for the measurements
+ * @param tx The current transaction to run the insert SQLs in
+ */
+export async function insertMeasurementsWithLocation(
+	measurements: MeasurementWithLocation[],
+	locations: LocationWithId[],
+	deviceId: string,
+	tx: any,
+): Promise<Measurement[]> {
+	const measuresWithLocationIdPromises = measurements.map(
+		async (measurement) => {
+			const measurementTime = measurement.createdAt || new Date()
+			// TODO: Remove if the inline query works
+			/*let locationId: bigint | null = null;
+
+      if (measurement.location) {
+        // Measurement has explicit location
+        const foundLocationId = locationMap.get(measurement.location);
+        if (!foundLocationId)
+          throw new Error(`Location ID for location ${measurement.location} not found,
+            even though it should've been inserted`)
+        locationId = foundLocationId;
+      } else
+        // No explicit location - infer from device location history
+        locationId = await getDeviceLocationAtTime(
+          tx,
+          deviceId,
+          measurementTime,
+        );*/
+
+			return {
+				sensorId: measurement.sensor_id,
+				value: measurement.value,
+				time: measurementTime,
+				locationId: measurement.location
+					? foundLocationsGet(locations, measurement.location)
+					: // TODO: Does this really work?
+						sql`(select ${deviceToLocation.locationId}
+                from ${deviceToLocation}
+                where ${deviceToLocation.deviceId} = ${deviceId}
+                  and ${deviceToLocation.time} <= ${measurementTime.toISOString()}
+                order by ${deviceToLocation.time} desc
+                limit 1)`,
+			}
+		},
+	)
+
+	const measuresWithLocationId = await Promise.all(
+		measuresWithLocationIdPromises,
+	)
+
+	// Insert measurements with locationIds (may be null for measurements
+	// without location and before any device location was set)
+	return await tx
+		.insert(measurement)
+		.values(measuresWithLocationId)
+		.onConflictDoNothing()
+		.returning()
+}
+
+/**
+ * Updates the last measurement values for all given sensors
+ * @param lastMeasurements The measurements to update, including the sensor keys as values
+ * @param tx The current transaction to execute the update in
+ */
+export async function updateLastMeasurements(
+	lastMeasurements: Record<string, NonNullable<LastMeasurement>>,
+	tx: any,
+) {
+	const sqlChunks: SQL[] = [
+		sql`(case`,
+		...Object.entries(lastMeasurements)
+			.map(([sensorId, lastMeasurement]) => [
+				sql`when ${sensor.id} = ${sensorId} then`,
+				sql<LastMeasurement>`${JSON.stringify(lastMeasurement)}::json`,
+			])
+			.flat(),
+		sql`end)`,
+	]
+
+	const finalSql: SQL = sql.join(sqlChunks, sql.raw(' '))
+
+	await tx
+		.update(sensor)
+		.set({ lastMeasurement: finalSql })
+		.where(inArray(sensor.id, Object.keys(lastMeasurements)))
+}
