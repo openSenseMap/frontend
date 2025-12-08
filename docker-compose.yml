@@ -1,7 +1,7 @@
 services:
   postgres:
     # image: timescale/timescaledb:2.10.2-pg14
-    image: timescale/timescaledb-ha:pg15-arm64
+    image: timescale/timescaledb-ha:pg15
     # Preload pg_cron extension
     # https://github.com/timescale/timescaledb-docker-ha/issues/293
     # Extension is created with prisma
@@ -13,7 +13,13 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       # - ./pgdata:/home/postgres/pgdata
       - ./db/imports:/home/postgres/imports
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - '8025:8025'
+      - '1025:1025'

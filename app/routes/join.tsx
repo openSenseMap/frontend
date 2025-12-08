@@ -1,13 +1,23 @@
 import i18next from "app/i18next.server";
 import * as React from "react";
-import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect , Form, Link, useActionData, useSearchParams  } from "react-router";
+import { useTranslation } from "react-i18next";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  redirect,
+  Form,
+  Link,
+  useActionData,
+  useSearchParams,
+} from "react-router";
 
 import ErrorMessage from "~/components/error-message";
 import { getProfileByUsername } from "~/models/profile.server";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail, validateName } from "~/utils";
 import { createUserSession, getUserId } from "~/utils/session.server";
-
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -25,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!name || typeof name !== "string") {
     return data(
-      { errors: { name: "Name is required", email: null, password: null } },
+      { errors: { name: "username_required", email: null, password: null } },
       { status: 400 },
     );
   }
@@ -47,14 +57,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!validateEmail(email)) {
     return data(
-      { errors: { name: null, email: "Email is invalid", password: null } },
+      { errors: { name: null, email: "email_invalid", password: null } },
       { status: 400 },
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return data(
-      { errors: { name: null, email: null, password: "Password is required" } },
+      { errors: { name: null, email: null, password: "password_required" } },
       { status: 400 },
     );
   }
@@ -65,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
         errors: {
           name: null,
           email: null,
-          password: "Please use at least 8 characters.",
+          password: "password_too_short",
         },
       },
       { status: 400 },
@@ -79,7 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         errors: {
           name: null,
-          email: "A user already exists with this email",
+          email: "email_already_taken",
           password: null,
         },
       },
@@ -93,7 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return data(
       {
         errors: {
-          name: "A user already exists with this name",
+          name: "username_already_taken",
           email: null,
           password: null,
         },
@@ -121,6 +131,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Join() {
+  const { t } = useTranslation("register");
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
@@ -163,7 +174,7 @@ export default function Join() {
               />
               {actionData?.errors?.name && (
                 <div className="pt-1 text-[#FF0000]" id="email-error">
-                  {actionData.errors.name}
+                  {t(actionData.errors.name)}
                 </div>
               )}
             </div>
@@ -191,7 +202,7 @@ export default function Join() {
               />
               {actionData?.errors?.email && (
                 <div className="pt-1 text-[#FF0000]" id="email-error">
-                  {actionData.errors.email}
+                  {t(actionData.errors.email)}
                 </div>
               )}
             </div>
@@ -217,7 +228,7 @@ export default function Join() {
               />
               {actionData?.errors?.password && (
                 <div className="pt-1 text-[#FF0000]" id="password-error">
-                  {actionData.errors.password}
+                  {t(actionData.errors.password)}
                 </div>
               )}
             </div>

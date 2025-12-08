@@ -1,7 +1,6 @@
 import tailwindStylesheetUrl from "/app/tailwind.css?url";
 import appStylesheetUrl from "/app/app.css?url";
 import clsx from "clsx";
-import i18next from "./i18next.server";
 import { useTranslation } from "react-i18next";
 import {
   data,
@@ -17,6 +16,7 @@ import {
 import { useChangeLanguage } from "remix-i18next/react";
 import { Toaster } from "./components/ui/toaster";
 import { i18nCookie } from "./cookies";
+import i18next from "./i18next.server";
 import { getEnv } from "./utils/env.server";
 import { getUser } from "./utils/session.server";
 
@@ -111,17 +111,13 @@ export function App() {
   useChangeLanguage(data.locale);
 
   return (
-    <html
-      lang={data.locale}
-      dir={i18n.dir()}
-      className={clsx("light", "overflow-hidden")}
-    >
+    <html lang={data.locale} dir={i18n.dir()} className={clsx("light")}>
       <head>
         <Meta />
         {/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
         <Links />
       </head>
-      <body className="flex h-full flex-col dark:bg-dark-background dark:text-dark-text overflow-visible overflow-auto">
+      <body className="dark:bg-dark-background dark:text-dark-text">
         <Outlet />
         <Toaster />
         <ScrollRestoration />

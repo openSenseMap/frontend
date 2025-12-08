@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import Backend from "i18next-fs-backend";
+import Backend from "i18next-fs-backend/cjs"; // Even though unintuitive, cjs is what we want https://github.com/i18next/i18next-fs-backend/issues/57
 import { RemixI18Next } from "remix-i18next/server";
 import { i18nCookie } from "./cookies";
 import i18nextOptions from "./i18next-options";
@@ -8,7 +8,7 @@ let i18next: RemixI18Next = new RemixI18Next({
   detection: {
     // persist language selection in cookie
     cookie: i18nCookie,
-    supportedLanguages: i18nextOptions.supportedLngs,
+    supportedLanguages: [...i18nextOptions.supportedLngs],
     fallbackLanguage: i18nextOptions.fallbackLng,
   },
   // This is the configuration for i18next used

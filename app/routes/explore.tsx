@@ -1,15 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import  { type FeatureCollection, type Point } from "geojson";
+import { type FeatureCollection, type Point } from "geojson";
 import mapboxglcss from "mapbox-gl/dist/mapbox-gl.css?url";
-import { useState, useRef} from "react";
-import  { type MapLayerMouseEvent, type MapRef, MapProvider, Layer, Source, Marker  } from "react-map-gl";
+import { useState, useRef } from "react";
+import {
+  type MapLayerMouseEvent,
+  type MapRef,
+  MapProvider,
+  Layer,
+  Source,
+  Marker,
+} from "react-map-gl";
 import {
   Outlet,
   useNavigate,
   useSearchParams,
   useLoaderData,
   useParams,
-  type LoaderFunctionArgs, type LinksFunction 
+  type LoaderFunctionArgs,
+  type LinksFunction,
 } from "react-router";
 import type Supercluster from "supercluster";
 import ErrorMessage from "~/components/error-message";
@@ -27,71 +35,70 @@ import { getSensors } from "~/models/sensor.server";
 import { type Device } from "~/schema";
 import { getFilteredDevices } from "~/utils";
 import { getCSV, getJSON, getTXT } from "~/utils/file-exports";
-import { getUser, getUserSession } from "~/utils/session.server"
+import { getUser, getUserSession } from "~/utils/session.server";
 
-
-
-export async function action({request}:{request:Request}){
-  const deviceLimit = 50
-  const sensorIds:Array<string>=[]
-  const measurements:Array<object>=[]
-	const formdata = await request.formData();
-  const deviceIds = (formdata.get('devices') as string).split(',');
-  const format = formdata.get('format') as string
-  const aggregate = formdata.get('aggregate') as string
+export async function action({ request }: { request: Request }) {
+  const deviceLimit = 50;
+  const sensorIds: Array<string> = [];
+  const measurements: Array<object> = [];
+  const formdata = await request.formData();
+  const deviceIds = (formdata.get("devices") as string).split(",");
+  const format = formdata.get("format") as string;
+  const aggregate = formdata.get("aggregate") as string;
   const includeFields = {
-    title: formdata.get('title') === 'on',
-    unit: formdata.get('unit') === 'on',
-    value: formdata.get('value') === 'on',
-    timestamp: formdata.get('timestamp') === 'on',
-  }
+    title: formdata.get("title") === "on",
+    unit: formdata.get("unit") === "on",
+    value: formdata.get("value") === "on",
+    timestamp: formdata.get("timestamp") === "on",
+  };
 
-  if(deviceIds.length>=deviceLimit){
-    return Response.json({error:"error",link:"https://archive.opensensemap.org/"})
+  if (deviceIds.length >= deviceLimit) {
+    return Response.json({
+      error: "error",
+      link: "https://archive.opensensemap.org/",
+    });
   }
-  for(const device of deviceIds){
+  for (const device of deviceIds) {
     const sensors = await getSensors(device);
     for (const sensor of sensors) {
       sensorIds.push(sensor.id);
-      const measurement = await getMeasurement(sensor.id,aggregate);
-      measurement.map((m:any)=>{
+      const measurement = await getMeasurement(sensor.id, aggregate);
+      measurement.map((m: any) => {
         m["title"] = sensor.title;
         m["unit"] = sensor.unit;
-      })
-   
+      });
+
       measurements.push(measurement);
     }
   }
 
-  let content = '';
-  let contentType = 'text/plain';
-  let fileName = '';
-  
-  if (format === 'csv') {
+  let content = "";
+  let contentType = "text/plain";
+  let fileName = "";
+
+  if (format === "csv") {
     const result = getCSV(measurements, includeFields);
     content = result.content;
     fileName = result.fileName;
     contentType = result.contentType;
-  }
-  else if (format === 'json') {
+  } else if (format === "json") {
     const result = getJSON(measurements, includeFields);
     content = result.content;
     fileName = result.fileName;
     contentType = result.contentType;
-  } 
-  else { // txt format
-      const result = getTXT(measurements, includeFields);
-      content = result.content;
-      fileName = result.fileName;
-      contentType = result.contentType;
+  } else {
+    // txt format
+    const result = getTXT(measurements, includeFields);
+    content = result.content;
+    fileName = result.fileName;
+    contentType = result.contentType;
   }
 
   return Response.json({
     href: `data:${contentType};charset=utf-8,${encodeURIComponent(content)}`,
-    download: fileName
+    download: fileName,
   });
 }
-
 
 export type DeviceClusterProperties =
   | Supercluster.PointFeature<any>
@@ -112,7 +119,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // check if sensors are queried - if not get devices only to reduce load
   const devices = !urlFilterParams.get("phenomenon")
-    ? await getDevices()
+    ? await getDevices("geojson")
     : await getDevicesWithSensors();
 
   const session = await getUserSession(request);
@@ -125,13 +132,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     const profile = await getProfileByUserId(user.id);
+    const userLocale = user.language
+      ? user.language.split(/[_-]/)[0].toLowerCase()
+      : "en";
     return {
       devices,
       user,
       profile,
       filteredDevices,
       filterParams,
-      locale,
+      locale: userLocale,
       //phenomena
     };
   }
@@ -142,6 +152,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filterParams,
     filteredDevices,
     message,
+    locale
     //phenomena,
   };
 }
@@ -163,7 +174,7 @@ if (process.env.NODE_ENV === "production") {
 
 export default function Explore() {
   // data from our loader
-  const { devices, user, profile, filterParams, filteredDevices, message } =
+  const { devices, user, profile, filterParams, filteredDevices, message,locale } =
     useLoaderData<typeof loader>();
 
   const mapRef = useRef<MapRef | null>(null);
@@ -323,7 +334,7 @@ export default function Explore() {
   var deviceLoc: any;
   let selectedDevice: any;
   if (deviceId) {
-    selectedDevice = devices.features.find(
+    selectedDevice = (devices as any).features.find(
       (device: any) => device.properties.id === deviceId,
     );
     deviceLoc = [
@@ -396,7 +407,7 @@ export default function Explore() {
           {/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-          <Outlet /> 
+          <Outlet />
         </Map>
       </MapProvider>
     </div>

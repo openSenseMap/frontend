@@ -1,6 +1,17 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import  { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, data, redirect, Form, Link, useActionData, useNavigation, useSearchParams  } from "react-router";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  redirect,
+  Form,
+  Link,
+  useActionData,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ErrorMessage from "~/components/error-message";
@@ -18,6 +29,7 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { createUserSession, getUserId } from "~/utils/session.server";
+import { setLanguageCookie } from "~/lib/set-language.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -54,7 +66,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const user = await verifyLogin(email, password);
-
+  const userLocale = user?.language
+      ? user.language.split(/[_-]/)[0].toLowerCase()
+      : "en";
+ 
   if (!user) {
     return data(
       { errors: { email: "Invalid email or password", password: null } },
@@ -67,6 +82,9 @@ export async function action({ request }: ActionFunctionArgs) {
     userId: user.id,
     remember: remember === "on" ? true : false,
     redirectTo,
+    headers: {
+      "Set-Cookie": await setLanguageCookie(userLocale),
+    }
   });
 }
 

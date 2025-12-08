@@ -117,11 +117,13 @@ export async function createUserSession({
   userId,
   remember,
   redirectTo,
+  headers,
 }: {
   request: Request;
   userId: string;
   remember: boolean;
   redirectTo: string;
+  headers?: HeadersInit;// added optional headers parameter
 }) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
