@@ -3,10 +3,9 @@ import { Globe } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useFetcher, useLoaderData } from 'react-router'
 import { Button } from '~/components/ui/button'
-import { type loader } from '~/root'
 
 export default function LanguageSelector() {
-	const data = useLoaderData<typeof loader>()
+	const data = useLoaderData()
 	const fetcher = useFetcher()
 	const [locale, setLocale] = useState(data.locale || 'en')
 	// When loader locale changes (e.g. after login), sync state
@@ -14,14 +13,9 @@ export default function LanguageSelector() {
 		if (!data?.locale) return
 		setLocale(data.locale)
 		void (async () => {
-			try {
-				await i18next.changeLanguage(data.locale)
-			} catch (e) {
-				//  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler
-			}
+			await i18next.changeLanguage(data.locale)
 		})()
 	}, [data.locale])
-
 	const toggleLanguage = () => {
 		const newLocale = locale === 'en' ? 'de' : 'en' // Toggle between "en" and "de"
 		setLocale(newLocale)
