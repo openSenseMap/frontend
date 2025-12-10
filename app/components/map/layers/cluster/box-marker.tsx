@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { type MarkerProps, Marker, useMap } from 'react-map-gl'
 import { useMatches, useNavigate, useSearchParams } from 'react-router'
 import { useGlobalCompareMode } from '~/components/device-detail/useGlobalCompareMode'
+import { validLngLat } from '~/lib/location'
 import { cn } from '~/lib/utils'
 import { type Device } from '~/schema'
-import { validLngLat } from '..'
 
 interface BoxMarkerProps extends MarkerProps {
 	device: Device

@@ -3,17 +3,6 @@ import { type LayerProps } from 'react-map-gl'
 // colors to use for the categories
 const colors = ['#4EAF47', '#666', '#666', '#666']
 
-/**
- * Checks whether the given longitude and latitude
- * are within the value range
- * @param lng Longitude
- * @param lat Latitude
- */
-export const validLngLat = (lng: number, lat: number): boolean => {
-	// the value range for lat is [-90, 90] and for longitude [-180, 180)
-	return lat >= -90 && lat <= 90 && lng >= -180 && lng < 180
-}
-
 // filters for classifying devices into three categories phenomenond on status
 export const deviceStatusFilter = {
 	active: ['==', ['get', 'status'], 'ACTIVE'],
