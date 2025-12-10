@@ -1,4 +1,3 @@
-import { stringify } from 'csv-stringify/sync'
 import {
 	type Params,
 	type LoaderFunction,
@@ -10,6 +9,7 @@ import {
 } from '~/lib/outlier-transform'
 import { getMeasurements } from '~/models/sensor.server'
 import { type Measurement } from '~/schema'
+import { convertToCsv } from '~/utils/csv'
 import { parseDateParam, parseEnumParam } from '~/utils/param-utils'
 import { StandardResponse } from '~/utils/response-utils'
 
@@ -192,7 +192,7 @@ export const loader: LoaderFunction = async ({
 
 		if (format == 'json') return Response.json(meas, responseInit)
 		else {
-			const csv = getCsv(meas, delimiter)
+			const csv = getCsv(meas, delimiter == 'comma' ? ',' : ';')
 			return new Response(csv, responseInit)
 		}
 	} catch (err) {
@@ -286,17 +286,13 @@ function getCsv(
 	meas: Measurement[] | TransformedMeasurement[],
 	delimiter: string,
 ): string {
-	const delimiterChar = delimiter === 'semicolon' ? ';' : ','
-
-	return stringify(meas, {
-		header: true,
-		columns: [
-			{ key: 'time', header: 'createdAt' },
-			{ key: 'value', header: 'value' },
+	return convertToCsv(
+		['createdAt', 'value'],
+		meas,
+		[
+			(measurement) => measurement.time.toString(),
+			(measurement) => measurement.value?.toString() ?? 'null',
 		],
-		delimiter: delimiterChar,
-		cast: {
-			date: (d) => d.toISOString(),
-		},
-	}).trimEnd()
+		delimiter,
+	)
 }
