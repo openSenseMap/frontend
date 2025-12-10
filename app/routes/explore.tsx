@@ -132,13 +132,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 	if (user) {
 		const profile = await getProfileByUserId(user.id)
+		const userLocale = user.language
+			? user.language.split(/[_-]/)[0].toLowerCase()
+			: 'en'
 		return {
 			devices,
 			user,
 			profile,
 			filteredDevices,
 			filterParams,
-			locale,
+			locale: userLocale,
 			//phenomena
 		}
 	}
@@ -149,6 +152,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		filterParams,
 		filteredDevices,
 		message,
+		locale,
 		//phenomena,
 	}
 }
@@ -170,8 +174,15 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, user, profile, filterParams, filteredDevices, message } =
-		useLoaderData<typeof loader>()
+	const {
+		devices,
+		user,
+		profile,
+		filterParams,
+		filteredDevices,
+		message,
+		locale,
+	} = useLoaderData<typeof loader>()
 
 	const mapRef = useRef<MapRef | null>(null)
 
