@@ -1,4 +1,4 @@
-import { eq, sql, inArray, and } from 'drizzle-orm'
+import { eq, sql, inArray, and, ilike } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
 import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-schema'
 import {
@@ -204,34 +204,34 @@ export function deleteSensor(id: Sensor['id']) {
 }
 
 /**
- * Find matching devices+their sensors based on phenomenon and device-level filters.
+ * Find matching devices+their sensors based on phenomenon or grouptag and device-level filters.
  * Returns sensorsMap (sensorId -> augmented sensor metadata) and sensorIds array.
  */
 export async function findMatchingSensors(params: BoxesDataQueryParams) {
-	const { boxId, exposure, phenomenon, bbox } = params
+	const { boxId, exposure, phenomenon, grouptag } = params
 
-	// Build device-level conditions (applied when querying device JOIN sensor)
-	const conditions = []
+	// Build device-level conditions
+	const deviceConditions = []
+
+	if (grouptag) {
+		deviceConditions.push(sql`${grouptag} = ANY(${device.tags})`)
+	}
 
 	if (boxId) {
-		conditions.push(inArray(device.id, boxId))
+		deviceConditions.push(inArray(device.id, boxId))
 	}
 
 	if (exposure) {
-		conditions.push(inArray(device.exposure, exposure))
+		deviceConditions.push(inArray(device.exposure, exposure))
 	}
 
-	if (bbox) {
-		const [lngSW, latSW, lngNE, latNE] = bbox
-		conditions.push(
-			sql`ST_Contains(
-				ST_MakeEnvelope(${lngSW}, ${latSW}, ${lngNE}, ${latNE}, 4326),
-				ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)
-			)`,
-		)
+	// Build sensor-level conditions
+	const sensorConditions = []
+
+	if (phenomenon) {
+		sensorConditions.push(ilike(sensor.title, phenomenon))
 	}
 
-	// Query devices and their sensors that match phenomenon
 	const rows = await drizzleClient
 		.select({
 			deviceId: device.id,
@@ -248,8 +248,8 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 		.innerJoin(sensor, eq(sensor.deviceId, device.id))
 		.where(
 			and(
-				eq(sensor.title, phenomenon),
-				conditions.length > 0 ? and(...conditions) : undefined,
+				sensorConditions.length > 0 ? and(...sensorConditions) : undefined,
+				deviceConditions.length > 0 ? and(...deviceConditions) : undefined,
 			),
 		)
 
