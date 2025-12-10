@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { type DeviceExposureType } from '~/schema'
+import { StandardResponse } from '~/utils/response-utils'
 
 export type BoxesDataColumn =
 	| 'createdAt'
@@ -15,21 +16,18 @@ export type BoxesDataColumn =
 	| 'unit'
 	| 'sensorType'
 
-const optionalCommaSeparatedArray = z
-	.union([
-		z.string().transform((s) => s.split(',').map((x) => x.trim())),
-		z.array(z.string()).transform((arr) => arr.map((s) => String(s).trim())),
-	])
-	.optional()
-
 const BoxesDataQuerySchemaBase = z
 	.object({
-		phenomenon: z.string({
-			required_error: 'phenomenon parameter is required',
-		}),
+		phenomenon: z.string().optional(),
 
-		// BoxId or bbox (validated as XOR later)
-		boxId: optionalCommaSeparatedArray,
+		boxId: z
+			.union([
+				z.string().transform((s) => s.split(',').map((x) => x.trim())),
+				z
+					.array(z.string())
+					.transform((arr) => arr.map((s) => String(s).trim())),
+			])
+			.optional(),
 		bbox: z
 			.union([
 				z.string().transform((s) => s.split(',').map((x) => Number(x.trim()))),
@@ -57,6 +55,8 @@ const BoxesDataQuerySchemaBase = z
 			])
 			.optional(),
 
+		grouptag: z.string().optional(),
+
 		// Date range
 		fromDate: z
 			.string()
@@ -67,9 +67,7 @@ const BoxesDataQuerySchemaBase = z
 			.optional()
 			.default(() =>
 				new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-			)
-			.transform((s) => new Date(s)),
-
+			),
 		toDate: z
 			.string()
 			.transform((s) => new Date(s))
@@ -77,8 +75,7 @@ const BoxesDataQuerySchemaBase = z
 				message: 'to-date is invalid',
 			})
 			.optional()
-			.default(() => new Date().toISOString())
-			.transform((s) => new Date(s)),
+			.default(() => new Date().toISOString()),
 
 		format: z
 			.enum(['csv', 'json'], {
@@ -119,13 +116,23 @@ const BoxesDataQuerySchemaBase = z
 		delimiter: z.enum(['comma', 'semicolon']).default('comma'),
 	})
 	// Validate: must have boxId or bbox, but not both
-	.refine((data) => !!(data.boxId || data.bbox), {
-		message: 'please specify either boxId or bbox',
-		path: ['boxId'],
-	})
-	.refine((data) => !(data.boxId && data.bbox), {
-		message: 'please specify only boxId or bbox',
-		path: ['boxId'],
+	.superRefine((data, ctx) => {
+		if (!data.boxId && !data.bbox && !data.grouptag) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'please specify either boxId, bbox or grouptag',
+				path: ['boxId'],
+			})
+		}
+
+		if (!data.phenomenon && !data.grouptag) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					'phenomenon parameter is required when grouptag is not provided',
+				path: ['phenomenon'],
+			})
+		}
 	})
 
 export type BoxesDataQueryParams = z.infer<typeof BoxesDataQuerySchemaBase>
@@ -179,6 +186,7 @@ export async function parseBoxesDataQuery(
 		boxId: getParam(['boxId', 'boxid', 'box_ids']),
 		bbox: getParam(['bbox']),
 		exposure: getParam(['exposure']),
+		grouptag: getParam(['grouptag', 'groupTag']),
 		fromDate: getParam(['from-date', 'fromDate']),
 		toDate: getParam(['to-date', 'toDate']),
 		format: getParam(['format']),
@@ -187,7 +195,6 @@ export async function parseBoxesDataQuery(
 		delimiter: getParam(['delimiter', 'separator']),
 	}
 
-	// Remove undefined values
 	const cleanParams = Object.fromEntries(
 		Object.entries(normalizedParams).filter(([_, v]) => v !== undefined),
 	)
@@ -197,7 +204,11 @@ export async function parseBoxesDataQuery(
 	if (!parseResult.success) {
 		const firstError = parseResult.error.errors[0]
 		const message = firstError.message || 'Invalid query parameters'
-		throw new Response(message, { status: 400 })
+
+		if (firstError.path.includes('bbox')) {
+			throw StandardResponse.unprocessableContent(message)
+		}
+		throw StandardResponse.badRequest(message)
 	}
 
 	return parseResult.data
