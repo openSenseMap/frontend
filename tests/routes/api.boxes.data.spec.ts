@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm'
 import { type ActionFunctionArgs, type AppLoadContext } from 'react-router'
 import { describe, it, expect, beforeAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
@@ -10,9 +11,7 @@ import {
 	loader as boxesDataLoader,
 	action as boxesDataAction,
 } from '~/routes/api.boxes.data'
-import { measurement, sensor, type User } from '~/schema'
-
-// import { loader as boxesDataByTagLoader } from '~/routes/api.boxes.data.bytag'
+import { device, measurement, sensor, type User } from '~/schema'
 
 const BOXES_DATA_TEST_USER = {
 	name: 'Download',
@@ -36,6 +35,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	let jwt = ''
 	let user: User
 	let deviceId = ''
+	let outdoorDeviceId = ''
 	let sensorId = ''
 
 	const expectedMeasurementsCount = 10
@@ -55,6 +55,38 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		const device = await createDevice(TEST_BOX, user.id)
 		deviceId = device.id
+
+		const outdoorDevice = await createDevice(
+			{
+				...TEST_BOX,
+				name: 'Download Box Outdoor',
+				exposure: 'outdoor',
+			},
+			user.id,
+		)
+		outdoorDeviceId = outdoorDevice.id
+
+		const [outdoorSensor] = await drizzleClient
+			.insert(sensor)
+			.values({
+				title: 'Temperatur',
+				unit: '°C',
+				sensorType: 'HDC1080',
+				deviceId: outdoorDevice.id,
+				status: 'active',
+			})
+			.returning()
+
+		const outdoorMeasurements = []
+		for (let i = 0; i < 5; i++) {
+			outdoorMeasurements.push({
+				sensorId: outdoorSensor.id,
+				time: new Date(Date.now() - i * 60000),
+				value: 15 + Math.random() * 5,
+			})
+		}
+
+		await drizzleClient.insert(measurement).values(outdoorMeasurements)
 
 		const [createdSensor] = await drizzleClient
 			.insert(sensor)
@@ -232,6 +264,52 @@ describe('openSenseMap API: /boxes/data', () => {
 		}
 	})
 
+	it('GET /boxes/data with multiple exposure filters', async () => {
+		const from = new Date(Date.now() - 100 * 864e5).toISOString()
+		const to = new Date().toISOString()
+
+		const url =
+			`${BASE_URL}/boxes/data/?` +
+			`bbox=-180,-90,180,90` +
+			`&phenomenon=Temperatur` +
+			`&exposure=indoor,outdoor` +
+			`&columns=exposure` +
+			`&from-date=${from}` +
+			`&to-date=${to}`
+
+		const req = new Request(url, {
+			headers: { Authorization: `Bearer ${jwt}` },
+		})
+
+		const res = await boxesDataLoader({
+			request: req,
+			params: {},
+			context: {} as AppLoadContext,
+		})
+
+		expect(res.status).toBe(200)
+		expect(res.headers.get('content-type')).toBe('text/csv')
+
+		const text = (await res.text()).trim()
+		const [header, ...lines] = text.split('\n')
+
+		expect(header).toBe('exposure')
+
+		expect(lines).toHaveLength(expectedMeasurementsCount + 5)
+
+		let sawIndoor = false
+		let sawOutdoor = false
+
+		for (const line of lines.slice(0, -1)) {
+			if (line === 'indoor') sawIndoor = true
+			if (line === 'outdoor') sawOutdoor = true
+			if (sawIndoor && sawOutdoor) break
+		}
+
+		expect(sawIndoor).toBe(true)
+		expect(sawOutdoor).toBe(true)
+	})
+
 	// ---------------------------
 	// content-disposition header
 	// ---------------------------
@@ -271,61 +349,121 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	// Bounding box validation
 	// ---------------------------
-	// it('GET /boxes/data invalid bbox (too many values)', async () => {
-	// 	const req = new Request(
-	// 		`${BASE_URL}/boxes/data/?boxid=${boxId}&phenomenon=Temperatur&bbox=1,2,3,4,5`,
-	// 		{ headers: { Authorization: `Bearer ${jwt}` } },
-	// 	)
+	it('GET /boxes/data invalid bbox (too many values)', async () => {
+		const req = new Request(
+			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,3,4,5`,
+			{ headers: { Authorization: `Bearer ${jwt}` } },
+		)
 
-	// 	const res = await boxesDataLoader({ request: req })
+		let res: Response
+		try {
+			res = await boxesDataLoader({
+				request: req,
+				params: {},
+				context: {} as AppLoadContext,
+			})
+		} catch (response) {
+			res = response as Response
+		}
 
-	// 	expect(res.status).toBe(422)
+		expect(res.status).toBe(422)
 
-	// 	const json = await res.json()
-	// 	expect(json.code).toBe('UnprocessableEntity')
-	// })
+		const json = await res.json()
+		expect(json.code).toBe('Unprocessable Content')
+	})
 
-	// it('GET /boxes/data invalid bbox (too few values)', async () => {
-	// 	const req = new Request(
-	// 		`${BASE_URL}/boxes/data/?boxid=${boxId}&phenomenon=Temperatur&bbox=1,2,3`,
-	// 		{ headers: { Authorization: `Bearer ${jwt}` } },
-	// 	)
+	it('should allow to specify bounding boxes with area greater than a single hemisphere', async () => {
+		const req = new Request(
+			`${BASE_URL}/boxes/data/?phenomenon=Temperatur&bbox=-180,-90,180,90`,
+		)
 
-	// 	const res = await boxesDataLoader({ request: req })
+		const res = await boxesDataLoader({
+			request: req,
+			params: {},
+			context: {} as AppLoadContext,
+		})
 
-	// 	expect(res.status).toBe(422)
-	// })
+		expect(res.status).toBe(200)
 
-	// it('GET /boxes/data invalid bbox (not floats)', async () => {
-	// 	const req = new Request(
-	// 		`${BASE_URL}/boxes/data/?boxid=${boxId}&phenomenon=Temperatur&bbox=1,2,east,4`,
-	// 		{ headers: { Authorization: `Bearer ${jwt}` } },
-	// 	)
+		expect(res.headers.get('content-type')).toContain('text/csv')
 
-	// 	const res = await boxesDataLoader({ request: req })
+		const bodyText = await res.text()
 
-	// 	expect(res.status).toBe(422)
-	// })
+		const lines = bodyText.split('\n')
+		expect(lines.length).toBeGreaterThan(1)
+	})
 
-	// ---------------------------
-	// byTag tests
-	// ---------------------------
-	// describe('/boxes/data/bytag', () => {
-	// 	it('GET /boxes/data/bytag returns JSON list', async () => {
-	// 		const req = new Request(`${BASE_URL}/boxes/data/bytag?grouptag=newgroup`)
+	it('GET /boxes/data invalid bbox (too few values)', async () => {
+		const req = new Request(
+			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,3`,
+			{ headers: { Authorization: `Bearer ${jwt}` } },
+		)
 
-	// 		const res = await boxesDataByTagLoader({ request: req })
+		let res: Response
+		try {
+			res = await boxesDataLoader({
+				request: req,
+				params: {},
+				context: {} as AppLoadContext,
+			})
+		} catch (response) {
+			res = response as Response
+		}
 
-	// 		expect(res.status).toBe(200)
-	// 		expect(res.headers.get('content-type')).toBe('application/json')
+		expect(res.status).toBe(422)
+	})
 
-	// 		const arr = await res.json()
-	// 		expect(arr.length).toHaveLength(40) // match original expected
-	// 	})
-	// })
+	it('GET /boxes/data invalid bbox (not floats)', async () => {
+		const req = new Request(
+			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,east,4`,
+			{ headers: { Authorization: `Bearer ${jwt}` } },
+		)
+
+		let res: Response
+		try {
+			res = await boxesDataLoader({
+				request: req,
+				params: {},
+				context: {} as AppLoadContext,
+			})
+		} catch (response) {
+			res = response as Response
+		}
+
+		expect(res.status).toBe(422)
+	})
+
+	it('GET /boxes/data JSON by grouptag', async () => {
+		const GROUPTAG = 'bytag'
+
+		// Add tag to device
+		await drizzleClient
+			.update(device)
+			.set({ tags: [GROUPTAG] })
+			.where(eq(device.id, deviceId))
+
+		const url = `${BASE_URL}/api/boxes/data?grouptag=${GROUPTAG}&format=json&columns=sensorId,value&phenomenon=Temperatur`
+		const req = new Request(url, {
+			headers: { Authorization: `Bearer ${jwt}` },
+		})
+
+		const res = await boxesDataLoader({
+			request: req,
+			params: {},
+			context: {} as AppLoadContext,
+		})
+
+		expect(res.status).toBe(200)
+		expect(res.headers.get('content-type')).toBe('application/json')
+
+		const body = await res.json()
+		expect(Array.isArray(body)).toBe(true)
+		expect(body).toHaveLength(expectedMeasurementsCount)
+	})
 
 	afterAll(async () => {
 		await deleteDevice({ id: deviceId })
+		await deleteDevice({ id: outdoorDeviceId })
 		await deleteUserByEmail(BOXES_DATA_TEST_USER.email)
 	})
 })
