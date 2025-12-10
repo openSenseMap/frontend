@@ -1,4 +1,5 @@
 import { asc, eq, inArray, or, sql } from 'drizzle-orm'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
@@ -24,11 +25,7 @@ import {
 	updateLastMeasurements,
 } from '~/utils/measurement-server-helper'
 
-const DEVICE_SENSORS_ID_USER = {
-	name: 'meTestSensorsIds',
-	email: 'test@box.sensorids',
-	password: 'highlySecurePasswordForTesting',
-}
+const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 
 const DEVICE_SENSOR_ID_BOX = {
 	name: `${DEVICE_SENSORS_ID_USER}s Box`,

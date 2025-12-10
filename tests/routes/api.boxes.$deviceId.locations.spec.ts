@@ -1,5 +1,6 @@
 import { or, sql } from 'drizzle-orm'
 import { type Params, type LoaderFunctionArgs } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/lib/user-service.server'
@@ -12,13 +13,9 @@ import {
 import { getSensors } from '~/models/sensor.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.locations'
-import { location, type Sensor, type User } from '~/schema'
+import { type Sensor, type User, location } from '~/schema'
 
-const DEVICE_SENSORS_ID_USER = {
-	name: 'meTestSensorsIds',
-	email: 'test@box.sensorids',
-	password: 'highlySecurePasswordForTesting',
-}
+const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 
 const DEVICE_SENSOR_ID_BOX = {
 	name: `${DEVICE_SENSORS_ID_USER}s Box`,
