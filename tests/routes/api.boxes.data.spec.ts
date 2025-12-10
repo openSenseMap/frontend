@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { type ActionFunctionArgs, type AppLoadContext } from 'react-router'
+import { type AppLoadContext } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
 import { drizzleClient } from '~/db.server'
@@ -13,11 +14,7 @@ import {
 } from '~/routes/api.boxes.data'
 import { device, measurement, sensor, type User } from '~/schema'
 
-const BOXES_DATA_TEST_USER = {
-	name: 'Download',
-	email: 'downloader@test.com',
-	password: 'secret-pass',
-}
+const BOXES_DATA_TEST_USER = generateTestUserCredentials()
 
 const TEST_BOX = {
 	name: 'Download Box',
