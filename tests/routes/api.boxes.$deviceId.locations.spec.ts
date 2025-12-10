@@ -1,6 +1,8 @@
+import { or, sql } from 'drizzle-orm'
 import { type Params, type LoaderFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import {
@@ -11,7 +13,7 @@ import {
 import { getSensors } from '~/models/sensor.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.locations'
-import { type Sensor, type Device, type User } from '~/schema'
+import { type Sensor, type User, location } from '~/schema'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 
@@ -50,9 +52,9 @@ const MEASUREMENTS = [
 		createdAt: new Date('1954-06-07 12:00:00+00'),
 		sensor_id: '',
 		location: {
-			lng: 1,
-			lat: 2,
-			height: 3,
+			lng: -179.65,
+			lat: 89.76,
+			height: 3.123,
 		},
 	},
 	{
@@ -60,8 +62,8 @@ const MEASUREMENTS = [
 		createdAt: new Date('1988-03-14 1:59:26+00'),
 		sensor_id: '',
 		location: {
-			lng: 4,
-			lat: 5,
+			lng: 56.78123,
+			lat: 32.198,
 		},
 	},
 	{
@@ -69,15 +71,15 @@ const MEASUREMENTS = [
 		createdAt: new Date('2000-05-25 11:11:11+00'),
 		sensor_id: '',
 		location: {
-			lng: 6,
-			lat: 7,
-			height: 8,
+			lng: 123.456789,
+			lat: 0.12345,
+			height: 8.71,
 		},
 	},
 ]
 
 describe('openSenseMap API Routes: /api/boxes/:deviceId/locations', () => {
-	let device: Device
+	let device
 	let deviceId: string = ''
 	let sensors: Sensor[]
 
@@ -123,10 +125,10 @@ describe('openSenseMap API Routes: /api/boxes/:deviceId/locations', () => {
 			expect(body).toHaveLength(2)
 			expect(body[0].coordinates).toHaveLength(2)
 			expect(body[1].coordinates).toHaveLength(2)
-			expect(body[0].coordinates[0]).toBe(4)
-			expect(body[0].coordinates[1]).toBe(5)
-			expect(body[1].coordinates[0]).toBe(1)
-			expect(body[1].coordinates[1]).toBe(2)
+			expect(body[0].coordinates[0]).toBe(56.78123)
+			expect(body[0].coordinates[1]).toBe(32.198)
+			expect(body[1].coordinates[0]).toBe(-179.65)
+			expect(body[1].coordinates[1]).toBe(89.76)
 			expect(body[0].type).toBe('Point')
 			expect(body[1].type).toBe('Point')
 			expect(body[0].timestamp).toBe('1988-03-14T01:59:26.000Z')
@@ -160,10 +162,10 @@ describe('openSenseMap API Routes: /api/boxes/:deviceId/locations', () => {
 			expect(body.geometry.coordinates).toHaveLength(2)
 			expect(body.geometry.coordinates[0]).toHaveLength(2)
 			expect(body.geometry.coordinates[1]).toHaveLength(2)
-			expect(body.geometry.coordinates[0][0]).toBe(4)
-			expect(body.geometry.coordinates[0][1]).toBe(5)
-			expect(body.geometry.coordinates[1][0]).toBe(1)
-			expect(body.geometry.coordinates[1][1]).toBe(2)
+			expect(body.geometry.coordinates[0][0]).toBe(56.78123)
+			expect(body.geometry.coordinates[0][1]).toBe(32.198)
+			expect(body.geometry.coordinates[1][0]).toBe(-179.65)
+			expect(body.geometry.coordinates[1][1]).toBe(89.76)
 			expect(body.properties.timestamps).toHaveLength(2)
 			expect(body.properties.timestamps[0]).toBe('1988-03-14T01:59:26.000Z')
 			expect(body.properties.timestamps[1]).toBe('1954-06-07T12:00:00.000Z')
@@ -183,5 +185,21 @@ describe('openSenseMap API Routes: /api/boxes/:deviceId/locations', () => {
 		await deleteUserByEmail(DEVICE_SENSORS_ID_USER.email)
 		// delete the box
 		await deleteDevice({ id: deviceId })
+		// delete created locations
+		await deleteLocations()
 	})
 })
+
+async function deleteLocations() {
+	await drizzleClient.delete(location).where(
+		or(
+			...MEASUREMENTS.map(
+				(measurement) =>
+					sql`ST_EQUALS(
+            ${location.location},
+            ST_SetSRID(ST_MakePoint(${measurement.location.lng}, ${measurement.location.lat}), 4326)
+          )`,
+			),
+		),
+	)
+}
