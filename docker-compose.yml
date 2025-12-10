@@ -1,7 +1,6 @@
 services:
   postgres:
-    # image: timescale/timescaledb:2.10.2-pg14
-    image: timescale/timescaledb-ha:pg15
+    image: timescale/timescaledb-ha:pg18
     # Preload pg_cron extension
     # https://github.com/timescale/timescaledb-docker-ha/issues/293
     # Extension is created with prisma
