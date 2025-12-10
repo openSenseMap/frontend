@@ -3,6 +3,7 @@ import {
 	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
 } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
@@ -15,11 +16,7 @@ import {
 } from '~/routes/api.devices'
 import { type User, type Device } from '~/schema'
 
-const DEVICE_TEST_USER = {
-	name: 'deviceTest',
-	email: 'test@devices.endpoint',
-	password: 'highlySecurePasswordForTesting',
-}
+const DEVICE_TEST_USER = generateTestUserCredentials()
 
 const generateMinimalDevice = (
 	location: number[] | {} = [123, 12, 34],
@@ -49,7 +46,12 @@ describe('openSenseMap API Routes: /boxes', () => {
 		jwt = t
 
 		queryableDevice = await createDevice(
-			{ ...generateMinimalDevice(), latitude: 123, longitude: 12, tags: ["newgroup"] },
+			{
+				...generateMinimalDevice(),
+				latitude: 123,
+				longitude: 12,
+				tags: ['newgroup'],
+			},
 			(testUser as User).id,
 		)
 	})
@@ -299,27 +301,29 @@ describe('openSenseMap API Routes: /boxes', () => {
 		it('should allow to filter boxes by grouptag', async () => {
 			// Arrange
 			const request = new Request(`${BASE_URL}?grouptag=newgroup`, {
-			  method: 'GET',
-			  headers: { 'Content-Type': 'application/json' },
-			});
-		  
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
 			// Act
-			const response = await devicesLoader({ request } as LoaderFunctionArgs);
-		  
+			const response = await devicesLoader({ request } as LoaderFunctionArgs)
+
 			// Handle case where loader returned a Response (e.g. validation error)
-			const data = response instanceof Response ? await response.json() : response;
-		  
-			expect(data).toBeDefined();
-			expect(Array.isArray(data)).toBe(true);
-		  
-			expect(data).toHaveLength(1);
-		  
+			const data =
+				response instanceof Response ? await response.json() : response
+
+			expect(data).toBeDefined()
+			expect(Array.isArray(data)).toBe(true)
+
+			expect(data).toHaveLength(1)
+
 			if (response instanceof Response) {
-			  expect(response.status).toBe(200);
-			  expect(response.headers.get('content-type')).toMatch(/application\/json/);
+				expect(response.status).toBe(200)
+				expect(response.headers.get('content-type')).toMatch(
+					/application\/json/,
+				)
 			}
-		});
-		  
+		})
 
 		it('should allow filtering boxes by bounding box', async () => {
 			// Arrange
@@ -431,51 +435,54 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 		it('should reject a new box with invalid coords', async () => {
 			function minimalSensebox(coords: number[]) {
-			  return {
-				name: "Test Box",
-				location: coords,
-				sensors: [],
-			  };
+				return {
+					name: 'Test Box',
+					location: coords,
+					sensors: [],
+				}
 			}
-		  
-			const requestBody = minimalSensebox([52]);
-		  
+
+			const requestBody = minimalSensebox([52])
+
 			const request = new Request(BASE_URL, {
-			  method: 'POST',
-			  headers: {
-				Authorization: `Bearer ${jwt}`,
-			  },
-			  body: JSON.stringify(requestBody),
-			});
-		  		  
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${jwt}`,
+				},
+				body: JSON.stringify(requestBody),
+			})
+
 			try {
-			  await devicesAction({ request } as ActionFunctionArgs);
+				await devicesAction({ request } as ActionFunctionArgs)
 			} catch (error) {
-			  if (error instanceof Response) {
-				expect(error.status).toBe(422);
-		  
-				const errorData = await error.json();
-				expect(errorData.message).toBe(
-				  'Illegal value for parameter location. missing latitude or longitude in location [52]'
-				);
-			  } else {
-				throw error;
-			  }
+				if (error instanceof Response) {
+					expect(error.status).toBe(422)
+
+					const errorData = await error.json()
+					expect(errorData.message).toBe(
+						'Illegal value for parameter location. missing latitude or longitude in location [52]',
+					)
+				} else {
+					throw error
+				}
 			}
-		  });
-		  
+		})
 
 		it('should reject a new box without location field', async () => {
 			// Arrange
-			function minimalSensebox(coords: number[]): {name: string, location?: number[], sensors: any[]} {
+			function minimalSensebox(coords: number[]): {
+				name: string
+				location?: number[]
+				sensors: any[]
+			} {
 				return {
-				  name: "Test Box",
-				  location: coords,
-				  sensors: [],
-				};
-			  }
-			
-			  const requestBody = minimalSensebox([52]);
+					name: 'Test Box',
+					location: coords,
+					sensors: [],
+				}
+			}
+
+			const requestBody = minimalSensebox([52])
 			delete requestBody.location
 
 			const request = new Request(BASE_URL, {
