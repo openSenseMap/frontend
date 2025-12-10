@@ -1,5 +1,11 @@
 import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
+import ConfirmEmailAddress, {
+	subject as ConfirmEmailAddressSubject,
+} from 'emails/confirm-email'
+import DeleteUserEmail, {
+	subject as DeleteUserEmailSubject,
+} from 'emails/delete-user'
 import NewUserEmail, { subject as NewUserEmailSubject } from 'emails/new-user'
 import PasswordResetEmail, {
 	subject as PasswordResetEmailSubject,
@@ -33,12 +39,6 @@ import {
 	verifyLogin,
 } from '~/models/user.server'
 import { passwordResetRequest, user, type User } from '~/schema'
-import ConfirmEmailAddress, {
-	subject as ConfirmEmailAddressSubject,
-} from 'emails/confirm-email'
-import DeleteUserEmail, {
-	subject as DeleteUserEmailSubject,
-} from 'emails/delete-user'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
