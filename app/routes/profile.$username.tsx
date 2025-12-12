@@ -6,7 +6,7 @@ import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
 	getProfileByUsername,
-	getProfileSensorsandMeasurementsCount,
+	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
 import { getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
@@ -23,7 +23,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		const profile = await getProfileByUsername(username)
 		if (profile) {
 			// Get sensors and measurements count
-			const counts = await getProfileSensorsandMeasurementsCount(profile)
+			const counts = await getProfileSensorsAndMeasurementsCount(profile)
 			sensorsCount = counts.sensorsCount
 			measurementsCount = counts.measurementsCount
 		}

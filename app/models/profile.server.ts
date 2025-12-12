@@ -85,7 +85,7 @@ function formatCount(num: number): string {
 }
 
 // function to get sensors and measurements count for a profile
-export async function getProfileSensorsandMeasurementsCount(profile: Profile) {
+export async function getProfileSensorsAndMeasurementsCount(profile: Profile) {
 	const userId = profile.userId
 	if (userId == null) return { sensorsCount: '0', measurementsCount: '0' }
 
@@ -98,26 +98,19 @@ export async function getProfileSensorsandMeasurementsCount(profile: Profile) {
 		return { sensorsCount: '0', measurementsCount: '0' }
 	}
 
-	// Count sensors using COUNT query
-	const [sensorsResult] = await drizzleClient
-		.select({ count: count() })
-		.from(sensor)
-		.where(inArray(sensor.deviceId, deviceIds))
-
-	const sensorsCount = sensorsResult.count
-
 	// Get sensor IDs for measurements count
 	const sensors = await drizzleClient.query.sensor.findMany({
 		where: (s, { inArray }) => inArray(s.deviceId, deviceIds),
 		columns: { id: true },
 	})
+	const sensorsCount = sensors.length
 	const sensorIds = sensors.map((s) => s.id)
 
 	// Count measurements using COUNT query
 	let measurementsCount = 0
 	if (sensorIds.length > 0) {
 		const [measurementsResult] = await drizzleClient
-			.select({ count: count() })
+			.select({ count: count(measurement.value) })
 			.from(measurement)
 			.where(inArray(measurement.sensorId, sensorIds))
 
