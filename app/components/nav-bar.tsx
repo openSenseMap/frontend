@@ -20,7 +20,7 @@ export function NavBar() {
 		.map((item) => {
 			const decoded = decodeURIComponent(item)
 			return decoded.charAt(0).toUpperCase() + decoded.slice(1)
-		})// prevents empty parts from showing
+		}) // prevents empty parts from showing
 
 	// User is optional
 	// If no user render Login button
