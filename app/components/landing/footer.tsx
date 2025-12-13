@@ -1,14 +1,17 @@
+import { useTranslation } from "react-i18next";
+
 export default function Footer() {
+  const { t } = useTranslation('footer')
   return (
     <footer id="footer" className="w-full bg-white px-4 text-gray-300 dark:bg-black dark:text-gray-100 sm:p-6 lg:text-lg">
       <hr className="my-6 border-gray-300 dark:border-gray-100 sm:mx-auto lg:my-8" />
       <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
-          © 2023{" "}
+          © 2025{" "}
           <a href="https://flowbite.com/" className="hover:underline">
             openSenseLab
           </a>
-          . All Rights Reserved.
+          . {t("rightsReserved")}
         </span>
         <ul className="mt-3 flex flex-wrap items-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
           <li>
@@ -18,7 +21,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
             >
-              Impressum
+              {t("imprint")}
             </a>
           </li>
           <li>
@@ -28,7 +31,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="dark:hover:text-green-200 px-2 hover:text-light-green md:px-8"
             >
-              Datenschutz
+              {t("dataProtection")}
             </a>
           </li>
           <li>
@@ -50,7 +53,7 @@ export default function Footer() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="sr-only">Instagram page</span>
+              <span className="sr-only">{t("instagram")}</span>
             </a>
           </li>
           <li>
@@ -68,7 +71,7 @@ export default function Footer() {
               >
                 <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
               </svg>
-              <span className="sr-only">Twitter page</span>
+              <span className="sr-only">{t("twitter")}</span>
             </a>
           </li>
           <li>
@@ -90,7 +93,7 @@ export default function Footer() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="sr-only">GitHub account</span>
+              <span className="sr-only">{t("github")}</span>
             </a>
           </li>
         </ul>
