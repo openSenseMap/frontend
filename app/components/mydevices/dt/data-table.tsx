@@ -35,6 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "react-i18next";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -71,11 +72,13 @@ export function DataTable<TData, TValue>({
   });
   const tableColsWidth = [30, 30, 40];
 
+  const { t } = useTranslation("data-table");
+
   return (
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter names..."
+          placeholder={t("filter_names")}
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -130,7 +133,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-centerdark:text-dark-text"
                 >
-                  No results.
+                  {t("no_results")}
                 </TableCell>
               </TableRow>
             )}
@@ -141,7 +144,7 @@ export function DataTable<TData, TValue>({
       <div className="flex justify-center py-4 dark:text-dark-text">
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
           <div className="flex flex-wrap items-center space-x-2">
-            <span className="text-sm font-medium">Rows per page</span>
+            <span className="text-sm font-medium">{t("rows_per_page")}</span>
             <Select
               value={table.getState().pagination.pageSize.toString()}
               onValueChange={(value) => {
@@ -162,7 +165,7 @@ export function DataTable<TData, TValue>({
             </Select>
           </div>
           <div className="text-sm font-medium">
-            {`Page ${table.getState().pagination.pageIndex + 1} of ${
+            {t("page")}{` ${table.getState().pagination.pageIndex + 1} `}{t("of")}{` ${
               table.getPageCount() ?? 10
             }`}
           </div>
@@ -175,7 +178,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanPreviousPage()}
             >
               <ChevronsLeft className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">First page</span>
+              <span className="sr-only">{t("first_page")}</span>
             </Button>
             <Button
               variant="outline"
@@ -185,7 +188,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanPreviousPage()}
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">Previous page</span>
+              <span className="sr-only">{t("previous_page")}</span>
             </Button>
             <Button
               variant="outline"
@@ -195,7 +198,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanNextPage()}
             >
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">Next page</span>
+              <span className="sr-only">{t("next_page")}</span>
             </Button>
             <Button
               variant="outline"
@@ -205,7 +208,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanNextPage()}
             >
               <ChevronsRight className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">Last page</span>
+              <span className="sr-only">{t("last_page")}</span>
             </Button>
           </div>
         </div>

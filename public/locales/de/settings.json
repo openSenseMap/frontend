@@ -1,0 +1,26 @@
+{
+    "public_profile": "Öffentliches Profil",
+    "account": "Konto",
+    "password": "Passwort",
+    "delete_account": "Konto löschen",
+
+    "profile_updated": "Profil aktualisiert",
+    "profile_updated_description": "Dein Profil wurde erfolgreich aktualisiert.",
+    "something_went_wrong": "Etwas ist schief gelaufen.",
+    "something_went_wrong_description": "Bitte versuche es später erneut.",
+    "profile_settings": "Profileinstellungen",
+    "profile_settings_description": "Das ist, wie andere dein Profil sehen.",
+    "username": "Benutzername",
+    "if_public": "Wenn dein Profil öffentlich ist, ist das wie andere Menschen dich sehen werden.",
+    "enter_username": "Gib deinen Benutzernamen ein",
+    "if_activated_public_1": "Wenn aktiviert, werden andere dein öffentliches",
+    "if_activated_public_2": "Profil",
+    "if_activated_public_3": " sehen können.",
+    "change_profile_photo": "Profilbild ändern",
+    "save_changes": "Änderungen speichern",
+
+    "profile_photo": "Profilbild",
+    "save_photo": "Profilbild speichern",
+    "reset": "Zurücksetzen",
+    "change": "Ändern"
+}

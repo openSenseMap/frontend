@@ -1,0 +1,26 @@
+{
+    "public_profile": "Public Profile",
+    "account": "Account",
+    "password": "Password",
+    "delete_account": "Delete Account",
+
+    "profile_updated": "Profile updated",
+    "profile_updated_description": "Your profile has been updated successfully.",
+    "something_went_wrong": "Something went wrong.",
+    "something_went_wrong_description": "Please try again later.",
+    "profile_settings": "Profile Settings",
+    "profile_settings_description": "This is how others see your profile.",
+    "username": "Username",
+    "if_public": "If your profile is public, this is how people will see you.",
+    "enter_username": "Enter your new username",
+    "if_activated_public_1": "If activated, others will be able to see your public",
+    "if_activated_public_2": "profile",
+    "if_activated_public_3": ".",
+    "change_profile_photo": "Change profile photo",
+    "save_changes": "Save changes",
+
+    "profile_photo": "Profile photo",
+    "save_photo": "Save Photo",
+    "reset": "Reset",
+    "change": "Change"
+}

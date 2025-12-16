@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import  { type Device } from "~/schema";
+import { useTranslation } from "react-i18next";
 
 export type SenseBox = {
   id: string;
@@ -22,7 +23,10 @@ export type SenseBox = {
 
 const colStyle = "pl-0 dark:text-white";
 
-export const columns: ColumnDef<SenseBox>[] = [
+
+export function getColumns(): ColumnDef<SenseBox>[] {
+  const { t } = useTranslation('data-table')
+  return [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -32,7 +36,7 @@ export const columns: ColumnDef<SenseBox>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className={colStyle}
         >
-          Name
+          {t("name")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -47,7 +51,7 @@ export const columns: ColumnDef<SenseBox>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className={colStyle}
         >
-          Exposure
+          {t("exposure")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -62,7 +66,7 @@ export const columns: ColumnDef<SenseBox>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className={styleVal}
         >
-          Model
+          {t("model")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -70,7 +74,7 @@ export const columns: ColumnDef<SenseBox>[] = [
   }, */
   {
     accessorKey: "id",
-    header: () => <div className="dark:text-white pl-0">Sensebox ID</div>,
+    header: () => <div className="dark:text-white pl-0">{t("sensebox_id")}</div>,
     cell: ({ row }) => {
       const senseBox = row.original;
 
@@ -90,7 +94,7 @@ export const columns: ColumnDef<SenseBox>[] = [
   },
   {
     id: "actions",
-    header: () => <div className="text-center dark:text-white">Actions</div>,
+    header: () => <div className="text-center dark:text-white">{t("actions")}</div>,
     cell: ({ row }) => {
       const senseBox = row.original;
 
@@ -109,16 +113,16 @@ export const columns: ColumnDef<SenseBox>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <a href={`/device/${senseBox.id}/overview`}>Overview</a>
+              <a href={`/device/${senseBox.id}/overview`}>{t("overview")}</a>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <a href={`/explore/${senseBox.id}`}>Show on map</a>
+              <a href={`/explore/${senseBox.id}`}>{t("show_on_map")}</a>
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
-              <a href={`/device/${senseBox.id}/edit/general`}>Edit</a>
+              <a href={`/device/${senseBox.id}/edit/general`}>{t("edit")}</a>
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
-              <a href={`/device/${senseBox.id}/dataupload`}>Data upload</a>
+              <a href={`/device/${senseBox.id}/dataupload`}>{t("data_upload")}</a>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <a
@@ -126,14 +130,14 @@ export const columns: ColumnDef<SenseBox>[] = [
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Support
+                {t("support")}
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(senseBox?.id)}
               className="cursor-pointer"
             >
-              Copy ID
+              {t("copy_id")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -141,3 +145,4 @@ export const columns: ColumnDef<SenseBox>[] = [
     },
   },
 ];
+}

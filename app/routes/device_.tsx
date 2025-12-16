@@ -1,4 +1,4 @@
-import { columns } from "~/components/mydevices/dt/columns";
+import { getColumns } from "~/components/mydevices/dt/columns";
 import { DataTable } from "~/components/mydevices/dt/data-table";
 import  { type DeviceExposureType, type DeviceStatusType } from "~/schema";
 
@@ -35,7 +35,7 @@ export default function DevicesDashboard(devices: UserDevices) {
           </div>
 
           <div className="mx-auto py-3">
-            <DataTable columns={columns} data={devicesData} />
+            <DataTable columns={getColumns()} data={devicesData} />
           </div>
         </div>
       )}
