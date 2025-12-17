@@ -277,8 +277,8 @@ export function transformMeasurement(
 			case 'height':
 				result.height = measurementLocation?.height ?? sensor?.height ?? null
 				break
-			case 'boxId':
-				result.boxId = sensor?.boxId
+			case 'boxid':
+				result.boxid = sensor?.boxid
 				break
 			case 'boxName':
 				result.boxName = sensor?.boxName

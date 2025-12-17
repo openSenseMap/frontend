@@ -8,7 +8,7 @@ export type BoxesDataColumn =
 	| 'lat'
 	| 'lon'
 	| 'height'
-	| 'boxId'
+	| 'boxid'
 	| 'boxName'
 	| 'exposure'
 	| 'sensorId'
@@ -20,7 +20,7 @@ const BoxesDataQuerySchemaBase = z
 	.object({
 		phenomenon: z.string().optional(),
 
-		boxId: z
+		boxid: z
 			.union([
 				z.string().transform((s) => s.split(',').map((x) => x.trim())),
 				z
@@ -114,13 +114,13 @@ const BoxesDataQuerySchemaBase = z
 
 		delimiter: z.enum(['comma', 'semicolon']).default('comma'),
 	})
-	// Validate: must have boxId or bbox, but not both
+	// Validate: must have boxid or bbox, but not both
 	.superRefine((data, ctx) => {
-		if (!data.boxId && !data.bbox && !data.grouptag) {
+		if (!data.boxid && !data.bbox && !data.grouptag) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: 'please specify either boxId, bbox or grouptag',
-				path: ['boxId'],
+				message: 'please specify either boxid, bbox or grouptag',
+				path: ['boxid'],
 			})
 		}
 
@@ -144,56 +144,23 @@ export async function parseBoxesDataQuery(
 	request: Request,
 ): Promise<BoxesDataQueryParams> {
 	const url = new URL(request.url)
-	const queryParams = url.searchParams
-
-	// For POST requests, try to parse JSON body
-	let jsonBody: Record<string, any> | null = null
+	let params: Record<string, any>
 	if (request.method !== 'GET') {
 		const contentType = request.headers.get('content-type') || ''
 		if (contentType.includes('application/json')) {
 			try {
-				jsonBody = await request.json()
+				params = await request.json()
 			} catch {
-				jsonBody = null
+				params = Object.fromEntries(url.searchParams)
 			}
+		} else {
+			params = Object.fromEntries(url.searchParams)
 		}
+	} else {
+		params = Object.fromEntries(url.searchParams)
 	}
 
-	const getParam = (names: string[]): any => {
-		for (const name of names) {
-			if (queryParams.has(name)) {
-				return queryParams.get(name)
-			}
-		}
-		if (jsonBody) {
-			for (const name of names) {
-				if (Object.prototype.hasOwnProperty.call(jsonBody, name)) {
-					return jsonBody[name]
-				}
-			}
-		}
-		return undefined
-	}
-
-	const normalizedParams = {
-		phenomenon: getParam(['phenomenon']),
-		boxId: getParam(['boxId', 'boxid']), // boxId in docs, but effectively boxid was used, so support both?
-		bbox: getParam(['bbox']),
-		exposure: getParam(['exposure']),
-		grouptag: getParam(['grouptag']),
-		fromDate: getParam(['from-date']),
-		toDate: getParam(['to-date']),
-		format: getParam(['format']),
-		columns: getParam(['columns']),
-		download: getParam(['download']),
-		delimiter: getParam(['delimiter']),
-	}
-
-	const cleanParams = Object.fromEntries(
-		Object.entries(normalizedParams).filter(([_, v]) => v !== undefined),
-	)
-
-	const parseResult = BoxesDataQuerySchemaBase.safeParse(cleanParams)
+	const parseResult = BoxesDataQuerySchemaBase.safeParse(params)
 
 	if (!parseResult.success) {
 		const firstError = parseResult.error.errors[0]

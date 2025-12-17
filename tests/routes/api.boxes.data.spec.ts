@@ -116,7 +116,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// CSV (default)
 	// ---------------------------
 	it('GET /boxes/data CSV', async () => {
-		const url = `${BASE_URL}/api/boxes/data?boxId=${deviceId}&phenomenon=Temperatur`
+		const url = `${BASE_URL}/api/boxes/data?boxid=${deviceId}&phenomenon=Temperatur`
 		const req = new Request(url, {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
@@ -138,7 +138,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	})
 
 	it('GET /boxes/data CSV with format=csv', async () => {
-		const url = `${BASE_URL}/api/boxes/data?boxId=${deviceId}&phenomenon=Temperatur&format=csv`
+		const url = `${BASE_URL}/api/boxes/data?boxid=${deviceId}&phenomenon=Temperatur&format=csv`
 		const req = new Request(url, {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
@@ -159,7 +159,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// JSON
 	// ---------------------------
 	it('GET /boxes/data JSON', async () => {
-		const url = `${BASE_URL}/api/boxes/data?boxId=${deviceId}&phenomenon=Temperatur&format=json&columns=sensorId,value,lat,lon`
+		const url = `${BASE_URL}/api/boxes/data?boxid=${deviceId}&phenomenon=Temperatur&format=json&columns=sensorId,value,lat,lon`
 		const req = new Request(url, {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
@@ -187,8 +187,8 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	// Multiple box IDs
 	// ---------------------------
-	it('GET /boxes/data CSV with multiple boxIds', async () => {
-		const url = `${BASE_URL}/api/boxes/data?boxId=${deviceId},${deviceId}&phenomenon=Temperatur`
+	it('GET /boxes/data CSV with multiple boxids', async () => {
+		const url = `${BASE_URL}/api/boxes/data?boxid=${deviceId},${deviceId}&phenomenon=Temperatur`
 		const req = new Request(url, {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
@@ -210,7 +210,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	it('POST /boxes/data CSV', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data?boxId=${deviceId}&phenomenon=Temperatur`,
+			`${BASE_URL}/boxes/data?boxid=${deviceId}&phenomenon=Temperatur`,
 			{
 				method: 'POST',
 				headers: {
@@ -312,7 +312,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	it('GET /boxes/data should include content-disposition by default', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxId=${deviceId},${deviceId}&phenomenon=Temperatur`,
+			`${BASE_URL}/boxes/data/?boxid=${deviceId},${deviceId}&phenomenon=Temperatur`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
@@ -328,7 +328,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 	it('GET /boxes/data should NOT include content-disposition when download=false', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxId=${deviceId},${deviceId}&phenomenon=Temperatur&download=false`,
+			`${BASE_URL}/boxes/data/?boxid=${deviceId},${deviceId}&phenomenon=Temperatur&download=false`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
@@ -348,7 +348,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	it('GET /boxes/data invalid bbox (too many values)', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxId=${deviceId}&phenomenon=Temperatur&bbox=1,2,3,4,5`,
+			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,3,4,5`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
@@ -392,7 +392,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 	it('GET /boxes/data invalid bbox (too few values)', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxId=${deviceId}&phenomenon=Temperatur&bbox=1,2,3`,
+			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,3`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
