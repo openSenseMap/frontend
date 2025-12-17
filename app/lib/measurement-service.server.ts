@@ -84,8 +84,9 @@ const normalizeLocation = (
 
 	if (Array.isArray(location)) {
 		if (location.length < 2) return null
+
 		return {
-			lng: location[0],
+			lng: normalizeLongitude(location[0]),
 			lat: location[1],
 			height: location[2],
 		}
@@ -93,7 +94,7 @@ const normalizeLocation = (
 
 	if (typeof location === 'object' && 'lat' in location && 'lng' in location) {
 		return {
-			lng: location.lng,
+			lng: normalizeLongitude(location.lng),
 			lat: location.lat,
 			height: location.height,
 		}
@@ -101,6 +102,15 @@ const normalizeLocation = (
 
 	return null
 }
+
+/**
+ * Longitude at +180 are mathematically equal to longitudes at -180
+ * and are therefore normalized to -180 for consistency.
+ * @param lng The longitude value to normalize
+ * @returns A normalized longitude in the value range [-180, 180)
+ */
+const normalizeLongitude = (lng: number): number =>
+	lng % 180 === 0 ? -180 : lng
 
 export const postNewMeasurements = async (
 	deviceId: string,
