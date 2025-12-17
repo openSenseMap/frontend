@@ -12,10 +12,7 @@ function createDownloadFilename(
 	params: string[],
 	format: string,
 ) {
-	// Note: Using encodeURI twice as in the old app (unsure why)
-	return `opensensemap_org-${action}-${encodeURI(
-		encodeURI(params.join('-')),
-	)}-${date
+	return `opensensemap_org-${action}-${encodeURI(params.join('-'))}-${date
 		.toISOString()
 		.replace(/-|:|\.\d*Z/g, '')
 		.replace('T', '_')}.${format}`
