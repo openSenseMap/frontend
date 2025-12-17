@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Form, useActionData , data, redirect, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
 import invariant from "tiny-invariant";
 import { Button } from "~/components/ui/button";
@@ -65,12 +66,13 @@ export default function EditUserProfilePage() {
   const passwordDelRef = useRef<HTMLInputElement>(null);
   //* toast
   const { toast } = useToast();
+  const { t } = useTranslation('settings')
 
   useEffect(() => {
     //* when password is not correct
     if (actionData && actionData?.errors?.passwordDelete) {
       toast({
-        title: "Invalid password",
+        title: t("invalid_password"),
         variant: "destructive",
       });
       passwordDelRef.current?.focus();
@@ -81,17 +83,16 @@ export default function EditUserProfilePage() {
     <Form method="post" className="space-y-6" noValidate>
       <Card className="dark:bg-dark-boxes dark:border-white">
         <CardHeader>
-          <CardTitle>Delete Account</CardTitle>
+          <CardTitle>{t("delete_account")}</CardTitle>
           <CardDescription>
-            Deleting your account will permanently remove all of your data from
-            our servers. This action cannot be undone.
+            {t("delete_account_description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="passwordDelete">Confirm Password</Label>
+            <Label htmlFor="passwordDelete">{t("confirm_password")}</Label>
             <Input
-              placeholder="Enter your password"
+              placeholder={t("enter_password")}
               required
               type="password"
               id="passwordDelete"
@@ -108,7 +109,7 @@ export default function EditUserProfilePage() {
             variant="destructive"
             disabled={!passwordDelVal}
           >
-            Delete Account
+            {t("delete_account")}
           </Button>
         </CardContent>
       </Card>

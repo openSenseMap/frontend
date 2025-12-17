@@ -24,6 +24,7 @@ import { Label } from "~/components/ui/label";
 import { updateUserPassword, verifyLogin } from "~/models/user.server";
 import { validatePassLength, validatePassType } from "~/utils";
 import { getUserEmail, getUserId } from "~/utils/session.server";
+import { useTranslation } from "react-i18next";
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -41,6 +42,10 @@ export async function action({ request }: ActionFunctionArgs) {
   const newPass = formData.get("newPassword");
   const confirmPass = formData.get("newPasswordConfirm");
   const passwordsList = [currPass, newPass, confirmPass];
+  // TODO: I don't know how to use translations here.
+  // Uncommenting the following line causes an exception.
+  // The translations already exist in settings.json
+  //const { t } = useTranslation('settings')
 
   //* when cancel button is clicked
   if (intent === "cancel") {
@@ -137,6 +142,7 @@ export default function ChangePaasswordPage() {
 
   //* toast
   const { toast } = useToast();
+  const { t } = useTranslation('settings')
 
   useEffect(() => {
     if (actionData) {
@@ -148,7 +154,7 @@ export default function ChangePaasswordPage() {
         toast({
           title: actionData.message,
           variant: "destructive",
-          description: "Please try again.",
+          description: t("try_again"),
         });
       }
     }
@@ -158,47 +164,46 @@ export default function ChangePaasswordPage() {
     <Form method="post" className="space-y-6" noValidate ref={$form}>
       <Card className="w-full dark:bg-dark-boxes dark:border-white">
         <CardHeader>
-          <CardTitle>Update Password</CardTitle>
+          <CardTitle>{t("update_password")}</CardTitle>
           <CardDescription>
-            Enter your current password and a new password to update your
-            account password.
+            {t("update_password_description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">Current Password</Label>
+            <Label htmlFor="currentPassword">{t("current_password")}</Label>
             <Input
               ref={currPassRef}
               id="currentPassword"
               name="currentPassword"
-              placeholder="Enter your current password"
+              placeholder={t("enter_current_password")}
               type="password"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="newPassword">New Password</Label>
+            <Label htmlFor="newPassword">{t("new_password")}</Label>
             <Input
               ref={newPassRef}
               id="newPassword"
               name="newPassword"
-              placeholder="Enter your new password"
+              placeholder={t("enter_new_password")}
               type="password"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="newPasswordConfirm">Confirm Password</Label>
+            <Label htmlFor="newPasswordConfirm">{t("confirm_password")}</Label>
             <Input
               ref={confirmPassRef}
               id="newPasswordConfirm"
               name="newPasswordConfirm"
-              placeholder="Confirm your new password"
+              placeholder={t("confirm_new_password")}
               type="password"
             />
           </div>
         </CardContent>
         <CardFooter>
           <Button type="submit" name="intent" value="update">
-            Save Changes
+            {t("save_changes")}
           </Button>
         </CardFooter>
       </Card>
