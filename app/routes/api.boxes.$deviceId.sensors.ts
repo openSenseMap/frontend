@@ -50,7 +50,7 @@ export const loader: LoaderFunction = async ({
 
 		count = countParam === null ? undefined : Number(countParam)
 
-		const meas = await getLatestMeasurements(deviceId, undefined, count)
+		const meas = await getLatestMeasurements(deviceId, count)
 
 		return StandardResponse.ok(meas)
 	} catch (err) {
