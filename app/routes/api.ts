@@ -152,8 +152,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 		{
 			path: `boxes/:boxId/:sensorId/measurements`,
 			method: 'DELETE',
-			deprecationNotice:
-				'Use boxes/:boxId/sensors/:sensorId/measurements instead',
 		},
 		{
 			path: `boxes/:boxId/sensors/:sensorId/measurements`,
