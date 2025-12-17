@@ -152,9 +152,7 @@ export const loader: LoaderFunction = async ({
 	try {
 		const collected = collectParameters(request, params)
 		if (collected instanceof Response) return collected
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const {
-			deviceId,
 			sensorId,
 			outliers,
 			outlierWindow,
