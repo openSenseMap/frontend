@@ -1,4 +1,4 @@
-import { eq, sql, inArray, and, ilike } from 'drizzle-orm'
+import { eq, sql, inArray, and } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
 import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-schema'
 import {
@@ -229,7 +229,7 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 	const sensorConditions = []
 
 	if (phenomenon) {
-		sensorConditions.push(ilike(sensor.title, phenomenon))
+		sensorConditions.push(eq(sensor.title, phenomenon))
 	}
 
 	const rows = await drizzleClient

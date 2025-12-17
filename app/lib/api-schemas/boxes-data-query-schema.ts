@@ -57,7 +57,6 @@ const BoxesDataQuerySchemaBase = z
 
 		grouptag: z.string().optional(),
 
-		// Date range
 		fromDate: z
 			.string()
 			.transform((s) => new Date(s))
@@ -140,7 +139,6 @@ export type BoxesDataQueryParams = z.infer<typeof BoxesDataQuerySchemaBase>
 /**
  * Parse and validate query parameters from request.
  * Supports both GET query params and POST JSON body.
- * Handles parameter name aliases (e.g., boxId/boxid/box_ids).
  */
 export async function parseBoxesDataQuery(
 	request: Request,
@@ -183,16 +181,16 @@ export async function parseBoxesDataQuery(
 	// Normalize parameter names to match schema
 	const normalizedParams = {
 		phenomenon: getParam(['phenomenon']),
-		boxId: getParam(['boxId', 'boxid', 'box_ids']),
+		boxId: getParam(['boxId', 'boxid']), // boxId in docs, but effectively boxid was used, so support both?
 		bbox: getParam(['bbox']),
 		exposure: getParam(['exposure']),
-		grouptag: getParam(['grouptag', 'groupTag']),
-		fromDate: getParam(['from-date', 'fromDate']),
-		toDate: getParam(['to-date', 'toDate']),
+		grouptag: getParam(['grouptag']),
+		fromDate: getParam(['from-date']),
+		toDate: getParam(['to-date']),
 		format: getParam(['format']),
 		columns: getParam(['columns']),
 		download: getParam(['download']),
-		delimiter: getParam(['delimiter', 'separator']),
+		delimiter: getParam(['delimiter']),
 	}
 
 	const cleanParams = Object.fromEntries(

@@ -312,7 +312,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	it('GET /boxes/data should include content-disposition by default', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxid=${deviceId},${deviceId}&phenomenon=Temperatur`,
+			`${BASE_URL}/boxes/data/?boxId=${deviceId},${deviceId}&phenomenon=Temperatur`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
@@ -328,7 +328,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 	it('GET /boxes/data should NOT include content-disposition when download=false', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxid=${deviceId},${deviceId}&phenomenon=Temperatur&download=false`,
+			`${BASE_URL}/boxes/data/?boxId=${deviceId},${deviceId}&phenomenon=Temperatur&download=false`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
@@ -348,7 +348,7 @@ describe('openSenseMap API: /boxes/data', () => {
 	// ---------------------------
 	it('GET /boxes/data invalid bbox (too many values)', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,3,4,5`,
+			`${BASE_URL}/boxes/data/?boxId=${deviceId}&phenomenon=Temperatur&bbox=1,2,3,4,5`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
@@ -392,7 +392,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 	it('GET /boxes/data invalid bbox (too few values)', async () => {
 		const req = new Request(
-			`${BASE_URL}/boxes/data/?boxid=${deviceId}&phenomenon=Temperatur&bbox=1,2,3`,
+			`${BASE_URL}/boxes/data/?boxId=${deviceId}&phenomenon=Temperatur&bbox=1,2,3`,
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 

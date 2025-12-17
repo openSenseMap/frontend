@@ -12,8 +12,7 @@ function createDownloadFilename(
 	params: string[],
 	format: string,
 ) {
-	// Note: In the old app encodeURI was used twice in this function,
-	// i am not sure why this was done
+	// Note: Using encodeURI twice as in the old app (unsure why)
 	return `opensensemap_org-${action}-${encodeURI(
 		encodeURI(params.join('-')),
 	)}-${date
