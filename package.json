@@ -111,7 +111,6 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.11",
     "pg": "^8.16.2",
-    "pg-query-stream": "^4.10.3",
     "postcss-import": "^16.1.1",
     "postgres": "^3.4.7",
     "prom-client": "^15.1.3",
