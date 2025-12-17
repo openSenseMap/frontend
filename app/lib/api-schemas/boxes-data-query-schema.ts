@@ -159,15 +159,12 @@ export async function parseBoxesDataQuery(
 		}
 	}
 
-	// Helper to get parameter value, checking multiple possible names
 	const getParam = (names: string[]): any => {
-		// Check query params first
 		for (const name of names) {
 			if (queryParams.has(name)) {
 				return queryParams.get(name)
 			}
 		}
-		// Then check JSON body
 		if (jsonBody) {
 			for (const name of names) {
 				if (Object.prototype.hasOwnProperty.call(jsonBody, name)) {
@@ -178,7 +175,6 @@ export async function parseBoxesDataQuery(
 		return undefined
 	}
 
-	// Normalize parameter names to match schema
 	const normalizedParams = {
 		phenomenon: getParam(['phenomenon']),
 		boxId: getParam(['boxId', 'boxid']), // boxId in docs, but effectively boxid was used, so support both?
