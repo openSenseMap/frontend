@@ -14,17 +14,21 @@ import { useOptionalUser } from '~/utils'
 
 export function NavBar() {
 	const location = useLocation()
+	// User is optional
+	// If no user render Login button
+	const user = useOptionalUser()
 	const parts = location.pathname
 		.split('/')
 		.slice(1)
 		.map((item) => {
 			const decoded = decodeURIComponent(item)
+
+			// respect the way the username is written, taking
+			// it from the user model instead of the url
+			if (item.toLowerCase() === user?.name.toLowerCase()) return user?.name
+
 			return decoded.charAt(0).toUpperCase() + decoded.slice(1)
 		}) // prevents empty parts from showing
-
-	// User is optional
-	// If no user render Login button
-	const user = useOptionalUser()
 
 	return (
 		<div className="border-b bg-white p-4 dark:bg-dark-background dark:text-dark-text">
