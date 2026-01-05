@@ -19,8 +19,12 @@ import {
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { useToast } from '~/components/ui/use-toast'
-import { deleteUserByEmail, getUserByEmail } from '~/models/user.server'
-import { getUser, getUserEmail, getUserId } from '~/utils/session.server'
+import {
+	deleteUserByEmail,
+	getUserByEmail,
+	verifyLogin,
+} from '~/models/user.server'
+import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -39,14 +43,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 //*****************************************************
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
-	// log all values of the form
+
+	// get all values of the form
 	const { intent, ...values } = Object.fromEntries(formData)
 	const { passwordDelete } = values
 
 	invariant(typeof passwordDelete === 'string', 'password must be a string')
 
-	const user = await getUser(request)
-	//* if entered password is invalid
+	const userEmail = await getUserEmail(request)
+	invariant(userEmail, `Email not found!`)
+
+	const user = await verifyLogin(userEmail, passwordDelete)
+
+	//* check if entered password is invalid
 	if (!user) {
 		return data(
 			{
