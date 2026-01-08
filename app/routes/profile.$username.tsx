@@ -81,6 +81,7 @@ export default function () {
 		useLoaderData<typeof loader>()
 
 	const { t } = useTranslation('profile')
+	const columnsTranslation = useTranslation('data-table')
 
 	// const sortedBadges = sortBadges(allBadges, userBackpack);
 
@@ -106,8 +107,10 @@ export default function () {
 								{profile?.user?.name || ''}
 							</h3>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
-								{t("user_since")}{' '}
-								{new Date(profile?.user?.createdAt || '').toLocaleDateString(t("locale"))}
+								{t('user_since')}{' '}
+								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
+									t('locale'),
+								)}
 							</p>
 						</div>
 					</div>
@@ -117,7 +120,7 @@ export default function () {
 								{profile?.user?.devices.length}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t("devices")}
+								{t('devices')}
 							</span>
 						</div>
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
@@ -125,7 +128,7 @@ export default function () {
 								{sensorsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t("sensors")}
+								{t('sensors')}
 							</span>
 						</div>
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
@@ -133,7 +136,7 @@ export default function () {
 								{measurementsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t("measurements")}
+								{t('measurements')}
 							</span>
 						</div>
 						{/* <div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
@@ -200,10 +203,10 @@ export default function () {
 						{profile?.user?.devices && (
 							<>
 								<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
-									{t("devices")}
+									{t('devices')}
 								</div>
 								<DataTable
-									columns={getColumns()}
+									columns={getColumns(columnsTranslation)}
 									data={profile?.user.devices}
 								/>
 							</>
