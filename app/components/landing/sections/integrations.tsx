@@ -1,6 +1,8 @@
 import { ArrowUpDown, RadioTower, Unplug } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Integrations() {
+  const { t } = useTranslation('integrations')
   return (
     <section
       id="integrations"
@@ -8,10 +10,9 @@ export default function Integrations() {
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">
         <div id="title" className="text-2xl font-semibold">
-          Integrations
+          {t("title")}
           <div id="description" className="text-lg font-medium">
-            We support different data communication protocols and offer specific
-            integrations for them.
+            {t("description")}
           </div>
         </div>
         <img src="/integration.svg" alt="" className="w-1/2 h-1/2" />
@@ -26,7 +27,7 @@ export default function Integrations() {
               className="flex items-center gap-3"
             >
               <ArrowUpDown className="h-4 w-4 mr-2" />
-              HTTP API
+              {t("HTTP API")}
             </a>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
@@ -37,7 +38,7 @@ export default function Integrations() {
               className="flex items-center gap-3"
             >
               <Unplug className="h-4 w-4 mr-2" />
-              MQTT
+              {t("MQTT")}
             </a>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
@@ -48,7 +49,7 @@ export default function Integrations() {
               className="flex items-center gap-3"
             >
               <RadioTower className="h-4 w-4 mr-2" />
-              TTN v3 (LoRa WAN)
+              {t("TTN")}
             </a>
           </div>
         </div>

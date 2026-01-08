@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 export default function Tools() {
+  const { t } = useTranslation('tools')
   const tools = [
     {
       name: "Tool 1",
@@ -76,7 +78,7 @@ export default function Tools() {
                       className="dark:border-blue-200 h-full w-[80%] rounded-lg border-8 border-solid border-blue-100 object-contain"
                     >
                       <source src={tool.video} type="video/mp4"></source>
-                      Your browser does not support the video tag.
+                      {t("notSupported")}
                     </video>
                   </div>
                 </TabsContent>
