@@ -1,4 +1,5 @@
 import { type BoxesDataColumn } from './api-schemas/boxes-data-query-schema'
+import { validLngLat } from './location'
 import { decodeMeasurements, hasDecoder } from '~/lib/decoding-service.server'
 import {
 	type DeviceWithoutSensors,
@@ -84,8 +85,9 @@ const normalizeLocation = (
 
 	if (Array.isArray(location)) {
 		if (location.length < 2) return null
+
 		return {
-			lng: location[0],
+			lng: normalizeLongitude(location[0]),
 			lat: location[1],
 			height: location[2],
 		}
@@ -93,7 +95,7 @@ const normalizeLocation = (
 
 	if (typeof location === 'object' && 'lat' in location && 'lng' in location) {
 		return {
-			lng: location.lng,
+			lng: normalizeLongitude(location.lng),
 			lat: location.lat,
 			height: location.height,
 		}
@@ -102,9 +104,14 @@ const normalizeLocation = (
 	return null
 }
 
-const validateLocationCoordinates = (loc: LocationData): boolean => {
-	return loc.lng >= -180 && loc.lng <= 180 && loc.lat >= -90 && loc.lat <= 90
-}
+/**
+ * Longitude at +180 are mathematically equal to longitudes at -180
+ * and are therefore normalized to -180 for consistency.
+ * @param lng The longitude value to normalize
+ * @returns A normalized longitude in the value range [-180, 180)
+ */
+const normalizeLongitude = (lng: number): number =>
+	lng % 180 === 0 ? -180 : lng
 
 export const postNewMeasurements = async (
 	deviceId: string,
@@ -143,6 +150,15 @@ export const postNewMeasurements = async (
 		contentType,
 		sensors: device.sensors,
 	})
+
+	for (const m of measurements) {
+		const locationData: LocationData | null = m.location ?? null
+		if (locationData && !validLngLat(locationData.lng, locationData.lat)) {
+			const error = new Error('Invalid location coordinates')
+			error.name = 'UnprocessableEntityError'
+			throw error
+		}
+	}
 
 	await saveMeasurements(device, measurements)
 }
@@ -203,7 +219,7 @@ export const postSingleMeasurement = async (
 		if (body.location) {
 			locationData = normalizeLocation(body.location)
 
-			if (locationData && !validateLocationCoordinates(locationData)) {
+			if (locationData && !validLngLat(locationData.lng, locationData.lat)) {
 				const error = new Error('Invalid location coordinates')
 				error.name = 'UnprocessableEntityError'
 				throw error
