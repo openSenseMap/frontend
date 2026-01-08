@@ -7,7 +7,7 @@ import { StandardResponse } from '~/utils/response-utils'
 const MeasurementSchema = z.object({
 	sensor_id: z.string(),
 	value: z.number(),
-	createdAt: z.string().datetime().optional(),
+	createdAt: z.string().datetime(),
 	location: z
 		.object({
 			lat: z.number(),
