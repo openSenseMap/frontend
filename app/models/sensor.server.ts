@@ -208,7 +208,7 @@ export function deleteSensor(id: Sensor['id']) {
  * Returns sensorsMap (sensorId -> augmented sensor metadata) and sensorIds array.
  */
 export async function findMatchingSensors(params: BoxesDataQueryParams) {
-	const { boxId, exposure, phenomenon, grouptag } = params
+	const { boxid, exposure, phenomenon, grouptag } = params
 
 	// Build device-level conditions
 	const deviceConditions = []
@@ -217,8 +217,8 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 		deviceConditions.push(sql`${grouptag} = ANY(${device.tags})`)
 	}
 
-	if (boxId) {
-		deviceConditions.push(inArray(device.id, boxId))
+	if (boxid) {
+		deviceConditions.push(inArray(device.id, boxid))
 	}
 
 	if (exposure) {
