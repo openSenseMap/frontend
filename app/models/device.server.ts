@@ -17,8 +17,6 @@ import {
 	type Device,
 	type Sensor,
 } from '~/schema'
-import { accessToken } from '~/schema/accessToken'
-import { addonDefinitions } from '~/utils/addon-definitions'
 import { getSensorsForModel } from '~/utils/model-definitions'
 
 const BASE_DEVICE_COLUMNS = {
@@ -660,7 +658,14 @@ export async function findDevices(
 
 export async function createDevice(deviceData: any, userId: string) {
 	try {
-		const newDevice = await drizzleClient.transaction(async (tx) => {
+		const [newDevice, usr] = await drizzleClient.transaction(async (tx) => {
+			// Get the user info
+			const [u] = await tx
+				.select()
+				.from(user)
+				.where(eq(user.id, userId))
+				.limit(1)
+
 			// Determine sensors to use
 			let sensorsToAdd = deviceData.sensors
 
@@ -732,11 +737,61 @@ export async function createDevice(deviceData: any, userId: string) {
 			}
 
 			// Return device with sensors
-			return {
-				...createdDevice,
-				sensors: createdSensors,
-			}
+			return [
+				{
+					...createdDevice,
+					sensors: createdSensors,
+				},
+				u,
+			]
 		})
+
+		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+		switch (newDevice.model) {
+			case 'luftdaten.info':
+				await sendMail({
+					recipientAddress: usr.email,
+					recipientName: usr.name,
+					subject: NewLufdatenDeviceMessages[lng].heading,
+					body: BaseNewDeviceEmail({
+						user: { name: usr.name },
+						device: newDevice,
+						language: lng,
+						content: NewLufdatenDeviceMessages,
+					}),
+				})
+				break
+			case 'homeV2Ethernet':
+			case 'homeV2Lora':
+			case 'homeV2Wifi':
+			case 'senseBox:Edu':
+				await sendMail({
+					recipientAddress: usr.email,
+					recipientName: usr.name,
+					subject: NewSenseboxDeviceMessages[lng].heading,
+					body: BaseNewDeviceEmail({
+						user: { name: usr.name },
+						device: newDevice,
+						language: lng,
+						content: NewSenseboxDeviceMessages,
+					}),
+				})
+				break
+			default:
+				await sendMail({
+					recipientAddress: usr.email,
+					recipientName: usr.name,
+					subject: BaseNewDeviceMessages[lng].heading,
+					body: BaseNewDeviceEmail({
+						user: { name: usr.name },
+						device: newDevice,
+						language: lng,
+						content: BaseNewDeviceMessages,
+					}),
+				})
+				break
+		}
+
 		return newDevice
 	} catch (error) {
 		console.error('Error creating device with sensors:', error)
