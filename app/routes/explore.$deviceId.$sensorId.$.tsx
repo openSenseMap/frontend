@@ -2,9 +2,12 @@ import { addDays } from 'date-fns'
 import { redirect, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import Graph from '~/components/device-detail/graph'
 import MobileBoxView from '~/components/map/layers/mobile/mobile-box-view'
-import { categorizeIntoTrips, type LocationPoint} from '~/lib/mobile-box-helper'
+import {
+	categorizeIntoTrips,
+	type LocationPoint,
+} from '~/lib/mobile-box-helper'
 import { getDevice } from '~/models/device.server'
-import { getMeasurement } from '~/models/measurement.server'
+import { getMeasurement } from '~/models/measurement.query.server'
 import { getSensor } from '~/models/sensor.server'
 import { type SensorWithMeasurementData } from '~/schema'
 

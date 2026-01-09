@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 // import { ModeToggle } from "../../mode-toggle";
 import LanguageSelector from "./language-selector";
+import { useTranslation } from "react-i18next";
 
 const links = [
   {
@@ -33,6 +34,8 @@ const links = [
 export default function Header() {
   const [openMenu, setOpenMenu] = useState(false);
 
+  const { t } = useTranslation("header");
+
   return (
     <nav
       id="header"
@@ -63,7 +66,7 @@ export default function Header() {
                       to={item.link}
                       className="dark:md:hover:text-green-200 block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-light-green"
                     >
-                      {item.name}
+                      {t(item.name)}
                     </Link>
                   </li>
                 );
@@ -115,7 +118,7 @@ export default function Header() {
                     className="dark:hover:text-green-200 block px-4 py-2 text-sm text-gray-700 hover:text-light-green"
                     role="menuitem"
                   >
-                    {item.name}
+                    {t(item.name)}
                   </Link>
                 ))}
               </div>
