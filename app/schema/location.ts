@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import {
 	bigserial,
 	geometry,
@@ -21,10 +21,15 @@ export const location = pgTable(
 			srid: 4326,
 		}).notNull(),
 	},
-	(t) => ({
-		locationIndex: index('location_index').using('gist', t.location),
-		unique_location: unique().on(t.location),
-	}),
+	(t) => [
+		index('location_index').using('gist', t.location),
+		unique().on(t.location),
+		sql`CONSTRAINT check_location CHECK (
+			ST_X(${t.location}) >= -180 AND
+			ST_X(${t.location}) < 180 AND
+			ST_Y(${t.location}) BETWEEN -90 AND 90
+		)`,
+	],
 )
 
 /**

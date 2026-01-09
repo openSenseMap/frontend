@@ -1,6 +1,8 @@
 import { BookA, Wrench } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Connect() {
+  const { t } = useTranslation('connect')
   return (
     <section
       id="connect"
@@ -8,10 +10,9 @@ export default function Connect() {
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">
         <div id="title" className="text-2xl font-semibold">
-          Connect any device
+          {t("title")}
           <div id="description" className="text-lg font-medium">
-            We support preconfigured devices by some vendors but you can always
-            registered your custom hardware and sensor setup.
+            {t("description")}
           </div>
         </div>
         <img src="/connection.svg" alt="" className="w-1/2 h-1/2" />
@@ -26,7 +27,7 @@ export default function Connect() {
               className="flex items-center gap-3"
             >
               <BookA className="h-4 w-4 mr-2" />
-              senseBox
+              {t("senseBox")}
             </a>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
@@ -37,7 +38,7 @@ export default function Connect() {
               className="flex items-center gap-3"
             >
               <BookA className="h-4 w-4 mr-2" />
-              hackAIR
+              {t("hackAIR")}
             </a>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
@@ -48,7 +49,7 @@ export default function Connect() {
               className="flex items-center gap-3"
             >
               <BookA className="h-4 w-4 mr-2" />
-              Sensor.Community
+              {t("Sensor.Community")}
             </a>
           </div>
           <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
@@ -59,7 +60,7 @@ export default function Connect() {
               className="flex items-center gap-3"
             >
               <Wrench className="h-4 w-4 mr-2" />
-              Custom
+              {t("Custom")}
             </a>
           </div>
         </div>

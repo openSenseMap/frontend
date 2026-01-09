@@ -123,13 +123,12 @@ export default function LoginPage() {
         )}
         {actionData?.success ? (
           <div className="w-full max-w-md text-center bg-white p-6 rounded-md shadow-lg">
-            <h2 className="text-2xl font-bold mb-4">Request Sent</h2>
+            <h2 className="text-2xl font-bold mb-4">{t("request_sent")}</h2>
             <p className="mb-6">
-              An email with instructions to reset your password has been sent.
-              Please check your inbox.
+              {t("request_sent_description")}
             </p>
             <Link to="/explore/login">
-              <Button className="w-full bg-light-blue">Back to Login</Button>
+              <Button className="w-full bg-light-blue">{t("back_to_login")}</Button>
             </Link>
           </div>
         ) : (
@@ -137,9 +136,9 @@ export default function LoginPage() {
             <Form method="post" className="space-y-6" noValidate>
               <CardHeader className="space-y-1 text-center">
                 <CardTitle className="text-2xl font-bold">
-                  Forgot your password?
+                  {t("forgot_your_password")}
                 </CardTitle>
-                <CardDescription>Reset password by mail</CardDescription>
+                <CardDescription>{t("reset_password")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -154,11 +153,11 @@ export default function LoginPage() {
                     autoComplete="email"
                     aria-invalid={actionData?.errors?.email ? true : undefined}
                     aria-describedby="email-error"
-                    placeholder="example@opensensemap.org"
+                    placeholder={t("example_placeholder")}
                   />
                   {actionData?.errors?.email && (
                     <div className="text-sm text-red-500 mt-1" id="email-error">
-                      {actionData.errors.email}
+                      {t(actionData.errors.email)}
                     </div>
                   )}
                 </div>
@@ -168,7 +167,7 @@ export default function LoginPage() {
                   Reset
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  {"Remember your password?"}{" "}
+                  {t("remember_password")}{" "}
                   <Link
                     className="font-medium underline"
                     to={{
@@ -176,7 +175,7 @@ export default function LoginPage() {
                       search: searchParams.toString(),
                     }}
                   >
-                    {"Login"}
+                    {t("login_label")}
                   </Link>
                 </p>
               </CardFooter>
