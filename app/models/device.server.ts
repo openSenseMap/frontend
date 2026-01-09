@@ -749,6 +749,11 @@ export async function createDevice(deviceData: any, userId: string) {
 		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 		switch (newDevice.model) {
 			case 'luftdaten.info':
+			case 'luftdaten_sds011':
+			case 'luftdaten_sds011_bme280':
+			case 'luftdaten_sds011_bmp180':
+			case 'luftdaten_sds011_dht11':
+			case 'luftdaten_sds011_dht22':
 				await sendMail({
 					recipientAddress: usr.email,
 					recipientName: usr.name,
@@ -764,6 +769,10 @@ export async function createDevice(deviceData: any, userId: string) {
 			case 'homeV2Ethernet':
 			case 'homeV2Lora':
 			case 'homeV2Wifi':
+			case 'homeEthernet':
+			case 'homeEthernetFeinstaub':
+			case 'homeWifi':
+			case 'homeWifiFeinstaub':
 			case 'senseBox:Edu':
 				await sendMail({
 					recipientAddress: usr.email,
