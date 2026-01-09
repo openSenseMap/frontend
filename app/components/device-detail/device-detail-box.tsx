@@ -464,7 +464,6 @@ export default function DeviceDetailBox() {
 																const sensorLink = createSensorLink(sensor.id)
 																if (sensorLink === '') {
 																	return (
-																		// FIX: Added h-full and flex-col to ensure uniform card height in grid rows
 																		<Card
 																			key={sensor.id}
 																			className="flex h-full flex-col"
@@ -478,7 +477,6 @@ export default function DeviceDetailBox() {
 																				})
 																			}
 																		>
-																			{/* FIX: Added flex-col and h-full to maintain flex layout chain */}
 																			<label
 																				htmlFor={sensor.id}
 																				className="flex h-full cursor-pointer flex-col"
@@ -500,20 +498,17 @@ export default function DeviceDetailBox() {
 																					)}
 																				/>
 																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-																					{/* FIX: Added truncate for text ellipsis and title attribute for hover tooltip */}
 																					<CardTitle
 																						className="truncate text-sm font-medium"
 																						title={sensor.title || ''}
 																					>
 																						{sensor.title}
 																					</CardTitle>
-																					{/* FIX: Added shrink-0 to prevent icon shrinking and ml-2 for spacing */}
 																					<SensorIcon
 																						title={sensor.title || ''}
 																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				{/* FIX: Added flex-grow to push footer to bottom of card */}
 																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
@@ -546,13 +541,11 @@ export default function DeviceDetailBox() {
 																	)
 																}
 																return (
-																	// FIX: Added h-full so Link wrapper stretches with grid
 																	<Link
 																		key={sensor.id}
 																		to={sensorLink}
 																		className="h-full"
 																	>
-																		{/* FIX: Added h-full and flex-col to ensure uniform card height in grid rows */}
 																		<Card
 																			key={sensor.id}
 																			className={clsx(
@@ -560,7 +553,6 @@ export default function DeviceDetailBox() {
 																				isSensorActive(sensor.id),
 																			)}
 																		>
-																			{/* FIX: Added flex-col and h-full to maintain flex layout chain */}
 																			<label
 																				htmlFor={sensor.id}
 																				className="flex h-full cursor-pointer flex-col"
@@ -582,20 +574,17 @@ export default function DeviceDetailBox() {
 																					)}
 																				/>
 																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-																					{/* FIX: Added truncate for text ellipsis and title attribute for hover tooltip */}
 																					<CardTitle
 																						className="truncate text-sm font-medium"
 																						title={sensor.title || ''}
 																					>
 																						{sensor.title}
 																					</CardTitle>
-																					{/* FIX: Added shrink-0 to prevent icon shrinking and ml-2 for spacing */}
 																					<SensorIcon
 																						title={sensor.title || ''}
 																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				{/* FIX: Added flex-grow to push footer to bottom of card */}
 																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
