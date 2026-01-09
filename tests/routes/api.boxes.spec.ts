@@ -46,7 +46,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				name: 'Test Weather Station',
 				location: [7.596, 51.969],
 				exposure: 'outdoor',
-				model: 'homeV2Wifi',
+				//model: 'homeV2Wifi',
 				grouptag: ['weather', 'test'],
 				sensors: [
 					{

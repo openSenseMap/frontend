@@ -42,7 +42,7 @@ describe('Device Model: createDevice', () => {
 			latitude: 51.969,
 			longitude: 7.596,
 			exposure: 'outdoor',
-			model: 'homeV2Wifi',
+			// model: "homeV2Wifi",
 			sensors: [
 				{ title: 'Temperature', unit: '°C', sensorType: 'HDC1080' },
 				{ title: 'Humidity', unit: '%', sensorType: 'HDC1080' },
@@ -101,18 +101,37 @@ describe('Device Model: createDevice', () => {
 		expect(result.sensors).toHaveLength(0)
 	})
 
+	it('should create device with tags/grouptag', async () => {
+		const deviceData = {
+			name: 'Tagged Device',
+			latitude: 51.5,
+			longitude: 7.5,
+			exposure: 'outdoor',
+			// model: 'Custom',
+			tags: ['weather', 'city', 'test'],
+			sensors: [{ title: 'Temperature', unit: '°C', sensorType: 'DHT22' }],
+		}
+
+		const result = await createDevice(deviceData, userId)
+
+		createdDeviceIds.push(result.id)
+		expect(result).toHaveProperty('tags')
+		expect(Array.isArray(result.tags)).toBe(true)
+		expect(result.tags).toEqual(['weather', 'city', 'test'])
+		expect(result.sensors).toHaveLength(1)
+	})
+
 	it('should create device with optional fields', async () => {
 		const deviceData = {
 			name: 'Full Featured Device',
 			latitude: 51.0,
 			longitude: 7.0,
 			exposure: 'mobile',
-			model: 'homeV2Lora',
 			description: 'A comprehensive test device',
 			image: 'https://example.com/device.jpg',
 			link: 'https://example.com',
 			public: true,
-			tags: [],
+			tags: ['test'],
 			sensors: [{ title: 'Temperature', unit: '°C', sensorType: 'SHT31' }],
 		}
 
@@ -124,7 +143,6 @@ describe('Device Model: createDevice', () => {
 		expect(result).toHaveProperty('link', 'https://example.com')
 		expect(result).toHaveProperty('public', true)
 		expect(result).toHaveProperty('exposure', 'mobile')
-		expect(result).toHaveProperty('model', 'homeV2Lora')
 		expect(result.sensors).toHaveLength(1)
 	})
 
