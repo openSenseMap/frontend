@@ -3,6 +3,7 @@ import {
 	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
 } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
@@ -18,11 +19,7 @@ import {
 } from '~/routes/api.devices'
 import { type User, type Device } from '~/schema'
 
-const DEVICE_TEST_USER = {
-	name: 'deviceTest',
-	email: 'test@devices.endpoint',
-	password: 'highlySecurePasswordForTesting',
-}
+const DEVICE_TEST_USER = generateTestUserCredentials()
 
 const generateMinimalDevice = (
 	location: number[] | {} = [123, 12, 34],
@@ -62,289 +59,360 @@ describe('openSenseMap API Routes: /boxes', () => {
 		)
 	})
 
-	it('should search for boxes with a specific name and limit the results', async () => {
-		// Arrange
-		const request = new Request(
-			`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=2`,
-			{
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			},
-		)
+	describe('GET', () => {
+		it('should search for boxes with a specific name and limit the results', async () => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=2`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
 
-		// Act
-		const response: any = await devicesLoader({
-			request: request,
-		} as LoaderFunctionArgs)
-
-		expect(response).toBeDefined()
-		expect(Array.isArray(response?.features)).toBe(true)
-		expect(response?.features.length).lessThanOrEqual(2)
-	})
-
-	it('should deny searching for a name if limit is greater than max value', async () => {
-		// Arrange
-		const request = new Request(
-			`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=21`,
-			{
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			},
-		)
-
-		// Act
-		await expect(async () => {
-			await devicesLoader({
+			// Act
+			const response: any = await devicesLoader({
 				request: request,
 			} as LoaderFunctionArgs)
-		}).rejects.toThrow()
-	})
 
-	it('should deny searching for a name if limit is lower than min value', async () => {
-		// Arrange
-		const request = new Request(
-			`${BASE_URL}?format=geojson&name=sensebox&limit=0`,
-			{
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			},
-		)
-
-		// Act
-		await expect(async () => {
-			await devicesLoader({
-				request: request,
-			} as LoaderFunctionArgs)
-		}).rejects.toThrow()
-	})
-
-	it('should allow to request minimal boxes', async () => {
-		// Arrange
-		const request = new Request(`${BASE_URL}?minimal=true&format=geojson`, {
-			method: 'GET',
-			headers: { 'Content-Type': 'application/json' },
+			expect(response).toBeDefined()
+			expect(Array.isArray(response?.features)).toBe(true)
+			expect(response?.features.length).lessThanOrEqual(2)
 		})
 
-		// Act
-		const response: any = await devicesLoader({
-			request: request,
-		} as LoaderFunctionArgs)
+		it('should deny searching for a name if limit is greater than max value', async () => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=21`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
 
-		// Assert
-		expect(response).toBeDefined()
-		expect(response.type).toBe('FeatureCollection')
-		expect(Array.isArray(response?.features)).toBe(true)
+			// Act
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		})
 
-		if (response.features.length > 0) {
-			const feature = response.features[0]
-			expect(feature.type).toBe('Feature')
-			expect(feature.properties).toBeDefined()
+		it('should deny searching for a name if limit is lower than min value', async () => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&name=sensebox&limit=0`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
 
-			// Should have minimal fields
-			const props = feature.properties
-			expect(props?._id || props?.id).toBeDefined()
-			expect(props?.name).toBeDefined()
+			// Act
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		})
 
-			// Should NOT include these fields in minimal mode
-			expect(props?.loc).toBeUndefined()
-			expect(props?.locations).toBeUndefined()
-			expect(props?.weblink).toBeUndefined()
-			expect(props?.image).toBeUndefined()
-			expect(props?.description).toBeUndefined()
-			expect(props?.model).toBeUndefined()
-			expect(props?.sensors).toBeUndefined()
-		}
-	})
-
-	it('should return the correct count and correct schema of boxes for /boxes GET with date parameter', async () => {
-		const tenDaysAgoIso = new Date(
-			Date.now() - 10 * 24 * 60 * 60 * 1000,
-		).toISOString()
-
-		// Arrange
-		const request = new Request(
-			`${BASE_URL}?format=geojson&date=${tenDaysAgoIso}`,
-			{
+		it('should allow to request minimal boxes', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?minimal=true&format=geojson`, {
 				method: 'GET',
 				headers: { 'Content-Type': 'application/json' },
-			},
-		)
+			})
 
-		// Act
-		const response: any = await devicesLoader({
-			request: request,
-		} as LoaderFunctionArgs)
+			// Act
+			const response: any = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
 
-		// Assert
-		expect(response).toBeDefined()
-		expect(response.type).toBe('FeatureCollection')
-		expect(Array.isArray(response?.features)).toBe(true)
+			// Assert
+			expect(response).toBeDefined()
+			expect(response.type).toBe('FeatureCollection')
+			expect(Array.isArray(response?.features)).toBe(true)
 
-		// Verify that returned boxes have sensor measurements after the specified date
-		if (response.features.length > 0) {
-			response.features.forEach((feature: any) => {
+			if (response.features.length > 0) {
+				const feature = response.features[0]
 				expect(feature.type).toBe('Feature')
 				expect(feature.properties).toBeDefined()
 
-				// If the box has sensors with measurements, they should be after the date
-				if (
-					feature.properties?.sensors &&
-					Array.isArray(feature.properties.sensors)
-				) {
-					const hasRecentMeasurement = feature.properties.sensors.some(
-						(sensor: any) => {
-							if (sensor.lastMeasurement?.createdAt) {
-								const measurementDate = new Date(
-									sensor.lastMeasurement.createdAt,
-								)
-								const filterDate = new Date(tenDaysAgoIso)
-								return measurementDate >= filterDate
-							}
-							return false
-						},
-					)
+				// Should have minimal fields
+				const props = feature.properties
+				expect(props?._id || props?.id).toBeDefined()
+				expect(props?.name).toBeDefined()
 
-					// If there are sensors with lastMeasurement, at least one should be recent
-					if (
-						feature.properties.sensors.some(
-							(s: any) => s.lastMeasurement?.createdAt,
-						)
-					) {
-						expect(hasRecentMeasurement).toBe(true)
-					}
-				}
-			})
-		}
-	})
-
-	it('should reject filtering boxes near a location with wrong parameter values', async () => {
-		// Arrange
-		const request = new Request(`${BASE_URL}?near=test,60`, {
-			method: 'GET',
-			headers: { 'Content-Type': 'application/json' },
-		})
-
-		// Act & Assert
-		await expect(async () => {
-			await devicesLoader({
-				request: request,
-			} as LoaderFunctionArgs)
-		}).rejects.toThrow()
-	})
-
-	it('should return 422 error on wrong format parameter', async () => {
-		// Arrange
-		const request = new Request(`${BASE_URL}?format=potato`, {
-			method: 'GET',
-			headers: { 'Content-Type': 'application/json' },
-		})
-
-		try {
-			await devicesLoader({
-				request: request,
-			} as LoaderFunctionArgs)
-			expect(true).toBe(false)
-		} catch (error) {
-			expect(error).toBeInstanceOf(Response)
-			expect((error as Response).status).toBe(422)
-
-			const errorData = await (error as Response).json()
-			expect(errorData.error).toBe('Invalid format parameter')
-		}
-	})
-
-	it('should return geojson format when requested', async () => {
-		// Arrange
-		const request = new Request(`${BASE_URL}?format=geojson`, {
-			method: 'GET',
-			headers: { 'Content-Type': 'application/json' },
-		})
-
-		// Act
-		const geojsonData: any = await devicesLoader({
-			request: request,
-		} as LoaderFunctionArgs)
-
-		expect(geojsonData).toBeDefined()
-		if (geojsonData) {
-			// Assert - this should always be GeoJSON since that's what the loader returns
-			expect(geojsonData.type).toBe('FeatureCollection')
-			expect(Array.isArray(geojsonData.features)).toBe(true)
-
-			if (geojsonData.features.length > 0) {
-				expect(geojsonData.features[0].type).toBe('Feature')
-				expect(geojsonData.features[0].geometry).toBeDefined()
-				// @ts-ignore
-				expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
-				// @ts-ignore
-				expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
-				expect(geojsonData.features[0].properties).toBeDefined()
+				// Should NOT include these fields in minimal mode
+				expect(props?.loc).toBeUndefined()
+				expect(props?.locations).toBeUndefined()
+				expect(props?.weblink).toBeUndefined()
+				expect(props?.image).toBeUndefined()
+				expect(props?.description).toBeUndefined()
+				expect(props?.model).toBeUndefined()
+				expect(props?.sensors).toBeUndefined()
 			}
-		}
-	})
-
-	it('should allow to filter boxes by grouptag', async () => {
-		// Arrange
-		const request = new Request(`${BASE_URL}?grouptag=testgroup`, {
-			method: 'GET',
-			headers: { 'Content-Type': 'application/json' },
 		})
 
-		// Act
-		const response = await devicesLoader({ request } as LoaderFunctionArgs)
+		it('should return the correct count and correct schema of boxes for /boxes GET with date parameter', async () => {
+			const tenDaysAgoIso = new Date(
+				Date.now() - 10 * 24 * 60 * 60 * 1000,
+			).toISOString()
 
-		// Handle case where loader returned a Response (e.g. validation error)
-		const data = response instanceof Response ? await response.json() : response
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&date=${tenDaysAgoIso}`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
 
-		expect(data).toBeDefined()
-		expect(Array.isArray(data)).toBe(true)
+			// Act
+			const response: any = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
 
-		expect(data).toHaveLength(1)
-
-		if (response instanceof Response) {
-			expect(response.status).toBe(200)
-			expect(response.headers.get('content-type')).toMatch(/application\/json/)
-		}
-	})
-
-	it('should allow filtering boxes by bounding box', async () => {
-		// Arrange
-		const request = new Request(
-			`${BASE_URL}?format=geojson&bbox=120,60,121,61`,
-			{
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			},
-		)
-
-		// Act
-		const response: any = await devicesLoader({
-			request: request,
-		} as LoaderFunctionArgs)
-
-		expect(response).toBeDefined()
-
-		if (response) {
 			// Assert
+			expect(response).toBeDefined()
 			expect(response.type).toBe('FeatureCollection')
-			expect(Array.isArray(response.features)).toBe(true)
+			expect(Array.isArray(response?.features)).toBe(true)
 
+			// Verify that returned boxes have sensor measurements after the specified date
 			if (response.features.length > 0) {
 				response.features.forEach((feature: any) => {
 					expect(feature.type).toBe('Feature')
-					expect(feature.geometry).toBeDefined()
-					expect(feature.geometry.coordinates).toBeDefined()
+					expect(feature.properties).toBeDefined()
 
-					const [longitude, latitude] = feature.geometry.coordinates
+					// If the box has sensors with measurements, they should be after the date
+					if (
+						feature.properties?.sensors &&
+						Array.isArray(feature.properties.sensors)
+					) {
+						const hasRecentMeasurement = feature.properties.sensors.some(
+							(sensor: any) => {
+								if (sensor.lastMeasurement?.createdAt) {
+									const measurementDate = new Date(
+										sensor.lastMeasurement.createdAt,
+									)
+									const filterDate = new Date(tenDaysAgoIso)
+									return measurementDate >= filterDate
+								}
+								return false
+							},
+						)
 
-					// Verify coordinates are within the bounding box [120,60,121,61]
-					expect(longitude).toBeGreaterThanOrEqual(120)
-					expect(longitude).toBeLessThanOrEqual(121)
-					expect(latitude).toBeGreaterThanOrEqual(60)
-					expect(latitude).toBeLessThanOrEqual(61)
+						// If there are sensors with lastMeasurement, at least one should be recent
+						if (
+							feature.properties.sensors.some(
+								(s: any) => s.lastMeasurement?.createdAt,
+							)
+						) {
+							expect(hasRecentMeasurement).toBe(true)
+						}
+					}
 				})
 			}
-		}
+		})
+
+		it('should reject filtering boxes near a location with wrong parameter values', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?near=test,60`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act & Assert
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		})
+
+		it('should return 422 error on wrong format parameter', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?format=potato`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			try {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+				expect(true).toBe(false)
+			} catch (error) {
+				expect(error).toBeInstanceOf(Response)
+				expect((error as Response).status).toBe(422)
+
+				const errorData = await (error as Response).json()
+				expect(errorData.error).toBe('Invalid format parameter')
+			}
+		})
+
+		it('should return geojson format when requested', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?format=geojson`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act
+			const geojsonData: any = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
+
+			expect(geojsonData).toBeDefined()
+			if (geojsonData) {
+				// Assert - this should always be GeoJSON since that's what the loader returns
+				expect(geojsonData.type).toBe('FeatureCollection')
+				expect(Array.isArray(geojsonData.features)).toBe(true)
+
+				if (geojsonData.features.length > 0) {
+					expect(geojsonData.features[0].type).toBe('Feature')
+					expect(geojsonData.features[0].geometry).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
+					expect(geojsonData.features[0].properties).toBeDefined()
+				}
+			}
+		})
+
+		it('should allow to filter boxes by grouptag', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?grouptag=testgroup`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act
+			const response = await devicesLoader({ request } as LoaderFunctionArgs)
+
+			// Handle case where loader returned a Response (e.g. validation error)
+			const data =
+				response instanceof Response ? await response.json() : response
+
+			expect(data).toBeDefined()
+			expect(Array.isArray(data)).toBe(true)
+
+			expect(data).toHaveLength(1)
+
+			if (response instanceof Response) {
+				expect(response.status).toBe(200)
+				expect(response.headers.get('content-type')).toMatch(
+					/application\/json/,
+				)
+			}
+		})
+
+		it('should allow filtering boxes by bounding box', async () => {
+			// Arrange
+			const request = new Request(
+				`${BASE_URL}?format=geojson&bbox=120,60,121,61`,
+				{
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json' },
+				},
+			)
+
+			// Act
+			const response: any = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
+
+			expect(response).toBeDefined()
+
+			if (response) {
+				// Assert
+				expect(response.type).toBe('FeatureCollection')
+				expect(Array.isArray(response.features)).toBe(true)
+
+				if (response.features.length > 0) {
+					response.features.forEach((feature: any) => {
+						expect(feature.type).toBe('Feature')
+						expect(feature.geometry).toBeDefined()
+						expect(feature.geometry.coordinates).toBeDefined()
+
+						const [longitude, latitude] = feature.geometry.coordinates
+
+						// Verify coordinates are within the bounding box [120,60,121,61]
+						expect(longitude).toBeGreaterThanOrEqual(120)
+						expect(longitude).toBeLessThanOrEqual(121)
+						expect(latitude).toBeGreaterThanOrEqual(60)
+						expect(latitude).toBeLessThanOrEqual(61)
+					})
+				}
+			}
+		})
+
+		it('should reject filtering boxes near a location with wrong parameter values', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?near=test,60`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act & Assert
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		})
+
+		it('should return 422 error on wrong format parameter', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?format=potato`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			try {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+				expect(true).toBe(false)
+			} catch (error) {
+				expect(error).toBeInstanceOf(Response)
+				expect((error as Response).status).toBe(422)
+
+				const errorData = await (error as Response).json()
+				expect(errorData.error).toBe('Invalid format parameter')
+			}
+		})
+
+		it('should return geojson format when requested', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?format=geojson`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act
+			const geojsonData: any = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
+
+			expect(geojsonData).toBeDefined()
+			if (geojsonData) {
+				// Assert - this should always be GeoJSON since that's what the loader returns
+				expect(geojsonData.type).toBe('FeatureCollection')
+				expect(Array.isArray(geojsonData.features)).toBe(true)
+
+				if (geojsonData.features.length > 0) {
+					expect(geojsonData.features[0].type).toBe('Feature')
+					expect(geojsonData.features[0].geometry).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
+					expect(geojsonData.features[0].properties).toBeDefined()
+				}
+			}
+		})
 	})
 
 	describe('POST', () => {

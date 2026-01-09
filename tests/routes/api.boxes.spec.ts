@@ -1,4 +1,5 @@
 import { type ActionFunctionArgs } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
@@ -7,11 +8,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.boxes'
 import { type User } from '~/schema'
 
-const BOXES_POST_TEST_USER = {
-	name: 'testing post boxes',
-	email: 'test@postboxes.me',
-	password: 'some secure password',
-}
+const BOXES_POST_TEST_USER = generateTestUserCredentials()
 
 describe('openSenseMap API Routes: /boxes', () => {
 	let user: User | null = null
@@ -49,7 +46,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				name: 'Test Weather Station',
 				location: [7.596, 51.969],
 				exposure: 'outdoor',
-				// model: "homeV2Wifi",
+				//model: 'homeV2Wifi',
 				grouptag: ['weather', 'test'],
 				sensors: [
 					{

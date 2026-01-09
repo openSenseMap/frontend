@@ -1,5 +1,6 @@
 import { eq, sql } from 'drizzle-orm'
 import { type AppLoadContext, type ActionFunctionArgs } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
 import { drizzleClient } from '~/db.server'
@@ -8,21 +9,11 @@ import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
-import {
-	location,
-	deviceToLocation,
-	measurement,
-	type User,
-	device,
-} from '~/schema'
+import { location, deviceToLocation, measurement, type User } from '~/schema'
 
 const mockAccessToken = 'valid-access-token-location-tests'
 
-const TEST_USER = {
-	name: 'testing location measurements',
-	email: 'test@locationmeasurement.me',
-	password: 'some secure password for locations',
-}
+const TEST_USER = generateTestUserCredentials()
 
 const TEST_BOX = {
 	name: `'${TEST_USER.name}'s Box`,

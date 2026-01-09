@@ -1,4 +1,5 @@
 import { type Params, type LoaderFunctionArgs } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
@@ -6,11 +7,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.sensors'
 import { type User } from '~/schema'
 
-const DEVICE_SENSORS_USER = {
-	name: 'meTestSensors',
-	email: 'test@box.sensors',
-	password: 'highlySecurePasswordForTesting',
-}
+const DEVICE_SENSORS_USER = generateTestUserCredentials()
 
 const DEVICE_SENSOR_BOX = {
 	name: `${DEVICE_SENSORS_USER}s Box`,
@@ -19,7 +16,7 @@ const DEVICE_SENSOR_BOX = {
 	tags: [],
 	latitude: 0,
 	longitude: 0,
-	// model: "luftdaten.info",
+	//model: 'luftdaten.info',
 	mqttEnabled: false,
 	ttnEnabled: false,
 	sensors: [

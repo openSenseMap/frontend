@@ -1,5 +1,6 @@
 import { type AppLoadContext, type ActionFunctionArgs } from 'react-router'
 import { csvExampleData, jsonSubmitData, byteSubmitData } from 'tests/data'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
 import { drizzleClient } from '~/db.server'
@@ -12,11 +13,7 @@ import { accessToken, type User } from '~/schema'
 
 const mockAccessToken = 'valid-access-token'
 
-const TEST_USER = {
-	name: 'testing measurement submits',
-	email: 'test@measurementsubmits.me',
-	password: 'some secure password',
-}
+const TEST_USER = generateTestUserCredentials()
 
 const TEST_BOX = {
 	name: `'${TEST_USER.name}'s Box`,
@@ -25,7 +22,7 @@ const TEST_BOX = {
 	tags: [],
 	latitude: 0,
 	longitude: 0,
-	// model: "luftdaten.info",
+	//model: 'luftdaten.info',
 	mqttEnabled: false,
 	ttnEnabled: false,
 	sensors: [
@@ -245,7 +242,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					'Content-Type': 'application/sbx-bytes',
 					Authorization: mockAccessToken,
 				},
-				body: byteSubmitData(sensors),
+				body: byteSubmitData(sensors) as unknown as BodyInit,
 			})
 
 			const response: any = await postMeasurementsAction({
@@ -283,7 +280,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					'Content-Type': 'application/sbx-bytes-ts',
 					Authorization: mockAccessToken,
 				},
-				body: byteSubmitData(sensors, true),
+				body: byteSubmitData(sensors, true) as unknown as BodyInit,
 			})
 
 			const response: any = await postMeasurementsAction({

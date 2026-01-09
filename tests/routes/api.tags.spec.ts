@@ -1,4 +1,5 @@
 import { type LoaderFunctionArgs } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
@@ -6,11 +7,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 import { loader } from '~/routes/api.tags'
 import { type User } from '~/schema'
 
-const TAGS_TEST_USER = {
-	name: 'testing all my tags',
-	email: 'test@tags.me',
-	password: 'some secure password',
-}
+const TAGS_TEST_USER = generateTestUserCredentials()
 const TEST_TAG_BOX = {
 	name: `'${TAGS_TEST_USER.name}'s Box`,
 	exposure: 'outdoor',
