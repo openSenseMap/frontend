@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import  { type Partner } from "~/lib/directus";
 
 type PartnersProps = {
@@ -6,6 +7,7 @@ type PartnersProps = {
 };
 
 export default function Partners({ data }: PartnersProps) {
+  const { t } = useTranslation('partners')
   return (
     <div
       id="partners"
@@ -14,7 +16,7 @@ export default function Partners({ data }: PartnersProps) {
       <div className="flex h-full w-5/6 flex-col justify-evenly">
         <div className="flex items-center justify-center pb-10">
           <p className="dark:text-blue-200 font-serif text-6xl font-black text-blue-100 subpixel-antialiased">
-            Partners
+            {t("Partners")}
           </p>
         </div>
         <div className="flex items-center justify-center">
@@ -59,7 +61,7 @@ export default function Partners({ data }: PartnersProps) {
           }}
           className="flex flex-col items-center justify-center"
         >
-          <p>hosted by</p>
+          <p>{t("hosted")}</p>
           <img
             src="/landing/openSenseLab_logo.png"
             alt="openSenseLab Logo"

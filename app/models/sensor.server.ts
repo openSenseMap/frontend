@@ -1,8 +1,10 @@
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql, inArray, and } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
+import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-schema'
 import {
 	type Measurement,
 	sensor,
+	device,
 	type Sensor,
 	type SensorWithLatestMeasurement,
 } from '~/schema'
@@ -199,4 +201,94 @@ export function getSensor(id: Sensor['id']) {
 
 export function deleteSensor(id: Sensor['id']) {
 	return drizzleClient.delete(sensor).where(eq(sensor.id, id))
+}
+
+/**
+ * Find matching devices+their sensors based on phenomenon or grouptag and device-level filters.
+ * Returns sensorsMap (sensorId -> augmented sensor metadata) and sensorIds array.
+ */
+export async function findMatchingSensors(params: BoxesDataQueryParams) {
+	const { boxid, exposure, phenomenon, grouptag } = params
+
+	// Build device-level conditions
+	const deviceConditions = []
+
+	if (grouptag) {
+		deviceConditions.push(sql`${grouptag} = ANY(${device.tags})`)
+	}
+
+	if (boxid) {
+		deviceConditions.push(inArray(device.id, boxid))
+	}
+
+	if (exposure) {
+		deviceConditions.push(inArray(device.exposure, exposure))
+	}
+
+	// Build sensor-level conditions
+	const sensorConditions = []
+
+	if (phenomenon) {
+		sensorConditions.push(eq(sensor.title, phenomenon))
+	}
+
+	const rows = await drizzleClient
+		.select({
+			deviceId: device.id,
+			deviceName: device.name,
+			deviceExposure: device.exposure,
+			deviceLat: device.latitude,
+			deviceLon: device.longitude,
+			sensorId: sensor.id,
+			sensorTitle: sensor.title,
+			sensorUnit: sensor.unit,
+			sensorType: sensor.sensorType,
+		})
+		.from(device)
+		.innerJoin(sensor, eq(sensor.deviceId, device.id))
+		.where(
+			and(
+				sensorConditions.length > 0 ? and(...sensorConditions) : undefined,
+				deviceConditions.length > 0 ? and(...deviceConditions) : undefined,
+			),
+		)
+
+	if (!rows || rows.length === 0) {
+		throw new Response('No senseBoxes found', { status: 404 })
+	}
+
+	const sensorsMap: Record<
+		string,
+		{
+			sensorId: string
+			boxId: string
+			boxName: string
+			exposure: string | null
+			lat: number
+			lon: number
+			height?: number
+			phenomenon: string | null
+			unit: string | null
+			sensorType: string | null
+		}
+	> = {}
+
+	for (const r of rows) {
+		if (r.sensorId) {
+			sensorsMap[r.sensorId] = {
+				sensorId: r.sensorId,
+				boxId: r.deviceId,
+				boxName: r.deviceName,
+				exposure: r.deviceExposure,
+				lat: r.deviceLat,
+				lon: r.deviceLon,
+				height: undefined,
+				phenomenon: r.sensorTitle,
+				unit: r.sensorUnit,
+				sensorType: r.sensorType,
+			}
+		}
+	}
+
+	return { sensorsMap, sensorIds: Object.keys(sensorsMap) }
 }

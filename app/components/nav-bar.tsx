@@ -11,15 +11,17 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useOptionalUser } from '~/utils'
+import { useTranslation } from 'react-i18next'
 
 export function NavBar() {
+	const { t } = useTranslation('navbar')
 	const location = useLocation()
 	const parts = location.pathname
 		.split('/')
 		.slice(1)
 		.map((item) => {
 			const decoded = decodeURIComponent(item)
-			return decoded.charAt(0).toUpperCase() + decoded.slice(1)
+			return t(decoded.charAt(0).toUpperCase() + decoded.slice(1))
 		}) // prevents empty parts from showing
 
 	// User is optional

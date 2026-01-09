@@ -7,8 +7,10 @@ import {
   Terminal,
   Trash,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Features() {
+  const { t } = useTranslation('features')
   return (
     <section
       id="features"
@@ -16,10 +18,9 @@ export default function Features() {
     >
       <div id="left" className="w-1/2 flex flex-col gap-10">
         <div id="title" className="text-2xl font-semibold">
-          Features
+          {t("features")}
           <div id="description" className="text-lg font-medium">
-            The openSenseMap platform has a lot to offer that makes
-            discoverability and sharing of environmental and sensor data easy.
+            {t("description")}
           </div>
         </div>
         <img src="/features.svg" alt="" className="w-1/2 h-1/2" />
@@ -29,43 +30,43 @@ export default function Features() {
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <GitFork className="h-4 w-4 mr-2" />
-              Data aggregation
+              {t("dataAggregation")}
             </div>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <Trash className="h-4 w-4 mr-2" />
-              No data retention
+              {t("noDataRetention")}
             </div>
           </div>
           <div className="flex flex-col border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <Copyleft className="h-4 w-4 mr-2" />
-              Data published as ODbL
+              {t("dataPublished")}
             </div>
           </div>
           <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <Telescope className="h-4 w-4 mr-2" />
-              Discover devices
+              {t("discoverDevices")}
             </div>
           </div>
           <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <Scale className="h-4 w-4 mr-2" />
-              Compare devices
+              {t("compareDevices")}
             </div>
           </div>
           <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <Download className="h-4 w-4 mr-2" />
-              Download options
+              {t("downloadOptions")}
             </div>
           </div>
           <div className="flex border-2 rounded-sm px-4 py-2 text-lg">
             <div className="flex items-center gap-3">
               <Terminal className="h-4 w-4 mr-2" />
-              HTTP REST API
+              {t("httpRestApi")}
             </div>
           </div>
         </div>
