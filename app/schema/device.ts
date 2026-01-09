@@ -21,6 +21,7 @@ import { location } from './location'
 import { logEntry } from './log-entry'
 import { sensor } from './sensor'
 import { user } from './user'
+import { deviceToIntegrations } from './integration'
 
 /**
  * Table
@@ -84,6 +85,10 @@ export const deviceRelations = relations(device, ({ one, many }) => ({
 	sensors: many(sensor),
 	locations: many(deviceToLocation),
 	logEntries: many(logEntry),
+	integrations: one(deviceToIntegrations, {
+		fields: [device.id],
+		references: [deviceToIntegrations.deviceId],
+	}),
 }))
 
 // Many-to-many
