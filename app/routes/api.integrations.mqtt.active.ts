@@ -4,13 +4,18 @@ import { StandardResponse } from '~/utils/response-utils'
 
 export const loader: LoaderFunction = async ({ request }) => {
 	try {
-		// TODO: Add service authentication
+		const key = request.headers.get("x-service-key")
+
+		if (key != process.env.MQTT_SERVICE_KEY){
+			return StandardResponse.unauthorized("Key invalid, access denied.")
+		}
 
 		const integrations = await getAllActiveMqttIntegrations()
 
 		const response = integrations.map((integration) => ({
 			deviceId: integration.deviceId,
 			integrationId: integration.integrationId,
+			enabled: integration.enabled,
 			url: integration.url,
 			topic: integration.topic,
 			messageFormat: integration.messageFormat,
