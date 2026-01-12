@@ -153,10 +153,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			method: 'DELETE',
 		},
 		{
-			path: `boxes/:boxId/sensors/:sensorId/measurements`,
-			method: 'DELETE',
-		},
-		{
 			path: `users/sign-out`,
 			method: 'POST',
 		},
