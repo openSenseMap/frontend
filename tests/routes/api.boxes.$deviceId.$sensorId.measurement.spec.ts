@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { insertMeasurements } from '~/models/measurement.server'
@@ -50,6 +51,7 @@ const MEASUREMENTS = [
 describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () => {
 	let deviceId: string
 	let sensorId: string
+	let jwt: string
 
 	beforeAll(async () => {
 		const u = await registerUser(USER.name, USER.email, USER.password, 'en_US')
@@ -60,6 +62,9 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 
 		deviceId = d.id
 		sensorId = s[0].id
+
+		const t = await createToken(u as User)
+		jwt = t.token
 	})
 
 	describe('DELETE', () => {
@@ -67,7 +72,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 			// Arrange
 			const request = new Request(
 				`${BASE_URL}/api/boxes/${deviceId}/${sensorId}?from-date=${new Date('1954-01-01 00:00:00+00')}&to-date=${new Date('1954-12-31 23:59:59+00')}`,
-				{ method: 'DELETE' },
+				{ method: 'DELETE', headers: { Authorization: `Bearer ${jwt}` } },
 			)
 
 			// Act
@@ -91,7 +96,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 			// Arrange
 			const request = new Request(
 				`${BASE_URL}/api/boxes/${deviceId}/${sensorId}?timestamps=${MEASUREMENTS[1].createdAt}`,
-				{ method: 'DELETE' },
+				{ method: 'DELETE', headers: { Authorization: `Bearer ${jwt}` } },
 			)
 
 			// Act
@@ -115,7 +120,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 			// Arrange
 			const request = new Request(
 				`${BASE_URL}/api/boxes/${deviceId}/${sensorId}?deleteAllMeasurements=true`,
-				{ method: 'DELETE' },
+				{ method: 'DELETE', headers: { Authorization: `Bearer ${jwt}` } },
 			)
 
 			// Act

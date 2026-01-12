@@ -39,30 +39,35 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				'You are not allowed to delete data of the given sensor',
 			)
 
-		const parsedParams = await parseQueryParams(request)
-		let count = 0
+		try {
+			const parsedParams = await parseQueryParams(request)
+			let count = 0
 
-		if (parsedParams.deleteAllMeasurements)
-			count = (await deleteMeasurementsForSensor(sensorId)).count
-		else if (parsedParams.timestamps)
-			count = (
-				await deleteSensorMeasurementsForTimes(
-					sensorId,
-					parsedParams.timestamps,
-				)
-			).count
-		else if (parsedParams.fromDate && parsedParams.toDate)
-			count = (
-				await deleteSensorMeasurementsForTimeRange(
-					sensorId,
-					parsedParams.fromDate,
-					parsedParams.toDate,
-				)
-			).count
+			if (parsedParams.deleteAllMeasurements)
+				count = (await deleteMeasurementsForSensor(sensorId)).count
+			else if (parsedParams.timestamps)
+				count = (
+					await deleteSensorMeasurementsForTimes(
+						sensorId,
+						parsedParams.timestamps,
+					)
+				).count
+			else if (parsedParams['from-date'] && parsedParams['to-date'])
+				count = (
+					await deleteSensorMeasurementsForTimeRange(
+						sensorId,
+						parsedParams['from-date'],
+						parsedParams['to-date'],
+					)
+				).count
 
-		return StandardResponse.ok({
-			message: `Successfully deleted ${count} of sensor ${sensorId}`,
-		})
+			return StandardResponse.ok({
+				message: `Successfully deleted ${count} of sensor ${sensorId}`,
+			})
+		} catch (e) {
+			if (e instanceof Response) return e
+			else throw e
+		}
 	} catch (err: any) {
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occured',
@@ -72,14 +77,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 const DeleteQueryParams = z
 	.object({
-		fromDate: z
+		'from-date': z
 			.string()
 			.transform((s) => new Date(s))
 			.refine((d) => !isNaN(d.getTime()), {
 				message: 'from-date is invalid',
 			})
 			.optional(),
-		toDate: z
+		'to-date': z
 			.string()
 			.transform((s) => new Date(s))
 			.refine((d) => !isNaN(d.getTime()), {
@@ -96,8 +101,8 @@ const DeleteQueryParams = z
 		deleteAllMeasurements: z.boolean().optional(),
 	})
 	.superRefine((data, ctx) => {
-		const fromDateSet = data.fromDate !== undefined
-		const toDateSet = data.toDate !== undefined
+		const fromDateSet = data['from-date'] !== undefined
+		const toDateSet = data['to-date'] !== undefined
 		const timestampsSet = data.timestamps !== undefined
 		const deleteAllSet = data.deleteAllMeasurements !== undefined
 
