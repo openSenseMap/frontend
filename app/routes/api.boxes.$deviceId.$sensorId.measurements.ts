@@ -42,9 +42,4 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			err.message || 'An unexpected error occured',
 		)
 	}
-
-	const MEASUREMENTS_ROUTE = `/api/boxes/${params.deviceId}/sensors/${params.sensorId}/measurements`
-	return redirect(MEASUREMENTS_ROUTE, {
-		status: 308, // Permanent Redirect
-	})
 }
