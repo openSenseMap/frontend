@@ -107,7 +107,7 @@ export default function DeviceDetailBox() {
 
 	const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>()
 	useEffect(() => {
-		const sortedSensors = [...data.sensors].sort(
+		const sortedSensors = [...(data.sensors as any)].sort(
 			(a, b) => (a.id as unknown as number) - (b.id as unknown as number),
 		)
 		setSensors(sortedSensors)
@@ -466,7 +466,7 @@ export default function DeviceDetailBox() {
 																	return (
 																		<Card
 																			key={sensor.id}
-																			className=""
+																			className="flex h-full flex-col"
 																			onClick={() =>
 																				toast({
 																					title:
@@ -479,7 +479,7 @@ export default function DeviceDetailBox() {
 																		>
 																			<label
 																				htmlFor={sensor.id}
-																				className="cursor-pointer"
+																				className="flex h-full cursor-pointer flex-col"
 																			>
 																				<input
 																					className="peer hidden"
@@ -498,15 +498,18 @@ export default function DeviceDetailBox() {
 																					)}
 																				/>
 																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-																					<CardTitle className="text-sm font-medium">
+																					<CardTitle
+																						className="truncate text-sm font-medium"
+																						title={sensor.title || ''}
+																					>
 																						{sensor.title}
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
-																						className="h-4 w-4 text-muted-foreground"
+																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				<CardContent>
+																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
 																							{sensor.value}
@@ -538,14 +541,21 @@ export default function DeviceDetailBox() {
 																	)
 																}
 																return (
-																	<Link key={sensor.id} to={sensorLink}>
+																	<Link
+																		key={sensor.id}
+																		to={sensorLink}
+																		className="h-full"
+																	>
 																		<Card
 																			key={sensor.id}
-																			className={isSensorActive(sensor.id)}
+																			className={clsx(
+																				'flex h-full flex-col',
+																				isSensorActive(sensor.id),
+																			)}
 																		>
 																			<label
 																				htmlFor={sensor.id}
-																				className="cursor-pointer"
+																				className="flex h-full cursor-pointer flex-col"
 																			>
 																				<input
 																					className="peer hidden"
@@ -564,15 +574,18 @@ export default function DeviceDetailBox() {
 																					)}
 																				/>
 																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-																					<CardTitle className="text-sm font-medium">
+																					<CardTitle
+																						className="truncate text-sm font-medium"
+																						title={sensor.title || ''}
+																					>
 																						{sensor.title}
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
-																						className="h-4 w-4 text-muted-foreground"
+																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				<CardContent>
+																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
 																							{sensor.value}

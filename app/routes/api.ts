@@ -34,11 +34,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes`,
 			method: 'GET',
 		},
-		// {
-		//   path: `boxes/data`,
-		//   method: "GET",
-		// },
-
+		{
+			path: `boxes/data`,
+			method: 'GET',
+		},
 		// {
 		//   path: `boxes/:boxId`,
 		//   method: "GET",
@@ -141,10 +140,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/transfer/:boxId`,
 			method: 'PUT',
 		},
-		// {
-		//   path: `boxes/:boxId`,
-		//   method: "PUT",
-		// },
+		{
+			path: `boxes/:boxId`,
+			method: 'PUT',
+		},
 		{
 			path: `boxes/:boxId`,
 			method: 'DELETE',
