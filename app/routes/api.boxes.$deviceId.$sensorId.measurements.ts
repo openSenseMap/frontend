@@ -1,7 +1,12 @@
-import { type ActionFunctionArgs, redirect } from 'react-router'
+import { type ActionFunctionArgs } from 'react-router'
+import z from 'zod'
 import { getUserFromJwt } from '~/lib/jwt'
 import { getUserDevices } from '~/models/device.server'
-import { deleteMeasurementsForSensor } from '~/models/measurement.server'
+import {
+	deleteMeasurementsForSensor,
+	deleteSensorMeasurementsForTimeRange,
+	deleteSensorMeasurementsForTimes,
+} from '~/models/measurement.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -34,12 +39,121 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				'You are not allowed to delete data of the given sensor',
 			)
 
-		// TODO add more parameters (from-date, to-date etc)
-		await deleteMeasurementsForSensor(sensorId)
-		return StandardResponse.ok({})
+		const parsedParams = await parseQueryParams(request)
+		let count = 0
+
+		if (parsedParams.deleteAllMeasurements)
+			count = (await deleteMeasurementsForSensor(sensorId)).count
+		else if (parsedParams.timestamps)
+			count = (
+				await deleteSensorMeasurementsForTimes(
+					sensorId,
+					parsedParams.timestamps,
+				)
+			).count
+		else if (parsedParams.fromDate && parsedParams.toDate)
+			count = (
+				await deleteSensorMeasurementsForTimeRange(
+					sensorId,
+					parsedParams.fromDate,
+					parsedParams.toDate,
+				)
+			).count
+
+		return StandardResponse.ok({
+			message: `Successfully deleted ${count} of sensor ${sensorId}`,
+		})
 	} catch (err: any) {
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occured',
 		)
 	}
+}
+
+const DeleteQueryParams = z
+	.object({
+		fromDate: z
+			.string()
+			.transform((s) => new Date(s))
+			.refine((d) => !isNaN(d.getTime()), {
+				message: 'from-date is invalid',
+			})
+			.optional(),
+		toDate: z
+			.string()
+			.transform((s) => new Date(s))
+			.refine((d) => !isNaN(d.getTime()), {
+				message: 'to-date is invalid',
+			})
+			.optional(),
+		timestamps: z
+			.array(z.string())
+			.transform((a) => a.map((i) => new Date(i)))
+			.refine((a) => a.some((i) => !isNaN(i.getTime())), {
+				message: 'timestamps contains invalid input',
+			})
+			.optional(),
+		deleteAllMeasurements: z.boolean().optional(),
+	})
+	.superRefine((data, ctx) => {
+		const fromDateSet = data.fromDate !== undefined
+		const toDateSet = data.toDate !== undefined
+		const timestampsSet = data.timestamps !== undefined
+		const deleteAllSet = data.deleteAllMeasurements !== undefined
+
+		if (deleteAllSet && (timestampsSet || fromDateSet || toDateSet)) {
+			const paths: string[] = []
+			if (timestampsSet) paths.push('timestamps')
+			if (fromDateSet) paths.push('from-date')
+			if (toDateSet) paths.push('to-date')
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Parameter deleteAllMeasurements can only be used by itself',
+				path: paths,
+			})
+		} else if (!deleteAllSet && timestampsSet && fromDateSet && toDateSet)
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					'Please specify only timestamps or a range with from-date and to-date',
+				path: ['timestamps', 'from-date', 'to-date'],
+			})
+		else if (!deleteAllSet && !timestampsSet && !fromDateSet && !toDateSet)
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					'Please specify only timestamps or a range with from-date and to-date',
+				path: ['timestamps', 'from-date', 'to-date'],
+			})
+	})
+
+const parseQueryParams = async (
+	request: Request,
+): Promise<z.infer<typeof DeleteQueryParams>> => {
+	const url = new URL(request.url)
+	let params: Record<string, any>
+	if (request.method !== 'GET') {
+		const contentType = request.headers.get('content-type') || ''
+		if (contentType.includes('application/json')) {
+			try {
+				params = await request.json()
+			} catch {
+				params = Object.fromEntries(url.searchParams)
+			}
+		} else {
+			params = Object.fromEntries(url.searchParams)
+		}
+	} else {
+		params = Object.fromEntries(url.searchParams)
+	}
+
+	const parseResult = DeleteQueryParams.safeParse(params)
+
+	if (!parseResult.success) {
+		const firstError = parseResult.error.errors[0]
+		const message = firstError.message || 'Invalid query parameters'
+		throw StandardResponse.badRequest(message)
+	}
+
+	return parseResult.data
 }

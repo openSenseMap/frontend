@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, gte, inArray, lt, lte, sql } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
 import {
 	type LastMeasurement,
@@ -254,6 +254,32 @@ export async function deleteMeasurementsForSensor(sensorId: string) {
 	return await drizzleClient
 		.delete(measurement)
 		.where(eq(measurement.sensorId, sensorId))
+}
+
+export async function deleteSensorMeasurementsForTimes(
+	sensorId: string,
+	dates: Date[],
+) {
+	return await drizzleClient
+		.delete(measurement)
+		.where(
+			and(eq(measurement.sensorId, sensorId), inArray(measurement.time, dates)),
+		)
+}
+
+export async function deleteSensorMeasurementsForTimeRange(
+	sensorId: string,
+	greaterThan: Date,
+	lessThan: Date,
+) {
+	return await drizzleClient
+		.delete(measurement)
+		.where(
+			and(
+				eq(measurement.sensorId, sensorId),
+				and(gt(measurement.time, greaterThan), lt(measurement.time, lessThan)),
+			),
+		)
 }
 
 export async function deleteMeasurementsForTime(date: Date) {
