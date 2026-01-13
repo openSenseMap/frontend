@@ -1,5 +1,5 @@
 import { ArrowLeft, Upload } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { redirect, Form, Link, type LoaderFunctionArgs } from 'react-router'
 import ErrorMessage from '~/components/error-message'
@@ -30,7 +30,11 @@ export async function action() {
 }
 
 export default function DataUpload() {
+	// Max number of characters to show for data
+	// thats input to the text area
+	const DATA_CUTOFF_CHARS = 3_000
 	const { t } = useTranslation(['csv-upload', 'common'])
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const [measurementData, setMeasurementData] = useState('')
 	const [dataFormat, setDataFormat] = useState('CSV')
 
@@ -126,12 +130,14 @@ export default function DataUpload() {
 								</div>
 								<div className="mb-8">
 									<Textarea
+										ref={textareaRef}
 										id="measurement-data"
 										placeholder={t('inputTextAreaPlaceholder')}
 										className="h-[300px]"
-										defaultValue={measurementData.slice(0, 3000)} // Displaying only the first 3000 characters
+										onChange={(e) => setMeasurementData(e.target.value)}
+										value={measurementData.slice(0, DATA_CUTOFF_CHARS)}
 									/>
-									{measurementData.length > 1000 && (
+									{measurementData.length > DATA_CUTOFF_CHARS && (
 										<div className="mt-2 text-sm text-gray-500">
 											{t('textAreaCutoffHint', {
 												length: measurementData.length,
@@ -139,7 +145,11 @@ export default function DataUpload() {
 										</div>
 									)}
 								</div>
-								<Button type="submit" className="w-full">
+								<Button
+									type="submit"
+									className="w-full"
+									disabled={measurementData.length === 0}
+								>
 									{t('uploadButtonLabel')}
 									<Upload className="ml-2 inline h-5 w-5" />
 								</Button>
