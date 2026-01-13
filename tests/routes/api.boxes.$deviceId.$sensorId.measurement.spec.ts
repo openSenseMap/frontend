@@ -95,7 +95,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 		it('should remove measurements by exact timestamps', async () => {
 			// Arrange
 			const request = new Request(
-				`${BASE_URL}/api/boxes/${deviceId}/${sensorId}?timestamps=${MEASUREMENTS[1].createdAt}`,
+				`${BASE_URL}/api/boxes/${deviceId}/${sensorId}?timestamps=${MEASUREMENTS[1].createdAt.toISOString()}`,
 				{ method: 'DELETE', headers: { Authorization: `Bearer ${jwt}` } },
 			)
 

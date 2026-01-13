@@ -92,13 +92,16 @@ const DeleteQueryParams = z
 			})
 			.optional(),
 		timestamps: z
-			.array(z.string())
+			.preprocess((val) => {
+				if (Array.isArray(val)) return val
+				else return [val]
+			}, z.array(z.string()))
 			.transform((a) => a.map((i) => new Date(i)))
 			.refine((a) => a.some((i) => !isNaN(i.getTime())), {
 				message: 'timestamps contains invalid input',
 			})
 			.optional(),
-		deleteAllMeasurements: z.boolean().optional(),
+		deleteAllMeasurements: z.coerce.boolean().optional(),
 	})
 	.superRefine((data, ctx) => {
 		const fromDateSet = data['from-date'] !== undefined
