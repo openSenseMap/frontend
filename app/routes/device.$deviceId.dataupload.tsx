@@ -1,5 +1,6 @@
 import { ArrowLeft, Upload } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { redirect, Form, Link, type LoaderFunctionArgs } from 'react-router'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
@@ -16,7 +17,6 @@ import {
 import { Textarea } from '~/components/ui/textarea'
 import { getUserId } from '~/utils/session.server'
 
-//*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
@@ -25,18 +25,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return {}
 }
 
-//*****************************************************
 export async function action() {
 	return {}
 }
 
-//**********************************
 export default function DataUpload() {
+	const { t } = useTranslation('csv-upload')
 	const [measurementData, setMeasurementData] = useState('')
 	const [dataFormat, setDataFormat] = useState('CSV')
 
 	return (
-		<div className="space-y-6 px-10 pb-16  font-helvetica">
+		<div className="space-y-6 px-10 pb-16 font-helvetica">
 			<NavBar />
 
 			<div>
@@ -44,8 +43,8 @@ export default function DataUpload() {
 					<nav className="col-span-2 md:col-span-2">
 						<ul>
 							<li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
-								<ArrowLeft className=" mr-2 inline h-5 w-5" />
-								<Link to="/profile/me">Back to Dashboard</Link>
+								<ArrowLeft className="mr-2 inline h-5 w-5" />
+								<Link to="/profile/me">{t('backToDashboardNavText')}</Link>
 							</li>
 						</ul>
 					</nav>
