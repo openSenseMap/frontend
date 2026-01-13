@@ -1,6 +1,6 @@
 import { ArrowLeft, Upload } from 'lucide-react'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { redirect, Form, Link, type LoaderFunctionArgs } from 'react-router'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
@@ -30,7 +30,7 @@ export async function action() {
 }
 
 export default function DataUpload() {
-	const { t } = useTranslation('csv-upload')
+	const { t } = useTranslation(['csv-upload', 'common'])
 	const [measurementData, setMeasurementData] = useState('')
 	const [dataFormat, setDataFormat] = useState('CSV')
 
@@ -44,7 +44,9 @@ export default function DataUpload() {
 						<ul>
 							<li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
 								<ArrowLeft className="mr-2 inline h-5 w-5" />
-								<Link to="/profile/me">{t('backToDashboardNavText')}</Link>
+								<Link to="/profile/me">
+									{t('common:backToDashboardNavText')}
+								</Link>
 							</li>
 						</ul>
 					</nav>
@@ -52,22 +54,26 @@ export default function DataUpload() {
 					<main className="col-span-6 md:col-span-6">
 						<Form method="post" noValidate>
 							<div className="container mx-auto max-w-3xl px-4 py-12">
-								<h1 className="mb-6 text-3xl font-bold">Manual Data Upload</h1>
+								<h1 className="mb-6 text-3xl font-bold">
+									{t('dataUploadHeading')}
+								</h1>
 								<div className="mb-8 rounded-md bg-muted p-4 text-muted-foreground">
 									<p>
-										Here you can upload measurements for this senseBox. This can
-										be of use for senseBoxes that log their measurements to an
-										SD card when no means of direct communication to
-										openSenseMap are available. Either select a file, or copy
-										the data into the text field. Accepted data formats are
-										described{' '}
-										<a
-											href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
-											className="underline"
-										>
-											here
-										</a>
-										.
+										<Trans t={t} i18nKey="dataUploadExplanation">
+											Here you can upload measurements for this senseBox. This
+											can be of use for senseBoxes that log their measurements
+											to an SD card when no means of direct communication to
+											openSenseMap are available. Either select a file, or copy
+											the data into the text field. Accepted data formats are
+											described{' '}
+											<a
+												href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
+												className="underline"
+											>
+												here
+											</a>
+											.
+										</Trans>
 									</p>
 								</div>
 								<div className="mb-8 grid grid-cols-2 gap-4">
@@ -80,7 +86,7 @@ export default function DataUpload() {
 												htmlFor="fileInput"
 												className="flex h-full w-full cursor-pointer items-center justify-center"
 											>
-												Upload File
+												{t('uploadFileLabel')}
 											</Label>
 											<Input
 												type="file"
@@ -121,18 +127,20 @@ export default function DataUpload() {
 								<div className="mb-8">
 									<Textarea
 										id="measurement-data"
-										placeholder="Paste measurement data here..."
+										placeholder={t('inputTextAreaPlaceholder')}
 										className="h-[300px]"
 										defaultValue={measurementData.slice(0, 3000)} // Displaying only the first 3000 characters
 									/>
 									{measurementData.length > 1000 && (
 										<div className="mt-2 text-sm text-gray-500">
-											{`Showing first 1000 characters of ${measurementData.length}`}
+											{t('textAreaCutoffHint', {
+												length: measurementData.length,
+											})}
 										</div>
 									)}
 								</div>
 								<Button type="submit" className="w-full">
-									Upload
+									{t('uploadButtonLabel')}
 									<Upload className="ml-2 inline h-5 w-5" />
 								</Button>
 							</div>

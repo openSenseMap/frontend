@@ -1,1 +1,9 @@
-{}
+{
+	"dataUploadHeading": "Manual Data Upload",
+	"dataUploadExplanation": "Here you can upload measurements for this senseBox. This can be of use for senseBoxes that log their measurements to an SD card when no means of direct communication to openSenseMap are available. Either select a file, or copy the data into the text field. Accepted data formats are described <2>here<2>.",
+	"uploadFileLabel": "Upload File",
+	"selectFormatLabel": "Select Format",
+	"inputTextAreaPlaceholder": "Paste measurement data here...",
+	"textAreaCutoffHint": "Showing first 3000 characters of {{length}}",
+	"uploadButtonLabel": "Upload"
+}
