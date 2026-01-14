@@ -13,9 +13,9 @@ import {
 import invariant from 'tiny-invariant'
 import ErrorMessage from '~/components/error-message'
 import {
+	updateDevice,
 	deleteDevice,
 	getDeviceWithoutSensors,
-	updateDeviceInfo,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
@@ -42,6 +42,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const { intent, name, exposure, passwordDelete } =
 		Object.fromEntries(formData)
+
+	const exposureLowerCase = exposure?.toString().toLowerCase()
+
 	const errors = {
 		exposure: exposure ? null : 'Invalid exposure.',
 		passwordDelete: passwordDelete ? null : 'Password is required.',
@@ -53,10 +56,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	invariant(typeof exposure === 'string', 'Device name is required.')
 
 	if (
-		exposure !== 'indoor' &&
-		exposure !== 'outdoor' &&
-		exposure !== 'mobile' &&
-		exposure !== 'unknown'
+		exposureLowerCase !== 'indoor' &&
+		exposureLowerCase !== 'outdoor' &&
+		exposureLowerCase !== 'mobile' &&
+		exposureLowerCase !== 'unknown'
 	) {
 		return data({
 			errors: {
@@ -69,7 +72,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	switch (intent) {
 		case 'save': {
-			await updateDeviceInfo({ id: deviceID, name: name, exposure: exposure })
+			await updateDevice(deviceID, { name, exposure: exposureLowerCase })
 			return data({
 				errors: {
 					exposure: null,
@@ -213,8 +216,7 @@ export default function () {
 								>
 									Exposure
 								</label>
-								{/* changed the case of the option values to lowercase as the
-								server expects lowercase */}
+
 								<div className="mt-1">
 									<select
 										id="exposure"

@@ -5,5 +5,25 @@
   "transition_label": "Wird eingeloggt...",
   "remember_label": "Eingeloggt bleiben",
   "no_account_label": "Noch kein Konto?",
-  "register_label": "Registrieren"
+  "register_label": "Registrieren",
+
+  "welcome_back": "Willkommen zurück",
+  "sign_in": "Melde dich an",
+  "forgot_password": "Passwort vergessen?",
+  "sign_in_button": "Anmelden",
+  "example_placeholder": "beispiel@opensensemap.org",
+
+  "request_sent": "Anfrage gesendet",
+  "request_sent_description": "Eine E-Mail mit einer Anleitung zum Zurücksetzen deines Passworts wurde versendet. Bitte prüfe deine E-Mails.",
+  "back_to_login": "Zurück zur Anmeldung",
+  "forgot_your_password": "Hast du dein Passwort vergessen?",
+  "reset_password": "Passwort per Mail zurücksetzen",
+  "remember_password": "Erinnerst du dich an dein Passwort?",
+
+  "Email is invalid": "Ungültige E-Mail-Adresse",
+  "An error occurred. Please try again later.": "Ein Fehler ist aufgetreten. Bitte versuche es später erneut.",
+  "Password is required": "Passwort benötigt",
+  "Password is too short": "Passwort ist zu kurz",
+  "Invalid email or password": "Falsche E-Mail-Adresse oder falsches Passwort"
 }
+
