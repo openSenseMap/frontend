@@ -1,7 +1,13 @@
 import { ArrowLeft, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { redirect, Form, Link, type LoaderFunctionArgs } from 'react-router'
+import {
+	redirect,
+	Form,
+	Link,
+	type LoaderFunctionArgs,
+	type ActionFunctionArgs,
+} from 'react-router'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
 import { Button } from '~/components/ui/button'
@@ -15,6 +21,9 @@ import {
 	SelectValue,
 } from '~/components/ui/select'
 import { Textarea } from '~/components/ui/textarea'
+import { postNewMeasurements } from '~/lib/measurement-service.server'
+import { findAccessToken } from '~/models/device.server'
+import { StandardResponse } from '~/utils/response-utils'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -25,8 +34,55 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return {}
 }
 
-export async function action() {
-	return {}
+export async function action({ request, params }: ActionFunctionArgs) {
+	const method = request.method
+	switch (method.toUpperCase()) {
+		case 'POST':
+			const deviceId = params['deviceId']
+			if (deviceId === undefined)
+				return StandardResponse.badRequest(
+					'deviceId must be set but is undefined',
+				)
+
+			const formData = await request.formData()
+			if (!formData.has('contentType'))
+				return StandardResponse.badRequest('contentType is not set')
+			const contentType = formData.get('contentType')!.toString()
+
+			if (!formData.has('measurement-data'))
+				return StandardResponse.badRequest('measurement data is not set')
+			const measurementData = formData.get('measurement-data')!.toString()
+
+			const deviceApiKey = await findAccessToken(deviceId)
+
+			try {
+				await postNewMeasurements(deviceId, measurementData, {
+					contentType,
+					luftdaten: false,
+					hackair: false,
+					authorization: deviceApiKey?.token ?? '',
+				})
+			} catch (err: any) {
+				// Handle different error types
+				if (err.name === 'UnauthorizedError')
+					return StandardResponse.unauthorized(err.message)
+
+				if (
+					err.name === 'ModelError' &&
+					err.type === 'UnprocessableEntityError'
+				)
+					return StandardResponse.unprocessableContent(err.message)
+
+				if (err.name === 'UnsupportedMediaTypeError')
+					return StandardResponse.unsupportedMediaType(err.message)
+
+				return StandardResponse.internalServerError(
+					err.message || 'An unexpected error occurred',
+				)
+			}
+
+			break
+	}
 }
 
 export default function DataUpload() {
@@ -132,6 +188,7 @@ export default function DataUpload() {
 									<Textarea
 										ref={textareaRef}
 										id="measurement-data"
+										name="measurement-data"
 										placeholder={t('inputTextAreaPlaceholder')}
 										className="h-[300px]"
 										onChange={(e) => setMeasurementData(e.target.value)}
@@ -144,6 +201,7 @@ export default function DataUpload() {
 											})}
 										</div>
 									)}
+									<input type="hidden" name="contentType" value={dataFormat} />
 								</div>
 								<Button
 									type="submit"
