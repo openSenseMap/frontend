@@ -176,6 +176,7 @@
     "@types/node": "^22.15.35",
     "@types/node-fetch": "^2.6.13",
     "@types/nodemailer": "^7.0.1",
+    "@types/pg": "^8.15.6",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.2.2",
     "@types/source-map-support": "^0.5.10",

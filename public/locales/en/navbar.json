@@ -14,5 +14,12 @@
   "pointintime_label": "Point in time",
   "pointintime_description": "Show a historical point in time on the map.",
   "timeperiod_label": "Time period",
-  "timeperiod_description": "Explore the development of the phenomena in a specific time window."
+  "timeperiod_description": "Explore the development of the phenomena in a specific time window.",
+
+  "Settings": "Settings",
+  "Profile": "Profile",
+  "Account": "Account",
+  "Password": "Password",
+  "Delete": "Delete",
+  "Photo": "Photo"
 }
