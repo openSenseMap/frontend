@@ -5,5 +5,7 @@
 	"selectFormatLabel": "Select Format",
 	"inputTextAreaPlaceholder": "Paste measurement data here...",
 	"textAreaCutoffHint": "Showing first 3000 characters of {{length}}",
-	"uploadButtonLabel": "Upload"
+	"uploadButtonLabel": "Upload",
+	"successMessage": "Successfully uploaded measurement data",
+	"errorMessage": "Unable to successfully upload measurement data: {{message}}"
 }

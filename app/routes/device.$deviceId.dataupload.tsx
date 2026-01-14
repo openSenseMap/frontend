@@ -1,5 +1,5 @@
 import { ArrowLeft, Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
 	redirect,
@@ -7,6 +7,9 @@ import {
 	Link,
 	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
+	useNavigation,
+	useParams,
+	useActionData,
 } from 'react-router'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
@@ -34,7 +37,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return {}
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({
+	request,
+	params,
+}: ActionFunctionArgs): Promise<Response> {
 	const method = request.method
 	switch (method.toUpperCase()) {
 		case 'POST':
@@ -51,7 +57,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 			if (!formData.has('measurement-data'))
 				return StandardResponse.badRequest('measurement data is not set')
-			const measurementData = formData.get('measurement-data')!.toString()
+			let measurementData = formData.get('measurement-data')!.toString()
+
+			// Remove the header line if input is csv
+			if (contentType == 'text/csv')
+				measurementData = measurementData.split('\n').slice(1).join('\n')
 
 			const deviceApiKey = await findAccessToken(deviceId)
 
@@ -62,6 +72,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 					hackair: false,
 					authorization: deviceApiKey?.token ?? '',
 				})
+
+				return StandardResponse.ok({})
 			} catch (err: any) {
 				// Handle different error types
 				if (err.name === 'UnauthorizedError')
@@ -80,19 +92,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
 					err.message || 'An unexpected error occurred',
 				)
 			}
-
 			break
 	}
+
+	return StandardResponse.noContent()
 }
 
-export default function DataUpload() {
+export default function DataUpload({ actionData }: any) {
+	// actionData needs to be any type until we migrate to Route.ActionArgs
 	// Max number of characters to show for data
 	// thats input to the text area
 	const DATA_CUTOFF_CHARS = 3_000
 	const { t } = useTranslation(['csv-upload', 'common'])
+	const params = useParams()
+	const nav = useNavigation()
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const [measurementData, setMeasurementData] = useState('')
 	const [dataFormat, setDataFormat] = useState('CSV')
+
+	useEffect(() => {
+		console.log(actionData)
+	}, [actionData])
 
 	return (
 		<div className="space-y-6 px-10 pb-16 font-helvetica">
@@ -117,6 +137,18 @@ export default function DataUpload() {
 								<h1 className="mb-6 text-3xl font-bold">
 									{t('dataUploadHeading')}
 								</h1>
+
+								{actionData?.ok && (
+									<div className="mb-8 rounded-md bg-light-green p-4 text-white">
+										{t('successMessage')}
+									</div>
+								)}
+								{actionData && !actionData.ok && (
+									<div className="mb-8 rounded-md bg-red-500 p-4 text-white">
+										{t('errorMessage', { message: actionData.error })}
+									</div>
+								)}
+
 								<div className="mb-8 rounded-md bg-muted p-4 text-muted-foreground">
 									<p>
 										<Trans t={t} i18nKey="dataUploadExplanation">
@@ -141,6 +173,10 @@ export default function DataUpload() {
 										<Button
 											variant="outline"
 											className="relative w-full dark:bg-dark-boxes"
+											disabled={
+												nav.formAction ===
+												`/device/${params.deviceId}/dataupload`
+											}
 										>
 											<Label
 												htmlFor="fileInput"
@@ -173,13 +209,17 @@ export default function DataUpload() {
 										<Select
 											onValueChange={(value) => setDataFormat(value as string)}
 											defaultValue={dataFormat ?? 'CSV'}
+											disabled={
+												nav.formAction ===
+												`/device/${params.deviceId}/dataupload`
+											}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select format" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="JSON">JSON</SelectItem>
-												<SelectItem value="CSV">CSV</SelectItem>
+												<SelectItem value="application/json">JSON</SelectItem>
+												<SelectItem value="text/csv">CSV</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>
@@ -206,7 +246,10 @@ export default function DataUpload() {
 								<Button
 									type="submit"
 									className="w-full"
-									disabled={measurementData.length === 0}
+									disabled={
+										measurementData.length === 0 ||
+										nav.formAction === `/device/${params.deviceId}/dataupload`
+									}
 								>
 									{t('uploadButtonLabel')}
 									<Upload className="ml-2 inline h-5 w-5" />

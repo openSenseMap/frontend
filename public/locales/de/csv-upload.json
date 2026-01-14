@@ -5,5 +5,7 @@
 	"selectFormatLabel": "Format auswählen",
 	"inputTextAreaPlaceholder": "Messdaten hier einfügen...",
 	"textAreaCutoffHint": "Nur die ersten 3000 Zeichen von {{length}} werden angezeigt",
-	"uploadButtonLabel": "Hochladen"
+	"uploadButtonLabel": "Hochladen",
+	"successMessage": "Messdaten erfolgreich hochgeladen",
+	"errorMessage": "Messdaten konnten nicht erfolgreich hochgeladen werden: {{message}}"
 }
