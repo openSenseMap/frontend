@@ -127,8 +127,8 @@ export default function LoginPage() {
         )}
         <Form method="post" className="space-y-6" noValidate>
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">{t("welcome_back")}</CardTitle>
-            <CardDescription>{t("sign_in")}</CardDescription>
+            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -143,11 +143,11 @@ export default function LoginPage() {
                 autoComplete="email"
                 aria-invalid={actionData?.errors?.email ? true : undefined}
                 aria-describedby="email-error"
-                placeholder={t("example_placeholder")}
+                placeholder="example@opensensemap.org"
               />
               {actionData?.errors?.email && (
                 <div className="text-sm text-red-500 mt-1" id="email-error">
-                  {t(actionData.errors.email)}
+                  {actionData.errors.email}
                 </div>
               )}
             </div>
@@ -155,7 +155,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password"> {t("password_label")}</Label>
                 <Link to="/explore/forgot" className="text-sm underline">
-                  {t("forgot_password")}
+                  Forgot password?
                 </Link>
               </div>
               <Input
@@ -170,7 +170,7 @@ export default function LoginPage() {
               />
               {actionData?.errors?.password && (
                 <div className="text-sm text-red-500 mt-1" id="password-error">
-                  {t(actionData.errors.password)}
+                  {actionData.errors.password}
                 </div>
               )}
             </div>
@@ -183,7 +183,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col items-center gap-2">
             <Button type="submit" className="w-full bg-light-blue">
-              {t("sign_in_button")}
+              Sign in
             </Button>
             <p className="text-sm text-muted-foreground">
               {t("no_account_label")}{" "}

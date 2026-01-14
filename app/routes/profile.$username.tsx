@@ -1,7 +1,6 @@
-import { useTranslation } from 'react-i18next'
 import { type LoaderFunctionArgs, redirect, useLoaderData } from 'react-router'
 import ErrorMessage from '~/components/error-message'
-import { getColumns } from '~/components/mydevices/dt/columns'
+import { columns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
@@ -80,9 +79,6 @@ export default function () {
 	const { profile, sensorsCount, measurementsCount } =
 		useLoaderData<typeof loader>()
 
-	const { t } = useTranslation('profile')
-	const columnsTranslation = useTranslation('data-table')
-
 	// const sortedBadges = sortBadges(allBadges, userBackpack);
 
 	return (
@@ -107,10 +103,8 @@ export default function () {
 								{profile?.user?.name || ''}
 							</h3>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
-								{t('user_since')}{' '}
-								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
-									t('locale'),
-								)}
+								User since{' '}
+								{new Date(profile?.user?.createdAt || '').toLocaleDateString()}
 							</p>
 						</div>
 					</div>
@@ -120,7 +114,7 @@ export default function () {
 								{profile?.user?.devices.length}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t('devices')}
+								Devices
 							</span>
 						</div>
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
@@ -128,7 +122,7 @@ export default function () {
 								{sensorsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t('sensors')}
+								Sensors
 							</span>
 						</div>
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
@@ -136,7 +130,7 @@ export default function () {
 								{measurementsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t('measurements')}
+								Measurements
 							</span>
 						</div>
 						{/* <div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
@@ -144,7 +138,7 @@ export default function () {
 								{userBackpack.length}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t("badges")}
+								Badges
 							</span>
 						</div> */}
 					</div>
@@ -203,12 +197,9 @@ export default function () {
 						{profile?.user?.devices && (
 							<>
 								<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
-									{t('devices')}
+									Devices
 								</div>
-								<DataTable
-									columns={getColumns(columnsTranslation)}
-									data={profile?.user.devices}
-								/>
+								<DataTable columns={columns} data={profile?.user.devices} />
 							</>
 						)}
 					</div>

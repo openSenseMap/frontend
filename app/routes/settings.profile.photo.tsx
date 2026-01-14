@@ -3,7 +3,6 @@ import { getFieldsetConstraint, parse } from "@conform-to/zod";
 import { type FileUpload, parseFormData } from "@mjackson/form-data-parser";
 import { eq } from "drizzle-orm";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
@@ -135,8 +134,6 @@ export default function PhotoChooserModal() {
     shouldRevalidate: "onBlur",
   });
 
-  const { t } = useTranslation("settings");
-
   const dismissModal = () => navigate("..", { preventScrollReset: true });
   return (
     <Dialog open={true} onOpenChange={dismissModal}>
@@ -146,7 +143,7 @@ export default function PhotoChooserModal() {
         className="dark:bg-dark-background dark:text-dark-text dark:border-dark-border"
       >
         <DialogHeader>
-          <DialogTitle>{t("profile_photo")}</DialogTitle>
+          <DialogTitle>Profile photo</DialogTitle>
         </DialogHeader>
         <Form
           method="post"
@@ -188,12 +185,12 @@ export default function PhotoChooserModal() {
           />
           {newImageSrc ? (
             <div className="flex gap-4">
-              <Button type="submit">{t("save_photo")}</Button>
-              <Button type="reset">{t("reset")}</Button>
+              <Button type="submit">Save Photo</Button>
+              <Button type="reset">Reset</Button>
             </div>
           ) : (
             <div className="flex gap-4">
-              <LabelButton htmlFor={photoFile.id}>{t("change")}</LabelButton>
+              <LabelButton htmlFor={photoFile.id}>Change</LabelButton>
             </div>
           )}
           {/* <ErrorList errors={form.errors} /> */}

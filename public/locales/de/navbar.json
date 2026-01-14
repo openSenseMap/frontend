@@ -14,12 +14,5 @@
   "pointintime_label": "Zeitpunkt",
   "pointintime_description": "Zeige einen historischen Zeitpunkt auf der Karte an.",
   "timeperiod_label": "Zeitraum",
-  "timeperiod_description": "Erforsche die Entwicklung der Phänomene in einem bestimmten Zeitfenster.",
-
-  "Settings": "Einstellungen",
-  "Profile": "Profil",
-  "Account": "Konto",
-  "Password": "Passwort",
-  "Delete": "Löschen",
-  "Photo": "Profilbild",
+  "timeperiod_description": "Erforsche die Entwicklung der Phänomene in einem bestimmten Zeitfenster."
 }
