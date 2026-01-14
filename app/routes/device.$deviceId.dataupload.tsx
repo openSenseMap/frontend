@@ -57,12 +57,7 @@ export async function action({
 
 			if (!formData.has('measurement-data'))
 				return StandardResponse.badRequest('measurement data is not set')
-			let measurementData = formData.get('measurement-data')!.toString()
-
-			// Remove the header line if input is csv
-			if (contentType == 'text/csv')
-				measurementData = measurementData.split('\n').slice(1).join('\n')
-
+			const measurementData = formData.get('measurement-data')!.toString()
 			const deviceApiKey = await findAccessToken(deviceId)
 
 			try {
@@ -110,10 +105,6 @@ export default function DataUpload({ actionData }: any) {
 	const [measurementData, setMeasurementData] = useState('')
 	const [dataFormat, setDataFormat] = useState('CSV')
 
-	useEffect(() => {
-		console.log(actionData)
-	}, [actionData])
-
 	return (
 		<div className="space-y-6 px-10 pb-16 font-helvetica">
 			<NavBar />
@@ -138,13 +129,13 @@ export default function DataUpload({ actionData }: any) {
 									{t('dataUploadHeading')}
 								</h1>
 
-								{actionData?.ok && (
+								{actionData && Object.keys(actionData).length === 0 && (
 									<div className="mb-8 rounded-md bg-light-green p-4 text-white">
 										{t('successMessage')}
 									</div>
 								)}
-								{actionData && !actionData.ok && (
-									<div className="mb-8 rounded-md bg-red-500 p-4 text-white">
+								{actionData && Object.keys(actionData).includes('error') && (
+									<div className="mb-8 rounded-md bg-red-500 p-4 font-bold text-white">
 										{t('errorMessage', { message: actionData.error })}
 									</div>
 								)}
@@ -208,7 +199,7 @@ export default function DataUpload({ actionData }: any) {
 									<div>
 										<Select
 											onValueChange={(value) => setDataFormat(value as string)}
-											defaultValue={dataFormat ?? 'CSV'}
+											defaultValue={dataFormat ?? 'text/csv'}
 											disabled={
 												nav.formAction ===
 												`/device/${params.deviceId}/dataupload`
