@@ -1,5 +1,4 @@
 'use client'
-'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, ClipboardCopy, Ellipsis } from 'lucide-react'
@@ -104,50 +103,51 @@ export function getColumns(
 			cell: ({ row }) => {
 				const senseBox = row.original
 
-			return (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" className="h-8 w-8 p-0">
-							<span className="sr-only">Open menu</span>
-							<Ellipsis className="h-4 w-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent
-						align="end"
-						className="dark:bg-dark-background dark:text-dark-text"
-					>
-						<DropdownMenuLabel>Actions</DropdownMenuLabel>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<a href={`/device/${senseBox.id}/overview`}>Overview</a>
-						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<a href={`/explore/${senseBox.id}`}>Show on map</a>
-						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<a href={`/device/${senseBox.id}/edit/general`}>Edit</a>
-						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<a href={`/device/${senseBox.id}/dataupload`}>Data upload</a>
-						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<a
-								href="https://sensebox.de/de/go-home"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								Support
-							</a>
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							onClick={() => navigator.clipboard.writeText(senseBox?.id)}
-							className="cursor-pointer"
+				return (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" className="h-8 w-8 p-0">
+								<span className="sr-only">Open menu</span>
+								<Ellipsis className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							align="end"
+							className="dark:bg-dark-background dark:text-dark-text"
 						>
-							Copy ID
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			)
+							<DropdownMenuLabel>Actions</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem>
+								<a href={`/device/${senseBox.id}/overview`}>Overview</a>
+							</DropdownMenuItem>
+							<DropdownMenuItem>
+								<a href={`/explore/${senseBox.id}`}>Show on map</a>
+							</DropdownMenuItem>
+							<DropdownMenuItem>
+								<a href={`/device/${senseBox.id}/edit/general`}>Edit</a>
+							</DropdownMenuItem>
+							<DropdownMenuItem>
+								<a href={`/device/${senseBox.id}/dataupload`}>Data upload</a>
+							</DropdownMenuItem>
+							<DropdownMenuItem>
+								<a
+									href="https://sensebox.de/de/go-home"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Support
+								</a>
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+								className="cursor-pointer"
+							>
+								Copy ID
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)
+			},
 		},
-	},
-]
+	]
+}
