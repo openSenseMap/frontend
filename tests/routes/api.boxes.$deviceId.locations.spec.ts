@@ -24,6 +24,7 @@ const DEVICE_SENSOR_ID_BOX = {
 	tags: [],
 	latitude: 0,
 	longitude: 0,
+	model: 'luftdaten.info',
 	mqttEnabled: false,
 	ttnEnabled: false,
 	sensors: [

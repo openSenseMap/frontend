@@ -11,32 +11,26 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useOptionalUser } from '~/utils'
-import { useTranslation } from 'react-i18next'
 
 export function NavBar() {
-	const { t } = useTranslation('navbar')
 	const location = useLocation()
-	// User is optional
-	// If no user render Login button
-	const user = useOptionalUser()
 	const parts = location.pathname
 		.split('/')
 		.slice(1)
 		.map((item) => {
 			const decoded = decodeURIComponent(item)
-
-			// respect the way the username is written, taking
-			// it from the user model instead of the url
-			if (item.toLowerCase() === user?.name.toLowerCase()) return user?.name
-
-			return t(decoded.charAt(0).toUpperCase() + decoded.slice(1))
+			return decoded.charAt(0).toUpperCase() + decoded.slice(1)
 		}) // prevents empty parts from showing
+
+	// User is optional
+	// If no user render Login button
+	const user = useOptionalUser()
 
 	return (
 		<div className="border-b bg-white p-4 dark:bg-dark-background dark:text-dark-text">
 			<div className="flex h-16 items-center justify-between">
 				<div className="flex max-w-screen-xl flex-wrap items-center justify-between">
-					<Link to="/explore" className="flex items-center md:pr-4">
+					<Link to="/" className="flex items-center md:pr-4">
 						<img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
 					</Link>
 					<span className="hidden self-center whitespace-nowrap text-xl font-semibold text-light-green dark:text-dark-green md:block">

@@ -10,7 +10,7 @@ import { device } from "./device";
 import { DeviceStatusEnum } from "./enum";
 import  { type Measurement } from "./measurement";
 
-export function generateHexId(): string {
+function generateHexId(): string {
   return randomBytes(12).toString('hex');
 }
 
@@ -34,7 +34,6 @@ export const sensor = pgTable("sensor", {
   title: text("title"),
   unit: text("unit"),
   sensorType: text("sensor_type"),
-  icon: text("icon"),
   status: DeviceStatusEnum("status").default("inactive"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

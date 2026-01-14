@@ -22,7 +22,7 @@ const TEST_BOX = {
 	tags: [],
 	latitude: 0,
 	longitude: 0,
-	//model: 'luftdaten.info',
+	model: 'luftdaten.info',
 	mqttEnabled: false,
 	ttnEnabled: false,
 	sensors: [
