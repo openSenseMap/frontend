@@ -103,7 +103,7 @@ export default function DataUpload({ actionData }: any) {
 	const nav = useNavigation()
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const [measurementData, setMeasurementData] = useState('')
-	const [dataFormat, setDataFormat] = useState('CSV')
+	const [dataFormat, setDataFormat] = useState('text/csv')
 
 	return (
 		<div className="space-y-6 px-10 pb-16 font-helvetica">
