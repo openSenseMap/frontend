@@ -1,5 +1,5 @@
 import { ArrowLeft, Upload } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
 	redirect,
@@ -9,7 +9,6 @@ import {
 	type ActionFunctionArgs,
 	useNavigation,
 	useParams,
-	useActionData,
 } from 'react-router'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
@@ -42,55 +41,54 @@ export async function action({
 	params,
 }: ActionFunctionArgs): Promise<Response> {
 	const method = request.method
-	switch (method.toUpperCase()) {
-		case 'POST':
-			const deviceId = params['deviceId']
-			if (deviceId === undefined)
-				return StandardResponse.badRequest(
-					'deviceId must be set but is undefined',
-				)
-
-			const formData = await request.formData()
-			if (!formData.has('contentType'))
-				return StandardResponse.badRequest('contentType is not set')
-			const contentType = formData.get('contentType')!.toString()
-
-			if (!formData.has('measurement-data'))
-				return StandardResponse.badRequest('measurement data is not set')
-			const measurementData = formData.get('measurement-data')!.toString()
-			const deviceApiKey = await findAccessToken(deviceId)
-
-			try {
-				await postNewMeasurements(deviceId, measurementData, {
-					contentType,
-					luftdaten: false,
-					hackair: false,
-					authorization: deviceApiKey?.token ?? '',
-				})
-
-				return StandardResponse.ok({})
-			} catch (err: any) {
-				// Handle different error types
-				if (err.name === 'UnauthorizedError')
-					return StandardResponse.unauthorized(err.message)
-
-				if (
-					err.name === 'ModelError' &&
-					err.type === 'UnprocessableEntityError'
-				)
-					return StandardResponse.unprocessableContent(err.message)
-
-				if (err.name === 'UnsupportedMediaTypeError')
-					return StandardResponse.unsupportedMediaType(err.message)
-
-				return StandardResponse.internalServerError(
-					err.message || 'An unexpected error occurred',
-				)
-			}
-			break
+	if (method !== 'POST') {
+		return StandardResponse.methodNotAllowed(
+			'Endpoint only supports POST requests',
+		)
 	}
 
-	return StandardResponse.noContent()
+	const deviceId = params['deviceId']
+	if (deviceId === undefined)
+		return StandardResponse.badRequest('deviceId must be set but is undefined')
+
+	const formData = await request.formData()
+	const contentType = formData.get('contentType')
+	if (contentType === null || typeof contentType !== 'string')
+		return StandardResponse.badRequest(
+			'contentType is either not set or has a wrong type',
+		)
+
+	const measurementData = formData.get('measurement-data')
+	if (measurementData === null || typeof measurementData !== 'string')
+		return StandardResponse.badRequest(
+			'measurement data is either not set or has a wrong type',
+		)
+	const deviceApiKey = await findAccessToken(deviceId)
+
+	try {
+		await postNewMeasurements(deviceId, measurementData, {
+			contentType,
+			luftdaten: false,
+			hackair: false,
+			authorization: deviceApiKey?.token ?? '',
+		})
+
+		return StandardResponse.ok({})
+	} catch (err: any) {
+		// Handle different error types
+		if (err.name === 'UnauthorizedError')
+			return StandardResponse.unauthorized(err.message)
+
+		if (err.name === 'ModelError' && err.type === 'UnprocessableEntityError')
+			return StandardResponse.unprocessableContent(err.message)
+
+		if (err.name === 'UnsupportedMediaTypeError')
+			return StandardResponse.unsupportedMediaType(err.message)
+
+		return StandardResponse.internalServerError(
+			err.message || 'An unexpected error occurred',
+		)
+	}
 }
 
 export default function DataUpload({ actionData }: any) {
