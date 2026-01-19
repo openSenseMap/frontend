@@ -1,6 +1,15 @@
 import { ArrowLeft, Upload } from 'lucide-react'
-import { useState } from 'react'
-import { redirect, Form, Link, type LoaderFunctionArgs } from 'react-router'
+import { useRef, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import {
+	redirect,
+	Form,
+	Link,
+	type LoaderFunctionArgs,
+	type ActionFunctionArgs,
+	useNavigation,
+	useParams,
+} from 'react-router'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
 import { Button } from '~/components/ui/button'
@@ -14,9 +23,11 @@ import {
 	SelectValue,
 } from '~/components/ui/select'
 import { Textarea } from '~/components/ui/textarea'
+import { postNewMeasurements } from '~/lib/measurement-service.server'
+import { findAccessToken } from '~/models/device.server'
+import { StandardResponse } from '~/utils/response-utils'
 import { getUserId } from '~/utils/session.server'
 
-//*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
@@ -25,18 +36,75 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return {}
 }
 
-//*****************************************************
-export async function action() {
-	return {}
+export async function action({
+	request,
+	params,
+}: ActionFunctionArgs): Promise<Response> {
+	const method = request.method
+	if (method !== 'POST') {
+		return StandardResponse.methodNotAllowed(
+			'Endpoint only supports POST requests',
+		)
+	}
+
+	const deviceId = params['deviceId']
+	if (deviceId === undefined)
+		return StandardResponse.badRequest('deviceId must be set but is undefined')
+
+	const formData = await request.formData()
+	const contentType = formData.get('contentType')
+	if (contentType === null || typeof contentType !== 'string')
+		return StandardResponse.badRequest(
+			'contentType is either not set or has a wrong type',
+		)
+
+	const measurementData = formData.get('measurement-data')
+	if (measurementData === null || typeof measurementData !== 'string')
+		return StandardResponse.badRequest(
+			'measurement data is either not set or has a wrong type',
+		)
+	const deviceApiKey = await findAccessToken(deviceId)
+
+	try {
+		await postNewMeasurements(deviceId, measurementData, {
+			contentType,
+			luftdaten: false,
+			hackair: false,
+			authorization: deviceApiKey?.token ?? '',
+		})
+
+		return StandardResponse.ok({})
+	} catch (err: any) {
+		// Handle different error types
+		if (err.name === 'UnauthorizedError')
+			return StandardResponse.unauthorized(err.message)
+
+		if (err.name === 'ModelError' && err.type === 'UnprocessableEntityError')
+			return StandardResponse.unprocessableContent(err.message)
+
+		if (err.name === 'UnsupportedMediaTypeError')
+			return StandardResponse.unsupportedMediaType(err.message)
+
+		return StandardResponse.internalServerError(
+			err.message || 'An unexpected error occurred',
+		)
+	}
 }
 
-//**********************************
-export default function DataUpload() {
+export default function DataUpload({ actionData }: any) {
+	// actionData needs to be any type until we migrate to Route.ActionArgs
+	// Max number of characters to show for data
+	// thats input to the text area
+	const DATA_CUTOFF_CHARS = 3_000
+	const { t } = useTranslation(['csv-upload', 'common'])
+	const params = useParams()
+	const nav = useNavigation()
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const [measurementData, setMeasurementData] = useState('')
-	const [dataFormat, setDataFormat] = useState('CSV')
+	const [dataFormat, setDataFormat] = useState('text/csv')
 
 	return (
-		<div className="space-y-6 px-10 pb-16  font-helvetica">
+		<div className="space-y-6 px-10 pb-16 font-helvetica">
 			<NavBar />
 
 			<div>
@@ -44,8 +112,10 @@ export default function DataUpload() {
 					<nav className="col-span-2 md:col-span-2">
 						<ul>
 							<li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
-								<ArrowLeft className=" mr-2 inline h-5 w-5" />
-								<Link to="/profile/me">Back to Dashboard</Link>
+								<ArrowLeft className="mr-2 inline h-5 w-5" />
+								<Link to="/profile/me">
+									{t('common:backToDashboardNavText')}
+								</Link>
 							</li>
 						</ul>
 					</nav>
@@ -53,22 +123,38 @@ export default function DataUpload() {
 					<main className="col-span-6 md:col-span-6">
 						<Form method="post" noValidate>
 							<div className="container mx-auto max-w-3xl px-4 py-12">
-								<h1 className="mb-6 text-3xl font-bold">Manual Data Upload</h1>
+								<h1 className="mb-6 text-3xl font-bold">
+									{t('dataUploadHeading')}
+								</h1>
+
+								{actionData && Object.keys(actionData).length === 0 && (
+									<div className="mb-8 rounded-md bg-light-green p-4 text-white">
+										{t('successMessage')}
+									</div>
+								)}
+								{actionData && Object.keys(actionData).includes('error') && (
+									<div className="mb-8 rounded-md bg-red-500 p-4 font-bold text-white">
+										{t('errorMessage', { message: actionData.error })}
+									</div>
+								)}
+
 								<div className="mb-8 rounded-md bg-muted p-4 text-muted-foreground">
 									<p>
-										Here you can upload measurements for this senseBox. This can
-										be of use for senseBoxes that log their measurements to an
-										SD card when no means of direct communication to
-										openSenseMap are available. Either select a file, or copy
-										the data into the text field. Accepted data formats are
-										described{' '}
-										<a
-											href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
-											className="underline"
-										>
-											here
-										</a>
-										.
+										<Trans t={t} i18nKey="dataUploadExplanation">
+											Here you can upload measurements for this senseBox. This
+											can be of use for senseBoxes that log their measurements
+											to an SD card when no means of direct communication to
+											openSenseMap are available. Either select a file, or copy
+											the data into the text field. Accepted data formats are
+											described{' '}
+											<a
+												href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
+												className="underline"
+											>
+												here
+											</a>
+											.
+										</Trans>
 									</p>
 								</div>
 								<div className="mb-8 grid grid-cols-2 gap-4">
@@ -76,12 +162,16 @@ export default function DataUpload() {
 										<Button
 											variant="outline"
 											className="relative w-full dark:bg-dark-boxes"
+											disabled={
+												nav.formAction ===
+												`/device/${params.deviceId}/dataupload`
+											}
 										>
 											<Label
 												htmlFor="fileInput"
 												className="flex h-full w-full cursor-pointer items-center justify-center"
 											>
-												Upload File
+												{t('uploadFileLabel')}
 											</Label>
 											<Input
 												type="file"
@@ -107,33 +197,50 @@ export default function DataUpload() {
 									<div>
 										<Select
 											onValueChange={(value) => setDataFormat(value as string)}
-											defaultValue={dataFormat ?? 'CSV'}
+											defaultValue={dataFormat ?? 'text/csv'}
+											disabled={
+												nav.formAction ===
+												`/device/${params.deviceId}/dataupload`
+											}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select format" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="JSON">JSON</SelectItem>
-												<SelectItem value="CSV">CSV</SelectItem>
+												<SelectItem value="application/json">JSON</SelectItem>
+												<SelectItem value="text/csv">CSV</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>
 								</div>
 								<div className="mb-8">
 									<Textarea
+										ref={textareaRef}
 										id="measurement-data"
-										placeholder="Paste measurement data here..."
+										name="measurement-data"
+										placeholder={t('inputTextAreaPlaceholder')}
 										className="h-[300px]"
-										defaultValue={measurementData.slice(0, 3000)} // Displaying only the first 3000 characters
+										onChange={(e) => setMeasurementData(e.target.value)}
+										value={measurementData.slice(0, DATA_CUTOFF_CHARS)}
 									/>
-									{measurementData.length > 1000 && (
+									{measurementData.length > DATA_CUTOFF_CHARS && (
 										<div className="mt-2 text-sm text-gray-500">
-											{`Showing first 1000 characters of ${measurementData.length}`}
+											{t('textAreaCutoffHint', {
+												length: measurementData.length,
+											})}
 										</div>
 									)}
+									<input type="hidden" name="contentType" value={dataFormat} />
 								</div>
-								<Button type="submit" className="w-full">
-									Upload
+								<Button
+									type="submit"
+									className="w-full"
+									disabled={
+										measurementData.length === 0 ||
+										nav.formAction === `/device/${params.deviceId}/dataupload`
+									}
+								>
+									{t('uploadButtonLabel')}
 									<Upload className="ml-2 inline h-5 w-5" />
 								</Button>
 							</div>

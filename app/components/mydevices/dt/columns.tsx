@@ -126,7 +126,7 @@ export function getColumns(
 							<DropdownMenuItem disabled>
 								<a href={`/device/${senseBox.id}/edit/general`}>{t('edit')}</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem disabled>
+							<DropdownMenuItem>
 								<a href={`/device/${senseBox.id}/dataupload`}>
 									{t('data_upload')}
 								</a>
