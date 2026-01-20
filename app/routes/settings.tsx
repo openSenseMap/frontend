@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation } from "react-router";
 import ErrorMessage from "~/components/error-message";
 import { NavBar } from "~/components/nav-bar";
@@ -7,6 +8,9 @@ export default function SettingsLayoutPage() {
   const location = useLocation();
   // get current tab from the URL
   const currentTab = location.pathname.split("/")[2];
+
+  const { t } = useTranslation("settings");
+
   return (
     <div className="h-screen bg-gray-100 dark:bg-dark-background dark:text-dark-text">
       <NavBar />
@@ -22,25 +26,25 @@ export default function SettingsLayoutPage() {
                 className="data-[state=active]:text-light-green"
                 value="profile"
               >
-                <Link to={`/settings/profile`}>Public Profile</Link>
+                <Link to={`/settings/profile`}>{t("public_profile")}</Link>
               </TabsTrigger>
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="account"
               >
-                <Link to={`/settings/account`}>Account</Link>
+                <Link to={`/settings/account`}>{t("account")}</Link>
               </TabsTrigger>
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="password"
               >
-                <Link to={`/settings/password`}>Password</Link>
+                <Link to={`/settings/password`}>{t("password")}</Link>
               </TabsTrigger>
               <TabsTrigger
                 className="data-[state=active]:text-light-green"
                 value="delete"
               >
-                <Link to={`/settings/delete`}>Delete Account</Link>
+                <Link to={`/settings/delete`}>{t("delete_account")}</Link>
               </TabsTrigger>
             </TabsList>
             <TabsContent className="mt-6" value={currentTab || "profile"}>

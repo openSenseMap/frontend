@@ -105,13 +105,13 @@ export default function DeviceDetailBox() {
   const [refreshOn] = useState(false);
   const [refreshSecond, setRefreshSecond] = useState(59);
 
-  const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>();
-  useEffect(() => {
-    const sortedSensors = [...(data.sensors as any)].sort(
-      (a, b) => (a.id as unknown as number) - (b.id as unknown as number)
-    );
-    setSensors(sortedSensors);
-  }, [data]);
+	const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>()
+	useEffect(() => {
+		const sortedSensors = [...(data.sensors as any)].sort(
+			(a, b) => (a.id as unknown as number) - (b.id as unknown as number),
+		)
+		setSensors(sortedSensors)
+	}, [data])
 
   const [searchParams] = useSearchParams();
 
@@ -401,258 +401,271 @@ export default function DeviceDetailBox() {
                                   currentParams.delete("tags");
                                 }
 
-                                // Update the URL with the new search params
-                                void navigate({
-                                  search: currentParams.toString(),
-                                });
-                              }}
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <Separator className="my-4"></Separator>
-                {data.device.logEntries.length > 0 && (
-                  <>
-                    <EntryLogs entryLogs={data.device.logEntries} />
-                    <Separator className="my-4" />
-                  </>
-                )}
-                {data.device.description && (
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="w-full"
-                    defaultValue={"item-1"}
-                  >
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                        Description
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        {addLineBreaks(data.device.description)}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full"
-                  defaultValue={"item-1"}
-                >
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-                      Sensors
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div
-                        className={
-                          navigation.state === "loading"
-                            ? "pointer-events-none"
-                            : ""
-                        }
-                      >
-                        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-                          {sensors &&
-                            sensors.map(
-                              (sensor: SensorWithLatestMeasurement) => {
-                                const sensorLink = createSensorLink(sensor.id);
-                                if (sensorLink === "") {
-                                  return (
-                                    <Card
-                                      key={sensor.id}
-                                      className=""
-                                      onClick={() =>
-                                        toast({
-                                          title:
-                                            "Cant select more than 2 sensors",
-                                          description:
-                                            "Deselect one sensor to select another",
-                                          variant: "destructive",
-                                        })
-                                      }
-                                    >
-                                      <label
-                                        htmlFor={sensor.id}
-                                        className="cursor-pointer"
-                                      >
-                                        <input
-                                          className="peer hidden"
-                                          disabled={
-                                            !sensorIds.has(sensor.id) &&
-                                            sensorIds.size >= 2
-                                              ? true
-                                              : false
-                                          }
-                                          type="checkbox"
-                                          name="sensor"
-                                          id={sensor.id}
-                                          value={sensor.id}
-                                          defaultChecked={sensorIds.has(
-                                            sensor.id
-                                          )}
-                                        />
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                          <CardTitle className="text-sm font-medium">
-                                            {sensor.title}
-                                          </CardTitle>
-                                          <SensorIcon
-                                            title={sensor.title || ""}
-                                            className="h-4 w-4 text-muted-foreground"
-                                          />
-                                        </CardHeader>
-                                        <CardContent>
-                                          <div className="flex flex-row items-center space-x-2">
-                                            <div className="text-2xl font-bold">
-                                              {sensor.value}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                              {sensor.unit}
-                                            </p>
-                                          </div>
-                                        </CardContent>
-                                        <Separator />
-                                        <CardFooter className="justify-between px-6 py-3">
-                                          <div className="flex items-center gap-1">
-                                            <div
-                                              className={
-                                                sensor.status === "active"
-                                                  ? "h-2 w-2 rounded-full bg-light-green"
-                                                  : "h-2 w-2 rounded-full bg-red-500"
-                                              }
-                                            ></div>
-                                          <p className="text-xs text-muted-foreground">
-                                            {sensor.time
-                                              ? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
-                                              : "No recent data"}
-                                          </p>
-                                          </div>
-                                        </CardFooter>
-                                      </label>
-                                    </Card>
-                                  );
-                                }
-                                return (
-                                  <Link key={sensor.id} to={sensorLink}>
-                                    <Card
-                                      key={sensor.id}
-                                      className={isSensorActive(sensor.id)}
-                                    >
-                                      <label
-                                        htmlFor={sensor.id}
-                                        className="cursor-pointer"
-                                      >
-                                        <input
-                                          className="peer hidden"
-                                          disabled={
-                                            !sensorIds.has(sensor.id) &&
-                                            sensorIds.size >= 2
-                                              ? true
-                                              : false
-                                          }
-                                          type="checkbox"
-                                          name="sensor"
-                                          id={sensor.id}
-                                          value={sensor.id}
-                                          defaultChecked={sensorIds.has(
-                                            sensor.id
-                                          )}
-                                        />
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                          <CardTitle className="text-sm font-medium">
-                                            {sensor.title}
-                                          </CardTitle>
-                                          <SensorIcon
-                                            title={sensor.title || ""}
-                                            className="h-4 w-4 text-muted-foreground"
-                                          />
-                                        </CardHeader>
-                                        <CardContent>
-                                          <div className="flex flex-row items-center space-x-2">
-                                            <div className="text-2xl font-bold">
-                                              {sensor.value}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                              {sensor.unit}
-                                            </p>
-                                          </div>
-                                        </CardContent>
-                                        <Separator />
-                                        <CardFooter className="justify-between px-6 py-3">
-                                          <div className="flex items-center gap-1">
-                                            <div
-                                              className={
-                                                sensor.status === "active"
-                                                  ? "h-2 w-2 rounded-full bg-light-green"
-                                                  : "h-2 w-2 rounded-full bg-red-500"
-                                              }
-                                            ></div>
-                                          <p className="text-xs text-muted-foreground">
-                                            {sensor.time
-                                            ? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
-                                            : "No recent data"}
-                                          </p>
-                                          </div>
-                                        </CardFooter>
-                                      </label>
-                                    </Card>
-                                  </Link>
-                                );
-                              }
-                            )}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
-            </div>
-          </div>
-        </Draggable>
-      )}
-      {compareMode && (
-        <Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
-          <XSquare
-            className="h-4 w-4 cursor-pointer"
-            onClick={() => {
-              setCompareMode(!compareMode);
-              setOpen(true);
-            }}
-          />
-          <AlertTitle>Compare devices</AlertTitle>
-          <AlertDescription className="inline">
-            Choose a device from the map to compare with.
-          </AlertDescription>
-        </Alert>
-      )}
-      {!open && (
-        <div
-          onClick={() => {
-            setOpen(true);
-          }}
-          className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 sm:bottom-[30px] sm:left-[10px]"
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="px-4 py-2 ">
-                  <ChevronUp />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Open device details</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      )}
-    </>
-  );
+																// Update the URL with the new search params
+																void navigate({
+																	search: currentParams.toString(),
+																})
+															}}
+														>
+															{tag}
+														</Badge>
+													))}
+												</div>
+											</div>
+										</div>
+									</div>
+								)}
+								<Separator className="my-4"></Separator>
+								{data.device.logEntries.length > 0 && (
+									<>
+										<EntryLogs entryLogs={data.device.logEntries} />
+										<Separator className="my-4" />
+									</>
+								)}
+								{data.device.description && (
+									<Accordion
+										type="single"
+										collapsible
+										className="w-full"
+										defaultValue={'item-1'}
+									>
+										<AccordionItem value="item-1">
+											<AccordionTrigger className="font-bold dark:dark:text-zinc-100">
+												Description
+											</AccordionTrigger>
+											<AccordionContent>
+												{addLineBreaks(data.device.description)}
+											</AccordionContent>
+										</AccordionItem>
+									</Accordion>
+								)}
+								<Accordion
+									type="single"
+									collapsible
+									className="w-full"
+									defaultValue={'item-1'}
+								>
+									<AccordionItem value="item-1">
+										<AccordionTrigger className="font-bold dark:dark:text-zinc-100">
+											Sensors
+										</AccordionTrigger>
+										<AccordionContent>
+											<div
+												className={
+													navigation.state === 'loading'
+														? 'pointer-events-none'
+														: ''
+												}
+											>
+												<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+													{sensors &&
+														sensors.map(
+															(sensor: SensorWithLatestMeasurement) => {
+																const sensorLink = createSensorLink(sensor.id)
+																if (sensorLink === '') {
+																	return (
+																		<Card
+																			key={sensor.id}
+																			className="flex h-full flex-col"
+																			onClick={() =>
+																				toast({
+																					title:
+																						'Cant select more than 2 sensors',
+																					description:
+																						'Deselect one sensor to select another',
+																					variant: 'destructive',
+																				})
+																			}
+																		>
+																			<label
+																				htmlFor={sensor.id}
+																				className="flex h-full cursor-pointer flex-col"
+																			>
+																				<input
+																					className="peer hidden"
+																					disabled={
+																						!sensorIds.has(sensor.id) &&
+																						sensorIds.size >= 2
+																							? true
+																							: false
+																					}
+																					type="checkbox"
+																					name="sensor"
+																					id={sensor.id}
+																					value={sensor.id}
+																					defaultChecked={sensorIds.has(
+																						sensor.id,
+																					)}
+																				/>
+																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+																					<CardTitle
+																						className="truncate text-sm font-medium"
+																						title={sensor.title || ''}
+																					>
+																						{sensor.title}
+																					</CardTitle>
+																					<SensorIcon
+																						title={sensor.title || ''}
+																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
+																					/>
+																				</CardHeader>
+																				<CardContent className="flex-grow">
+																					<div className="flex flex-row items-center space-x-2">
+																						<div className="text-2xl font-bold">
+																							{sensor.value}
+																						</div>
+																						<p className="text-xs text-muted-foreground">
+																							{sensor.unit}
+																						</p>
+																					</div>
+																				</CardContent>
+																				<Separator />
+																				<CardFooter className="justify-between px-6 py-3">
+																					<div className="flex items-center gap-1">
+																						<div
+																							className={
+																								sensor.status === 'active'
+																									? 'h-2 w-2 rounded-full bg-light-green'
+																									: 'h-2 w-2 rounded-full bg-red-500'
+																							}
+																						></div>
+																						<p className="text-xs text-muted-foreground">
+																							{sensor.time
+																								? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
+																								: 'No recent data'}
+																						</p>
+																					</div>
+																				</CardFooter>
+																			</label>
+																		</Card>
+																	)
+																}
+																return (
+																	<Link
+																		key={sensor.id}
+																		to={sensorLink}
+																		className="h-full"
+																	>
+																		<Card
+																			key={sensor.id}
+																			className={clsx(
+																				'flex h-full flex-col',
+																				isSensorActive(sensor.id),
+																			)}
+																		>
+																			<label
+																				htmlFor={sensor.id}
+																				className="flex h-full cursor-pointer flex-col"
+																			>
+																				<input
+																					className="peer hidden"
+																					disabled={
+																						!sensorIds.has(sensor.id) &&
+																						sensorIds.size >= 2
+																							? true
+																							: false
+																					}
+																					type="checkbox"
+																					name="sensor"
+																					id={sensor.id}
+																					value={sensor.id}
+																					defaultChecked={sensorIds.has(
+																						sensor.id,
+																					)}
+																				/>
+																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+																					<CardTitle
+																						className="truncate text-sm font-medium"
+																						title={sensor.title || ''}
+																					>
+																						{sensor.title}
+																					</CardTitle>
+																					<SensorIcon
+																						title={sensor.title || ''}
+																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
+																					/>
+																				</CardHeader>
+																				<CardContent className="flex-grow">
+																					<div className="flex flex-row items-center space-x-2">
+																						<div className="text-2xl font-bold">
+																							{sensor.value}
+																						</div>
+																						<p className="text-xs text-muted-foreground">
+																							{sensor.unit}
+																						</p>
+																					</div>
+																				</CardContent>
+																				<Separator />
+																				<CardFooter className="justify-between px-6 py-3">
+																					<div className="flex items-center gap-1">
+																						<div
+																							className={
+																								sensor.status === 'active'
+																									? 'h-2 w-2 rounded-full bg-light-green'
+																									: 'h-2 w-2 rounded-full bg-red-500'
+																							}
+																						></div>
+																						<p className="text-xs text-muted-foreground">
+																							{sensor.time
+																								? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
+																								: 'No recent data'}
+																						</p>
+																					</div>
+																				</CardFooter>
+																			</label>
+																		</Card>
+																	</Link>
+																)
+															},
+														)}
+												</div>
+											</div>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
+							</div>
+						</div>
+					</div>
+				</Draggable>
+			)}
+			{compareMode && (
+				<Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
+					<XSquare
+						className="h-4 w-4 cursor-pointer"
+						onClick={() => {
+							setCompareMode(!compareMode)
+							setOpen(true)
+						}}
+					/>
+					<AlertTitle>Compare devices</AlertTitle>
+					<AlertDescription className="inline">
+						Choose a device from the map to compare with.
+					</AlertDescription>
+				</Alert>
+			)}
+			{!open && (
+				<div
+					onClick={() => {
+						setOpen(true)
+					}}
+					className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 sm:bottom-[30px] sm:left-[10px]"
+				>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<div className="px-4 py-2">
+									<ChevronUp />
+								</div>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>Open device details</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				</div>
+			)}
+		</>
+	)
 }
 
 const InfoItem = ({

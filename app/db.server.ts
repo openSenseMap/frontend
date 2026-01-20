@@ -1,45 +1,45 @@
-import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import invariant from "tiny-invariant";
-import * as schema from "./schema";
+import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import postgres, { type Sql } from 'postgres'
+import invariant from 'tiny-invariant'
+import * as schema from './schema'
 
-let drizzleClient: PostgresJsDatabase<typeof schema>;
-
+let drizzleClient: PostgresJsDatabase<typeof schema>
+let pg: Sql<any>
 declare global {
-  var __db__: PostgresJsDatabase<typeof schema>;
+	var __db__:
+		| {
+				drizzle: PostgresJsDatabase<typeof schema>
+				pg: Sql<any>
+		  }
+		| undefined
 }
 
-// this is needed because in development we don't want to restart
-// the server with every change, but we want to make sure we don't
-// create a new connection to the DB with every change either.
-// in production we'll have a single connection to the DB.
-if (process.env.NODE_ENV === "production") {
-  drizzleClient = getClient();
+if (process.env.NODE_ENV === 'production') {
+	const { drizzle, pg: rawPg } = initClient()
+	drizzleClient = drizzle
+	pg = rawPg
 } else {
-  if (!global.__db__) {
-    global.__db__ = getClient();
-  }
-  drizzleClient = global.__db__;
+	if (!global.__db__) {
+		global.__db__ = initClient()
+	}
+	drizzleClient = global.__db__.drizzle
+	pg = global.__db__.pg
 }
 
-function getClient() {
-  const { DATABASE_URL } = process.env;
-  invariant(typeof DATABASE_URL === "string", "DATABASE_URL env var not set");
+function initClient() {
+	const { DATABASE_URL } = process.env
+	invariant(typeof DATABASE_URL === 'string', 'DATABASE_URL env var not set')
 
-  const databaseUrl = new URL(DATABASE_URL);
+	const databaseUrl = new URL(DATABASE_URL)
+	console.log(`🔌 setting up drizzle client to ${databaseUrl.host}`)
 
-  console.log(`🔌 setting up drizzle client to ${databaseUrl.host}`);
+	const rawPg = postgres(DATABASE_URL, {
+		ssl: process.env.PG_CLIENT_SSL === 'true' ? true : false,
+	})
 
-  // NOTE: during development if you change anything in this function, remember
-  // that this only runs once per server restart and won't automatically be
-  // re-run per request like everything else is. So if you need to change
-  // something in this file, you'll need to manually restart the server.
-  const queryClient = postgres(DATABASE_URL, {
-    ssl: process.env.PG_CLIENT_SSL === "true" ? true : false,
-  });
-  const client = drizzle(queryClient, { schema });
+	const drizzleDb = drizzle(rawPg, { schema })
 
-  return client;
+	return { drizzle: drizzleDb, pg: rawPg }
 }
 
-export { drizzleClient };
+export { drizzleClient, pg }
