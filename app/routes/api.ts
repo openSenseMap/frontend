@@ -1,6 +1,10 @@
 import { type LoaderFunctionArgs } from 'react-router'
 
-type RouteInfo = { path: string; method: 'GET' | 'PUT' | 'POST' | 'DELETE' }
+type RouteInfo = {
+	path: string
+	method: 'GET' | 'PUT' | 'POST' | 'DELETE'
+	deprecationNotice?: string
+}
 
 const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 	noauth: [
@@ -34,7 +38,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/data`,
 			method: 'GET',
 		},
-
 		// {
 		//   path: `boxes/:boxId`,
 		//   method: "GET",
@@ -145,10 +148,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/:boxId`,
 			method: 'DELETE',
 		},
-		// {
-		//   path: `boxes/:boxId/:sensorId/measurements`,
-		//   method: "DELETE",
-		// },
+		{
+			path: `boxes/:boxId/:sensorId/measurements`,
+			method: 'DELETE',
+		},
 		{
 			path: `users/sign-out`,
 			method: 'POST',
@@ -213,7 +216,10 @@ export async function loader({}: LoaderFunctionArgs) {
 
 	lines.push('\nRoutes requiring valid authentication through JWT:')
 
-	for (const r of routes.auth) lines.push(`${r.method}\t${r.path}`)
+	for (const r of routes.auth)
+		lines.push(
+			`${r.method}\t${r.path}\t${r.deprecationNotice ? 'DEPRECATED: ' + r.deprecationNotice : ''}`,
+		)
 
 	return new Response(lines.join('\n'), {
 		status: 200,
