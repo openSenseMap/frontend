@@ -40,7 +40,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
 	const formData = await request.formData()
-	const { intent, name, exposure, passwordDelete } =
+	const { intent, name, exposure, description, passwordDelete } =
 		Object.fromEntries(formData)
 
 	const exposureLowerCase = exposure?.toString().toLowerCase()
@@ -53,7 +53,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const deviceID = params.deviceId
 	invariant(typeof deviceID === 'string', ' Device id not found.')
 	invariant(typeof name === 'string', 'Device name is required.')
-	invariant(typeof exposure === 'string', 'Device name is required.')
+	invariant(typeof exposure === 'string', 'Device exposure is required.')
+	invariant(typeof description === 'string', 'Device description must be a string.')
+
 
 	if (
 		exposureLowerCase !== 'indoor' &&
@@ -72,7 +74,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	switch (intent) {
 		case 'save': {
-			await updateDevice(deviceID, { name, exposure: exposureLowerCase })
+			await updateDevice(deviceID, {
+				name,
+				exposure: exposureLowerCase,
+				description
+			})
 			return data({
 				errors: {
 					exposure: null,
@@ -127,6 +133,7 @@ export default function () {
 	const passwordDelRef = React.useRef<HTMLInputElement>(null)
 	const [name, setName] = useState(device?.name)
 	const [exposure, setExposure] = useState(device?.exposure)
+	const [description, setDescription] = useState(device?.description)
 	//* to view toast on edit page
 	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
 
@@ -168,7 +175,9 @@ export default function () {
 										name="intent"
 										value="save"
 										disabled={
-											name === device?.name && exposure === device?.exposure
+											name === device?.name &&
+											exposure === device?.exposure &&
+											description === device?.description
 										}
 										className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
 									>
@@ -214,7 +223,7 @@ export default function () {
 									htmlFor="exposure"
 									className="txt-base block font-bold tracking-normal"
 								>
-									Exposure
+									Exposure *
 								</label>
 
 								<div className="mt-1">
@@ -238,6 +247,29 @@ export default function () {
 										<option value="mobile">mobile</option>
 										<option value="unknown">unknown</option>
 									</select>
+								</div>
+							</div>
+
+							{/* Description */}
+							<div className="mt-3">
+								<label
+									htmlFor="description"
+									className="txt-base block font-bold tracking-normal"
+								>
+									Description
+								</label>
+								<div className="mt-1">
+									<textarea
+										id="description"
+										name="description"
+										maxLength={300}
+										defaultValue={device?.description || ''}
+										onChange={(e) => setDescription(e.target.value)}
+										className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
+									/>
+									<p className="text-sm text-gray-500">
+										{description?.length || 0} / 300
+									</p>
 								</div>
 							</div>
 
