@@ -35,8 +35,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 		const device = userDevices.find((d) => d.id === deviceId)
 		if (!device?.sensors.some((s) => s.id === sensorId))
-			return StandardResponse.forbidden(
-				'You are not allowed to delete data of the given sensor',
+			return StandardResponse.notFound(
+				`Sensor with id ${sensorId} not found or not part of this device`,
 			)
 
 		try {
