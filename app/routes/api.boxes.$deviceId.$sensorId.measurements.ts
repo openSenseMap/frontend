@@ -140,15 +140,11 @@ const parseQueryParams = async (
 ): Promise<z.infer<typeof DeleteQueryParams>> => {
 	const url = new URL(request.url)
 	let params: Record<string, any>
-	if (request.method !== 'GET') {
-		const contentType = request.headers.get('content-type') || ''
-		if (contentType.includes('application/json')) {
-			try {
-				params = await request.json()
-			} catch {
-				params = Object.fromEntries(url.searchParams)
-			}
-		} else {
+	const contentType = request.headers.get('content-type') || ''
+	if (contentType.includes('application/json')) {
+		try {
+			params = await request.json()
+		} catch {
 			params = Object.fromEntries(url.searchParams)
 		}
 	} else {
