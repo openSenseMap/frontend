@@ -24,6 +24,7 @@ const BASE_DEVICE_COLUMNS = {
 	name: true,
 	description: true,
 	image: true,
+	website: true,
 	link: true,
 	tags: true,
 	exposure: true,
