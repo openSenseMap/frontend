@@ -183,6 +183,13 @@
       "when": 1768585075372,
       "tag": "0025_check-location-update",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1768990588627,
+      "tag": "0026_misty_switch",
+      "breakpoints": true
     }
   ]
 }

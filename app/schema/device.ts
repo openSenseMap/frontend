@@ -32,6 +32,7 @@ export const device = pgTable('device', {
 		.$defaultFn(() => createId()),
 	name: text('name').notNull(),
 	image: text('image'),
+	website: text('website'),
 	description: text('description'),
 	tags: text('tags')
 		.array()
