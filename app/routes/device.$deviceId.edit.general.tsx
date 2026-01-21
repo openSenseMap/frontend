@@ -1,4 +1,4 @@
-import { Save } from 'lucide-react'
+import { Save, Upload, X } from 'lucide-react'
 import React, { useState } from 'react'
 import {
 	type ActionFunctionArgs,
@@ -12,17 +12,18 @@ import {
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import ErrorMessage from '~/components/error-message'
+import { Button } from '~/components/ui/button'
 import {
 	updateDevice,
 	deleteDevice,
 	getDeviceWithoutSensors,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
+import { uploadDeviceImage, deleteDeviceImage } from '~/utils/s3.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
-	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -40,22 +41,29 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
 	const formData = await request.formData()
+
 	const { intent, name, exposure, description, passwordDelete } =
 		Object.fromEntries(formData)
 
-	const exposureLowerCase = exposure?.toString().toLowerCase()
+	const image = formData.get('image') as File | null
+
+	const exposureLowerCase =
+		typeof exposure === 'string' ? exposure.toLowerCase() : ''
 
 	const errors = {
 		exposure: exposure ? null : 'Invalid exposure.',
 		passwordDelete: passwordDelete ? null : 'Password is required.',
+		image: null as string | null,
 	}
 
 	const deviceID = params.deviceId
-	invariant(typeof deviceID === 'string', ' Device id not found.')
+	invariant(typeof deviceID === 'string', 'Device id not found.')
 	invariant(typeof name === 'string', 'Device name is required.')
 	invariant(typeof exposure === 'string', 'Device exposure is required.')
-	invariant(typeof description === 'string', 'Device description must be a string.')
-
+	invariant(
+		typeof description === 'string',
+		'Device description must be a string.',
+	)
 
 	if (
 		exposureLowerCase !== 'indoor' &&
@@ -65,8 +73,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	) {
 		return data({
 			errors: {
-				exposure: exposure ? null : 'Invalid exposure.',
+				exposure: 'Invalid exposure.',
 				passwordDelete: errors.passwordDelete,
+				image: null,
 			},
 			status: 400,
 		})
@@ -74,46 +83,126 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	switch (intent) {
 		case 'save': {
+			let imageUrl: string | undefined
+
+			if (image && image.size > 0 && image.name !== '') {
+				const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+				const maxSize = 5 * 1024 * 1024 // 5MB
+
+				if (!validTypes.includes(image.type)) {
+					return data({
+						errors: {
+							exposure: null,
+							passwordDelete: null,
+							image: 'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF.',
+						},
+						status: 400,
+					})
+				}
+
+				if (image.size > maxSize) {
+					return data({
+						errors: {
+							exposure: null,
+							passwordDelete: null,
+							image: 'File too large. Maximum size is 5MB.',
+						},
+						status: 400,
+					})
+				}
+
+				try {
+					imageUrl = await uploadDeviceImage(deviceID, image)
+				} catch (error) {
+					console.error('Image upload error:', error)
+					return data({
+						errors: {
+							exposure: null,
+							passwordDelete: null,
+							image: 'Failed to upload image. Please try again.',
+						},
+						status: 500,
+					})
+				}
+			}
+
 			await updateDevice(deviceID, {
 				name,
 				exposure: exposureLowerCase,
-				description
+				description,
+				...(imageUrl && { image: imageUrl }),
 			})
+
 			return data({
 				errors: {
 					exposure: null,
 					passwordDelete: null,
+					image: null,
+				},
+				status: 200,
+			})
+		}
+		case 'removeImage': {
+			const device = await getDeviceWithoutSensors({ id: deviceID })
+			
+			if (device?.image) {
+				try {
+					await deleteDeviceImage(device.image)
+				} catch (error) {
+					console.error('Failed to delete image:', error)
+				}
+			}
+
+			await updateDevice(deviceID, {
+				image: '',
+			})
+
+			return data({
+				errors: {
+					exposure: null,
+					passwordDelete: null,
+					image: null,
 				},
 				status: 200,
 			})
 		}
 		case 'delete': {
-			//* check password validaty
 			if (errors.passwordDelete) {
 				return data({
 					errors,
 					status: 400,
 				})
 			}
-			//* 1. get user email
+
 			const userEmail = await getUserEmail(request)
 			invariant(typeof userEmail === 'string', 'email not found')
 			invariant(typeof passwordDelete === 'string', 'password must be a string')
-			//* 2. check entered password
+
 			const user = await verifyLogin(userEmail, passwordDelete)
-			//* 3. retrun error if password is not correct
+
 			if (!user) {
 				return data(
 					{
 						errors: {
-							exposure: exposure ? null : 'Invalid exposure.',
+							exposure: null,
 							passwordDelete: 'Invalid password',
+							image: null,
 						},
 					},
 					{ status: 400 },
 				)
 			}
-			//* 4. delete device
+
+			// Delete device image before deleting device
+			const device = await getDeviceWithoutSensors({ id: deviceID })
+			if (device?.image) {
+				try {
+					await deleteDeviceImage(device.image)
+				} catch (error) {
+					console.error('Failed to delete device image:', error)
+				}
+			}
+
 			await deleteDevice({ id: deviceID })
 
 			return redirect('/profile/me')
@@ -127,15 +216,34 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function () {
 	const { device } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
-	const [passwordDelVal, setPasswordVal] = useState('') //* to enable delete account button
-	//* focus when an error occured
+	const [passwordDelVal, setPasswordVal] = useState('')
 	const nameRef = React.useRef<HTMLInputElement>(null)
 	const passwordDelRef = React.useRef<HTMLInputElement>(null)
 	const [name, setName] = useState(device?.name)
 	const [exposure, setExposure] = useState(device?.exposure)
 	const [description, setDescription] = useState(device?.description)
-	//* to view toast on edit page
+	const [imagePreview, setImagePreview] = useState<string | null>(
+		device?.image || null,
+	)
+	const [imageFile, setImageFile] = useState<File | null>(null)
 	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
+
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (file) {
+			setImageFile(file)
+			const reader = new FileReader()
+			reader.onloadend = () => {
+				setImagePreview(reader.result as string)
+			}
+			reader.readAsDataURL(file)
+		}
+	}
+
+	const handleRemoveImage = () => {
+		setImageFile(null)
+		setImagePreview(null)
+	}
 
 	React.useEffect(() => {
 		if (actionData) {
@@ -143,28 +251,26 @@ export default function () {
 				(errorMessage) => errorMessage,
 			)
 
-			//* when device data updated successfully
 			if (!hasErrors) {
 				setToastOpen(true)
-				// setToastOpenTest(true);
-			}
-			//* when password is null
-			else if (hasErrors && actionData?.errors?.passwordDelete) {
+			} else if (hasErrors && actionData?.errors?.passwordDelete) {
 				passwordDelRef.current?.focus()
 			}
 		}
 	}, [actionData, setToastOpen])
 
+	const hasChanges =
+		name !== device?.name ||
+		exposure !== device?.exposure ||
+		description !== device?.description ||
+		imageFile !== device?.image
+
 	return (
 		<div className="grid grid-rows-1">
-			{/* general form */}
 			<div className="flex min-h-full items-center justify-center">
 				<div className="mx-auto w-full font-helvetica">
-					{/* Form */}
-					<Form method="post" noValidate>
-						{/* Heading */}
+					<Form method="post" encType="multipart/form-data" noValidate>
 						<div>
-							{/* Title */}
 							<div className="mt-2 flex justify-between">
 								<div>
 									<h1 className="text-4xl">General</h1>
@@ -174,12 +280,8 @@ export default function () {
 										type="submit"
 										name="intent"
 										value="save"
-										disabled={
-											name === device?.name &&
-											exposure === device?.exposure &&
-											description === device?.description
-										}
-										className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
+										disabled={!hasChanges}
+										className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6] disabled:opacity-50"
 									>
 										<Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
 									</button>
@@ -187,11 +289,9 @@ export default function () {
 							</div>
 						</div>
 
-						{/* divider */}
 						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
 						<div className="space-y-5 pt-4">
-							{/* <Form method="post" className="space-y-6" noValidate> */}
 							{/* Name */}
 							<div>
 								<label
@@ -200,7 +300,6 @@ export default function () {
 								>
 									Name *
 								</label>
-
 								<div className="mt-1">
 									<input
 										id="name"
@@ -225,7 +324,6 @@ export default function () {
 								>
 									Exposure *
 								</label>
-
 								<div className="mt-1">
 									<select
 										id="exposure"
@@ -273,6 +371,76 @@ export default function () {
 								</div>
 							</div>
 
+							{/* Image Upload */}
+							<div className="mt-3">
+								<label
+									htmlFor="image"
+									className="txt-base block font-bold tracking-normal"
+								>
+									Device Image
+								</label>
+								<div className="mt-1">
+										<div className="relative inline-block">
+											{imagePreview ? (
+												<>
+													<img
+														src={imagePreview}
+														alt="Device preview"
+														className="h-48 w-48 rounded border border-gray-200 object-cover"
+													/>
+													<button
+														type="button"
+														onClick={handleRemoveImage}
+														className="absolute right-0 top-0 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+													>
+														<X className="h-4 w-4" />
+													</button>
+													{device?.image && !imageFile && (
+										        <Button 
+														  variant="destructive"
+															className='top-2'
+															type="submit"
+															name="intent"
+															value="removeImage">
+															Remove image permanently
+														</Button>
+
+													)}
+												</>
+											) : (
+												<label
+													htmlFor="image"
+													className="flex h-48 w-48 cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-gray-300 hover:border-gray-400"
+												>
+													<Upload className="h-8 w-8 text-gray-400" />
+													<span className="mt-2 text-sm text-gray-500">
+														Upload Image
+													</span>
+												</label>
+											)}
+
+											<input
+												id="image"
+												name="image"
+												type="file"
+												accept="image/jpeg,image/png,image/webp,image/gif"
+												onChange={handleImageChange}
+												className="hidden"
+											/>
+										</div>
+									</div>
+
+								
+									{actionData?.errors?.image && (
+										<div className="pt-1 text-[#FF0000]">
+											{actionData.errors.image}
+										</div>
+									)}
+									<p className="mt-1 text-sm text-gray-500">
+										Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
+									</p>
+								</div>
+
 							{/* Delete device */}
 							<div>
 								<h1 className="mt-7 text-3xl text-[#FF4136]">
@@ -293,7 +461,6 @@ export default function () {
 									type="password"
 									placeholder="Password"
 									ref={passwordDelRef}
-									// defaultValue={123}
 									className="w-full rounded border border-gray-200 px-2 py-2 text-base placeholder-[#999]"
 									value={passwordDelVal}
 									onChange={(e) => setPasswordVal(e.target.value)}
@@ -304,7 +471,6 @@ export default function () {
 									</div>
 								)}
 							</div>
-							{/* Delete button */}
 							<div className="flex justify-end">
 								<button
 									type="submit"
@@ -316,7 +482,6 @@ export default function () {
 									Delete senseBox
 								</button>
 							</div>
-							{/* </Form> */}
 						</div>
 					</Form>
 				</div>
