@@ -42,7 +42,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export async function action({ request, params }: ActionFunctionArgs) {
 	const formData = await request.formData()
 
-	const { intent, name, exposure, description, passwordDelete } =
+	const { intent, name, exposure, description, website, passwordDelete } =
 		Object.fromEntries(formData)
 
 	const image = formData.get('image') as File | null
@@ -76,6 +76,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	invariant(
 		typeof description === 'string',
 		'Device description must be a string.',
+	)
+	invariant(
+		typeof website === 'string',
+		'Device website must be a string.',
 	)
 
 	if (
@@ -143,6 +147,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				name,
 				exposure: exposureLowerCase,
 				description,
+				website,
 				grouptag,
 				...(imageUrl && { image: imageUrl }),
 			})
@@ -238,6 +243,8 @@ export default function () {
 	const [description, setDescription] = useState(device?.description)
 	const [tags, setTags] = useState<string[]>(device?.tags ?? [])
 	const [newTag, setNewTag] = useState('')
+	const [website, setWebsite] = useState(device?.website || '')
+
 
 	const [imagePreview, setImagePreview] = useState<string | null>(
 		device?.image || null,
@@ -292,6 +299,7 @@ export default function () {
 		name !== device?.name ||
 		exposure !== device?.exposure ||
 		description !== device?.description ||
+		website !== device?.website ||
 		imageFile !== device?.image || 
 		JSON.stringify(tags) !== JSON.stringify(device?.tags ?? [])
 
@@ -400,6 +408,28 @@ export default function () {
 									</p>
 								</div>
 							</div>
+
+							{/* Website */}
+							<div className="mt-3">
+								<label
+									htmlFor="website"
+									className="txt-base block font-bold tracking-normal"
+								>
+									Website
+								</label>
+								<div className="mt-1">
+									<input
+										id="website"
+										name="website"
+										type="url"
+										placeholder="https://example.com"
+										value={website}
+										onChange={(e) => setWebsite(e.target.value)}
+										className="w-full rounded border border-gray-200 px-2 py-1 text-base"
+									/>
+								</div>
+							</div>
+
 
 							{/* Image Upload */}
 							<div className="mt-3">
