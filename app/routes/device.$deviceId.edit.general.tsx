@@ -47,6 +47,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	const image = formData.get('image') as File | null
 
+	const rawGroupTag = formData.get('grouptag')
+
+	let grouptag: string[] | undefined
+	if (typeof rawGroupTag === 'string') {
+		try {
+			grouptag = JSON.parse(rawGroupTag)
+		} catch {
+			grouptag = []
+		}
+	}
+
+
+
 	const exposureLowerCase =
 		typeof exposure === 'string' ? exposure.toLowerCase() : ''
 
@@ -130,6 +143,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				name,
 				exposure: exposureLowerCase,
 				description,
+				grouptag,
 				...(imageUrl && { image: imageUrl }),
 			})
 
@@ -222,11 +236,26 @@ export default function () {
 	const [name, setName] = useState(device?.name)
 	const [exposure, setExposure] = useState(device?.exposure)
 	const [description, setDescription] = useState(device?.description)
+	const [tags, setTags] = useState<string[]>(device?.tags ?? [])
+	const [newTag, setNewTag] = useState('')
+
 	const [imagePreview, setImagePreview] = useState<string | null>(
 		device?.image || null,
 	)
 	const [imageFile, setImageFile] = useState<File | null>(null)
 	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
+
+	const addTag = () => {
+		const trimmed = newTag.trim()
+		if (!trimmed || tags.includes(trimmed)) return
+
+		setTags([...tags, trimmed])
+		setNewTag('')
+	}
+
+	const removeTag = (tagToRemove: string) => {
+		setTags(tags.filter(tag => tag !== tagToRemove))
+	}
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
@@ -263,7 +292,8 @@ export default function () {
 		name !== device?.name ||
 		exposure !== device?.exposure ||
 		description !== device?.description ||
-		imageFile !== device?.image
+		imageFile !== device?.image || 
+		JSON.stringify(tags) !== JSON.stringify(device?.tags ?? [])
 
 	return (
 		<div className="grid grid-rows-1">
@@ -440,6 +470,60 @@ export default function () {
 										Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
 									</p>
 								</div>
+
+								{/* Tags */}
+									<div className="mt-6">
+										<label className="txt-base block font-bold tracking-normal">
+											Tags
+										</label>
+
+										{/* Existing tags */}
+										<div className="mt-2 flex flex-wrap gap-2">
+											{tags.map(tag => (
+												<span
+													key={tag}
+													className="flex items-center gap-1 rounded-full bg-gray-200 px-3 py-1 text-sm"
+												>
+													{tag}
+													<button
+														type="button"
+														onClick={() => removeTag(tag)}
+														className="text-gray-600 hover:text-red-600"
+													>
+														<X className="h-3 w-3" />
+													</button>
+												</span>
+											))}
+										</div>
+
+										{/* Add new tag */}
+										<div className="mt-3 flex gap-2">
+											<input
+												type="text"
+												value={newTag}
+												onChange={e => setNewTag(e.target.value)}
+												onKeyDown={e => {
+													if (e.key === 'Enter') {
+														e.preventDefault()
+														addTag()
+													}
+												}}
+												placeholder="Add a tag"
+												className="flex-1 rounded border border-gray-200 px-2 py-1 text-base"
+											/>
+											<Button type="button" onClick={addTag}>
+												Add
+											</Button>
+										</div>
+										<input
+											type="hidden"
+											name="grouptag"
+											value={JSON.stringify(tags)}
+										/>
+
+									</div>
+
+
 
 							{/* Delete device */}
 							<div>

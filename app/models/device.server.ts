@@ -132,6 +132,7 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			description: true,
 			exposure: true,
 			image: true,
+			tags: true,
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
