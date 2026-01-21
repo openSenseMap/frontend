@@ -26,13 +26,16 @@ export async function action({ request }: ActionFunctionArgs) {
     const data = JSON.parse(rawData);
 
     // Map sensors from nested objects to a flat array
-    const sensors = data["sensor-selection"].selectedSensors.map(
-      (sensor: any) => ({
-        title: sensor.title,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-      }),
-    );
+    const sensors =
+      data["device-selection"].model === "Custom"
+        ? data["sensor-selection"].selectedSensors.map(
+          (sensor: any) => ({
+            title: sensor.title,
+            sensorType: sensor.sensorType,
+            unit: sensor.unit,
+            icon: sensor.icon,
+          }))
+        : undefined;
 
     // Construct the device payload
     const devicePayload = {
@@ -46,8 +49,8 @@ export async function action({ request }: ActionFunctionArgs) {
       longitude: data.location.longitude,
       model: data["device-selection"].model,
       sensors,
-      mqttEnabled: data.advanced.mqttEnabled,
-      ttnEnabled: data.advanced.ttnEnabled,
+      mqttEnabled: data.advanced.mqttEnabled ?? false,
+      ttnEnabled: data.advanced.ttnEnabled ?? false,
     };
 
     // Call server function
