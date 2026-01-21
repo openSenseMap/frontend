@@ -1,0 +1,17 @@
+{
+	"back_to_dashboard": "Back to Dashboard",
+	"configuration": "Configuration",
+	"fine_dust_port": "Fine dust sensor port",
+	"serial_1": "Serial 1",
+	"serial_2": "Serial 2",
+	"soil_moisture_temp": "Soil moisture and temperature",
+	"sound_level_port": "Sound level port",
+	"wind_port": "Wind port",
+	"wifi_ssid": "WiFi SSID",
+	"wifi_password": "WiFi Password",
+	"enable_debug": "Enable Debug",
+	"display_enabled": "Display Enabled",
+	"compile_sketch": "Compile Sketch",
+	"your_sketch": "Your Sketch",
+	"enter_connection_options": "Please fill the form."
+}
