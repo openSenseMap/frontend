@@ -332,7 +332,7 @@ export default function NewDeviceStepper() {
 												e.preventDefault()
 												e.stopPropagation()
 											}}
-										>{/*Covert it to button, so that it is not confused as the Submit button*/}
+										>
 											<Info />
 										</TooltipTrigger>
 										<TooltipContent>{stepper.current.info}</TooltipContent>

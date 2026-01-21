@@ -128,7 +128,6 @@ export function GeneralInfoStep() {
 										e.stopPropagation()
 									}}
 								>
-									{/*Treat it as a normal button, rather than treating it as a Submit button*/}
 									<Info />
 								</TooltipTrigger>
 								<TooltipContent>
