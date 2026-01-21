@@ -377,7 +377,7 @@ export default function () {
 									htmlFor="image"
 									className="txt-base block font-bold tracking-normal"
 								>
-									Device Image
+									Image
 								</label>
 								<div className="mt-1">
 										<div className="relative inline-block">
