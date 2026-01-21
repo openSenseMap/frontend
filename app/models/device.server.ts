@@ -24,6 +24,7 @@ const BASE_DEVICE_COLUMNS = {
 	name: true,
 	description: true,
 	image: true,
+	website: true,
 	link: true,
 	tags: true,
 	exposure: true,
@@ -129,7 +130,11 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 		columns: {
 			id: true,
 			name: true,
+			description: true,
 			exposure: true,
+			image: true,
+			tags: true,
+			website: true,
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
@@ -157,6 +162,7 @@ export type UpdateDeviceArgs = {
 	exposure?: string
 	grouptag?: string | string[]
 	description?: string
+	website?: string
 	link?: string
 	image?: string
 	model?: string
@@ -185,6 +191,7 @@ export async function updateDevice(
 		'name',
 		'exposure',
 		'description',
+		'website',
 		'image',
 		'model',
 		'useAuth',

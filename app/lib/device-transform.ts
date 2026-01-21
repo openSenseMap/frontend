@@ -9,6 +9,7 @@ export type TransformedDevice = {
 	name: string
 	description: string | null
 	image: string | null
+	website: string | null
 	link: string | null
 	grouptag: string[]
 	exposure: string | null

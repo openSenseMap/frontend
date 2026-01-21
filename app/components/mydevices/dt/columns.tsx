@@ -123,7 +123,7 @@ export function getColumns(
 							<DropdownMenuItem>
 								<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem disabled>
+							<DropdownMenuItem>
 								<a href={`/device/${senseBox.id}/edit/general`}>{t('edit')}</a>
 							</DropdownMenuItem>
 							<DropdownMenuItem>
