@@ -1,0 +1,17 @@
+{
+	"back_to_dashboard": "Zurück zum Dashboard",
+	"configuration": "Konfiguration",
+	"fine_dust_port": "Feinstaubsensor Port",
+	"serial_1": "Serial 1",
+	"serial_2": "Serial 2",
+	"soil_moisture_temp": "Bodenfeuchte und -temperatur",
+	"sound_level_port": "Schallpegel Port",
+	"wind_port": "Wind Port",
+	"wifi_ssid": "WLAN SSID",
+	"wifi_password": "WLAN Passwort",
+	"enable_debug": "Debug aktivieren",
+	"display_enabled": "Display aktiviert",
+	"compile_sketch": "Sketch kompilieren",
+	"your_sketch": "Dein Sketch",
+	"enter_connection_options": "Bitte Formular ausfüllen."
+}
