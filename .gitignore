@@ -23,3 +23,5 @@ measurements.csv
 .react-router/
 
 /coverage
+
+/minio-data
