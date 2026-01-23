@@ -1,4 +1,4 @@
-ARG NODE_VERSION = current
+ARG NODE_VERSION=current
 
 # base node image
 FROM node:${NODE_VERSION}-slim AS base
