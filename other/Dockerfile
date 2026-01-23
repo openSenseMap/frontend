@@ -1,5 +1,7 @@
+ARG NODE_VERSION = current
+
 # base node image
-FROM node:22-bullseye-slim AS base
+FROM node:${NODE_VERSION}-slim AS base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV=production
