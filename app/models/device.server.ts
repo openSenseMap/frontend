@@ -677,7 +677,7 @@ export async function createDevice(deviceData: any, userId: string) {
 			let sensorsToAdd = deviceData.sensors
 
 			// If model and sensors are both specified, reject (backwards compatibility)
-			if (deviceData.model && deviceData.sensors) {
+			if (deviceData.model && deviceData.sensors && deviceData.model.toLowerCase() !== 'custom') {
 				throw new Error(
 					'Parameters model and sensors cannot be specified at the same time.',
 				)
@@ -689,6 +689,10 @@ export async function createDevice(deviceData: any, userId: string) {
 				if (modelSensors) {
 					sensorsToAdd = modelSensors
 				}
+			}
+
+			if (deviceData.model === 'Custom' && deviceData.sensors) {
+				sensorsToAdd = deviceData.sensors
 			}
 
 			// Create the device
