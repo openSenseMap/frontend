@@ -52,9 +52,9 @@ import { StandardResponse } from '~/utils/response-utils'
  *                 example: ["bike", "atrai", "arnsberg"]
  *               model:
  *                 type: string
- *                 enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]
+ *                 enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "custom"]
  *                 description: Box model type
- *                 example: "Custom"
+ *                 example: "custom"
  *               sensors:
  *                 type: array
  *                 items:
@@ -186,7 +186,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *           example: "outdoor"
  *         model:
  *           type: string
- *           enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]
+ *           enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "custom"]
  *           description: Box model
  *           example: "homeV2Wifi"
  *         latitude:

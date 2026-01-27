@@ -10,7 +10,7 @@ export const CreateBoxSchema = z.object({
 	exposure: z.enum(["indoor", "outdoor", "mobile", "unknown"]).optional().default("unknown"),
 	location: z.array(z.number()).length(2, "Location must be [longitude, latitude]"),
 	grouptag: z.array(z.string()).optional().default([]),
-	model: z.enum(["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]).optional().default("Custom"),
+	model: z.enum(["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "custom"]).optional().default("custom"),
 	sensors: z.array(z.object({
 		id: z.string(),
 		icon: z.string().optional(),

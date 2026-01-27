@@ -46,7 +46,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				name: 'Test Weather Station',
 				location: [7.596, 51.969],
 				exposure: 'outdoor',
-				//model: 'homeV2Wifi',
+				// model: 'custom',
 				grouptag: ['weather', 'test'],
 				sensors: [
 					{
@@ -267,7 +267,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			expect(response.status).toBe(201)
 			expect(body).toHaveProperty('exposure', 'unknown')
-			expect(body).toHaveProperty('model', 'Custom')
+			expect(body).toHaveProperty('model', 'custom')
 			expect(body).toHaveProperty('grouptag')
 			expect(body.grouptag).toEqual([])
 		})

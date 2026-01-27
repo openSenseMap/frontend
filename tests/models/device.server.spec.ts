@@ -87,7 +87,7 @@ describe('Device Model: createDevice', () => {
 			latitude: 52.0,
 			longitude: 8.0,
 			exposure: 'indoor',
-			model: 'Custom',
+			model: 'custom',
 		}
 
 		const result = await createDevice(deviceData, userId)
