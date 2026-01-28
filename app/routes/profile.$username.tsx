@@ -83,6 +83,15 @@ export default function () {
 	const { t } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
 
+	function formatCount(num: number): string {
+		if (num >= 1_000_000) {
+			return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
+		}
+		if (num >= 1_000) {
+			return `${(num / 1_000).toFixed(1).replace(/\.0$/, '')}k`
+		}
+		return num.toString()
+	}
 	// const sortedBadges = sortBadges(allBadges, userBackpack);
 
 	return (
@@ -117,7 +126,7 @@ export default function () {
 					<div className="grid grid-cols-2 gap-4 md:pt-6">
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
 							<span className="text-2xl font-bold dark:text-dark-green">
-								{profile?.user?.devices.length}
+								{formatCount(profile?.user?.devices.length || 0)}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
 								{t('devices')}
