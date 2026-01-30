@@ -695,7 +695,7 @@ export async function createDevice(deviceData: any, userId: string) {
 				}
 			}
 
-			if (deviceData.model.toLowerCase() === 'custom' && deviceData.sensors) {
+			if (deviceData.model?.toLowerCase() === 'custom' && deviceData.sensors) {
 				sensorsToAdd = deviceData.sensors
 			}
 
