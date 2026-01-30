@@ -160,7 +160,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 	it('should do nothing when adding the feinstaub addon to a non-home device', async () => {
 		const device = await createDevice(
 			{
-				...generateMinimalDevice('Custom'),
+				...generateMinimalDevice('custom'),
 				// sensors: [{ title: 'temp', unit: 'K', sensorType: 'some Sensor' }],
 			},
 			user.id,
@@ -187,7 +187,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 		const data = await response.json()
 
 		// Model should not change
-		expect(data.model).toBe('Custom')
+		expect(data.model).toBe('custom')
 
 		// Should not have SDS011 sensors
 		const hasPM10 = data.sensors.some(

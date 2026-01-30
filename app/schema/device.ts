@@ -41,7 +41,7 @@ export const device = pgTable('device', {
 	useAuth: boolean('use_auth'),
 	exposure: DeviceExposureEnum('exposure'),
 	status: DeviceStatusEnum('status').default('inactive'),
-	model: DeviceModelEnum('model'),
+	model: DeviceModelEnum('model').default('custom'),
 	public: boolean('public').default(false),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),

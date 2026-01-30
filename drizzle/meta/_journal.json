@@ -190,6 +190,20 @@
       "when": 1768990588627,
       "tag": "0026_misty_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1769504123613,
+      "tag": "0027_ambiguous_mariko_yashida",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1769504950323,
+      "tag": "0028_gigantic_deadpool",
+      "breakpoints": true
     }
   ]
 }

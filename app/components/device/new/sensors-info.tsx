@@ -38,11 +38,13 @@ export function SensorSelectionStep() {
         : selectedDevice;
       setSelectedDeviceModel(deviceModel);
 
-      const fetchSensors = () => {
-        const fetchedSensors = getSensorsForModel(deviceModel);
-        setSensors(fetchedSensors);
-      };
-      fetchSensors();
+       if (deviceModel !== "custom") {
+          const fetchedSensors = getSensorsForModel(deviceModel);
+          setSensors(fetchedSensors);
+        } else {
+          setSensors([]);
+        }
+
     }
   }, [selectedDevice]);
 
@@ -123,7 +125,7 @@ export function SensorSelectionStep() {
     return <p className="text-center text-lg">Please select a device first.</p>;
   }
 
-  if (selectedDevice === "Custom") {
+  if (selectedDevice === "custom") {
     return <CustomDeviceConfig />;
   }
 

@@ -41,5 +41,5 @@ export const DeviceModelEnum = pgEnum('model', [
 	'hackair_home_v2',
 	'senseBox:Edu',
 	'luftdaten.info',
-	'Custom',
+	'custom',
 ])
