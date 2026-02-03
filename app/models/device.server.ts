@@ -691,7 +691,7 @@ export async function createDevice(deviceData: any, userId: string) {
 			if (deviceData.model && !deviceData.sensors) {
 				const modelSensors = getSensorsForModel(deviceData.model as any)
 				
-				if (!Array.isArray(modelSensors)) {
+				if (!Array.isArray(modelSensors) && deviceData.model?.toLowerCase() !== 'custom') {
 					throw new Error(`Unknown model: ${deviceData.model}`)
 				}
 
