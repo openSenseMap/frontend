@@ -1,301 +1,172 @@
+import Form from "@rjsf/core";
+import validator from "@rjsf/validator-ajv8";
 import { Save } from "lucide-react";
 import React, { useState } from "react";
-import { data, redirect , Form, useActionData, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { data, redirect , useFetcher, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs  } from "react-router";
 import ErrorMessage from "~/components/error-message";
+import { CheckboxWidget } from "~/components/rjsf/checkboxWidget";
+import { FieldTemplate } from "~/components/rjsf/fieldTemplate";
+import { BaseInputTemplate } from "~/components/rjsf/inputTemplate";
 import { toast } from "~/components/ui/use-toast";
-import { checkMqttValidaty } from "~/models/mqtt.server";
 import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
-export async function loader({ request }: LoaderFunctionArgs) {
-  //* if user is not logged in, redirect to home
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return redirect("/");
+  const { deviceId } = params;
 
-  return "";
-}
-
-//*****************************************************
-export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const { enableMQTTcb, mqttURL, mqttTopic } = Object.fromEntries(formData);
-
-  //* ToDo: if mqtt checkbox is not enabled, reset mqtt to default
-  if (!enableMQTTcb) {
-    return data({
-      errors: {
-        mqttURL: null,
-        mqttTopic: null,
-      },
-      reset: true,
-      isMqttValid: null,
-      status: 200,
-    });
-  }
-
-  const errors = {
-    mqttURL: mqttURL ? null : "Invalid URL (please use ws or wss URL)",
-    mqttTopic: mqttTopic ? null : "Invalid mqtt topic",
+  try {
+    const headers = {
+    "x-service-key": process.env.MQTT_SERVICE_KEY!,
   };
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+    
+     const [schemaRes, integrationRes] = await Promise.all([
+    fetch(`${process.env.MQTT_SERVICE_URL}/integrations/schema/mqtt`, { headers }),
+    fetch(`${process.env.MQTT_SERVICE_URL}/integrations/${deviceId}`, { headers }),
+  ]);
 
-  if (hasErrors) {
-    return data({
-      errors: errors,
-      reset: false,
-      isMqttValid: null,
-      status: 400,
-    });
+  if (!schemaRes.ok) {
+    throw new Response("Failed to load MQTT schema", { status: 500 });
   }
 
-  //* check mqtt connection validity
-  const isMqttValid = await checkMqttValidaty(mqttURL.toString());
+  const schemaData = await schemaRes.json();
 
-  return data({
-    errors: errors,
-    reset: false,
-    isMqttValid: isMqttValid,
-    status: 200,
-  });
+  let integration = null;
+  if (integrationRes.ok) {
+    integration = await integrationRes.json();
+  }
+
+  const data = {
+    schema: schemaData.schema,
+    uiSchema: schemaData.uiSchema,
+    integration,
+  };
+
+  return data;
+}
+  catch{
+    console.log("err")
+  }
 }
 
-//**********************************
-export default function EditBoxMQTT() {
-  const [mqttEnabled, setMqttEnabled] = useState(false);
-  const [mqttValid, setMqttValid] = useState(true);
-  const actionData = useActionData<typeof action>();
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { deviceId } = params;
+  
+  const formData = await request.formData();
+  const mqttConfigStr = formData.get("mqttConfig");
+  
+  if (!mqttConfigStr) {
+    return data({ error: "No MQTT config provided" }, { status: 400 });
+  }
 
-  const mqttURLRef = React.useRef<HTMLInputElement>(null);
-  const mqttTopicRef = React.useRef<HTMLInputElement>(null);
+  const mqttConfig = JSON.parse(mqttConfigStr.toString());
+  
+  const serviceUrl = process.env.MQTT_SERVICE_URL;
+  const serviceKey = process.env.MQTT_SERVICE_KEY;
+
+  if (!serviceUrl || !serviceKey) {
+    throw new Error("MQTT service env vars are not configured");
+  }
+
+  if (!mqttConfig.enabled) {
+    await fetch(`${serviceUrl}/integrations/${deviceId}`, {
+      method: 'DELETE',
+      headers: { 'x-service-key': serviceKey }
+    });
+    return data({ success: true });
+  }
+
+  // Create or update integration
+  const response = await fetch(`${serviceUrl}/integrations/${deviceId}`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-service-key': serviceKey
+    },
+    body: JSON.stringify({
+      url: mqttConfig.url,
+      topic: mqttConfig.topic,
+      messageFormat: mqttConfig.messageFormat,
+      decodeOptions: mqttConfig.decodeOptions,
+      connectionOptions: mqttConfig.connectionOptions,
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    return data({ 
+      error: error.error || error.details || 'Failed to save configuration' 
+    }, { status: response.status });
+  }
+
+  return data({ success: true });
+}
+
+export default function EditBoxMQTT() {
+  const loaderData = useLoaderData<typeof loader>();
+
+  if (!loaderData) {
+    throw new Error("Loader data missing");
+  }
+
+  const { schema, uiSchema, integration } = loaderData;
+
+
+  const [formData, setFormData] = React.useState(() => {
+    if (!integration) {
+      return {
+        enabled: false,
+        messageFormat: "json",
+      };
+    }
+
+    return {
+      enabled: integration.enabled,
+      url: integration.url,
+      topic: integration.topic,
+      messageFormat: integration.messageFormat,
+      decodeOptions: integration.decodeOptions,
+      connectionOptions: integration.connectionOptions,
+    };
+  });
+  const fetcher = useFetcher();
+
 
   React.useEffect(() => {
-    if (actionData) {
-      const hasErrors = Object.values(actionData?.errors).some(
-        (errorMessage) => errorMessage,
-      );
-
-      // ToDo
-      if (actionData.reset) {
-        // Do nothing for now
-      } else if (!hasErrors) {
-        if (actionData.isMqttValid) {
-          setMqttValid(true);
-          //* show conn. success msg
-          toast({
-            description: "Successfully connected to mqtt url!",
-          });
-        } else {
-          setMqttValid(false);
-          mqttURLRef.current?.focus();
-        }
-      } else if (hasErrors && actionData?.errors?.mqttURL) {
-        mqttURLRef.current?.focus();
-      } else if (hasErrors && actionData?.errors?.mqttTopic) {
-        mqttTopicRef.current?.focus();
-      }
+    if (fetcher.data?.success) {
+      toast({ description: "MQTT configuration saved successfully!" });
     }
-  }, [actionData]);
+  }, [fetcher.data]);
+
+  const handleSubmit = async ({ formData: newFormData }: any) => {
+  await fetcher.submit(
+    { mqttConfig: JSON.stringify(newFormData) },
+    { method: "post" }
+  );
+};
 
   return (
-    <div className="grid grid-rows-1">
-      <div className="flex min-h-full items-center justify-center">
-        <div className="mx-auto w-full font-helvetica text-[14px]">
-          {/* Form */}
-          <Form method="post" noValidate>
-            {/* Heading */}
-            <div>
-              {/* Title */}
-              <div className="mt-2 flex justify-between">
-                <div>
-                  <h1 className=" text-4xl">MQTT</h1>
-                </div>
-                <div>
-                  {/* Save button */}
-                  <button
-                    type="submit"
-                    name="intent"
-                    value="save"
-                    className=" h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
-                  >
-                    <Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
-                  </button>
-                </div>
-              </div>
-            </div>
+      <div className="mx-auto max-w-xl">
+      <h1 className="text-4xl mb-4">MQTT</h1>
 
-            {/* divider */}
-            <hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
-
-            <div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-              <p>
-                openSenseMap offers a{" "}
-                <a
-                  href="http://mqtt.org/"
-                  className="cursor-pointer text-[#4eaf47]"
-                >
-                  MQTT{" "}
-                </a>{" "}
-                client for connecting to public brokers. Documentation for the
-                parameters is provided{" "}
-                <a
-                  href="https://docs.opensensemap.org/#api-Boxes-postNewBox"
-                  className="cursor-pointer text-[#4eaf47]"
-                >
-                  in the docs.{" "}
-                </a>
-                Please note that it's only possible to receive measurements
-                through MQTT.
-              </p>
-            </div>
-
-            <div className="my-6 flex items-center space-x-2">
-              <Checkbox
-                name="enableMQTTcb"
-                onCheckedChange={() => setMqttEnabled(!mqttEnabled)}
-              />
-              <label
-                htmlFor="terms"
-                className="cursor-pointer text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Enable MQTT
-              </label>
-            </div>
-
-            {/* MQTT URL */}
-            <div className="my-2">
-              <label
-                htmlFor="name"
-                className="txt-base block font-bold tracking-normal"
-              >
-                Url*
-              </label>
-
-              <div className="mt-1">
-                <input
-                  id="mqttURL"
-                  required
-                  autoFocus={true}
-                  name="mqttURL"
-                  type="text"
-                  ref={mqttURLRef}
-                  className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttEnabled}
-                />
-                {actionData?.errors?.mqttURL && (
-                  <div className="pt-1 text-[#FF0000]" id="mqttURL-error">
-                    {actionData.errors.mqttURL}
-                  </div>
-                )}
-
-                {!mqttValid && (
-                  <div className="pt-1 text-[#FF0000]" id="mqttURL-error">
-                    Entered mqtt url is not valid, please try again with a valid
-                    one.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* MQTT Topic */}
-            <div className="my-2">
-              <label
-                htmlFor="mqttTopic"
-                className="txt-base block font-bold tracking-normal"
-              >
-                Topic*
-              </label>
-
-              <div className="mt-1">
-                <input
-                  id="mqttTopic"
-                  required
-                  autoFocus={true}
-                  name="mqttTopic"
-                  type="text"
-                  ref={mqttTopicRef}
-                  className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttEnabled}
-                />
-                {actionData?.errors?.mqttTopic && (
-                  <div className="pt-1 text-[#FF0000]" id="mqttTopic-error">
-                    {actionData.errors.mqttTopic}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* MQTT Message format */}
-            <div className="my-4">
-              <label
-                htmlFor="mqttTopic"
-                className="txt-base block font-bold tracking-normal"
-              >
-                Message format*
-              </label>
-              <div className="mt-1">
-                <RadioGroup
-                  defaultValue="json"
-                  disabled={!mqttEnabled}
-                  className="disabled:cursor-not-allowed"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="json" id="r1" />
-                    <Label htmlFor="r1">json</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="csv" id="r2" />
-                    <Label htmlFor="r2">csv</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-
-            {/* MQTT Decoding options */}
-            <div className="my-2">
-              <label
-                htmlFor="mqttDecode"
-                className="txt-base block font-bold tracking-normal"
-              >
-                Decoding options
-              </label>
-
-              <div className="mt-1">
-                <input
-                  id="mqttDecode"
-                  autoFocus={true}
-                  name="mqttDecode"
-                  type="text"
-                  className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttEnabled}
-                />
-              </div>
-            </div>
-
-            {/* MQTT Decoding options */}
-            <div>
-              <label
-                htmlFor="mqttConn"
-                className="txt-base block font-bold tracking-normal"
-              >
-                Connection options
-              </label>
-
-              <div className="mt-1">
-                <input
-                  id="mqttConn"
-                  name="mqttConn"
-                  type="text"
-                  className="w-full rounded border border-gray-200 px-2 py-1 text-base disabled:cursor-not-allowed disabled:bg-[#eee]"
-                  disabled={!mqttEnabled}
-                />
-              </div>
-            </div>
-          </Form>
-        </div>
-      </div>
+        <Form
+          widgets={{CheckboxWidget}}
+          schema={schema}
+          uiSchema={uiSchema}
+          formData={formData}
+          validator={validator}
+          templates={{ FieldTemplate, BaseInputTemplate }}
+          onChange={(e: any) => setFormData(e.formData)}
+          onSubmit={handleSubmit}
+        >
+          <button
+            type="submit"
+            className="mt-4 h-12 w-12 rounded-full border"
+          >
+            <Save className="mx-auto h-6 w-6" />
+          </button>
+        </Form>
     </div>
   );
 }
