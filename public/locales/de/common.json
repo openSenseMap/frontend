@@ -1,3 +1,4 @@
 {
-  "greeting": "Hallo"
+	"greeting": "Hallo",
+	"backToDashboardNavText": "Zurück zum Dashboard"
 }

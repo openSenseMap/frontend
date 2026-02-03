@@ -25,29 +25,30 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const data = JSON.parse(rawData);
 
-    // Map sensors from nested objects to a flat array
-    const sensors = data["sensor-selection"].selectedSensors.map(
-      (sensor: any) => ({
-        title: sensor.title,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-      }),
-    );
-
-    // Construct the device payload
     const devicePayload = {
       name: data["general-info"].name,
       exposure: data["general-info"].exposure,
       expiresAt: data["general-info"].temporaryExpirationDate,
-      tags:
-        data["general-info"].tags?.map((tag: { value: string }) => tag.value) ||
-        [],
+      tags: data["general-info"].tags?.map((tag: { value: string }) => tag.value) || [],
       latitude: data.location.latitude,
       longitude: data.location.longitude,
-      model: data["device-selection"].model,
-      sensors,
-      mqttEnabled: data.advanced.mqttEnabled,
-      ttnEnabled: data.advanced.ttnEnabled,
+      // Only include model if NOT custom
+      ...(data["device-selection"].model !== 'custom' && {
+        model: data["device-selection"].model
+      }),
+      // Only include sensors if custom
+      ...(data["device-selection"].model === 'custom' && {
+        sensors: data["sensor-selection"].selectedSensors.map(
+          (sensor: any) => ({
+            title: sensor.title,
+            sensorType: sensor.sensorType,
+            unit: sensor.unit,
+            icon: sensor.icon,
+          })
+        )
+      }),
+      mqttEnabled: data.advanced.mqttEnabled ?? false,
+      ttnEnabled: data.advanced.ttnEnabled ?? false,
     };
 
     // Call server function

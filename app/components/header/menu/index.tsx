@@ -97,7 +97,7 @@ export default function Menu() {
                 <Link to="/explore">
                   <DropdownMenuItem className="cursor-pointer">
                     <Compass className="mr-2 h-5 w-5" />
-                    <span>{"Explore"}</span>
+                    <span>{t("explore_label")}</span>
                   </DropdownMenuItem>
                 </Link>
               )}
@@ -105,7 +105,7 @@ export default function Menu() {
                 <Link to="/profile/me">
                   <DropdownMenuItem className="cursor-pointer">
                     <User2 className="mr-2 h-5 w-5" />
-                    Profile
+                    {t("profile_label")}
                   </DropdownMenuItem>
                 </Link>
               )}
@@ -114,7 +114,7 @@ export default function Menu() {
                 <Link to="/settings/profile">
                   <DropdownMenuItem className=" cursor-pointer">
                     <Settings className="mr-2 h-5 w-5" />
-                    <span>{"Settings"}</span>
+                    <span>{t("settings_label")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </Link>

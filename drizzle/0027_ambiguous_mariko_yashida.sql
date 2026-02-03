@@ -1,0 +1,4 @@
+ALTER TABLE "device" ALTER COLUMN "model" SET DATA TYPE text;--> statement-breakpoint
+DROP TYPE "public"."model";--> statement-breakpoint
+CREATE TYPE "public"."model" AS ENUM('homeV2Lora', 'homeV2Ethernet', 'homeV2Wifi', 'homeEthernet', 'homeWifi', 'homeEthernetFeinstaub', 'homeWifiFeinstaub', 'luftdaten_sds011', 'luftdaten_sds011_dht11', 'luftdaten_sds011_dht22', 'luftdaten_sds011_bmp180', 'luftdaten_sds011_bme280', 'hackair_home_v2', 'senseBox:Edu', 'luftdaten.info', 'custom');--> statement-breakpoint
+ALTER TABLE "device" ALTER COLUMN "model" SET DATA TYPE "public"."model" USING "model"::"public"."model";

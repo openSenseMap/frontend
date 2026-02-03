@@ -1,10 +1,8 @@
 services:
   postgres:
-    # image: timescale/timescaledb:2.10.2-pg14
-    image: timescale/timescaledb-ha:pg15
+    image: timescale/timescaledb-ha:pg18
     # Preload pg_cron extension
     # https://github.com/timescale/timescaledb-docker-ha/issues/293
-    # Extension is created with prisma
     command:
       - -cshared_preload_libraries=timescaledb,pg_cron
     restart: always
@@ -23,3 +21,16 @@ services:
     ports:
       - '8025:8025'
       - '1025:1025'
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - '9000:9000'   # S3 API
+      - '9001:9001'   # Admin UI
+    volumes:
+      - ./minio-data:/data 

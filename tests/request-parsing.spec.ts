@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { parseRequestData, parseUserRegistrationData, parseUserSignInData, parseRefreshTokenData } from '~/lib/request-parsing';
 
 describe('parseRequestData', () => {
