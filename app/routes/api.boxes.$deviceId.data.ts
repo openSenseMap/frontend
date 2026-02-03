@@ -16,7 +16,10 @@ export const action: ActionFunction = async ({
     const hackair = searchParams.get("hackair") !== null;
 
     const contentType = request.headers.get("content-type") || "";
+    const mqttServiceKey = request.headers.get("x-service-key");
     const authorization = request.headers.get("authorization");
+
+    const isMqttRequest= mqttServiceKey === process.env.MQTT_SERVICE_KEY;
 
     let body: any;
     if (contentType.includes("application/json")) {
@@ -33,7 +36,7 @@ export const action: ActionFunction = async ({
       contentType,
       luftdaten,
       hackair,
-      authorization,
+      authorization: isMqttRequest ? undefined : authorization,
     });
 
     return new Response("Measurements saved in box", {
