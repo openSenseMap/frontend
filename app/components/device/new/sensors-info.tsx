@@ -1,217 +1,266 @@
-import { useState, useEffect } from "react";
-import { useFormContext } from "react-hook-form";
-import { z } from "zod";
-import { CustomDeviceConfig } from "./custom-device-config";
-import { Card, CardContent } from "~/components/ui/card";
-import { cn } from "~/lib/utils";
-import { getSensorsForModel } from "~/utils/model-definitions";
+import { InfoIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useFormContext } from 'react-hook-form'
+import { z } from 'zod'
+import { CustomDeviceConfig } from './custom-device-config'
+import { Card, CardContent } from '~/components/ui/card'
+import { useToast } from '~/components/ui/use-toast'
+import { cn } from '~/lib/utils'
+import { getSensorsForModel } from '~/utils/model-definitions'
 
 export const sensorSchema = z.object({
-  title: z.string(),
-  unit: z.string(),
-  sensorType: z.string(),
-  icon: z.string().optional(),
-  image: z.string().optional(),
-});
+	title: z.string(),
+	unit: z.string(),
+	sensorType: z.string(),
+	icon: z.string().optional(),
+	image: z.string().optional(),
+})
 
-export type Sensor = z.infer<typeof sensorSchema>;
+export type Sensor = z.infer<typeof sensorSchema>
 
 type SensorGroup = {
-  sensorType: string;
-  sensors: Sensor[];
-  image?: string;
-};
+	sensorType: string
+	sensors: Sensor[]
+	image?: string
+}
 
 export function SensorSelectionStep() {
-  const { watch, setValue } = useFormContext();
-  const selectedDevice = watch("model");
-  const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
-    null,
-  );
-  const [sensors, setSensors] = useState<Sensor[]>([]);
-  const [selectedSensors, setSelectedSensors] = useState<Sensor[]>([]);
+	const { watch, setValue } = useFormContext()
+	const { toast } = useToast()
+	const selectedDevice = watch('model')
+	const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
+		null,
+	)
+	const [sensors, setSensors] = useState<Sensor[]>([])
+	const [selectedSensors, setSelectedSensors] = useState<Sensor[]>([])
+	const [highlightedGroup, setHighlightedGroup] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (selectedDevice) {
-      const deviceModel = selectedDevice.startsWith("homeV2")
-        ? "senseBoxHomeV2"
-        : selectedDevice;
-      setSelectedDeviceModel(deviceModel);
+	useEffect(() => {
+		if (selectedDevice) {
+			const deviceModel = selectedDevice.startsWith('homeV2')
+				? 'senseBoxHomeV2'
+				: selectedDevice
+			setSelectedDeviceModel(deviceModel)
 
-       if (deviceModel !== "custom") {
-          const fetchedSensors = getSensorsForModel(deviceModel);
-          setSensors(fetchedSensors);
-        } else {
-          setSensors([]);
-        }
+			const fetchSensors = () => {
+				const fetchedSensors = getSensorsForModel(deviceModel)
+				setSensors(fetchedSensors)
+			}
+			fetchSensors()
+		}
+	}, [selectedDevice])
 
-    }
-  }, [selectedDevice]);
+	useEffect(() => {
+		const savedSelectedSensors = watch('selectedSensors') || []
+		setSelectedSensors(savedSelectedSensors)
+	}, [watch])
 
-  useEffect(() => {
-    const savedSelectedSensors = watch("selectedSensors") || [];
-    setSelectedSensors(savedSelectedSensors);
-  }, [watch]);
+	// Clear highlight after a delay
+	useEffect(() => {
+		if (highlightedGroup) {
+			const timer = setTimeout(() => {
+				setHighlightedGroup(null)
+			}, 2000)
+			return () => clearTimeout(timer)
+		}
+	}, [highlightedGroup])
 
-  const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
-    const grouped = sensors.reduce(
-      (acc, sensor) => {
-        if (!acc[sensor.sensorType]) {
-          acc[sensor.sensorType] = [];
-        }
-        acc[sensor.sensorType].push(sensor);
-        return acc;
-      },
-      {} as Record<string, Sensor[]>,
-    );
+	const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
+		const grouped = sensors.reduce(
+			(acc, sensor) => {
+				if (!acc[sensor.sensorType]) {
+					acc[sensor.sensorType] = []
+				}
+				acc[sensor.sensorType].push(sensor)
+				return acc
+			},
+			{} as Record<string, Sensor[]>,
+		)
 
-    return Object.entries(grouped).map(([sensorType, sensors]) => ({
-      sensorType,
-      sensors,
-      image: sensors.find((sensor) => sensor.image)?.image,
-    }));
-  };
+		return Object.entries(grouped).map(([sensorType, sensors]) => ({
+			sensorType,
+			sensors,
+			image: sensors.find((sensor) => sensor.image)?.image,
+		}))
+	}
 
-  const sensorGroups = groupSensorsByType(sensors);
+	const sensorGroups = groupSensorsByType(sensors)
 
-  const handleGroupToggle = (group: SensorGroup) => {
-    const isGroupSelected = group.sensors.every((sensor) =>
-      selectedSensors.some(
-        (s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-      ),
-    );
+	const handleGroupToggle = (group: SensorGroup) => {
+		const isGroupSelected = group.sensors.every((sensor) =>
+			selectedSensors.some(
+				(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
+			),
+		)
 
-    const updatedSensors = isGroupSelected
-      ? selectedSensors.filter(
-          (s) =>
-            !group.sensors.some(
-              (sensor) =>
-                s.title === sensor.title && s.sensorType === sensor.sensorType,
-            ),
-        )
-      : [
-          ...selectedSensors,
-          ...group.sensors.filter(
-            (sensor) =>
-              !selectedSensors.some(
-                (s) =>
-                  s.title === sensor.title &&
-                  s.sensorType === sensor.sensorType,
-              ),
-          ),
-        ];
+		const updatedSensors = isGroupSelected
+			? selectedSensors.filter(
+					(s) =>
+						!group.sensors.some(
+							(sensor) =>
+								s.title === sensor.title && s.sensorType === sensor.sensorType,
+						),
+				)
+			: [
+					...selectedSensors,
+					...group.sensors.filter(
+						(sensor) =>
+							!selectedSensors.some(
+								(s) =>
+									s.title === sensor.title &&
+									s.sensorType === sensor.sensorType,
+							),
+					),
+				]
 
-    setSelectedSensors(updatedSensors);
-    setValue("selectedSensors", updatedSensors);
-  };
+		setSelectedSensors(updatedSensors)
+		setValue('selectedSensors', updatedSensors)
+	}
 
-  const handleSensorToggle = (sensor: Sensor) => {
-    const isAlreadySelected = selectedSensors.some(
-      (s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-    );
+	const handleCardClick = (group: SensorGroup) => {
+		if (selectedDeviceModel === 'senseBoxHomeV2') {
+			// For senseBoxHomeV2, clicking the card selects the whole group
+			handleGroupToggle(group)
+		} else {
+			// For other devices, highlight parameters and show info toast
+			setHighlightedGroup(group.sensorType)
+			toast({
+				title: 'Select Parameters',
+				description:
+					'Click on the individual parameters below to select the sensors you want to use.',
+				duration: 3000,
+			})
+		}
+	}
 
-    const updatedSensors = isAlreadySelected
-      ? selectedSensors.filter(
-          (s) =>
-            !(s.title === sensor.title && s.sensorType === sensor.sensorType),
-        )
-      : [...selectedSensors, sensor];
+	const handleSensorToggle = (sensor: Sensor) => {
+		const isAlreadySelected = selectedSensors.some(
+			(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
+		)
 
-    setSelectedSensors(updatedSensors);
-    setValue("selectedSensors", updatedSensors);
-  };
+		const updatedSensors = isAlreadySelected
+			? selectedSensors.filter(
+					(s) =>
+						!(s.title === sensor.title && s.sensorType === sensor.sensorType),
+				)
+			: [...selectedSensors, sensor]
 
-  if (!selectedDevice) {
-    return <p className="text-center text-lg">Please select a device first.</p>;
-  }
+		setSelectedSensors(updatedSensors)
+		setValue('selectedSensors', updatedSensors)
+	}
 
-  if (selectedDevice === "custom") {
-    return <CustomDeviceConfig />;
-  }
+	if (!selectedDevice) {
+		return <p className="text-center text-lg">Please select a device first.</p>
+	}
 
-  return (
-    <div className="flex flex-col items-center h-full">
-      <div className="container mx-auto p-4 bg-white rounded-md overflow-auto space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sensorGroups.map((group) => {
-            const isGroupSelected = group.sensors.every((sensor) =>
-              selectedSensors.some(
-                (s) =>
-                  s.title === sensor.title &&
-                  s.sensorType === sensor.sensorType,
-              ),
-            );
+	if (selectedDevice === 'Custom') {
+		return <CustomDeviceConfig />
+	}
 
-            return (
-              <Card
-                key={group.sensorType}
-                className={cn(
-                  "overflow-hidden cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105",
-                  isGroupSelected
-                    ? "ring-2 ring-primary shadow-lg"
-                    : "hover:shadow-md",
-                )}
-                onClick={
-                  selectedDeviceModel === "senseBoxHomeV2"
-                    ? () => handleGroupToggle(group)
-                    : undefined
-                }
-              >
-                <CardContent className="p-6">
-                  <h3
-                    className="text-xl font-semibold break-words mb-4"
-                    style={{ wordBreak: "break-word", whiteSpace: "normal" }}
-                    title={group.sensorType}
-                  >
-                    {group.sensorType}
-                  </h3>
+	const isSenseBoxHomeV2 = selectedDeviceModel === 'senseBoxHomeV2'
 
-                  <ul className="mb-4 space-y-2">
-                    {group.sensors.map((sensor) => {
-                      const isSelected = selectedSensors.some(
-                        (s) =>
-                          s.title === sensor.title &&
-                          s.sensorType === sensor.sensorType,
-                      );
+	return (
+		<div className="flex h-full flex-col items-center">
+			{/* Instruction banner */}
+			<div className="bg-blue-50 border-blue-200 text-blue-800 mb-4 w-full rounded-md border p-3 text-sm">
+				{isSenseBoxHomeV2 ? (
+					<span>
+						Click on a sensor card to select all its parameters at once.
+					</span>
+				) : (
+					<span className="inline-flex items-center gap-1">
+						<InfoIcon className="text-slate-500" />
+						<p>
+							Click on individual parameters within each card to select the
+							sensors you need.
+						</p>
+					</span>
+				)}
+			</div>
 
-                      return (
-                        <li
-                          key={sensor.title}
-                          className={cn(
-                            "text-sm text-gray-600 cursor-pointer px-2 py-1 rounded-md",
-                            isSelected
-                              ? "bg-primary text-white"
-                              : "hover:bg-gray-100",
-                          )}
-                          onClick={
-                            selectedDeviceModel !== "senseBoxHomeV2"
-                              ? (e) => {
-                                  e.stopPropagation();
-                                  handleSensorToggle(sensor);
-                                }
-                              : undefined
-                          }
-                        >
-                          {sensor.title} ({sensor.unit})
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <div className="rounded-md h-32 w-32 flex items-center justify-center">
-                    {group.image && (
-                      <img
-                        src={group.image}
-                        alt={`${group.sensorType} placeholder`}
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
+			<div className="container mx-auto space-y-6 overflow-auto rounded-md bg-white p-4">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+					{sensorGroups.map((group) => {
+						const isGroupSelected = group.sensors.every((sensor) =>
+							selectedSensors.some(
+								(s) =>
+									s.title === sensor.title &&
+									s.sensorType === sensor.sensorType,
+							),
+						)
+						const isHighlighted = highlightedGroup === group.sensorType
+
+						return (
+							<Card
+								key={group.sensorType}
+								className={cn(
+									'transform cursor-pointer overflow-hidden transition-all duration-300 ease-in-out hover:scale-105',
+									isGroupSelected
+										? 'shadow-lg ring-2 ring-primary'
+										: 'hover:shadow-md',
+									isHighlighted && 'ring-blue-400 bg-blue-50 ring-2',
+								)}
+								onClick={() => handleCardClick(group)}
+							>
+								<CardContent className="p-6">
+									<h3
+										className="mb-4 break-words text-xl font-semibold"
+										style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}
+										title={group.sensorType}
+									>
+										{group.sensorType}
+									</h3>
+
+									<ul className="mb-4 space-y-2">
+										{group.sensors.map((sensor) => {
+											const isSelected = selectedSensors.some(
+												(s) =>
+													s.title === sensor.title &&
+													s.sensorType === sensor.sensorType,
+											)
+
+											return (
+												<li
+													key={sensor.title}
+													className={cn(
+														'cursor-pointer rounded-md px-2 py-1 text-sm transition-all duration-200',
+														isSelected
+															? 'bg-primary text-white'
+															: 'text-gray-600 hover:bg-gray-100',
+														// Highlight animation when card is clicked (non-senseBoxHomeV2)
+														isHighlighted &&
+															!isSelected &&
+															'text-blue-800 animate-pulse bg-blue-100 font-medium',
+													)}
+													onClick={
+														!isSenseBoxHomeV2
+															? (e) => {
+																	e.stopPropagation()
+																	handleSensorToggle(sensor)
+																}
+															: undefined
+													}
+												>
+													{sensor.title} ({sensor.unit})
+												</li>
+											)
+										})}
+									</ul>
+									<div className="flex h-32 w-32 items-center justify-center rounded-md">
+										{group.image && (
+											<img
+												src={group.image}
+												alt={`${group.sensorType} placeholder`}
+												className="h-full w-full rounded-md object-cover"
+											/>
+										)}
+									</div>
+								</CardContent>
+							</Card>
+						)
+					})}
+				</div>
+			</div>
+		</div>
+	)
 }
