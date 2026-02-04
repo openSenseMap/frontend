@@ -9,7 +9,7 @@ import {
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
-import { getInitials } from '~/utils/misc'
+import { formatCount, getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -83,15 +83,6 @@ export default function () {
 	const { t } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
 
-	function formatCount(num: number): string {
-		if (num >= 1_000_000) {
-			return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
-		}
-		if (num >= 1_000) {
-			return `${(num / 1_000).toFixed(1).replace(/\.0$/, '')}k`
-		}
-		return num.toString()
-	}
 	// const sortedBadges = sortBadges(allBadges, userBackpack);
 
 	return (

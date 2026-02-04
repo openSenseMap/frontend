@@ -9,6 +9,7 @@ import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
 import { drizzleClient } from '~/db.server'
 import { type User, type Profile, profile, measurement } from '~/schema'
 import type * as schema from '~/schema'
+import { formatCount } from '~/utils/misc'
 
 export async function getProfileByUserId(id: Profile['id']) {
 	return drizzleClient.query.profile.findFirst({
@@ -72,16 +73,6 @@ export async function createProfileWithTransaction(
 		public: false,
 		userId,
 	})
-}
-
-function formatCount(num: number): string {
-	if (num >= 1_000_000) {
-		return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
-	}
-	if (num >= 1_000) {
-		return `${(num / 1_000).toFixed(1).replace(/\.0$/, '')}k`
-	}
-	return num.toString()
 }
 
 // function to get sensors and measurements count for a profile
