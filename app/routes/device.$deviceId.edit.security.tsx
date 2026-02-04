@@ -8,31 +8,44 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { type LoaderFunctionArgs, redirect, Form } from 'react-router'
+import {
+	type LoaderFunctionArgs,
+	redirect,
+	Form,
+	useLoaderData,
+} from 'react-router'
 import { Checkbox } from '@/components/ui/checkbox'
 import ErrorMessage from '~/components/error-message'
 import { Callout } from '~/components/ui/alert'
+import { findAccessToken, getDevice } from '~/models/device.server'
 import { getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
-	return ''
+	const deviceId = params.deviceId
+	if (typeof deviceId !== 'string') throw 'deviceID not found'
+
+	const t = await findAccessToken(deviceId)
+	const device = await getDevice({ id: deviceId })
+	return { key: t?.token, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
 export async function action() {
+	console.log('hello world')
 	return ''
 }
 
 export default function EditBoxSecurity() {
 	const { t } = useTranslation('settings')
+	const { key, deviceAuthEnabled } = useLoaderData<typeof loader>()
 	const [keyVisible, setTokenvisibility] = useState(false)
+	const [authEnabled, setAuthEnabled] = useState(deviceAuthEnabled)
 
 	const copyKeyToClipboard = async () => {
-		const key = 'dummy token'
-		await navigator.clipboard.writeText(key)
+		if (key) await navigator.clipboard.writeText(key)
 	}
 
 	return (
@@ -72,7 +85,11 @@ export default function EditBoxSecurity() {
 			</Callout>
 
 			<div className="flex flex-wrap items-center gap-4 py-5">
-				<Checkbox id="enableAuth" />
+				<Checkbox
+					id="enableAuth"
+					value={authEnabled}
+					onChange={() => setAuthEnabled(!authEnabled)}
+				/>
 				<Label htmlFor="enableAuth" className="cursor-pointer pt-1">
 					{t('device_security.auth_enable_checkbox_label')}
 				</Label>
@@ -87,6 +104,7 @@ export default function EditBoxSecurity() {
 						<button
 							className="btn btn-default w-12 rounded-br-none rounded-tr-none"
 							onClick={() => setTokenvisibility(!keyVisible)}
+							disabled={!deviceAuthEnabled}
 							type="button"
 						>
 							{keyVisible ? (
@@ -99,7 +117,7 @@ export default function EditBoxSecurity() {
 					<input
 						name="api-key"
 						id="api-key"
-						defaultValue="dummy token"
+						value={key}
 						className="form-control rounded-none border-[#ccc;]"
 						type={keyVisible ? 'text' : 'password'}
 						disabled
@@ -109,6 +127,7 @@ export default function EditBoxSecurity() {
 							className="btn btn-default w-12 rounded-bl-none rounded-tl-none"
 							onClick={() => copyKeyToClipboard()}
 							type="button"
+							disabled={!deviceAuthEnabled}
 						>
 							<LucideCopy size={20.5} />
 						</button>
