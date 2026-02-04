@@ -89,38 +89,35 @@ const sensorsSchema = z.object({
 const mqttSchema = z
   .object({
     mqttEnabled: z.boolean().default(false),
-    url: z.string().optional(),
-    topic: z.string().optional(),
-    messageFormat: z.enum(["json", "csv"]).optional(),
-    decodeOptions: z.string().optional(),
-    connectionOptions: z.string().optional(),
+    mqttConfig: z.record(z.any()).optional(),
+    ttnEnabled: z.boolean().default(false),
   })
-  .superRefine((data, ctx) => {
-    if (data.mqttEnabled) {
-      // Check required fields when enabled is true
-      if (!data.url) {
-        ctx.addIssue({
-          path: ["url"],
-          message: "URL is required when MQTT is enabled.",
-          code: "custom",
-        });
-      }
-      if (!data.topic) {
-        ctx.addIssue({
-          path: ["topic"],
-          message: "Topic is required when MQTT is enabled.",
-          code: "custom",
-        });
-      }
-      if (!data.messageFormat) {
-        ctx.addIssue({
-          path: ["messageFormat"],
-          message: "Message format is required when MQTT is enabled.",
-          code: "custom",
-        });
-      }
-    }
-  });
+//   .superRefine((data, ctx) => {
+//     if (data.mqttEnabled) {
+//       // Check required fields when enabled is true
+//       if (!data.url) {
+//         ctx.addIssue({
+//           path: ["url"],
+//           message: "URL is required when MQTT is enabled.",
+//           code: "custom",
+//         });
+//       }
+//       if (!data.topic) {
+//         ctx.addIssue({
+//           path: ["topic"],
+//           message: "Topic is required when MQTT is enabled.",
+//           code: "custom",
+//         });
+//       }
+//       if (!data.messageFormat) {
+//         ctx.addIssue({
+//           path: ["messageFormat"],
+//           message: "Message format is required when MQTT is enabled.",
+//           code: "custom",
+//         });
+//       }
+//     }
+//   });
 
 const ttnSchema = z
   .object({
@@ -167,7 +164,7 @@ const ttnSchema = z
     }
   });
 
-const advancedSchema = z.intersection(mqttSchema, ttnSchema);
+// const advancedSchema = z.intersection(mqttSchema, ttnSchema);
 
 export const Stepper = defineStepper(
   {
@@ -198,7 +195,7 @@ export const Stepper = defineStepper(
     schema: sensorsSchema,
     index: 3
   },
-  { id: "advanced", label: "Advanced", info: null, schema: advancedSchema, index: 4 },
+  { id: "advanced", label: "Advanced", info: null,  schema: mqttSchema, index: 4 },
   { id: "summary", label: "Summary", info: null, schema: z.object({}), index: 5 },
 );
 
