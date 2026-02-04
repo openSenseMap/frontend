@@ -36,7 +36,7 @@
 	"email_not_confirmed": "Email not confirmed. Please check your inbox.",
 	"resend_verification": "Resend confirmation email",
 	"sending": "Sending...",
-	"verification_email_sent": "Verification email sent",
+	"verification_email_sent": "✔️ Verification email sent",
 	"verification_email_failed": "Failed to send verification email",
 	"email_already_confirmed": "Email is already confirmed",
 	"language": "Language",

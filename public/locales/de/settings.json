@@ -33,7 +33,7 @@
 	"email_not_confirmed": "E-Mail nicht bestätigt. Bitte überprüfe deinen Posteingang.",
 	"resend_verification": "Bestätigungs-E-Mail erneut senden",
 	"sending": "Wird gesendet...",
-	"verification_email_sent": "Bestätigungs-E-Mail gesendet",
+	"verification_email_sent": "✔️ Bestätigungs-E-Mail gesendet",
 	"verification_email_failed": "Bestätigungs-E-Mail konnte nicht gesendet werden.",
 	"email_already_confirmed": "E-Mail ist bereits bestätigt.",
 	"language": "Sprache",
