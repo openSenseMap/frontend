@@ -26,7 +26,6 @@ const OTHER_TEST_USER = generateTestUserCredentials()
 describe('openSenseMap API Routes: /users', () => {
 	describe('/me/boxes/:deviceId', () => {
 		describe('GET', () => {
-			// Removed async here - not needed on describe
 			let jwt: string = ''
 			let otherJwt: string = ''
 			let deviceId: string = ''
@@ -52,7 +51,7 @@ describe('openSenseMap API Routes: /users', () => {
 
 				const device = await createDevice(BOX_TEST_USER_BOX, (user as User).id)
 				deviceId = device.id
-			}, 30000) // Increase timeout to 30 seconds
+			}) 
 
 			it('should let users retrieve one of their boxes with all fields', async () => {
 				// Act: Get single box
@@ -96,7 +95,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// delete the valid test user
 				await deleteUserByEmail(BOX_TEST_USER.email)
 				await deleteUserByEmail(OTHER_TEST_USER.email)
-			}, 30000) // Increase timeout for cleanup too
+			}) 
 		})
 	})
 })
