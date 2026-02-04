@@ -32,6 +32,8 @@
     "enter_name": "Enter your name",
     "email": "Email",
     "enter_email": "Enter your email",
+    "email_confirmed": "Email confirmed",
+    "email_not_confirmed": "Email not confirmed. Please check your inbox.",
     "language": "Language",
     "select_language": "Select language",
     "confirm_password": "Confirm password",

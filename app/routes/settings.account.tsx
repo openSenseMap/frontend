@@ -121,7 +121,7 @@ export default function EditUserProfilePage() {
 	const [name, setName] = useState(userData?.name || '')
 	const passwordUpdRef = useRef<HTMLInputElement>(null) // For password update focus
 	const { toast } = useToast()
-  const { t } = useTranslation('settings')
+	const { t } = useTranslation('settings')
 
 	useEffect(() => {
 		// Handle invalid password update error
@@ -139,48 +139,58 @@ export default function EditUserProfilePage() {
 				variant: 'success',
 			})
 		}
-	}, [actionData, toast])
+	}, [actionData, toast, t])
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
 			<Card className="dark:border-white dark:bg-dark-boxes">
 				<CardHeader>
-					<CardTitle>{t("account_information")}</CardTitle>
-					<CardDescription>{t("update_basic_details")}</CardDescription>
+					<CardTitle>{t('account_information')}</CardTitle>
+					<CardDescription>{t('update_basic_details')}</CardDescription>
 				</CardHeader>
 				<CardContent className="grid gap-6">
 					<div className="grid gap-2">
-						<Label htmlFor="name">{t("name")}</Label>
+						<Label htmlFor="name">{t('name')}</Label>
 						<Input
 							id="name"
 							required
 							name="name"
 							type="text"
-							placeholder={t("enter_name")}
+							placeholder={t('enter_name')}
 							defaultValue={name}
 							onChange={(e) => setName(e.target.value)}
 						/>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="email">{t("email")}</Label>
+						<Label htmlFor="email">{t('email')}</Label>
 						<Input
 							id="email"
 							name="email"
-							placeholder={t("enter_email")}
+							placeholder={t('enter_email')}
 							type="email"
-							readOnly={true}
+							// readOnly={true}
 							defaultValue={userData?.email}
 						/>
+						{/* Email confirmation status */}
+						{userData?.emailIsConfirmed ? (
+							<p className="text-green-500 flex items-center gap-1 text-sm dark:text-green-300">
+								<span>✓</span> {t('email_confirmed')}
+							</p>
+						) : (
+							<p className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-sm">
+								<span>⚠</span> {t('email_not_confirmed')}
+							</p>
+						)}
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="language">{t("language")}</Label>
+						<Label htmlFor="language">{t('language')}</Label>
 						<Select
 							defaultValue={lang}
 							onValueChange={(value) => setLang(value)}
 							name="language"
 						>
 							<SelectTrigger className="dark:border-white">
-								<SelectValue placeholder={t("select_language")} />
+								<SelectValue placeholder={t('select_language')} />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="en_US">English</SelectItem>
@@ -189,12 +199,12 @@ export default function EditUserProfilePage() {
 						</Select>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="passwordUpdate">{t("confirm_password")}</Label>
+						<Label htmlFor="passwordUpdate">{t('confirm_password')}</Label>
 						<Input
 							autoComplete="current-password"
 							ref={passwordUpdRef}
 							id="passwordUpdate"
-							placeholder={t("enter_current_password")}
+							placeholder={t('enter_current_password')}
 							type="password"
 							name="passwordUpdate"
 						/>
@@ -206,7 +216,7 @@ export default function EditUserProfilePage() {
 						// Disable button if no changes were made
 						disabled={name === userData?.name && lang === userData?.language}
 					>
-						{t("save_changes")}
+						{t('save_changes')}
 					</Button>
 				</CardFooter>
 			</Card>
