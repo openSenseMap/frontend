@@ -30,7 +30,10 @@ export default function EditBoxSecurity() {
 	const { t } = useTranslation('settings')
 	const [keyVisible, setTokenvisibility] = useState(false)
 
-	const copyKeyToClipboard = () => {}
+	const copyKeyToClipboard = async () => {
+		const key = 'dummy token'
+		await navigator.clipboard.writeText(key)
+	}
 
 	return (
 		<Form method="post" className="font-helvetica text-[14px]" noValidate>
