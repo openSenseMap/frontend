@@ -139,7 +139,7 @@ export default function EditUserProfilePage() {
 				variant: 'success',
 			})
 		}
-	}, [actionData, toast])
+	}, [actionData, toast, t])
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
@@ -168,9 +168,19 @@ export default function EditUserProfilePage() {
 							name="email"
 							placeholder={t('enter_email')}
 							type="email"
-							readOnly={true}
+							// readOnly={true}
 							defaultValue={userData?.email}
 						/>
+						{/* Email confirmation status */}
+						{userData?.emailIsConfirmed ? (
+							<p className="text-green-500 flex items-center gap-1 text-sm dark:text-green-300">
+								<span>✓</span> {t('email_confirmed')}
+							</p>
+						) : (
+							<p className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-sm">
+								<span>⚠</span> {t('email_not_confirmed')}
+							</p>
+						)}
 					</div>
 					<div className="grid gap-2">
 						<Label htmlFor="language">{t('language')}</Label>

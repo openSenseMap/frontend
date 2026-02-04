@@ -29,6 +29,8 @@
 	"enter_name": "Gib deinen Namen ein",
 	"email": "E-Mail",
 	"enter_email": "Gib deine E-Mail-Adresse ein",
+	"email_confirmed": "E-Mail bestätigt",
+  	"email_not_confirmed": "E-Mail nicht bestätigt. Bitte überprüfe deinen Posteingang.",
 	"language": "Sprache",
 	"select_language": "Wähle die Sprache aus",
 	"confirm_password": "Bestätige dein Passwort",
