@@ -202,21 +202,22 @@ export default function EditUserProfilePage() {
 								<p className="dark:text-amber-400 flex items-center gap-1 text-sm text-orange-500">
 									<span>⚠</span> {t('email_not_confirmed')}
 								</p>
-								<fetcher.Form
-									method="post"
-									action="/api/users/me/resend-email-confirmation"
+								<Button
+									type="button"
+									variant="default"
+									size="sm"
+									disabled={fetcher.state === 'submitting'}
+									onClick={() => {
+										void fetcher.submit(null, {
+											method: 'post',
+											action: '/api/users/me/resend-email-confirmation',
+										})
+									}}
 								>
-									<Button
-										type="submit"
-										variant="outline"
-										size="sm"
-										disabled={fetcher.state === 'submitting'}
-									>
-										{fetcher.state === 'submitting'
-											? t('sending')
-											: t('resend_verification')}
-									</Button>
-								</fetcher.Form>
+									{fetcher.state === 'submitting'
+										? t('sending')
+										: t('resend_verification')}
+								</Button>
 							</div>
 						)}
 					</div>
