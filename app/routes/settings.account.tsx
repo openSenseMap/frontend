@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
 	Form,
 	useActionData,
+	useFetcher,
 	useLoaderData,
 	data,
 	redirect,
@@ -54,7 +55,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const { name, passwordUpdate, email, language } = Object.fromEntries(formData)
-
 	const errors = {
 		name: name ? null : 'Invalid name',
 		email: email ? null : 'Invalid email',
@@ -115,16 +115,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
 //*****************************************************
 export default function EditUserProfilePage() {
-	const userData = useLoaderData<typeof loader>() // Load user data
+	const userData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
+	const fetcher = useFetcher()
 	const [lang, setLang] = useState(userData?.language || 'en_US')
 	const [name, setName] = useState(userData?.name || '')
-	const passwordUpdRef = useRef<HTMLInputElement>(null) // For password update focus
+	const passwordUpdRef = useRef<HTMLInputElement>(null)
 	const { toast } = useToast()
 	const { t } = useTranslation('settings')
 
+	// Handle profile update responses
 	useEffect(() => {
-		// Handle invalid password update error
 		if (actionData && actionData?.errors?.passwordUpdate) {
 			toast({
 				title: t('invalid_password'),
@@ -132,7 +133,6 @@ export default function EditUserProfilePage() {
 			})
 			passwordUpdRef.current?.focus()
 		}
-		// Show success toast if profile updated
 		if (actionData && !actionData?.errors?.passwordUpdate) {
 			toast({
 				title: t('profile_successfully_updated'),
@@ -140,6 +140,28 @@ export default function EditUserProfilePage() {
 			})
 		}
 	}, [actionData, toast, t])
+
+	// Handle resend verification response
+	useEffect(() => {
+		if (fetcher.state === 'idle' && fetcher.data) {
+			if (fetcher.data.code === 'Ok') {
+				toast({
+					title: t('verification_email_sent'),
+					variant: 'success',
+				})
+			} else if (fetcher.data.code === 'UnprocessableContent') {
+				toast({
+					title: t('email_already_confirmed'),
+					variant: 'default',
+				})
+			} else {
+				toast({
+					title: t('verification_email_failed'),
+					variant: 'destructive',
+				})
+			}
+		}
+	}, [fetcher.state, fetcher.data, toast, t])
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
@@ -168,18 +190,34 @@ export default function EditUserProfilePage() {
 							name="email"
 							placeholder={t('enter_email')}
 							type="email"
-							// readOnly={true}
 							defaultValue={userData?.email}
 						/>
 						{/* Email confirmation status */}
 						{userData?.emailIsConfirmed ? (
-							<p className="text-green-500 flex items-center gap-1 text-sm dark:text-green-300">
+							<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
 								<span>✓</span> {t('email_confirmed')}
 							</p>
 						) : (
-							<p className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-sm">
-								<span>⚠</span> {t('email_not_confirmed')}
-							</p>
+							<div className="flex items-center justify-between">
+								<p className="dark:text-amber-400 flex items-center gap-1 text-sm text-orange-500">
+									<span>⚠</span> {t('email_not_confirmed')}
+								</p>
+								<fetcher.Form
+									method="post"
+									action="/api/users/me/resend-email-confirmation"
+								>
+									<Button
+										type="submit"
+										variant="outline"
+										size="sm"
+										disabled={fetcher.state === 'submitting'}
+									>
+										{fetcher.state === 'submitting'
+											? t('sending')
+											: t('resend_verification')}
+									</Button>
+								</fetcher.Form>
+							</div>
 						)}
 					</div>
 					<div className="grid gap-2">
@@ -213,7 +251,6 @@ export default function EditUserProfilePage() {
 				<CardFooter>
 					<Button
 						type="submit"
-						// Disable button if no changes were made
 						disabled={name === userData?.name && lang === userData?.language}
 					>
 						{t('save_changes')}

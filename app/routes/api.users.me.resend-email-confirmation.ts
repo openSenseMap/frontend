@@ -1,14 +1,15 @@
 import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { getUserFromJwt } from "~/lib/jwt";
 import { resendEmailConfirmation } from "~/lib/user-service.server";
+import { type User } from "~/schema";
 import { StandardResponse } from "~/utils/response-utils";
+import { getUser } from "~/utils/session.server";
 
 export const action: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   try {
-    const jwtResponse = await getUserFromJwt(request);
-
+    const jwtResponse = await getUser(request) as User;
+    
     if (typeof jwtResponse === "string")
       return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
 
