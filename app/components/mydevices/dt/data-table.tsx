@@ -51,28 +51,32 @@ export function DataTable<TData, TValue>({
 		[],
 	)
 
-	const table = useReactTable({
-		data,
-		columns,
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		onSortingChange: setSorting,
-		getSortedRowModel: getSortedRowModel(),
-		onColumnFiltersChange: setColumnFilters,
-		getFilteredRowModel: getFilteredRowModel(),
-		state: {
-			sorting,
-			columnFilters,
-		},
-		initialState: {
-			pagination: {
-				pageSize: 5,
-			},
-		},
-	})
-	const tableColsWidth = [30, 30, 40]
-
-	const { t } = useTranslation('data-table')
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+       sorting: [
+        {
+          id: "createdAt",
+          desc: true,
+        },
+      ],
+    },
+  });
+  const tableColsWidth = [30, 30, 40];
 
 	return (
 		<div>
