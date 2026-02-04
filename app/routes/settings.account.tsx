@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
 	Form,
 	useActionData,
+	useFetcher,
 	useLoaderData,
 	data,
 	redirect,
@@ -54,7 +55,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const { name, passwordUpdate, email, language } = Object.fromEntries(formData)
-
 	const errors = {
 		name: name ? null : 'Invalid name',
 		email: email ? null : 'Invalid email',
@@ -115,16 +115,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
 //*****************************************************
 export default function EditUserProfilePage() {
-	const userData = useLoaderData<typeof loader>() // Load user data
+	const userData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
+	const fetcher = useFetcher()
 	const [lang, setLang] = useState(userData?.language || 'en_US')
 	const [name, setName] = useState(userData?.name || '')
-	const passwordUpdRef = useRef<HTMLInputElement>(null) // For password update focus
+	const passwordUpdRef = useRef<HTMLInputElement>(null)
 	const { toast } = useToast()
-  const { t } = useTranslation('settings')
+	const { t } = useTranslation('settings')
 
+	// Handle profile update responses
 	useEffect(() => {
-		// Handle invalid password update error
 		if (actionData && actionData?.errors?.passwordUpdate) {
 			toast({
 				title: t('invalid_password'),
@@ -132,55 +133,103 @@ export default function EditUserProfilePage() {
 			})
 			passwordUpdRef.current?.focus()
 		}
-		// Show success toast if profile updated
 		if (actionData && !actionData?.errors?.passwordUpdate) {
 			toast({
 				title: t('profile_successfully_updated'),
 				variant: 'success',
 			})
 		}
-	}, [actionData, toast])
+	}, [actionData, toast, t])
+
+	// Handle resend verification response
+	useEffect(() => {
+		if (fetcher.state === 'idle' && fetcher.data) {
+			if (fetcher.data.code === 'Ok') {
+				toast({
+					title: t('verification_email_sent'),
+					variant: 'success',
+				})
+			} else if (fetcher.data.code === 'UnprocessableContent') {
+				toast({
+					title: t('email_already_confirmed'),
+					variant: 'default',
+				})
+			} else {
+				toast({
+					title: t('verification_email_failed'),
+					variant: 'destructive',
+				})
+			}
+		}
+	}, [fetcher.state, fetcher.data, toast, t])
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
 			<Card className="dark:border-white dark:bg-dark-boxes">
 				<CardHeader>
-					<CardTitle>{t("account_information")}</CardTitle>
-					<CardDescription>{t("update_basic_details")}</CardDescription>
+					<CardTitle>{t('account_information')}</CardTitle>
+					<CardDescription>{t('update_basic_details')}</CardDescription>
 				</CardHeader>
 				<CardContent className="grid gap-6">
 					<div className="grid gap-2">
-						<Label htmlFor="name">{t("name")}</Label>
+						<Label htmlFor="name">{t('name')}</Label>
 						<Input
 							id="name"
 							required
 							name="name"
 							type="text"
-							placeholder={t("enter_name")}
+							placeholder={t('enter_name')}
 							defaultValue={name}
 							onChange={(e) => setName(e.target.value)}
 						/>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="email">{t("email")}</Label>
+						<Label htmlFor="email">{t('email')}</Label>
 						<Input
 							id="email"
 							name="email"
-							placeholder={t("enter_email")}
+							placeholder={t('enter_email')}
 							type="email"
-							readOnly={true}
 							defaultValue={userData?.email}
 						/>
+						{/* Email confirmation status */}
+						{userData?.emailIsConfirmed ? (
+							<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
+								<span>✓</span> {t('email_confirmed')}
+							</p>
+						) : (
+							<div className="flex items-center justify-between">
+								<p className="dark:text-amber-400 flex items-center gap-1 text-sm text-orange-500">
+									<span>⚠</span> {t('email_not_confirmed')}
+								</p>
+								<Button
+									type="button"
+									variant="default"
+									size="sm"
+									disabled={fetcher.state === 'submitting'}
+									onClick={() => {
+										void fetcher.submit(null, {
+											method: 'post',
+											action: '/api/users/me/resend-email-confirmation',
+										})
+									}}
+								>
+									{fetcher.state === 'submitting'
+										? t('sending')
+										: t('resend_verification')}
+								</Button>
+							</div>
+						)}
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="language">{t("language")}</Label>
+						<Label htmlFor="language">{t('language')}</Label>
 						<Select
 							defaultValue={lang}
 							onValueChange={(value) => setLang(value)}
 							name="language"
 						>
 							<SelectTrigger className="dark:border-white">
-								<SelectValue placeholder={t("select_language")} />
+								<SelectValue placeholder={t('select_language')} />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="en_US">English</SelectItem>
@@ -189,12 +238,12 @@ export default function EditUserProfilePage() {
 						</Select>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="passwordUpdate">{t("confirm_password")}</Label>
+						<Label htmlFor="passwordUpdate">{t('confirm_password')}</Label>
 						<Input
 							autoComplete="current-password"
 							ref={passwordUpdRef}
 							id="passwordUpdate"
-							placeholder={t("enter_current_password")}
+							placeholder={t('enter_current_password')}
 							type="password"
 							name="passwordUpdate"
 						/>
@@ -203,10 +252,9 @@ export default function EditUserProfilePage() {
 				<CardFooter>
 					<Button
 						type="submit"
-						// Disable button if no changes were made
 						disabled={name === userData?.name && lang === userData?.language}
 					>
-						{t("save_changes")}
+						{t('save_changes')}
 					</Button>
 				</CardFooter>
 			</Card>
