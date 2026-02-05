@@ -1,12 +1,13 @@
 import { Label } from '@radix-ui/react-label'
 import {
 	LucideCopy,
+	LucideCopyCheck,
 	LucideEye,
 	LucideEyeOff,
 	RefreshCw,
 	Save,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
 	type LoaderFunctionArgs,
@@ -18,7 +19,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import ErrorMessage from '~/components/error-message'
 import { Callout } from '~/components/ui/alert'
-import { findDeviceApiKey, getDevice } from '~/models/device.server'
+import {
+	addOrReplaceDeviceApiKey,
+	findDeviceApiKey,
+	getDevice,
+	updateDevice,
+} from '~/models/device.server'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -34,16 +40,22 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return { key: t?.apiKey, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
+	const { deviceId } = params
+	if (typeof deviceId !== 'string') throw 'deviceID not found'
+
 	switch (request.method) {
 		case 'POST':
+			const formData = await request.formData()
+			const enableAuth = formData.has('enableAuth')
+			await updateDevice(deviceId, { useAuth: enableAuth })
 			break
 		case 'PUT':
+			const device = await getDevice({ id: deviceId })
+			if (device === undefined) throw 'device not found'
+			await addOrReplaceDeviceApiKey(device)
 			break
 	}
-
-	const formData = await request.formData()
-	console.log(formData)
 
 	return ''
 }
@@ -53,10 +65,24 @@ export default function EditBoxSecurity() {
 	const { key, deviceAuthEnabled } = useLoaderData<typeof loader>()
 	const [keyVisible, setTokenvisibility] = useState(false)
 	const [authEnabled, setAuthEnabled] = useState(deviceAuthEnabled)
+	const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
 	const copyKeyToClipboard = async () => {
-		if (key) await navigator.clipboard.writeText(key)
+		if (!key) return
+		await navigator.clipboard.writeText(key)
+		setCopiedToClipboard(true)
 	}
+
+	useEffect(() => {
+		if (!copiedToClipboard) return
+		const timer = window.setTimeout(() => {
+			setCopiedToClipboard(false)
+		}, 2_500)
+
+		return () => {
+			window.clearTimeout(timer)
+		}
+	}, [copiedToClipboard])
 
 	return (
 		<div className="font-helvetica text-[14px]">
@@ -93,12 +119,13 @@ export default function EditBoxSecurity() {
 
 				<div className="flex flex-wrap items-center gap-4 py-5">
 					<Checkbox
-						name="enableAuthCheckbox"
-						id="enableAuthCheckbox"
-						value={authEnabled ? 'on' : 'off'}
+						name="enableAuth"
+						id="enableAuth"
+						defaultChecked={authEnabled}
+						value="true"
 						onChange={() => setAuthEnabled(!authEnabled)}
 					/>
-					<Label htmlFor="enableAuthCheckbox" className="cursor-pointer pt-1">
+					<Label htmlFor="enableAuth" className="cursor-pointer pt-1">
 						{t('device_security.auth_enable_checkbox_label')}
 					</Label>
 				</div>
@@ -131,12 +158,19 @@ export default function EditBoxSecurity() {
 						/>
 						<span>
 							<button
-								className="btn btn-default w-12 rounded-bl-none rounded-tl-none disabled:opacity-40"
+								className="btn btn-default relative h-full w-12 rounded-bl-none rounded-tl-none disabled:opacity-40"
 								onClick={() => copyKeyToClipboard()}
 								type="button"
 								disabled={!deviceAuthEnabled}
 							>
-								<LucideCopy size={20.5} />
+								<LucideCopyCheck
+									size={20.5}
+									className={`bottom-0 left-0 right-0 top-0 mx-auto my-auto ${copiedToClipboard ? 'scale-100 opacity-100' : 'scale-50 opacity-0'} absolute text-green-700 transition-transform`}
+								/>
+								<LucideCopy
+									size={20.5}
+									className={`bottom-0 left-0 right-0 top-0 mx-auto my-auto ${copiedToClipboard ? 'opacity-0' : 'opacity-100'} absolute`}
+								/>
 							</button>
 						</span>
 					</div>
