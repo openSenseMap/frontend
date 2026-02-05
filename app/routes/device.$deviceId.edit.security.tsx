@@ -21,7 +21,6 @@ import ErrorMessage from '~/components/error-message'
 import { Callout } from '~/components/ui/alert'
 import {
 	addOrReplaceDeviceApiKey,
-	findDeviceApiKey,
 	getDevice,
 	updateDevice,
 } from '~/models/device.server'
@@ -35,9 +34,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	const deviceId = params.deviceId
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 
-	const t = await findDeviceApiKey(deviceId)
+	const t = (await getDevice({ id: deviceId }))?.apiKey
+	if (!t) throw 'device not found'
+
 	const device = await getDevice({ id: deviceId })
-	return { key: t?.apiKey, deviceAuthEnabled: device?.useAuth ?? false }
+	return { key: t, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {

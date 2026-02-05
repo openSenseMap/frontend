@@ -7,11 +7,7 @@ import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
-import {
-	createDevice,
-	deleteDevice,
-	findDeviceApiKey,
-} from '~/models/device.server'
+import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import {
 	loader as deviceLoader,
@@ -651,15 +647,13 @@ describe('openSenseMap API Routes: /boxes', () => {
 				} as ActionFunctionArgs)
 				const data = await response.json()
 
-				const useAuthKey = await findDeviceApiKey(queryableDevice!.id)
-
 				expect(response.status).toBe(200)
 				expect(data.name).toBe(update_payload.name)
 				expect(data.exposure).toBe(update_payload.exposure)
 				expect(Array.isArray(data.grouptag)).toBe(true)
 				expect(data.grouptag).toContain(update_payload.grouptag)
 				expect(data.description).toBe(update_payload.description)
-				expect(useAuthKey).not.toBeNull()
+				expect(data.access_token).not.toBeNull()
 				expect(data.currentLocation).toEqual({
 					type: 'Point',
 					coordinates: [

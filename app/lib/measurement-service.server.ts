@@ -5,7 +5,6 @@ import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
 	getDevice,
-	findDeviceApiKey,
 } from '~/models/device.server'
 import { saveMeasurements } from '~/models/measurement.server'
 import {
@@ -137,12 +136,7 @@ export const postNewMeasurements = async (
 	}
 
 	if (device.useAuth) {
-		const deviceAccessToken = await findDeviceApiKey(deviceId)
-
-		if (
-			deviceAccessToken?.apiKey &&
-			deviceAccessToken.apiKey !== authorization
-		) {
+		if (device.apiKey !== authorization) {
 			const error = new Error('Device access token not valid!')
 			error.name = 'UnauthorizedError'
 			throw error
@@ -195,12 +189,7 @@ export const postSingleMeasurement = async (
 		}
 
 		if (device.useAuth) {
-			const deviceAccessToken = await findDeviceApiKey(deviceId)
-
-			if (
-				deviceAccessToken?.apiKey &&
-				deviceAccessToken.apiKey !== authorization
-			) {
+			if (device.apiKey !== authorization) {
 				const error = new Error('Device access token not valid!')
 				error.name = 'UnauthorizedError'
 				throw error

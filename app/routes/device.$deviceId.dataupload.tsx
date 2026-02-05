@@ -24,7 +24,7 @@ import {
 } from '~/components/ui/select'
 import { Textarea } from '~/components/ui/textarea'
 import { postNewMeasurements } from '~/lib/measurement-service.server'
-import { findDeviceApiKey } from '~/models/device.server'
+import { getDevice } from '~/models/device.server'
 import { StandardResponse } from '~/utils/response-utils'
 import { getUserId } from '~/utils/session.server'
 
@@ -63,14 +63,15 @@ export async function action({
 		return StandardResponse.badRequest(
 			'measurement data is either not set or has a wrong type',
 		)
-	const deviceApiKey = await findDeviceApiKey(deviceId)
+	const deviceApiKey = (await getDevice({ id: deviceId }))?.apiKey
+	if (!deviceApiKey) return StandardResponse.badRequest('device not found')
 
 	try {
 		await postNewMeasurements(deviceId, measurementData, {
 			contentType,
 			luftdaten: false,
 			hackair: false,
-			authorization: deviceApiKey?.apiKey ?? '',
+			authorization: deviceApiKey,
 		})
 
 		return StandardResponse.ok({})

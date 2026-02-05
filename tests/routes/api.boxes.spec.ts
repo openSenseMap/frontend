@@ -3,7 +3,7 @@ import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
-import { deleteDevice, findDeviceApiKey } from '~/models/device.server'
+import { deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.boxes'
 import { type User } from '~/schema'
@@ -82,8 +82,6 @@ describe('openSenseMap API Routes: /boxes', () => {
 				createdDeviceIds.push(body._id)
 			}
 
-			const useAuthKey = await findDeviceApiKey(body._id)
-
 			expect(response.status).toBe(201)
 			expect(body).toHaveProperty('_id')
 			expect(body).toHaveProperty('name', 'Test Weather Station')
@@ -91,7 +89,8 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(body).toHaveProperty('sensors')
 			expect(body.sensors[0]).toHaveProperty('title', 'Temperature')
 			expect(body.sensors[1]).toHaveProperty('title', 'Humidity')
-			expect(useAuthKey).not.toBeNull()
+			expect(body).toHaveProperty('access_token')
+			expect(body.access_token).not.toBeNull()
 		})
 
 		it('should create a box with minimal data (no sensors)', async () => {
