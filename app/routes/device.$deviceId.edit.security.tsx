@@ -18,7 +18,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import ErrorMessage from '~/components/error-message'
 import { Callout } from '~/components/ui/alert'
-import { findAccessToken, getDevice } from '~/models/device.server'
+import { findDeviceApiKey, getDevice } from '~/models/device.server'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -29,9 +29,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	const deviceId = params.deviceId
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 
-	const t = await findAccessToken(deviceId)
+	const t = await findDeviceApiKey(deviceId)
 	const device = await getDevice({ id: deviceId })
-	return { key: t?.token, deviceAuthEnabled: device?.useAuth ?? false }
+	return { key: t?.apiKey, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
 export async function action({ request }: ActionFunctionArgs) {

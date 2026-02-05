@@ -1,5 +1,16 @@
 import { point } from '@turf/helpers'
-import { eq, sql, desc, ilike, arrayContains, and, between } from 'drizzle-orm'
+import {
+	eq,
+	sql,
+	desc,
+	ilike,
+	arrayContains,
+	and,
+	between,
+	ExtractTablesWithRelations,
+} from 'drizzle-orm'
+import { PgTransaction } from 'drizzle-orm/pg-core'
+import { PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
 import BaseNewDeviceEmail, {
 	messages as BaseNewDeviceMessages,
 } from 'emails/base-new-device'
@@ -7,8 +18,10 @@ import { messages as NewLufdatenDeviceMessages } from 'emails/new-device-luftdat
 import { messages as NewSenseboxDeviceMessages } from 'emails/new-device-sensebox'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
+import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import {
+	deviceApiKey,
 	device,
 	deviceToLocation,
 	location,
@@ -17,6 +30,7 @@ import {
 	type Device,
 	type Sensor,
 } from '~/schema'
+import * as schema from '~/schema/index'
 import { getSensorsForModel } from '~/utils/model-definitions'
 
 const BASE_DEVICE_COLUMNS = {
@@ -377,6 +391,14 @@ export async function updateDevice(
 				}
 			}
 		}
+
+		if (
+			args.useAuth &&
+			args.useAuth == updatedDevice.useAuth &&
+			args.useAuth === true
+		)
+			await addOrReplaceDeviceApiKey(updatedDevice, tx)
+
 		return updatedDevice
 	})
 
@@ -751,6 +773,10 @@ export async function createDevice(deviceData: any, userId: string) {
 				}
 			}
 
+			if (createdDevice.useAuth) {
+				await addOrReplaceDeviceApiKey(createdDevice, tx)
+			}
+
 			// Return device with sensors
 			return [
 				{
@@ -841,14 +867,45 @@ export async function getLatestDevices() {
 	return devices
 }
 
-export async function findAccessToken(
+export async function addOrReplaceDeviceApiKey(
+	device: Device,
+	tx?: PgTransaction<
+		PostgresJsQueryResultHKT,
+		typeof schema,
+		ExtractTablesWithRelations<typeof schema>
+	>,
+): Promise<{ apiKey: string }> {
+	const existing = findDeviceApiKey(device.id, tx)
+	if (existing !== null)
+		await (tx ?? drizzleClient)
+			.delete(deviceApiKey)
+			.where(eq(deviceApiKey.deviceId, device.id))
+
+	const { jwt } = await createDeviceApiKey(device)
+	const result = await (tx ?? drizzleClient)
+		.insert(deviceApiKey)
+		.values({ deviceId: device.id, apiKey: jwt })
+		.returning()
+
+	if (result[0].apiKey === null)
+		throw new Error('device api key cannot be null after inserting')
+
+	return { apiKey: result[0].apiKey }
+}
+
+export async function findDeviceApiKey(
 	deviceId: string,
-): Promise<{ token: string } | null> {
-	const result = await drizzleClient.query.accessToken.findFirst({
+	tx?: PgTransaction<
+		PostgresJsQueryResultHKT,
+		typeof schema,
+		ExtractTablesWithRelations<typeof schema>
+	>,
+): Promise<{ apiKey: string } | null> {
+	const result = await (tx ?? drizzleClient).query.deviceApiKey.findFirst({
 		where: (token, { eq }) => eq(token.deviceId, deviceId),
 	})
 
-	if (!result || !result.token) return null
+	if (!result || !result.apiKey) return null
 
-	return { token: result.token }
+	return { apiKey: result.apiKey }
 }

@@ -9,7 +9,7 @@ import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
-import { accessToken, type User } from '~/schema'
+import { deviceApiKey, type User } from '~/schema'
 
 const mockAccessToken = 'valid-access-token'
 
@@ -53,7 +53,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			deviceWithSensors?.sensors?.map((sensor: any) => sensor.id) || []
 		sensors = deviceWithSensors?.sensors?.map((sensor: any) => sensor) || []
 
-		await drizzleClient.insert(accessToken).values({
+		await drizzleClient.insert(deviceApiKey).values({
 			deviceId: deviceId,
 			token: 'valid-access-token',
 		})
