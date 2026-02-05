@@ -51,6 +51,8 @@ const BASE_DEVICE_COLUMNS = {
 	expiresAt: true,
 	useAuth: true,
 	sensorWikiModel: true,
+	public: true,
+	userId: true,
 } as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
@@ -880,11 +882,12 @@ export async function addOrReplaceDeviceApiKey(
 		await (tx ?? drizzleClient)
 			.delete(deviceApiKey)
 			.where(eq(deviceApiKey.deviceId, device.id))
+			.returning()
 
-	const { jwt } = await createDeviceApiKey(device)
+	const { key } = await createDeviceApiKey(device)
 	const result = await (tx ?? drizzleClient)
 		.insert(deviceApiKey)
-		.values({ deviceId: device.id, apiKey: jwt })
+		.values({ deviceId: device.id, apiKey: key })
 		.returning()
 
 	if (result[0].apiKey === null)
@@ -902,7 +905,7 @@ export async function findDeviceApiKey(
 	>,
 ): Promise<{ apiKey: string } | null> {
 	const result = await (tx ?? drizzleClient).query.deviceApiKey.findFirst({
-		where: (token, { eq }) => eq(token.deviceId, deviceId),
+		where: (key, { eq }) => eq(key.deviceId, deviceId),
 	})
 
 	if (!result || !result.apiKey) return null

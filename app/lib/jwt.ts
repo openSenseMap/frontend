@@ -252,7 +252,7 @@ export const refreshJwt = async (
 export const createDeviceApiKey = (
 	device: Device,
 ): Promise<{
-	jwt: string
+	key: string
 }> => {
 	invariant(typeof JWT_ALGORITHM === 'string')
 	invariant(typeof JWT_ISSUER === 'string')
@@ -275,7 +275,11 @@ export const createDeviceApiKey = (
 				if (typeof token === 'undefined')
 					return reject('Generated token was undefined and thus not valid')
 
-				return resolve({ jwt: token })
+				// We use the signature part of the jwt as a deviceApiKey
+				const k = token.split('.').at(-1)
+				if (k === undefined)
+					throw new Error('signature part of jwt may never be undefined')
+				return resolve({ key: k })
 			},
 		)
 	})
