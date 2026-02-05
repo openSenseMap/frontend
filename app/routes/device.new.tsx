@@ -25,6 +25,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const data = JSON.parse(rawData);
 
+    const selectedSensors = data["sensor-selection"].selectedSensors
+
     const devicePayload = {
       name: data["general-info"].name,
       exposure: data["general-info"].exposure,
@@ -32,24 +34,28 @@ export async function action({ request }: ActionFunctionArgs) {
       tags: data["general-info"].tags?.map((tag: { value: string }) => tag.value) || [],
       latitude: data.location.latitude,
       longitude: data.location.longitude,
-      // Only include model if NOT custom
-      ...(data["device-selection"].model !== 'custom' && {
-        model: data["device-selection"].model
+
+      ...(data["device-selection"].model !== "custom" && {
+        model: data["device-selection"].model,
+        
+        sensorTemplates: selectedSensors.map(
+          (sensor: any) => sensor.sensorType.toLowerCase()
+        ),
       }),
-      // Only include sensors if custom
-      ...(data["device-selection"].model === 'custom' && {
-        sensors: data["sensor-selection"].selectedSensors.map(
-          (sensor: any) => ({
-            title: sensor.title,
-            sensorType: sensor.sensorType,
-            unit: sensor.unit,
-            icon: sensor.icon,
-          })
-        )
+
+      ...(data["device-selection"].model === "custom" && {
+        sensors: selectedSensors.map((sensor: any) => ({
+          title: sensor.title,
+          sensorType: sensor.sensorType,
+          unit: sensor.unit,
+          icon: sensor.icon,
+        })),
       }),
+
       mqttEnabled: data.advanced.mqttEnabled ?? false,
       ttnEnabled: data.advanced.ttnEnabled ?? false,
-    };
+    }
+
 
     // Call server function
     const newDevice = await createDevice(devicePayload, userId);
