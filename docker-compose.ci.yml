@@ -5,6 +5,7 @@ services:
     # https://github.com/timescale/timescaledb-docker-ha/issues/293
     command:
       - -cshared_preload_libraries=timescaledb,pg_cron
+      - -ccron.database_name=postgres
     restart: always
     environment:
       - POSTGRES_USER=postgres
