@@ -1,8 +1,8 @@
 {
-    "title": "Verbinde jedes Gerät",
-    "description": "Wir unterstützen vorkonfigurierte Geräte einiger Hersteller, aber du kannst jederzeit deine eigene Hardware und Sensoren registrieren.",
-    "senseBox": "senseBox",
-    "hackAIR": "hackAIR",
-    "Sensor.Community": "Sensor.Community",
-    "Custom": "Speziell"
+	"title": "Verbinde jedes Gerät",
+	"description": "Wir unterstützen vorkonfigurierte Geräte einiger Hersteller, aber du kannst jederzeit deine eigene Hardware und Sensoren registrieren.",
+	"senseBox": "senseBox",
+	"hackAIR": "hackAIR",
+	"Sensor.Community": "Sensor.Community",
+	"Custom": "Speziell"
 }

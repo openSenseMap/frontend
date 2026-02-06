@@ -18,23 +18,33 @@ const CLUSTER_DISTANCE_METERS = 8 // Distance threshold for clustering
 const MIN_CLUSTER_SIZE = 15 // Minimum points to form a cluster
 
 // Function to calculate distance between two points in meters
-function calculateDistance(point1: LocationPoint, point2: LocationPoint): number {
+function calculateDistance(
+	point1: LocationPoint,
+	point2: LocationPoint,
+): number {
 	const R = 6371000 // Earth's radius in meters
 	const lat1Rad = (point1.geometry.y * Math.PI) / 180
 	const lat2Rad = (point2.geometry.y * Math.PI) / 180
 	const deltaLatRad = ((point2.geometry.y - point1.geometry.y) * Math.PI) / 180
 	const deltaLonRad = ((point2.geometry.x - point1.geometry.x) * Math.PI) / 180
 
-	const a = Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
-		Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-		Math.sin(deltaLonRad / 2) * Math.sin(deltaLonRad / 2)
+	const a =
+		Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
+		Math.cos(lat1Rad) *
+			Math.cos(lat2Rad) *
+			Math.sin(deltaLonRad / 2) *
+			Math.sin(deltaLonRad / 2)
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
 	return R * c
 }
 
 // Cluster points within a single trip
-function clusterTripPoints(points: LocationPoint[], distanceThreshold: number, minClusterSize: number) {
+function clusterTripPoints(
+	points: LocationPoint[],
+	distanceThreshold: number,
+	minClusterSize: number,
+) {
 	const clusters: LocationPoint[][] = []
 	const visited = new Set<number>()
 
@@ -60,7 +70,7 @@ function clusterTripPoints(points: LocationPoint[], distanceThreshold: number, m
 			clusters.push(cluster)
 		} else {
 			// Add individual points that don't form clusters
-			cluster.forEach(point => clusters.push([point]))
+			cluster.forEach((point) => clusters.push([point]))
 		}
 	}
 
@@ -69,12 +79,16 @@ function clusterTripPoints(points: LocationPoint[], distanceThreshold: number, m
 
 // Calculate cluster center and metadata
 function calculateClusterCenter(cluster: LocationPoint[], clusterId: string) {
-	const centerX = cluster.reduce((sum, point) => sum + point.geometry.x, 0) / cluster.length
-	const centerY = cluster.reduce((sum, point) => sum + point.geometry.y, 0) / cluster.length
-	
+	const centerX =
+		cluster.reduce((sum, point) => sum + point.geometry.x, 0) / cluster.length
+	const centerY =
+		cluster.reduce((sum, point) => sum + point.geometry.y, 0) / cluster.length
+
 	// Sort by timestamp to get earliest and latest
-	const sortedByTime = cluster.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
-	
+	const sortedByTime = cluster.sort(
+		(a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+	)
+
 	return {
 		coordinates: [centerX, centerY],
 		pointCount: cluster.length,
@@ -82,7 +96,7 @@ function calculateClusterCenter(cluster: LocationPoint[], clusterId: string) {
 		endTime: sortedByTime[sortedByTime.length - 1].time,
 		isCluster: cluster.length > 1,
 		clusterId: clusterId,
-		originalPoints: cluster // Keep reference to original points
+		originalPoints: cluster, // Keep reference to original points
 	}
 }
 
@@ -115,20 +129,27 @@ export default function MobileOverviewLayer({
 		if (!trips || trips.length === 0) return []
 
 		return trips.map((trip, tripIndex) => {
-			const clusters = clusterTripPoints(trip.points, CLUSTER_DISTANCE_METERS, MIN_CLUSTER_SIZE)
-			
+			const clusters = clusterTripPoints(
+				trip.points,
+				CLUSTER_DISTANCE_METERS,
+				MIN_CLUSTER_SIZE,
+			)
+
 			return {
 				...trip,
-				clusters: clusters.map((cluster, clusterIndex) => 
-					calculateClusterCenter(cluster, `trip-${tripIndex}-cluster-${clusterIndex}`)
-				)
+				clusters: clusters.map((cluster, clusterIndex) =>
+					calculateClusterCenter(
+						cluster,
+						`trip-${tripIndex}-cluster-${clusterIndex}`,
+					),
+				),
 			}
 		})
 	}, [trips])
 
 	const [sourceData, setSourceData] = useState<FeatureCollection<
 		Point,
-		{ 
+		{
 			color: string
 			tripNumber: number
 			timestamp: string
@@ -140,16 +161,17 @@ export default function MobileOverviewLayer({
 		}
 	> | null>(null)
 
-	const [expandedSourceData, setExpandedSourceData] = useState<FeatureCollection<
-		Point,
-		{ 
-			color: string
-			tripNumber: number
-			timestamp: string
-			clusterId: string
-		}
-	> | null>(null)
-	
+	const [expandedSourceData, setExpandedSourceData] =
+		useState<FeatureCollection<
+			Point,
+			{
+				color: string
+				tripNumber: number
+				timestamp: string
+				clusterId: string
+			}
+		> | null>(null)
+
 	const { osem: mapRef } = useMap()
 
 	// Legend items state
@@ -172,7 +194,7 @@ export default function MobileOverviewLayer({
 		pointCount?: number
 		isCluster?: boolean
 	} | null>(null)
-	
+
 	const [showOriginalColors, setShowOriginalColors] = useState(true)
 
 	useEffect(() => {
@@ -200,16 +222,16 @@ export default function MobileOverviewLayer({
 		const expandedPoints = clusteredTrips.flatMap((trip, tripIndex) =>
 			trip.clusters.flatMap((cluster) => {
 				if (!cluster.isCluster || !cluster.originalPoints) return []
-				
+
 				return cluster.originalPoints.map((originalPoint) =>
 					point([originalPoint.geometry.x, originalPoint.geometry.y], {
 						color: colors[tripIndex],
 						tripNumber: tripIndex + 1,
 						timestamp: originalPoint.time,
 						clusterId: cluster.clusterId,
-					})
+					}),
 				)
-			})
+			}),
 		)
 
 		// Set legend items for the trips
@@ -253,7 +275,14 @@ export default function MobileOverviewLayer({
 
 			if (event.features && event.features.length > 0) {
 				const feature = event.features[0]
-				const { tripNumber, startTime, endTime, pointCount, isCluster, clusterId } = feature.properties
+				const {
+					tripNumber,
+					startTime,
+					endTime,
+					pointCount,
+					isCluster,
+					clusterId,
+				} = feature.properties
 				setHighlightedTrip(tripNumber)
 
 				// Set hovered cluster if it's a cluster
@@ -264,13 +293,13 @@ export default function MobileOverviewLayer({
 				}
 
 				const [longitude, latitude] = feature.geometry.coordinates
-				setPopupInfo({ 
-					longitude, 
-					latitude, 
-					startTime, 
-					endTime, 
+				setPopupInfo({
+					longitude,
+					latitude,
+					startTime,
+					endTime,
 					pointCount,
-					isCluster 
+					isCluster,
 				})
 			} else {
 				setHighlightedTrip(null)
@@ -329,39 +358,33 @@ export default function MobileOverviewLayer({
 								'interpolate',
 								['linear'],
 								['get', 'pointCount'],
-								1, 5,    // Single point: radius 5
-								10, 8,   // 10 points: radius 8
-								50, 12,  // 50 points: radius 12
-								100, 16  // 100+ points: radius 16
+								1,
+								5, // Single point: radius 5
+								10,
+								8, // 10 points: radius 8
+								50,
+								12, // 50 points: radius 12
+								100,
+								16, // 100+ points: radius 16
 							],
-							3 // Non-cluster points: radius 3
+							3, // Non-cluster points: radius 3
 						],
 						'circle-opacity': showOriginalColors
-							? [
-									'case',
-									['==', ['get', 'tripNumber'], highlightedTrip],
-									1,
-									0.5,
-								]
+							? ['case', ['==', ['get', 'tripNumber'], highlightedTrip], 1, 0.5]
 							: 1,
 						'circle-stroke-width': [
 							'case',
 							['get', 'isCluster'],
 							2, // Clusters have stroke
-							0  // Individual points don't
+							0, // Individual points don't
 						],
 						'circle-stroke-color': '#222',
 						'circle-stroke-opacity': showOriginalColors
-							? [
-									'case',
-									['==', ['get', 'tripNumber'], highlightedTrip],
-									1,
-									0.3,
-								]
+							? ['case', ['==', ['get', 'tripNumber'], highlightedTrip], 1, 0.3]
 							: 1,
 					}}
 				/>
-				
+
 				{/* Text layer for cluster point counts */}
 				<Layer
 					id="box-overview-cluster-text"
@@ -377,12 +400,7 @@ export default function MobileOverviewLayer({
 					paint={{
 						'text-color': '#211',
 						'text-opacity': showOriginalColors
-							? [
-									'case',
-									['==', ['get', 'tripNumber'], highlightedTrip],
-									1,
-									0.7,
-								]
+							? ['case', ['==', ['get', 'tripNumber'], highlightedTrip], 1, 0.7]
 							: 1,
 					}}
 				/>
@@ -390,7 +408,11 @@ export default function MobileOverviewLayer({
 
 			{/* Expanded cluster points - shown on hover */}
 			{hoveredCluster && expandedSourceData && (
-				<Source id="box-overview-expanded-source" type="geojson" data={expandedSourceData}>
+				<Source
+					id="box-overview-expanded-source"
+					type="geojson"
+					data={expandedSourceData}
+				>
 					<Layer
 						id="box-overview-expanded-layer"
 						type="circle"
@@ -407,7 +429,7 @@ export default function MobileOverviewLayer({
 					/>
 				</Source>
 			)}
-			
+
 			{highlightedTrip && popupInfo && (
 				<Popup
 					longitude={popupInfo.longitude}
@@ -432,16 +454,17 @@ export default function MobileOverviewLayer({
 								{format(new Date(popupInfo.startTime), 'Pp')}
 							</p>
 						</div>
-						{popupInfo.isCluster && popupInfo.startTime !== popupInfo.endTime && (
-							<div>
-								<span className="text-xs font-medium text-muted-foreground">
-									To
-								</span>
-								<p className="text-sm font-bold text-primary">
-									{format(new Date(popupInfo.endTime), 'Pp')}
-								</p>
-							</div>
-						)}
+						{popupInfo.isCluster &&
+							popupInfo.startTime !== popupInfo.endTime && (
+								<div>
+									<span className="text-xs font-medium text-muted-foreground">
+										To
+									</span>
+									<p className="text-sm font-bold text-primary">
+										{format(new Date(popupInfo.endTime), 'Pp')}
+									</p>
+								</div>
+							)}
 					</div>
 				</Popup>
 			)}
@@ -462,4 +485,3 @@ export default function MobileOverviewLayer({
 		</>
 	)
 }
-
