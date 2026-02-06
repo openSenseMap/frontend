@@ -120,7 +120,7 @@ export default function EditBox() {
                   <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-[#31708f] dark:text-gray-100">
                     {/* Account successfully deleted. */}
                     <div>
-                      senseBox succesfully updated -
+                      device succesfully updated -
                       <Link to={`/explore/${deviceId}`}>
                         {" "}
                         <span className="text-[#4eaf47] hover:underline">

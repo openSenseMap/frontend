@@ -31,7 +31,7 @@ export async function action() {
 }
 
 //**********************************
-export default function DeviceOnverview() {
+export default function DeviceOverview() {
   const { deviceData, sensorsData } = useLoaderData<typeof loader>();
 
   return (
@@ -45,18 +45,18 @@ export default function DeviceOnverview() {
       <div className="space-y-0.5">
         <h2 className="text-3xl font-bold tracking-normal ">Device Overview</h2>
         <p className="text-muted-foreground">
-          View sensebox details and sensors.
+          View device details and sensors.
         </p>
       </div>
       <Separator />
 
-      <h2 className="text-2xl font-bold tracking-normal ">senseBox</h2>
+      <h2 className="text-2xl font-bold tracking-normal ">Device</h2>
       {/* sensebox table */}
       <Table>
         <TableBody className="border-[1px]">
           <TableRow>
             <TableCell className=" w-[50%] border-r-[1px]">
-              senseBox Name
+              Device Name
             </TableCell>
             <TableCell className=" w-[50%] border-r-[1px] font-semibold">
               {deviceData?.name}
@@ -65,7 +65,7 @@ export default function DeviceOnverview() {
 
           <TableRow>
             <TableCell className=" w-[50%] border-r-[1px]">
-              senseBox Model
+              Device Model
             </TableCell>
             <TableCell className=" w-[50%] border-r-[1px] font-semibold">
               XXXX
@@ -90,7 +90,7 @@ export default function DeviceOnverview() {
 
           <TableRow>
             <TableCell className=" w-[50%] border-r-[1px]">
-              senseBox ID
+              Device ID
             </TableCell>
             <TableCell className=" w-[50%] border-r-[1px] font-semibold">
               {deviceData?.id}
