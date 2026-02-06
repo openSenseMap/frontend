@@ -31,7 +31,7 @@ export const modelDefinitions = {
 	homeV2Ethernet: senseBoxHomeV2,
 	homeV2EthernetFeinstaub: senseBoxHomeV2,
 	homeV2Wifi: senseBoxHomeV2,
-	homeV2WifiFeinstaub: senseBoxHomeV2,	
+	homeV2WifiFeinstaub: senseBoxHomeV2,
 	'senseBox:Edu': [
 		sensorDefinitions.hdc1080_temperature,
 		sensorDefinitions.hdc1080_humidity,

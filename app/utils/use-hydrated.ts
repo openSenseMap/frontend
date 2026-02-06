@@ -1,8 +1,8 @@
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore } from 'react'
 
 function subscribe() {
-  // biome-ignore lint/suspicious/noEmptyBlockStatements: Mock function
-  return () => {};
+	// biome-ignore lint/suspicious/noEmptyBlockStatements: Mock function
+	return () => {}
 }
 
 /**
@@ -23,9 +23,9 @@ function subscribe() {
  * ```
  */
 export function useHydrated() {
-  return useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
-  );
+	return useSyncExternalStore(
+		subscribe,
+		() => true,
+		() => false,
+	)
 }

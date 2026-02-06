@@ -1,8 +1,8 @@
 {
-    "user_since": "Benutzer*in seit",
-    "locale": "de",
-    "devices": "Geräte",
-    "sensors": "Sensoren",
-    "measurements": "Messungen",
-    "badges": "Badges"
+	"user_since": "Benutzer*in seit",
+	"locale": "de",
+	"devices": "Geräte",
+	"sensors": "Sensoren",
+	"measurements": "Messungen",
+	"badges": "Badges"
 }

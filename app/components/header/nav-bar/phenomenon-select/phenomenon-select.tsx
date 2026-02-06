@@ -1,56 +1,59 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { X } from "lucide-react";
+import { X } from 'lucide-react'
 // import { useTranslation } from "react-i18next";
-import { useState, useEffect, type Key } from "react"; // Changed import
-import { useLoaderData, useNavigation, useSearchParams } from "react-router";
-import Spinner from "~/components/spinner";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Label } from "~/components/ui/label";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import  { type loader } from "~/routes/explore";
-import { sensorWikiLabel, type SensorWikiLabel  } from "~/utils/sensor-wiki-helper";
+import { useState, useEffect, type Key } from 'react' // Changed import
+import { useLoaderData, useNavigation, useSearchParams } from 'react-router'
+import Spinner from '~/components/spinner'
+import { Button } from '~/components/ui/button'
+import { Checkbox } from '~/components/ui/checkbox'
+import { Label } from '~/components/ui/label'
+import { ScrollArea } from '~/components/ui/scroll-area'
+import { type loader } from '~/routes/explore'
+import {
+	sensorWikiLabel,
+	type SensorWikiLabel,
+} from '~/utils/sensor-wiki-helper'
 
 export function PhenomenonSelect() {
-  const data = useLoaderData<typeof loader>();
-  // const { t } = useTranslation("navbar");
-  const loaderData = useLoaderData<typeof loader>();
-  const navigation = useNavigation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedCheckboxes, setSelectedCheckboxes] = useState<string[]>([]); // Added state for selected checkboxes
+	const data = useLoaderData<typeof loader>()
+	// const { t } = useTranslation("navbar");
+	const loaderData = useLoaderData<typeof loader>()
+	const navigation = useNavigation()
+	const [searchParams, setSearchParams] = useSearchParams()
+	const [selectedCheckboxes, setSelectedCheckboxes] = useState<string[]>([]) // Added state for selected checkboxes
 
-  useEffect(() => {
-    // When URL parameters change, update selected checkboxes accordingly
-    const phenomenonParam = searchParams.get("phenomenon") || "all";
-    const phenomenonArray =
-      phenomenonParam === "all" ? [] : phenomenonParam.split(",");
-    setSelectedCheckboxes(phenomenonArray);
-  }, [searchParams]);
+	useEffect(() => {
+		// When URL parameters change, update selected checkboxes accordingly
+		const phenomenonParam = searchParams.get('phenomenon') || 'all'
+		const phenomenonArray =
+			phenomenonParam === 'all' ? [] : phenomenonParam.split(',')
+		setSelectedCheckboxes(phenomenonArray)
+	}, [searchParams])
 
-  const handleCheckboxChange = (slug: string) => {
-    const updatedCheckboxes = selectedCheckboxes.includes(slug)
-      ? selectedCheckboxes.filter((checkbox) => checkbox !== slug)
-      : [...selectedCheckboxes, slug];
+	const handleCheckboxChange = (slug: string) => {
+		const updatedCheckboxes = selectedCheckboxes.includes(slug)
+			? selectedCheckboxes.filter((checkbox) => checkbox !== slug)
+			: [...selectedCheckboxes, slug]
 
-    setSelectedCheckboxes(updatedCheckboxes);
+		setSelectedCheckboxes(updatedCheckboxes)
 
-    // Update URL search parameters
-    if (updatedCheckboxes.length === 0) {
-      searchParams.delete("phenomenon");
-    } else {
-      searchParams.set("phenomenon", updatedCheckboxes.join(","));
-    }
-    setSearchParams(searchParams);
-  };
+		// Update URL search parameters
+		if (updatedCheckboxes.length === 0) {
+			searchParams.delete('phenomenon')
+		} else {
+			searchParams.set('phenomenon', updatedCheckboxes.join(','))
+		}
+		setSearchParams(searchParams)
+	}
 
-  return (
-    <div className="dark:text-zinc-200 flex-col h-full flex-1 gap-2 flex justify-around">
-      {navigation.state === "loading" && (
-        <div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
-          <Spinner />
-        </div>
-      )}
-      {/* <ScrollArea className="py-1">
+	return (
+		<div className="flex h-full flex-1 flex-col justify-around gap-2 dark:text-zinc-200">
+			{navigation.state === 'loading' && (
+				<div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+					<Spinner />
+				</div>
+			)}
+			{/* <ScrollArea className="py-1">
         <div className="grid grid-cols-2 gap-1 py-1">
           {loaderData.phenomena.map(
             (
@@ -91,7 +94,7 @@ export function PhenomenonSelect() {
           </span>
         </Button>
       </div> */}
-      <div className="flex items-center justify-center">Coming soon</div>
-    </div>
-  );
+			<div className="flex items-center justify-center">Coming soon</div>
+		</div>
+	)
 }
