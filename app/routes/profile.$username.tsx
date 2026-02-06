@@ -9,7 +9,7 @@ import {
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
-import { getInitials } from '~/utils/misc'
+import { formatCount, getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -117,7 +117,7 @@ export default function () {
 					<div className="grid grid-cols-2 gap-4 md:pt-6">
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
 							<span className="text-2xl font-bold dark:text-dark-green">
-								{profile?.user?.devices.length}
+								{formatCount(profile?.user?.devices.length || 0)}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
 								{t('devices')}
