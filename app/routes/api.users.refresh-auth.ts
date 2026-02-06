@@ -1,8 +1,8 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
-import { getUserFromJwt, hashJwt, refreshJwt } from '~/lib/jwt'
-import { parseRefreshTokenData } from '~/lib/request-parsing'
-import { type User } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import  { type ActionFunction, type ActionFunctionArgs } from "react-router";
+import { getUserFromJwt, hashJwt, refreshJwt } from "~/lib/jwt";
+import { parseRefreshTokenData } from "~/lib/request-parsing";
+import  { type User } from "~/schema";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -112,53 +112,48 @@ import { StandardResponse } from '~/utils/response-utils'
  */
 
 export const action: ActionFunction = async ({
-	request,
+  request,
 }: ActionFunctionArgs) => {
-	try {
-		// Parse request data - handles both JSON and form data automatically
-		const data = await parseRefreshTokenData(request)
+  try {
+    // Parse request data - handles both JSON and form data automatically
+    const data = await parseRefreshTokenData(request);
+    
+    if (!data.token || data.token.trim().length === 0)
+      return StandardResponse.forbidden("You must specify a token to refresh");
 
-		if (!data.token || data.token.trim().length === 0)
-			return StandardResponse.forbidden('You must specify a token to refresh')
+    // We deliberately make casts and stuff like that, so everything
+    // but the happy path will result in an internal server error.
+    // This is done s.t. we are not leaking information if someone
+    // tries sending random token to see if users exist or similar
+    const user = (await getUserFromJwt(request)) as User;
+    const rawAuthorizationHeader = request.headers
+      .get("authorization")!
+      .toString();
+    const [, jwtString = ""] = rawAuthorizationHeader.split(" ");
 
-		// We deliberately make casts and stuff like that, so everything
-		// but the happy path will result in an internal server error.
-		// This is done s.t. we are not leaking information if someone
-		// tries sending random token to see if users exist or similar
-		const user = (await getUserFromJwt(request)) as User
-		const rawAuthorizationHeader = request.headers
-			.get('authorization')!
-			.toString()
-		const [, jwtString = ''] = rawAuthorizationHeader.split(' ')
+    if (data.token !== hashJwt(jwtString))
+      return StandardResponse.forbidden("Refresh token invalid or too old. Please sign in with your username and password.");
 
-		if (data.token !== hashJwt(jwtString))
-			return StandardResponse.forbidden(
-				'Refresh token invalid or too old. Please sign in with your username and password.',
-			)
+    const { token, refreshToken } =
+      (await refreshJwt(user, data.token)) || {};
 
-		const { token, refreshToken } = (await refreshJwt(user, data.token)) || {}
-
-		if (token && refreshToken)
-			return StandardResponse.ok({
-				code: 'Authorized',
-				message: 'Successfully refreshed auth',
-				data: { user },
-				token,
-				refreshToken,
-			})
-		else
-			return StandardResponse.forbidden(
-				'Refresh token invalid or too old. Please sign in with your username and password.',
-			)
-	} catch (error) {
-		// Handle parsing errors
-		if (error instanceof Error && error.message.includes('Failed to parse'))
-			return StandardResponse.forbidden(
-				`Invalid request format: ${error.message}`,
-			)
-
-		// Handle other errors
-		console.warn(error)
-		return StandardResponse.internalServerError()
-	}
-}
+    if (token && refreshToken)
+      return StandardResponse.ok({
+          code: "Authorized",
+          message: "Successfully refreshed auth",
+          data: { user },
+          token,
+          refreshToken,
+        });
+    else
+      return StandardResponse.forbidden("Refresh token invalid or too old. Please sign in with your username and password.");
+  } catch (error) {
+    // Handle parsing errors
+    if (error instanceof Error && error.message.includes('Failed to parse'))
+      return StandardResponse.forbidden(`Invalid request format: ${error.message}`);
+    
+    // Handle other errors
+    console.warn(error);
+    return StandardResponse.internalServerError();
+  }
+};

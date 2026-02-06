@@ -30,7 +30,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     ports:
-      - '9000:9000' # S3 API
-      - '9001:9001' # Admin UI
+      - '9000:9000'   # S3 API
+      - '9001:9001'   # Admin UI
     volumes:
-      - ./minio-data:/data
+      - ./minio-data:/data 

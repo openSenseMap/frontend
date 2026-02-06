@@ -1,11 +1,7 @@
-import {
-	type Params,
-	type LoaderFunction,
-	type LoaderFunctionArgs,
-} from 'react-router'
-import { getLocations } from '~/models/device.server'
-import { parseDateParam, parseEnumParam } from '~/utils/param-utils'
-import { StandardResponse } from '~/utils/response-utils'
+import { type Params, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { getLocations } from "~/models/device.server";
+import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
+import { StandardResponse } from "~/utils/response-utils";
 
 /**
  * @openapi
@@ -96,91 +92,87 @@ import { StandardResponse } from '~/utils/response-utils'
  */
 
 export const loader: LoaderFunction = async ({
-	request,
-	params,
+  request,
+  params,
 }: LoaderFunctionArgs): Promise<Response> => {
-	try {
-		const collected = collectParameters(request, params)
-		if (collected instanceof Response) return collected
-		const { deviceId, fromDate, toDate, format } = collected
+  try {
 
-		const locations = await getLocations({ id: deviceId }, fromDate, toDate)
-		if (!locations) return StandardResponse.notFound('Device not found')
+    const collected = collectParameters(request, params);
+    if (collected instanceof Response)
+      return collected;
+    const {deviceId, fromDate, toDate, format} = collected;
 
-		const jsonLocations = locations.map((location) => {
-			return {
-				coordinates: [location.x, location.y],
-				type: 'Point',
-				timestamp: location.time,
-			}
-		})
+    const locations = await getLocations({ id: deviceId}, fromDate, toDate);
+    if (!locations)
+      return StandardResponse.notFound("Device not found");
 
-		let headers: HeadersInit = {
-			'content-type':
-				format == 'json'
-					? 'application/json; charset=utf-8'
-					: 'application/geo+json; charset=utf-8',
-		}
+    const jsonLocations = locations.map((location) => {
+      return {
+        coordinates: [location.x, location.y],
+        type: 'Point',
+        timestamp: location.time,
+      }
+    });
 
-		const responseInit: ResponseInit = {
-			status: 200,
-			headers: headers,
-		}
+    let headers: HeadersInit = {
+        "content-type": format == "json" ? "application/json; charset=utf-8" : "application/geo+json; charset=utf-8",
+    };
 
-		if (format == 'json') return Response.json(jsonLocations, responseInit)
-		else {
-			const geoJsonLocations = {
-				type: 'Feature',
-				geometry: {
-					type: 'LineString',
-					coordinates: jsonLocations.map((location) => location.coordinates),
-				},
-				properties: {
-					timestamps: jsonLocations.map((location) => location.timestamp),
-				},
-			}
-			return Response.json(geoJsonLocations, responseInit)
-		}
-	} catch (err) {
-		console.warn(err)
-		return StandardResponse.internalServerError()
-	}
-}
+    const responseInit: ResponseInit = {
+      status: 200,
+      headers: headers,
+    };
 
-function collectParameters(
-	request: Request,
-	params: Params<string>,
-):
-	| Response
-	| {
-			deviceId: string
-			fromDate: Date
-			toDate: Date
-			format: string | null
-	  } {
-	const deviceId = params.deviceId
-	if (deviceId === undefined)
-		return StandardResponse.badRequest('Invalid device id specified')
+    if (format == "json")
+      return Response.json(jsonLocations, responseInit);
+    else {
+      const geoJsonLocations =  {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString', coordinates: jsonLocations.map(location => location.coordinates)
+          },
+          properties: {
+            timestamps: jsonLocations.map(location => location.timestamp)
+          }
+        };
+      return Response.json(geoJsonLocations, responseInit)
+    }
 
-	const url = new URL(request.url)
+  } catch (err) {
+    console.warn(err);
+    return StandardResponse.internalServerError();
+  }
+};
 
-	const fromDate = parseDateParam(
-		url,
-		'from-date',
-		new Date(new Date().setDate(new Date().getDate() - 2)),
-	)
-	if (fromDate instanceof Response) return fromDate
+function collectParameters(request: Request, params: Params<string>):
+  Response | {
+    deviceId: string,
+    fromDate: Date,
+    toDate: Date,
+    format: string | null
+  } {
+  const deviceId = params.deviceId;
+  if (deviceId === undefined)
+    return StandardResponse.badRequest("Invalid device id specified");
 
-	const toDate = parseDateParam(url, 'to-date', new Date())
-	if (toDate instanceof Response) return toDate
+  const url = new URL(request.url);
 
-	const format = parseEnumParam(url, 'format', ['json', 'geojson'], 'json')
-	if (format instanceof Response) return format
+  const fromDate = parseDateParam(url, "from-date", new Date(new Date().setDate(new Date().getDate() - 2)))
+  if (fromDate instanceof Response)
+    return fromDate
 
-	return {
-		deviceId,
-		fromDate,
-		toDate,
-		format,
-	}
+  const toDate = parseDateParam(url, "to-date", new Date())
+  if (toDate instanceof Response)
+    return toDate
+
+  const format = parseEnumParam(url, "format", ["json", "geojson"], "json");
+  if (format instanceof Response)
+    return format
+
+  return {
+    deviceId,
+    fromDate,
+    toDate,
+    format
+  };
 }
