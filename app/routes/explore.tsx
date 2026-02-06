@@ -332,7 +332,7 @@ export default function Explore() {
 		}
 	}
 
-	//* fly to sensebox location when url inludes deviceId
+	//* fly to device location when url inludes deviceId
 	const { deviceId } = useParams()
 	var deviceLoc: any
 	let selectedDevice: any

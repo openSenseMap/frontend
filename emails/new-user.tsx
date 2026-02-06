@@ -16,7 +16,7 @@ const messages = {
 		description:
 			"thank you for registering yourself on the openSenseMap platform. You'll find your profile at",
 		descriptionSuffix:
-			'There, you can create new senseBoxes and change data and credentials.',
+			'There, you can create new devices and change data and credentials.',
 		confirm: 'Please confirm your email address. Just click on this',
 		hint: 'If you are unable to click the link, you can also open this address with your web browser:',
 		support:

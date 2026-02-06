@@ -27,7 +27,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *        required: true
  *        schema:
  *          type: string
- *        description: the ID of the senseBox you are referring to
+ *        description: the ID of the device you are referring to
  *      - in: path
  *        name: sensorId
  *        required: true

@@ -558,7 +558,7 @@ export default function () {
 							{/* Delete device */}
 							<div>
 								<h1 className="mt-7 text-3xl text-[#FF4136]">
-									Delete senseBox
+									Delete device
 								</h1>
 							</div>
 
@@ -593,7 +593,7 @@ export default function () {
 									disabled={!passwordDelVal}
 									className="mb-5 rounded border border-gray-200 px-4 py-2 text-black hover:bg-[#e6e6e6] disabled:border-[#ccc] disabled:text-[#8a8989]"
 								>
-									Delete senseBox
+									Delete device
 								</button>
 							</div>
 						</div>

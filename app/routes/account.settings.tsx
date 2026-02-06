@@ -418,7 +418,7 @@ export default function Settings() {
                   <hr className="my-2 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
                   <div className="">
                     <p>
-                      If you delete your account, all your senseBoxes and
+                      If you delete your account, all your devices and
                       measurements will be deleted.
                     </p>
                     <p className="mb-0 mt-1">
