@@ -204,6 +204,20 @@
       "when": 1769504950323,
       "tag": "0028_gigantic_deadpool",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1770285162055,
+      "tag": "0029_plain_black_widow",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1770303921106,
+      "tag": "0030_parallel_toxin",
+      "breakpoints": true
     }
   ]
 }

@@ -39,6 +39,7 @@ export const device = pgTable('device', {
 		.default(sql`ARRAY[]::text[]`),
 	link: text('link'),
 	useAuth: boolean('use_auth'),
+	apiKey: text('apiKey'),
 	exposure: DeviceExposureEnum('exposure'),
 	status: DeviceStatusEnum('status').default('inactive'),
 	model: DeviceModelEnum('model').default('custom'),

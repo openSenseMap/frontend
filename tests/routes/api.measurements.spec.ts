@@ -3,15 +3,12 @@ import { csvExampleData, jsonSubmitData, byteSubmitData } from 'tests/data'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
-import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
-import { accessToken, type User } from '~/schema'
-
-const mockAccessToken = 'valid-access-token'
+import { type User } from '~/schema'
 
 const TEST_USER = generateTestUserCredentials()
 
@@ -36,6 +33,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 	let deviceId: string = ''
 	let sensorIds: string[] = []
 	let sensors: any[] = []
+	let deviceApiKey: string = ''
 
 	beforeAll(async () => {
 		const user = await registerUser(
@@ -52,11 +50,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 		sensorIds =
 			deviceWithSensors?.sensors?.map((sensor: any) => sensor.id) || []
 		sensors = deviceWithSensors?.sensors?.map((sensor: any) => sensor) || []
-
-		await drizzleClient.insert(accessToken).values({
-			deviceId: deviceId,
-			token: 'valid-access-token',
-		})
+		deviceApiKey = deviceWithSensors?.apiKey ?? ''
 	})
 
 	// ---------------------------------------------------
@@ -70,7 +64,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify({ value: 312.1 }),
 				},
@@ -120,7 +114,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify({ value: 123.4, createdAt: timestamp }),
 				},
@@ -145,7 +139,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify({ value: 123.4, createdAt: future }),
 				},
@@ -172,7 +166,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'text/csv',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: csvPayload,
 			})
@@ -194,7 +188,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'text/csv',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: csvPayload,
 			})
@@ -215,7 +209,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'text/csv',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: csvPayload,
 			})
@@ -240,7 +234,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/sbx-bytes',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: byteSubmitData(sensors) as unknown as BodyInit,
 			})
@@ -278,7 +272,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/sbx-bytes-ts',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: byteSubmitData(sensors, true) as unknown as BodyInit,
 			})
@@ -342,7 +336,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/sbx-bytes',
-				Authorization: mockAccessToken,
+				Authorization: deviceApiKey,
 			},
 			body: bytes,
 		})
@@ -364,7 +358,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/sbx-bytes',
-				Authorization: mockAccessToken,
+				Authorization: deviceApiKey,
 			},
 			body: new Uint8Array(0),
 		})
@@ -420,7 +414,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: JSON.stringify(submitData),
 			})
@@ -457,7 +451,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			const request = new Request(`${BASE_URL}/api/boxes/${deviceId}/data`, {
 				method: 'POST',
 				headers: {
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 					// TODO: remove header here
 					'Content-Type': 'application/json',
 				},
@@ -495,7 +489,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: JSON.stringify(submitData),
 			})
