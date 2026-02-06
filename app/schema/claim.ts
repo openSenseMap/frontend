@@ -1,11 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
-import {
-	type InferInsertModel,
-	type InferSelectModel,
-} from 'drizzle-orm'
+import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm'
 import { index, pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core'
 import { device } from './device'
-
 
 export const claim = pgTable(
 	'claim',

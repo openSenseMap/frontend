@@ -19,15 +19,15 @@ const alertVariants = cva(
 				default:
 					'bg-white text-slate-950 dark:bg-dark-boxes dark:text-dark-text',
 				destructive:
-					'border-red-500/50 dark:border-red-900/50 dark:text-red-900 dark:dark:border-red-900 dark:[&>svg]:text-red-900 text-red-500 dark:border-red-500 [&>svg]:text-red-500',
-				note: 'border-blue-500/50 dark:border-blue-900/50 dark:bg-blue-900/20 bg-blue-50 dark:text-blue-200 dark:[&>svg]:text-blue-400 text-blue-900 [&>svg]:text-blue-500',
+					'border-red-500/50 dark:border-red-900/50 text-red-500 dark:border-red-500 dark:dark:border-red-900 dark:text-red-900 [&>svg]:text-red-500 dark:[&>svg]:text-red-900',
+				note: 'border-blue-500/50 dark:border-blue-900/50 dark:bg-blue-900/20 bg-blue-50 text-blue-900 dark:text-blue-200 [&>svg]:text-blue-500 dark:[&>svg]:text-blue-400',
 				tip: 'border-green-500/50 dark:border-green-900/50 dark:bg-green-900/20 bg-green-50 text-green-900 dark:text-green-200 [&>svg]:text-green-500 dark:[&>svg]:text-green-400',
 				important:
-					'border-violet-500/50 bg-violet-50 text-violet-900 dark:border-violet-900/50 dark:bg-violet-900/20 dark:text-violet-200 dark:[&>svg]:text-violet-400 [&>svg]:text-violet-500',
+					'border-violet-500/50 dark:border-violet-900/50 dark:bg-violet-900/20 bg-violet-50 text-violet-900 dark:text-violet-200 [&>svg]:text-violet-500 dark:[&>svg]:text-violet-400',
 				warning:
-					'border-yellow-500/50 bg-yellow-50 text-yellow-900 dark:border-yellow-900/50 dark:bg-yellow-900/20 dark:text-yellow-200 [&>svg]:text-yellow-500 dark:[&>svg]:text-yellow-400',
+					'border-yellow-500/50 dark:border-yellow-900/50 dark:bg-yellow-900/20 bg-yellow-50 text-yellow-900 dark:text-yellow-200 [&>svg]:text-yellow-500 dark:[&>svg]:text-yellow-400',
 				caution:
-					'border-red-500/50 dark:border-red-900/50 dark:bg-red-900/20 bg-red-50 text-red-900 dark:text-red-200 dark:[&>svg]:text-red-400 [&>svg]:text-red-500',
+					'border-red-500/50 dark:border-red-900/50 dark:bg-red-900/20 bg-red-50 text-red-900 dark:text-red-200 [&>svg]:text-red-500 dark:[&>svg]:text-red-400',
 			},
 		},
 		defaultVariants: {

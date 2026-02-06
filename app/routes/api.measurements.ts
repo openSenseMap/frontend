@@ -1,7 +1,7 @@
-import { type ActionFunctionArgs } from "react-router";
-import { drizzleClient } from "~/db.server";
-import { measurement, type Measurement } from "~/schema";
-import { StandardResponse } from "~/utils/response-utils";
+import { type ActionFunctionArgs } from 'react-router'
+import { drizzleClient } from '~/db.server'
+import { measurement, type Measurement } from '~/schema'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -83,23 +83,22 @@ import { StandardResponse } from "~/utils/response-utils";
  *           example: 25.4
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
-  if (request.method !== "POST")
-    return StandardResponse.methodNotAllowed("Method not allowed");
+	if (request.method !== 'POST')
+		return StandardResponse.methodNotAllowed('Method not allowed')
 
-  try {
-    const payload: Measurement[] = await request.json();
-    
-    const measurements = payload.map((data) => ({
-      sensorId: data.sensorId,
-      time: new Date(data.time),
-      value: Number(data.value),
-    }));
+	try {
+		const payload: Measurement[] = await request.json()
 
-    await drizzleClient.insert(measurement).values(measurements);
-    
-    return StandardResponse.ok("Measurements successfully stored");
-    
-  } catch (error) {
-    return StandardResponse.badRequest(`${error}`);
-  }
-};
+		const measurements = payload.map((data) => ({
+			sensorId: data.sensorId,
+			time: new Date(data.time),
+			value: Number(data.value),
+		}))
+
+		await drizzleClient.insert(measurement).values(measurements)
+
+		return StandardResponse.ok('Measurements successfully stored')
+	} catch (error) {
+		return StandardResponse.badRequest(`${error}`)
+	}
+}
