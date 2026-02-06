@@ -1,33 +1,51 @@
-// app/routes/docs.tsx
 import { useLoaderData } from "react-router";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css";
-import { openapiSpecification } from "~/lib/openapi"; // Direct import
-
-// In production, use the pre-built file
-const isProduction = process.env.NODE_ENV === "production";
 
 export const loader = async () => {
-  if (isProduction) {
+  if (process.env.NODE_ENV === "production") {
     const spec = await import("../../public/openapi.json");
-    return Response.json(spec);
+    return Response.json({ spec });
   }
-  return Response.json(openapiSpecification());
+
+  const { combinedOpenapiSpecification } = await import(
+    "~/lib/openapi.combined"
+  );
+
+  return Response.json({
+    spec: combinedOpenapiSpecification(),
+  });
 };
 
+
 export default function ApiDocumentation() {
-  const spec = useLoaderData();
+  const { spec } = useLoaderData<typeof loader>();
+
   return (
-    <main>
-      <div className="flex items-center justify-center p-3">
+    <main className="container mx-auto p-6">
+      <div className="flex justify-center p-3">
         <img
           src="./openSenseMap_API.png"
           alt="API Image"
-          height={350}
           width={350}
         />
       </div>
-      <SwaggerUI spec={spec} />
+
+      {/* Optional manual TOC */}
+      <div className="mb-6 flex gap-4 justify-center">
+        <a href="#public-api" className="text-blue-600 hover:underline">
+          Public API
+        </a>
+        <a href="#integration-api" className="text-green-600 hover:underline">
+          Integration API
+        </a>
+      </div>
+
+      <SwaggerUI
+        spec={spec}
+        docExpansion="list"
+        defaultModelsExpandDepth={1}
+      />
     </main>
   );
 }
