@@ -5,161 +5,126 @@ import { useFormContext } from "react-hook-form";
 import { CheckboxWidget } from "~/components/rjsf/checkboxWidget";
 import { FieldTemplate } from "~/components/rjsf/fieldTemplate";
 import { BaseInputTemplate } from "~/components/rjsf/inputTemplate";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { Switch } from "~/components/ui/switch";
+import { type IntegrationMetadata } from "~/routes/api.integrations";
 
 export function AdvancedStep() {
   const { watch, setValue, resetField } = useFormContext();
+  const [integrations, setIntegrations] = useState<IntegrationMetadata[]>([]);
+  const [schemas, setSchemas] = useState<Record<string, { schema: any; uiSchema: any }>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-  const mqttEnabled = watch("mqttEnabled") ?? false;
-  const ttnEnabled = watch("ttnEnabled") ?? false;
-  const mqttConfig = watch("mqttConfig") ?? {};
-
-  const [schema, setSchema] = useState<any>(null);
-  const [uiSchema, setUiSchema] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [schemaError, setSchemaError] = useState<string | null>(null);
-
-  // ----------------------------------
-  // Load MQTT schema on demand
-  // ----------------------------------
+  // Load available integrations on mount
   useEffect(() => {
-    if (!mqttEnabled || schema) return;
-
-    const loadSchema = async () => {
-      setLoading(true);
-      setSchemaError(null);
-
+    const loadIntegrations = async () => {
       try {
-        const res = await fetch("/api/integrations/schema/mqtt");
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch MQTT schema");
-        }
-
+        const res = await fetch("/api/integrations");
+        if (!res.ok) throw new Error("Failed to fetch integrations");
         const data = await res.json();
-        setSchema(data.schema);
-        setUiSchema(data.uiSchema);
+        setIntegrations(data);
       } catch (err) {
-        console.error("Failed to load MQTT schema", err);
-        setSchemaError("Failed to load MQTT configuration schema.");
-      } finally {
-        setLoading(false);
+        console.error("Failed to load integrations", err);
       }
     };
 
-    void loadSchema();
-  }, [mqttEnabled, schema]);
+    void loadIntegrations();
+  }, []);
 
-  // ----------------------------------
-  // Toggle handlers
-  // ----------------------------------
-  const handleMqttToggle = (checked: boolean) => {
-    setValue("mqttEnabled", checked);
+  // Load schema when integration is enabled
+  const loadSchema = async (slug: string, schemaUrl: string) => {
+    if (schemas[slug]) return; // Already loaded
 
-    if (!checked) {
-      resetField("mqttConfig");
+    setLoading((prev) => ({ ...prev, [slug]: true }));
+
+    try {
+      console.log("schema url", schemaUrl)
+      const res = await fetch(schemaUrl);
+      if (!res.ok) throw new Error(`Failed to fetch ${slug} schema`);
+
+      const data = await res.json();
+      setSchemas((prev) => ({ ...prev, [slug]: data }));
+    } catch (err) {
+      console.error(`Failed to load ${slug} schema`, err);
+    } finally {
+      setLoading((prev) => ({ ...prev, [slug]: false }));
     }
   };
 
-  const handleTtnToggle = (checked: boolean) => {
-    setValue("ttnEnabled", checked);
+  // Toggle handler
+  const handleToggle = (slug: string, checked: boolean, schemaUrl: string) => {
+    setValue(`${slug}Enabled`, checked);
+
+    if (checked) {
+      void loadSchema(slug, schemaUrl);
+    } else {
+      resetField(`${slug}Config`);
+    }
   };
 
   return (
     <>
-      {/* ============================= */}
-      {/* MQTT Configuration */}
-      {/* ============================= */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>MQTT Configuration</CardTitle>
-          <CardDescription>
-            Configure your MQTT settings for data streaming
-          </CardDescription>
-        </CardHeader>
+      {integrations.map((intg) => {
+        const enabled = watch(`${intg.slug}Enabled`) ?? false;
+        const config = watch(`${intg.slug}Config`) ?? {};
+        const isLoading = loading[intg.slug] ?? false;
+        const schema = schemas[intg.slug];
 
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="mqttEnabled" className="text-base font-semibold">
-              Enable MQTT
-            </Label>
-            <Switch
-              id="mqttEnabled"
-              checked={mqttEnabled}
-              onCheckedChange={handleMqttToggle}
-            />
-          </div>
-
-          {mqttEnabled && (
-            <>
-              {loading && (
-                <p className="text-sm text-muted-foreground">
-                  Loading MQTT configuration…
-                </p>
+        return (
+          <Card key={intg.id} className="w-full mb-6">
+            <CardHeader>
+              <CardTitle>{intg.name} Configuration</CardTitle>
+              {intg.description && (
+                <CardDescription>{intg.description}</CardDescription>
               )}
+            </CardHeader>
 
-              {schemaError && (
-                <p className="text-sm text-red-600">{schemaError}</p>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor={`${intg.slug}Enabled`} className="text-base font-semibold">
+                  Enable {intg.name}
+                </Label>
+                <Switch
+                  id={`${intg.slug}Enabled`}
+                  checked={enabled}
+                  onCheckedChange={(checked) => handleToggle(intg.slug, checked, intg.schemaUrl)}
+                />
+              </div>
+
+              {enabled && (
+                <>
+                  {isLoading && (
+                    <p className="text-sm text-muted-foreground">
+                      Loading {intg.name} configuration…
+                    </p>
+                  )}
+
+                  {schema && (
+                    <Form
+                      widgets={{ CheckboxWidget }}
+                      templates={{ FieldTemplate, BaseInputTemplate }}
+                      schema={schema.schema}
+                      uiSchema={schema.uiSchema}
+                      validator={validator}
+                      formData={config}
+                      onChange={(e) => {
+                        setValue(`${intg.slug}Config`, e.formData, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                      onSubmit={() => {}}
+                    >
+                      <></>
+                    </Form>
+                  )}
+                </>
               )}
-
-              {schema && (
-                <Form
-                  widgets={{CheckboxWidget}}
-                  templates={{ FieldTemplate, BaseInputTemplate }}
-                  schema={schema}
-                  uiSchema={uiSchema}
-                  validator={validator}
-                  formData={mqttConfig}
-                  onChange={(e) => {
-                    setValue("mqttConfig", e.formData, {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    });
-                  }}
-                  onSubmit={() => {}}
-                >
-                  {/* Prevent native submit */}
-                  <></>
-                </Form>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ============================= */}
-      {/* TTN Configuration */}
-      {/* ============================= */}
-      <Card className="w-full mt-6">
-        <CardHeader>
-          <CardTitle>TTN Configuration</CardTitle>
-          <CardDescription>
-            Configure your TTN (The Things Network) settings
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="ttnEnabled" className="text-base font-semibold">
-              Enable TTN
-            </Label>
-            <Switch
-              disabled
-              id="ttnEnabled"
-              checked={ttnEnabled}
-              onCheckedChange={handleTtnToggle}
-            />
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        );
+      })}
     </>
   );
 }

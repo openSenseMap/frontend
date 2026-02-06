@@ -2,6 +2,7 @@ import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "reac
 import ValidationStepperForm from "~/components/device/new/new-device-stepper";
 import { NavBar } from "~/components/nav-bar";
 import { createDevice } from "~/models/device.server";
+import { getIntegrations } from "~/models/integration.server";
 import { getUser, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -26,19 +27,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const data = JSON.parse(rawData);
     const advanced = data.advanced;
 
-    const mqttConfig = advanced?.mqttEnabled && advanced?.mqttConfig
-      ? {
-          url: advanced.mqttConfig.url,
-          topic: advanced.mqttConfig.topic,
-          messageFormat: advanced.mqttConfig.messageFormat,
-          decodeOptions: advanced.mqttConfig.decodeOptions,
-          connectionOptions: advanced.mqttConfig.connectionOptions,
-        }
-      : undefined;
-
-    // -----------------------------
     // Map sensors from nested objects
-    // -----------------------------
     const sensors = data["sensor-selection"].selectedSensors.map(
       (sensor: any) => ({
         title: sensor.title,
@@ -47,9 +36,7 @@ export async function action({ request }: ActionFunctionArgs) {
       })
     );
 
-    // -----------------------------
-    // Construct device payload
-    // -----------------------------
+    // Construct device payload 
     const devicePayload = {
       name: data["general-info"].name,
       exposure: data["general-info"].exposure,
@@ -61,8 +48,6 @@ export async function action({ request }: ActionFunctionArgs) {
       longitude: data.location.longitude,
       model: data["device-selection"].model,
       sensors,
-      mqttEnabled: data.advanced.mqttEnabled,
-      ttnEnabled: data.advanced.ttnEnabled,
     };
 
     // -----------------------------
@@ -71,39 +56,53 @@ export async function action({ request }: ActionFunctionArgs) {
     const newDevice = await createDevice(devicePayload, userId);
     const deviceId = newDevice.id;
 
-    // -----------------------------
-    // Create MQTT integration
-    // -----------------------------
-    if (advanced?.mqttEnabled && mqttConfig) {
-      const serviceUrl = process.env.MQTT_SERVICE_URL;
-      const serviceKey = process.env.MQTT_SERVICE_KEY;
+    const integrations = await getIntegrations();
 
-      if (!serviceUrl || !serviceKey) {
-        throw new Error("MQTT service env vars are not configured");
+    for (const intg of integrations) {
+      const enabledKey = `${intg.slug}Enabled`; 
+      const configKey = `${intg.slug}Config`;   
+
+      // Check if this integration is enabled in the form data
+      if (!advanced?.[enabledKey] || !advanced?.[configKey]) {
+        continue; 
       }
 
-      const mqttResponse = await fetch(
-        `${serviceUrl}/integrations/${deviceId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-service-key": serviceKey,
-          },
-          body: JSON.stringify(mqttConfig),
+      try {
+
+        const serviceKey = process.env[intg.serviceKeyEnvVar];
+        
+        if (!serviceKey) {
+          throw new Error(
+            `Service key env var '${intg.serviceKeyEnvVar}' not configured`
+          );
         }
-      );
 
-      if (!mqttResponse.ok) {
-        const errText = await mqttResponse.text();
-        console.error("Failed to create MQTT integration:", errText);
+        const response = await fetch(
+          `${intg.serviceUrl}/integrations/${deviceId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-service-key": serviceKey,
+            },
+            body: JSON.stringify(advanced[configKey]),
+          }
+        );
 
-        // Device exists already → decide whether you want rollback later
-        throw new Error("Device created but MQTT setup failed");
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Failed: ${response.status} - ${errText}`);
+        }
+
+        console.log(`✅ Created ${intg.name} integration for device ${deviceId}`);
+      } catch (error) {
+        console.error(`Failed to create ${intg.name} integration:`, error);
+        
       }
     }
 
-    console.log("🚀 ~ New Device Created:", newDevice);
+    console.log("🚀 Device Created:", newDevice.id);
+
     return redirect("/profile/me");
   } catch (error) {
     console.error("Error creating device:", error);
