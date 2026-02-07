@@ -46,7 +46,9 @@ export function DataTable<TData, TValue>({
 	columns,
 	data,
 }: DataTableProps<TData, TValue>) {
-	const [sorting, setSorting] = React.useState<SortingState>([])
+	const [sorting, setSorting] = React.useState<SortingState>([
+		 { id: 'createdAt', desc: true }
+	])
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
 		[],
 	)
@@ -68,15 +70,11 @@ export function DataTable<TData, TValue>({
       pagination: {
         pageSize: 5,
       },
-       sorting: [
-        {
-          id: "createdAt",
-          desc: true,
-        },
-      ],
     },
   });
-  const tableColsWidth = [30, 30, 40];
+  const tableColsWidth = [30, 30, 30, 40];
+
+	const { t } = useTranslation('data-table')
 
 	return (
 		<div>
