@@ -15,65 +15,50 @@ import {
 import { type Device } from '~/schema'
 
 export type SenseBox = {
-  id: string;
-  name: string;
-  exposure: Device["exposure"];
-  createdAt: string;
-  // model: string;
-};
+	id: string
+	name: string
+	exposure: Device['exposure']
+	// model: string;
+}
 
 const colStyle = 'pl-0 dark:text-white'
 
-export const columns: ColumnDef<SenseBox>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className={colStyle}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"))
-      return <div>{date.toLocaleDateString()}</div>
-    },
-    },
-  {
-    accessorKey: "exposure",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className={colStyle}
-        >
-          Exposure
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  /* {
+export function getColumns(
+	useTranslation: UseTranslationResponse<'data-table', any>,
+): ColumnDef<SenseBox>[] {
+	const { t } = useTranslation
+	return [
+		{
+			accessorKey: 'name',
+			header: ({ column }) => {
+				return (
+					<Button
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+						className={colStyle}
+					>
+						{t('name')}
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+					</Button>
+				)
+			},
+		},
+		{
+			accessorKey: 'exposure',
+			header: ({ column }) => {
+				return (
+					<Button
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+						className={colStyle}
+					>
+						{t('exposure')}
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+					</Button>
+				)
+			},
+		},
+		/* {
     accessorKey: "model",
     header: ({ column }) => {
       return (
