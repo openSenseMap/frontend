@@ -133,7 +133,7 @@ export function DataTable<TData, TValue>({
 							<TableRow>
 								<TableCell
 									colSpan={columns.length}
-									className="text-centerdark:text-dark-text h-24"
+									className="text-center dark:text-dark-text h-24"
 								>
 									{t('no_results')}
 								</TableCell>
