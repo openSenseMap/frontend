@@ -12,6 +12,7 @@
     "sensebox_id": "Sensebox ID",
     "actions": "Actions",
     "name": "Name",
+    "createdAt": "Created at",
     "exposure": "Exposure",
     "model": "Model",
     "overview": "Overview",
