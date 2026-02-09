@@ -512,7 +512,8 @@ export default function DeviceDetailBox() {
 																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
-																							{sensor.lastMeasurement?.value ?? '–'}
+																							{sensor.lastMeasurement?.value ??
+																								'–'}
 																						</div>
 																						<p className="text-xs text-muted-foreground">
 																							{sensor.unit}
@@ -588,7 +589,8 @@ export default function DeviceDetailBox() {
 																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
-																							{sensor.lastMeasurement?.value ?? '–'}
+																							{sensor.lastMeasurement?.value ??
+																								'–'}
 																						</div>
 																						<p className="text-xs text-muted-foreground">
 																							{sensor.unit}

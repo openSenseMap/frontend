@@ -103,7 +103,7 @@ const Map = forwardRef<MapRef, MapProps>(
 					top: 0,
 					left: 0,
 				}}
-				touchZoomRotate={{around: 'center'}}
+				touchZoomRotate={{ around: 'center' }}
 				onLoad={handleMapLoad}
 				{...props}
 			>

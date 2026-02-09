@@ -58,8 +58,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		}
 	}
 
-
-
 	const exposureLowerCase =
 		typeof exposure === 'string' ? exposure.toLowerCase() : ''
 
@@ -77,10 +75,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		typeof description === 'string',
 		'Device description must be a string.',
 	)
-	invariant(
-		typeof website === 'string',
-		'Device website must be a string.',
-	)
+	invariant(typeof website === 'string', 'Device website must be a string.')
 
 	if (
 		exposureLowerCase !== 'indoor' &&
@@ -103,7 +98,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			let imageUrl: string | undefined
 
 			if (image && image.size > 0 && image.name !== '') {
-				const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+				const validTypes = [
+					'image/jpeg',
+					'image/png',
+					'image/webp',
+					'image/gif',
+				]
 				const maxSize = 5 * 1024 * 1024 // 5MB
 
 				if (!validTypes.includes(image.type)) {
@@ -111,7 +111,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 						errors: {
 							exposure: null,
 							passwordDelete: null,
-							image: 'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF.',
+							image:
+								'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF.',
 						},
 						status: 400,
 					})
@@ -163,7 +164,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		}
 		case 'removeImage': {
 			const device = await getDeviceWithoutSensors({ id: deviceID })
-			
+
 			if (device?.image) {
 				try {
 					await deleteDeviceImage(device.image)
@@ -245,7 +246,6 @@ export default function () {
 	const [newTag, setNewTag] = useState('')
 	const [website, setWebsite] = useState(device?.website || '')
 
-
 	const [imagePreview, setImagePreview] = useState<string | null>(
 		device?.image || null,
 	)
@@ -261,7 +261,7 @@ export default function () {
 	}
 
 	const removeTag = (tagToRemove: string) => {
-		setTags(tags.filter(tag => tag !== tagToRemove))
+		setTags(tags.filter((tag) => tag !== tagToRemove))
 	}
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -300,7 +300,7 @@ export default function () {
 		exposure !== device?.exposure ||
 		description !== device?.description ||
 		website !== device?.website ||
-		imageFile !== device?.image || 
+		imageFile !== device?.image ||
 		JSON.stringify(tags) !== JSON.stringify(device?.tags ?? [])
 
 	return (
@@ -430,7 +430,6 @@ export default function () {
 								</div>
 							</div>
 
-
 							{/* Image Upload */}
 							<div className="mt-3">
 								<label
@@ -440,126 +439,120 @@ export default function () {
 									Image
 								</label>
 								<div className="mt-1">
-										<div className="relative inline-block">
-											{imagePreview ? (
-												<>
-													<img
-														src={imagePreview}
-														alt="Device preview"
-														className="h-48 w-48 rounded border border-gray-200 object-cover"
-													/>
-													<button
-														type="button"
-														onClick={handleRemoveImage}
-														className="absolute right-0 top-0 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-													>
-														<X className="h-4 w-4" />
-													</button>
-													{device?.image && !imageFile && (
-										        <Button 
-														  variant="destructive"
-															className='top-2'
-															type="submit"
-															name="intent"
-															value="removeImage">
-															Remove image permanently
-														</Button>
-
-													)}
-												</>
-											) : (
-												<label
-													htmlFor="image"
-													className="flex h-48 w-48 cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-gray-300 hover:border-gray-400"
+									<div className="relative inline-block">
+										{imagePreview ? (
+											<>
+												<img
+													src={imagePreview}
+													alt="Device preview"
+													className="h-48 w-48 rounded border border-gray-200 object-cover"
+												/>
+												<button
+													type="button"
+													onClick={handleRemoveImage}
+													className="hover:bg-red-600 absolute right-0 top-0 rounded-full bg-red-500 p-1 text-white"
 												>
-													<Upload className="h-8 w-8 text-gray-400" />
-													<span className="mt-2 text-sm text-gray-500">
-														Upload Image
-													</span>
-												</label>
-											)}
+													<X className="h-4 w-4" />
+												</button>
+												{device?.image && !imageFile && (
+													<Button
+														variant="destructive"
+														className="top-2"
+														type="submit"
+														name="intent"
+														value="removeImage"
+													>
+														Remove image permanently
+													</Button>
+												)}
+											</>
+										) : (
+											<label
+												htmlFor="image"
+												className="flex h-48 w-48 cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-gray-300 hover:border-gray-400"
+											>
+												<Upload className="h-8 w-8 text-gray-400" />
+												<span className="mt-2 text-sm text-gray-500">
+													Upload Image
+												</span>
+											</label>
+										)}
 
-											<input
-												id="image"
-												name="image"
-												type="file"
-												accept="image/jpeg,image/png,image/webp,image/gif"
-												onChange={handleImageChange}
-												className="hidden"
-											/>
-										</div>
+										<input
+											id="image"
+											name="image"
+											type="file"
+											accept="image/jpeg,image/png,image/webp,image/gif"
+											onChange={handleImageChange}
+											className="hidden"
+										/>
 									</div>
-
-								
-									{actionData?.errors?.image && (
-										<div className="pt-1 text-[#FF0000]">
-											{actionData.errors.image}
-										</div>
-									)}
-									<p className="mt-1 text-sm text-gray-500">
-										Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
-									</p>
 								</div>
 
-								{/* Tags */}
-									<div className="mt-6">
-										<label className="txt-base block font-bold tracking-normal">
-											Tags
-										</label>
-
-										{/* Existing tags */}
-										<div className="mt-2 flex flex-wrap gap-2">
-											{tags.map(tag => (
-												<span
-													key={tag}
-													className="flex items-center gap-1 rounded-full bg-gray-200 px-3 py-1 text-sm"
-												>
-													{tag}
-													<button
-														type="button"
-														onClick={() => removeTag(tag)}
-														className="text-gray-600 hover:text-red-600"
-													>
-														<X className="h-3 w-3" />
-													</button>
-												</span>
-											))}
-										</div>
-
-										{/* Add new tag */}
-										<div className="mt-3 flex gap-2">
-											<input
-												type="text"
-												value={newTag}
-												onChange={e => setNewTag(e.target.value)}
-												onKeyDown={e => {
-													if (e.key === 'Enter') {
-														e.preventDefault()
-														addTag()
-													}
-												}}
-												placeholder="Add a tag"
-												className="flex-1 rounded border border-gray-200 px-2 py-1 text-base"
-											/>
-											<Button type="button" onClick={addTag}>
-												Add
-											</Button>
-										</div>
-										<input
-											type="hidden"
-											name="grouptag"
-											value={JSON.stringify(tags)}
-										/>
-
+								{actionData?.errors?.image && (
+									<div className="pt-1 text-[#FF0000]">
+										{actionData.errors.image}
 									</div>
+								)}
+								<p className="mt-1 text-sm text-gray-500">
+									Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
+								</p>
+							</div>
 
+							{/* Tags */}
+							<div className="mt-6">
+								<label className="txt-base block font-bold tracking-normal">
+									Tags
+								</label>
 
+								{/* Existing tags */}
+								<div className="mt-2 flex flex-wrap gap-2">
+									{tags.map((tag) => (
+										<span
+											key={tag}
+											className="flex items-center gap-1 rounded-full bg-gray-200 px-3 py-1 text-sm"
+										>
+											{tag}
+											<button
+												type="button"
+												onClick={() => removeTag(tag)}
+												className="hover:text-red-600 text-gray-600"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</span>
+									))}
+								</div>
+
+								{/* Add new tag */}
+								<div className="mt-3 flex gap-2">
+									<input
+										type="text"
+										value={newTag}
+										onChange={(e) => setNewTag(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') {
+												e.preventDefault()
+												addTag()
+											}
+										}}
+										placeholder="Add a tag"
+										className="flex-1 rounded border border-gray-200 px-2 py-1 text-base"
+									/>
+									<Button type="button" onClick={addTag}>
+										Add
+									</Button>
+								</div>
+								<input
+									type="hidden"
+									name="grouptag"
+									value={JSON.stringify(tags)}
+								/>
+							</div>
 
 							{/* Delete device */}
 							<div>
-								<h1 className="mt-7 text-3xl text-[#FF4136]">
-									Delete device
-								</h1>
+								<h1 className="mt-7 text-3xl text-[#FF4136]">Delete device</h1>
 							</div>
 
 							<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">

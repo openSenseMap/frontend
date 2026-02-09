@@ -1,14 +1,14 @@
-import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { createToken } from "~/lib/jwt";
-import { parseUserRegistrationData } from "~/lib/request-parsing";
+import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { createToken } from '~/lib/jwt'
+import { parseUserRegistrationData } from '~/lib/request-parsing'
 import {
-  type EmailValidation,
-  type PasswordValidation,
-  type UsernameValidation,
-} from "~/lib/user-service";
-import { registerUser } from "~/lib/user-service.server";
-import { type User } from "~/schema";
-import { StandardResponse } from "~/utils/response-utils";
+	type EmailValidation,
+	type PasswordValidation,
+	type UsernameValidation,
+} from '~/lib/user-service'
+import { registerUser } from '~/lib/user-service.server'
+import { type User } from '~/schema'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -133,7 +133,7 @@ import { StandardResponse } from "~/utils/response-utils";
  *             schema:
  *               type: string
  *             example: "Internal Server Error"
- * 
+ *
  * components:
  *   schemas:
  *     User:
@@ -178,82 +178,80 @@ import { StandardResponse } from "~/utils/response-utils";
  */
 
 export const action: ActionFunction = async ({
-  request,
+	request,
 }: ActionFunctionArgs) => {
-  const method = request.method;
-  if (method !== "POST")
-    return StandardResponse.methodNotAllowed("");
+	const method = request.method
+	if (method !== 'POST') return StandardResponse.methodNotAllowed('')
 
-  try {
-    // Parse request data - handles both JSON and form data automatically
-    const data = await parseUserRegistrationData(request);
-    
-    const username = data.name;
-    const email = data.email;
-    const password = data.password;
-    const language = data.language as "de_DE" | "en_US";
-    const registration = await registerUser(
-      username,
-      email,
-      password,
-      language,
-    );
-    if (!registration)
-      // null is returned when no new user profile was created because it already exists
-      return StandardResponse.badRequest("User already exists.");
+	try {
+		// Parse request data - handles both JSON and form data automatically
+		const data = await parseUserRegistrationData(request)
 
-    if ("validationKind" in registration) {
-      // A validation was returned, therefore a bad request was sent in
-      let msg = "Bad Request";
-      switch (registration.validationKind) {
-        case "username":
-          const usernameValidation = registration as UsernameValidation;
-          if (usernameValidation.required) msg = "Username is required.";
-          if (usernameValidation.length)
-            msg =
-              "Username must be at least 3 characters long and not more than 40.";
-          if (usernameValidation.invalidCharacters)
-            msg =
-              "Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.";
-          break;
-        case "email":
-          const emailValidation = registration as EmailValidation;
-          if (emailValidation.required) msg = "Email is required.";
-          if (emailValidation.format) msg = "Invalid email format.";
-          break;
-        case "password":
-          const passwordValidation = registration as PasswordValidation;
-          if (passwordValidation.required) msg = "Password is required.";
-          if (passwordValidation.length)
-            msg = "Password must be at least 8 characters long.";
-          break;
-      }
-      return StandardResponse.badRequest(msg);
-    }
+		const username = data.name
+		const email = data.email
+		const password = data.password
+		const language = data.language as 'de_DE' | 'en_US'
+		const registration = await registerUser(username, email, password, language)
+		if (!registration)
+			// null is returned when no new user profile was created because it already exists
+			return StandardResponse.badRequest('User already exists.')
 
-    const user = registration as User;
+		if ('validationKind' in registration) {
+			// A validation was returned, therefore a bad request was sent in
+			let msg = 'Bad Request'
+			switch (registration.validationKind) {
+				case 'username':
+					const usernameValidation = registration as UsernameValidation
+					if (usernameValidation.required) msg = 'Username is required.'
+					if (usernameValidation.length)
+						msg =
+							'Username must be at least 3 characters long and not more than 40.'
+					if (usernameValidation.invalidCharacters)
+						msg =
+							'Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.'
+					break
+				case 'email':
+					const emailValidation = registration as EmailValidation
+					if (emailValidation.required) msg = 'Email is required.'
+					if (emailValidation.format) msg = 'Invalid email format.'
+					break
+				case 'password':
+					const passwordValidation = registration as PasswordValidation
+					if (passwordValidation.required) msg = 'Password is required.'
+					if (passwordValidation.length)
+						msg = 'Password must be at least 8 characters long.'
+					break
+			}
+			return StandardResponse.badRequest(msg)
+		}
 
-    try {
-      const { token, refreshToken } = await createToken(user);
+		const user = registration as User
 
-      return StandardResponse.created({
-          message: "Successfully registered new user",
-          token: token,
-          refreshToken: refreshToken,
-          data: user,
-        });
-    } catch (err) {
-      console.error("Unable to create JWT", err);
-      return StandardResponse.internalServerError(`Unable to create jwt for newly created user: ${(err as Error)?.message}`);
-    }
-  } catch (error) {
-    // Handle parsing errors
-    if (error instanceof Error && error.message.includes('Failed to parse')) {
-      return StandardResponse.badRequest(`Invalid request format: ${error.message}`);
-    }
-    
-    // Handle other errors
-    console.error("Registration error:", error);
-    return StandardResponse.internalServerError();
-  }
-};
+		try {
+			const { token, refreshToken } = await createToken(user)
+
+			return StandardResponse.created({
+				message: 'Successfully registered new user',
+				token: token,
+				refreshToken: refreshToken,
+				data: user,
+			})
+		} catch (err) {
+			console.error('Unable to create JWT', err)
+			return StandardResponse.internalServerError(
+				`Unable to create jwt for newly created user: ${(err as Error)?.message}`,
+			)
+		}
+	} catch (error) {
+		// Handle parsing errors
+		if (error instanceof Error && error.message.includes('Failed to parse')) {
+			return StandardResponse.badRequest(
+				`Invalid request format: ${error.message}`,
+			)
+		}
+
+		// Handle other errors
+		console.error('Registration error:', error)
+		return StandardResponse.internalServerError()
+	}
+}

@@ -47,32 +47,32 @@ export function DataTable<TData, TValue>({
 	data,
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = React.useState<SortingState>([
-		 { id: 'createdAt', desc: true }
+		{ id: 'createdAt', desc: true },
 	])
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
 		[],
 	)
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
-    initialState: {
-      pagination: {
-        pageSize: 5,
-      },
-    },
-  });
-  const tableColsWidth = [30, 30, 30, 40];
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		onSortingChange: setSorting,
+		getSortedRowModel: getSortedRowModel(),
+		onColumnFiltersChange: setColumnFilters,
+		getFilteredRowModel: getFilteredRowModel(),
+		state: {
+			sorting,
+			columnFilters,
+		},
+		initialState: {
+			pagination: {
+				pageSize: 5,
+			},
+		},
+	})
+	const tableColsWidth = [30, 30, 30, 40]
 
 	const { t } = useTranslation('data-table')
 
@@ -133,7 +133,7 @@ export function DataTable<TData, TValue>({
 							<TableRow>
 								<TableCell
 									colSpan={columns.length}
-									className="text-center dark:text-dark-text h-24"
+									className="h-24 text-center dark:text-dark-text"
 								>
 									{t('no_results')}
 								</TableCell>
