@@ -17,6 +17,7 @@ export type TransformedDevice = {
 	latitude: number
 	longitude: number
 	useAuth: boolean | null
+	access_token: string | null
 	public: boolean | null
 	status: string | null
 	createdAt: Date
@@ -65,7 +66,7 @@ export type TransformedDevice = {
 export function transformDeviceToApiFormat(
 	box: DeviceWithSensors,
 ): TransformedDevice {
-	const { id, tags, sensors, ...rest } = box
+	const { id, tags, sensors, apiKey, ...rest } = box
 	const timestamp = box.updatedAt.toISOString()
 	const coordinates = [box.longitude, box.latitude]
 
@@ -86,6 +87,7 @@ export function transformDeviceToApiFormat(
 			},
 		],
 		integrations: { mqtt: { enabled: false } },
+		access_token: apiKey,
 		sensors:
 			sensors?.map((sensor) => ({
 				_id: sensor.id,

@@ -54,6 +54,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				latitude: 123,
 				longitude: 12,
 				tags: ['testgroup'],
+				useAuth: false,
 			},
 			(testUser as User).id,
 		)
@@ -625,6 +626,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					description: 'total neue beschreibung',
 					location: { lat: 54.2, lng: 21.1 },
 					weblink: 'http://www.google.de',
+					useAuth: true,
 					image:
 						'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
 				}
@@ -643,17 +645,15 @@ describe('openSenseMap API Routes: /boxes', () => {
 					params: { deviceId: queryableDevice?.id },
 					context: {} as AppLoadContext,
 				} as ActionFunctionArgs)
-
-				expect(response.status).toBe(200)
-
 				const data = await response.json()
 
+				expect(response.status).toBe(200)
 				expect(data.name).toBe(update_payload.name)
 				expect(data.exposure).toBe(update_payload.exposure)
 				expect(Array.isArray(data.grouptag)).toBe(true)
 				expect(data.grouptag).toContain(update_payload.grouptag)
 				expect(data.description).toBe(update_payload.description)
-
+				expect(data.access_token).not.toBeNull()
 				expect(data.currentLocation).toEqual({
 					type: 'Point',
 					coordinates: [

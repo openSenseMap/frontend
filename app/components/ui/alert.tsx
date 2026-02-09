@@ -1,60 +1,137 @@
-import { cva, type VariantProps } from "class-variance-authority";
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
+import { cva, type VariantProps } from 'class-variance-authority'
+import {
+	type LucideIcon,
+	LucideInfo,
+	LucideLightbulb,
+	LucideMessageCircleWarning,
+	LucideTriangleAlert,
+	LucideOctagonAlert,
+} from 'lucide-react'
+import * as React from 'react'
+import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
 
 const alertVariants = cva(
-  "relative w-full rounded-lg border border-slate-200 p-4 [&:has(svg)]:pl-11 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-slate-950 dark:border-slate-800 dark:[&>svg]:text-slate-50",
-  {
-    variants: {
-      variant: {
-        default:
-          "bg-white text-slate-950 dark:bg-dark-boxes dark:text-dark-text ",
-        destructive:
-          "border-red-500/50 text-red-500 dark:border-red-500 [&>svg]:text-red-500 dark:border-red-900/50 dark:text-red-900 dark:dark:border-red-900 dark:[&>svg]:text-red-900",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-);
+	'relative w-full rounded-md border border-slate-200 p-4 dark:border-slate-800 [&:has(svg)]:pl-12 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-slate-950 dark:[&>svg]:text-slate-50',
+	{
+		variants: {
+			variant: {
+				default:
+					'bg-white text-slate-950 dark:bg-dark-boxes dark:text-dark-text',
+				destructive:
+					'border-red-500/50 dark:border-red-900/50 dark:text-red-900 dark:dark:border-red-900 dark:[&>svg]:text-red-900 text-red-500 dark:border-red-500 [&>svg]:text-red-500',
+				note: 'border-blue-500/50 dark:border-blue-900/50 dark:bg-blue-900/20 bg-blue-50 dark:text-blue-200 dark:[&>svg]:text-blue-400 text-blue-900 [&>svg]:text-blue-500',
+				tip: 'border-green-500/50 dark:border-green-900/50 dark:bg-green-900/20 bg-green-50 text-green-900 dark:text-green-200 [&>svg]:text-green-500 dark:[&>svg]:text-green-400',
+				important:
+					'border-violet-500/50 bg-violet-50 text-violet-900 dark:border-violet-900/50 dark:bg-violet-900/20 dark:text-violet-200 dark:[&>svg]:text-violet-400 [&>svg]:text-violet-500',
+				warning:
+					'border-yellow-500/50 bg-yellow-50 text-yellow-900 dark:border-yellow-900/50 dark:bg-yellow-900/20 dark:text-yellow-200 [&>svg]:text-yellow-500 dark:[&>svg]:text-yellow-400',
+				caution:
+					'border-red-500/50 dark:border-red-900/50 dark:bg-red-900/20 bg-red-50 text-red-900 dark:text-red-200 dark:[&>svg]:text-red-400 [&>svg]:text-red-500',
+			},
+		},
+		defaultVariants: {
+			variant: 'default',
+		},
+	},
+)
 
 const Alert = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
+	HTMLDivElement,
+	React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
 >(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-));
-Alert.displayName = "Alert";
+	<div
+		ref={ref}
+		role="alert"
+		className={cn(alertVariants({ variant }), className)}
+		{...props}
+	/>
+))
+Alert.displayName = 'Alert'
 
 const AlertTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+	HTMLParagraphElement,
+	React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <h5
-    ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-    {...props}
-  />
-));
-AlertTitle.displayName = "AlertTitle";
+	<h5
+		ref={ref}
+		className={cn(
+			'my-1 text-base font-medium leading-none tracking-tight',
+			className,
+		)}
+		{...props}
+	/>
+))
+AlertTitle.displayName = 'AlertTitle'
 
 const AlertDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+	HTMLParagraphElement,
+	React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
-    {...props}
-  />
-));
-AlertDescription.displayName = "AlertDescription";
+	<div
+		ref={ref}
+		className={cn('mt-2 text-sm [&_p]:leading-relaxed', className)}
+		{...props}
+	/>
+))
+AlertDescription.displayName = 'AlertDescription'
 
-export { Alert, AlertTitle, AlertDescription };
+interface CalloutProps {
+	variant: Exclude<
+		VariantProps<typeof alertVariants>['variant'],
+		'default' | 'destructive' | undefined | null
+	>
+}
+
+const VARIANT_MAPPING: {
+	[key in CalloutProps['variant']]: {
+		icon: LucideIcon
+		translationResource: string
+	}
+} = {
+	note: {
+		icon: LucideInfo,
+		translationResource: 'callout_title_note',
+	},
+	tip: {
+		icon: LucideLightbulb,
+		translationResource: 'callout_title_tip',
+	},
+	important: {
+		icon: LucideMessageCircleWarning,
+		translationResource: 'callout_title_important',
+	},
+	warning: {
+		icon: LucideTriangleAlert,
+		translationResource: 'callout_title_warning',
+	},
+	caution: {
+		icon: LucideOctagonAlert,
+		translationResource: 'callout_title_caution',
+	},
+}
+
+/**
+ * A convenience wrapper for {@link Alert} that predefines icons
+ * and titles for different types of callouts (notes, tips, warnings, etc.)
+ */
+const Callout = (
+	props: React.PropsWithChildren<CalloutProps> = {
+		variant: 'note',
+	},
+) => {
+	const { t } = useTranslation('ui-components')
+	const map = VARIANT_MAPPING[props.variant]
+	const Icon = map.icon
+	const title = t(`callout.${map.translationResource}`)
+
+	return (
+		<Alert variant={props.variant}>
+			<Icon size={20} />
+			<AlertTitle>{title}</AlertTitle>
+			<AlertDescription>{props.children}</AlertDescription>
+		</Alert>
+	)
+}
+
+export { Alert, AlertTitle, AlertDescription, Callout }
