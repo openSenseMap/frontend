@@ -1,14 +1,14 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs } from "react-router";
-import { BoxesQuerySchema, deleteDevice } from "~/lib/devices-service.server";
-import { getUserFromJwt } from "~/lib/jwt";
+import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router'
+import { BoxesQuerySchema, deleteDevice } from '~/lib/devices-service.server'
+import { getUserFromJwt } from '~/lib/jwt'
 import {
-  createDevice,
-  findDevices,
-  getDevice,
-  type FindDevicesOptions,
-} from "~/models/device.server";
-import { type Device, type User } from "~/schema";
-import { StandardResponse } from "~/utils/response-utils";
+	createDevice,
+	findDevices,
+	getDevice,
+	type FindDevicesOptions,
+} from '~/models/device.server'
+import { type Device, type User } from '~/schema'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -282,153 +282,163 @@ import { StandardResponse } from "~/utils/response-utils";
  *           example: "Failed to fetch devices"
  */
 export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const queryObj = Object.fromEntries(url.searchParams);
-  const max_limit = 20;
-  const parseResult = BoxesQuerySchema.safeParse(queryObj);
+	const url = new URL(request.url)
+	const queryObj = Object.fromEntries(url.searchParams)
+	const max_limit = 20
+	const parseResult = BoxesQuerySchema.safeParse(queryObj)
 
-  if (!parseResult.success) {
-    const { fieldErrors, formErrors } = parseResult.error.flatten();
-    if (fieldErrors.format)
-      throw StandardResponse.unprocessableContent("Invalid format parameter");
+	if (!parseResult.success) {
+		const { fieldErrors, formErrors } = parseResult.error.flatten()
+		if (fieldErrors.format)
+			throw StandardResponse.unprocessableContent('Invalid format parameter')
 
-    throw StandardResponse.unprocessableContent(`${parseResult.error.flatten()}`);
-  }
+		throw StandardResponse.unprocessableContent(
+			`${parseResult.error.flatten()}`,
+		)
+	}
 
-  const params: FindDevicesOptions = parseResult.data;
+	const params: FindDevicesOptions = parseResult.data
 
-  const devices = await findDevices(params);
+	const devices = await findDevices(params)
 
-  if (params.format === "geojson") {
-    const geojson = {
-      type: "FeatureCollection",
-      features: devices.map((device: Device) => ({
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [device.longitude, device.latitude],
-        },
-        properties: {
-          ...device,
-        },
-      })),
-    };
+	if (params.format === 'geojson') {
+		const geojson = {
+			type: 'FeatureCollection',
+			features: devices.map((device: Device) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: [device.longitude, device.latitude],
+				},
+				properties: {
+					...device,
+				},
+			})),
+		}
 
-    return geojson;
-  } else {
-    return devices;
-  }
+		return geojson
+	} else {
+		return devices
+	}
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  try {
-    const jwtResponse = await getUserFromJwt(request);
+	try {
+		const jwtResponse = await getUserFromJwt(request)
 
-    if (typeof jwtResponse === "string")
-      return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
-    switch (request.method) {
-      case "POST":
-        return await post(request, jwtResponse);
-      case "DELETE":
-        return await del(request, jwtResponse, params);
-      default:
-        return StandardResponse.methodNotAllowed("Method Not Allowed")
-    }
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
+		if (typeof jwtResponse === 'string')
+			return StandardResponse.forbidden(
+				'Invalid JWT authorization. Please sign in to obtain new JWT.',
+			)
+		switch (request.method) {
+			case 'POST':
+				return await post(request, jwtResponse)
+			case 'DELETE':
+				return await del(request, jwtResponse, params)
+			default:
+				return StandardResponse.methodNotAllowed('Method Not Allowed')
+		}
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
 }
 
 async function del(request: Request, user: User, params: any) {
-  const { deviceId } = params;
+	const { deviceId } = params
 
-  if (!deviceId)
-    throw StandardResponse.badRequest("Device ID is required");
+	if (!deviceId) throw StandardResponse.badRequest('Device ID is required')
 
-  const device = (await getDevice({ id: deviceId })) as unknown as Device;
+	const device = (await getDevice({ id: deviceId })) as unknown as Device
 
-  if (!device)
-    throw StandardResponse.notFound("Device not found");
+	if (!device) throw StandardResponse.notFound('Device not found')
 
-  const body = await request.json();
+	const body = await request.json()
 
-  if (!body.password)
-    throw StandardResponse.badRequest("Password is required for device deletion");
+	if (!body.password)
+		throw StandardResponse.badRequest(
+			'Password is required for device deletion',
+		)
 
-  try {
-    const deleted = await deleteDevice(user, device, body.password);
+	try {
+		const deleted = await deleteDevice(user, device, body.password)
 
-    if (deleted === "unauthorized")
-      return StandardResponse.unauthorized("Password incorrect");
+		if (deleted === 'unauthorized')
+			return StandardResponse.unauthorized('Password incorrect')
 
-    return StandardResponse.ok(null);
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
+		return StandardResponse.ok(null)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
 }
 
 async function post(request: Request, user: User) {
-  try {
-    const body = await request.json();
+	try {
+		const body = await request.json()
 
-    if (!body.location)
-      throw StandardResponse.badRequest("missing required parameter location");
+		if (!body.location)
+			throw StandardResponse.badRequest('missing required parameter location')
 
-    let latitude: number, longitude: number, height: number | undefined;
+		let latitude: number, longitude: number, height: number | undefined
 
-    if (Array.isArray(body.location)) {
-      // Handle array format [lat, lng, height?]
-      if (body.location.length < 2)
-        throw StandardResponse.unprocessableContent(
+		if (Array.isArray(body.location)) {
+			// Handle array format [lat, lng, height?]
+			if (body.location.length < 2)
+				throw StandardResponse.unprocessableContent(
 					`Illegal value for parameter location. missing latitude or longitude in location [${body.location.join(',')}]`,
 				)
 
-      latitude = Number(body.location[0]);
-      longitude = Number(body.location[1]);
-      height = body.location[2] ? Number(body.location[2]) : undefined;
-    } else if (typeof body.location === "object" && body.location !== null) {
-      // Handle object format { lat, lng, height? }
-      if (!("lat" in body.location) || !("lng" in body.location))
-        throw StandardResponse.unprocessableContent("Illegal value for parameter location. missing latitude or longitude");
+			latitude = Number(body.location[0])
+			longitude = Number(body.location[1])
+			height = body.location[2] ? Number(body.location[2]) : undefined
+		} else if (typeof body.location === 'object' && body.location !== null) {
+			// Handle object format { lat, lng, height? }
+			if (!('lat' in body.location) || !('lng' in body.location))
+				throw StandardResponse.unprocessableContent(
+					'Illegal value for parameter location. missing latitude or longitude',
+				)
 
-      latitude = Number(body.location.lat);
-      longitude = Number(body.location.lng);
-      height = body.location.height ? Number(body.location.height) : undefined;
-    } else
-      throw StandardResponse.unprocessableContent("Illegal value for parameter location. Expected array or object");
+			latitude = Number(body.location.lat)
+			longitude = Number(body.location.lng)
+			height = body.location.height ? Number(body.location.height) : undefined
+		} else
+			throw StandardResponse.unprocessableContent(
+				'Illegal value for parameter location. Expected array or object',
+			)
 
-    if (isNaN(latitude) || isNaN(longitude))
-      throw StandardResponse.unprocessableContent("Invalid latitude or longitude values");
+		if (isNaN(latitude) || isNaN(longitude))
+			throw StandardResponse.unprocessableContent(
+				'Invalid latitude or longitude values',
+			)
 
-    const rawAuthorizationHeader = request.headers.get("authorization");
-    if (!rawAuthorizationHeader)
-      throw StandardResponse.unauthorized("Authorization header required");
+		const rawAuthorizationHeader = request.headers.get('authorization')
+		if (!rawAuthorizationHeader)
+			throw StandardResponse.unauthorized('Authorization header required')
 
-    const [, jwtString] = rawAuthorizationHeader.split(" ");
+		const [, jwtString] = rawAuthorizationHeader.split(' ')
 
-    const deviceData = {
-      ...body,
-      latitude,
-      longitude,
-    };
+		const deviceData = {
+			...body,
+			latitude,
+			longitude,
+		}
 
-    const newDevice = await createDevice(deviceData, user.id);
+		const newDevice = await createDevice(deviceData, user.id)
 
-    return StandardResponse.created({
-        data: {
-          ...newDevice,
-          createdAt: newDevice.createdAt || new Date(),
-        },
-      });
-  } catch (error) {
-    console.error("Error creating device:", error);
+		return StandardResponse.created({
+			data: {
+				...newDevice,
+				createdAt: newDevice.createdAt || new Date(),
+			},
+		})
+	} catch (error) {
+		console.error('Error creating device:', error)
 
-    if (error instanceof Response) {
-      throw error;
-    }
+		if (error instanceof Response) {
+			throw error
+		}
 
-    throw Response.json({ message: "Internal server error" }, { status: 500 });
-  }
+		throw Response.json({ message: 'Internal server error' }, { status: 500 })
+	}
 }
