@@ -9,8 +9,8 @@ import { StandardResponse } from "~/utils/response-utils";
  *   get:
  *    tags:
  *      - Boxes
- *    summary: Get locations of a senseBox
- *    description: Get all locations of the specified senseBox ordered by date as an array of GeoJSON Points.
+ *    summary: Get locations of a device
+ *    description: Get all locations of the specified device ordered by date as an array of GeoJSON Points.
  *      If `format=geojson`, a GeoJSON linestring will be returned, with `properties.timestamps`
  *      being an array with the timestamp for each coordinate.
  *    parameters:
@@ -19,7 +19,7 @@ import { StandardResponse } from "~/utils/response-utils";
  *        required: true
  *        schema:
  *          type: string
- *        description: the ID of the senseBox you are referring to
+ *        description: the ID of the device you are referring to
  *      - in: query
  *        name: from-date
  *        required: false

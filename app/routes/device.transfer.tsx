@@ -25,7 +25,7 @@ export default function DeviceTransfer() {
             Device Transfer
           </h2>
           <p className="text-muted-foreground">
-            Import sensebox into your account.
+            Import device into your account.
           </p>
         </div>
         <Separator />
