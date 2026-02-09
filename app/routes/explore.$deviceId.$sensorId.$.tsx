@@ -61,19 +61,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	).map((d) => ({
 		...d,
 		locationId: Number(d.locationId),
-		location: d.location ? {
-			...d.location,
-			id: Number(d.location.id),
-		} : null,
+		location: d.location
+			? {
+					...d.location,
+					id: Number(d.location.id),
+				}
+			: null,
 	}))
 
 	// If device exposure is 'mobile', process trips
 	if (device.exposure === 'mobile' && !startDate) {
 		// Categorize data into trips
-		const dataPoints: LocationPoint[] = normalizedSensor1Data.map((d) => ({
-			geometry: { x: d.location.x, y: d.location.y },
-			time: d.time.toISOString(), // Ensure the time is in ISO format
-		}))
+		const dataPoints: LocationPoint[] = normalizedSensor1Data
+			.filter((d) => d.location !== null)
+			.map((d) => ({
+				// null locations cannot be shown on the map and have been filtered above
+				// hence the ! operator is fine here
+				geometry: { x: d.location!.x, y: d.location!.y },
+				time: d.time.toISOString(), // Ensure the time is in ISO format
+			}))
 
 		const trips = categorizeIntoTrips(dataPoints, 600) // 600 seconds (10 minutes) as the time threshold
 
@@ -138,18 +144,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		).map((d) => ({
 			...d,
 			locationId: Number(d.locationId),
-			location: d.location ? { 
-				...d.location,
-				id: Number(d.location.id),
-			} : null,
+			location: d.location
+				? {
+						...d.location,
+						id: Number(d.location.id),
+					}
+				: null,
 		}))
 
 		if (device.exposure === 'mobile') {
 			// Categorize data into trips
-			const dataPoints: LocationPoint[] = normalizedSensor2Data.map((d) => ({
-				geometry: { x: d.location.x, y: d.location.y },
-				time: d.time.toISOString(), // Ensure the time is in ISO format
-			}))
+			const dataPoints: LocationPoint[] = normalizedSensor2Data
+				.filter((d) => d.location !== null)
+				.map((d) => ({
+					// null locations cannot be shown on the map and have been filtered above
+					// hence the ! operator is fine here
+					geometry: { x: d.location!.x, y: d.location!.y },
+					time: d.time.toISOString(), // Ensure the time is in ISO format
+				}))
 
 			const trips = categorizeIntoTrips(dataPoints, 600) // 600 seconds (10 minutes) as the time threshold
 
