@@ -7,3 +7,5 @@ node_modules
 /postgres-data
 
 /app/styles/**/*.css
+/app/db/seeds/**/*
+/app/db/drizzle/**/*
