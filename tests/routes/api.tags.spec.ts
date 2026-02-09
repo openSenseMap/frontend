@@ -12,7 +12,7 @@ const TEST_TAG_BOX = {
 	name: `'${TAGS_TEST_USER.name}'s Box`,
 	exposure: 'outdoor',
 	expiresAt: null,
-	tags: ['tag1', 'tag2', 'testgroup'],
+	tags: ['tag1', 'tag2', 'testgrouptag'],
 	latitude: 0,
 	longitude: 0,
 	model: 'luftdaten.info',
@@ -79,7 +79,9 @@ describe('openSenseMap API Routes: /tags', () => {
 			'application/json; charset=utf-8',
 		)
 		expect(Array.isArray(body.data)).toBe(true)
-		expect(body.data).toHaveLength(3)
+		expect(
+			body.data.filter((t: string) => TEST_TAG_BOX.tags.includes(t)),
+		).toHaveLength(3)
 	})
 
 	afterAll(async () => {

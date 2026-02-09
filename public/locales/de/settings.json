@@ -3,7 +3,6 @@
 	"account": "Konto",
 	"password": "Passwort",
 	"delete_account": "Konto löschen",
-
 	"profile_updated": "Profil aktualisiert",
 	"profile_updated_description": "Dein Profil wurde erfolgreich aktualisiert.",
 	"something_went_wrong": "Etwas ist schief gelaufen.",
@@ -18,12 +17,10 @@
 	"if_activated_public_3": " sehen können.",
 	"change_profile_photo": "Profilbild ändern",
 	"save_changes": "Änderungen speichern",
-
 	"profile_photo": "Profilbild",
 	"save_photo": "Profilbild speichern",
 	"reset": "Zurücksetzen",
 	"change": "Ändern",
-
 	"invalid_password": "Falsches Passwort",
 	"profile_successfully_updated": "Profil efolgreich aktualisiert",
 	"account_information": "Konto Informationen",
@@ -36,7 +33,6 @@
 	"select_language": "Wähle die Sprache aus",
 	"confirm_password": "Bestätige dein Passwort",
 	"enter_current_password": "Gib dein aktuelles Passwort ein",
-
 	"try_again": "Versuche es nochmal.",
 	"update_password": "Aktualisiere dein Passwort",
 	"update_password_description": "Gib dein aktuelles und ein neues Passwort ein, um dein Konto Passwort zu aktualisieren.",
@@ -51,7 +47,13 @@
 	"new_passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
 	"current_password_incorret": "Das aktuelle Passwort ist falsch.",
 	"password_updated_successfully": "Das Passwort wurde erfolgreich aktualisiert.",
-
 	"delete_account_description": "Wenn du dein Konto löschst, werden alle deine Daten permanent von unseren Servern gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
-	"enter_password": "Gib dein Passwort ein"
+	"enter_password": "Gib dein Passwort ein",
+	"device_security": {
+		"warning_deactive_auth": "Wenn die Gerätesicherheit deaktiviert ist, kann jede Person Messdaten senden, die Ihrem Gerät zugewiesen sind!",
+		"page_title": "Sicherheitseinstellungen ändern",
+		"api_key_label": "API Schlüssel",
+		"explanation_text": "Geräte sollten stets ihren API Schlüssel nutzen, um ihre Anfragen an die openSenseMap API zu authentifizieren. Dies stellt sicher, dass nur authentifizierte Geräte den Zustand des Gerätes auf der openSenseMap aktualisieren können. Der API Schlüssel wird an jede Anfrage an die API angehängt. Mehr Informationen <2>gibt es in der Dokumentation</2>.",
+		"generate_new_key_warning": "Das Generieren eines neuen Schlüssel zieht zwangsläufig ein Update des Gerätes nach sich (z.B. Ändern des Codes/ Sketches). <1>Dieser Schritt kann nicht rückgängig gemacht werden</1>."
+	}
 }
