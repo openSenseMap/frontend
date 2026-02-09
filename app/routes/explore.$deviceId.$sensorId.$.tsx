@@ -61,10 +61,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	).map((d) => ({
 		...d,
 		locationId: Number(d.locationId),
-		location: {
+		location: d.location ? {
 			...d.location,
-			id: Number(d.location?.id),
-		},
+			id: Number(d.location.id),
+		} : null,
 	}))
 
 	// If device exposure is 'mobile', process trips
@@ -138,10 +138,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		).map((d) => ({
 			...d,
 			locationId: Number(d.locationId),
-			location: {
+			location: d.location ? { 
 				...d.location,
 				id: Number(d.location.id),
-			},
+			} : null,
 		}))
 
 		if (device.exposure === 'mobile') {
