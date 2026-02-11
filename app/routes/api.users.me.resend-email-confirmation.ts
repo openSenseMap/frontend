@@ -9,16 +9,18 @@ export const action: ActionFunction = async ({
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 
-		if (typeof jwtResponse === 'string')
+		if (typeof jwtResponse === 'string') {
 			return StandardResponse.forbidden(
 				'Invalid JWT authorization. Please sign in to obtain new JWT.',
 			)
+		}
 
 		const result = await resendEmailConfirmation(jwtResponse)
-		if (result === 'already_confirmed')
+		if (result === 'already_confirmed') {
 			return StandardResponse.unprocessableContent(
 				`Email address ${jwtResponse.email} is already confirmed.`,
 			)
+		}
 
 		return StandardResponse.ok({
 			code: 'Ok',

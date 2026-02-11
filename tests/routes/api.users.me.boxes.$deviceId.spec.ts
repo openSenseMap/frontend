@@ -10,7 +10,7 @@ import { type User } from '~/schema'
 
 const BOX_TEST_USER = generateTestUserCredentials()
 const BOX_TEST_USER_BOX = {
-	name: `${BOX_TEST_USER}s Box`,
+	name: `${BOX_TEST_USER.name}s Box`,
 	exposure: 'outdoor',
 	expiresAt: null,
 	tags: [],
@@ -23,11 +23,9 @@ const BOX_TEST_USER_BOX = {
 
 const OTHER_TEST_USER = generateTestUserCredentials()
 
-// TODO Give the users some boxes to test with
-
 describe('openSenseMap API Routes: /users', () => {
 	describe('/me/boxes/:deviceId', () => {
-		describe('GET', async () => {
+		describe('GET', () => {
 			let jwt: string = ''
 			let otherJwt: string = ''
 			let deviceId: string = ''
@@ -53,7 +51,7 @@ describe('openSenseMap API Routes: /users', () => {
 
 				const device = await createDevice(BOX_TEST_USER_BOX, (user as User).id)
 				deviceId = device.id
-			})
+			}) 
 
 			it('should let users retrieve one of their boxes with all fields', async () => {
 				// Act: Get single box
@@ -70,6 +68,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Assert: Response for single box
 				expect(singleBoxResponse.status).toBe(200)
 			})
+
 			it('should deny to retrieve a box of other user', async () => {
 				// Arrange
 				const forbiddenRequest = new Request(
@@ -96,7 +95,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// delete the valid test user
 				await deleteUserByEmail(BOX_TEST_USER.email)
 				await deleteUserByEmail(OTHER_TEST_USER.email)
-			})
+			}) 
 		})
 	})
 })
