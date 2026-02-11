@@ -1,3 +1,4 @@
+import { CheckLine, OctagonAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -30,6 +31,7 @@ import {
 	SelectValue,
 } from '~/components/ui/select'
 import { useToast } from '~/components/ui/use-toast'
+import { resendEmailConfirmation } from '~/lib/user-service.server'
 import {
 	getUserByEmail,
 	updateUserName,
@@ -40,11 +42,9 @@ import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
-	// If user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
-	// Get user email and load user data
 	const userEmail = await getUserEmail(request)
 	invariant(userEmail, `Email not found!`)
 	const userData = await getUserByEmail(userEmail)
@@ -54,38 +54,71 @@ export async function loader({ request }: LoaderFunctionArgs) {
 //*****************************************************
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
-	const { name, passwordUpdate, email, language } = Object.fromEntries(formData)
-	const errors = {
-		name: name ? null : 'Invalid name',
-		email: email ? null : 'Invalid email',
-		passwordUpdate: passwordUpdate ? null : 'Password is required',
+	const intent = formData.get('intent')
+
+	if (intent === 'resend-verification') {
+		const userEmail = await getUserEmail(request)
+		if (!userEmail) {
+			return data(
+				{ intent: 'resend-verification', code: 'Forbidden' },
+				{ status: 403 },
+			)
+		}
+		const user = await getUserByEmail(userEmail)
+		if (!user) {
+			return data(
+				{ intent: 'resend-verification', code: 'Forbidden' },
+				{ status: 403 },
+			)
+		}
+
+		try {
+			const result = await resendEmailConfirmation(user)
+			if (result === 'already_confirmed') {
+				return data(
+					{ intent: 'resend-verification', code: 'UnprocessableContent' },
+					{ status: 422 },
+				)
+			}
+			return data(
+				{ intent: 'resend-verification', code: 'Ok' },
+				{ status: 200 },
+			)
+		} catch (err) {
+			console.warn(err)
+			return data(
+				{ intent: 'resend-verification', code: 'Error' },
+				{ status: 500 },
+			)
+		}
 	}
+
+	const { name, passwordUpdate, email, language } = Object.fromEntries(formData)
 
 	invariant(typeof name === 'string', 'name must be a string')
 	invariant(typeof email === 'string', 'email must be a string')
 	invariant(typeof passwordUpdate === 'string', 'password must be a string')
 	invariant(typeof language === 'string', 'language must be a string')
 
-	// Validate password
-	if (errors.passwordUpdate) {
+	if (!passwordUpdate) {
 		return data(
 			{
+				intent: 'update-profile',
 				errors: {
 					name: null,
 					email: null,
-					passwordUpdate: errors.passwordUpdate,
+					passwordUpdate: 'Password is required',
 				},
-				status: 400,
 			},
 			{ status: 400 },
 		)
 	}
 
 	const user = await verifyLogin(email, passwordUpdate)
-	// If password is invalid
 	if (!user) {
 		return data(
 			{
+				intent: 'update-profile',
 				errors: {
 					name: null,
 					email: null,
@@ -96,13 +129,12 @@ export async function action({ request }: ActionFunctionArgs) {
 		)
 	}
 
-	// Update locale and name
 	await updateUserlocale(email, language)
 	await updateUserName(email, name)
 
-	// Return success response
 	return data(
 		{
+			intent: 'update-profile',
 			errors: {
 				name: null,
 				email: null,
@@ -117,7 +149,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function EditUserProfilePage() {
 	const userData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
-	const fetcher = useFetcher()
+	const fetcher = useFetcher<typeof action>()
 	const [lang, setLang] = useState(userData?.language || 'en_US')
 	const [name, setName] = useState(userData?.name || '')
 	const passwordUpdRef = useRef<HTMLInputElement>(null)
@@ -126,14 +158,16 @@ export default function EditUserProfilePage() {
 
 	// Handle profile update responses
 	useEffect(() => {
-		if (actionData && actionData?.errors?.passwordUpdate) {
+		if (!actionData || actionData.intent !== 'update-profile') return
+		if (!('errors' in actionData)) return
+
+		if (actionData.errors?.passwordUpdate) {
 			toast({
 				title: t('invalid_password'),
 				variant: 'destructive',
 			})
 			passwordUpdRef.current?.focus()
-		}
-		if (actionData && !actionData?.errors?.passwordUpdate) {
+		} else {
 			toast({
 				title: t('profile_successfully_updated'),
 				variant: 'success',
@@ -141,25 +175,19 @@ export default function EditUserProfilePage() {
 		}
 	}, [actionData, toast, t])
 
-	// Handle resend verification response
+	// Handle resend verification response (via fetcher)
 	useEffect(() => {
-		if (fetcher.state === 'idle' && fetcher.data) {
-			if (fetcher.data.code === 'Ok') {
-				toast({
-					title: t('verification_email_sent'),
-					variant: 'success',
-				})
-			} else if (fetcher.data.code === 'UnprocessableContent') {
-				toast({
-					title: t('email_already_confirmed'),
-					variant: 'default',
-				})
-			} else {
-				toast({
-					title: t('verification_email_failed'),
-					variant: 'destructive',
-				})
-			}
+		if (fetcher.state !== 'idle' || !fetcher.data) return
+		if (fetcher.data.intent !== 'resend-verification') return
+		if (!('code' in fetcher.data)) return
+
+		const { code } = fetcher.data
+		if (code === 'Ok') {
+			toast({ title: t('verification_email_sent'), variant: 'success' })
+		} else if (code === 'UnprocessableContent') {
+			toast({ title: t('email_already_confirmed'), variant: 'default' })
+		} else {
+			toast({ title: t('verification_email_failed'), variant: 'destructive' })
 		}
 	}, [fetcher.state, fetcher.data, toast, t])
 
@@ -192,15 +220,18 @@ export default function EditUserProfilePage() {
 							type="email"
 							defaultValue={userData?.email}
 						/>
-						{/* Email confirmation status */}
 						{userData?.emailIsConfirmed ? (
 							<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
-								<span>✓</span> {t('email_confirmed')}
+								<span className="inline-flex gap-1">
+									<CheckLine /> {t('email_confirmed')}
+								</span>
 							</p>
 						) : (
 							<div className="flex items-center justify-between">
 								<p className="dark:text-amber-400 flex items-center gap-1 text-sm text-orange-500">
-									<span>⚠</span> {t('email_not_confirmed')}
+									<span className="inline-flex gap-1">
+										<OctagonAlert /> {t('email_not_confirmed')}
+									</span>
 								</p>
 								<Button
 									type="button"
@@ -208,10 +239,10 @@ export default function EditUserProfilePage() {
 									size="sm"
 									disabled={fetcher.state === 'submitting'}
 									onClick={() => {
-										void fetcher.submit(null, {
-											method: 'post',
-											action: '/api/users/me/resend-email-confirmation',
-										})
+										void fetcher.submit(
+											{ intent: 'resend-verification' },
+											{ method: 'post' },
+										)
 									}}
 								>
 									{fetcher.state === 'submitting'
