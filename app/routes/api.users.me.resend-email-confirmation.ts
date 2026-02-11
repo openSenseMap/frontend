@@ -1,6 +1,5 @@
 import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
 import { getUserFromJwt } from '~/lib/jwt'
-import { getUserFromJwt } from '~/lib/jwt'
 import { resendEmailConfirmation } from '~/lib/user-service.server'
 import { getUserByEmail } from '~/models/user.server'
 import { StandardResponse } from '~/utils/response-utils'
