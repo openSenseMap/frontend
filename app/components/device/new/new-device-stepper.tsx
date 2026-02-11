@@ -1,90 +1,90 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { defineStepper } from "@stepperize/react";
-import { Info, Slash } from "lucide-react";
-import { useEffect, useState } from "react";
-import  { type FieldErrors, FormProvider, useForm  } from "react-hook-form";
-import { Form, useSubmit } from "react-router";
-import { z } from "zod";
-import { AdvancedStep } from "./advanced-info";
-import { DeviceSelectionStep } from "./device-info";
-import { GeneralInfoStep } from "./general-info";
-import { LocationStep } from "./location-info";
-import { sensorSchema, SensorSelectionStep } from "./sensors-info";
-import { SummaryInfo } from "./summary-info";
+import { zodResolver } from '@hookform/resolvers/zod'
+import { defineStepper } from '@stepperize/react'
+import { Info, Slash } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { type FieldErrors, FormProvider, useForm } from 'react-hook-form'
+import { Form, useSubmit } from 'react-router'
+import { z } from 'zod'
+import { AdvancedStep } from './advanced-info'
+import { DeviceSelectionStep } from './device-info'
+import { GeneralInfoStep } from './general-info'
+import { LocationStep } from './location-info'
+import { sensorSchema, SensorSelectionStep } from './sensors-info'
+import { SummaryInfo } from './summary-info'
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbSeparator,
+} from '~/components/ui/breadcrumb'
+import { Button } from '~/components/ui/button'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { useToast } from "~/components/ui/use-toast";
-import { DeviceModelEnum } from "~/schema/enum";
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '~/components/ui/tooltip'
+import { useToast } from '~/components/ui/use-toast'
+import { DeviceModelEnum } from '~/schema/enum'
 
 const generalInfoSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .min(1, "Name is required"),
-  exposure: z.enum(["indoor", "outdoor", "mobile", "unknown"], {
-    errorMap: () => ({ message: "Exposure is required" }),
-  }),
-  temporaryExpirationDate: z
-    .string()
-    .optional()
-    .transform((date) => (date ? new Date(date) : undefined)) // Transform string to Date
-    .refine(
-      (date) =>
-        !date || date <= new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
-      {
-        message: "Temporary expiration date must be within 1 month from now",
-      },
-    ),
-  tags: z
-    .array(
-      z.object({
-        value: z.string(),
-      }),
-    )
-    .optional(),
-});
+	name: z
+		.string()
+		.min(2, 'Name must be at least 2 characters')
+		.min(1, 'Name is required'),
+	exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown'], {
+		errorMap: () => ({ message: 'Exposure is required' }),
+	}),
+	temporaryExpirationDate: z
+		.string()
+		.optional()
+		.transform((date) => (date ? new Date(date) : undefined)) // Transform string to Date
+		.refine(
+			(date) =>
+				!date || date <= new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
+			{
+				message: 'Temporary expiration date must be within 1 month from now',
+			},
+		),
+	tags: z
+		.array(
+			z.object({
+				value: z.string(),
+			}),
+		)
+		.optional(),
+})
 
 const locationSchema = z.object({
-  latitude: z.coerce
-    .number({
-      invalid_type_error: "Latitude must be a valid number",
-      required_error: "Latitude is required",
-    })
-    .min(-90, "Latitude must be greater than or equal to -90")
-    .max(90, "Latitude must be less than or equal to 90"),
-  longitude: z.coerce
-    .number({
-      invalid_type_error: "Longitude must be a valid number",
-      required_error: "Longitude is required",
-    })
-    .min(-180, "Longitude must be greater than or equal to -180")
-    .max(180, "Longitude must be less than or equal to 180"),
-});
+	latitude: z.coerce
+		.number({
+			invalid_type_error: 'Latitude must be a valid number',
+			required_error: 'Latitude is required',
+		})
+		.min(-90, 'Latitude must be greater than or equal to -90')
+		.max(90, 'Latitude must be less than or equal to 90'),
+	longitude: z.coerce
+		.number({
+			invalid_type_error: 'Longitude must be a valid number',
+			required_error: 'Longitude is required',
+		})
+		.min(-180, 'Longitude must be greater than or equal to -180')
+		.max(180, 'Longitude must be less than or equal to 180'),
+})
 
 const deviceSchema = z.object({
-  model: z.enum(DeviceModelEnum.enumValues, {
-    errorMap: () => ({ message: "Please select a device." }),
-  }),
-});
+	model: z.enum(DeviceModelEnum.enumValues, {
+		errorMap: () => ({ message: 'Please select a device.' }),
+	}),
+})
 
 // selectedSensors can be an array of sensors
 const sensorsSchema = z.object({
-  selectedSensors: z
-    .array(sensorSchema)
-    .min(1, "Please select at least one sensor"),
-});
+	selectedSensors: z
+		.array(sensorSchema)
+		.min(1, 'Please select at least one sensor'),
+})
 
 const mqttSchema = z
   .object({
@@ -121,49 +121,49 @@ const mqttSchema = z
 //   });
 
 const ttnSchema = z
-  .object({
-    ttnEnabled: z.boolean().default(false),
-    dev_id: z.string().optional(),
-    app_id: z.string().optional(),
-    profile: z
-      .enum([
-        "lora-serialization",
-        "sensebox/home",
-        "json",
-        "debug",
-        "cayenne-lpp",
-      ])
-      .optional(),
-    decodeOptions: z.string().optional(),
-    port: z.number().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.ttnEnabled) {
-      if (!data.dev_id) {
-        ctx.addIssue({
-          path: ["dev_id"],
-          message: "Device ID is required when TTN is enabled.",
-          code: "custom",
-        });
-      }
+	.object({
+		ttnEnabled: z.boolean().default(false),
+		dev_id: z.string().optional(),
+		app_id: z.string().optional(),
+		profile: z
+			.enum([
+				'lora-serialization',
+				'sensebox/home',
+				'json',
+				'debug',
+				'cayenne-lpp',
+			])
+			.optional(),
+		decodeOptions: z.string().optional(),
+		port: z.number().optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (data.ttnEnabled) {
+			if (!data.dev_id) {
+				ctx.addIssue({
+					path: ['dev_id'],
+					message: 'Device ID is required when TTN is enabled.',
+					code: 'custom',
+				})
+			}
 
-      if (!data.app_id) {
-        ctx.addIssue({
-          path: ["app_id"],
-          message: "Application ID is required when TTN is enabled.",
-          code: "custom",
-        });
-      }
+			if (!data.app_id) {
+				ctx.addIssue({
+					path: ['app_id'],
+					message: 'Application ID is required when TTN is enabled.',
+					code: 'custom',
+				})
+			}
 
-      if (!data.profile) {
-        ctx.addIssue({
-          path: ["profile"],
-          message: "Profile is required when TTN is enabled.",
-          code: "custom",
-        });
-      }
-    }
-  });
+			if (!data.profile) {
+				ctx.addIssue({
+					path: ['profile'],
+					message: 'Profile is required when TTN is enabled.',
+					code: 'custom',
+				})
+			}
+		}
+	})
 
 // const advancedSchema = z.intersection(mqttSchema, ttnSchema);
 
@@ -200,34 +200,34 @@ export const Stepper = defineStepper(
   { id: "summary", label: "Summary", info: null, schema: z.object({}), index: 5 },
 );
 
-type GeneralInfoData = z.infer<typeof generalInfoSchema>;
-type LocationData = z.infer<typeof locationSchema>;
-type DeviceData = z.infer<typeof deviceSchema>;
-type SensorData = z.infer<typeof sensorsSchema>;
-type MqttData = z.infer<typeof mqttSchema>;
-type TtnData = z.infer<typeof ttnSchema>;
+type GeneralInfoData = z.infer<typeof generalInfoSchema>
+type LocationData = z.infer<typeof locationSchema>
+type DeviceData = z.infer<typeof deviceSchema>
+type SensorData = z.infer<typeof sensorsSchema>
+type MqttData = z.infer<typeof mqttSchema>
+type TtnData = z.infer<typeof ttnSchema>
 
 type FormData = GeneralInfoData &
-  LocationData &
-  DeviceData &
-  SensorData &
-  MqttData &
-  TtnData;
+	LocationData &
+	DeviceData &
+	SensorData &
+	MqttData &
+	TtnData
 
 export default function NewDeviceStepper() {
-  const submit = useSubmit();
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const stepper = Stepper.useStepper();
-  const form = useForm<FormData>({
-    mode: "onTouched",
-    resolver: zodResolver(stepper.current.schema),
-  });
-  const { toast } = useToast();
-  const [isFirst, setIsFirst] = useState(false);
+	const submit = useSubmit()
+	const [formData, setFormData] = useState<Record<string, any>>({})
+	const stepper = Stepper.useStepper()
+	const form = useForm<FormData>({
+		mode: 'onTouched',
+		resolver: zodResolver(stepper.current.schema),
+	})
+	const { toast } = useToast()
+	const [isFirst, setIsFirst] = useState(false)
 
-  useEffect(() => {
-    setIsFirst(stepper.isFirst);
-  }, [stepper.isFirst]);
+	useEffect(() => {
+		setIsFirst(stepper.isFirst)
+	}, [stepper.isFirst])
 
   const onSubmit = (data: FormData) => {
     console.log("🚀 ~ onSubmit ~ data", data);    
@@ -236,7 +236,7 @@ export default function NewDeviceStepper() {
       [stepper.current.id]: data,
     };
 
-    setFormData(updatedData);
+		setFormData(updatedData)
 
     if (stepper.isLast) {
       // Submit form data as JSON
@@ -251,105 +251,109 @@ export default function NewDeviceStepper() {
     }
   };
 
-  const onError = (errors: FieldErrors<FormData>) => {
-    const firstErrorMessage = Object.values(errors)?.[0]?.message;
-    if (firstErrorMessage) {
-      toast({
-        title: "Form Error",
-        description: firstErrorMessage,
-        variant: "destructive",
-        duration: 2000,
-      });
-    }
-  };
+	const onError = (errors: FieldErrors<FormData>) => {
+		const firstErrorMessage = Object.values(errors)?.[0]?.message
+		if (firstErrorMessage) {
+			toast({
+				title: 'Form Error',
+				description: firstErrorMessage,
+				variant: 'destructive',
+				duration: 2000,
+			})
+		}
+	}
 
-  return (
-    <Stepper.Scoped>
-      <FormProvider {...form}>
-        <Form
-          onSubmit={form.handleSubmit(onSubmit, onError)}
-          className="h-full space-y-6 p-6 border rounded-lg w-1/2 bg-white flex flex-col justify-between"
-        >
-          <div className="space-y-4">
-            {/* Breadcrumb Navigation */}
-            <Breadcrumb>
-              <BreadcrumbList>
-                {Stepper.steps.map((step, index) => {
-                  return (
-                    <div className="flex gap-2" key={index}>
-                      <BreadcrumbItem key={step.id}>
-                        <BreadcrumbLink
-                          onClick={() => stepper.goTo(step.id)}
-                          className={`
-                              ${
-                                stepper.current.index === step.index
-                                  ? "font-bold text-black"
-                                  : "text-gray-500 cursor-pointer hover:text-black"
-                              }
-                            `}
-                        >
-                          {step.label}
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
+	return (
+		<Stepper.Scoped>
+			<FormProvider {...form}>
+				<Form
+					onSubmit={form.handleSubmit(onSubmit, onError)}
+					className="flex h-full w-1/2 flex-col justify-between space-y-6 rounded-lg border bg-white p-6"
+				>
+					<div className="space-y-4">
+						{/* Breadcrumb Navigation */}
+						<Breadcrumb>
+							<BreadcrumbList>
+								{Stepper.steps.map((step, index) => {
+									return (
+										<div className="flex gap-2" key={index}>
+											<BreadcrumbItem key={step.id}>
+												<BreadcrumbLink
+													onClick={() => stepper.goTo(step.id)}
+													className={` ${
+														stepper.current.index === step.index
+															? 'font-bold text-black'
+															: 'cursor-pointer text-gray-500 hover:text-black'
+													} `}
+												>
+													{step.label}
+												</BreadcrumbLink>
+											</BreadcrumbItem>
 
-                      {index < Stepper.steps.length - 1 && (
-                        <BreadcrumbSeparator>
-                          <Slash className="h-4 w-4" />
-                        </BreadcrumbSeparator>
-                      )}
-                    </div>
-                  );
-                })}
-              </BreadcrumbList>
-            </Breadcrumb>
+											{index < Stepper.steps.length - 1 && (
+												<BreadcrumbSeparator>
+													<Slash className="h-4 w-4" />
+												</BreadcrumbSeparator>
+											)}
+										</div>
+									)
+								})}
+							</BreadcrumbList>
+						</Breadcrumb>
 
-            {/* Step Header with Info */}
-            <div className="flex items-center justify-start gap-2">
-              <h2 className="text-lg font-medium">
-                Step {stepper.current.index + 1} of {Stepper.steps.length}:{" "}
-                {stepper.current.label}
-              </h2>
-              {stepper.current.info && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger onClick={(e) => e.preventDefault()}>
-                      <Info />
-                    </TooltipTrigger>
-                    <TooltipContent>{stepper.current.info}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-          </div>
+						{/* Step Header with Info */}
+						<div className="flex items-center justify-start gap-2">
+							<h2 className="text-lg font-medium">
+								Step {stepper.current.index + 1} of {Stepper.steps.length}:{' '}
+								{stepper.current.label}
+							</h2>
+							{stepper.current.info && (
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger
+											type="button"
+											onClick={(e) => {
+												e.preventDefault()
+												e.stopPropagation()
+											}}
+										>
+											<Info />
+										</TooltipTrigger>
+										<TooltipContent>{stepper.current.info}</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							)}
+						</div>
+					</div>
 
-          {/* Form Content */}
-          <div className="overflow-auto h-full">
-            {stepper.switch({
-              advanced: () => <AdvancedStep />,
-              "general-info": () => <GeneralInfoStep />,
-              location: () => <LocationStep />,
-              "device-selection": () => <DeviceSelectionStep />,
-              "sensor-selection": () => <SensorSelectionStep />,
-              summary: () => <SummaryInfo />,
-            })}
-          </div>
+					{/* Form Content */}
+					<div className="h-full overflow-auto">
+						{stepper.switch({
+							advanced: () => <AdvancedStep />,
+							'general-info': () => <GeneralInfoStep />,
+							location: () => <LocationStep />,
+							'device-selection': () => <DeviceSelectionStep />,
+							'sensor-selection': () => <SensorSelectionStep />,
+							summary: () => <SummaryInfo />,
+						})}
+					</div>
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={stepper.prev}
-              disabled={isFirst}
-            >
-              Back
-            </Button>
-            <Button type="submit">
-              {stepper.isLast ? "Complete" : "Next"}
-            </Button>
-          </div>
-        </Form>
-      </FormProvider>
-    </Stepper.Scoped>
-  );
+					{/* Navigation Buttons */}
+					<div className="mt-4 flex justify-between">
+						<Button
+							type="button"
+							variant="secondary"
+							onClick={stepper.prev}
+							disabled={isFirst}
+						>
+							Back
+						</Button>
+						<Button type="submit">
+							{stepper.isLast ? 'Complete' : 'Next'}
+						</Button>
+					</div>
+				</Form>
+			</FormProvider>
+		</Stepper.Scoped>
+	)
 }

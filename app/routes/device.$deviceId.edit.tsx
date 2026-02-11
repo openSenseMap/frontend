@@ -1,7 +1,6 @@
-
 //* Toast impl.
-import * as ToastPrimitive from "@radix-ui/react-toast";
-import { clsx } from "clsx";
+import * as ToastPrimitive from '@radix-ui/react-toast'
+import { clsx } from 'clsx'
 import {
   ArrowRightLeft,
   Lock,
@@ -37,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 //*****************************************************
 export async function action() {
-  return redirect("/");
+	return redirect('/')
 }
 
 //**********************************
@@ -77,84 +76,84 @@ export default function EditBox() {
     },
   ];
 
-  return (
-    <div className="space-y-6 px-10 pb-16  font-helvetica">
-      <NavBar />
+	return (
+		<div className="space-y-6 px-10 pb-16 font-helvetica">
+			<NavBar />
 
-      {/*Toast notification */}
-      <div className={toastOpen ? "mb-2" : ""}>
-        <ToastPrimitive.Provider>
-          <ToastPrimitive.Root
-            open={toastOpen}
-            duration={3000}
-            onOpenChange={setToastOpen}
-            className={clsx(
-              " inset-x-4 bottom-4 z-50 w-auto rounded-lg border-[1px] border-[#bce8f1] shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full",
-              "bg-[#d9edf7] dark:bg-gray-800",
-              "radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right",
-              "radix-state-closed:animate-toast-hide",
-              "radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x",
-              "radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x",
-              "radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y",
-              "radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y",
-              "radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;",
-              "focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75",
-            )}
-          >
-            <div className="flex">
-              <div className="flex w-0 flex-1 items-center p-4">
-                <div className="radix w-full">
-                  <ToastPrimitive.Title className=" flex justify-between text-base font-medium  text-[#31708f] dark:text-gray-100">
-                    {/* Account successfully deleted. */}
-                    <div>
-                      senseBox succesfully updated -
-                      <Link to={`/explore/${deviceId}`}>
-                        {" "}
-                        <span className="text-[#4eaf47] hover:underline">
-                          view
-                        </span>{" "}
-                      </Link>
-                    </div>
+			{/*Toast notification */}
+			<div className={toastOpen ? 'mb-2' : ''}>
+				<ToastPrimitive.Provider>
+					<ToastPrimitive.Root
+						open={toastOpen}
+						duration={3000}
+						onOpenChange={setToastOpen}
+						className={clsx(
+							'inset-x-4 bottom-4 z-50 w-auto rounded-lg border-[1px] border-[#bce8f1] shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full',
+							'bg-[#d9edf7] dark:bg-gray-800',
+							'radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right',
+							'radix-state-closed:animate-toast-hide',
+							'radix-swipe-direction-right:radix-swipe-end:animate-toast-swipe-out-x',
+							'radix-swipe-direction-right:translate-x-radix-toast-swipe-move-x',
+							'radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y',
+							'radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y',
+							'radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;',
+							'focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75',
+						)}
+					>
+						<div className="flex">
+							<div className="flex w-0 flex-1 items-center p-4">
+								<div className="radix w-full">
+									<ToastPrimitive.Title className="flex justify-between text-base font-medium text-[#31708f] dark:text-gray-100">
+										{/* Account successfully deleted. */}
+										<div>
+											device succesfully updated -
+											<Link to={`/explore/${deviceId}`}>
+												{' '}
+												<span className="text-[#4eaf47] hover:underline">
+													view
+												</span>{' '}
+											</Link>
+										</div>
 
-                    <ToastPrimitive.Close aria-label="Close">
-                      <span aria-hidden>×</span>
-                    </ToastPrimitive.Close>
-                  </ToastPrimitive.Title>
-                </div>
-              </div>
-            </div>
-          </ToastPrimitive.Root>
-          <ToastPrimitive.Viewport />
-        </ToastPrimitive.Provider>
-      </div>
+										<ToastPrimitive.Close aria-label="Close">
+											<span aria-hidden>×</span>
+										</ToastPrimitive.Close>
+									</ToastPrimitive.Title>
+								</div>
+							</div>
+						</div>
+					</ToastPrimitive.Root>
+					<ToastPrimitive.Viewport />
+				</ToastPrimitive.Provider>
+			</div>
 
-      <div className="rounded text-[#676767]">
-        <ArrowLeft className=" mr-2 inline h-5 w-5" />
-        <Link to="/profile/me">Back to Dashboard</Link>
-      </div>
+			<div className="rounded text-[#676767]">
+				<ArrowLeft className="mr-2 inline h-5 w-5" />
+				<Link to="/profile/me">Back to Dashboard</Link>
+			</div>
 
-      <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">Device settings</h2>
-        <p className="text-muted-foreground">Manage your device data.</p>
-      </div>
-      <Separator />
-      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-        {/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
-        <aside className="-mx-4 lg:w-1/5">
-          <EditDviceSidebarNav items={sidebarNavItems} />
-        </aside>
-        <div className="flex-1">
-          <Outlet context={[setToastOpen]} />
-        </div>
-      </div>
-    </div>
-  );
+			<div className="space-y-0.5">
+				<h2 className="text-2xl font-bold tracking-tight">Device settings</h2>
+				<p className="text-muted-foreground">Manage your device data.</p>
+			</div>
+			<Separator />
+			<div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
+				{/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
+				<aside className="-mx-4 lg:w-1/5">
+					<EditDviceSidebarNav items={sidebarNavItems} />
+				</aside>
+				<div className="flex-1">
+					<Outlet context={[setToastOpen]} />
+				</div>
+			</div>
+		</div>
+	)
 }
 
 export function ErrorBoundary() {
-  return (
-    <div className="w-screen h-screen flex items-center justify-center">
-      <ErrorMessage />
-    </div>
-  );
+	return (
+		<div className="flex h-screen w-screen items-center justify-center">
+			<ErrorMessage />
+		</div>
+	)
 }

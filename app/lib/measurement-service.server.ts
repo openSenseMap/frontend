@@ -1,10 +1,10 @@
+import { type BoxesDataColumn } from './api-schemas/boxes-data-query-schema'
 import { validLngLat } from './location'
 import { decodeMeasurements, hasDecoder } from '~/lib/decoding-service.server'
 import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
 	getDevice,
-	findAccessToken,
 } from '~/models/device.server'
 import { saveMeasurements } from '~/models/measurement.server'
 import {
@@ -136,9 +136,7 @@ export const postNewMeasurements = async (
 	}
 
 	if (device.useAuth) {
-		const deviceAccessToken = await findAccessToken(deviceId)
-
-		if (deviceAccessToken?.token && deviceAccessToken.token !== authorization) {
+		if (device.apiKey !== authorization) {
 			const error = new Error('Device access token not valid!')
 			error.name = 'UnauthorizedError'
 			throw error
@@ -191,12 +189,7 @@ export const postSingleMeasurement = async (
 		}
 
 		if (device.useAuth) {
-			const deviceAccessToken = await findAccessToken(deviceId)
-
-			if (
-				deviceAccessToken?.token &&
-				deviceAccessToken.token !== authorization
-			) {
+			if (device.apiKey !== authorization) {
 				const error = new Error('Device access token not valid!')
 				error.name = 'UnauthorizedError'
 				throw error
@@ -250,4 +243,73 @@ export const postSingleMeasurement = async (
 		console.error('Error in postSingleMeasurement:', error)
 		throw error
 	}
+}
+
+/**
+ * Transform a measurement row into an object with requested columns.
+ * - prefer measurement location if present
+ * - otherwise fall back to sensor/device location (sensorsMap)
+ */
+export function transformMeasurement(
+	m: {
+		sensorId: string
+		createdAt: Date | null
+		value: number | null
+		locationId: bigint | null
+	},
+	sensorsMap: Record<string, any>,
+	locationsMap: Record<string, any>,
+	columns: BoxesDataColumn[],
+) {
+	const sensor = sensorsMap[m.sensorId]
+	const measurementLocation = m.locationId
+		? locationsMap[m.locationId.toString()]
+		: null
+
+	const result: Record<string, any> = {}
+
+	for (const col of columns) {
+		switch (col) {
+			case 'createdAt':
+				result.createdAt = m.createdAt ? m.createdAt.toISOString() : null
+				break
+			case 'value':
+				result.value = m.value
+				break
+			case 'lat':
+				result.lat = measurementLocation?.lat ?? sensor?.lat
+				break
+			case 'lon':
+				result.lon = measurementLocation?.lon ?? sensor?.lon
+				break
+			case 'height':
+				result.height = measurementLocation?.height ?? sensor?.height ?? null
+				break
+			case 'boxid':
+				result.boxid = sensor?.boxid
+				break
+			case 'boxName':
+				result.boxName = sensor?.boxName
+				break
+			case 'exposure':
+				result.exposure = sensor?.exposure
+				break
+			case 'sensorId':
+				result.sensorId = sensor?.sensorId
+				break
+			case 'phenomenon':
+				result.phenomenon = sensor?.phenomenon
+				break
+			case 'unit':
+				result.unit = sensor?.unit
+				break
+			case 'sensorType':
+				result.sensorType = sensor?.sensorType
+				break
+			default:
+				break
+		}
+	}
+
+	return result
 }

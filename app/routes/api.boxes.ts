@@ -1,10 +1,10 @@
-import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { transformDeviceToApiFormat } from "~/lib/device-transform";
-import { CreateBoxSchema } from "~/lib/devices-service.server";
-import { getUserFromJwt } from "~/lib/jwt";
-import { createDevice } from "~/models/device.server";
-import { type User } from "~/schema";
-import { StandardResponse } from "~/utils/response-utils";
+import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { CreateBoxSchema } from '~/lib/devices-service.server'
+import { getUserFromJwt } from '~/lib/jwt'
+import { createDevice } from '~/models/device.server'
+import { type User } from '~/schema'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -52,9 +52,9 @@ import { StandardResponse } from "~/utils/response-utils";
  *                 example: ["bike", "atrai", "arnsberg"]
  *               model:
  *                 type: string
- *                 enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]
+ *                 enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "custom"]
  *                 description: Box model type
- *                 example: "Custom"
+ *                 example: "custom"
  *               sensors:
  *                 type: array
  *                 items:
@@ -186,7 +186,7 @@ import { StandardResponse } from "~/utils/response-utils";
  *           example: "outdoor"
  *         model:
  *           type: string
- *           enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "Custom"]
+ *           enum: ["homeV2Lora", "homeV2Ethernet", "homeV2Wifi", "senseBox:Edu", "luftdaten.info", "custom"]
  *           description: Box model
  *           example: "homeV2Wifi"
  *         latitude:
@@ -325,71 +325,83 @@ import { StandardResponse } from "~/utils/response-utils";
  */
 
 export const action: ActionFunction = async ({
-  request,
+	request,
 }: ActionFunctionArgs) => {
-  try {
-    // Check authentication
-    const jwtResponse = await getUserFromJwt(request);
+	try {
+		// Check authentication
+		const jwtResponse = await getUserFromJwt(request)
 
-    if (typeof jwtResponse === "string")
-      return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
+		if (typeof jwtResponse === 'string')
+			return StandardResponse.forbidden(
+				'Invalid JWT authorization. Please sign in to obtain new JWT.',
+			)
 
-    switch (request.method) {
-      case "POST":
-        return await post(request, jwtResponse);
-      default:
-        return StandardResponse.methodNotAllowed("Method Not Allowed");
-    }
-  } catch (err) {
-    console.error("Error in action:", err);
-    return StandardResponse.internalServerError();
-  }
-};
+		switch (request.method) {
+			case 'POST':
+				return await post(request, jwtResponse)
+			default:
+				return StandardResponse.methodNotAllowed('Method Not Allowed')
+		}
+	} catch (err) {
+		console.error('Error in action:', err)
+		return StandardResponse.internalServerError()
+	}
+}
 
 async function post(request: Request, user: User) {
-  try {
-    // Parse and validate request body
-    let requestData;
-    try {
-      requestData = await request.json();
-    } catch {
-      return StandardResponse.badRequest("Invalid JSON in request body");
-    }
+	try {
+		// Parse and validate request body
+		let requestData
+		try {
+			requestData = await request.json()
+		} catch {
+			return StandardResponse.badRequest('Invalid JSON in request body')
+		}
 
-    // Validate request data
-    const validationResult = CreateBoxSchema.safeParse(requestData);
-    if (!validationResult.success) {
-      return Response.json({
-        code: "Bad Request",
-        message: "Invalid request data",
-        errors: validationResult.error.errors.map(err => `${err.path.join('.')}: ${err.message}`),
-      }, { status: 400 });
-    }
+		// Validate request data
+		const validationResult = CreateBoxSchema.safeParse(requestData)
+		if (!validationResult.success) {
+			return Response.json(
+				{
+					code: 'Bad Request',
+					message: 'Invalid request data',
+					errors: validationResult.error.errors.map(
+						(err) => `${err.path.join('.')}: ${err.message}`,
+					),
+				},
+				{ status: 400 },
+			)
+		}
 
-    const validatedData = validationResult.data;
+		const validatedData = validationResult.data
+		const sensorsProvided = validatedData.sensors?.length > 0
+		// Extract longitude and latitude from location array [longitude, latitude]
+		const [longitude, latitude] = validatedData.location
+		const newBox = await createDevice(
+			{
+				name: validatedData.name,
+				exposure: validatedData.exposure,
+				model: sensorsProvided ? undefined : validatedData.model,
+				latitude: latitude,
+				longitude: longitude,
+				tags: validatedData.grouptag,
+				sensors: sensorsProvided
+					? validatedData.sensors.map((s) => ({
+							title: s.title,
+							sensorType: s.sensorType,
+							unit: s.unit,
+						}))
+					: undefined,
+			},
+			user.id,
+		)
 
-    // Extract longitude and latitude from location array [longitude, latitude]
-    const [longitude, latitude] = validatedData.location;
-    const newBox = await createDevice({
-      name: validatedData.name,
-      exposure: validatedData.exposure,
-      model: validatedData.model,
-      latitude: latitude,
-      longitude: longitude,
-      tags: validatedData.grouptag,
-      sensors: validatedData.sensors.map(sensor => ({
-        title: sensor.title,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-      })),
-    }, user.id);
+		// Build response object using helper function
+		const responseData = transformDeviceToApiFormat(newBox)
 
-    // Build response object using helper function
-    const responseData = transformDeviceToApiFormat(newBox);
-
-    return StandardResponse.created(responseData);
-  } catch (err) {
-    console.error("Error creating box:", err);
-    return StandardResponse.internalServerError();
-  }
+		return StandardResponse.created(responseData)
+	} catch (err) {
+		console.error('Error creating box:', err)
+		return StandardResponse.internalServerError()
+	}
 }

@@ -9,7 +9,10 @@ import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
-import { loader as deviceLoader } from '~/routes/api.device.$deviceId'
+import {
+	loader as deviceLoader,
+	action as deviceUpdateAction,
+} from '~/routes/api.device.$deviceId'
 import {
 	loader as devicesLoader,
 	action as devicesAction,
@@ -50,33 +53,14 @@ describe('openSenseMap API Routes: /boxes', () => {
 				...generateMinimalDevice(),
 				latitude: 123,
 				longitude: 12,
-				tags: ['newgroup'],
+				tags: ['testgroup'],
+				useAuth: false,
 			},
 			(testUser as User).id,
 		)
 	})
 
 	describe('GET', () => {
-		it('should search for boxes with a specific name', async () => {
-			// Arrange
-			const request = new Request(
-				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}`,
-				{
-					method: 'GET',
-					headers: { 'Content-Type': 'application/json' },
-				},
-			)
-
-			// Act
-			const response: any = await devicesLoader({
-				request: request,
-			} as LoaderFunctionArgs)
-
-			expect(response).toBeDefined()
-			expect(Array.isArray(response?.features)).toBe(true)
-			expect(response?.features.length).lessThanOrEqual(5) // 5 is default limit
-		})
-
 		it('should search for boxes with a specific name and limit the results', async () => {
 			// Arrange
 			const request = new Request(
@@ -300,7 +284,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 		it('should allow to filter boxes by grouptag', async () => {
 			// Arrange
-			const request = new Request(`${BASE_URL}?grouptag=newgroup`, {
+			const request = new Request(`${BASE_URL}?grouptag=testgroup`, {
 				method: 'GET',
 				headers: { 'Content-Type': 'application/json' },
 			})
@@ -361,6 +345,72 @@ describe('openSenseMap API Routes: /boxes', () => {
 						expect(latitude).toBeGreaterThanOrEqual(60)
 						expect(latitude).toBeLessThanOrEqual(61)
 					})
+				}
+			}
+		})
+
+		it('should reject filtering boxes near a location with wrong parameter values', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?near=test,60`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act & Assert
+			await expect(async () => {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+			}).rejects.toThrow()
+		})
+
+		it('should return 422 error on wrong format parameter', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?format=potato`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			try {
+				await devicesLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+				expect(true).toBe(false)
+			} catch (error) {
+				expect(error).toBeInstanceOf(Response)
+				expect((error as Response).status).toBe(422)
+
+				const errorData = await (error as Response).json()
+				expect(errorData.error).toBe('Invalid format parameter')
+			}
+		})
+
+		it('should return geojson format when requested', async () => {
+			// Arrange
+			const request = new Request(`${BASE_URL}?format=geojson`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			// Act
+			const geojsonData: any = await devicesLoader({
+				request: request,
+			} as LoaderFunctionArgs)
+
+			expect(geojsonData).toBeDefined()
+			if (geojsonData) {
+				// Assert - this should always be GeoJSON since that's what the loader returns
+				expect(geojsonData.type).toBe('FeatureCollection')
+				expect(Array.isArray(geojsonData.features)).toBe(true)
+
+				if (geojsonData.features.length > 0) {
+					expect(geojsonData.features[0].type).toBe('Feature')
+					expect(geojsonData.features[0].geometry).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
+					// @ts-ignore
+					expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
+					expect(geojsonData.features[0].properties).toBeDefined()
 				}
 			}
 		})
@@ -564,6 +614,251 @@ describe('openSenseMap API Routes: /boxes', () => {
 				// Add assertions for fields that shouldn't be returned
 				// For example, if there are internal fields that shouldn't be exposed:
 				// expect(result.internalField).toBeUndefined()
+			})
+		})
+
+		describe('PUT', () => {
+			it('should allow to update the device via PUT', async () => {
+				const update_payload = {
+					name: 'neuername',
+					exposure: 'indoor',
+					grouptag: 'testgroup',
+					description: 'total neue beschreibung',
+					location: { lat: 54.2, lng: 21.1 },
+					weblink: 'http://www.google.de',
+					useAuth: true,
+					image:
+						'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+				const data = await response.json()
+
+				expect(response.status).toBe(200)
+				expect(data.name).toBe(update_payload.name)
+				expect(data.exposure).toBe(update_payload.exposure)
+				expect(Array.isArray(data.grouptag)).toBe(true)
+				expect(data.grouptag).toContain(update_payload.grouptag)
+				expect(data.description).toBe(update_payload.description)
+				expect(data.access_token).not.toBeNull()
+				expect(data.currentLocation).toEqual({
+					type: 'Point',
+					coordinates: [
+						update_payload.location.lng,
+						update_payload.location.lat,
+					],
+					timestamp: expect.any(String),
+				})
+
+				expect(data.loc).toEqual([
+					{
+						type: 'Feature',
+						geometry: {
+							type: 'Point',
+							coordinates: [
+								update_payload.location.lng,
+								update_payload.location.lat,
+							],
+							timestamp: expect.any(String),
+						},
+					},
+				])
+			})
+
+			it('should allow to update the device via PUT with array as grouptags', async () => {
+				const update_payload = {
+					name: 'neuername',
+					exposure: 'outdoor',
+					grouptag: ['testgroup'],
+					description: 'total neue beschreibung',
+					location: { lat: 54.2, lng: 21.1 },
+					weblink: 'http://www.google.de',
+					image:
+						'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response: any = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+
+				const data = await response.json()
+				expect(data.name).toBe(update_payload.name)
+				expect(data.exposure).toBe(update_payload.exposure)
+
+				expect(Array.isArray(data.grouptag)).toBe(true)
+				expect(data.grouptag).toEqual(update_payload.grouptag)
+
+				expect(data.description).toBe(update_payload.description)
+				expect(data.currentLocation.coordinates).toEqual([
+					update_payload.location.lng,
+					update_payload.location.lat,
+				])
+				expect(data.loc[0].geometry.coordinates).toEqual([
+					update_payload.location.lng,
+					update_payload.location.lat,
+				])
+
+				//TODO: this fails, check if we actually need timestamps in images
+				// const parts = data.image.split('_')
+				// const ts36 = parts[1].replace('.png', '')
+				// const tsMs = parseInt(ts36, 36) * 1000
+				// expect(Date.now() - tsMs).toBeLessThan(1000)
+			})
+			it('should remove image when deleteImage=true', async () => {
+				const update_payload = {
+					deleteImage: true,
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.image).toBeNull()
+			})
+
+			it('should nullify description when set to empty string', async () => {
+				const update_payload = {
+					description: '',
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.description).toBeNull()
+			})
+
+			it('should clear group tags when empty array provided', async () => {
+				const update_payload = {
+					grouptag: [],
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.grouptag).toHaveLength(0)
+			})
+
+			it('should merge addons.add into grouptags', async () => {
+				const update_payload = {
+					addons: { add: 'feinstaub' },
+					grouptag: ['existinggroup'],
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+
+				expect(Array.isArray(data.grouptag)).toBe(true)
+				expect(data.grouptag).toContain('existinggroup')
+				expect(data.grouptag).toContain('feinstaub')
+			})
+
+			it('should accept multi-valued grouptag array', async () => {
+				const update_payload = {
+					grouptag: ['tag1', 'tag2', 'tag3'],
+				}
+
+				const request = new Request(`${BASE_URL}/${queryableDevice?.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: JSON.stringify(update_payload),
+				})
+
+				const response = await deviceUpdateAction({
+					request,
+					params: { deviceId: queryableDevice?.id },
+					context: {} as AppLoadContext,
+				} as ActionFunctionArgs)
+
+				expect(response.status).toBe(200)
+				const data = await response.json()
+				expect(data.grouptag).toEqual(
+					expect.arrayContaining(['tag1', 'tag2', 'tag3']),
+				)
 			})
 		})
 

@@ -1,5 +1,5 @@
 {
-  "id": "b4bc2011-8fc4-4d19-9fde-edeede1726f2",
+  "id": "be35aeec-1a4d-449f-bbe9-b290b6a79093",
   "prevId": "b7903c96-4a1f-498b-abb4-07815b2d42d8",
   "version": "7",
   "dialect": "postgresql",
@@ -523,6 +523,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "status",
@@ -791,241 +797,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.device_to_integrations": {
-      "name": "device_to_integrations",
-      "schema": "",
-      "columns": {
-        "device_id": {
-          "name": "device_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "mqtt_integration_id": {
-          "name": "mqtt_integration_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ttn_integration_id": {
-          "name": "ttn_integration_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "device_to_integrations_device_id_device_id_fk": {
-          "name": "device_to_integrations_device_id_device_id_fk",
-          "tableFrom": "device_to_integrations",
-          "tableTo": "device",
-          "columnsFrom": [
-            "device_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "device_to_integrations_mqtt_integration_id_mqtt_integration_id_fk": {
-          "name": "device_to_integrations_mqtt_integration_id_mqtt_integration_id_fk",
-          "tableFrom": "device_to_integrations",
-          "tableTo": "mqtt_integration",
-          "columnsFrom": [
-            "mqtt_integration_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "device_to_integrations_ttn_integration_id_ttn_integration_id_fk": {
-          "name": "device_to_integrations_ttn_integration_id_ttn_integration_id_fk",
-          "tableFrom": "device_to_integrations",
-          "tableTo": "ttn_integration",
-          "columnsFrom": [
-            "ttn_integration_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "device_to_integrations_device_id_pk": {
-          "name": "device_to_integrations_device_id_pk",
-          "columns": [
-            "device_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.mqtt_integration": {
-      "name": "mqtt_integration",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "enabled": {
-          "name": "enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "topic": {
-          "name": "topic",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "message_format": {
-          "name": "message_format",
-          "type": "message_format",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'json'"
-        },
-        "decode_options": {
-          "name": "decode_options",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "connection_options": {
-          "name": "connection_options",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "device_id": {
-          "name": "device_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "mqtt_integration_device_id_device_id_fk": {
-          "name": "mqtt_integration_device_id_device_id_fk",
-          "tableFrom": "mqtt_integration",
-          "tableTo": "device",
-          "columnsFrom": [
-            "device_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.ttn_integration": {
-      "name": "ttn_integration",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "enabled": {
-          "name": "enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "dev_id": {
-          "name": "dev_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "app_id": {
-          "name": "app_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "port": {
-          "name": "port",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "profile": {
-          "name": "profile",
-          "type": "ttn_profile",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'json'"
-        },
-        "decode_options": {
-          "name": "decode_options",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::json"
-        },
-        "device_id": {
-          "name": "device_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "ttn_integration_device_id_device_id_fk": {
-          "name": "ttn_integration_device_id_device_id_fk",
-          "tableFrom": "ttn_integration",
-          "tableTo": "device",
-          "columnsFrom": [
-            "device_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.refresh_token": {
       "name": "refresh_token",
       "schema": "",
@@ -1249,6 +1020,16 @@
         "homeV2Lora",
         "homeV2Ethernet",
         "homeV2Wifi",
+        "homeEthernet",
+        "homeWifi",
+        "homeEthernetFeinstaub",
+        "homeWifiFeinstaub",
+        "luftdaten_sds011",
+        "luftdaten_sds011_dht11",
+        "luftdaten_sds011_dht22",
+        "luftdaten_sds011_bmp180",
+        "luftdaten_sds011_bme280",
+        "hackair_home_v2",
         "senseBox:Edu",
         "luftdaten.info",
         "Custom"
@@ -1261,29 +1042,6 @@
         "active",
         "inactive",
         "old"
-      ]
-    },
-    "public.message_format": {
-      "name": "message_format",
-      "schema": "public",
-      "values": [
-        "json",
-        "csv",
-        "application/json",
-        "text/csv",
-        "debug_plain",
-        ""
-      ]
-    },
-    "public.ttn_profile": {
-      "name": "ttn_profile",
-      "schema": "public",
-      "values": [
-        "json",
-        "debug",
-        "sensebox/home",
-        "lora-serialization",
-        "cayenne-lpp"
       ]
     }
   },

@@ -172,9 +172,9 @@ export default function EditBoxMQTT() {
 }
 
 export function ErrorBoundary() {
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <ErrorMessage />
-    </div>
-  );
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<ErrorMessage />
+		</div>
+	)
 }

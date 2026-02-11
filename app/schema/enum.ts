@@ -1,23 +1,6 @@
 import { pgEnum } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
-export const MqttMessageFormatEnum = pgEnum('message_format', [
-	'json',
-	'csv',
-	'application/json',
-	'text/csv',
-	'debug_plain',
-	'',
-])
-
-export const TtnProfileEnum = pgEnum('ttn_profile', [
-	'json',
-	'debug',
-	'sensebox/home',
-	'lora-serialization',
-	'cayenne-lpp',
-])
-
 // Enum for device exposure types
 export const DeviceExposureEnum = pgEnum('exposure', [
 	'indoor',
@@ -46,7 +29,17 @@ export const DeviceModelEnum = pgEnum('model', [
 	'homeV2Lora',
 	'homeV2Ethernet',
 	'homeV2Wifi',
+	'homeEthernet',
+	'homeWifi',
+	'homeEthernetFeinstaub',
+	'homeWifiFeinstaub',
+	'luftdaten_sds011',
+	'luftdaten_sds011_dht11',
+	'luftdaten_sds011_dht22',
+	'luftdaten_sds011_bmp180',
+	'luftdaten_sds011_bme280',
+	'hackair_home_v2',
 	'senseBox:Edu',
 	'luftdaten.info',
-	'Custom',
+	'custom',
 ])

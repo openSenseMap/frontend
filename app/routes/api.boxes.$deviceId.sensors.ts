@@ -1,6 +1,6 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLatestMeasurements } from "~/lib/measurement-service.server";
-import { StandardResponse } from "~/utils/response-utils";
+import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import { getLatestMeasurements } from '~/lib/measurement-service.server'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -8,14 +8,14 @@ import { StandardResponse } from "~/utils/response-utils";
  *  get:
  *    tags:
  *      - Sensors
- *    summary: Get the latest measurements of all sensors of the specified senseBox.
+ *    summary: Get the latest measurements of all sensors of the specified device.
  *    parameters:
  *      - in: path
  *        name: deviceId
  *        required: true
  *        schema:
  *          type: string
- *        description: the ID of the senseBox you are referring to
+ *        description: the ID of the device you are referring to
  *      - in: query
  *        name: count
  *        required: false
@@ -31,28 +31,30 @@ import { StandardResponse } from "~/utils/response-utils";
  */
 
 export const loader: LoaderFunction = async ({
-  request,
-  params,
+	request,
+	params,
 }: LoaderFunctionArgs): Promise<Response> => {
-  try {
-    const deviceId = params.deviceId;
-    if (deviceId === undefined)
-      return StandardResponse.badRequest("Invalid device id specified");
+	try {
+		const deviceId = params.deviceId
+		if (deviceId === undefined)
+			return StandardResponse.badRequest('Invalid device id specified')
 
-    const url = new URL(request.url);
-    const countParam = url.searchParams.get("count");
+		const url = new URL(request.url)
+		const countParam = url.searchParams.get('count')
 
-    let count: undefined | number = undefined;
-    if (countParam !== null && Number.isNaN(countParam))
-      return StandardResponse.badRequest("Illegal value for parameter count. allowed values: numbers");
+		let count: undefined | number = undefined
+		if (countParam !== null && Number.isNaN(countParam))
+			return StandardResponse.badRequest(
+				'Illegal value for parameter count. allowed values: numbers',
+			)
 
-    count = countParam === null ? undefined : Number(countParam);
+		count = countParam === null ? undefined : Number(countParam)
 
-    const meas = await getLatestMeasurements(deviceId, count);
+		const meas = await getLatestMeasurements(deviceId, count)
 
-    return StandardResponse.ok(meas);
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
-};
+		return StandardResponse.ok(meas)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}

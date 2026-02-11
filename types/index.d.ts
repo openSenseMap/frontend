@@ -1,3 +1,3 @@
 export interface LastMeasurement {
-  value: string;
+	value: string
 }

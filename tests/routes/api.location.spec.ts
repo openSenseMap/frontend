@@ -11,8 +11,6 @@ import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$devic
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
 import { location, deviceToLocation, measurement, type User } from '~/schema'
 
-const mockAccessToken = 'valid-access-token-location-tests'
-
 const TEST_USER = generateTestUserCredentials()
 
 const TEST_BOX = {
@@ -22,7 +20,6 @@ const TEST_BOX = {
 	tags: [],
 	latitude: 0,
 	longitude: 0,
-	model: 'luftdaten.info',
 	mqttEnabled: false,
 	ttnEnabled: false,
 	sensors: [
@@ -37,6 +34,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 	let deviceId: string = ''
 	let sensorIds: string[] = []
 	let sensors: any[] = []
+	let deviceApiKey: string = ''
 
 	// Helper function to get device's current location
 	async function getDeviceCurrentLocation(deviceId: string) {
@@ -122,6 +120,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 		userId = (user as User).id
 		const device = await createDevice(TEST_BOX, userId)
 		deviceId = device.id
+		deviceApiKey = device.apiKey
 
 		const deviceWithSensors = await getDevice({ id: deviceId })
 		sensorIds =
@@ -147,7 +146,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify(measurement),
 				},
@@ -181,7 +180,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify(measurement),
 				},
@@ -215,7 +214,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify(currentMeasurement),
 				},
@@ -246,7 +245,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify(pastMeasurement),
 				},
@@ -291,7 +290,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement),
 				},
@@ -340,7 +339,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement1),
 				},
@@ -366,7 +365,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement2),
 				},
@@ -391,7 +390,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement3),
 				},
@@ -451,7 +450,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement3),
 				},
@@ -476,7 +475,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement2),
 				},
@@ -502,7 +501,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: testDevice.apiKey,
 					},
 					body: JSON.stringify(measurement1),
 				},
@@ -553,7 +552,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify(measurement),
 				},
@@ -583,7 +582,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: mockAccessToken,
+						Authorization: deviceApiKey,
 					},
 					body: JSON.stringify(measurement),
 				},
@@ -617,7 +616,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: JSON.stringify(body),
 			})
@@ -659,7 +658,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: mockAccessToken,
+					Authorization: deviceApiKey,
 				},
 				body: JSON.stringify(measurements),
 			})

@@ -18,13 +18,13 @@ export const action: ActionFunction = async ({
 		!formData.has('token') ||
 		formData.get('token')?.toString().trim().length === 0
 	)
-  return StandardResponse.badRequest('No email confirmation token specified.');
+		return StandardResponse.badRequest('No email confirmation token specified.')
 
 	if (
 		!formData.has('email') ||
 		formData.get('email')?.toString().trim().length === 0
 	)
-  return StandardResponse.badRequest('No email address to confirm specified.');
+		return StandardResponse.badRequest('No email address to confirm specified.')
 
 	try {
 		const updatedUser = await confirmEmail(
@@ -33,14 +33,16 @@ export const action: ActionFunction = async ({
 		)
 
 		if (updatedUser === null)
-      return StandardResponse.forbidden('Invalid or expired confirmation token.');
+			return StandardResponse.forbidden(
+				'Invalid or expired confirmation token.',
+			)
 
-    return StandardResponse.ok({
-				code: 'Ok',
-				message: 'E-Mail successfully confirmed. Thank you',
-			});
+		return StandardResponse.ok({
+			code: 'Ok',
+			message: 'E-Mail successfully confirmed. Thank you',
+		})
 	} catch (err) {
 		console.warn(err)
-    return StandardResponse.internalServerError();
+		return StandardResponse.internalServerError()
 	}
 }

@@ -46,7 +46,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				name: 'Test Weather Station',
 				location: [7.596, 51.969],
 				exposure: 'outdoor',
-				model: 'homeV2Wifi',
+				// model: 'custom',
 				grouptag: ['weather', 'test'],
 				sensors: [
 					{
@@ -85,10 +85,12 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(response.status).toBe(201)
 			expect(body).toHaveProperty('_id')
 			expect(body).toHaveProperty('name', 'Test Weather Station')
-			expect(body).toHaveProperty('sensors')
 			expect(body.sensors).toHaveLength(2)
+			expect(body).toHaveProperty('sensors')
 			expect(body.sensors[0]).toHaveProperty('title', 'Temperature')
 			expect(body.sensors[1]).toHaveProperty('title', 'Humidity')
+			expect(body).toHaveProperty('access_token')
+			expect(body.access_token).not.toBeNull()
 		})
 
 		it('should create a box with minimal data (no sensors)', async () => {
@@ -267,7 +269,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			expect(response.status).toBe(201)
 			expect(body).toHaveProperty('exposure', 'unknown')
-			expect(body).toHaveProperty('model', 'Custom')
+			expect(body).toHaveProperty('model', 'custom')
 			expect(body).toHaveProperty('grouptag')
 			expect(body.grouptag).toEqual([])
 		})

@@ -1,7 +1,7 @@
-import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { parseUserSignInData } from "~/lib/request-parsing";
-import { signIn } from "~/lib/user-service.server";
-import { StandardResponse } from "~/utils/response-utils";
+import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { parseUserSignInData } from '~/lib/request-parsing'
+import { signIn } from '~/lib/user-service.server'
+import { StandardResponse } from '~/utils/response-utils'
 /**
  * @openapi
  * /api/users/sign-in:
@@ -108,42 +108,47 @@ import { StandardResponse } from "~/utils/response-utils";
  *           description: Last account update timestamp
  */
 export const action: ActionFunction = async ({
-  request,
+	request,
 }: ActionFunctionArgs) => {
-  try {
-    // Parse request data - handles both JSON and form data automatically
-    const data = await parseUserSignInData(request);
-    
-    const email = data.email.trim();
-    const password = data.password.trim();
+	try {
+		// Parse request data - handles both JSON and form data automatically
+		const data = await parseUserSignInData(request)
 
-    if (!email || email.length === 0)
-      return StandardResponse.forbidden("You must specify either your email or your username");
+		const email = data.email.trim()
+		const password = data.password.trim()
 
-    if (!password || password.length === 0) {
-      return StandardResponse.forbidden("You must specify your password to sign in");
-    }
+		if (!email || email.length === 0)
+			return StandardResponse.forbidden(
+				'You must specify either your email or your username',
+			)
 
-    const { user, jwt, refreshToken } = (await signIn(email, password)) || {};
+		if (!password || password.length === 0) {
+			return StandardResponse.forbidden(
+				'You must specify your password to sign in',
+			)
+		}
 
-    if (user && jwt && refreshToken)
-      return StandardResponse.ok({
-          code: "Authorized",
-          message: "Successfully signed in",
-          data: { user },
-          token: jwt,
-          refreshToken,
-        });
-    else
-      return StandardResponse.forbidden("User and or password not valid!");
-  } catch (error) {
-    // Handle parsing errors
-    if (error instanceof Error && error.message.includes('Failed to parse')) {
-      return StandardResponse.forbidden(`Invalid request format: ${error.message}`);
-    }
-    
-    // Handle other errors
-    console.warn(error);
-    return StandardResponse.internalServerError();
-  }
-};
+		const { user, jwt, refreshToken } = (await signIn(email, password)) || {}
+
+		if (user && jwt && refreshToken)
+			return StandardResponse.ok({
+				code: 'Authorized',
+				message: 'Successfully signed in',
+				data: { user },
+				token: jwt,
+				refreshToken,
+			})
+		else return StandardResponse.forbidden('User and or password not valid!')
+	} catch (error) {
+		// Handle parsing errors
+		if (error instanceof Error && error.message.includes('Failed to parse')) {
+			return StandardResponse.forbidden(
+				`Invalid request format: ${error.message}`,
+			)
+		}
+
+		// Handle other errors
+		console.warn(error)
+		return StandardResponse.internalServerError()
+	}
+}

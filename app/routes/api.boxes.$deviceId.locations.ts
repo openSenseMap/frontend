@@ -1,7 +1,11 @@
-import { type Params, type LoaderFunction, type LoaderFunctionArgs } from "react-router";
-import { getLocations } from "~/models/device.server";
-import { parseDateParam, parseEnumParam } from "~/utils/param-utils";
-import { StandardResponse } from "~/utils/response-utils";
+import {
+	type Params,
+	type LoaderFunction,
+	type LoaderFunctionArgs,
+} from 'react-router'
+import { getLocations } from '~/models/device.server'
+import { parseDateParam, parseEnumParam } from '~/utils/param-utils'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -9,8 +13,8 @@ import { StandardResponse } from "~/utils/response-utils";
  *   get:
  *    tags:
  *      - Boxes
- *    summary: Get locations of a senseBox
- *    description: Get all locations of the specified senseBox ordered by date as an array of GeoJSON Points.
+ *    summary: Get locations of a device
+ *    description: Get all locations of the specified device ordered by date as an array of GeoJSON Points.
  *      If `format=geojson`, a GeoJSON linestring will be returned, with `properties.timestamps`
  *      being an array with the timestamp for each coordinate.
  *    parameters:
@@ -19,7 +23,7 @@ import { StandardResponse } from "~/utils/response-utils";
  *        required: true
  *        schema:
  *          type: string
- *        description: the ID of the senseBox you are referring to
+ *        description: the ID of the device you are referring to
  *      - in: query
  *        name: from-date
  *        required: false
@@ -92,87 +96,91 @@ import { StandardResponse } from "~/utils/response-utils";
  */
 
 export const loader: LoaderFunction = async ({
-  request,
-  params,
+	request,
+	params,
 }: LoaderFunctionArgs): Promise<Response> => {
-  try {
+	try {
+		const collected = collectParameters(request, params)
+		if (collected instanceof Response) return collected
+		const { deviceId, fromDate, toDate, format } = collected
 
-    const collected = collectParameters(request, params);
-    if (collected instanceof Response)
-      return collected;
-    const {deviceId, fromDate, toDate, format} = collected;
+		const locations = await getLocations({ id: deviceId }, fromDate, toDate)
+		if (!locations) return StandardResponse.notFound('Device not found')
 
-    const locations = await getLocations({ id: deviceId}, fromDate, toDate);
-    if (!locations)
-      return StandardResponse.notFound("Device not found");
+		const jsonLocations = locations.map((location) => {
+			return {
+				coordinates: [location.x, location.y],
+				type: 'Point',
+				timestamp: location.time,
+			}
+		})
 
-    const jsonLocations = locations.map((location) => {
-      return {
-        coordinates: [location.x, location.y],
-        type: 'Point',
-        timestamp: location.time,
-      }
-    });
+		let headers: HeadersInit = {
+			'content-type':
+				format == 'json'
+					? 'application/json; charset=utf-8'
+					: 'application/geo+json; charset=utf-8',
+		}
 
-    let headers: HeadersInit = {
-        "content-type": format == "json" ? "application/json; charset=utf-8" : "application/geo+json; charset=utf-8",
-    };
+		const responseInit: ResponseInit = {
+			status: 200,
+			headers: headers,
+		}
 
-    const responseInit: ResponseInit = {
-      status: 200,
-      headers: headers,
-    };
+		if (format == 'json') return Response.json(jsonLocations, responseInit)
+		else {
+			const geoJsonLocations = {
+				type: 'Feature',
+				geometry: {
+					type: 'LineString',
+					coordinates: jsonLocations.map((location) => location.coordinates),
+				},
+				properties: {
+					timestamps: jsonLocations.map((location) => location.timestamp),
+				},
+			}
+			return Response.json(geoJsonLocations, responseInit)
+		}
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}
 
-    if (format == "json")
-      return Response.json(jsonLocations, responseInit);
-    else {
-      const geoJsonLocations =  {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString', coordinates: jsonLocations.map(location => location.coordinates)
-          },
-          properties: {
-            timestamps: jsonLocations.map(location => location.timestamp)
-          }
-        };
-      return Response.json(geoJsonLocations, responseInit)
-    }
+function collectParameters(
+	request: Request,
+	params: Params<string>,
+):
+	| Response
+	| {
+			deviceId: string
+			fromDate: Date
+			toDate: Date
+			format: string | null
+	  } {
+	const deviceId = params.deviceId
+	if (deviceId === undefined)
+		return StandardResponse.badRequest('Invalid device id specified')
 
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
-};
+	const url = new URL(request.url)
 
-function collectParameters(request: Request, params: Params<string>):
-  Response | {
-    deviceId: string,
-    fromDate: Date,
-    toDate: Date,
-    format: string | null
-  } {
-  const deviceId = params.deviceId;
-  if (deviceId === undefined)
-    return StandardResponse.badRequest("Invalid device id specified");
+	const fromDate = parseDateParam(
+		url,
+		'from-date',
+		new Date(new Date().setDate(new Date().getDate() - 2)),
+	)
+	if (fromDate instanceof Response) return fromDate
 
-  const url = new URL(request.url);
+	const toDate = parseDateParam(url, 'to-date', new Date())
+	if (toDate instanceof Response) return toDate
 
-  const fromDate = parseDateParam(url, "from-date", new Date(new Date().setDate(new Date().getDate() - 2)))
-  if (fromDate instanceof Response)
-    return fromDate
+	const format = parseEnumParam(url, 'format', ['json', 'geojson'], 'json')
+	if (format instanceof Response) return format
 
-  const toDate = parseDateParam(url, "to-date", new Date())
-  if (toDate instanceof Response)
-    return toDate
-
-  const format = parseEnumParam(url, "format", ["json", "geojson"], "json");
-  if (format instanceof Response)
-    return format
-
-  return {
-    deviceId,
-    fromDate,
-    toDate,
-    format
-  };
+	return {
+		deviceId,
+		fromDate,
+		toDate,
+		format,
+	}
 }

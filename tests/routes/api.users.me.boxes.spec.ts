@@ -78,6 +78,7 @@ describe('openSenseMap API Routes: /users', () => {
 					expect(box).toHaveProperty('createdAt')
 					expect(box).toHaveProperty('updatedAt')
 					expect(box).toHaveProperty('useAuth')
+					expect(box).toHaveProperty('access_token') // kept for backwards compatibility, now called apiKey
 
 					expect(box).toHaveProperty('currentLocation')
 					expect(box.currentLocation).toHaveProperty('type', 'Point')
