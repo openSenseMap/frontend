@@ -60,7 +60,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
     for (const intg of integrations) {
       const enabledKey = `${intg.slug}Enabled`; 
-      const configKey = `${intg.slug}Config`;   
+      const configKey = `${intg.slug}Config`; 
+      
+      const config = advanced[configKey];
+        if (!config) {
+          console.warn(`${intg.name} is enabled but no config provided`);
+          continue;
+        }
 
       // Check if this integration is enabled in the form data
       if (!advanced?.[enabledKey] || !advanced?.[configKey]) {

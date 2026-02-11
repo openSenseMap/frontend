@@ -91,6 +91,7 @@ const mqttSchema = z
     mqttEnabled: z.boolean().default(false),
     mqttConfig: z.record(z.any()).optional(),
     ttnEnabled: z.boolean().default(false),
+    ttnConfig: z.record(z.any()).optional(),
   })
 //   .superRefine((data, ctx) => {
 //     if (data.mqttEnabled) {
@@ -229,7 +230,7 @@ export default function NewDeviceStepper() {
   }, [stepper.isFirst]);
 
   const onSubmit = (data: FormData) => {
-    console.log("🚀 ~ onSubmit ~ data:", data);
+    console.log("🚀 ~ onSubmit ~ data", data);    
     const updatedData = {
       ...formData,
       [stepper.current.id]: data,
@@ -238,12 +239,10 @@ export default function NewDeviceStepper() {
     setFormData(updatedData);
 
     if (stepper.isLast) {
-      console.log("Complete! Final Data:", updatedData);
-
       // Submit form data as JSON
       void submit(
         {
-          formData: JSON.stringify(updatedData), // Serialize the data
+          formData: JSON.stringify(updatedData),
         },
         { method: "post" },
       );
