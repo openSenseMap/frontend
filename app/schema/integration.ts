@@ -1,0 +1,21 @@
+import { createId } from '@paralleldrive/cuid2'
+import { InferSelectModel } from 'drizzle-orm';
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const integration = pgTable('integration', {
+  id: text('id')
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => createId()),
+  name: text('name').notNull(),           
+  slug: text('slug').notNull().unique(), 
+  serviceUrl: text('service_url').notNull(),
+  serviceKeyEnvVar: text('service_key_env_var').notNull(),
+  schemaPath: text('schema_path').notNull(),
+  icon: text('icon'), //name of lucide icon , pascal case! 
+  description: text('description'),
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export type Integration = InferSelectModel<typeof integration>

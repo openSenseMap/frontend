@@ -87,40 +87,38 @@ const sensorsSchema = z.object({
 })
 
 const mqttSchema = z
-	.object({
-		mqttEnabled: z.boolean().default(false),
-		url: z.string().optional(),
-		topic: z.string().optional(),
-		messageFormat: z.enum(['json', 'csv']).optional(),
-		decodeOptions: z.string().optional(),
-		connectionOptions: z.string().optional(),
-	})
-	.superRefine((data, ctx) => {
-		if (data.mqttEnabled) {
-			// Check required fields when enabled is true
-			if (!data.url) {
-				ctx.addIssue({
-					path: ['url'],
-					message: 'URL is required when MQTT is enabled.',
-					code: 'custom',
-				})
-			}
-			if (!data.topic) {
-				ctx.addIssue({
-					path: ['topic'],
-					message: 'Topic is required when MQTT is enabled.',
-					code: 'custom',
-				})
-			}
-			if (!data.messageFormat) {
-				ctx.addIssue({
-					path: ['messageFormat'],
-					message: 'Message format is required when MQTT is enabled.',
-					code: 'custom',
-				})
-			}
-		}
-	})
+  .object({
+    mqttEnabled: z.boolean().default(false),
+    mqttConfig: z.record(z.any()).optional(),
+    ttnEnabled: z.boolean().default(false),
+    ttnConfig: z.record(z.any()).optional(),
+  })
+//   .superRefine((data, ctx) => {
+//     if (data.mqttEnabled) {
+//       // Check required fields when enabled is true
+//       if (!data.url) {
+//         ctx.addIssue({
+//           path: ["url"],
+//           message: "URL is required when MQTT is enabled.",
+//           code: "custom",
+//         });
+//       }
+//       if (!data.topic) {
+//         ctx.addIssue({
+//           path: ["topic"],
+//           message: "Topic is required when MQTT is enabled.",
+//           code: "custom",
+//         });
+//       }
+//       if (!data.messageFormat) {
+//         ctx.addIssue({
+//           path: ["messageFormat"],
+//           message: "Message format is required when MQTT is enabled.",
+//           code: "custom",
+//         });
+//       }
+//     }
+//   });
 
 const ttnSchema = z
 	.object({
@@ -167,52 +165,40 @@ const ttnSchema = z
 		}
 	})
 
-const advancedSchema = z.intersection(mqttSchema, ttnSchema)
+// const advancedSchema = z.intersection(mqttSchema, ttnSchema);
 
 export const Stepper = defineStepper(
-	{
-		id: 'general-info',
-		label: 'General Info',
-		info: 'Provide a unique name for your device, select its operating environment (outdoor, indoor, mobile, or unknown), and add relevant tags (optional).',
-		schema: generalInfoSchema,
-		index: 0,
-	},
-	{
-		id: 'location',
-		label: 'Location',
-		info: "Select the device's location by clicking on the map or entering latitude and longitude coordinates manually. Drag the marker on the map to adjust the location if needed.",
-		schema: locationSchema,
-		index: 1,
-	},
-	{
-		id: 'device-selection',
-		label: 'Device Selection',
-		info: 'Select a device model from the available options',
-		schema: deviceSchema,
-		index: 2,
-	},
-	{
-		id: 'sensor-selection',
-		label: 'Sensor Selection',
-		info: 'Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.',
-		schema: sensorsSchema,
-		index: 3,
-	},
-	{
-		id: 'advanced',
-		label: 'Advanced',
-		info: null,
-		schema: advancedSchema,
-		index: 4,
-	},
-	{
-		id: 'summary',
-		label: 'Summary',
-		info: null,
-		schema: z.object({}),
-		index: 5,
-	},
-)
+  {
+    id: "general-info",
+    label: "General Info",
+    info: "Provide a unique name for your device, select its operating environment (outdoor, indoor, mobile, or unknown), and add relevant tags (optional).",
+    schema: generalInfoSchema,
+    index: 0
+  },
+  {
+    id: "location",
+    label: "Location",
+    info: "Select the device's location by clicking on the map or entering latitude and longitude coordinates manually. Drag the marker on the map to adjust the location if needed.",
+    schema: locationSchema,
+    index: 1
+  },
+  {
+    id: "device-selection",
+    label: "Device Selection",
+    info: "Select a device model from the available options",
+    schema: deviceSchema,
+    index: 2
+  },
+  {
+    id: "sensor-selection",
+    label: "Sensor Selection",
+    info: "Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.",
+    schema: sensorsSchema,
+    index: 3
+  },
+  { id: "advanced", label: "Advanced", info: null,  schema: mqttSchema, index: 4 },
+  { id: "summary", label: "Summary", info: null, schema: z.object({}), index: 5 },
+);
 
 type GeneralInfoData = z.infer<typeof generalInfoSchema>
 type LocationData = z.infer<typeof locationSchema>
@@ -243,29 +229,27 @@ export default function NewDeviceStepper() {
 		setIsFirst(stepper.isFirst)
 	}, [stepper.isFirst])
 
-	const onSubmit = (data: FormData) => {
-		console.log('🚀 ~ onSubmit ~ data:', data)
-		const updatedData = {
-			...formData,
-			[stepper.current.id]: data,
-		}
+  const onSubmit = (data: FormData) => {
+    console.log("🚀 ~ onSubmit ~ data", data);    
+    const updatedData = {
+      ...formData,
+      [stepper.current.id]: data,
+    };
 
 		setFormData(updatedData)
 
-		if (stepper.isLast) {
-			console.log('Complete! Final Data:', updatedData)
-
-			// Submit form data as JSON
-			void submit(
-				{
-					formData: JSON.stringify(updatedData), // Serialize the data
-				},
-				{ method: 'post' },
-			)
-		} else {
-			stepper.next()
-		}
-	}
+    if (stepper.isLast) {
+      // Submit form data as JSON
+      void submit(
+        {
+          formData: JSON.stringify(updatedData),
+        },
+        { method: "post" },
+      );
+    } else {
+      stepper.next();
+    }
+  };
 
 	const onError = (errors: FieldErrors<FormData>) => {
 		const firstErrorMessage = Object.values(errors)?.[0]?.message

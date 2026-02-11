@@ -1,12 +1,9 @@
-import {
-	type ActionFunctionArgs,
-	redirect,
-	type LoaderFunctionArgs,
-} from 'react-router'
-import ValidationStepperForm from '~/components/device/new/new-device-stepper'
-import { NavBar } from '~/components/nav-bar'
-import { createDevice } from '~/models/device.server'
-import { getUser, getUserId } from '~/utils/session.server'
+import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "react-router";
+import ValidationStepperForm from "~/components/device/new/new-device-stepper";
+import { NavBar } from "~/components/nav-bar";
+import { createDevice } from "~/models/device.server";
+import { getIntegrations } from "~/models/integration.server";
+import { getUser, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
@@ -27,44 +24,90 @@ export async function action({ request }: ActionFunctionArgs) {
 			throw new Error('User is not authenticated.')
 		}
 
-		const data = JSON.parse(rawData)
+    const data = JSON.parse(rawData);
+    const advanced = data.advanced;
 
-		const selectedSensors = data['sensor-selection'].selectedSensors
+    // Map sensors from nested objects
+    const sensors = data["sensor-selection"].selectedSensors.map(
+      (sensor: any) => ({
+        title: sensor.title,
+        sensorType: sensor.sensorType,
+        unit: sensor.unit,
+      })
+    );
 
-		const devicePayload = {
-			name: data['general-info'].name,
-			exposure: data['general-info'].exposure,
-			expiresAt: data['general-info'].temporaryExpirationDate,
-			tags:
-				data['general-info'].tags?.map((tag: { value: string }) => tag.value) ||
-				[],
-			latitude: data.location.latitude,
-			longitude: data.location.longitude,
+    // Construct device payload 
+    const devicePayload = {
+      name: data["general-info"].name,
+      exposure: data["general-info"].exposure,
+      expiresAt: data["general-info"].temporaryExpirationDate,
+      tags:
+        data["general-info"].tags?.map((tag: { value: string }) => tag.value) ||
+        [],
+      latitude: data.location.latitude,
+      longitude: data.location.longitude,
+      model: data["device-selection"].model,
+      sensors,
+    };
 
-			...(data['device-selection'].model !== 'custom' && {
-				model: data['device-selection'].model,
+    // -----------------------------
+    // Create device in OpenSenseMap
+    // -----------------------------
+    const newDevice = await createDevice(devicePayload, userId);
+    const deviceId = newDevice.id;
 
-				sensorTemplates: selectedSensors.map((sensor: any) =>
-					sensor.sensorType.toLowerCase(),
-				),
-			}),
+    const integrations = await getIntegrations();
 
-			...(data['device-selection'].model === 'custom' && {
-				sensors: selectedSensors.map((sensor: any) => ({
-					title: sensor.title,
-					sensorType: sensor.sensorType,
-					unit: sensor.unit,
-					icon: sensor.icon,
-				})),
-			}),
+    for (const intg of integrations) {
+      const enabledKey = `${intg.slug}Enabled`; 
+      const configKey = `${intg.slug}Config`; 
+      
+      const config = advanced[configKey];
+        if (!config) {
+          console.warn(`${intg.name} is enabled but no config provided`);
+          continue;
+        }
 
-			mqttEnabled: data.advanced.mqttEnabled ?? false,
-			ttnEnabled: data.advanced.ttnEnabled ?? false,
-		}
+      // Check if this integration is enabled in the form data
+      if (!advanced?.[enabledKey] || !advanced?.[configKey]) {
+        continue; 
+      }
 
-		// Call server function
-		const newDevice = await createDevice(devicePayload, userId)
-		console.log('🚀 ~ New Device Created:', newDevice)
+      try {
+
+        const serviceKey = process.env[intg.serviceKeyEnvVar];
+        
+        if (!serviceKey) {
+          throw new Error(
+            `Service key env var '${intg.serviceKeyEnvVar}' not configured`
+          );
+        }
+
+        const response = await fetch(
+          `${intg.serviceUrl}/integrations/${deviceId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-service-key": serviceKey,
+            },
+            body: JSON.stringify(advanced[configKey]),
+          }
+        );
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Failed: ${response.status} - ${errText}`);
+        }
+
+        console.log(`✅ Created ${intg.name} integration for device ${deviceId}`);
+      } catch (error) {
+        console.error(`Failed to create ${intg.name} integration:`, error);
+        
+      }
+    }
+
+    console.log("🚀 Device Created:", newDevice.id);
 
 		return redirect('/profile/me')
 	} catch (error) {
@@ -72,6 +115,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		return redirect('/profile/me')
 	}
 }
+
 
 export default function NewDevice() {
 	return (

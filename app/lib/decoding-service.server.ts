@@ -67,7 +67,7 @@ const decodeHandlers: {
 		decodeMessage: (body: any, { sensors }: { sensors: any[] }) => {
 			if (Array.isArray(body)) {
 				return body.map((measurement) => ({
-					sensor_id: measurement.sensor,
+					sensor_id: measurement.sensor_id ?? measurement.sensor,
 					value: parseFloat(measurement.value),
 					createdAt: measurement.createdAt
 						? new Date(measurement.createdAt)
