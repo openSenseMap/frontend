@@ -7,11 +7,11 @@ export const action: ActionFunction = async ({
 	request,
 }: ActionFunctionArgs) => {
 	try {
-		// JWT auth only (session-based auth is handled in route actions)
 		const jwtResponse = await getUserFromJwt(request)
-		if (!jwtResponse || typeof jwtResponse === 'string') {
+
+		if (typeof jwtResponse === 'string') {
 			return StandardResponse.forbidden(
-				'Invalid authorization. Please sign in.',
+				'Invalid JWT authorization. Please sign in to obtain new JWT.',
 			)
 		}
 
