@@ -1,4 +1,3 @@
-import { InfoIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { z } from 'zod'
@@ -76,17 +75,6 @@ export function SensorSelectionStep() {
 			},
 			{} as Record<string, Sensor[]>,
 		)
-	const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
-		const grouped = sensors.reduce(
-			(acc, sensor) => {
-				if (!acc[sensor.sensorType]) {
-					acc[sensor.sensorType] = []
-				}
-				acc[sensor.sensorType].push(sensor)
-				return acc
-			},
-			{} as Record<string, Sensor[]>,
-		)
 
 		return Object.entries(grouped).map(([sensorType, sensors]) => ({
 			sensorType,
@@ -94,14 +82,7 @@ export function SensorSelectionStep() {
 			image: sensors.find((sensor) => sensor.image)?.image,
 		}))
 	}
-		return Object.entries(grouped).map(([sensorType, sensors]) => ({
-			sensorType,
-			sensors,
-			image: sensors.find((sensor) => sensor.image)?.image,
-		}))
-	}
 
-	const sensorGroups = groupSensorsByType(sensors)
 	const sensorGroups = groupSensorsByType(sensors)
 
 	const handleGroupToggle = (group: SensorGroup) => {
@@ -155,10 +136,6 @@ export function SensorSelectionStep() {
 		const isAlreadySelected = selectedSensors.some(
 			(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
 		)
-	const handleSensorToggle = (sensor: Sensor) => {
-		const isAlreadySelected = selectedSensors.some(
-			(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-		)
 
 		const updatedSensors = isAlreadySelected
 			? selectedSensors.filter(
@@ -170,20 +147,7 @@ export function SensorSelectionStep() {
 		setSelectedSensors(updatedSensors)
 		setValue('selectedSensors', updatedSensors)
 	}
-		const updatedSensors = isAlreadySelected
-			? selectedSensors.filter(
-					(s) =>
-						!(s.title === sensor.title && s.sensorType === sensor.sensorType),
-				)
-			: [...selectedSensors, sensor]
 
-		setSelectedSensors(updatedSensors)
-		setValue('selectedSensors', updatedSensors)
-	}
-
-	if (!selectedDevice) {
-		return <p className="text-center text-lg">Please select a device first.</p>
-	}
 	if (!selectedDevice) {
 		return <p className="text-center text-lg">Please select a device first.</p>
 	}
@@ -197,18 +161,15 @@ export function SensorSelectionStep() {
 	return (
 		<div className="flex h-full flex-col items-center">
 			{/* Instruction banner */}
-			<div className="bg-blue-50 border-blue-200 text-blue-800 mb-4 w-full rounded-md border p-3 text-sm">
+			<div className="text-blue-800 mb-4 w-full rounded-md border border-blue-200 bg-blue-50 p-3 text-sm">
 				{isSenseBoxHomeV2 ? (
 					<span>
 						Click on a sensor card to select all its parameters at once.
 					</span>
 				) : (
-					<span className="inline-flex items-center gap-1">
-						<InfoIcon className="text-slate-500" />
-						<p>
-							Click on individual parameters within each card to select the
-							sensors you need.
-						</p>
+					<span>
+						Click on individual parameters within each card to select the
+						sensors you need.
 					</span>
 				)}
 			</div>
@@ -233,7 +194,7 @@ export function SensorSelectionStep() {
 									isGroupSelected
 										? 'shadow-lg ring-2 ring-primary'
 										: 'hover:shadow-md',
-									isHighlighted && 'ring-blue-400 bg-blue-50 ring-2',
+									isHighlighted && 'bg-blue-50 ring-2 ring-blue-400',
 								)}
 								onClick={() => handleCardClick(group)}
 							>
@@ -246,13 +207,6 @@ export function SensorSelectionStep() {
 										{group.sensorType}
 									</h3>
 
-									<ul className="mb-4 space-y-2">
-										{group.sensors.map((sensor) => {
-											const isSelected = selectedSensors.some(
-												(s) =>
-													s.title === sensor.title &&
-													s.sensorType === sensor.sensorType,
-											)
 									<ul className="mb-4 space-y-2">
 										{group.sensors.map((sensor) => {
 											const isSelected = selectedSensors.some(
