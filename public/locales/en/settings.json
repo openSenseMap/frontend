@@ -60,5 +60,14 @@
 	"password_updated_successfully": "Password updated successfully.",
 
 	"delete_account_description": "Deleting your account will permanently remove all of your data from our servers. This action cannot be undone.",
-	"enter_password": "Enter your password"
+	"enter_password": "Enter your password",
+	"device_security": {
+		"warning_deactive_auth": "If you disable device security, anyone can send measurement data that is assigned to your device!",
+		"page_title": "Change security settings",
+		"auth_enable_checkbox_label": "Enable authentication",
+		"api_key_label": "API Key",
+		"explanation_text": "Devices should use their API key shown on this page to authenticate requests sent to the openSenseMap API. This ensures that only authenticated devices update the state of the device on openSenseMap. The API key is appended to every request made to the API. More information can be found <2>in the docs</2>.",
+		"generate_new_key_button": "Generate a new key",
+		"generate_new_key_warning": "Generating a new key will require you to update your device (e.g. change the sketch/ code). <1>This step can not be undone</1>."
+	}
 }
