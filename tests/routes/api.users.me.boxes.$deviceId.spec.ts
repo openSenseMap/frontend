@@ -10,7 +10,7 @@ import { type User } from '~/schema'
 
 const BOX_TEST_USER = generateTestUserCredentials()
 const BOX_TEST_USER_BOX = {
-	name: `${BOX_TEST_USER.name}s Box`, // Fixed: was using BOX_TEST_USER instead of BOX_TEST_USER.name
+	name: `${BOX_TEST_USER.name}s Box`,
 	exposure: 'outdoor',
 	expiresAt: null,
 	tags: [],
@@ -20,7 +20,7 @@ const BOX_TEST_USER_BOX = {
 	mqttEnabled: false,
 	ttnEnabled: false,
 }
-// TODO Give the users some boxes to test with
+
 const OTHER_TEST_USER = generateTestUserCredentials()
 
 describe('openSenseMap API Routes: /users', () => {
