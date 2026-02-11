@@ -1,12 +1,12 @@
-import { createCookie } from "react-router";
+import { createCookie } from 'react-router'
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === 'production'
 
-export let i18nCookie = createCookie("i18n", {
-  sameSite: "lax",
-  path: "/",
-  secrets: process.env.SESSION_SECRET
-    ? [process.env.SESSION_SECRET]
-    : ["s3cr3t"],
-  secure: isProduction,
-});
+export let i18nCookie = createCookie('i18n', {
+	sameSite: 'lax',
+	path: '/',
+	secrets: process.env.SESSION_SECRET
+		? [process.env.SESSION_SECRET]
+		: ['s3cr3t'],
+	secure: isProduction,
+})

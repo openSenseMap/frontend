@@ -16,7 +16,7 @@ const messages = {
 		heading: 'openSenseMap account has been deleted',
 		hello: 'Dear',
 		description:
-			'Your account and all registered senseBoxes are being deleted. Sad to see you go!',
+			'Your account and all registered devices are being deleted. Sad to see you go!',
 		hint: 'This action is irreversible. If you want to participate again, register yourself a new account at',
 		hint_suffix: '.',
 		support: 'If you have any questions, feel free to write us an email to:',
@@ -27,7 +27,7 @@ const messages = {
 		heading: 'openSenseMap Account wurde gelöschen',
 		hello: 'Hallo',
 		description:
-			'Dein Account und alle deine senseBoxen wurden gerade gelöscht. Schade, dass du dich gelöscht hast!',
+			'Dein Account und alle deine Geräte wurden gerade gelöscht. Schade, dass du dich gelöscht hast!',
 		hint: 'Dieser Vorgang ist endgültig. Wenn du gerne wieder teilnehmen möchtest, kannst du dich einfach auf',
 		hint_suffix: 'neu registrieren.',
 		support: 'Wenn Du Fragen hast schreib uns eine Mail an:',

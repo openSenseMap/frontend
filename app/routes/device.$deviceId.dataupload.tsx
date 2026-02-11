@@ -142,12 +142,11 @@ export default function DataUpload({ actionData }: any) {
 								<div className="mb-8 rounded-md bg-muted p-4 text-muted-foreground">
 									<p>
 										<Trans t={t} i18nKey="dataUploadExplanation">
-											Here you can upload measurements for this senseBox. This
-											can be of use for senseBoxes that log their measurements
-											to an SD card when no means of direct communication to
-											openSenseMap are available. Either select a file, or copy
-											the data into the text field. Accepted data formats are
-											described{' '}
+											Here you can upload measurements for this device. This can
+											be of use for devices that log their measurements to an SD
+											card when no means of direct communication to openSenseMap
+											are available. Either select a file, or copy the data into
+											the text field. Accepted data formats are described{' '}
 											<a
 												href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurements"
 												className="underline"

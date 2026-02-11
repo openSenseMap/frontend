@@ -512,7 +512,8 @@ export default function DeviceDetailBox() {
 																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
-																							{sensor.value}
+																							{sensor.lastMeasurement?.value ??
+																								'–'}
 																						</div>
 																						<p className="text-xs text-muted-foreground">
 																							{sensor.unit}
@@ -530,8 +531,8 @@ export default function DeviceDetailBox() {
 																							}
 																						></div>
 																						<p className="text-xs text-muted-foreground">
-																							{sensor.time
-																								? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
+																							{sensor.lastMeasurement
+																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
 																								: 'No recent data'}
 																						</p>
 																					</div>
@@ -588,7 +589,8 @@ export default function DeviceDetailBox() {
 																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
-																							{sensor.value}
+																							{sensor.lastMeasurement?.value ??
+																								'–'}
 																						</div>
 																						<p className="text-xs text-muted-foreground">
 																							{sensor.unit}
@@ -606,8 +608,8 @@ export default function DeviceDetailBox() {
 																							}
 																						></div>
 																						<p className="text-xs text-muted-foreground">
-																							{sensor.time
-																								? `${formatDistanceToNow(new Date(sensor.time), { addSuffix: true })}`
+																							{sensor.lastMeasurement
+																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
 																								: 'No recent data'}
 																						</p>
 																					</div>

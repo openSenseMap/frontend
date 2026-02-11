@@ -1,13 +1,13 @@
 import {
-  type ActionFunctionArgs,
-  type ActionFunction,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-} from "react-router";
-import { getUserFromJwt } from "~/lib/jwt";
-import { deleteUser, updateUserDetails } from "~/lib/user-service.server";
-import { type User } from "~/schema/user";
-import { StandardResponse } from "~/utils/response-utils";
+	type ActionFunctionArgs,
+	type ActionFunction,
+	type LoaderFunction,
+	type LoaderFunctionArgs,
+} from 'react-router'
+import { getUserFromJwt } from '~/lib/jwt'
+import { deleteUser, updateUserDetails } from '~/lib/user-service.server'
+import { type User } from '~/schema/user'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -274,115 +274,117 @@ import { StandardResponse } from "~/utils/response-utils";
  *           example: The server was unable to complete your request. Please try again later.
  */
 export const loader: LoaderFunction = async ({
-  request,
+	request,
 }: LoaderFunctionArgs) => {
-  try {
-    const jwtResponse = await getUserFromJwt(request);
+	try {
+		const jwtResponse = await getUserFromJwt(request)
 
-    if (typeof jwtResponse === "string")
-      return StandardResponse.forbidden("Invalid JWT authorization. Please sign in to obtain new JWT.");
+		if (typeof jwtResponse === 'string')
+			return StandardResponse.forbidden(
+				'Invalid JWT authorization. Please sign in to obtain new JWT.',
+			)
 
-    return StandardResponse.ok({ code: "Ok", data: { me: jwtResponse } });
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
-};
+		return StandardResponse.ok({ code: 'Ok', data: { me: jwtResponse } })
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}
 
 export const action: ActionFunction = async ({
-  request,
+	request,
 }: ActionFunctionArgs) => {
-  const loaderValue = (await loader({
-    request,
-  } as LoaderFunctionArgs)) as Response;
-  if (loaderValue.status !== 200) return loaderValue;
+	const loaderValue = (await loader({
+		request,
+	} as LoaderFunctionArgs)) as Response
+	if (loaderValue.status !== 200) return loaderValue
 
-  const user = (await loaderValue.json()).data.me as User;
+	const user = (await loaderValue.json()).data.me as User
 
-  switch (request.method) {
-    case "PUT":
-      return await put(user, request);
-    case "DELETE":
-      return await del(user, request);
-    default:
-      return StandardResponse.methodNotAllowed("Method Not Allowed");
-  }
-};
+	switch (request.method) {
+		case 'PUT':
+			return await put(user, request)
+		case 'DELETE':
+			return await del(user, request)
+		default:
+			return StandardResponse.methodNotAllowed('Method Not Allowed')
+	}
+}
 
 const put = async (user: User, request: Request): Promise<Response> => {
-  const { email, language, name, currentPassword, newPassword } =
-    await request.json();
-  try {
-    const rawAuthorizationHeader = request.headers.get("authorization");
-    if (!rawAuthorizationHeader) throw new Error("no_token");
-    const [, jwtString] = rawAuthorizationHeader.split(" ");
+	const { email, language, name, currentPassword, newPassword } =
+		await request.json()
+	try {
+		const rawAuthorizationHeader = request.headers.get('authorization')
+		if (!rawAuthorizationHeader) throw new Error('no_token')
+		const [, jwtString] = rawAuthorizationHeader.split(' ')
 
-    const { updated, messages, updatedUser } = await updateUserDetails(
-      user,
-      jwtString,
-      {
-        email,
-        language,
-        name,
-        currentPassword,
-        newPassword,
-      },
-    );
-    const messageText = messages.join(".");
+		const { updated, messages, updatedUser } = await updateUserDetails(
+			user,
+			jwtString,
+			{
+				email,
+				language,
+				name,
+				currentPassword,
+				newPassword,
+			},
+		)
+		const messageText = messages.join('.')
 
-    if (updated === false) {
-      if (messages.length > 0) {
-        return StandardResponse.badRequest(messageText);
-      }
+		if (updated === false) {
+			if (messages.length > 0) {
+				return StandardResponse.badRequest(messageText)
+			}
 
-      return StandardResponse.ok({
-          code: "Ok",
-          message: "No changed properties supplied. User remains unchanged.",
-        });
-    }
+			return StandardResponse.ok({
+				code: 'Ok',
+				message: 'No changed properties supplied. User remains unchanged.',
+			})
+		}
 
-    return StandardResponse.ok({
-        code: "Ok",
-        message: `User successfully saved. ${messageText}`,
-        data: { me: updatedUser },
-      });
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
-};
+		return StandardResponse.ok({
+			code: 'Ok',
+			message: `User successfully saved. ${messageText}`,
+			data: { me: updatedUser },
+		})
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}
 
 const del = async (user: User, r: Request): Promise<Response> => {
-  try {
-    let formData = new FormData();
-    try {
-      formData = await r.formData();
-    } catch {
-      // Just continue, it will fail in the next check
-    }
+	try {
+		let formData = new FormData()
+		try {
+			formData = await r.formData()
+		} catch {
+			// Just continue, it will fail in the next check
+		}
 
-    if (
-      !formData.has("password") ||
-      formData.get("password")?.toString().length === 0
-    )
-    return StandardResponse.badRequest("Bad Request");
+		if (
+			!formData.has('password') ||
+			formData.get('password')?.toString().length === 0
+		)
+			return StandardResponse.badRequest('Bad Request')
 
-    const rawAuthorizationHeader = r.headers.get("authorization");
-    if (!rawAuthorizationHeader) throw new Error("no_token");
-    const [, jwtString] = rawAuthorizationHeader.split(" ");
+		const rawAuthorizationHeader = r.headers.get('authorization')
+		if (!rawAuthorizationHeader) throw new Error('no_token')
+		const [, jwtString] = rawAuthorizationHeader.split(' ')
 
-    const deleted = await deleteUser(
-      user,
-      formData.get("password")!.toString(), // ! operator is fine, we check formData.has above
-      jwtString,
-    );
+		const deleted = await deleteUser(
+			user,
+			formData.get('password')!.toString(), // ! operator is fine, we check formData.has above
+			jwtString,
+		)
 
-    if (deleted === "unauthorized")
-      return StandardResponse.unauthorized("Password incorrect");
+		if (deleted === 'unauthorized')
+			return StandardResponse.unauthorized('Password incorrect')
 
-    return StandardResponse.ok(null);
-  } catch (err) {
-    console.warn(err);
-    return StandardResponse.internalServerError();
-  }
-};
+		return StandardResponse.ok(null)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}

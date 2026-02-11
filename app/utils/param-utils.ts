@@ -1,4 +1,4 @@
-import { StandardResponse } from "./response-utils";
+import { StandardResponse } from './response-utils'
 
 /**
  * Parses a parameter from the url search paramaters into a date.
@@ -9,15 +9,21 @@ import { StandardResponse } from "./response-utils";
  * @param defaultDate The default date, returned when the parameter doesn't exist
  * @returns Either the parsed date or a bad request response
  */
-export function parseDateParam(url: URL, paramName: string, defaultDate: Date): Response | Date {
-  const param = url.searchParams.get(paramName)
-  if (param) {
-    const date = new Date(param)
-    if (Number.isNaN(date.valueOf()))
-      return StandardResponse.badRequest(`Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`);
-    return date
-  }
-  return defaultDate;
+export function parseDateParam(
+	url: URL,
+	paramName: string,
+	defaultDate: Date,
+): Response | Date {
+	const param = url.searchParams.get(paramName)
+	if (param) {
+		const date = new Date(param)
+		if (Number.isNaN(date.valueOf()))
+			return StandardResponse.badRequest(
+				`Illegal value for parameter ${paramName}. Allowed values: RFC3339Date`,
+			)
+		return date
+	}
+	return defaultDate
 }
 
 /**
@@ -30,12 +36,19 @@ export function parseDateParam(url: URL, paramName: string, defaultDate: Date): 
  * @param defaultValue The default value, returned when the parameter doesn't exist
  * @returns Either the parsed enum (string) or a bad request response
  */
-export function parseEnumParam<DefaultType>(url: URL, paramName: string, allowedValues: string[], defaultValue: DefaultType): Response | string | DefaultType {
-  const param = url.searchParams.get(paramName);
-  if (param) {
-    if (!allowedValues.includes(param))
-      return StandardResponse.badRequest(`Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`);
-    return param;
-  }
-  return defaultValue
+export function parseEnumParam<DefaultType>(
+	url: URL,
+	paramName: string,
+	allowedValues: string[],
+	defaultValue: DefaultType,
+): Response | string | DefaultType {
+	const param = url.searchParams.get(paramName)
+	if (param) {
+		if (!allowedValues.includes(param))
+			return StandardResponse.badRequest(
+				`Illegal value for parameter ${paramName}. Allowed values: ${allowedValues}`,
+			)
+		return param
+	}
+	return defaultValue
 }

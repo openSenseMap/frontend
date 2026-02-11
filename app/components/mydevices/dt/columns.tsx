@@ -18,6 +18,7 @@ export type SenseBox = {
 	id: string
 	name: string
 	exposure: Device['exposure']
+	createdAt: Date
 	// model: string;
 }
 
@@ -41,6 +42,26 @@ export function getColumns(
 						<ArrowUpDown className="ml-2 h-4 w-4" />
 					</Button>
 				)
+			},
+		},
+		{
+			accessorKey: 'createdAt',
+			sortingFn: 'datetime',
+			header: ({ column }) => {
+				return (
+					<Button
+						variant="ghost"
+						className={colStyle}
+						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+					>
+						{t('createdAt')}
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+					</Button>
+				)
+			},
+			cell: ({ row }) => {
+				const date = new Date(row.getValue('createdAt'))
+				return <div>{date.toLocaleDateString()}</div>
 			},
 		},
 		{

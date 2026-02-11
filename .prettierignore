@@ -5,5 +5,5 @@ node_modules
 .env
 
 /postgres-data
-
-/app/styles/**/*.css
+/db/seeds/**/*
+/drizzle/**/*

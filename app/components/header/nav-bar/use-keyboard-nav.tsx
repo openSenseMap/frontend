@@ -1,63 +1,63 @@
-import  { type Key, useState, useEffect  } from "react";
+import { type Key, useState, useEffect } from 'react'
 
 export default function useKeyboardNav(
-  initCursorVal: number = 0,
-  cursorMin: number = 0,
-  cursorMax: number = 0
+	initCursorVal: number = 0,
+	cursorMin: number = 0,
+	cursorMax: number = 0,
 ) {
-  const useKeyPress = function (targetKey: Key) {
-    const [keyPressed, setKeyPressed] = useState(false);
+	const useKeyPress = function (targetKey: Key) {
+		const [keyPressed, setKeyPressed] = useState(false)
 
-    useEffect(() => {
-      const downHandler = ({ key }: { key: string }) => {
-        if (key === targetKey) {
-          setKeyPressed(true);
-        }
-      };
+		useEffect(() => {
+			const downHandler = ({ key }: { key: string }) => {
+				if (key === targetKey) {
+					setKeyPressed(true)
+				}
+			}
 
-      const upHandler = ({ key }: { key: string }) => {
-        if (key === targetKey) {
-          setKeyPressed(false);
-        }
-      };
+			const upHandler = ({ key }: { key: string }) => {
+				if (key === targetKey) {
+					setKeyPressed(false)
+				}
+			}
 
-      window.addEventListener("keydown", downHandler);
-      window.addEventListener("keyup", upHandler);
+			window.addEventListener('keydown', downHandler)
+			window.addEventListener('keyup', upHandler)
 
-      return () => {
-        window.removeEventListener("keydown", downHandler);
-        window.removeEventListener("keyup", upHandler);
-      };
-    }, [targetKey]);
+			return () => {
+				window.removeEventListener('keydown', downHandler)
+				window.removeEventListener('keyup', upHandler)
+			}
+		}, [targetKey])
 
-    return keyPressed;
-  };
+		return keyPressed
+	}
 
-  const downPress = useKeyPress("ArrowDown");
-  const upPress = useKeyPress("ArrowUp");
-  const enterPress = useKeyPress("Enter");
-  const controlPress = useKeyPress("Control");
-  const metaPress = useKeyPress("Meta");
-  const [cursor, setCursor] = useState(initCursorVal);
+	const downPress = useKeyPress('ArrowDown')
+	const upPress = useKeyPress('ArrowUp')
+	const enterPress = useKeyPress('Enter')
+	const controlPress = useKeyPress('Control')
+	const metaPress = useKeyPress('Meta')
+	const [cursor, setCursor] = useState(initCursorVal)
 
-  useEffect(() => {
-    if (downPress && cursor < cursorMax - 1) {
-      setCursor(cursor + 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downPress, cursorMax]);
-  useEffect(() => {
-    if (upPress && cursor > 0) {
-      setCursor(cursor - 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [upPress, cursorMin]);
+	useEffect(() => {
+		if (downPress && cursor < cursorMax - 1) {
+			setCursor(cursor + 1)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [downPress, cursorMax])
+	useEffect(() => {
+		if (upPress && cursor > 0) {
+			setCursor(cursor - 1)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [upPress, cursorMin])
 
-  return {
-    cursor,
-    setCursor,
-    enterPress,
-    controlPress,
-    metaPress,
-  };
+	return {
+		cursor,
+		setCursor,
+		enterPress,
+		controlPress,
+		metaPress,
+	}
 }
