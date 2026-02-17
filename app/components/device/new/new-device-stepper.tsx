@@ -3,7 +3,7 @@ import { defineStepper } from '@stepperize/react'
 import { Info, Slash } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { type FieldErrors, FormProvider, useForm } from 'react-hook-form'
-import { Form, useSubmit } from 'react-router'
+import { Form, useLoaderData, useSubmit } from 'react-router'
 import { z } from 'zod'
 import { AdvancedStep } from './advanced-info'
 import { DeviceSelectionStep } from './device-info'
@@ -26,6 +26,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
+import { type loader } from '~/routes/device.new'
 import { DeviceModelEnum } from '~/schema/enum'
 
 const generalInfoSchema = z.object({
@@ -86,86 +87,7 @@ const sensorsSchema = z.object({
 		.min(1, 'Please select at least one sensor'),
 })
 
-const mqttSchema = z
-  .object({
-    mqttEnabled: z.boolean().default(false),
-    mqttConfig: z.record(z.any()).optional(),
-    ttnEnabled: z.boolean().default(false),
-    ttnConfig: z.record(z.any()).optional(),
-  })
-//   .superRefine((data, ctx) => {
-//     if (data.mqttEnabled) {
-//       // Check required fields when enabled is true
-//       if (!data.url) {
-//         ctx.addIssue({
-//           path: ["url"],
-//           message: "URL is required when MQTT is enabled.",
-//           code: "custom",
-//         });
-//       }
-//       if (!data.topic) {
-//         ctx.addIssue({
-//           path: ["topic"],
-//           message: "Topic is required when MQTT is enabled.",
-//           code: "custom",
-//         });
-//       }
-//       if (!data.messageFormat) {
-//         ctx.addIssue({
-//           path: ["messageFormat"],
-//           message: "Message format is required when MQTT is enabled.",
-//           code: "custom",
-//         });
-//       }
-//     }
-//   });
-
-const ttnSchema = z
-	.object({
-		ttnEnabled: z.boolean().default(false),
-		dev_id: z.string().optional(),
-		app_id: z.string().optional(),
-		profile: z
-			.enum([
-				'lora-serialization',
-				'sensebox/home',
-				'json',
-				'debug',
-				'cayenne-lpp',
-			])
-			.optional(),
-		decodeOptions: z.string().optional(),
-		port: z.number().optional(),
-	})
-	.superRefine((data, ctx) => {
-		if (data.ttnEnabled) {
-			if (!data.dev_id) {
-				ctx.addIssue({
-					path: ['dev_id'],
-					message: 'Device ID is required when TTN is enabled.',
-					code: 'custom',
-				})
-			}
-
-			if (!data.app_id) {
-				ctx.addIssue({
-					path: ['app_id'],
-					message: 'Application ID is required when TTN is enabled.',
-					code: 'custom',
-				})
-			}
-
-			if (!data.profile) {
-				ctx.addIssue({
-					path: ['profile'],
-					message: 'Profile is required when TTN is enabled.',
-					code: 'custom',
-				})
-			}
-		}
-	})
-
-// const advancedSchema = z.intersection(mqttSchema, ttnSchema);
+const advancedSchema = z.record(z.any());
 
 export const Stepper = defineStepper(
   {
@@ -196,7 +118,7 @@ export const Stepper = defineStepper(
     schema: sensorsSchema,
     index: 3
   },
-  { id: "advanced", label: "Advanced", info: null,  schema: mqttSchema, index: 4 },
+  { id: "advanced", label: "Advanced", info: null,  schema: advancedSchema, index: 4 },
   { id: "summary", label: "Summary", info: null, schema: z.object({}), index: 5 },
 );
 
@@ -204,17 +126,16 @@ type GeneralInfoData = z.infer<typeof generalInfoSchema>
 type LocationData = z.infer<typeof locationSchema>
 type DeviceData = z.infer<typeof deviceSchema>
 type SensorData = z.infer<typeof sensorsSchema>
-type MqttData = z.infer<typeof mqttSchema>
-type TtnData = z.infer<typeof ttnSchema>
+type AdvancedData = z.infer<typeof advancedSchema>
 
 type FormData = GeneralInfoData &
 	LocationData &
 	DeviceData &
 	SensorData &
-	MqttData &
-	TtnData
+	AdvancedData
 
 export default function NewDeviceStepper() {
+	const { integrations } = useLoaderData<typeof loader>();
 	const submit = useSubmit()
 	const [formData, setFormData] = useState<Record<string, any>>({})
 	const stepper = Stepper.useStepper()
@@ -230,7 +151,6 @@ export default function NewDeviceStepper() {
 	}, [stepper.isFirst])
 
   const onSubmit = (data: FormData) => {
-    console.log("🚀 ~ onSubmit ~ data", data);    
     const updatedData = {
       ...formData,
       [stepper.current.id]: data,
@@ -252,16 +172,23 @@ export default function NewDeviceStepper() {
   };
 
 	const onError = (errors: FieldErrors<FormData>) => {
-		const firstErrorMessage = Object.values(errors)?.[0]?.message
-		if (firstErrorMessage) {
-			toast({
-				title: 'Form Error',
-				description: firstErrorMessage,
-				variant: 'destructive',
-				duration: 2000,
-			})
+		const firstError = Object.values(errors)[0];
+
+		let message: string | undefined;
+
+		if (firstError && "message" in firstError) {
+			message = firstError.message as string | undefined;
 		}
-	}
+
+		if (message) {
+			toast({
+				title: "Form Error",
+				description: message,
+				variant: "destructive",
+				duration: 2000,
+			});
+		}
+	};
 
 	return (
 		<Stepper.Scoped>
@@ -329,7 +256,7 @@ export default function NewDeviceStepper() {
 					{/* Form Content */}
 					<div className="h-full overflow-auto">
 						{stepper.switch({
-							advanced: () => <AdvancedStep />,
+							advanced: () => <AdvancedStep integrations={integrations} />,
 							'general-info': () => <GeneralInfoStep />,
 							location: () => <LocationStep />,
 							'device-selection': () => <DeviceSelectionStep />,

@@ -8,56 +8,49 @@ import { BaseInputTemplate } from "~/components/rjsf/inputTemplate";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { Switch } from "~/components/ui/switch";
-import { type IntegrationMetadata } from "~/routes/api.integrations";
 
-export function AdvancedStep() {
+interface Integration {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string | null;
+  description?: string | null;
+  order: number;
+}
+
+interface AdvancedStepProps {
+  integrations: Integration[];
+}
+
+export function AdvancedStep({ integrations }: AdvancedStepProps) {
   const { watch, setValue, resetField } = useFormContext();
-  const [integrations, setIntegrations] = useState<IntegrationMetadata[]>([]);
   const [schemas, setSchemas] = useState<Record<string, { schema: any; uiSchema: any }>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-  // Load available integrations on mount
-  useEffect(() => {
-    const loadIntegrations = async () => {
-      try {
-        const res = await fetch("/api/integrations");
-        if (!res.ok) throw new Error("Failed to fetch integrations");
-        const data = await res.json();
-        setIntegrations(data);
-      } catch (err) {
-        console.error("Failed to load integrations", err);
-      }
-    };
 
-    void loadIntegrations();
-  }, []);
-
-  // Load schema when integration is enabled
-  const loadSchema = async (slug: string, schemaUrl: string) => {
-    if (schemas[slug]) return; // Already loaded
+  const loadSchema = async (slug: string) => {
+    if (schemas[slug]) return;
 
     setLoading((prev) => ({ ...prev, [slug]: true }));
 
     try {
-      console.log("schema url", schemaUrl)
-      const res = await fetch(schemaUrl);
+      const res = await fetch(`/api/integrations/schema/${slug}`);
       if (!res.ok) throw new Error(`Failed to fetch ${slug} schema`);
 
-      const data = await res.json();
-      setSchemas((prev) => ({ ...prev, [slug]: data }));
-    } catch (err) {
-      console.error(`Failed to load ${slug} schema`, err);
-    } finally {
-      setLoading((prev) => ({ ...prev, [slug]: false }));
-    }
-  };
+        const data = await res.json();
+        setSchemas((prev) => ({ ...prev, [slug]: data }));
+      } catch (err) {
+        console.error(`Failed to load ${slug} schema`, err);
+      } finally {
+        setLoading((prev) => ({ ...prev, [slug]: false }));
+      }
+  }
 
-  // Toggle handler
-  const handleToggle = (slug: string, checked: boolean, schemaUrl: string) => {
+  const handleToggle = (slug: string, checked: boolean) => {
     setValue(`${slug}Enabled`, checked);
 
     if (checked) {
-      void loadSchema(slug, schemaUrl);
+      void loadSchema(slug);
     } else {
       resetField(`${slug}Config`);
     }
@@ -88,7 +81,7 @@ export function AdvancedStep() {
                 <Switch
                   id={`${intg.slug}Enabled`}
                   checked={enabled}
-                  onCheckedChange={(checked) => handleToggle(intg.slug, checked, intg.schemaUrl)}
+                  onCheckedChange={(checked) => handleToggle(intg.slug, checked)}
                 />
               </div>
 
