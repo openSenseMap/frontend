@@ -17,8 +17,6 @@ const schema = z.object({
   MYBADGES_ISSUERID_OSEM: z.string(),
   MYBADGES_CLIENT_ID: z.string(),
   MYBADGES_CLIENT_SECRET: z.string(),
-  MQTT_SERVICE_URL: z.string(),
-  MQTT_SERVICE_KEY: z.string()
 });
 
 declare global {
@@ -47,7 +45,6 @@ export function getEnv() {
     MYBADGES_API_URL: process.env.MYBADGES_API_URL,
     MYBADGES_URL: process.env.MYBADGES_URL,
     SENSORWIKI_API_URL: process.env.SENSORWIKI_API_URL,
-    MQTT_SERVICE_URL: process.env.MQTT_SERVICE_URL,
   };
 }
 
