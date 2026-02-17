@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "react-router";
 import ValidationStepperForm from "~/components/device/new/new-device-stepper";
 import { NavBar } from "~/components/nav-bar";
+import { createDeviceIntegrations } from "~/lib/integration-service.server";
 import { createDevice } from "~/models/device.server";
 import { getIntegrations } from "~/models/integration.server";
 import { getUser, getUserId } from "~/utils/session.server";
@@ -10,7 +11,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	if (!user) {
 		return redirect('/login')
 	}
-	return {}
+	const integrations = await getIntegrations();
+
+  return { integrations };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -54,60 +57,8 @@ export async function action({ request }: ActionFunctionArgs) {
     // Create device in OpenSenseMap
     // -----------------------------
     const newDevice = await createDevice(devicePayload, userId);
-    const deviceId = newDevice.id;
 
-    const integrations = await getIntegrations();
-
-    for (const intg of integrations) {
-      const enabledKey = `${intg.slug}Enabled`; 
-      const configKey = `${intg.slug}Config`; 
-      
-      const config = advanced[configKey];
-        if (!config) {
-          console.warn(`${intg.name} is enabled but no config provided`);
-          continue;
-        }
-
-      // Check if this integration is enabled in the form data
-      if (!advanced?.[enabledKey] || !advanced?.[configKey]) {
-        continue; 
-      }
-
-      try {
-
-        const serviceKey = process.env[intg.serviceKeyEnvVar];
-        
-        if (!serviceKey) {
-          throw new Error(
-            `Service key env var '${intg.serviceKeyEnvVar}' not configured`
-          );
-        }
-
-        const response = await fetch(
-          `${intg.serviceUrl}/integrations/${deviceId}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "x-service-key": serviceKey,
-            },
-            body: JSON.stringify(advanced[configKey]),
-          }
-        );
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`Failed: ${response.status} - ${errText}`);
-        }
-
-        console.log(`✅ Created ${intg.name} integration for device ${deviceId}`);
-      } catch (error) {
-        console.error(`Failed to create ${intg.name} integration:`, error);
-        
-      }
-    }
-
-    console.log("🚀 Device Created:", newDevice.id);
+    await createDeviceIntegrations(newDevice.id, advanced);
 
 		return redirect('/profile/me')
 	} catch (error) {
