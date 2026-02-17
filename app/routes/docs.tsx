@@ -45,6 +45,7 @@ export default function ApiDocumentation() {
         spec={spec}
         docExpansion="list"
         defaultModelsExpandDepth={1}
+        deepLinking={true}
       />
     </main>
   );
