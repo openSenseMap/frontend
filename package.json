@@ -101,7 +101,7 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-fs-backend": "^2.6.0",
     "i18next-http-backend": "^3.0.2",
-    "isbot": "^5.1.28",
+    "isbot": "^5.1.35",
     "jsonwebtoken": "^9.0.2",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.523.0",
