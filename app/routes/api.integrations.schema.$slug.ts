@@ -19,19 +19,22 @@ export async function loader({ params }: LoaderFunctionArgs) {
       return new Response(`Integration '${slug}' not found`, { status: 404 });
     }
 
-    const serviceKey = process.env[intg.serviceKeyEnvVar];
+    const serviceKey = process.env[intg.serviceKey];
     if (!serviceKey) {
       return new Response(
-        `Service key env var '${intg.serviceKeyEnvVar}' not configured`,
+        `Service key env var '${intg.serviceKey}' not configured`,
         { status: 500 }
       );
     }
 
-    const res = await fetch(`${intg.serviceUrl}${intg.schemaPath}`, {
-      headers: {
-        "x-service-key": serviceKey,
-      },
-    });
+    const res = await fetch(
+      `${intg.serviceUrl}/integrations/schema/${slug}`,
+      {
+        headers: {
+          "x-service-key": serviceKey,
+        },
+      }
+    );
 
     if (!res.ok) {
       return new Response(`Failed to fetch schema from ${intg.name} service`, {
