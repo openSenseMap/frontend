@@ -13,7 +13,7 @@ export const integration = pgTable('integration', {
   serviceKey: text('service_key').notNull(),
   icon: text('icon'), //name of lucide icon , pascal case! 
   description: text('description'),
-  order: integer('order').default(0),
+  order: integer('order').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
