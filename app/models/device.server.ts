@@ -242,7 +242,7 @@ export async function updateDevice(
 
 	const result = await drizzleClient.transaction(async (tx) => {
 		if (args.location) {
-			const { lat, lng, height } = args.location
+			const { lat, lng } = args.location
 
 			const pointWKT = `POINT(${lng} ${lat})`
 
@@ -723,15 +723,27 @@ export async function createDevice(deviceData: any, userId: string) {
 				}
 
 				if (
-					Array.isArray(deviceData.sensorTemplates) &&
-					deviceData.sensorTemplates.length > 0
+					Array.isArray(deviceData.selectedSensorDetails) &&
+					deviceData.selectedSensorDetails.length > 0
 				) {
 					sensorsToAdd = modelSensors.filter((sensor) =>
-						deviceData.sensorTemplates.includes(
-							sensor.sensorType.toLowerCase(),
+						deviceData.selectedSensorDetails.some(
+							(selected: { title: string; sensorType: string }) =>
+                                selected.title === sensor.title &&
+                                selected.sensorType === sensor.sensorType,
 						),
 					)
-				} else {
+				} 
+				else if (Array.isArray(deviceData.sensorTemplates) &&
+                    deviceData.sensorTemplates.length > 0){
+						sensorsToAdd = modelSensors.filter((sensor) =>
+                        deviceData.sensorTemplates.includes(
+                            sensor.sensorType.toLowerCase(),
+                        ),
+                    )	
+					}
+				
+				else {
 					sensorsToAdd = modelSensors
 				}
 			}

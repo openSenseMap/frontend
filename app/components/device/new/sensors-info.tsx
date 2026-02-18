@@ -195,7 +195,7 @@ export function SensorSelectionStep() {
 										<div className="text-left">
 											<p className="font-medium">{group.sensorType}</p>
 											<p className="text-xs text-muted-foreground">
-												{group.sensors.length} parameter
+												{group.sensors.length} phenomenon
 												{group.sensors.length !== 1 ? 's' : ''}
 											</p>
 										</div>
@@ -226,7 +226,7 @@ export function SensorSelectionStep() {
 											htmlFor={`group-${group.sensorType}`}
 											className="cursor-pointer font-medium"
 										>
-											Select all parameters
+											Select all phenomenons
 										</Label>
 									</div>
 
