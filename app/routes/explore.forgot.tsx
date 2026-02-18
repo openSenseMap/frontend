@@ -25,6 +25,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
+import { requestPasswordReset } from '~/lib/user-service.server'
 import { validateEmail } from '~/utils'
 import { getUserId } from '~/utils/session.server'
 
@@ -46,41 +47,23 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	try {
-		const response = await fetch(
-			'https://api.opensensemap.org/users/request-password-reset',
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ email }),
-			},
-		)
+		await requestPasswordReset(email)
 
-		if (!response.ok) {
-			const errorData = await response.json()
-			return data(
-				{ errors: { email: errorData.message }, success: false },
-				{ status: response.status },
-			)
-		}
-
-		const jsonData = await response.json()
 		return data(
 			{
-				code: jsonData.code,
-				message: jsonData.message,
+				code: 'Ok',
+				message: 'password_reset_initiated',
 				success: true,
 				errors: { email: null },
 			},
 			{ status: 200 },
 		)
-	} catch (error) {
+	} catch (err) {
+		console.warn(err)
 		return data(
 			{
 				errors: { email: 'An error occurred. Please try again later.' },
 				success: false,
-				error: error,
 			},
 			{ status: 500 },
 		)
@@ -88,15 +71,15 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'Login' }]
+	return [{ title: 'Forgot Password' }]
 }
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
 	const [searchParams] = useSearchParams()
 	const actionData = useActionData<typeof action>()
 	const emailRef = React.useRef<HTMLInputElement>(null)
 
-	const { t } = useTranslation('login')
+	const { t } = useTranslation('forgot-password')
 	const navigation = useNavigation()
 
 	React.useEffect(() => {
@@ -164,7 +147,7 @@ export default function LoginPage() {
 							</CardContent>
 							<CardFooter className="flex flex-col items-center gap-2">
 								<Button type="submit" className="w-full bg-light-blue">
-									Reset
+									{t('reset_password_button')}
 								</Button>
 								<p className="text-sm text-muted-foreground">
 									{t('remember_password')}{' '}

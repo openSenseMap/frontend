@@ -19,6 +19,7 @@
 	"forgot_your_password": "Hast du dein Passwort vergessen?",
 	"reset_password": "Passwort per Mail zurücksetzen",
 	"remember_password": "Erinnerst du dich an dein Passwort?",
+	"password_reset_success": "Passwort erfolgreich geändert. Du kannst dich jetzt anmelden.",
 
 	"Email is invalid": "Ungültige E-Mail-Adresse",
 	"An error occurred. Please try again later.": "Ein Fehler ist aufgetreten. Bitte versuche es später erneut.",
