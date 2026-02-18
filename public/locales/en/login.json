@@ -19,6 +19,7 @@
 	"forgot_your_password": "Forgot your password?",
 	"reset_password": "Reset password by mail",
 	"remember_password": "Remember your password?",
+	"password_reset_success": "Password changed successfully. You can now log in.",
 
 	"Email is invalid": "Email is invalid",
 	"An error occurred. Please try again later.": "An error occurred. Please try again later.",
