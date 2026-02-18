@@ -242,7 +242,7 @@ export async function updateDevice(
 
 	const result = await drizzleClient.transaction(async (tx) => {
 		if (args.location) {
-			const { lat, lng, height } = args.location
+			const { lat, lng } = args.location
 
 			const pointWKT = `POINT(${lng} ${lat})`
 
@@ -809,58 +809,62 @@ export async function createDevice(deviceData: any, userId: string) {
 		})
 
 		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-		switch (newDevice.model) {
-			case 'luftdaten.info':
-			case 'luftdaten_sds011':
-			case 'luftdaten_sds011_bme280':
-			case 'luftdaten_sds011_bmp180':
-			case 'luftdaten_sds011_dht11':
-			case 'luftdaten_sds011_dht22':
-				await sendMail({
-					recipientAddress: usr.email,
-					recipientName: usr.name,
-					subject: NewLufdatenDeviceMessages[lng].heading,
-					body: BaseNewDeviceEmail({
-						user: { name: usr.name },
-						device: newDevice,
-						language: lng,
-						content: NewLufdatenDeviceMessages,
-					}),
-				})
-				break
-			case 'homeV2Ethernet':
-			case 'homeV2Lora':
-			case 'homeV2Wifi':
-			case 'homeEthernet':
-			case 'homeEthernetFeinstaub':
-			case 'homeWifi':
-			case 'homeWifiFeinstaub':
-			case 'senseBox:Edu':
-				await sendMail({
-					recipientAddress: usr.email,
-					recipientName: usr.name,
-					subject: NewSenseboxDeviceMessages[lng].heading,
-					body: BaseNewDeviceEmail({
-						user: { name: usr.name },
-						device: newDevice,
-						language: lng,
-						content: NewSenseboxDeviceMessages,
-					}),
-				})
-				break
-			default:
-				await sendMail({
-					recipientAddress: usr.email,
-					recipientName: usr.name,
-					subject: BaseNewDeviceMessages[lng].heading,
-					body: BaseNewDeviceEmail({
-						user: { name: usr.name },
-						device: newDevice,
-						language: lng,
-						content: BaseNewDeviceMessages,
-					}),
-				})
-				break
+		try {
+			switch (newDevice.model) {
+				case 'luftdaten.info':
+				case 'luftdaten_sds011':
+				case 'luftdaten_sds011_bme280':
+				case 'luftdaten_sds011_bmp180':
+				case 'luftdaten_sds011_dht11':
+				case 'luftdaten_sds011_dht22':
+					await sendMail({
+						recipientAddress: usr.email,
+						recipientName: usr.name,
+						subject: NewLufdatenDeviceMessages[lng].heading,
+						body: BaseNewDeviceEmail({
+							user: { name: usr.name },
+							device: newDevice,
+							language: lng,
+							content: NewLufdatenDeviceMessages,
+						}),
+					})
+					break
+				case 'homeV2Ethernet':
+				case 'homeV2Lora':
+				case 'homeV2Wifi':
+				case 'homeEthernet':
+				case 'homeEthernetFeinstaub':
+				case 'homeWifi':
+				case 'homeWifiFeinstaub':
+				case 'senseBox:Edu':
+					await sendMail({
+						recipientAddress: usr.email,
+						recipientName: usr.name,
+						subject: NewSenseboxDeviceMessages[lng].heading,
+						body: BaseNewDeviceEmail({
+							user: { name: usr.name },
+							device: newDevice,
+							language: lng,
+							content: NewSenseboxDeviceMessages,
+						}),
+					})
+					break
+				default:
+					await sendMail({
+						recipientAddress: usr.email,
+						recipientName: usr.name,
+						subject: BaseNewDeviceMessages[lng].heading,
+						body: BaseNewDeviceEmail({
+							user: { name: usr.name },
+							device: newDevice,
+							language: lng,
+							content: BaseNewDeviceMessages,
+						}),
+					})
+					break
+			}
+		} catch (mailError) {
+			console.error('Failed to send confirmation email:', mailError)
 		}
 
 		return newDevice
