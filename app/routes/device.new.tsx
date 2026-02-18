@@ -43,10 +43,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
 			...(data['device-selection'].model !== 'custom' && {
 				model: data['device-selection'].model,
-
-				sensorTemplates: selectedSensors.map((sensor: any) =>
-					sensor.sensorType.toLowerCase(),
-				),
+				// Send full sensor details for precise filtering
+				selectedSensorDetails: selectedSensors.map((sensor: any) => ({
+					title: sensor.title,
+					sensorType: sensor.sensorType,
+				})),
 			}),
 
 			...(data['device-selection'].model === 'custom' && {
@@ -62,7 +63,6 @@ export async function action({ request }: ActionFunctionArgs) {
 			ttnEnabled: data.advanced.ttnEnabled ?? false,
 		}
 
-		// Call server function
 		const newDevice = await createDevice(devicePayload, userId)
 		console.log('🚀 ~ New Device Created:', newDevice)
 
@@ -72,7 +72,6 @@ export async function action({ request }: ActionFunctionArgs) {
 		return redirect('/profile/me')
 	}
 }
-
 export default function NewDevice() {
 	return (
 		<div className="flex h-screen flex-col">
