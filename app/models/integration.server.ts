@@ -11,3 +11,18 @@ export async function getIntegrations() {
 export async function getIntegrationById({ id }: Pick<Integration, "id">){
   return drizzleClient.query.integration.findFirst({where: eq(integration.id, id)})
 }
+
+export async function isValidServiceKey(serviceKey: string | null): Promise<boolean> {
+  if (!serviceKey) return false;
+
+  const integrations = await getIntegrations();
+
+  for (const intg of integrations) {
+    const expectedKey = process.env[intg.serviceKey];
+    if (expectedKey && serviceKey === expectedKey) {
+      return true;
+    }
+  }
+
+  return false;
+}

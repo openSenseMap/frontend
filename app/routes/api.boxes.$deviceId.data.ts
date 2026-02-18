@@ -1,5 +1,6 @@
 import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
 import { postNewMeasurements } from '~/lib/measurement-service.server'
+import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const action: ActionFunction = async ({
@@ -16,10 +17,10 @@ export const action: ActionFunction = async ({
 		const hackair = searchParams.get('hackair') !== null
 
 		const contentType = request.headers.get('content-type') || ''
-		const mqttServiceKey = request.headers.get('x-service-key')
+		const serviceKey = request.headers.get('x-service-key')
 		const authorization = request.headers.get('authorization')
 
-		const isMqttRequest = mqttServiceKey === process.env.MQTT_SERVICE_KEY
+		const isTrustedService = await isValidServiceKey(serviceKey);
 
 		let body: any
 		if (contentType.includes('application/json')) {
@@ -36,7 +37,7 @@ export const action: ActionFunction = async ({
 			contentType,
 			luftdaten,
 			hackair,
-			authorization: isMqttRequest ? undefined : authorization,
+			authorization: isTrustedService ? undefined : authorization,
 		})
 
 		return new Response('Measurements saved in box', {
