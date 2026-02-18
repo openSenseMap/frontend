@@ -93,7 +93,8 @@ class OSEMTransporter {
 		}
 	}
 }
-void OSEMTransporter.getInstance() // eagerly initialize the transporter
+
+if (!config.DISABLE_MAILING) void OSEMTransporter.getInstance() // eagerly initialize the transporter
 
 export interface MailAttachment {
 	filename: string
