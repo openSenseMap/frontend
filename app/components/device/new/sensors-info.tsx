@@ -46,8 +46,13 @@ export function SensorSelectionStep() {
 				: selectedDevice
 			setSelectedDeviceModel(deviceModel)
 
-			const fetchedSensors = getSensorsForModel(deviceModel)
-			setSensors(fetchedSensors)
+			// Add safety check for custom devices
+			if (deviceModel !== 'custom') {
+				const fetchedSensors = getSensorsForModel(deviceModel)
+				setSensors(fetchedSensors ?? []) // Also handle null return
+			} else {
+				setSensors([])
+			}
 		}
 	}, [selectedDevice])
 
@@ -57,6 +62,9 @@ export function SensorSelectionStep() {
 	}, [watch])
 
 	const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
+		// Add safety check in case sensors is null/undefined
+		if (!sensors || sensors.length === 0) return []
+		
 		const grouped = sensors.reduce(
 			(acc, sensor) => {
 				if (!acc[sensor.sensorType]) {
@@ -130,7 +138,7 @@ export function SensorSelectionStep() {
 		return <p className="text-center text-lg">Please select a device first.</p>
 	}
 
-	if (selectedDevice === 'Custom') {
+	if (selectedDevice === 'custom') {
 		return <CustomDeviceConfig />
 	}
 
@@ -209,7 +217,6 @@ export function SensorSelectionStep() {
 										<Checkbox
 											id={`group-${group.sensorType}`}
 											checked={isFullySelected}
-											// Show indeterminate state for partial selection
 											data-state={
 												isPartiallySelected ? 'indeterminate' : undefined
 											}
@@ -223,7 +230,7 @@ export function SensorSelectionStep() {
 										</Label>
 									</div>
 
-									{/* Individual sensors - only show for non-senseBoxHomeV2 or always show */}
+									{/* Individual sensors - only show for non-senseBoxHomeV2 */}
 									{!isSenseBoxHomeV2 && (
 										<div className="ml-2 space-y-2 border-l-2 border-muted pl-4">
 											{group.sensors.map((sensor) => {
