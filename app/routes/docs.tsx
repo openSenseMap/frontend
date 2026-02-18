@@ -2,9 +2,12 @@ import { useLoaderData } from "react-router";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css";
 
-export const loader = async () => {
+export const loader = async ({ request }: { request: Request }) => {
   if (process.env.NODE_ENV === "production") {
-    const spec = await import("../../public/openapi.json");
+    const url = new URL(request.url);
+    const res = await fetch(new URL("/openapi.json", url.origin));
+    if (!res.ok) throw new Response("Failed to load OpenAPI spec", { status: 500 });
+    const spec = await res.json();
     return Response.json({ spec });
   }
 
