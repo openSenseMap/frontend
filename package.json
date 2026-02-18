@@ -74,7 +74,7 @@
     "@types/mapbox-gl": "^2.7.21",
     "@types/react-tagsinput": "^3.20.6",
     "address": "^2.0.3",
-    "bcryptjs": "^3.0.2",
+    "bcryptjs": "^3.0.3",
     "chalk": "^5.4.1",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0",
