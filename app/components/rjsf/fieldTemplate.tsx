@@ -6,7 +6,6 @@ export function FieldTemplate(props: FieldTemplateProps) {
     classNames,
     style,
     label,
-    help,
     required,
     errors,
     children,
@@ -22,12 +21,6 @@ export function FieldTemplate(props: FieldTemplateProps) {
       )}
       
       {children}
-      
-      {/* {help && (
-        <div className="mt-1 text-sm text-gray-500">
-          {help}
-        </div>
-      )} */}
       
       {errors && (
         <div className="mt-1 text-sm text-red-600">
