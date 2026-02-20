@@ -38,6 +38,7 @@ export const action: ActionFunction = async ({
 			luftdaten,
 			hackair,
 			authorization: isTrustedService ? undefined : authorization,
+			isTrustedService
 		})
 
 		return new Response('Measurements saved in box', {

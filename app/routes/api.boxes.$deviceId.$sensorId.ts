@@ -1,5 +1,6 @@
 import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
 import { postSingleMeasurement } from '~/lib/measurement-service.server'
+import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const action: ActionFunction = async ({
@@ -17,6 +18,9 @@ export const action: ActionFunction = async ({
 		const authorization = request.headers.get('authorization')
 		const contentType = request.headers.get('content-type') || ''
 
+		const serviceKey = request.headers.get('x-service-key')
+		const isTrustedService = await isValidServiceKey(serviceKey);
+
 		if (!contentType.includes('application/json'))
 			return StandardResponse.unsupportedMediaType(
 				'Content-Type must be application/json',
@@ -24,7 +28,7 @@ export const action: ActionFunction = async ({
 
 		const body = await request.json()
 
-		await postSingleMeasurement(deviceId, sensorId, body, authorization)
+		await postSingleMeasurement(deviceId, sensorId, body, authorization, isTrustedService)
 
 		return new Response('Measurement saved in box', {
 			status: 201,
