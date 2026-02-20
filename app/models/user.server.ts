@@ -94,6 +94,7 @@ export async function updateUserPassword(
 			hash: hashedPassword,
 		})
 		.where(eq(passwordTable.userId, userId))
+		.returning()
 }
 
 export async function updateUserlocale(
