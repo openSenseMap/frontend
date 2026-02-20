@@ -7,7 +7,6 @@ import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 import { ServerRouter, type EntryContext } from 'react-router'
-import { ensureIntegrationsSeeded } from './db.bootstrap.server'
 import i18nextOptions from './i18next-options' // our i18n configuration file
 import i18next from './i18next.server'
 import { getEnv, init } from './utils/env.server'
@@ -18,7 +17,6 @@ export const streamTimeout = 5000
 init()
 global.ENV = getEnv()
 
-await ensureIntegrationsSeeded()
 
 export default async function handleRequest(
 	request: Request,

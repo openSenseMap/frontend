@@ -20,6 +20,7 @@
     "db:studio": "drizzle-kit studio",
     "db:setup": "npm run db:generate && npm run db:migrate",
     "db:seed": "tsx ./db/seed.ts",
+    "db:seed-integrations": "tsx ./db/seed-integrations",
     "email:dev": "email dev",
     "components": "npx shadcn-ui",
     "format": "prettier --write .",
