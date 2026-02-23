@@ -192,7 +192,7 @@ const decodeHandlers: {
 	[key: string]: { decodeMessage: (data: any, options: any) => any[] }
 } = {
 	'application/json': {
-		decodeMessage: (body: any, { sensors }: { sensors: any[] }) => {
+		decodeMessage: (body: any, {}: { sensors: any[] }) => {
 			if (Array.isArray(body)) {
 				return body.map((measurement) => ({
 					sensor_id: measurement.sensor_id ?? measurement.sensor,
@@ -228,7 +228,7 @@ const decodeHandlers: {
 	},
 
 	'text/csv': {
-		decodeMessage: (body: string, { sensors }: { sensors: any[] }) => {
+		decodeMessage: (body: string, {}: { sensors: any[] }) => {
 			const lines = body.trim().split('\n')
 			return lines.map((line) => {
 				const parts = line.split(',').map((part) => part.trim())
