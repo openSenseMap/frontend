@@ -12,6 +12,7 @@ export const sensorSchema = z.object({
 	sensorType: z.string(),
 	icon: z.string().optional(),
 	image: z.string().optional(),
+	id: z.string().optional()
 })
 
 export type Sensor = z.infer<typeof sensorSchema>
@@ -75,9 +76,7 @@ export function SensorSelectionStep() {
 
 	const handleGroupToggle = (group: SensorGroup) => {
 		const isGroupSelected = group.sensors.every((sensor) =>
-			selectedSensors.some(
-				(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-			),
+			selectedSensors.some((s) => s.id === sensor.id),
 		)
 
 		const updatedSensors = isGroupSelected
@@ -105,15 +104,10 @@ export function SensorSelectionStep() {
 	}
 
 	const handleSensorToggle = (sensor: Sensor) => {
-		const isAlreadySelected = selectedSensors.some(
-			(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-		)
+		const isAlreadySelected = selectedSensors.some((s) => s.id === sensor.id)
 
 		const updatedSensors = isAlreadySelected
-			? selectedSensors.filter(
-					(s) =>
-						!(s.title === sensor.title && s.sensorType === sensor.sensorType),
-				)
+			? selectedSensors.filter((s) => s.id !== sensor.id)
 			: [...selectedSensors, sensor]
 
 		setSelectedSensors(updatedSensors)

@@ -722,14 +722,9 @@ export async function createDevice(deviceData: any, userId: string) {
 					throw new Error(`Unknown model: ${deviceData.model}`)
 				}
 
-				if (
-					Array.isArray(deviceData.sensorTemplates) &&
-					deviceData.sensorTemplates.length > 0
-				) {
+				if (Array.isArray(deviceData.sensorTemplates) && deviceData.sensorTemplates.length > 0) {
 					sensorsToAdd = modelSensors.filter((sensor) =>
-						deviceData.sensorTemplates.includes(
-							sensor.sensorType.toLowerCase(),
-						),
+						deviceData.sensorTemplates.includes(sensor.id),
 					)
 				} else {
 					sensorsToAdd = modelSensors
