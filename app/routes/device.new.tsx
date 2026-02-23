@@ -46,9 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			...(data['device-selection'].model !== 'custom' && {
 				model: data['device-selection'].model,
 
-				sensorTemplates: selectedSensors.map((sensor: any) =>
-					sensor.sensorType.toLowerCase(),
-				),
+				sensorTemplates: selectedSensors.map((sensor: any) => sensor.id),
 			}),
 
 			...(data['device-selection'].model === 'custom' && {
