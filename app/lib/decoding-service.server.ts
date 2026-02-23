@@ -73,10 +73,6 @@ function findLuftdatenSensorId(
 
 		const title = sensor.title.toLowerCase()
 
-		// Old code also checked sensor.sensorType startsWith vt_sensortype.
-		// In your current system, sensorType might be missing—so:
-		// - if sensorType exists: require startsWith match
-		// - else: do title-only match (best-effort compatibility)
 		if (sensor.sensorType) {
 			const type = sensor.sensorType.toLowerCase()
 			if (!type.startsWith(vt_sensortype)) continue
@@ -326,59 +322,6 @@ const decodeHandlers: {
 			return out
 		},
 	},
-
-	// luftdaten: {
-	// 	decodeMessage: (body: any, { sensors }: { sensors: any[] }) => {
-	// 		const sensorMappings: { [key: string]: string } = {
-	// 			SDS_P1: 'PM10',
-	// 			SDS_P2: 'PM2.5',
-	// 		}
-
-	// 		return body.sensordatavalues.map((item: any) => {
-	// 			const mappedTitle = sensorMappings[item.value_type]
-	// 			const sensor = sensors.find((s) => s.title === mappedTitle)
-
-	// 			if (!sensor) {
-	// 				throw new Error(`No sensor found for value_type: ${item.value_type}`)
-	// 			}
-
-	// 			return {
-	// 				sensor_id: sensor.id,
-	// 				value: parseFloat(item.value),
-	// 				createdAt: new Date(),
-	// 				location: null,
-	// 			}
-	// 		})
-	// 	},
-	// },
-
-	// hackair: {
-	// 	decodeMessage: (body: any, { sensors }: { sensors: any[] }) => {
-	// 		const sensorMappings: { [key: string]: string } = {
-	// 			'PM2.5_AirPollutantValue': 'PM2.5',
-	// 			PM10_AirPollutantValue: 'PM10',
-	// 		}
-
-	// 		return Object.entries(body.reading)
-	// 			.map(([key, value]: [string, any]) => {
-	// 				const mappedTitle = sensorMappings[key]
-	// 				if (!mappedTitle) return null
-
-	// 				const sensor = sensors.find((s) => s.title === mappedTitle)
-	// 				if (!sensor) {
-	// 					throw new Error(`No sensor found for sensor_description: ${key}`)
-	// 				}
-
-	// 				return {
-	// 					sensor_id: sensor.id,
-	// 					value: parseFloat(value),
-	// 					createdAt: new Date(),
-	// 					location: null,
-	// 				}
-	// 			})
-	// 			.filter(Boolean)
-	// 	},
-	// },
 
 	'application/sbx-bytes': {
 		decodeMessage: (body: ArrayBuffer, { sensors }: { sensors: any[] }) => {
