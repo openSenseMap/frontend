@@ -30,32 +30,37 @@ export async function action({ request }: ActionFunctionArgs) {
     const data = JSON.parse(rawData);
     const advanced = data.advanced;
 
-    // Map sensors from nested objects
-    const sensors = data["sensor-selection"].selectedSensors.map(
-      (sensor: any) => ({
-        title: sensor.title,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-      })
-    );
+    const selectedSensors = data['sensor-selection'].selectedSensors
 
-    // Construct device payload 
-    const devicePayload = {
-      name: data["general-info"].name,
-      exposure: data["general-info"].exposure,
-      expiresAt: data["general-info"].temporaryExpirationDate,
-      tags:
-        data["general-info"].tags?.map((tag: { value: string }) => tag.value) ||
-        [],
-      latitude: data.location.latitude,
-      longitude: data.location.longitude,
-      model: data["device-selection"].model,
-      sensors,
+    
+		const devicePayload = {
+			name: data['general-info'].name,
+			exposure: data['general-info'].exposure,
+			expiresAt: data['general-info'].temporaryExpirationDate,
+			tags:
+				data['general-info'].tags?.map((tag: { value: string }) => tag.value) ||
+				[],
+			latitude: data.location.latitude,
+			longitude: data.location.longitude,
+
+			...(data['device-selection'].model !== 'custom' && {
+				model: data['device-selection'].model,
+
+				sensorTemplates: selectedSensors.map((sensor: any) =>
+					sensor.sensorType.toLowerCase(),
+				),
+			}),
+
+			...(data['device-selection'].model === 'custom' && {
+				sensors: selectedSensors.map((sensor: any) => ({
+					title: sensor.title,
+					sensorType: sensor.sensorType,
+					unit: sensor.unit,
+					icon: sensor.icon,
+				})),
+			}),
     };
 
-    // -----------------------------
-    // Create device in OpenSenseMap
-    // -----------------------------
     const newDevice = await createDevice(devicePayload, userId);
 
     await createDeviceIntegrations(newDevice.id, advanced);
