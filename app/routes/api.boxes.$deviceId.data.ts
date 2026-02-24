@@ -3,6 +3,21 @@ import { postNewMeasurements } from '~/lib/measurement-service.server'
 import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
 
+/**
+ * @openapi
+ * /boxes/{deviceId}/data:
+ *   post:
+ *    tags:
+ *      - Sensors
+ *    summary: Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.
+ *    description:
+ *    parameters:
+ *      - in: header
+ *        name: x-osem-device-api-key
+ *        schema:
+ *          type: string
+ *        description: alternative HTTP header for authorizing your device if you cannot use the HTTP Authorization header
+ */
 export const action: ActionFunction = async ({
 	request,
 	params,
