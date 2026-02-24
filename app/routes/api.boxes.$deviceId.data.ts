@@ -18,9 +18,11 @@ export const action: ActionFunction = async ({
 
 		const contentType = request.headers.get('content-type') || ''
 		const serviceKey = request.headers.get('x-service-key')
-		const authorization = request.headers.get('authorization')
+		const authorization =
+			request.headers.get('authorization') ??
+			request.headers.get('x-osem-device-api-key')
 
-		const isTrustedService = await isValidServiceKey(serviceKey);
+		const isTrustedService = await isValidServiceKey(serviceKey)
 
 		let body: any
 		if (contentType.includes('application/json')) {
@@ -38,7 +40,7 @@ export const action: ActionFunction = async ({
 			luftdaten,
 			hackair,
 			authorization: isTrustedService ? undefined : authorization,
-			isTrustedService
+			isTrustedService,
 		})
 
 		return new Response('Measurements saved in box', {

@@ -15,11 +15,13 @@ export const action: ActionFunction = async ({
 				'Invalid device id or sensor id specified',
 			)
 
-		const authorization = request.headers.get('authorization')
+		const authorization =
+			request.headers.get('authorization') ??
+			request.headers.get('x-osem-device-api-key')
 		const contentType = request.headers.get('content-type') || ''
 
 		const serviceKey = request.headers.get('x-service-key')
-		const isTrustedService = await isValidServiceKey(serviceKey);
+		const isTrustedService = await isValidServiceKey(serviceKey)
 
 		if (!contentType.includes('application/json'))
 			return StandardResponse.unsupportedMediaType(
@@ -28,7 +30,13 @@ export const action: ActionFunction = async ({
 
 		const body = await request.json()
 
-		await postSingleMeasurement(deviceId, sensorId, body, authorization, isTrustedService)
+		await postSingleMeasurement(
+			deviceId,
+			sensorId,
+			body,
+			authorization,
+			isTrustedService,
+		)
 
 		return new Response('Measurement saved in box', {
 			status: 201,
