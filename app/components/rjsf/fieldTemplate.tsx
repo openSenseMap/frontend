@@ -9,19 +9,25 @@ export function FieldTemplate(props: FieldTemplateProps) {
     required,
     errors,
     children,
+    hidden,
+    displayLabel,
   } = props;
+
+  if (hidden) {
+    return <div className="hidden">{children}</div>;
+  }
 
   return (
     <div className={classNames} style={style}>
-      {label && (
+      {displayLabel && label && (
         <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
           {label}
           {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      
+
       {children}
-      
+
       {errors && (
         <div className="mt-1 text-sm text-red-600">
           {errors}
