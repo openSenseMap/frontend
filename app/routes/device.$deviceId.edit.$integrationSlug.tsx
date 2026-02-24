@@ -1,5 +1,6 @@
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
+import { eq } from "drizzle-orm";
 import { Save } from "lucide-react";
 import React from "react";
 import {
@@ -11,14 +12,14 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import ErrorMessage from "~/components/error-message";
+import { ArrayFieldTemplate } from "~/components/rjsf/arrayFieldTemplate";
 import { CheckboxWidget } from "~/components/rjsf/checkboxWidget";
 import { FieldTemplate } from "~/components/rjsf/fieldTemplate";
 import { BaseInputTemplate } from "~/components/rjsf/inputTemplate";
 import { toast } from "~/components/ui/use-toast";
-import { getUserId } from "~/utils/session.server";
 import { drizzleClient } from "~/db.server";
-import { eq } from "drizzle-orm";
 import { integration } from "~/schema/integration";
+import { getUserId } from "~/utils/session.server";
 
 // =====================================================
 // Loader
@@ -123,7 +124,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const config = JSON.parse(configStr.toString());
 
   // Delete integration if disabled
-  if (!config.enabled) {
+  if (config.enabled === false) {
     const deleteRes = await fetch(
       `${intg.serviceUrl}/integrations/${deviceId}`,
       {
@@ -201,7 +202,7 @@ export default function EditIntegration() {
         uiSchema={uiSchema}
         formData={formData}
         validator={validator}
-        templates={{ FieldTemplate, BaseInputTemplate }}
+        templates={{ FieldTemplate, ArrayFieldTemplate, BaseInputTemplate }}
         onChange={(e: any) => setFormData(e.formData)}
         onSubmit={handleSubmit}
       >

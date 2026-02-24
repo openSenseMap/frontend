@@ -2,6 +2,7 @@ import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { ArrayFieldTemplate } from "~/components/rjsf/arrayFieldTemplate";
 import { CheckboxWidget } from "~/components/rjsf/checkboxWidget";
 import { FieldTemplate } from "~/components/rjsf/fieldTemplate";
 import { BaseInputTemplate } from "~/components/rjsf/inputTemplate";
@@ -96,7 +97,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
                   {schema && (
                     <Form
                       widgets={{ CheckboxWidget }}
-                      templates={{ FieldTemplate, BaseInputTemplate }}
+                      templates={{ FieldTemplate, ArrayFieldTemplate, BaseInputTemplate }}
                       schema={schema.schema}
                       uiSchema={schema.uiSchema}
                       validator={validator}
