@@ -25,3 +25,5 @@ measurements.csv
 /coverage
 
 /minio-data
+
+/public/openapi.json

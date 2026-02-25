@@ -416,8 +416,6 @@ async function post(request: Request, user: User) {
 		if (!rawAuthorizationHeader)
 			throw StandardResponse.unauthorized('Authorization header required')
 
-		const [, jwtString] = rawAuthorizationHeader.split(' ')
-
 		const deviceData = {
 			...body,
 			latitude,

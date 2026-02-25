@@ -22,6 +22,7 @@ export const sensorSchema = z.object({
 	sensorType: z.string(),
 	icon: z.string().optional(),
 	image: z.string().optional(),
+	id: z.string().optional()
 })
 
 export type Sensor = z.infer<typeof sensorSchema>

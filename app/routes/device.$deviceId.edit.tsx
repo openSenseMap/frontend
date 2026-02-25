@@ -2,40 +2,36 @@
 import * as ToastPrimitive from '@radix-ui/react-toast'
 import { clsx } from 'clsx'
 import {
-	ArrowRightLeft,
-	Lock,
-	MapPin,
-	FileText,
-	Wifi,
-	Sheet,
-	Cpu,
-	ArrowLeft,
-	UploadCloud,
-	NotepadText,
-} from 'lucide-react'
-import { useState } from 'react'
-import {
-	redirect,
-	Link,
-	Outlet,
-	useParams,
-	type LoaderFunctionArgs,
-} from 'react-router'
-import ErrorMessage from '~/components/error-message'
-import { EditDviceSidebarNav } from '~/components/mydevices/edit-device/edit-device-sidebar-nav'
-import { NavBar } from '~/components/nav-bar'
-import { Separator } from '~/components/ui/separator'
-import { getUserId } from '~/utils/session.server'
+  ArrowRightLeft,
+  Lock,
+  MapPin,
+  FileText,
+  Wifi,
+  Sheet,
+  Cpu,
+  ArrowLeft,
+  UploadCloud,
+  NotepadText,
+} from "lucide-react";
+import { useState } from "react";
+import { redirect , Link, Outlet, useParams, type LoaderFunctionArgs, useLoaderData  } from "react-router";
+import ErrorMessage from "~/components/error-message";
+import { EditDviceSidebarNav } from "~/components/mydevices/edit-device/edit-device-sidebar-nav";
+import { NavBar } from "~/components/nav-bar";
+import { Separator } from "~/components/ui/separator";
+import { getLucideIcon } from "~/lib/lucide-icon-map";
+import { getIntegrations } from "~/models/integration.server";
+import { getUserId } from "~/utils/session.server";
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
-	//* if user is not logged in, redirect to home
-	const userId = await getUserId(request)
-	if (!userId) return redirect('/')
+export async function loader({ request }: LoaderFunctionArgs) {
+  //* if user is not logged in, redirect to home
+  const userId = await getUserId(request);
+  if (!userId) return redirect("/");
 
-	const deviceID = params.deviceId
-
-	return { DevieID: deviceID }
+  return {
+    integrations: await getIntegrations(),
+  };
 }
 
 //*****************************************************
@@ -45,55 +41,40 @@ export async function action() {
 
 //**********************************
 export default function EditBox() {
-	//* Toast notification when device info is updated
-	const [toastOpen, setToastOpen] = useState(false)
+  const [toastOpen, setToastOpen] = useState(false);
 
-	// Get deviceId from route path
-	const { deviceId } = useParams()
+  const { integrations } = useLoaderData<typeof loader>();
 
-	const sidebarNavItems = [
-		{
-			title: 'General',
-			href: `/device/${deviceId}/edit/general`,
-			icon: Sheet,
-		},
-		{
-			title: 'Sensors',
-			href: `/device/${deviceId}/edit/sensors`,
-			icon: Cpu,
-		},
-		{
-			title: 'Location',
-			href: `/device/${deviceId}/edit/location`,
-			icon: MapPin,
-		},
-		{ title: 'Logs', href: `/device/${deviceId}/edit/logs`, icon: NotepadText },
-		{
-			title: 'Security',
-			href: `/device/${deviceId}/edit/security`,
-			icon: Lock,
-		},
-		{
-			title: 'Script',
-			href: `/device/${deviceId}/edit/script`,
-			icon: FileText,
-		},
-		{
-			title: 'MQTT',
-			href: `/device/${deviceId}/edit/mqtt`,
-			icon: Wifi,
-		},
-		{
-			title: 'TTN',
-			href: `/device/${deviceId}/edit/ttn`,
-			icon: UploadCloud,
-		},
-		{
-			title: 'Transfer',
-			href: `/device/${deviceId}/edit/transfer`,
-			icon: ArrowRightLeft,
-		},
-	]
+  const { deviceId } = useParams();
+
+  const staticNavItems = [
+    { title: "General", href: `/device/${deviceId}/edit/general`, icon: Sheet },
+    { title: "Sensors", href: `/device/${deviceId}/edit/sensors`, icon: Cpu },
+    { title: "Location", href: `/device/${deviceId}/edit/location`, icon: MapPin },
+    { title: "Logs", href: `/device/${deviceId}/edit/logs`, icon: NotepadText },
+    { title: "Security", href: `/device/${deviceId}/edit/security`, icon: Lock },
+    { title: "Script", href: `/device/${deviceId}/edit/script`, icon: FileText },
+  ];
+
+  const integrationItems = integrations.map((intg) => {
+  const Icon = getLucideIcon(intg.icon);
+
+    return {
+      title: intg.name,
+      href: `/device/${deviceId}/edit/${intg.slug}`,
+      icon: Icon,
+    };
+  });
+
+  const sidebarNavItems = [
+    ...staticNavItems,
+    ...integrationItems,
+    {
+      title: "Transfer",
+      href: `/device/${deviceId}/edit/transfer`,
+      icon: ArrowRightLeft,
+    },
+  ];
 
 	return (
 		<div className="space-y-6 px-10 pb-16 font-helvetica">

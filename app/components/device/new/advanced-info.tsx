@@ -1,248 +1,124 @@
-import { useFormContext } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '~/components/ui/card'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '~/components/ui/select'
-import { Switch } from '~/components/ui/switch'
-import { Textarea } from '~/components/ui/textarea'
+import Form from "@rjsf/core";
+import validator from "@rjsf/validator-ajv8";
+import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
+import { ArrayFieldTemplate } from "~/components/rjsf/arrayFieldTemplate";
+import { CheckboxWidget } from "~/components/rjsf/checkboxWidget";
+import { FieldTemplate } from "~/components/rjsf/fieldTemplate";
+import { BaseInputTemplate } from "~/components/rjsf/inputTemplate";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { Switch } from "~/components/ui/switch";
 
-export function AdvancedStep() {
-	const { register, setValue, watch, resetField } = useFormContext()
-	const { t } = useTranslation('newdevice') 
+interface Integration {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string | null;
+  description?: string | null;
+  order: number;
+}
 
-	// Watch field states
-	const isMqttEnabled = watch('mqttEnabled') || false
-	const isTtnEnabled = watch('ttnEnabled') || false
+interface AdvancedStepProps {
+  integrations: Integration[];
+}
 
-	// Clear corresponding fields when disabling
-	const handleMqttToggle = (checked: boolean) => {
-		setValue('mqttEnabled', checked)
-		if (!checked) {
-			resetField('url')
-			resetField('topic')
-			resetField('messageFormat')
-			resetField('decodeOptions')
-			resetField('connectionOptions')
-		}
-	}
+export function AdvancedStep({ integrations }: AdvancedStepProps) {
+  const { watch, setValue, resetField } = useFormContext();
+  const [schemas, setSchemas] = useState<Record<string, { schema: any; uiSchema: any }>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-	const handleTtnToggle = (checked: boolean) => {
-		setValue('ttnEnabled', checked)
-		if (!checked) {
-			resetField('dev_id')
-			resetField('app_id')
-			resetField('profile')
-			resetField('decodeOptions')
-			resetField('port')
-		}
-	}
 
-	const handleInputChange = (
-		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => {
-		const { name, value } = event.target
-		setValue(name, value)
-	}
+  const loadSchema = async (slug: string) => {
+    if (schemas[slug]) return;
 
-	const handleSelectChange = (field: string, value: string) => {
-		setValue(field, value)
-	}
+    setLoading((prev) => ({ ...prev, [slug]: true }));
 
-	return (
-		<>
-			{/* MQTT Configuration */}
-			<Card className="w-full">
-				<CardHeader>
-					<CardTitle>{t('MQTT Configuration')}</CardTitle>
-					<CardDescription>
-						{t('mqtt_config_text')}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="flex items-center justify-between space-x-2">
-						<Label htmlFor="mqttEnabled" className="text-base font-semibold">
-							{t('Enable MQTT')}
-						</Label>
-						<Switch
-							disabled
-							id="mqttEnabled"
-							checked={isMqttEnabled}
-							onCheckedChange={handleMqttToggle}
-						/>
-					</div>
+    try {
+      const res = await fetch(`/api/integrations/schema/${slug}`);
+      if (!res.ok) throw new Error(`Failed to fetch ${slug} schema`);
 
-					{isMqttEnabled && (
-						<div className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="mqtt-url">MQTT URL</Label>
-								<Input
-									id="mqtt-url"
-									placeholder="mqtt://example.com:1883"
-									{...register('url')}
-									onChange={handleInputChange}
-								/>
-							</div>
+        const data = await res.json();
+        setSchemas((prev) => ({ ...prev, [slug]: data }));
+      } catch (err) {
+        console.error(`Failed to load ${slug} schema`, err);
+      } finally {
+        setLoading((prev) => ({ ...prev, [slug]: false }));
+      }
+  }
 
-							<div className="space-y-2">
-								<Label htmlFor="mqtt-topic">MQTT Topic</Label>
-								<Input
-									id="mqtt-topic"
-									placeholder="my/mqtt/topic"
-									{...register('topic')}
-									onChange={handleInputChange}
-								/>
-							</div>
+  const handleToggle = (slug: string, checked: boolean) => {
+    setValue(`${slug}Enabled`, checked);
 
-							<div className="space-y-2">
-								<Label htmlFor="mqtt-message-format">Message Format</Label>
-								<Select
-									onValueChange={(value) =>
-										handleSelectChange('messageFormat', value)
-									}
-									defaultValue={watch('messageFormat')}
-								>
-									<SelectTrigger id="mqtt-message-format">
-										<SelectValue placeholder="Select a message format" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="json">JSON</SelectItem>
-										<SelectItem value="csv">CSV</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
+    if (checked) {
+      void loadSchema(slug);
+    } else {
+      resetField(`${slug}Config`);
+    }
+  };
 
-							<div className="space-y-2">
-								<Label htmlFor="mqtt-decode-options">Decode Options</Label>
-								<Textarea
-									id="mqtt-decode-options"
-									placeholder="Enter decode options as JSON"
-									className="resize-none"
-									{...register('decodeOptions')}
-									onChange={handleInputChange}
-								/>
-							</div>
+  return (
+    <>
+      {integrations.map((intg) => {
+        const enabled = watch(`${intg.slug}Enabled`) ?? false;
+        const config = watch(`${intg.slug}Config`) ?? {};
+        const isLoading = loading[intg.slug] ?? false;
+        const schema = schemas[intg.slug];
 
-							<div className="space-y-2">
-								<Label htmlFor="mqtt-connection-options">
-									Connection Options
-								</Label>
-								<Textarea
-									id="mqtt-connection-options"
-									placeholder="Enter connection options as JSON"
-									className="resize-none"
-									{...register('connectionOptions')}
-									onChange={handleInputChange}
-								/>
-							</div>
-						</div>
-					)}
-				</CardContent>
-			</Card>
+        return (
+          <Card key={intg.id} className="w-full mb-6">
+            <CardHeader>
+              <CardTitle>{intg.name} Configuration</CardTitle>
+              {intg.description && (
+                <CardDescription>{intg.description}</CardDescription>
+              )}
+            </CardHeader>
 
-			{/* TTN Configuration */}
-			<Card className="mt-6 w-full">
-				<CardHeader>
-					<CardTitle>{t('TTN Configuration')}</CardTitle>
-					<CardDescription>
-						{t('ttn_config_text')}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="flex items-center justify-between space-x-2">
-						<Label htmlFor="ttnEnabled" className="text-base font-semibold">
-							{t('Enable TTN')}
-						</Label>
-						<Switch
-							disabled
-							id="ttnEnabled"
-							checked={isTtnEnabled}
-							onCheckedChange={handleTtnToggle}
-						/>
-					</div>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor={`${intg.slug}Enabled`} className="text-base font-semibold">
+                  Enable {intg.name}
+                </Label>
+                <Switch
+                  id={`${intg.slug}Enabled`}
+                  checked={enabled}
+                  onCheckedChange={(checked) => handleToggle(intg.slug, checked)}
+                />
+              </div>
 
-					{isTtnEnabled && (
-						<div className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="ttn-dev-id">Device ID</Label>
-								<Input
-									id="ttn-dev-id"
-									placeholder="Enter TTN Device ID"
-									{...register('dev_id')}
-									onChange={handleInputChange}
-								/>
-							</div>
+              {enabled && (
+                <>
+                  {isLoading && (
+                    <p className="text-sm text-muted-foreground">
+                      Loading {intg.name} configuration…
+                    </p>
+                  )}
 
-							<div className="space-y-2">
-								<Label htmlFor="ttn-app-id">Application ID</Label>
-								<Input
-									id="ttn-app-id"
-									placeholder="Enter TTN Application ID"
-									{...register('app_id')}
-									onChange={handleInputChange}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="ttn-profile">Profile</Label>
-								<Select
-									onValueChange={(value) =>
-										handleSelectChange('profile', value)
-									}
-									defaultValue={watch('profile')}
-								>
-									<SelectTrigger id="ttn-profile">
-										<SelectValue placeholder="Select a profile" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="lora-serialization">
-											Lora Serialization
-										</SelectItem>
-										<SelectItem value="sensebox/home">Sensebox/Home</SelectItem>
-										<SelectItem value="json">JSON</SelectItem>
-										<SelectItem value="debug">Debug</SelectItem>
-										<SelectItem value="cayenne-lpp">Cayenne LPP</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="ttn-decode-options">Decode Options</Label>
-								<Textarea
-									id="ttn-decode-options"
-									placeholder="Enter decode options as JSON"
-									className="resize-none"
-									{...register('decodeOptions')}
-									onChange={handleInputChange}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="ttn-port">Port</Label>
-								<Input
-									id="ttn-port"
-									placeholder="Enter TTN Port"
-									type="number"
-									{...register('port', { valueAsNumber: true })}
-									onChange={handleInputChange}
-								/>
-							</div>
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</>
-	)
+                  {schema && (
+                    <Form
+                      widgets={{ CheckboxWidget }}
+                      templates={{ FieldTemplate, ArrayFieldTemplate, BaseInputTemplate }}
+                      schema={schema.schema}
+                      uiSchema={schema.uiSchema}
+                      validator={validator}
+                      formData={config}
+                      onChange={(e) => {
+                        setValue(`${intg.slug}Config`, e.formData, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                      onSubmit={() => {}}
+                    >
+                      <></>
+                    </Form>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </>
+  );
 }

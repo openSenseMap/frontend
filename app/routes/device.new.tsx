@@ -1,19 +1,19 @@
-import {
-	type ActionFunctionArgs,
-	redirect,
-	type LoaderFunctionArgs,
-} from 'react-router'
-import ValidationStepperForm from '~/components/device/new/new-device-stepper'
-import { NavBar } from '~/components/nav-bar'
-import { createDevice } from '~/models/device.server'
-import { getUser, getUserId } from '~/utils/session.server'
+import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "react-router";
+import ValidationStepperForm from "~/components/device/new/new-device-stepper";
+import { NavBar } from "~/components/nav-bar";
+import { createDeviceIntegrations } from "~/lib/integration-service.server";
+import { createDevice } from "~/models/device.server";
+import { getIntegrations } from "~/models/integration.server";
+import { getUser, getUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
 	if (!user) {
 		return redirect('/login')
 	}
-	return {}
+	const integrations = await getIntegrations();
+
+  return { integrations };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -27,10 +27,12 @@ export async function action({ request }: ActionFunctionArgs) {
 			throw new Error('User is not authenticated.')
 		}
 
-		const data = JSON.parse(rawData)
+    const data = JSON.parse(rawData);
+    const advanced = data.advanced;
 
-		const selectedSensors = data['sensor-selection'].selectedSensors
+    const selectedSensors = data['sensor-selection'].selectedSensors
 
+    
 		const devicePayload = {
 			name: data['general-info'].name,
 			exposure: data['general-info'].exposure,
@@ -43,11 +45,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
 			...(data['device-selection'].model !== 'custom' && {
 				model: data['device-selection'].model,
-				// Send full sensor details for precise filtering
-				selectedSensorDetails: selectedSensors.map((sensor: any) => ({
-					title: sensor.title,
-					sensorType: sensor.sensorType,
-				})),
+
+				sensorTemplates: selectedSensors.map((sensor: any) => sensor.id),
 			}),
 
 			...(data['device-selection'].model === 'custom' && {
@@ -58,13 +57,11 @@ export async function action({ request }: ActionFunctionArgs) {
 					icon: sensor.icon,
 				})),
 			}),
+    };
 
-			mqttEnabled: data.advanced.mqttEnabled ?? false,
-			ttnEnabled: data.advanced.ttnEnabled ?? false,
-		}
+    const newDevice = await createDevice(devicePayload, userId);
 
-		const newDevice = await createDevice(devicePayload, userId)
-		console.log('🚀 ~ New Device Created:', newDevice)
+    await createDeviceIntegrations(newDevice.id, advanced);
 
 		return redirect('/profile/me')
 	} catch (error) {
@@ -72,6 +69,8 @@ export async function action({ request }: ActionFunctionArgs) {
 		return redirect('/profile/me')
 	}
 }
+
+
 export default function NewDevice() {
 	return (
 		<div className="flex h-screen flex-col">

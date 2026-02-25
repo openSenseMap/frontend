@@ -722,28 +722,11 @@ export async function createDevice(deviceData: any, userId: string) {
 					throw new Error(`Unknown model: ${deviceData.model}`)
 				}
 
-				if (
-					Array.isArray(deviceData.selectedSensorDetails) &&
-					deviceData.selectedSensorDetails.length > 0
-				) {
+				if (Array.isArray(deviceData.sensorTemplates) && deviceData.sensorTemplates.length > 0) {
 					sensorsToAdd = modelSensors.filter((sensor) =>
-						deviceData.selectedSensorDetails.some(
-							(selected: { title: string; sensorType: string }) =>
-                                selected.title === sensor.title &&
-                                selected.sensorType === sensor.sensorType,
-						),
+						deviceData.sensorTemplates.includes(sensor.id),
 					)
-				} 
-				else if (Array.isArray(deviceData.sensorTemplates) &&
-                    deviceData.sensorTemplates.length > 0){
-						sensorsToAdd = modelSensors.filter((sensor) =>
-                        deviceData.sensorTemplates.includes(
-                            sensor.sensorType.toLowerCase(),
-                        ),
-                    )	
-					}
-				
-				else {
+				} else {
 					sensorsToAdd = modelSensors
 				}
 			}
