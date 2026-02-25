@@ -85,7 +85,7 @@
     "chartjs-plugin-zoom": "^2.2.0",
     "chroma-js": "^3.1.2",
     "class-variance-authority": "^0.7.1",
-    "close-with-grace": "^2.2.0",
+    "close-with-grace": "^2.5.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "compression": "^1.8.0",
