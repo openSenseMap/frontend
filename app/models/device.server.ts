@@ -242,7 +242,7 @@ export async function updateDevice(
 
 	const result = await drizzleClient.transaction(async (tx) => {
 		if (args.location) {
-			const { lat, lng, height } = args.location
+			const { lat, lng } = args.location
 
 			const pointWKT = `POINT(${lng} ${lat})`
 

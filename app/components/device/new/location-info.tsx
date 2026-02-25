@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
 	Map,
 	Marker,
@@ -12,10 +13,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
+
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
 	const { register, setValue, watch } = useFormContext()
-
+	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
 
@@ -129,7 +131,7 @@ export function LocationStep() {
 
 			<div className="flex w-full items-center justify-around bg-gray-50 p-4 dark:bg-gray-800">
 				<div>
-					<Label htmlFor="latitude">Latitude</Label>
+					<Label htmlFor="latitude">{t('latitude')}</Label>
 					<Input
 						id="latitude"
 						type="number"
@@ -142,13 +144,13 @@ export function LocationStep() {
 						})}
 						value={marker.latitude === '' ? '' : String(marker.latitude)}
 						onChange={handleLatitudeChange}
-						placeholder="Enter latitude (-90 to 90)"
+						placeholder={t('enter latitude')}
 						className="w-full rounded-md border p-2"
 					/>
 				</div>
 
 				<div>
-					<Label htmlFor="longitude">Longitude</Label>
+					<Label htmlFor="longitude">{t('longitude')}</Label>
 					<Input
 						id="longitude"
 						type="number"
@@ -161,7 +163,7 @@ export function LocationStep() {
 						})}
 						value={marker.longitude === '' ? '' : String(marker.longitude)}
 						onChange={handleLongitudeChange}
-						placeholder="Enter longitude (-180 to 180)"
+						placeholder={t('enter longitude')}
 						className="w-full rounded-md border p-2"
 					/>
 				</div>

@@ -3,6 +3,7 @@ import { defineStepper } from '@stepperize/react'
 import { Info, Slash } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { type FieldErrors, FormProvider, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Form, useLoaderData, useSubmit } from 'react-router'
 import { z } from 'zod'
 import { AdvancedStep } from './advanced-info'
@@ -90,37 +91,49 @@ const sensorsSchema = z.object({
 const advancedSchema = z.record(z.any());
 
 export const Stepper = defineStepper(
-  {
-    id: "general-info",
-    label: "General Info",
-    info: "Provide a unique name for your device, select its operating environment (outdoor, indoor, mobile, or unknown), and add relevant tags (optional).",
-    schema: generalInfoSchema,
-    index: 0
-  },
-  {
-    id: "location",
-    label: "Location",
-    info: "Select the device's location by clicking on the map or entering latitude and longitude coordinates manually. Drag the marker on the map to adjust the location if needed.",
-    schema: locationSchema,
-    index: 1
-  },
-  {
-    id: "device-selection",
-    label: "Device Selection",
-    info: "Select a device model from the available options",
-    schema: deviceSchema,
-    index: 2
-  },
-  {
-    id: "sensor-selection",
-    label: "Sensor Selection",
-    info: "Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.",
-    schema: sensorsSchema,
-    index: 3
-  },
-  { id: "advanced", label: "Advanced", info: null,  schema: advancedSchema, index: 4 },
-  { id: "summary", label: "Summary", info: null, schema: z.object({}), index: 5 },
-);
+	{
+		id: 'general-info',
+		label: 'General Info',
+		infoKey: 'general_information_text',
+		schema: generalInfoSchema,
+		index: 0,
+	},
+	{
+		id: 'location',
+		label: 'Location',
+		infoKey: 'location_info_text',
+		schema: locationSchema,
+		index: 1,
+	},
+	{
+		id: 'device-selection',
+		label: 'Device Selection',
+		infoKey: 'device_selection_info_text',
+		schema: deviceSchema,
+		index: 2,
+	},
+	{
+		id: 'sensor-selection',
+		label: 'Sensor Selection',
+		infoKey: 'sensor_selection_info_text',
+		schema: sensorsSchema,
+		index: 3,
+	},
+	{
+		id: 'advanced',
+		label: 'Advanced',
+		infoKey: null,
+		schema: advancedSchema,
+		index: 4,
+	},
+	{
+		id: 'summary',
+		label: 'Summary',
+		infoKey: null,
+		schema: z.object({}),
+		index: 5,
+	},
+)
 
 type GeneralInfoData = z.infer<typeof generalInfoSchema>
 type LocationData = z.infer<typeof locationSchema>
@@ -144,6 +157,7 @@ export default function NewDeviceStepper() {
 		resolver: zodResolver(stepper.current.schema),
 	})
 	const { toast } = useToast()
+	const { t } = useTranslation('newdevice')
 	const [isFirst, setIsFirst] = useState(false)
 
 	useEffect(() => {
@@ -213,7 +227,7 @@ export default function NewDeviceStepper() {
 															: 'cursor-pointer text-gray-500 hover:text-black'
 													} `}
 												>
-													{step.label}
+													{t(step.label)}
 												</BreadcrumbLink>
 											</BreadcrumbItem>
 
@@ -231,10 +245,10 @@ export default function NewDeviceStepper() {
 						{/* Step Header with Info */}
 						<div className="flex items-center justify-start gap-2">
 							<h2 className="text-lg font-medium">
-								Step {stepper.current.index + 1} of {Stepper.steps.length}:{' '}
-								{stepper.current.label}
+								{t('step')} {stepper.current.index + 1} {t('of')} {Stepper.steps.length}:{' '}
+								{t(stepper.current.label)}
 							</h2>
-							{stepper.current.info && (
+							{stepper.current.infoKey && (
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger
@@ -246,7 +260,7 @@ export default function NewDeviceStepper() {
 										>
 											<Info />
 										</TooltipTrigger>
-										<TooltipContent>{stepper.current.info}</TooltipContent>
+										<TooltipContent>{t(stepper.current.infoKey)}</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
 							)}
@@ -273,10 +287,10 @@ export default function NewDeviceStepper() {
 							onClick={stepper.prev}
 							disabled={isFirst}
 						>
-							Back
+							{t('back')}
 						</Button>
 						<Button type="submit">
-							{stepper.isLast ? 'Complete' : 'Next'}
+							{stepper.isLast ? t('Complete') : t('next')}
 						</Button>
 					</div>
 				</Form>
