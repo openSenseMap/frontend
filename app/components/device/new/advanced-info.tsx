@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
 	Card,
 	CardContent,
@@ -20,6 +21,7 @@ import { Textarea } from '~/components/ui/textarea'
 
 export function AdvancedStep() {
 	const { register, setValue, watch, resetField } = useFormContext()
+	const { t } = useTranslation('newdevice') 
 
 	// Watch field states
 	const isMqttEnabled = watch('mqttEnabled') || false
@@ -64,15 +66,15 @@ export function AdvancedStep() {
 			{/* MQTT Configuration */}
 			<Card className="w-full">
 				<CardHeader>
-					<CardTitle>MQTT Configuration</CardTitle>
+					<CardTitle>{t('MQTT Configuration')}</CardTitle>
 					<CardDescription>
-						Configure your MQTT settings for data streaming
+						{t('mqtt_config_text')}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className="flex items-center justify-between space-x-2">
 						<Label htmlFor="mqttEnabled" className="text-base font-semibold">
-							Enable MQTT
+							{t('Enable MQTT')}
 						</Label>
 						<Switch
 							disabled
@@ -153,15 +155,15 @@ export function AdvancedStep() {
 			{/* TTN Configuration */}
 			<Card className="mt-6 w-full">
 				<CardHeader>
-					<CardTitle>TTN Configuration</CardTitle>
+					<CardTitle>{t('TTN Configuration')}</CardTitle>
 					<CardDescription>
-						Configure your TTN (The Things Network) settings
+						{t('ttn_config_text')}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className="flex items-center justify-between space-x-2">
 						<Label htmlFor="ttnEnabled" className="text-base font-semibold">
-							Enable TTN
+							{t('Enable TTN')}
 						</Label>
 						<Switch
 							disabled

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { CustomDeviceConfig } from './custom-device-config'
 import {
@@ -13,6 +14,7 @@ import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 import { cn } from '~/lib/utils'
 import { getSensorsForModel } from '~/utils/model-definitions'
+
 
 export const sensorSchema = z.object({
 	title: z.string(),
@@ -33,6 +35,7 @@ type SensorGroup = {
 export function SensorSelectionStep() {
 	const { watch, setValue } = useFormContext()
 	const selectedDevice = watch('model')
+	const { t } = useTranslation('newdevice');
 	const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
 		null,
 	)
@@ -135,7 +138,7 @@ export function SensorSelectionStep() {
 	}
 
 	if (!selectedDevice) {
-		return <p className="text-center text-lg">Please select a device first.</p>
+		return <p className="text-center text-lg">{t('device_not_selected')}</p>
 	}
 
 	if (selectedDevice === 'custom') {
@@ -149,8 +152,8 @@ export function SensorSelectionStep() {
 			{/* Selected count summary */}
 			<div className="mb-4 flex items-center justify-between">
 				<p className="text-sm text-muted-foreground">
-					{selectedSensors.length} sensor
-					{selectedSensors.length !== 1 ? 's' : ''} selected
+					{selectedSensors.length} {t('sensor')}
+					{selectedSensors.length !== 1 ? 's' : ''} {t('selected')}
 				</p>
 				{selectedSensors.length > 0 && (
 					<button
@@ -195,14 +198,14 @@ export function SensorSelectionStep() {
 										<div className="text-left">
 											<p className="font-medium">{group.sensorType}</p>
 											<p className="text-xs text-muted-foreground">
-												{group.sensors.length} phenomenon
+												{group.sensors.length} {t('phenomenon')}
 												{group.sensors.length !== 1 ? 's' : ''}
 											</p>
 										</div>
 									</div>
 									{selectedCount > 0 && (
 										<Badge variant="secondary" className="ml-2">
-											{selectedCount} selected
+											{selectedCount} {t('selected')}
 										</Badge>
 									)}
 								</div>
@@ -226,7 +229,7 @@ export function SensorSelectionStep() {
 											htmlFor={`group-${group.sensorType}`}
 											className="cursor-pointer font-medium"
 										>
-											Select all phenomenons
+											{t('Select all phenomenons')}
 										</Label>
 									</div>
 
@@ -271,7 +274,7 @@ export function SensorSelectionStep() {
 									{/* For senseBoxHomeV2, just show the parameters as info */}
 									{isSenseBoxHomeV2 && (
 										<div className="ml-2 space-y-1 text-sm text-muted-foreground">
-											<p className="font-medium text-foreground">Includes:</p>
+											<p className="font-medium text-foreground">{t('Includes')}:</p>
 											{group.sensors.map((sensor) => (
 												<p key={sensor.title} className="ml-2">
 													• {sensor.title} ({sensor.unit})

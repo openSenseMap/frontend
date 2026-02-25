@@ -1,5 +1,7 @@
 {
 	"date_picker_label": "Select a date",
+	"new Device":"New Device",
+	"transfer Device": "Transfer Device",
 	"date_range_picker_label": "Select a time period",
 	"search_label": "Search",
 	"temperature_label": "Temperature",
