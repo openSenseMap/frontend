@@ -17,6 +17,7 @@ export const streamTimeout = 5000
 init()
 global.ENV = getEnv()
 
+
 export default async function handleRequest(
 	request: Request,
 	responseStatusCode: number,

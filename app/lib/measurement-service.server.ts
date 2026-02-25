@@ -61,6 +61,7 @@ interface PostMeasurementsOptions {
 	luftdaten: boolean
 	hackair: boolean
 	authorization?: string | null
+	isTrustedService?: boolean
 }
 
 interface SingleMeasurementBody {
@@ -117,7 +118,7 @@ export const postNewMeasurements = async (
 	body: any,
 	options: PostMeasurementsOptions,
 ): Promise<void> => {
-	const { luftdaten, hackair, authorization } = options
+	const { luftdaten, hackair, authorization, isTrustedService } = options
 	let { contentType } = options
 
 	if (hackair) {
@@ -135,7 +136,7 @@ export const postNewMeasurements = async (
 		throw new Error('NotFoundError: Device not found')
 	}
 
-	if (device.useAuth) {
+	if (device.useAuth  && !isTrustedService) {
 		if (device.apiKey !== authorization) {
 			const error = new Error('Device access token not valid!')
 			error.name = 'UnauthorizedError'
@@ -165,6 +166,7 @@ export const postSingleMeasurement = async (
 	sensorId: string,
 	body: SingleMeasurementBody,
 	authorization?: string | null,
+	isTrustedService?: boolean
 ): Promise<void> => {
 	try {
 		if (typeof body.value !== 'number' || isNaN(body.value)) {
@@ -188,7 +190,7 @@ export const postSingleMeasurement = async (
 			throw error
 		}
 
-		if (device.useAuth) {
+		if (device.useAuth && !isTrustedService) {
 			if (device.apiKey !== authorization) {
 				const error = new Error('Device access token not valid!')
 				error.name = 'UnauthorizedError'

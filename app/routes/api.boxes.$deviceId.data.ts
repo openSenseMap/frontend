@@ -1,7 +1,23 @@
 import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
 import { postNewMeasurements } from '~/lib/measurement-service.server'
+import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
 
+/**
+ * @openapi
+ * /boxes/{deviceId}/data:
+ *   post:
+ *    tags:
+ *      - Sensors
+ *    summary: Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.
+ *    description:
+ *    parameters:
+ *      - in: header
+ *        name: x-osem-device-api-key
+ *        schema:
+ *          type: string
+ *        description: alternative HTTP header for authorizing your device if you cannot use the HTTP Authorization header
+ */
 export const action: ActionFunction = async ({
 	request,
 	params,
@@ -16,7 +32,12 @@ export const action: ActionFunction = async ({
 		const hackair = searchParams.get('hackair') !== null
 
 		const contentType = request.headers.get('content-type') || ''
-		const authorization = request.headers.get('authorization')
+		const serviceKey = request.headers.get('x-service-key')
+		const authorization =
+			request.headers.get('authorization') ??
+			request.headers.get('x-osem-device-api-key')
+
+		const isTrustedService = await isValidServiceKey(serviceKey)
 
 		let body: any
 		if (contentType.includes('application/json')) {
@@ -33,7 +54,8 @@ export const action: ActionFunction = async ({
 			contentType,
 			luftdaten,
 			hackair,
-			authorization,
+			authorization: isTrustedService ? undefined : authorization,
+			isTrustedService,
 		})
 
 		return new Response('Measurements saved in box', {

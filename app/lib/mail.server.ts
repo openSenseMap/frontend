@@ -10,6 +10,7 @@ dotenv.config()
  * as varibales may be skipped or  there is no .env file at all
  */
 interface Config {
+	DISABLE_MAILING: boolean
 	SMTP_HOST: string | undefined
 	SMTP_PORT: number | undefined
 	SMTP_SECURE: boolean | undefined
@@ -24,6 +25,7 @@ interface Config {
  */
 const getConfig = (): Config => {
 	const config = {
+		DISABLE_MAILING: Boolean(process.env.DISABLE_MAILING) ?? false,
 		SMTP_HOST: process.env.SMTP_HOST,
 		SMTP_PORT: process.env.SMTP_PORT
 			? Number(process.env.SMTP_PORT)
@@ -91,7 +93,8 @@ class OSEMTransporter {
 		}
 	}
 }
-void OSEMTransporter.getInstance() // eagerly initialize the transporter
+
+if (!config.DISABLE_MAILING) void OSEMTransporter.getInstance() // eagerly initialize the transporter
 
 export interface MailAttachment {
 	filename: string
@@ -105,6 +108,8 @@ export const sendMail = async (mailConfig: {
 	body: React.ReactElement
 	attachments?: MailAttachment[]
 }) => {
+	if (config.DISABLE_MAILING) return
+
 	try {
 		const mailHtml = await render(mailConfig.body)
 

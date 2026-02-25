@@ -53,6 +53,9 @@ jobs:
       - name: 📥 Install deps
         run: npm install
 
+      - name: 🧾 Generate OpenAPI spec
+        run: npm run build:docs
+
       - name: 🔎 Type check
         run: npm run typecheck --if-present
 

@@ -26,10 +26,11 @@ import {
 	CardTitle,
 } from '~/components/ui/card'
 import { Checkbox } from '~/components/ui/checkbox'
+import { toast } from '~/components/ui/use-toast'
+import { setLanguageCookie } from '~/lib/set-language.server'
 import { verifyLogin } from '~/models/user.server'
 import { safeRedirect, validateEmail } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
-import { setLanguageCookie } from '~/lib/set-language.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await getUserId(request)
@@ -108,6 +109,16 @@ export default function LoginPage() {
 			passwordRef.current?.focus()
 		}
 	}, [actionData])
+
+	React.useEffect(() => {
+		if (searchParams.get('passwordReset') === '1') {
+			toast({
+				title: t('password_reset_success'),
+				variant: 'success',
+			})
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []) 
 
 	return (
 		<div className="flex h-screen items-center justify-center">
