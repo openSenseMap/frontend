@@ -232,6 +232,13 @@
       "when": 1771332110325,
       "tag": "0032_equal_young_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1772190371178,
+      "tag": "0033_living_stellaris",
+      "breakpoints": true
     }
   ]
 }
