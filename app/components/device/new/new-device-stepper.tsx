@@ -88,47 +88,47 @@ const sensorsSchema = z.object({
 		.min(1, 'Please select at least one sensor'),
 })
 
-const advancedSchema = z.record(z.any());
+const advancedSchema = z.record(z.any())
 
 export const Stepper = defineStepper(
 	{
 		id: 'general-info',
-		label: 'General Info',
+		label: 'general_info',
 		infoKey: 'general_information_text',
 		schema: generalInfoSchema,
 		index: 0,
 	},
 	{
 		id: 'location',
-		label: 'Location',
+		label: 'location',
 		infoKey: 'location_info_text',
 		schema: locationSchema,
 		index: 1,
 	},
 	{
 		id: 'device-selection',
-		label: 'Device Selection',
+		label: 'device_selection',
 		infoKey: 'device_selection_info_text',
 		schema: deviceSchema,
 		index: 2,
 	},
 	{
 		id: 'sensor-selection',
-		label: 'Sensor Selection',
+		label: 'sensor_selection',
 		infoKey: 'sensor_selection_info_text',
 		schema: sensorsSchema,
 		index: 3,
 	},
 	{
 		id: 'advanced',
-		label: 'Advanced',
+		label: 'advanced',
 		infoKey: null,
 		schema: advancedSchema,
 		index: 4,
 	},
 	{
 		id: 'summary',
-		label: 'Summary',
+		label: 'summary',
 		infoKey: null,
 		schema: z.object({}),
 		index: 5,
@@ -148,7 +148,7 @@ type FormData = GeneralInfoData &
 	AdvancedData
 
 export default function NewDeviceStepper() {
-	const { integrations } = useLoaderData<typeof loader>();
+	const { integrations } = useLoaderData<typeof loader>()
 	const submit = useSubmit()
 	const [formData, setFormData] = useState<Record<string, any>>({})
 	const stepper = Stepper.useStepper()
@@ -164,45 +164,44 @@ export default function NewDeviceStepper() {
 		setIsFirst(stepper.isFirst)
 	}, [stepper.isFirst])
 
-  const onSubmit = (data: FormData) => {
-    const updatedData = {
-      ...formData,
-      [stepper.current.id]: data,
-    };
+	const onSubmit = (data: FormData) => {
+		const updatedData = {
+			...formData,
+			[stepper.current.id]: data,
+		}
 
 		setFormData(updatedData)
 
-    if (stepper.isLast) {
-      // Submit form data as JSON
-      void submit(
-        {
-          formData: JSON.stringify(updatedData),
-        },
-        { method: "post" },
-      );
-    } else {
-      stepper.next();
-    }
-  };
+		if (stepper.isLast) {
+			void submit(
+				{
+					formData: JSON.stringify(updatedData),
+				},
+				{ method: 'post' },
+			)
+		} else {
+			stepper.next()
+		}
+	}
 
 	const onError = (errors: FieldErrors<FormData>) => {
-		const firstError = Object.values(errors)[0];
+		const firstError = Object.values(errors)[0]
 
-		let message: string | undefined;
+		let message: string | undefined
 
-		if (firstError && "message" in firstError) {
-			message = firstError.message as string | undefined;
+		if (firstError && 'message' in firstError) {
+			message = firstError.message as string | undefined
 		}
 
 		if (message) {
 			toast({
-				title: "Form Error",
+				title: 'Form Error',
 				description: message,
-				variant: "destructive",
+				variant: 'destructive',
 				duration: 2000,
-			});
+			})
 		}
-	};
+	}
 
 	return (
 		<Stepper.Scoped>
@@ -245,8 +244,8 @@ export default function NewDeviceStepper() {
 						{/* Step Header with Info */}
 						<div className="flex items-center justify-start gap-2">
 							<h2 className="text-lg font-medium">
-								{t('step')} {stepper.current.index + 1} {t('of')} {Stepper.steps.length}:{' '}
-								{t(stepper.current.label)}
+								{t('step')} {stepper.current.index + 1} {t('of')}{' '}
+								{Stepper.steps.length}: {t(stepper.current.label)}
 							</h2>
 							{stepper.current.infoKey && (
 								<TooltipProvider>
@@ -260,7 +259,9 @@ export default function NewDeviceStepper() {
 										>
 											<Info />
 										</TooltipTrigger>
-										<TooltipContent>{t(stepper.current.infoKey)}</TooltipContent>
+										<TooltipContent>
+											{t(stepper.current.infoKey)}
+										</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
 							)}
@@ -290,7 +291,7 @@ export default function NewDeviceStepper() {
 							{t('back')}
 						</Button>
 						<Button type="submit">
-							{stepper.isLast ? t('Complete') : t('next')}
+							{stepper.isLast ? t('complete') : t('next')}
 						</Button>
 					</div>
 				</Form>

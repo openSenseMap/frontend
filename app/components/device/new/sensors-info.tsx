@@ -15,14 +15,13 @@ import { Label } from '~/components/ui/label'
 import { cn } from '~/lib/utils'
 import { getSensorsForModel } from '~/utils/model-definitions'
 
-
 export const sensorSchema = z.object({
 	title: z.string(),
 	unit: z.string(),
 	sensorType: z.string(),
 	icon: z.string().optional(),
 	image: z.string().optional(),
-	id: z.string().optional()
+	id: z.string().optional(),
 })
 
 export type Sensor = z.infer<typeof sensorSchema>
@@ -36,7 +35,7 @@ type SensorGroup = {
 export function SensorSelectionStep() {
 	const { watch, setValue } = useFormContext()
 	const selectedDevice = watch('model')
-	const { t } = useTranslation('newdevice');
+	const { t } = useTranslation('newdevice')
 	const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
 		null,
 	)
@@ -50,10 +49,9 @@ export function SensorSelectionStep() {
 				: selectedDevice
 			setSelectedDeviceModel(deviceModel)
 
-			// Add safety check for custom devices
 			if (deviceModel !== 'custom') {
 				const fetchedSensors = getSensorsForModel(deviceModel)
-				setSensors(fetchedSensors ?? []) // Also handle null return
+				setSensors(fetchedSensors ?? [])
 			} else {
 				setSensors([])
 			}
@@ -66,9 +64,8 @@ export function SensorSelectionStep() {
 	}, [watch])
 
 	const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
-		// Add safety check in case sensors is null/undefined
 		if (!sensors || sensors.length === 0) return []
-		
+
 		const grouped = sensors.reduce(
 			(acc, sensor) => {
 				if (!acc[sensor.sensorType]) {
@@ -150,7 +147,6 @@ export function SensorSelectionStep() {
 
 	return (
 		<div className="flex h-full flex-col">
-			{/* Selected count summary */}
 			<div className="mb-4 flex items-center justify-between">
 				<p className="text-sm text-muted-foreground">
 					{selectedSensors.length} {t('sensor')}
@@ -165,7 +161,7 @@ export function SensorSelectionStep() {
 							setValue('selectedSensors', [])
 						}}
 					>
-						Clear all
+						{t('clear_all')}
 					</button>
 				)}
 			</div>
@@ -213,7 +209,6 @@ export function SensorSelectionStep() {
 							</AccordionTrigger>
 							<AccordionContent className="pb-4">
 								<div className="space-y-3 pt-2">
-									{/* Select All option */}
 									<div
 										className="flex items-center space-x-3 rounded-md bg-muted/50 p-3"
 										onClick={(e) => e.stopPropagation()}
@@ -230,11 +225,10 @@ export function SensorSelectionStep() {
 											htmlFor={`group-${group.sensorType}`}
 											className="cursor-pointer font-medium"
 										>
-											{t('Select all phenomenons')}
+											{t('select_all_phenomenons')}
 										</Label>
 									</div>
 
-									{/* Individual sensors - only show for non-senseBoxHomeV2 */}
 									{!isSenseBoxHomeV2 && (
 										<div className="ml-2 space-y-2 border-l-2 border-muted pl-4">
 											{group.sensors.map((sensor) => {
@@ -272,10 +266,11 @@ export function SensorSelectionStep() {
 										</div>
 									)}
 
-									{/* For senseBoxHomeV2, just show the parameters as info */}
 									{isSenseBoxHomeV2 && (
 										<div className="ml-2 space-y-1 text-sm text-muted-foreground">
-											<p className="font-medium text-foreground">{t('Includes')}:</p>
+											<p className="font-medium text-foreground">
+												{t('includes')}:
+											</p>
 											{group.sensors.map((sensor) => (
 												<p key={sensor.title} className="ml-2">
 													• {sensor.title} ({sensor.unit})

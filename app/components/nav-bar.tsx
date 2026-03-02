@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useOptionalUser } from '~/utils'
 
-
 export function NavBar() {
 	const { t } = useTranslation('navbar')
 	const location = useLocation()
@@ -61,13 +60,13 @@ export function NavBar() {
 									<DropdownMenuGroup>
 										<Link to="/device/new">
 											<DropdownMenuItem>
-												<span>{t("new Device")}</span>
+												<span>{t('new_device')}</span>
 											</DropdownMenuItem>
 										</Link>
 
 										<Link to="/device/transfer">
 											<DropdownMenuItem disabled>
-												<span>{t("transfer Device")}</span>
+												<span>{t('transfer_device')}</span>
 											</DropdownMenuItem>
 										</Link>
 									</DropdownMenuGroup>
