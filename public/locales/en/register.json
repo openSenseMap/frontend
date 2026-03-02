@@ -18,5 +18,10 @@
 	"password_required": "Password is required",
 	"password_too_short": "Password is too short",
 	"email_already_taken": "A user with this email already exists",
-	"email_invalid": "Invalid email address"
+	"email_invalid": "Invalid email address",
+
+	"agree_tos_prefix": "I agree to the",
+	"terms_of_service": "Terms of Service",
+	"agree_tos_suffix": ".",
+	"tos_must_accept": "The terms of service must be accepted."
 }

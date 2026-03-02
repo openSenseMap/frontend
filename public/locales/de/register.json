@@ -18,5 +18,10 @@
 	"password_required": "Passwort ist ein Pflichtfeld",
 	"password_too_short": "Passwort ist zu kurz",
 	"email_already_taken": "Die E-Mail Adresse wird bereits verwendet",
-	"email_invalid": "Ungültige E-Mail Adresse"
+	"email_invalid": "Ungültige E-Mail Adresse",
+
+	"agree_tos_prefix": "Ich stimme den",
+	"terms_of_service": "Nutzungsbedingungen",
+	"agree_tos_suffix": "zu.",
+	"tos_must_accept": "Den Nutzungsbedingungen muss zugestimmt werden."
 }
