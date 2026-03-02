@@ -10,6 +10,7 @@
 
 	"select_device": "Select Device",
 	"Device": "Device",
+	"device_selection": "Device Selection",
 	"select_device_text": "Which hardware do you use?",
 	"device_not_selected": "Please select a device first.",
 	"device_selection_info_text": "Select a device model from the available options",
