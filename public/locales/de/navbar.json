@@ -1,5 +1,6 @@
 {
 	"date_picker_label": "Wähle einen Zeitpunkt",
+	"transfer_device": "Gerät übertragen",
 	"date_range_picker_label": "Wähle einen Zeitraum",
 	"search_label": "Suche",
 	"temperature_label": "Temperatur",
@@ -15,11 +16,11 @@
 	"pointintime_description": "Zeige einen historischen Zeitpunkt auf der Karte an.",
 	"timeperiod_label": "Zeitraum",
 	"timeperiod_description": "Erforsche die Entwicklung der Phänomene in einem bestimmten Zeitfenster.",
-
 	"Settings": "Einstellungen",
 	"Profile": "Profil",
 	"Account": "Konto",
 	"Password": "Passwort",
 	"Delete": "Löschen",
-	"Photo": "Profilbild"
+	"Photo": "Profilbild",
+	"new_device": "Neues Gerät"
 }
