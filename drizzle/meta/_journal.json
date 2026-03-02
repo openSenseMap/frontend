@@ -239,6 +239,13 @@
       "when": 1772190371178,
       "tag": "0033_living_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1772462929836,
+      "tag": "0034_mighty_betty_brant",
+      "breakpoints": true
     }
   ]
 }
