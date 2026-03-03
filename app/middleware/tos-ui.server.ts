@@ -7,12 +7,12 @@ function isAllowedUiPath(pathname: string) {
   if (pathname === "/terms") return true;
   if (pathname === "/settings/delete") return true;
   if (pathname === "/logout") return true;
-  if (pathname === '/tos-required') return true
+  if (pathname === '/tos-required') return true;
+  if (pathname.startsWith("/profile")) return true;
 
 
-  // TODO: create a dedicated delete-only route
-  if (pathname.startsWith("/device/")) return true;
-
+  if (/^\/device\/[^/]+\/edit\/delete\/?$/.test(pathname)) return true;
+  
   return false;
 }
 
