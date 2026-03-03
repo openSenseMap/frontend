@@ -1,0 +1,5 @@
+{
+    "delete_device": "Delete device",
+    "confirm_permanent_deletion": "This will permanently delete <b>{{device}}</b> and all associated data. Please confirm with your password.",
+    "password": "Password"
+}

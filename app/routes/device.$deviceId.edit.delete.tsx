@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
@@ -59,7 +60,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		)
 	}
 
-	// Delete device image before deleting device
 	const device = await getDeviceWithoutSensors({ id: deviceId })
 	if (device?.image) {
 		try {
@@ -80,6 +80,9 @@ export default function DeviceDeletePage() {
 	const passwordRef = React.useRef<HTMLInputElement>(null)
 	const [password, setPassword] = React.useState('')
 
+	const { t } = useTranslation('delete-device')
+
+
 	React.useEffect(() => {
 		if (actionData?.errors?.passwordDelete) passwordRef.current?.focus()
 	}, [actionData])
@@ -89,16 +92,20 @@ export default function DeviceDeletePage() {
 			<Form method="post" className="space-y-6" noValidate>
 				<Card className="dark:border-white dark:bg-dark-boxes">
 					<CardHeader>
-						<CardTitle className="text-red-600">Delete device</CardTitle>
+						<CardTitle className="text-red-600">{t('delete_device')}</CardTitle>
 						<CardDescription>
-							This will permanently delete <b>{device?.name}</b> and all associated
-							data. Please confirm with your password.
+							  <Trans
+									t={t}
+									i18nKey="confirm_permanent_deletion"
+									values={{ device: device.name }}
+									components={{ b: <b /> }}
+								/>
 						</CardDescription>
 					</CardHeader>
 
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="passwordDelete">Password</Label>
+							<Label htmlFor="passwordDelete">{t('password')}</Label>
 							<Input
 								id="passwordDelete"
 								name="passwordDelete"
@@ -116,7 +123,7 @@ export default function DeviceDeletePage() {
 						</div>
 
 						<Button type="submit" variant="destructive" disabled={!password}>
-							Delete device
+							{t('delete_device')}
 						</Button>
 					</CardContent>
 				</Card>
