@@ -27,6 +27,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
+import { getCurrentEffectiveTos } from '~/models/tos.server'
 import {
 	createUser,
 	getUserByEmail,
@@ -43,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
-	const { username, email, password } = Object.fromEntries(formData)
+	const { username, email, password, tosAccepted } = Object.fromEntries(formData)
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 
 	if (!username || typeof username !== 'string') {
@@ -53,6 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: 'username_required',
 					email: null,
 					password: null,
+					tosAccepted: null,
 				},
 			},
 			{ status: 400 },
@@ -68,6 +70,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: validateUserName.errorMsg,
 					password: null,
 					email: null,
+					tosAccepted: null,
 				},
 			},
 			{ status: 400 },
@@ -82,6 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: 'username_already_taken',
 					email: null,
 					password: null,
+					tosAccepted: null,
 				},
 			},
 			{ status: 400 },
@@ -89,7 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	if (!validateEmail(email)) {
 		return data(
-			{ errors: { username: null, email: 'email_invalid', password: null } },
+			{ errors: { username: null, email: 'email_invalid', password: null, tosAccepted: null, } },
 			{ status: 400 },
 		)
 	}
@@ -101,6 +105,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: null,
 					password: 'password_required',
 					email: null,
+					tosAccepted: null,
 				},
 			},
 			{ status: 400 },
@@ -114,6 +119,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: null,
 					password: 'password_too_short',
 					email: null,
+					tosAccepted: null,
 				},
 			},
 			{ status: 400 },
@@ -129,9 +135,39 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: null,
 					email: 'email_already_taken',
 					password: null,
+					tosAccepted: null,
 				},
 			},
 			{ status: 400 },
+		)
+	}
+
+	if (tosAccepted !== 'on') {
+		return data(
+			{
+				errors: {
+					username: null,
+					email: null,
+					password: null,
+					tosAccepted: 'tos_must_accept',
+				},
+			},
+			{ status: 400 },
+		)
+	}
+
+	const tos = await getCurrentEffectiveTos()
+	if (!tos) {
+		return data(
+			{
+				errors: {
+					username: null,
+					email: null,
+					password: null,
+					tosAccepted: 'tos_unavailable',
+				},
+			},
+			{ status: 500 },
 		)
 	}
 
@@ -141,7 +177,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const locale = await i18next.getLocale(request)
 	const language = locale === 'de' ? 'de_DE' : 'en_US'
 
-	const user = await createUser(username, email, language, password)
+	const user = await createUser(username, email, language, password, tos.id)
 
 	return createUserSession({
 		request,
@@ -252,6 +288,28 @@ export default function RegisterDialog() {
 								</div>
 							)}
 						</div>
+						<div className="flex items-start gap-2">
+							<input
+								id="tosAccepted"
+								name="tosAccepted"
+								type="checkbox"
+								className="mt-1 h-4 w-4"
+								aria-invalid={actionData?.errors?.tosAccepted ? true : undefined}
+								aria-describedby="tos-error"
+							/>
+							<Label htmlFor="tosAccepted" className="text-sm leading-5">
+								{t('agree_tos_prefix')}{' '}
+								<Link to="/terms" className="underline" target="_blank" rel="noreferrer">
+									{t('terms_of_service')}
+								</Link>{' '}
+								{t('agree_tos_suffix')}
+							</Label>
+						</div>
+						{actionData?.errors?.tosAccepted && (
+							<div className="mt-1 text-sm text-red-500" id="tos-error">
+								{t(actionData.errors.tosAccepted)}
+							</div>
+						)}
 					</CardContent>
 					<CardFooter className="flex flex-col items-center gap-2">
 						<Button className="w-full bg-light-blue">{t('register')}</Button>
