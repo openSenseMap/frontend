@@ -24,9 +24,11 @@ import {
 	type UsernameValidation,
 	validateEmail,
 	validatePassword,
+	validateTosAccepted,
 	validateUsername,
 } from './user-service'
 import { drizzleClient } from '~/db.server'
+import { getCurrentEffectiveTos } from '~/models/tos.server'
 import {
 	createUser,
 	deleteUserByEmail,
@@ -57,6 +59,7 @@ export const registerUser = async (
 	email: string,
 	password: string,
 	language: 'de_DE' | 'en_US',
+	tosAccepted: boolean,
 ): Promise<
 	UsernameValidation | EmailValidation | PasswordValidation | User | null
 > => {
@@ -69,10 +72,16 @@ export const registerUser = async (
 	const passwordValidation = validatePassword(password)
 	if (!passwordValidation.isValid) return passwordValidation
 
+	const tosValidation = validateTosAccepted(tosAccepted)
+	if(!tosValidation.isValid) return tosValidation
+
+	const tos = await getCurrentEffectiveTos()
+	invariant(tos, 'Expected tos to be configured.')
+
 	const existingUser = await getUserByEmail(email)
 	if (existingUser) return null // no new user is created -> null
 
-	const newUsers = await createUser(username, email, language, password)
+	const newUsers = await createUser(username, email, language, password, tos.id)
 	if (newUsers.length === 0)
 		throw new Error('Something went wrong creating the user profile!')
 
