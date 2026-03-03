@@ -36,6 +36,7 @@ describe('openSenseMap API Routes: /users', () => {
 					BOX_TEST_USER.email,
 					BOX_TEST_USER.password,
 					'en_US',
+					true
 				)
 				const { token: t } = await createToken(user as User)
 				jwt = t
@@ -45,6 +46,7 @@ describe('openSenseMap API Routes: /users', () => {
 					OTHER_TEST_USER.email,
 					OTHER_TEST_USER.password,
 					'en_US',
+					true
 				)
 				const { token: t2 } = await createToken(otherUser as User)
 				otherJwt = t2

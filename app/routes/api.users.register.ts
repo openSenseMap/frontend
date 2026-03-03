@@ -57,6 +57,10 @@ import { StandardResponse } from '~/utils/response-utils'
  *                   - "en_US"
  *                 default: "en_US"
  *                 example: "en_US"
+ * 				  tosAccepted: 
+ * 					type: boolean
+ * 					description: Acceptance of Terms of service
+ * 					default: false			
  *     responses:
  *       201:
  *         description: User successfully registered

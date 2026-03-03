@@ -42,6 +42,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			TRANSFER_TEST_USER.email,
 			TRANSFER_TEST_USER.password,
 			'en_US',
+			true
 		)
 		user = testUser as User
 		const { token: t } = await createToken(testUser as User)
@@ -139,6 +140,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
+				true
 			)
 			const { token: otherJwt } = await createToken(otherUser as User)
 
@@ -196,6 +198,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
+				true
 			)
 			const { token: otherJwt } = await createToken(otherUser as User)
 

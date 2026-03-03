@@ -15,6 +15,7 @@ describe('openSenseMap API Routes: /users', () => {
 				VALID_USER.email,
 				VALID_USER.password,
 				'en_US',
+				true
 			)
 		})
 

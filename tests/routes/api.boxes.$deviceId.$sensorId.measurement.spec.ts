@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, Params } from 'react-router'
+import { type ActionFunctionArgs, type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
@@ -8,7 +8,7 @@ import { insertMeasurements } from '~/models/measurement.server'
 import { getSensors } from '~/models/sensor.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.boxes.$deviceId.$sensorId.measurements'
-import { sensor, type User } from '~/schema'
+import { type User } from '~/schema'
 
 const USER = generateTestUserCredentials()
 const USER2 = generateTestUserCredentials()
@@ -56,12 +56,13 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 	let jwt2: string
 
 	beforeAll(async () => {
-		const u = await registerUser(USER.name, USER.email, USER.password, 'en_US')
+		const u = await registerUser(USER.name, USER.email, USER.password, 'en_US', true)
 		const u2 = await registerUser(
 			USER2.name,
 			USER2.email,
 			USER2.password,
 			'en_US',
+			true
 		)
 		const d = await createDevice(DEVICE, (u as User).id)
 		const s = await getSensors(d.id)

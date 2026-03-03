@@ -30,6 +30,7 @@ describe('openSenseMap API Routes: /tags', () => {
 			TAGS_TEST_USER.email,
 			TAGS_TEST_USER.password,
 			'en_US',
+			true
 		)
 		userId = (user as User).id
 	})
