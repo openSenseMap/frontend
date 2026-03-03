@@ -119,6 +119,28 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 	})
 }
 
+export function getUserDevice({
+  id,
+  userId,
+}: Pick<Device, 'id' | 'userId'>) {
+  return drizzleClient.query.device.findFirst({
+    where: (d, { and, eq }) => and(eq(d.id, id), eq(d.userId, userId)),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      exposure: true,
+      image: true,
+      tags: true,
+      website: true,
+      updatedAt: true,
+      latitude: true,
+      longitude: true,
+      userId: true,
+    },
+  })
+}
+
 export function getLocations(
 	{ id }: Pick<Device, 'id'>,
 	fromDate: Date,
