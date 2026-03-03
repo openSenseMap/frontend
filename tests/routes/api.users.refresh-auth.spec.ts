@@ -24,6 +24,7 @@ describe('openSenseMap API Routes: /users', () => {
 				VALID_REFRESH_AUTH_TEST_USER.email,
 				VALID_REFRESH_AUTH_TEST_USER.password,
 				'en_US',
+				true
 			)
 			;({ token: jwt, refreshToken } = await createToken(user as User))
 		})
