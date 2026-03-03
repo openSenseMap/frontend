@@ -88,7 +88,6 @@ export default function DeviceDeletePage() {
 	}, [actionData])
 
 	return (
-		<div className="mx-auto max-w-xl p-6">
 			<Form method="post" className="space-y-6" noValidate>
 				<Card className="dark:border-white dark:bg-dark-boxes">
 					<CardHeader>
@@ -128,6 +127,5 @@ export default function DeviceDeletePage() {
 					</CardContent>
 				</Card>
 			</Form>
-		</div>
 	)
 }
