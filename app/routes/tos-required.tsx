@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 import {
 	Form,
 	Link,
@@ -78,6 +79,9 @@ export default function TosRequiredModal() {
 	const actionData = useActionData<typeof action>()
 	const [checked, setChecked] = React.useState(false)
 
+	const { t } = useTranslation('tos')
+	
+
 	return (
 		<Dialog open onOpenChange={() => {}}>
 			<DialogContent
@@ -88,9 +92,9 @@ export default function TosRequiredModal() {
 				className="sm:max-w-lg"
 			>
 				<DialogHeader>
-					<DialogTitle>Terms of Service update</DialogTitle>
+					<DialogTitle>{t('tos_update')}</DialogTitle>
 					<DialogDescription>
-						You need to accept the latest Terms of Service to continue using the app.
+						{t('must_accept')}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -113,11 +117,20 @@ export default function TosRequiredModal() {
 								onChange={(e) => setChecked(e.target.checked)}
 							/>
 							<label htmlFor="accepted" className="text-sm leading-5">
-								I agree to the{' '}
-								<Link to="/terms" target="_blank" rel="noreferrer" className="underline">
-									Terms of Service
-								</Link>
-								.
+								<Trans
+									i18nKey="tos_agree"
+									ns="tos"
+									components={{
+										termsLink: (
+											<Link
+												to="/terms"
+												target="_blank"
+												rel="noreferrer"
+												className="underline"
+											/>
+										),
+									}}
+								/>
 							</label>
 						</div>
 
@@ -129,11 +142,13 @@ export default function TosRequiredModal() {
 
 						<DialogFooter className="sm:justify-between">
 							<div className="text-sm text-muted-foreground">
-								You can still{' '}
-								<Link to="/settings/delete" className="underline">
-									delete your account
-								</Link>
-								.
+								<Trans
+									i18nKey="delete_account"
+									ns="tos"
+									components={{
+										deleteLink: <Link to="/settings/delete" className="underline" />,
+									}}
+								/>
 							</div>
 
 							<Button type="submit" disabled={!checked}>
