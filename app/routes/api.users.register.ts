@@ -2,6 +2,7 @@ import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
 import { createToken } from '~/lib/jwt'
 import { parseUserRegistrationData } from '~/lib/request-parsing'
 import {
+	type TosValidation,
 	type EmailValidation,
 	type PasswordValidation,
 	type UsernameValidation,
@@ -191,7 +192,8 @@ export const action: ActionFunction = async ({
 		const email = data.email
 		const password = data.password
 		const language = data.language as 'de_DE' | 'en_US'
-		const registration = await registerUser(username, email, password, language)
+		const tosAccepted = data.tosAccepted
+		const registration = await registerUser(username, email, password, language, tosAccepted)
 		if (!registration)
 			// null is returned when no new user profile was created because it already exists
 			return StandardResponse.badRequest('User already exists.')
@@ -221,6 +223,10 @@ export const action: ActionFunction = async ({
 					if (passwordValidation.length)
 						msg = 'Password must be at least 8 characters long.'
 					break
+				case 'tos':
+					const tosValidation = registration as TosValidation
+					if (tosValidation.required) msg = 'Terms of service must be accepted.'
+					break	
 			}
 			return StandardResponse.badRequest(msg)
 		}
