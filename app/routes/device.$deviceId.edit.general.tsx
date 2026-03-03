@@ -15,12 +15,10 @@ import ErrorMessage from '~/components/error-message'
 import { Button } from '~/components/ui/button'
 import {
 	updateDevice,
-	deleteDevice,
 	getDeviceWithoutSensors,
 } from '~/models/device.server'
-import { verifyLogin } from '~/models/user.server'
 import { uploadDeviceImage, deleteDeviceImage } from '~/utils/s3.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+import { getUserId } from '~/utils/session.server'
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -186,47 +184,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				status: 200,
 			})
 		}
-		case 'delete': {
-			if (errors.passwordDelete) {
-				return data({
-					errors,
-					status: 400,
-				})
-			}
-
-			const userEmail = await getUserEmail(request)
-			invariant(typeof userEmail === 'string', 'email not found')
-			invariant(typeof passwordDelete === 'string', 'password must be a string')
-
-			const user = await verifyLogin(userEmail, passwordDelete)
-
-			if (!user) {
-				return data(
-					{
-						errors: {
-							exposure: null,
-							passwordDelete: 'Invalid password',
-							image: null,
-						},
-					},
-					{ status: 400 },
-				)
-			}
-
-			// Delete device image before deleting device
-			const device = await getDeviceWithoutSensors({ id: deviceID })
-			if (device?.image) {
-				try {
-					await deleteDeviceImage(device.image)
-				} catch (error) {
-					console.error('Failed to delete device image:', error)
-				}
-			}
-
-			await deleteDevice({ id: deviceID })
-
-			return redirect('/profile/me')
-		}
 	}
 
 	return redirect('')
@@ -236,9 +193,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function () {
 	const { device } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
-	const [passwordDelVal, setPasswordVal] = useState('')
 	const nameRef = React.useRef<HTMLInputElement>(null)
-	const passwordDelRef = React.useRef<HTMLInputElement>(null)
 	const [name, setName] = useState(device?.name)
 	const [exposure, setExposure] = useState(device?.exposure)
 	const [description, setDescription] = useState(device?.description)
@@ -289,9 +244,7 @@ export default function () {
 
 			if (!hasErrors) {
 				setToastOpen(true)
-			} else if (hasErrors && actionData?.errors?.passwordDelete) {
-				passwordDelRef.current?.focus()
-			}
+			} 
 		}
 	}, [actionData, setToastOpen])
 
@@ -550,45 +503,6 @@ export default function () {
 								/>
 							</div>
 
-							{/* Delete device */}
-							<div>
-								<h1 className="mt-7 text-3xl text-[#FF4136]">Delete device</h1>
-							</div>
-
-							<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-								<p>
-									If you really want to delete your station, please type your
-									current password - all measurements will be deleted as well.
-								</p>
-							</div>
-							<div>
-								<input
-									id="passwordDelete"
-									name="passwordDelete"
-									type="password"
-									placeholder="Password"
-									ref={passwordDelRef}
-									className="w-full rounded border border-gray-200 px-2 py-2 text-base placeholder-[#999]"
-									value={passwordDelVal}
-									onChange={(e) => setPasswordVal(e.target.value)}
-								/>
-								{actionData?.errors?.passwordDelete && (
-									<div className="pt-1 text-[#FF0000]" id="email-error">
-										{actionData.errors.passwordDelete}
-									</div>
-								)}
-							</div>
-							<div className="flex justify-end">
-								<button
-									type="submit"
-									name="intent"
-									value="delete"
-									disabled={!passwordDelVal}
-									className="mb-5 rounded border border-gray-200 px-4 py-2 text-black hover:bg-[#e6e6e6] disabled:border-[#ccc] disabled:text-[#8a8989]"
-								>
-									Delete device
-								</button>
-							</div>
 						</div>
 					</Form>
 				</div>
