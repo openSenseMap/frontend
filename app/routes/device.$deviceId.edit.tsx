@@ -74,12 +74,7 @@ export default function EditBox() {
       title: "Transfer",
       href: `/device/${deviceId}/edit/transfer`,
       icon: ArrowRightLeft,
-    },
-		{
-			title: "Delete",
-			href: `/device/${deviceId}/edit/delete`,
-			icon: Trash
-		}
+    }
   ];
 
 	return (
