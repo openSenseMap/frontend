@@ -20,8 +20,6 @@ const API_TOS_ALLOWLIST: AllowRule[] = [
 
   { method: 'DELETE', pathname: '/api/users/me' },
 
-  { method: 'DELETE', pathname: /^\/api\/boxes\/[^/]+$/ },
-
   { method: 'POST', pathname: '/api/users/me/accept-tos' },
 ]
 
