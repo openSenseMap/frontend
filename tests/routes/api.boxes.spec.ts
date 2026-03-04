@@ -669,9 +669,9 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			// Act
-			const response = await action({
+			const response = (await action({
 				request: request,
-			} as ActionFunctionArgs)
+			} as ActionFunctionArgs)) as Response
 			const responseData = await response.json()
 			await deleteDevice({ id: responseData._id })
 
@@ -702,9 +702,9 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			// Act
-			const response = await action({
+			const response = (await action({
 				request: request,
-			} as ActionFunctionArgs)
+			} as ActionFunctionArgs)) as Response
 			const responseData = await response.json()
 			await deleteDevice({ id: responseData._id })
 
