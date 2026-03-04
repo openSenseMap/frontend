@@ -46,7 +46,6 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 	tosAccepted: boolean
 }> {
 	const data = await parseRequestData(request)
-	console.log("data", data)
 
 	return {
 		name: data.name || '',

@@ -7,7 +7,7 @@ export async function loader() {
   return data({ tos })
 }
 
-export default function TosReadOnly() {
+export default function TermsPage() {
   const { tos } = useLoaderData<typeof loader>()
   if (!tos) return <div className="p-6">No ToS configured.</div>
 
