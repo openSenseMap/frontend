@@ -253,6 +253,13 @@
       "when": 1772628732530,
       "tag": "0035_eminent_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1772630307932,
+      "tag": "0036_classy_millenium_guard",
+      "breakpoints": true
     }
   ]
 }
