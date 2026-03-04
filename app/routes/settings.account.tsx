@@ -10,6 +10,7 @@ import {
 	redirect,
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
+	useSearchParams,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { Button } from '~/components/ui/button'
@@ -180,6 +181,14 @@ export default function EditUserProfilePage() {
 	const fetcher = useFetcher<typeof action>()
 	const { toast } = useToast()
 	const { t } = useTranslation('settings')
+
+	const [params] = useSearchParams()
+	useEffect(() => {
+		const status = params.get('emailConfirm')
+		if (status === 'ok') toast({ title: t('email_confirmed'), variant: 'success' })
+		if (status === 'invalid_or_expired') toast({ title: t('verification_link_invalid'), variant: 'destructive' })
+		if (status === 'missing_params') toast({ title: t('verification_link_invalid'), variant: 'destructive' })
+	}, [params, toast, t])
 
 	const passwordUpdRef = useRef<HTMLInputElement>(null)
 

@@ -319,6 +319,7 @@ export const confirmEmail = async (
 			email: emailToConfirm,
 			unconfirmedEmail: null,
 		})
+		.where(eq(user.id, u.id))
 		.returning()
 
 	return updatedUser[0]
