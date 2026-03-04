@@ -2,8 +2,8 @@ import 'dotenv/config'
 import { z } from 'zod'
 
 const envSchema = z.object({
-	DATABASE_URL: z.string().url().trim().min(1),
-	PG_CLIENT_SSL: z.string().default('false'),
+	DATABASE_URL: z.url().trim().min(1),
+	PG_CLIENT_SSL: z.string().prefault('false'),
 })
 
 const envDB = envSchema.safeParse(process.env)

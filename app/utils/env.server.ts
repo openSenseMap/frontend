@@ -5,13 +5,13 @@ const schema = z.object({
   DATABASE_URL: z.string(),
   PG_CLIENT_SSL: z.string(),
   SESSION_SECRET: z.string(),
-  MAPBOX_GEOCODING_API: z.string().url(),
+  MAPBOX_GEOCODING_API: z.url(),
   MAPBOX_ACCESS_TOKEN: z.string(),
-  OSEM_API_URL: z.string().url(),
-  DIRECTUS_URL: z.string().url(),
-  SENSORWIKI_API_URL: z.string().url(),
-  MYBADGES_API_URL: z.string().url(),
-  MYBADGES_URL: z.string().url(),
+  OSEM_API_URL: z.url(),
+  DIRECTUS_URL: z.url(),
+  SENSORWIKI_API_URL: z.url(),
+  MYBADGES_API_URL: z.url(),
+  MYBADGES_URL: z.url(),
   MYBADGES_SERVERADMIN_USERNAME: z.string(),
   MYBADGES_SERVERADMIN_PASSWORD: z.string(),
   MYBADGES_ISSUERID_OSEM: z.string(),
@@ -31,7 +31,7 @@ export function init() {
 	if (parsed.success === false) {
 		console.error(
 			'❌ Invalid environment variables:',
-			parsed.error.flatten().fieldErrors,
+			z.treeifyError(parsed.error),
 		)
 	}
 }

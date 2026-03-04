@@ -8,11 +8,11 @@ export const CreateBoxSchema = z.object({
 	exposure: z
 		.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
 		.optional()
-		.default('unknown'),
+		.prefault('unknown'),
 	location: z
 		.array(z.number())
 		.length(2, 'Location must be [longitude, latitude]'),
-	grouptag: z.array(z.string()).optional().default([]),
+	grouptag: z.array(z.string()).optional().prefault([]),
 	model: z
 		.enum([
 			'homeV2Lora',
@@ -23,7 +23,7 @@ export const CreateBoxSchema = z.object({
 			'custom',
 		])
 		.optional()
-		.default('custom'),
+		.prefault('custom'),
 	sensors: z
 		.array(
 			z.object({
@@ -35,32 +35,36 @@ export const CreateBoxSchema = z.object({
 			}),
 		)
 		.optional()
-		.default([]),
+		.prefault([]),
 })
 
 export const BoxesQuerySchema = z.object({
 	format: z
 		.enum(['json', 'geojson'], {
-			errorMap: () => ({
-				message: "Format must be either 'json' or 'geojson'",
-			}),
+			error: () => "Format must be either 'json' or 'geojson'",
 		})
-		.default('json'),
+		.prefault('json'),
 	minimal: z
 		.enum(['true', 'false'])
-		.default('false')
+		.prefault('false')
 		.transform((v) => v === 'true'),
 	full: z
 		.enum(['true', 'false'])
-		.default('false')
+		.prefault('false')
 		.transform((v) => v === 'true'),
 	limit: z
 		.string()
-		.default('5')
+		.prefault('5')
 		.transform((val) => parseInt(val, 10))
-		.refine((val) => !isNaN(val), { message: 'Limit must be a number' })
-		.refine((val) => val >= 1, { message: 'Limit must be at least 1' })
-		.refine((val) => val <= 20, { message: 'Limit must not exceed 20' }),
+		.refine((val) => !isNaN(val), {
+            error: 'Limit must be a number'
+        })
+		.refine((val) => val >= 1, {
+            error: 'Limit must be at least 1'
+        })
+		.refine((val) => val <= 20, {
+            error: 'Limit must not exceed 20'
+        }),
 
 	name: z.string().optional(),
 	date: z
@@ -111,8 +115,8 @@ export const BoxesQuerySchema = z.object({
 	near: z
 		.string()
 		.regex(/^[-+]?\d+(\.\d+)?,[-+]?\d+(\.\d+)?$/, {
-			message: "Invalid 'near' parameter format. Expected: 'lat,lng'",
-		})
+            error: "Invalid 'near' parameter format. Expected: 'lat,lng'"
+        })
 		.transform((val) => val.split(',').map(Number) as [number, number])
 		.optional(),
 
@@ -143,14 +147,10 @@ export const BoxesQuerySchema = z.object({
 		})
 		.optional(),
 
-	fromDate: z
-		.string()
-		.datetime()
+	fromDate: z.iso.datetime()
 		.transform((v) => new Date(v))
 		.optional(),
-	toDate: z
-		.string()
-		.datetime()
+	toDate: z.iso.datetime()
 		.transform((v) => new Date(v))
 		.optional(),
 })

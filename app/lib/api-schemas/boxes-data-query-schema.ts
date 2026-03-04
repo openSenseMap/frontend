@@ -36,8 +36,8 @@ const BoxesDataQuerySchemaBase = z
 					.transform((arr) => arr.map((x) => Number(x))),
 			])
 			.refine((arr) => arr.length === 4 && arr.every((n) => !isNaN(n)), {
-				message: 'bbox must contain exactly 4 numeric coordinates',
-			})
+                error: 'bbox must contain exactly 4 numeric coordinates'
+            })
 			.optional(),
 
 		exposure: z
@@ -61,26 +61,26 @@ const BoxesDataQuerySchemaBase = z
 			.string()
 			.transform((s) => new Date(s))
 			.refine((d) => !isNaN(d.getTime()), {
-				message: 'from-date is invalid',
-			})
+                error: 'from-date is invalid'
+            })
 			.optional()
-			.default(() =>
+			.prefault(() =>
 				new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
 			),
 		toDate: z
 			.string()
 			.transform((s) => new Date(s))
 			.refine((d) => !isNaN(d.getTime()), {
-				message: 'to-date is invalid',
-			})
+                error: 'to-date is invalid'
+            })
 			.optional()
-			.default(() => new Date().toISOString()),
+			.prefault(() => new Date().toISOString()),
 
 		format: z
 			.enum(['csv', 'json'], {
-				errorMap: () => ({ message: "Format must be either 'csv' or 'json'" }),
+				error: () => "Format must be either 'csv' or 'json'",
 			})
-			.default('csv'),
+			.prefault('csv'),
 
 		// Columns to include
 		columns: z
@@ -96,7 +96,7 @@ const BoxesDataQuerySchemaBase = z
 						arr.map((s) => String(s).trim() as BoxesDataColumn),
 					),
 			])
-			.default([
+			.prefault([
 				'sensorId',
 				'createdAt',
 				'value',
@@ -110,15 +110,15 @@ const BoxesDataQuerySchemaBase = z
 				if (typeof v === 'boolean') return v
 				return v !== 'false' && v !== '0'
 			})
-			.default(true),
+			.prefault(true),
 
-		delimiter: z.enum(['comma', 'semicolon']).default('comma'),
+		delimiter: z.enum(['comma', 'semicolon']).prefault('comma'),
 	})
 	// Validate: must have boxid or bbox, but not both
 	.superRefine((data, ctx) => {
 		if (!data.boxid && !data.bbox && !data.grouptag) {
 			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
+				code: "custom",
 				message: 'please specify either boxid, bbox or grouptag',
 				path: ['boxid'],
 			})
@@ -126,7 +126,7 @@ const BoxesDataQuerySchemaBase = z
 
 		if (!data.phenomenon && !data.grouptag) {
 			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
+				code: "custom",
 				message:
 					'phenomenon parameter is required when grouptag is not provided',
 				path: ['phenomenon'],
@@ -163,7 +163,7 @@ export async function parseBoxesDataQuery(
 	const parseResult = BoxesDataQuerySchemaBase.safeParse(params)
 
 	if (!parseResult.success) {
-		const firstError = parseResult.error.errors[0]
+		const firstError = parseResult.error.issues[0]
 		const message = firstError.message || 'Invalid query parameters'
 
 		if (firstError.path.includes('bbox')) {
