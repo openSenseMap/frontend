@@ -12,7 +12,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 import {
 	loader as deviceLoader,
 	action as deviceUpdateAction,
-} from '~/routes/api.device.$deviceId'
+} from '~/routes/api.boxes.$deviceId'
 import {
 	loader as devicesLoader,
 	action as devicesAction,
