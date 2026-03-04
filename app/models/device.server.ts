@@ -155,7 +155,9 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			latitude: true,
 			longitude: true,
 			userId: true,
-			useAuth: true
+			useAuth: true,
+			model: true,
+			apiKey: true
 		},
 	})
 }
