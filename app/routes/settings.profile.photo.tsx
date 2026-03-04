@@ -1,5 +1,5 @@
-import { conform, useForm } from '@conform-to/react'
-import { getFieldsetConstraint, parse } from '@conform-to/zod'
+import { useForm, getInputProps, getFormProps } from '@conform-to/react'
+import { getZodConstraint, parseWithZod } from '@conform-to/zod/v4'
 import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
 import { eq } from 'drizzle-orm'
 import { useState } from 'react'
@@ -14,7 +14,7 @@ import {
 	useLoaderData,
 	useNavigate,
 } from 'react-router'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 import ErrorMessage from '~/components/error-message'
 import { LabelButton } from '~/components/label-button'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
@@ -74,17 +74,11 @@ export async function action({ request }: ActionFunctionArgs) {
 		async (file: FileUpload) => uploadHandler(file),
 	)
 
-	const submission = parse(formData, { schema: PhotoFormSchema })
+	const submission = parseWithZod(formData, { schema: PhotoFormSchema })
 
-	if (submission.intent !== 'submit') {
-		return { status: 'idle', submission } as const
-	}
-	if (!submission.value) {
+	if (submission.status !== 'success') {
 		return data(
-			{
-				status: 'error',
-				submission,
-			} as const,
+			{ status: 'error', submission: submission.reply() } as const,
 			{ status: 400 },
 		)
 	}
@@ -127,15 +121,17 @@ export default function PhotoChooserModal() {
 	const actionData = useActionData<typeof action>()
 	const [form, { photoFile }] = useForm({
 		id: 'profile-photo',
-		constraint: getFieldsetConstraint(PhotoFormSchema),
-		lastSubmission: actionData?.submission,
+		constraint: getZodConstraint(PhotoFormSchema),
+		lastResult: actionData?.submission,
 		onValidate({ formData }) {
-			return parse(formData, { schema: PhotoFormSchema })
+			return parseWithZod(formData, { schema: PhotoFormSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
 
 	const { t } = useTranslation('settings')
+
+	const { key, ...photoFileProps } = getInputProps(photoFile, { type: 'file' })
 
 	const dismissModal = () => navigate('..', { preventScrollReset: true })
 	return (
@@ -149,11 +145,11 @@ export default function PhotoChooserModal() {
 					<DialogTitle>{t('profile_photo')}</DialogTitle>
 				</DialogHeader>
 				<Form
+					{...getFormProps(form)}
 					method="post"
 					encType="multipart/form-data"
 					className="mt-8 flex flex-col items-center justify-center gap-10"
 					onReset={() => setNewImageSrc(null)}
-					{...form.props}
 				>
 					<Avatar className="h-64 w-64">
 						<AvatarImage
@@ -170,7 +166,8 @@ export default function PhotoChooserModal() {
 					</Avatar>
 					{/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
 					<input
-						{...conform.input(photoFile, { type: 'file' })}
+						key={key}
+						{...photoFileProps}
 						type="file"
 						accept="image/*"
 						className="sr-only"
