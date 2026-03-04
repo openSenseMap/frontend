@@ -42,7 +42,7 @@ export async function tosApiMiddleware(
       {
         code: "tos_required",
         tosVersionId: req.tos.id,
-        effectiveAt: req.tos.effectiveAt,
+        effectiveFrom: req.tos.effectiveFrom,
       },
       428,
     );

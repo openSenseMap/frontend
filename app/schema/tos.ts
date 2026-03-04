@@ -12,13 +12,13 @@ export const tosVersion = pgTable(
     title: text('title').notNull(),
     body: text('body').notNull(),
 
-    effectiveAt: timestamp('effective_at', { withTimezone: true }).notNull(),
+    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => ({
-    effectiveAtIdx: index('tos_version_effective_at_idx').on(t.effectiveAt),
+    effectiveFromIdx: index('tos_version_effective_from_idx').on(t.effectiveFrom),
   }),
 )
 

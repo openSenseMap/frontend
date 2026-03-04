@@ -2,8 +2,8 @@ import { drizzleClient } from '~/db.server'
 
 export async function getCurrentEffectiveTos(now = new Date()) {
   return drizzleClient.query.tosVersion.findFirst({
-    where: (t, { lte }) => lte(t.effectiveAt, now),
-    orderBy: (t, { desc }) => [desc(t.effectiveAt)],
+    where: (t, { lte }) => lte(t.effectiveFrom, now),
+    orderBy: (t, { desc }) => [desc(t.effectiveFrom)],
   })
 }
 
