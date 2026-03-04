@@ -38,10 +38,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/data`,
 			method: 'GET',
 		},
-		// {
-		//   path: `boxes/:boxId`,
-		//   method: "GET",
-		// },
+		{
+			path: `boxes/:boxId`,
+			method: 'GET',
+		},
 		{
 			path: `boxes/:boxId/sensors`,
 			method: 'GET',
