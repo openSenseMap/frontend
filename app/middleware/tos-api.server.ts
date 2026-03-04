@@ -8,17 +8,35 @@ function json(body: unknown, status = 200) {
   });
 }
 
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+type AllowRule = {
+  method: HttpMethod | '*'
+  pathname: string | RegExp
+}
+
+const API_TOS_ALLOWLIST: AllowRule[] = [
+  { method: 'POST', pathname: '/api/users/refresh-auth' },
+  { method: 'POST', pathname: '/api/users/sign-out' },
+
+  { method: 'DELETE', pathname: '/api/users/me' },
+
+  { method: 'DELETE', pathname: /^\/api\/boxes\/[^/]+$/ },
+
+  { method: 'POST', pathname: '/api/users/me/accept-tos' },
+]
+
 function isAllowedApi(request: Request, pathname: string) {
-  if (request.method === "POST" && pathname === "/api/users/refresh-auth") return true;
-  if (request.method === "POST" && pathname === "/api/users/sign-out") return true;
+  const method = request.method as HttpMethod
 
-  if (request.method === "DELETE" && pathname === "/api/users/me") return true;
+  return API_TOS_ALLOWLIST.some((rule) => {
+    if (rule.method !== '*' && rule.method !== method) return false
 
-  if (request.method === "DELETE" && /^\/api\/boxes\/[^/]+$/.test(pathname)) return true;
+    if (rule.pathname instanceof RegExp) {
+      return rule.pathname.test(pathname)
+    }
 
-  if (request.method === "POST" && pathname === "/api/users/me/accept-tos") return true;
-
-  return false;
+    return rule.pathname === pathname
+  })
 }
 
 export async function tosApiMiddleware(
