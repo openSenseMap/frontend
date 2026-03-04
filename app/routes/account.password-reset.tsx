@@ -14,7 +14,6 @@ import {
 	useSearchParams,
 } from 'react-router'
 
-import ErrorMessage from '~/components/error-message'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
 import {
@@ -194,7 +193,7 @@ export default function PasswordResetRoute() {
 
 			<Card className="z-50 w-full max-w-md">
 				{busy && (
-					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm dark:bg-zinc-800/30">
+					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
 						<Spinner />
 					</div>
 				)}
@@ -217,20 +216,22 @@ export default function PasswordResetRoute() {
 							<CardTitle className="text-2xl font-bold">
 								{t('set_new_password')}
 							</CardTitle>
-							<CardDescription>{t('set_new_password_description')}</CardDescription>
+							<CardDescription>
+								{t('set_new_password_description')}
+							</CardDescription>
 						</CardHeader>
 
 						<CardContent className="space-y-4">
 							<input type="hidden" name="token" value={token} />
 
 							{actionData?.errors?.token && (
-								<div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+								<div className="dark:border-red-900/40 dark:bg-red-950/40 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:text-red-200">
 									{t(actionData.errors.token)}
 								</div>
 							)}
 
 							{actionData?.errors?.form && (
-								<div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+								<div className="dark:border-red-900/40 dark:bg-red-950/40 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:text-red-200">
 									{t(actionData.errors.form)}
 								</div>
 							)}
@@ -243,7 +244,9 @@ export default function PasswordResetRoute() {
 									name="newPassword"
 									type="password"
 									autoComplete="new-password"
-									aria-invalid={actionData?.errors?.newPassword ? true : undefined}
+									aria-invalid={
+										actionData?.errors?.newPassword ? true : undefined
+									}
 									aria-describedby="new-password-error"
 								/>
 								{actionData?.errors?.newPassword && (
@@ -306,14 +309,6 @@ export default function PasswordResetRoute() {
 					</Form>
 				)}
 			</Card>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

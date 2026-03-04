@@ -6,7 +6,6 @@ import {
 	useMatches,
 } from 'react-router'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
-import ErrorMessage from '~/components/error-message'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import i18next from '~/i18next.server'
@@ -106,13 +105,5 @@ export default function DeviceId() {
 				<Outlet />
 			</HoveredPointContext.Provider>
 		</>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
-		</div>
 	)
 }

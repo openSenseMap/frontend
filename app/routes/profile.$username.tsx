@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { type LoaderFunctionArgs, redirect, useLoaderData } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
@@ -216,14 +215,6 @@ export default function () {
 					</div>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

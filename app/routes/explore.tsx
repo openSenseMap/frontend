@@ -20,7 +20,6 @@ import {
 	type LinksFunction,
 } from 'react-router'
 import type Supercluster from 'supercluster'
-import ErrorMessage from '~/components/error-message'
 import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
@@ -413,14 +412,6 @@ export default function Explore() {
 					<Outlet />
 				</Map>
 			</MapProvider>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

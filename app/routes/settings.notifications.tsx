@@ -1,5 +1,4 @@
 import { Form } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { Separator } from '~/components/ui/separator'
 
 export default function NotificationsPage() {
@@ -13,14 +12,6 @@ export default function NotificationsPage() {
 			</div>
 			<Separator />
 			<Form></Form>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

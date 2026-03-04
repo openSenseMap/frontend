@@ -1,6 +1,5 @@
 import { Info } from 'lucide-react'
 import { type LoaderFunctionArgs, redirect, Form } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************
@@ -112,14 +111,6 @@ export default function EditBoxTransfer() {
 					</Form>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

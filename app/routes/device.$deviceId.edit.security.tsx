@@ -17,7 +17,6 @@ import {
 	type ActionFunctionArgs,
 } from 'react-router'
 import { Checkbox } from '@/components/ui/checkbox'
-import ErrorMessage from '~/components/error-message'
 import { Callout } from '~/components/ui/alert'
 import {
 	addOrReplaceDeviceApiKey,
@@ -198,14 +197,6 @@ export default function EditBoxSecurity() {
 					</button>
 				</Callout>
 			</Form>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

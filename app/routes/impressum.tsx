@@ -1,5 +1,3 @@
-import ErrorMessage from '~/components/error-message'
-
 export default function Impressum() {
 	return (
 		<div>
@@ -9,8 +7,4 @@ export default function Impressum() {
 			tempore iure pariatur consequuntur?
 		</div>
 	)
-}
-
-export function ErrorBoundary() {
-	return <ErrorMessage />
 }

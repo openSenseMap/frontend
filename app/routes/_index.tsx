@@ -9,6 +9,7 @@ import {
 	Link,
 	useLoaderData,
 } from 'react-router'
+import ErrorMessage from '~/components/error-message'
 import Footer from '~/components/landing/footer'
 import { GlobeComponent } from '~/components/landing/globe.client'
 import Header from '~/components/landing/header/header'
