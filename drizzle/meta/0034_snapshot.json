@@ -1,6 +1,6 @@
 {
-  "id": "1206fdc4-d0a5-4e02-852e-e6a63e14e3fa",
-  "prevId": "2b328f08-9cdd-4a4f-a611-cd519981dd08",
+  "id": "b478ffc5-30e2-4102-9136-74106013d4d6",
+  "prevId": "352566bf-215d-4e8d-825d-5468fbc5d902",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -125,21 +125,35 @@
           "primaryKey": false,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "sensor_wiki_model": {
           "name": "sensor_wiki_model",
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "device_user_id_user_id_fk": {
+          "name": "device_user_id_user_id_fk",
+          "tableFrom": "device",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -678,18 +692,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "accepted_tos_version_id": {
-          "name": "accepted_tos_version_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "accepted_tos_at": {
-          "name": "accepted_tos_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -703,6 +705,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "accepted_tos_version_id": {
+          "name": "accepted_tos_version_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_tos_at": {
+          "name": "accepted_tos_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1189,8 +1203,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "effective_at": {
-          "name": "effective_at",
+        "effective_from": {
+          "name": "effective_from",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
@@ -1211,11 +1225,11 @@
         }
       },
       "indexes": {
-        "tos_version_effective_at_idx": {
-          "name": "tos_version_effective_at_idx",
+        "tos_version_effective_from_idx": {
+          "name": "tos_version_effective_from_idx",
           "columns": [
             {
-              "expression": "effective_at",
+              "expression": "effective_from",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

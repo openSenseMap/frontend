@@ -29,10 +29,10 @@ export const user = pgTable('user', {
 	emailConfirmationToken: text('email_confirmation_token').$defaultFn(() =>
 		uuidv4(),
 	),
-	acceptedTosVersionId: text('accepted_tos_version_id').references(() => tosVersion.id),
-	acceptedTosAt: timestamp('accepted_tos_at', { withTimezone: true }),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	acceptedTosVersionId: text('accepted_tos_version_id').references(() => tosVersion.id),
+	acceptedTosAt: timestamp('accepted_tos_at', { withTimezone: true }),
 })
 
 /**
