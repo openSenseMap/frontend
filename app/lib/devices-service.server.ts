@@ -10,8 +10,27 @@ export const CreateBoxSchema = z.object({
 		.optional()
 		.default('unknown'),
 	location: z
-		.array(z.number())
-		.length(2, 'Location must be [longitude, latitude]'),
+		.union([
+			z
+				.array(z.number())
+				.min(
+					2,
+					'Location must be [longitude, latitude, (height)] (height is optional)',
+				)
+				.max(
+					3,
+					'Location must be [longitude, latitude, (height)] (height is optional)',
+				),
+			z.object({
+				lng: z.number(),
+				lat: z.number(),
+				height: z.number().optional(),
+			}),
+		])
+		.transform((loc) => {
+			if (Array.isArray(loc)) return loc
+			return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
+		}),
 	grouptag: z.array(z.string()).optional().default([]),
 	model: z
 		.enum([
