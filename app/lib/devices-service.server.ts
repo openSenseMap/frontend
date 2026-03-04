@@ -1,7 +1,8 @@
 import { z } from 'zod'
-import { deleteDevice as deleteDeviceById } from '~/models/device.server'
+import { deleteDevice as deleteDeviceById, updateDevice as updateDeviceById, type UpdateDeviceArgs } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
 import { type Device, type User } from '~/schema'
+import { deleteDeviceImage } from '~/utils/s3.server'
 
 export const CreateBoxSchema = z.object({
 	name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
@@ -184,6 +185,24 @@ export const BoxesQuerySchema = z.object({
 
 export type BoxesQueryParams = z.infer<typeof BoxesQuerySchema>
 
+
+/**
+ * Updates a device after verifying the user is entitled (device owner).
+ *
+ * @param user   The user performing the update
+ * @param device The device to update (must belong to user)
+ * @param args   Update payload
+ * @returns The updated device, or "unauthorized" if not entitled
+ */
+export const updateDevice = async (
+  userId: User['id'],
+  device: Device,
+  args: UpdateDeviceArgs,
+): Promise<Device | 'unauthorized'> => {
+  if (device.userId !== userId) return 'unauthorized'
+  return updateDeviceById(device.id, args)
+}
+
 /**
  * Deletes a device after verifiying that the user is entitled by checking
  * the password.
@@ -199,5 +218,13 @@ export const deleteDevice = async (
 ): Promise<boolean | 'unauthorized'> => {
 	const verifiedUser = await verifyLogin(user.email, password)
 	if (verifiedUser === null) return 'unauthorized'
+
+	if (device.image) {
+		try {
+			await deleteDeviceImage(device.image)
+		} catch (e) {
+			console.error('Failed to delete device image:', e)
+		}
+	}
 	return (await deleteDeviceById({ id: device.id })).count > 0
 }

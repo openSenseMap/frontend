@@ -154,6 +154,10 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
+			userId: true,
+			useAuth: true,
+			model: true,
+			apiKey: true
 		},
 	})
 }
@@ -200,7 +204,7 @@ type SensorUpdateArgs = {
 
 export async function updateDevice(
 	deviceId: string,
-	args: UpdateDeviceArgs,
+	args: UpdateDeviceArgs
 ): Promise<Device> {
 	const setColumns: Record<string, any> = {}
 	const updatableFields: (keyof UpdateDeviceArgs)[] = [
