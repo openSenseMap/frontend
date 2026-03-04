@@ -1,10 +1,14 @@
 import { type LoaderFunctionArgs } from 'react-router'
+import { type Route } from '../+types/root'
+import { tosApiMiddleware } from '~/middleware/tos-api.server'
 
 type RouteInfo = {
 	path: string
 	method: 'GET' | 'PUT' | 'POST' | 'DELETE'
 	deprecationNotice?: string
 }
+
+export const middleware: Route.MiddlewareFunction[] = [tosApiMiddleware];
 
 const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 	noauth: [

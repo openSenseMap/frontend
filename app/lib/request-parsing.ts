@@ -43,6 +43,7 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 	email: string
 	password: string
 	language: string
+	tosAccepted: boolean
 }> {
 	const data = await parseRequestData(request)
 
@@ -51,6 +52,7 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 		email: data.email || '',
 		password: data.password || '',
 		language: data.language || 'en_US',
+		tosAccepted: data.tosAccepted || false
 	}
 }
 

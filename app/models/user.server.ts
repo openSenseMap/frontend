@@ -9,6 +9,7 @@ import {
 	type User,
 	password as passwordTable,
 	user,
+	tosAcceptance
 } from '~/schema'
 
 export async function getUserById(id: User['id']) {
@@ -147,6 +148,7 @@ export async function createUser(
 	email: User['email'],
 	language: User['language'],
 	password: string,
+	tosVersionId?: string
 ) {
 	const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13) // make salt_factor configurable oSeM API uses 13 by default
 
@@ -158,6 +160,8 @@ export async function createUser(
 				email,
 				language,
 				unconfirmedEmail: email,
+				acceptedTosVersionId: tosVersionId,
+        		acceptedTosAt: new Date(), 
 			})
 			.returning()
 		await t.insert(passwordTable).values({
@@ -165,6 +169,12 @@ export async function createUser(
 			userId: newUser[0].id,
 		})
 		await createProfileWithTransaction(t, newUser[0].id, name)
+		if (tosVersionId) {
+		await t
+			.insert(tosAcceptance)
+			.values({ userId: newUser[0].id, tosVersionId })
+			.onConflictDoNothing()
+		}
 		return newUser
 	})
 }

@@ -10,6 +10,7 @@ import { device } from './device'
 import { password, passwordResetRequest } from './password'
 import { profile } from './profile'
 import { refreshToken } from './refreshToken'
+import { tosVersion } from './tos'
 
 /**
  * Table
@@ -30,6 +31,8 @@ export const user = pgTable('user', {
 	),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	acceptedTosVersionId: text('accepted_tos_version_id').references(() => tosVersion.id),
+	acceptedTosAt: timestamp('accepted_tos_at', { withTimezone: true }),
 })
 
 /**

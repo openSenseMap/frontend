@@ -1,5 +1,5 @@
 type RegistrationInputValidation = {
-	validationKind: 'username' | 'email' | 'password'
+	validationKind: 'username' | 'email' | 'password' | 'tos'
 }
 
 export type UsernameValidation = {
@@ -65,3 +65,17 @@ export const validatePassword = (password: string): PasswordValidation => {
 		return { isValid: false, length: true, validationKind: 'password' }
 	return { isValid: true, validationKind: 'password' }
 }
+
+export type TosValidation = {
+  isValid: boolean
+  required?: boolean
+} & RegistrationInputValidation
+
+export const validateTosAccepted = (tosAccepted: boolean): TosValidation => {
+  if (!tosAccepted) {
+    return { isValid: false, required: true, validationKind: 'tos' }
+  }
+  return { isValid: true, validationKind: 'tos' }
+}
+
+
