@@ -13,12 +13,13 @@ import {
 import invariant from 'tiny-invariant'
 import ErrorMessage from '~/components/error-message'
 import { Button } from '~/components/ui/button'
+import { updateDevice, deleteDevice } from '~/lib/devices-service.server'
 import {
-	updateDevice,
-	deleteDevice,
+	getDevice,
 	getDeviceWithoutSensors,
 } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
+import { type Device } from '~/schema'
 import { uploadDeviceImage, deleteDeviceImage } from '~/utils/s3.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
@@ -28,6 +29,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	if (!userId) return redirect('/')
 
 	const deviceID = params.deviceId
+	invariant(typeof deviceID === 'string', 'Device id not found.')
 
 	if (typeof deviceID !== 'string') {
 		return redirect('/profile/me')
@@ -40,6 +42,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
+	const deviceID = params.deviceId
+	const userId = await getUserId(request)
+  invariant(typeof deviceID === 'string', 'Device id not found.')
+  invariant(typeof userId === 'string', 'User id not found.')
+
+	const device = await getDevice({id: deviceID}) as Device 
+
 	const formData = await request.formData()
 
 	const { intent, name, exposure, description, website, passwordDelete } =
@@ -67,7 +76,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		image: null as string | null,
 	}
 
-	const deviceID = params.deviceId
 	invariant(typeof deviceID === 'string', 'Device id not found.')
 	invariant(typeof name === 'string', 'Device name is required.')
 	invariant(typeof exposure === 'string', 'Device exposure is required.')
@@ -144,26 +152,28 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				}
 			}
 
-			await updateDevice(deviceID, {
-				name,
-				exposure: exposureLowerCase,
-				description,
-				website,
-				grouptag,
-				...(imageUrl && { image: imageUrl }),
-			})
+			const result = await updateDevice(
+				userId,
+				device,
+				{
+					name: String(name),
+					exposure: exposureLowerCase,
+					description: String(description),
+					website: String(website),
+					grouptag,
+					...(imageUrl && { image: imageUrl }),
+				},
+			)
+
+			if (result === 'unauthorized') throw new Response('Forbidden', { status: 403 })
 
 			return data({
-				errors: {
-					exposure: null,
-					passwordDelete: null,
-					image: null,
-				},
+				errors: { exposure: null, passwordDelete: null, image: null },
 				status: 200,
 			})
 		}
 		case 'removeImage': {
-			const device = await getDeviceWithoutSensors({ id: deviceID })
+			const device = await getDeviceWithoutSensors({ id: deviceID }) as Device
 
 			if (device?.image) {
 				try {
@@ -173,7 +183,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				}
 			}
 
-			await updateDevice(deviceID, {
+			await updateDevice(userId, device, {
 				image: '',
 			})
 
@@ -214,7 +224,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			}
 
 			// Delete device image before deleting device
-			const device = await getDeviceWithoutSensors({ id: deviceID })
+			const device = await getDeviceWithoutSensors({ id: deviceID }) as Device
 			if (device?.image) {
 				try {
 					await deleteDeviceImage(device.image)
@@ -223,7 +233,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				}
 			}
 
-			await deleteDevice({ id: deviceID })
+			await deleteDevice(user, device, passwordDelete)
 
 			return redirect('/profile/me')
 		}
