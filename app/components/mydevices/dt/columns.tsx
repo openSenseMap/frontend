@@ -167,9 +167,6 @@ export function getColumns(
 							>
 								{t('copy_id')}
 							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<a href={`/device/${senseBox.id}/edit/delete`}>{t('delete')}</a>
-							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				)
