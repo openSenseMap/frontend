@@ -15,7 +15,6 @@ import {
 	Form,
 	useLoaderData,
 	type ActionFunctionArgs,
-	data,
 } from 'react-router'
 import { Checkbox } from '@/components/ui/checkbox'
 import ErrorMessage from '~/components/error-message'
@@ -28,35 +27,30 @@ import {
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
 	const deviceId = params.deviceId
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 
-	const t = (await getDevice({ id: deviceId }))?.apiKey
-	if (!t) throw data({ message: 'Device not found!'}, {status: 404})
-
 	const device = await getDevice({ id: deviceId })
-	return { key: t, deviceAuthEnabled: device?.useAuth ?? false }
+	return { key: device?.apiKey, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
 	const { deviceId } = params
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 
-	switch (request.method) {
-		case 'POST':
-			const formData = await request.formData()
-			const enableAuth = formData.has('enableAuth')
-			await updateDevice(deviceId, { useAuth: enableAuth })
-			break
-		case 'PUT':
-			const device = await getDevice({ id: deviceId })
-			if (device === undefined) throw 'device not found'
-			await addOrReplaceDeviceApiKey(device)
-			break
+	const formData = await request.formData()
+	const intent = formData.get('intent')
+
+	if (intent === 'generate-new-key') {
+		const device = await getDevice({ id: deviceId })
+		if (device === undefined) throw 'device not found'
+		await addOrReplaceDeviceApiKey(device)
+	} else if (intent === 'save-settings') {
+		const enableAuth = formData.get('enableAuth') === 'true'
+		await updateDevice(deviceId, { useAuth: enableAuth })
 	}
 
 	return ''
@@ -89,9 +83,14 @@ export default function EditBoxSecurity() {
 	return (
 		<div className="font-helvetica text-[14px]">
 			<Form method="POST" noValidate>
+				<input type="hidden" name="intent" value="save-settings" />
+
 				<div className="mt-2 flex justify-between">
 					<h1 className="text-4xl">{t('device_security.page_title')}</h1>
-					<button className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]">
+					<button
+						type="submit"
+						className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
+					>
 						<Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
 					</button>
 				</div>
@@ -153,7 +152,7 @@ export default function EditBoxSecurity() {
 						</span>
 						<input
 							name="api-key"
-							value={key}
+							value={key ?? ''}
 							className="form-control rounded-none border-[#ccc;]"
 							type={keyVisible ? 'text' : 'password'}
 							disabled
@@ -179,7 +178,8 @@ export default function EditBoxSecurity() {
 				</div>
 				<br />
 			</Form>
-			<Form method="PUT">
+			<Form method="POST">
+				<input type="hidden" name="intent" value="generate-new-key" />
 				<Callout variant="warning">
 					<p>
 						<Trans t={t} i18nKey="device_security.generate_new_key_warning">
@@ -189,6 +189,7 @@ export default function EditBoxSecurity() {
 						</Trans>
 					</p>
 					<button
+						type="submit"
 						className="btn flex items-center space-x-2 bg-[#e9e9ed] disabled:opacity-40"
 						disabled={!deviceAuthEnabled}
 					>

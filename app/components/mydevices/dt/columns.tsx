@@ -26,8 +26,10 @@ const colStyle = 'pl-0 dark:text-white'
 
 export function getColumns(
 	useTranslation: UseTranslationResponse<'data-table', any>,
+	opts?: { isOwner?: boolean },
 ): ColumnDef<SenseBox>[] {
 	const { t } = useTranslation
+	const isOwner = opts?.isOwner ?? false
 	return [
 		{
 			accessorKey: 'name',
@@ -144,6 +146,8 @@ export function getColumns(
 							<DropdownMenuItem>
 								<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
 							</DropdownMenuItem>
+							{isOwner ? (
+								<>
 							<DropdownMenuItem>
 								<a href={`/device/${senseBox.id}/edit/general`}>{t('edit')}</a>
 							</DropdownMenuItem>
@@ -167,6 +171,8 @@ export function getColumns(
 							>
 								{t('copy_id')}
 							</DropdownMenuItem>
+							</>
+						): null }
 						</DropdownMenuContent>
 					</DropdownMenu>
 				)
