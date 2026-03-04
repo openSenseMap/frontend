@@ -9,11 +9,12 @@ const VALID_SECOND_USER = generateTestUserCredentials()
 
 describe('openSenseMap API Routes: /users/register', () => {
 	describe('/POST', () => {
-		it('should allow to register an user via POST', async () => {
+		it('should allow to register a user via POST', async () => {
 			// Arrange
 			const params = new URLSearchParams()
 			for (const [key, value] of Object.entries(VALID_USER))
 				params.append(key, value)
+			params.append('tosAccepted', 'true')
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -43,6 +44,7 @@ describe('openSenseMap API Routes: /users/register', () => {
 			const params = new URLSearchParams()
 			for (const [key, value] of Object.entries(VALID_USER))
 				params.append(key, value)
+			params.append('tosAccepted', 'true')
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -274,6 +276,7 @@ describe('openSenseMap API Routes: /users/register', () => {
 			const params = new URLSearchParams()
 			for (const [key, value] of Object.entries(VALID_SECOND_USER))
 				params.append(key, value)
+			params.append('tosAccepted', 'true')
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
