@@ -77,11 +77,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function () {
 	// Get the data from the loader function using the useLoaderData hook
-	const { profile, sensorsCount, measurementsCount } =
+	const { profile, sensorsCount, measurementsCount, requestingUserId } =
 		useLoaderData<typeof loader>()
 
 	const { t } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
+
+	const isOwner = !!profile?.userId && requestingUserId === profile.userId
 
 	// const sortedBadges = sortBadges(allBadges, userBackpack);
 
@@ -206,7 +208,7 @@ export default function () {
 									{t('devices')}
 								</div>
 								<DataTable
-									columns={getColumns(columnsTranslation)}
+									columns={getColumns(columnsTranslation, { isOwner })}
 									data={profile?.user.devices}
 								/>
 							</>
