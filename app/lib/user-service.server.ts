@@ -221,12 +221,12 @@ export const updateUserDetails = async (
 
 		const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 		await sendMail({
-			recipientAddress: user.email,
+			recipientAddress: email,
 			recipientName: user.name,
 			subject: ConfirmEmailAddressSubject[lng],
 			body: ConfirmEmailAddress({
 				user: { name: user.name },
-				email: user.email,
+				email: email,
 				token: updatedUser.emailConfirmationToken || '',
 				language: lng,
 			}),
@@ -409,34 +409,36 @@ export const resetPassword = async (
  * else the updated user containing the new email confirmation token
  */
 export const resendEmailConfirmation = async (
-	u: User,
+  u: User,
 ): Promise<'already_confirmed' | User> => {
-	if (u.emailIsConfirmed && u.unconfirmedEmail?.trim().length === 0)
-		return 'already_confirmed'
+  const pendingEmail = (u.unconfirmedEmail ?? '').trim()
+  const hasPending = pendingEmail.length > 0
 
-	const token = uuidv4()
-	const savedUser = await drizzleClient
-		.update(user)
-		.set({
-			emailConfirmationToken: token,
-		})
-		.where(eq(user.id, u.id))
-		.returning()
+  if (u.emailIsConfirmed && !hasPending) return 'already_confirmed'
 
-	const lng = (savedUser[0].language?.split('_')[0] as 'de' | 'en') ?? 'en'
-	await sendMail({
-		recipientAddress: savedUser[0].email,
-		recipientName: savedUser[0].name,
-		subject: ResendEmailConfirmationSubject[lng],
-		body: ResendEmailConfirmationEmail({
-			user: { name: savedUser[0].name },
-			email: savedUser[0].email,
-			token: token,
-			language: lng,
-		}),
-	})
+  const token = uuidv4()
+  const [savedUser] = await drizzleClient
+    .update(user)
+    .set({ emailConfirmationToken: token })
+    .where(eq(user.id, u.id))
+    .returning()
 
-	return savedUser[0]
+  const lng = (savedUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+  const recipient = hasPending ? pendingEmail : savedUser.email
+
+  await sendMail({
+    recipientAddress: recipient,
+    recipientName: savedUser.name,
+    subject: ResendEmailConfirmationSubject[lng],
+    body: ResendEmailConfirmationEmail({
+      user: { name: savedUser.name },
+      email: recipient,
+      token,
+      language: lng,
+    }),
+  })
+
+  return savedUser
 }
 
 export const signIn = async (
