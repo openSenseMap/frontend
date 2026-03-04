@@ -33,11 +33,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	const deviceId = params.deviceId
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 
-	const t = (await getDevice({ id: deviceId }))?.apiKey
-	if (!t) throw 'device not found'
-
 	const device = await getDevice({ id: deviceId })
-	return { key: t, deviceAuthEnabled: device?.useAuth ?? false }
+	return { key: device?.apiKey, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -87,7 +84,6 @@ export default function EditBoxSecurity() {
 		<div className="font-helvetica text-[14px]">
 			<Form method="POST" noValidate>
 				<input type="hidden" name="intent" value="save-settings" />
-				<input type="hidden" name="enableAuth" value={String(authEnabled)} />
 
 				<div className="mt-2 flex justify-between">
 					<h1 className="text-4xl">{t('device_security.page_title')}</h1>
@@ -124,11 +120,13 @@ export default function EditBoxSecurity() {
 
 				<div className="flex flex-wrap items-center gap-4 py-5">
 					<Checkbox
-						id="enableAuthCheckbox"
-						checked={authEnabled}
-						onCheckedChange={(checked) => setAuthEnabled(checked === true)}
+						name="enableAuth"
+						id="enableAuth"
+						defaultChecked={authEnabled}
+						value="true"
+						onChange={() => setAuthEnabled(!authEnabled)}
 					/>
-					<Label htmlFor="enableAuthCheckbox" className="cursor-pointer pt-1">
+					<Label htmlFor="enableAuth" className="cursor-pointer pt-1">
 						{t('device_security.auth_enable_checkbox_label')}
 					</Label>
 				</div>
@@ -154,7 +152,7 @@ export default function EditBoxSecurity() {
 						</span>
 						<input
 							name="api-key"
-							value={key}
+							value={key ?? ''}
 							className="form-control rounded-none border-[#ccc;]"
 							type={keyVisible ? 'text' : 'password'}
 							disabled
