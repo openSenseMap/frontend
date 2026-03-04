@@ -31,6 +31,7 @@
   "enter_email": "Gib deine E-Mail-Adresse ein",
   "email_confirmed": "E-Mail bestätigt",
   "email_not_confirmed": "E-Mail nicht bestätigt. Bitte überprüfe deinen Posteingang.",
+  "email_change_pending_hint": "Änderung der E-Mail Adresse benötigt Bestätigung",
   "resend_verification": "Bestätigungs-E-Mail erneut senden",
   "sending": "Wird gesendet...",
   "verification_email_sent": "Bestätigungs-E-Mail gesendet",

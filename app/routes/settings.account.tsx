@@ -1,5 +1,5 @@
 import { CheckLine, OctagonAlert } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	Form,
@@ -10,6 +10,7 @@ import {
 	redirect,
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
+	useSearchParams,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { Button } from '~/components/ui/button'
@@ -33,149 +34,205 @@ import {
 import { useToast } from '~/components/ui/use-toast'
 import { resendEmailConfirmation } from '~/lib/user-service.server'
 import {
-	getUserByEmail,
+	getUserById,
+	updateUserEmail,
 	updateUserName,
 	updateUserlocale,
 	verifyLogin,
+	getUserByAnyEmail,
 } from '~/models/user.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+import { getUserId } from '~/utils/session.server'
 
-//*****************************************************
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
-	const userEmail = await getUserEmail(request)
-	invariant(userEmail, `Email not found!`)
-	const userData = await getUserByEmail(userEmail)
-	return userData
+	const user = await getUserById(userId)
+	if (!user) return redirect('/')
+
+	return user
 }
 
-//*****************************************************
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
-	const intent = formData.get('intent')
+	const intent = String(formData.get('intent') ?? '')
+
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
+
+	const user = await getUserById(userId)
+	if (!user) return redirect('/')
 
 	if (intent === 'resend-verification') {
-		const userEmail = await getUserEmail(request)
-		if (!userEmail) {
-			return data(
-				{ intent: 'resend-verification', code: 'Forbidden' },
-				{ status: 403 },
-			)
-		}
-		const user = await getUserByEmail(userEmail)
-		if (!user) {
-			return data(
-				{ intent: 'resend-verification', code: 'Forbidden' },
-				{ status: 403 },
-			)
-		}
-
 		try {
 			const result = await resendEmailConfirmation(user)
 			if (result === 'already_confirmed') {
-				return data(
-					{ intent: 'resend-verification', code: 'UnprocessableContent' },
-					{ status: 422 },
-				)
+				return data({ intent, code: 'UnprocessableContent' }, { status: 422 })
 			}
-			return data(
-				{ intent: 'resend-verification', code: 'Ok' },
-				{ status: 200 },
-			)
+			return data({ intent, code: 'Ok' }, { status: 200 })
 		} catch (err) {
 			console.warn(err)
-			return data(
-				{ intent: 'resend-verification', code: 'Error' },
-				{ status: 500 },
-			)
+			return data({ intent, code: 'Error' }, { status: 500 })
 		}
 	}
 
-	const { name, passwordUpdate, email, language } = Object.fromEntries(formData)
+	const name = String(formData.get('name') ?? '').trim()
+	const email = String(formData.get('email') ?? '').trim()
+	const language = String(formData.get('language') ?? '').trim()
+	const currentPassword = String(formData.get('passwordUpdate') ?? '')
 
 	invariant(typeof name === 'string', 'name must be a string')
 	invariant(typeof email === 'string', 'email must be a string')
-	invariant(typeof passwordUpdate === 'string', 'password must be a string')
 	invariant(typeof language === 'string', 'language must be a string')
+	invariant(typeof currentPassword === 'string', 'password must be a string')
 
-	if (!passwordUpdate) {
+	const pendingEmail = (user.unconfirmedEmail ?? '').trim()
+	const hasPendingEmail = pendingEmail.length > 0
+
+	const wantsEmailChange =
+		email.length > 0 &&
+		((hasPendingEmail && email !== pendingEmail) ||
+			(!hasPendingEmail && email !== user.email))
+
+	const wantsNameChange = name.length > 0 && name !== user.name
+	const wantsLanguageChange = language.length > 0 && language !== user.language
+
+	const wantsAnyChange = wantsNameChange || wantsLanguageChange || wantsEmailChange
+
+	if (!wantsAnyChange) {
 		return data(
 			{
 				intent: 'update-profile',
-				errors: {
-					name: null,
-					email: null,
-					passwordUpdate: 'Password is required',
-				},
+				errors: { name: null, email: null, passwordUpdate: null },
 			},
-			{ status: 400 },
+			{ status: 200 },
 		)
 	}
 
-	const user = await verifyLogin(email, passwordUpdate)
-	if (!user) {
-		return data(
-			{
-				intent: 'update-profile',
-				errors: {
-					name: null,
-					email: null,
-					passwordUpdate: 'Invalid password',
+	if (wantsEmailChange) {
+		if (!currentPassword) {
+			return data(
+				{
+					intent: 'update-profile',
+					errors: {
+						name: null,
+						email: null,
+						passwordUpdate: 'Password is required to change email',
+					},
 				},
-			},
-			{ status: 400 },
-		)
+				{ status: 400 },
+			)
+		}
+
+		const ok = await verifyLogin(user.email, currentPassword)
+		if (!ok) {
+			return data(
+				{
+					intent: 'update-profile',
+					errors: {
+						name: null,
+						email: null,
+						passwordUpdate: 'Invalid password',
+					},
+				},
+				{ status: 400 },
+			)
+		}
+
+		const existing = await getUserByAnyEmail(email)
+		if (existing && existing.id !== user.id) {
+			return data(
+				{
+					intent: 'update-profile',
+					errors: { name: null, email: 'Email already in use', passwordUpdate: null },
+				},
+				{ status: 409 },
+			)
+		}
+
 	}
 
-	await updateUserlocale(email, language)
-	await updateUserName(email, name)
+	if (wantsNameChange) {
+		await updateUserName(user.email, name)
+	}
+
+	if (wantsLanguageChange) {
+		await updateUserlocale(user.email, language)
+	}
+
+	if (wantsEmailChange) {
+		const [updatedUser] = await updateUserEmail(user, email)
+
+		await resendEmailConfirmation(updatedUser)
+	}
 
 	return data(
 		{
 			intent: 'update-profile',
-			errors: {
-				name: null,
-				email: null,
-				passwordUpdate: null,
-			},
+			errors: { name: null, email: null, passwordUpdate: null },
 		},
 		{ status: 200 },
 	)
 }
 
-//*****************************************************
 export default function EditUserProfilePage() {
 	const userData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const fetcher = useFetcher<typeof action>()
-	const [lang, setLang] = useState(userData?.language || 'en_US')
-	const [name, setName] = useState(userData?.name || '')
-	const passwordUpdRef = useRef<HTMLInputElement>(null)
 	const { toast } = useToast()
 	const { t } = useTranslation('settings')
 
-	// Handle profile update responses
+	const [params] = useSearchParams()
+	useEffect(() => {
+		const status = params.get('emailConfirm')
+		if (status === 'ok') toast({ title: t('email_confirmed'), variant: 'success' })
+		if (status === 'invalid_or_expired') toast({ title: t('verification_link_invalid'), variant: 'destructive' })
+		if (status === 'missing_params') toast({ title: t('verification_link_invalid'), variant: 'destructive' })
+	}, [params, toast, t])
+
+	const passwordUpdRef = useRef<HTMLInputElement>(null)
+
+	const { pendingEmail, hasPendingEmail, emailShown, showConfirmed } = useMemo(() => {
+		const pending = (userData?.unconfirmedEmail ?? '').trim()
+		const hasPending = pending.length > 0
+		const shown = hasPending ? pending : (userData?.email ?? '')
+		const confirmed = Boolean(userData?.emailIsConfirmed) && !hasPending
+		return {
+			pendingEmail: pending,
+			hasPendingEmail: hasPending,
+			emailShown: shown,
+			showConfirmed: confirmed,
+		}
+	}, [userData])
+
+	const [name, setName] = useState(userData?.name ?? '')
+	const [email, setEmail] = useState(emailShown)
+	const [lang, setLang] = useState(userData?.language ?? 'en_US')
+
+	useEffect(() => {
+		setName(userData?.name ?? '')
+		setLang(userData?.language ?? 'en_US')
+		setEmail(emailShown)
+	}, [userData, emailShown])
+
 	useEffect(() => {
 		if (!actionData || actionData.intent !== 'update-profile') return
 		if (!('errors' in actionData)) return
 
 		if (actionData.errors?.passwordUpdate) {
-			toast({
-				title: t('invalid_password'),
-				variant: 'destructive',
-			})
+			toast({ title: t('invalid_password'), variant: 'destructive' })
 			passwordUpdRef.current?.focus()
-		} else {
-			toast({
-				title: t('profile_successfully_updated'),
-				variant: 'success',
-			})
+			return
 		}
+
+		if (actionData.errors?.email) {
+			toast({ title: String(actionData.errors.email), variant: 'destructive' })
+			return
+		}
+
+		toast({ title: t('profile_successfully_updated'), variant: 'success' })
 	}, [actionData, toast, t])
 
-	// Handle resend verification response (via fetcher)
 	useEffect(() => {
 		if (fetcher.state !== 'idle' || !fetcher.data) return
 		if (fetcher.data.intent !== 'resend-verification') return
@@ -190,6 +247,11 @@ export default function EditUserProfilePage() {
 			toast({ title: t('verification_email_failed'), variant: 'destructive' })
 		}
 	}, [fetcher.state, fetcher.data, toast, t])
+
+	const saveDisabled =
+		name === (userData?.name ?? '') &&
+		lang === (userData?.language ?? 'en_US') &&
+		email.trim() === emailShown.trim()
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
@@ -207,10 +269,11 @@ export default function EditUserProfilePage() {
 							name="name"
 							type="text"
 							placeholder={t('enter_name')}
-							defaultValue={name}
+							value={name}
 							onChange={(e) => setName(e.target.value)}
 						/>
 					</div>
+
 					<div className="grid gap-2">
 						<Label htmlFor="email">{t('email')}</Label>
 						<Input
@@ -218,21 +281,27 @@ export default function EditUserProfilePage() {
 							name="email"
 							placeholder={t('enter_email')}
 							type="email"
-							defaultValue={userData?.email}
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
 						/>
-						{userData?.emailIsConfirmed ? (
+
+						{showConfirmed ? (
 							<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
 								<span className="inline-flex gap-1">
 									<CheckLine /> {t('email_confirmed')}
 								</span>
 							</p>
 						) : (
-							<div className="flex items-center justify-between">
-								<p className="dark:text-amber-400 flex items-center gap-1 text-sm text-orange-500">
+							<div className="flex items-center justify-between gap-3">
+								<p className="flex items-center gap-1 text-sm text-orange-500 dark:text-amber-400">
 									<span className="inline-flex gap-1">
-										<OctagonAlert /> {t('email_not_confirmed')}
+										<OctagonAlert />{' '}
+										{hasPendingEmail
+											? t('email_not_confirmed')
+											: t('email_not_confirmed')}
 									</span>
 								</p>
+
 								<Button
 									type="button"
 									variant="default"
@@ -251,23 +320,30 @@ export default function EditUserProfilePage() {
 								</Button>
 							</div>
 						)}
+
+						{hasPendingEmail ? (
+							<p className="text-sm text-muted-foreground">
+								{t('email_change_pending_hint', {
+									pendingEmail,
+									currentEmail: userData?.email ?? '',
+								})}
+							</p>
+						) : null}
 					</div>
+
 					<div className="grid gap-2">
 						<Label htmlFor="language">{t('language')}</Label>
-						<Select
-							defaultValue={lang}
-							onValueChange={(value) => setLang(value)}
-							name="language"
-						>
+						<Select value={lang} onValueChange={setLang} name="language">
 							<SelectTrigger className="dark:border-white">
 								<SelectValue placeholder={t('select_language')} />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="en_US">English</SelectItem>
-								<SelectItem value="de_De">Deutsch</SelectItem>
+								<SelectItem value="de_DE">Deutsch</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
+
 					<div className="grid gap-2">
 						<Label htmlFor="passwordUpdate">{t('confirm_password')}</Label>
 						<Input
@@ -280,11 +356,9 @@ export default function EditUserProfilePage() {
 						/>
 					</div>
 				</CardContent>
+
 				<CardFooter>
-					<Button
-						type="submit"
-						disabled={name === userData?.name && lang === userData?.language}
-					>
+					<Button type="submit" disabled={saveDisabled}>
 						{t('save_changes')}
 					</Button>
 				</CardFooter>
