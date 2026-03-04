@@ -34,6 +34,7 @@
 	"enter_email": "Enter your email",
 	"email_confirmed": "Email confirmed",
 	"email_not_confirmed": "Email not confirmed. Please check your inbox.",
+	"email_change_pending_hint": "Change of e-mail adress needs confirmation.",
 	"resend_verification": "Resend confirmation email",
 	"sending": "Sending...",
 	"verification_email_sent": "Verification email sent",

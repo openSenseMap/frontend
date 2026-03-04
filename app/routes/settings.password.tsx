@@ -45,7 +45,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	//* when cancel button is clicked
 	if (intent === 'cancel') {
-		return redirect('/account/settings')
+		return redirect('/settings/account')
 	}
 
 	//* validate passwords type
