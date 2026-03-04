@@ -1,4 +1,14 @@
 {
 	"greeting": "Hallo",
-	"backToDashboardNavText": "Zurück zum Dashboard"
+	"backToDashboardNavText": "Zurück zum Dashboard",
+	"error_occurred": "Ein Fehler ist aufgetreten",
+	"error_not_found_title": "Seite nicht gefunden",
+	"error_forbidden_title": "Zugriff verweigert",
+	"error_server_title": "Serverfehler",
+	"error_network_title": "Verbindungsfehler",
+	"error_generic_message": "Etwas Unerwartetes ist passiert. Bitte versuchen Sie es erneut.",
+	"error_help_text": "Wenn dieses Problem weiterhin besteht, wenden Sie sich bitte an unser Support-Team.",
+	"go_back": "Zurück",
+	"go_home": "Zur Startseite",
+	"try_again": "Erneut versuchen"
 }

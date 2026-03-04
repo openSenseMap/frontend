@@ -1,4 +1,14 @@
 {
 	"greeting": "Hello",
-	"backToDashboardNavText": "Back to Dashboard"
+	"backToDashboardNavText": "Back to Dashboard",
+	"error_occurred": "An error occurred",
+	"error_not_found_title": "Page not found",
+	"error_forbidden_title": "Access denied",
+	"error_server_title": "Server error",
+	"error_network_title": "Connection error",
+	"error_generic_message": "Something unexpected happened. Please try again.",
+	"error_help_text": "If this problem persists, please contact our support team.",
+	"go_back": "Go back",
+	"go_home": "Go home",
+	"try_again": "Try again"
 }
