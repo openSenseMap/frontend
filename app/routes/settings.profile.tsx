@@ -100,7 +100,7 @@ export default function EditUserProfilePage() {
 				})
 			}
 		}
-	}, [actionData, toast])
+	}, [actionData, toast, t])
 
 	return (
 		<Form method="post">
