@@ -88,7 +88,7 @@ export function NavBar() {
 									type="button"
 									className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
 								>
-									<Link to="/login">
+									<Link to="/explore/login">
 										<LogIn className="mx-auto h-6 w-6" />
 									</Link>
 								</button>
