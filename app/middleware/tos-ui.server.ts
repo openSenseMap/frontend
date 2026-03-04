@@ -9,9 +9,6 @@ function isAllowedUiPath(pathname: string) {
   if (pathname === "/logout") return true;
   if (pathname === '/tos-required') return true;
   if (pathname.startsWith("/profile")) return true;
-
-
-  if (/^\/device\/[^/]+\/edit\/delete\/?$/.test(pathname)) return true;
   
   return false;
 }
