@@ -94,7 +94,7 @@
     "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
-    "execa": "^9.6.0",
+    "execa": "^9.6.1",
     "flubber": "^0.4.2",
     "framer-motion": "^12.19.1",
     "geolib": "^3.3.4",

@@ -1,6 +1,7 @@
 import { Plus, Cloud, Home, HelpCircle, Bike, X, Info } from 'lucide-react'
 import React, { useState } from 'react'
 import { useFormContext, useFieldArray } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '~/components/ui/badge'
@@ -13,10 +14,12 @@ import {
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 
+
 type ExposureOption = 'outdoor' | 'indoor' | 'mobile' | 'unknown'
 
 export function GeneralInfoStep() {
 	const { register, control, setValue, getValues, watch } = useFormContext()
+	const {t} = useTranslation('newdevice')
 	const { fields, append, remove } = useFieldArray({
 		control,
 		name: 'tags', // Tags array
@@ -88,7 +91,7 @@ export function GeneralInfoStep() {
 				/>
 			</div>
 			<div>
-				<Label htmlFor="exposure">Exposure</Label>
+				<Label htmlFor="exposure">{t('exposure')}</Label>
 				<div className="mt-2 flex flex-wrap gap-2">
 					{exposureOptions.map((option) => (
 						<Button
@@ -103,7 +106,7 @@ export function GeneralInfoStep() {
 							}`}
 						>
 							{option.icon}
-							<span className="text-sm">{option.label}</span>
+							<span className="text-sm">{t(option.label)}</span>
 						</Button>
 					))}
 				</div>
@@ -117,7 +120,7 @@ export function GeneralInfoStep() {
 							onCheckedChange={handleTemporaryChange}
 						/>
 						<Label htmlFor="isTemporary" className="text-base font-medium">
-							Temporary Device
+							{t('temporary')}
 						</Label>
 						<TooltipProvider>
 							<Tooltip>
@@ -133,8 +136,7 @@ export function GeneralInfoStep() {
 								<TooltipContent>
 									{
 										<p className="text-sm text-gray-500">
-											Temporary devices will be automatically deleted after a
-											maximum of one month.
+											{t('temporary_info_text')}
 										</p>
 									}
 								</TooltipContent>
@@ -147,7 +149,7 @@ export function GeneralInfoStep() {
 								htmlFor="temporaryExpirationDate"
 								className="whitespace-nowrap text-sm font-medium"
 							>
-								Expiration Date:
+								{t('expiration_date')}
 							</Label>
 							<Input
 								type="date"
@@ -170,7 +172,7 @@ export function GeneralInfoStep() {
 					<Input
 						id="tag-input"
 						type="text"
-						placeholder="Add a tag"
+						placeholder={t('add_tag')}
 						onKeyDown={(e) => {
 							if (e.key === 'Enter') {
 								e.preventDefault()

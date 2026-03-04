@@ -176,6 +176,10 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
+			userId: true,
+			useAuth: true,
+			model: true,
+			apiKey: true
 		},
 	})
 }
@@ -222,7 +226,7 @@ type SensorUpdateArgs = {
 
 export async function updateDevice(
 	deviceId: string,
-	args: UpdateDeviceArgs,
+	args: UpdateDeviceArgs
 ): Promise<Device> {
 	const setColumns: Record<string, any> = {}
 	const updatableFields: (keyof UpdateDeviceArgs)[] = [
@@ -264,7 +268,7 @@ export async function updateDevice(
 
 	const result = await drizzleClient.transaction(async (tx) => {
 		if (args.location) {
-			const { lat, lng, height } = args.location
+			const { lat, lng } = args.location
 
 			const pointWKT = `POINT(${lng} ${lat})`
 
@@ -416,11 +420,7 @@ export async function updateDevice(
 			}
 		}
 
-		if (
-			args.useAuth &&
-			args.useAuth == updatedDevice.useAuth &&
-			args.useAuth === true
-		)
+		if (args.useAuth === true && !updatedDevice.apiKey)
 			await addOrReplaceDeviceApiKey(updatedDevice, tx)
 
 		return updatedDevice
@@ -744,7 +744,10 @@ export async function createDevice(deviceData: any, userId: string) {
 					throw new Error(`Unknown model: ${deviceData.model}`)
 				}
 
-				if (Array.isArray(deviceData.sensorTemplates) && deviceData.sensorTemplates.length > 0) {
+				if (
+					Array.isArray(deviceData.sensorTemplates) &&
+					deviceData.sensorTemplates.length > 0
+				) {
 					sensorsToAdd = modelSensors.filter((sensor) =>
 						deviceData.sensorTemplates.includes(sensor.id),
 					)

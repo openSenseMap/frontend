@@ -24,6 +24,24 @@ export async function getUserByEmail(email: User['email']) {
 	})
 }
 
+export async function getUserByUnconfirmedEmail(
+	unconfirmedEmail: string,
+) {
+	return drizzleClient.query.user.findFirst({
+		where: (user, { eq }) => eq(user.unconfirmedEmail, unconfirmedEmail),
+	})
+}
+
+/**
+ * Returns a user if the email is taken either as a confirmed as unconfirmed email.
+ */
+export async function getUserByAnyEmail(email: User['email']) {
+	return drizzleClient.query.user.findFirst({
+		where: (user, { eq, or }) =>
+			or(eq(user.email, email), eq(user.unconfirmedEmail, email)),
+	})
+}
+
 export async function getUserByUsername(username: User['name']) {
 	return drizzleClient.query.user.findFirst({
 		where: (user, { eq }) => eq(user.name, username),

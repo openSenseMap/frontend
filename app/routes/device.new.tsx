@@ -1,19 +1,23 @@
-import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "react-router";
-import ValidationStepperForm from "~/components/device/new/new-device-stepper";
-import { NavBar } from "~/components/nav-bar";
-import { createDeviceIntegrations } from "~/lib/integration-service.server";
-import { createDevice } from "~/models/device.server";
-import { getIntegrations } from "~/models/integration.server";
-import { getUser, getUserId } from "~/utils/session.server";
+import {
+	type ActionFunctionArgs,
+	redirect,
+	type LoaderFunctionArgs,
+} from 'react-router'
+import ValidationStepperForm from '~/components/device/new/new-device-stepper'
+import { NavBar } from '~/components/nav-bar'
+import { createDeviceIntegrations } from '~/lib/integration-service.server'
+import { createDevice } from '~/models/device.server'
+import { getIntegrations } from '~/models/integration.server'
+import { getUser, getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const user = await getUser(request)
 	if (!user) {
-		return redirect('/login')
+		return redirect('/explore/login')
 	}
-	const integrations = await getIntegrations();
+	const integrations = await getIntegrations()
 
-  return { integrations };
+	return { integrations }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -27,12 +31,11 @@ export async function action({ request }: ActionFunctionArgs) {
 			throw new Error('User is not authenticated.')
 		}
 
-    const data = JSON.parse(rawData);
-    const advanced = data.advanced;
+		const data = JSON.parse(rawData)
+		const advanced = data.advanced
 
-    const selectedSensors = data['sensor-selection'].selectedSensors
+		const selectedSensors = data['sensor-selection'].selectedSensors
 
-    
 		const devicePayload = {
 			name: data['general-info'].name,
 			exposure: data['general-info'].exposure,
@@ -57,11 +60,11 @@ export async function action({ request }: ActionFunctionArgs) {
 					icon: sensor.icon,
 				})),
 			}),
-    };
+		}
 
-    const newDevice = await createDevice(devicePayload, userId);
+		const newDevice = await createDevice(devicePayload, userId)
 
-    await createDeviceIntegrations(newDevice.id, advanced);
+		await createDeviceIntegrations(newDevice.id, advanced)
 
 		return redirect('/profile/me')
 	} catch (error) {
@@ -69,7 +72,6 @@ export async function action({ request }: ActionFunctionArgs) {
 		return redirect('/profile/me')
 	}
 }
-
 
 export default function NewDevice() {
 	return (

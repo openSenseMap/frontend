@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { type Sensor } from './sensors-info'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,6 +21,7 @@ export function CustomDeviceConfig() {
 		unit: '',
 		sensorType: '',
 	})
+	const { t } = useTranslation('newdevice');
 
 	// Sync state with form context on mount
 	useEffect(() => {
@@ -53,7 +55,7 @@ export function CustomDeviceConfig() {
 			<div>
 				<div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
 					<div>
-						<Label htmlFor="phenomenon">Phenomenon</Label>
+						<Label htmlFor="phenomenon">{t('phenomenon')}</Label>
 						<Input
 							id="phenomenon"
 							value={newSensor.title}
@@ -62,7 +64,7 @@ export function CustomDeviceConfig() {
 						/>
 					</div>
 					<div>
-						<Label htmlFor="unit">Unit</Label>
+						<Label htmlFor="unit">{t('unit')}</Label>
 						<Input
 							id="unit"
 							value={newSensor.unit}
@@ -71,7 +73,7 @@ export function CustomDeviceConfig() {
 						/>
 					</div>
 					<div>
-						<Label htmlFor="type">Type</Label>
+						<Label htmlFor="type">{t('type')}</Label>
 						<Input
 							id="type"
 							value={newSensor.sensorType}
@@ -86,7 +88,7 @@ export function CustomDeviceConfig() {
 						!newSensor.title || !newSensor.unit || !newSensor.sensorType
 					}
 				>
-					Add Sensor
+					{t('Add Sensor')}
 				</Button>
 			</div>
 

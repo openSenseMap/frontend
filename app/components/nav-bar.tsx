@@ -1,8 +1,8 @@
 import { LogIn, Mailbox, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import Menu from './header/menu'
 import { Button } from './ui/button'
-
 import {
 	DropdownMenu,
 	DropdownMenuGroup,
@@ -11,7 +11,6 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useOptionalUser } from '~/utils'
-import { useTranslation } from 'react-i18next'
 
 export function NavBar() {
 	const { t } = useTranslation('navbar')
@@ -61,13 +60,13 @@ export function NavBar() {
 									<DropdownMenuGroup>
 										<Link to="/device/new">
 											<DropdownMenuItem>
-												<span>New device</span>
+												<span>{t('new_device')}</span>
 											</DropdownMenuItem>
 										</Link>
 
 										<Link to="/device/transfer">
 											<DropdownMenuItem disabled>
-												<span>Transfer device</span>
+												<span>{t('transfer_device')}</span>
 											</DropdownMenuItem>
 										</Link>
 									</DropdownMenuGroup>
@@ -89,7 +88,7 @@ export function NavBar() {
 									type="button"
 									className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
 								>
-									<Link to="/login">
+									<Link to="/explore/login">
 										<LogIn className="mx-auto h-6 w-6" />
 									</Link>
 								</button>
