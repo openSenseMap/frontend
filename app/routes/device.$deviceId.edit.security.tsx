@@ -15,6 +15,7 @@ import {
 	Form,
 	useLoaderData,
 	type ActionFunctionArgs,
+	data,
 } from 'react-router'
 import { Checkbox } from '@/components/ui/checkbox'
 import ErrorMessage from '~/components/error-message'
@@ -35,7 +36,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 
 	const t = (await getDevice({ id: deviceId }))?.apiKey
-	if (!t) throw 'device not found'
+	if (!t) throw data({ message: 'Device not found!'}, {status: 404})
 
 	const device = await getDevice({ id: deviceId })
 	return { key: t, deviceAuthEnabled: device?.useAuth ?? false }
