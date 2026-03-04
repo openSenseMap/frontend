@@ -199,7 +199,7 @@
     "esbuild": "^0.27.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-unicorn": "^60.0.0",
+    "eslint-plugin-unicorn": "^63.0.0",
     "fs-extra": "^11.3.0",
     "jsdom": "^26.1.0",
     "msw": "^2.10.2",
