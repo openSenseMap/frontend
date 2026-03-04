@@ -25,7 +25,7 @@ interface Config {
  */
 const getConfig = (): Config => {
 	const config = {
-		DISABLE_MAILING: Boolean(process.env.DISABLE_MAILING) ?? false,
+		DISABLE_MAILING: JSON.parse(process.env.DISABLE_MAILING ?? 'false'),
 		SMTP_HOST: process.env.SMTP_HOST,
 		SMTP_PORT: process.env.SMTP_PORT
 			? Number(process.env.SMTP_PORT)
