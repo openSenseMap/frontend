@@ -12,9 +12,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/settings/account?emailConfirm=missing_params')
   }
 
-  const userWithExEmail = await getUserByEmail(email)
-  console.log("user", userWithExEmail)
-
   const updated = await confirmEmail(token, email)
 
   if (!updated) {
