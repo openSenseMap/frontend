@@ -20,16 +20,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: '/tags',
 			method: 'GET',
 		},
-		// {
-		//   path: `statistics/idw`,
-		//   method: "GET",
-
-		// },
-		// {
-		//   path: `statistics/descriptive`,
-		//   method: "GET",
-
-		// },
 		{
 			path: `boxes`,
 			method: 'GET',
@@ -38,10 +28,10 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/data`,
 			method: 'GET',
 		},
-		// {
-		//   path: `boxes/:boxId`,
-		//   method: "GET",
-		// },
+		{
+			path: `boxes/:boxId`,
+			method: 'GET',
+		},
 		{
 			path: `boxes/:boxId/sensors`,
 			method: 'GET',
@@ -50,18 +40,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/:boxId/sensors/:sensorId`,
 			method: 'GET',
 		},
-		// {
-		//   path: `boxes/:boxId/data/:sensorId`,
-		//   method: "GET",
-		// },
-		// {
-		//   path: `boxes/:boxId/locations`,
-		//   method: "GET",
-		// },
-		// {
-		//   path: `boxes/data`,
-		//   method: "POST",
-		// },
 		{
 			path: `boxes/:boxId/data`,
 			method: 'POST',
@@ -165,44 +143,6 @@ const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			method: 'POST',
 		},
 	],
-	// management: [
-	//   {
-	//     path: `${managementPath}/boxes`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/boxes/:boxId`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/boxes/:boxId`,
-	//     method: "PUT",
-	//   },
-	//   {
-	//     path: `${managementPath}/boxes/delete`,
-	//     method: "POST",
-	//   },
-	//   {
-	//     path: `${managementPath}/users`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/:userId`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/:userId`,
-	//     method: "PUT",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/delete`,
-	//     method: "POST",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/:userId/exec`,
-	//     method: "POST",
-	//   },
-	// ],
 }
 
 export async function loader({}: LoaderFunctionArgs) {
