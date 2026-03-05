@@ -140,23 +140,23 @@ export function getColumns(
 						>
 							<DropdownMenuLabel>Actions</DropdownMenuLabel>
 							<DropdownMenuSeparator />
-							<DropdownMenuItem>
+							<DropdownMenuItem asChild>
 								<a href={`/device/${senseBox.id}/overview`}>{t('overview')}</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem asChild>
 								<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
 							</DropdownMenuItem>
 							{isOwner ? (
 								<>
-							<DropdownMenuItem>
+							<DropdownMenuItem asChild>
 								<a href={`/device/${senseBox.id}/edit/general`}>{t('edit')}</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem asChild>
 								<a href={`/device/${senseBox.id}/dataupload`}>
 									{t('data_upload')}
 								</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem asChild>
 								<a
 									href="https://sensebox.de/de/go-home"
 									target="_blank"
@@ -165,7 +165,7 @@ export function getColumns(
 									{t('support')}
 								</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem
+							<DropdownMenuItem asChild
 								onClick={() => navigator.clipboard.writeText(senseBox?.id)}
 								className="cursor-pointer"
 							>
