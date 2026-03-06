@@ -1,33 +1,125 @@
 import { Info } from 'lucide-react'
-import { type LoaderFunctionArgs, redirect, Form } from 'react-router'
+import {
+	type ActionFunctionArgs,
+	data,
+	Form,
+	type LoaderFunctionArgs,
+	redirect,
+	useActionData,
+	useLoaderData,
+	useNavigation,
+} from 'react-router'
 import ErrorMessage from '~/components/error-message'
+import { createBoxTransfer } from '~/lib/transfer-service.server'
+import { getDevice } from '~/models/device.server'
+import { type Claim } from '~/schema'
 import { getUserId } from '~/utils/session.server'
 
-//*****************************************************
-export async function loader({ request }: LoaderFunctionArgs) {
-	//* if user is not logged in, redirect to home
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
-	return ''
+	const deviceId = params.deviceId
+	if (!deviceId) throw new Response('Missing deviceId', { status: 400 })
+
+	const box = await getDevice({ id: deviceId })
+	if (!box) throw new Response('Device not found', { status: 404 })
+	if (box.user.id !== userId) throw new Response('Forbidden', { status: 403 })
+
+	return { deviceId, boxName: box.name ?? box.id }
 }
 
-//*****************************************************
-export async function action() {
-	return ''
+type ActionData = {
+	success: boolean
+	message?: string
+	error?: string
+	transfer?: Claim
 }
 
-//**********************************
+export async function action({ request, params }: ActionFunctionArgs) {
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
+
+	const deviceId = params.deviceId
+	if (!deviceId) {
+		return data<ActionData>(
+			{ success: false, error: 'Missing deviceId' },
+			{ status: 400 },
+		)
+	}
+
+	const formData = await request.formData()
+	const expiration = formData.get('expiration')?.toString()
+	const confirmation = formData.get('type')?.toString()?.trim()
+
+	const box = await getDevice({ id: deviceId })
+	if (!box) {
+		return data<ActionData>(
+			{ success: false, error: 'Device not found' },
+			{ status: 404 },
+		)
+	}
+
+	const confirmationTarget = box.name ?? box.id
+	if (confirmation !== confirmationTarget) {
+		return data<ActionData>(
+			{
+				success: false,
+				error: `Please type "${confirmationTarget}" to confirm.`,
+			},
+			{ status: 400 },
+		)
+	}
+
+	const days = Number(expiration)
+	if (!Number.isFinite(days) || days <= 0) {
+		return data<ActionData>(
+			{ success: false, error: 'Invalid expiration value' },
+			{ status: 400 },
+		)
+	}
+
+	const expiresAt = new Date()
+	expiresAt.setDate(expiresAt.getDate() + days)
+
+	try {
+		const transfer = await createBoxTransfer(userId, deviceId, expiresAt.toISOString())
+
+		return data<ActionData>(
+			{
+				success: true,
+				message: 'Box successfully prepared for transfer',
+				transfer,
+			},
+			{ status: 201 },
+		)
+	} catch (err) {
+		const message =
+			err instanceof Error ? err.message : 'Failed to create transfer'
+
+		return data<ActionData>(
+			{ success: false, error: message },
+			{ status: 400 },
+		)
+	}
+}
+
 export default function EditBoxTransfer() {
+	const { boxName } = useLoaderData<typeof loader>()
+	const actionData = useActionData<typeof action>()
+	const navigation = useNavigation()
+
+
+	const transferToken = actionData?.transfer?.token
+
+	const isSubmitting = navigation.state === 'submitting'
+
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
 				<div className="mx-auto w-full font-helvetica text-[14px]">
-					{/* Form */}
 					<Form method="post" noValidate>
-						{/* Heading */}
 						<div>
-							{/* Title */}
 							<div className="mt-2 flex justify-between">
 								<div>
 									<h1 className="text-4xl">Transfer</h1>
@@ -35,7 +127,6 @@ export default function EditBoxTransfer() {
 							</div>
 						</div>
 
-						{/* divider */}
 						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
 						<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
@@ -45,19 +136,11 @@ export default function EditBoxTransfer() {
 							</p>
 							<hr className="my-4 border-[#f7e1b5]" />
 							<p className="my-1">
-								To perform the transfer, enter the name below and click the
-								button. A <b>token</b> will be displayed. You pass this{' '}
-								<b>token</b> to the new owner. The new owner has to enter the
-								token in his account and click on <b>Claim device</b>. After
-								that the device will be transferred to the new account.
-								<br />
-								<br />
-								The transfer may be delayed until the new owner has entered the{' '}
-								<b>token</b>.
+								Type <b>{boxName}</b> to confirm, then create a transfer token for
+								the new owner.
 							</p>
 						</div>
 
-						{/* Expiration */}
 						<div>
 							<label
 								htmlFor="expiration"
@@ -70,6 +153,7 @@ export default function EditBoxTransfer() {
 								<select
 									id="expiration"
 									name="expiration"
+									defaultValue="1"
 									className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 								>
 									<option value="1">1 day</option>
@@ -81,19 +165,18 @@ export default function EditBoxTransfer() {
 							</div>
 						</div>
 
-						{/* Type */}
 						<div className="my-3">
 							<label
 								htmlFor="type"
 								className="txt-base block font-bold tracking-normal"
 							>
-								Type 321 heiss v1 10 to confirm.
+								Type <b>{boxName}</b> to confirm.
 							</label>
 
 							<div className="mt-1">
 								<input
 									id="type"
-									autoFocus={true}
+									autoFocus
 									name="type"
 									type="text"
 									className="w-full rounded border border-gray-200 px-2 py-1 text-base"
@@ -101,15 +184,32 @@ export default function EditBoxTransfer() {
 							</div>
 						</div>
 
-						{/* Transfer button */}
 						<button
-							type="button"
-							disabled
+							type="submit"
+							disabled={isSubmitting}
 							className="my-4 block w-full rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[12px] py-[6px] text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c] disabled:cursor-not-allowed disabled:opacity-70"
 						>
-							I understand, transfer this device.
+							{isSubmitting
+								? 'Creating transfer...'
+								: 'I understand, transfer this device.'}
 						</button>
 					</Form>
+
+					{/* {actionData?.error ? (
+						<div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-red-700">
+							{actionData.error}
+						</div>
+					) : null} */}
+
+					{transferToken ? (
+						<div className="mt-4 rounded border border-green-200 bg-green-50 p-4 text-green-800">
+							<p className="font-bold">Transfer created</p>
+							<p className="mt-2">Give this token to the new owner:</p>
+							<code className="mt-2 block rounded bg-white px-3 py-2 text-base">
+								{transferToken}
+							</code>
+						</div>
+					) : null}
 				</div>
 			</div>
 		</div>
