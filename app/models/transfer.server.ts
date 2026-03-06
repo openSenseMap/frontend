@@ -1,6 +1,7 @@
-import { eq } from 'drizzle-orm'
+import { randomBytes } from 'node:crypto'
+import { eq, and } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
-import { type Claim, claim, device, type Device } from '~/schema'
+import { type Claim, claim, type Device } from '~/schema'
 
 export interface TransferCode {
 	id: string
@@ -45,8 +46,7 @@ export const createTransfer = async (
 }
 
 export const generateTransferCode = (): string => {
-	const crypto = require('crypto')
-	return crypto.randomBytes(6).toString('hex')
+	return randomBytes(6).toString('hex')
 }
 
 export function getTransfer({ id }: Pick<Device, 'id'>) {
@@ -78,7 +78,7 @@ export const removeTransfer = async (
 	const [existingClaim] = await drizzleClient
 		.select()
 		.from(claim)
-		.where(eq(claim.token, token) && eq(claim.boxId, boxId))
+		.where(and(eq(claim.token, token), eq(claim.boxId, boxId)))
 
 	if (!existingClaim) {
 		throw new Error('Transfer token not found')
