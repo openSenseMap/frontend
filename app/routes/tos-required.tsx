@@ -20,8 +20,8 @@ import {
 	DialogTitle,
 } from '~/components/ui/dialog'
 import { drizzleClient } from '~/db.server'
-import { getCurrentEffectiveTos, getTosRequirementForUser } from '~/models/tos.server'
-import { tosAcceptance } from '~/schema/tos'
+import { getCurrentEffectiveTos, getTosRequirementForUser, ONE_DAY_MS, TOS_GRACE_DAYS } from '~/models/tos.server'
+import { tosUserState } from '~/schema/tos'
 import { requireUser } from '~/utils/session.server'
 
 function safeRedirectTo(value: string | null, fallback = '/') {
@@ -37,7 +37,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const redirectTo = safeRedirectTo(url.searchParams.get('redirectTo'), '/')
 
 	const req = await getTosRequirementForUser(user.id)
-	if (!req.required) throw redirect(redirectTo)
+
+	if (!req.mustBlock) {
+		throw redirect(redirectTo)
+	}
 
 	const tos = await getCurrentEffectiveTos()
 	if (!tos) return data({ tos: null, redirectTo }, { status: 500 })
@@ -66,10 +69,22 @@ export async function action({ request }: ActionFunctionArgs) {
 		return data({ error: 'tos_not_current' }, { status: 400 })
 	}
 
+	const now = new Date()
+	const graceUntil = new Date(now.getTime() + TOS_GRACE_DAYS * ONE_DAY_MS)
+
 	await drizzleClient
-		.insert(tosAcceptance)
-		.values({ userId: user.id, tosVersionId: current.id })
-		.onConflictDoNothing()
+		.insert(tosUserState)
+		.values({
+			userId: user.id,
+			tosVersionId: current.id,
+			firstSeenAt: now,
+			graceUntil,
+			acceptedAt: now,
+		})
+		.onConflictDoUpdate({
+			target: [tosUserState.userId, tosUserState.tosVersionId],
+			set: { acceptedAt: now },
+		})
 
 	throw redirect(redirectTo)
 }
@@ -80,7 +95,6 @@ export default function TosRequiredModal() {
 	const [checked, setChecked] = React.useState(false)
 
 	const { t } = useTranslation('tos')
-	
 
 	return (
 		<Dialog open onOpenChange={() => {}}>
@@ -93,14 +107,12 @@ export default function TosRequiredModal() {
 			>
 				<DialogHeader>
 					<DialogTitle>{t('tos_update')}</DialogTitle>
-					<DialogDescription>
-						{t('must_accept')}
-					</DialogDescription>
+					<DialogDescription>{t('must_accept')}</DialogDescription>
 				</DialogHeader>
 
 				{!tos ? (
 					<div className="text-sm text-red-500">
-						No effective Terms of Service are configured.
+						{t('not_configured')}
 					</div>
 				) : (
 					<Form method="post" className="space-y-4">
@@ -136,7 +148,7 @@ export default function TosRequiredModal() {
 
 						{actionData?.error === 'tos_must_accept' && (
 							<div className="text-sm text-red-500">
-								You must accept the Terms to continue.
+								{t('must_accept')}
 							</div>
 						)}
 
@@ -146,13 +158,15 @@ export default function TosRequiredModal() {
 									i18nKey="delete_account"
 									ns="tos"
 									components={{
-										deleteLink: <Link to="/settings/delete" className="underline" />,
+										deleteLink: (
+											<Link to="/settings/delete" className="underline" />
+										),
 									}}
 								/>
 							</div>
 
 							<Button type="submit" disabled={!checked}>
-								Continue
+								{t('continue')}
 							</Button>
 						</DialogFooter>
 					</Form>

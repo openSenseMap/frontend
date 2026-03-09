@@ -3,13 +3,14 @@ import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
 import { createProfileWithTransaction } from './profile.server'
+import { ONE_DAY_MS, TOS_GRACE_DAYS } from './tos.server'
 import { drizzleClient } from '~/db.server'
 import {
 	type Password,
 	type User,
 	password as passwordTable,
 	user,
-	tosAcceptance
+	tosUserState
 } from '~/schema'
 
 export async function getUserById(id: User['id']) {
@@ -170,10 +171,14 @@ export async function createUser(
 		})
 		await createProfileWithTransaction(t, newUser[0].id, name)
 		if (tosVersionId) {
-		await t
-			.insert(tosAcceptance)
-			.values({ userId: newUser[0].id, tosVersionId })
-			.onConflictDoNothing()
+			const now = new Date()
+			const graceUntil = new Date(now.getTime() + TOS_GRACE_DAYS * ONE_DAY_MS)
+			await t.insert(tosUserState).values({
+				userId: newUser[0].id,
+				tosVersionId,
+				graceUntil: graceUntil,
+				acceptedAt: new Date()
+				}).onConflictDoNothing()
 		}
 		return newUser
 	})

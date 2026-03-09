@@ -253,6 +253,13 @@
       "when": 1773047232187,
       "tag": "0035_strong_alex_wilder",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1773052746270,
+      "tag": "0036_blue_stardust",
+      "breakpoints": true
     }
   ]
 }
