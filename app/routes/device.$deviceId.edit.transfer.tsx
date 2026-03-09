@@ -1,4 +1,6 @@
-import { Info } from 'lucide-react'
+import { Info, Check, Copy } from 'lucide-react'
+import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import {
 	type ActionFunctionArgs,
 	data,
@@ -22,11 +24,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	const deviceId = params.deviceId
 	if (!deviceId) throw new Response('Missing deviceId', { status: 400 })
 
-	const box = await getDevice({ id: deviceId })
-	if (!box) throw new Response('Device not found', { status: 404 })
-	if (box.user.id !== userId) throw new Response('Forbidden', { status: 403 })
+	const device = await getDevice({ id: deviceId })
+	if (!device) throw new Response('Device not found', { status: 404 })
+	if (device.user.id !== userId) throw new Response('Forbidden', { status: 403 })
 
-	return { deviceId, boxName: box.name ?? box.id }
+	return { deviceId, deviceName: device.name ?? device.id }
 }
 
 type ActionData = {
@@ -52,15 +54,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const expiration = formData.get('expiration')?.toString()
 	const confirmation = formData.get('type')?.toString()?.trim()
 
-	const box = await getDevice({ id: deviceId })
-	if (!box) {
+	const device = await getDevice({ id: deviceId })
+	if (!device) {
 		return data<ActionData>(
 			{ success: false, error: 'Device not found' },
 			{ status: 404 },
 		)
 	}
 
-	const confirmationTarget = box.name ?? box.id
+	const confirmationTarget = device.name ?? device.id
 	if (confirmation !== confirmationTarget) {
 		return data<ActionData>(
 			{
@@ -104,13 +106,32 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	}
 }
 
-export default function EditBoxTransfer() {
-	const { boxName } = useLoaderData<typeof loader>()
+export default function EditDeviceTransfer() {
+	const { deviceName } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
+	const { t }= useTranslation("device-transfer")
+
+	const [copied, setCopied] = useState(false)
+
+	const handleCopyToken = async () => {
+		if (!transferToken) return
+
+		try {
+			await navigator.clipboard.writeText(transferToken)
+			setCopied(true)
+
+			window.setTimeout(() => {
+				setCopied(false)
+			}, 2000)
+		} catch (err) {
+			console.error('Failed to copy token:', err)
+		}
+	}
 
 
 	const transferToken = actionData?.transfer?.token
+	const transferExpiresAt = actionData?.transfer?.expiresAt
 
 	const isSubmitting = navigation.state === 'submitting'
 
@@ -132,12 +153,16 @@ export default function EditBoxTransfer() {
 						<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
 							<p className="my-1 inline-flex">
 								<Info className="mr-1 inline h-5 w-5 align-sub" />
-								Transfer this device to another user!
+								{t('transfer_device')}
 							</p>
 							<hr className="my-4 border-[#f7e1b5]" />
 							<p className="my-1">
-								Type <b>{boxName}</b> to confirm, then create a transfer token for
-								the new owner.
+								<Trans
+									i18nKey="type_to_confirm"
+									ns="device-transfer"
+									values={{ deviceName }}
+									components={{ b: <b /> }}
+								/>
 							</p>
 						</div>
 
@@ -146,7 +171,7 @@ export default function EditBoxTransfer() {
 								htmlFor="expiration"
 								className="txt-base block font-bold tracking-normal"
 							>
-								Expiration
+								{t('expiration')}
 							</label>
 
 							<div className="mt-1">
@@ -156,11 +181,11 @@ export default function EditBoxTransfer() {
 									defaultValue="1"
 									className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 								>
-									<option value="1">1 day</option>
-									<option value="7">7 days</option>
-									<option value="30">30 days</option>
-									<option value="60">60 days</option>
-									<option value="90">90 days</option>
+									<option value="1">{t('1_day')}</option>
+									<option value="7">{t('7_days')}</option>
+									<option value="30">{t('30_days')}</option>
+									<option value="60">{t('60_days')}</option>
+									<option value="90">{t('90_days')}</option>
 								</select>
 							</div>
 						</div>
@@ -170,7 +195,12 @@ export default function EditBoxTransfer() {
 								htmlFor="type"
 								className="txt-base block font-bold tracking-normal"
 							>
-								Type <b>{boxName}</b> to confirm.
+								<Trans
+									i18nKey="type_to_confirm"
+									ns="device-transfer"
+									values={{ deviceName }}
+									components={{ b: <b /> }}
+								/>
 							</label>
 
 							<div className="mt-1">
@@ -195,20 +225,46 @@ export default function EditBoxTransfer() {
 						</button>
 					</Form>
 
-					{/* {actionData?.error ? (
+					{actionData?.error ? (
 						<div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-red-700">
 							{actionData.error}
 						</div>
-					) : null} */}
+					) : null}
 
 					{transferToken ? (
-						<div className="mt-4 rounded border border-green-200 bg-green-50 p-4 text-green-800">
-							<p className="font-bold">Transfer created</p>
-							<p className="mt-2">Give this token to the new owner:</p>
-							<code className="mt-2 block rounded bg-white px-3 py-2 text-base">
+						<div className="mt-2 flex items-center gap-2">
+							<code className="block flex-1 rounded bg-white px-3 py-2 text-base">
 								{transferToken}
 							</code>
+
+							<button
+								type="button"
+								onClick={handleCopyToken}
+								className="inline-flex items-center gap-2 rounded border border-green-300 bg-green-100 px-3 py-2 text-sm text-green-800 hover:bg-green-200"
+								aria-label={copied ? 'Token copied' : 'Copy token'}
+								title={copied ? 'Copied' : 'Copy'}
+							>
+								{copied ? (
+									<>
+										<Check className="h-4 w-4" />
+										{t('copied')}
+									</>
+								) : (
+									<>
+										<Copy className="h-4 w-4" />
+										{t('copy')}
+									</>
+								)}
+							</button>
 						</div>
+					) : null}
+					{transferExpiresAt ? (
+						<p className="mt-3 text-sm">
+							{t('valid_until')}{' '}
+							<b>
+								{new Date(transferExpiresAt).toLocaleString()}
+							</b>
+						</p>
 					) : null}
 				</div>
 			</div>

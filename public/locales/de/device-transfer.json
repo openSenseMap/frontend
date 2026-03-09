@@ -1,0 +1,15 @@
+{
+    "transfer_created": "Transfer erstellt",
+    "give_token": "Gib dieses Token dem neuen Besitzer",
+    "transfer_device": "Übergib dieses Gerät einem anderen Nutzer",
+    "1_day": "1 Tag",
+    "7_days": "7 Tage",
+    "30_days": "30 Tage",
+    "60_days": "60 Tage",
+    "90_days": "90 Tage",
+    "type_to_confirm": "Schreibe <b>{{deviceName}}</b> um zu bestätigen und erstelle ein Token für den neuen Besitzer.",
+    "expiration": "Gültigkeit",
+    "valid_until": "Gültig bis:",
+    "copy": "kopieren",
+    "copied": "kopiert"
+}
