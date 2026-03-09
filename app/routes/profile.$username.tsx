@@ -202,10 +202,10 @@ export default function ProfilePage() {
 						{isOwner ? (
 							<div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-dark-boxes">
 								<h3 className="mb-2 text-lg font-semibold dark:text-dark-text">
-									Gerät übernehmen
+									{t('take_over_device')}
 								</h3>
 								<p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-									Füge hier einen Transfer-Token ein, um ein Gerät in dein Konto zu übernehmen.
+									{t('enter_transfer_token')}
 								</p>
 
 								<Form method="post" replace className="flex flex-col gap-3 sm:flex-row smitems-start">
@@ -223,7 +223,7 @@ export default function ProfilePage() {
 										disabled={isSubmitting}
 										className="rounded-md bg-light-green px-4 py-2 text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-dark-green"
 									>
-										{isSubmitting ? 'Übernehme…' : 'Gerät übernehmen'}
+										{isSubmitting ? t('taking_over') : t('take_over_device')}
 									</button>
 								</Form>
 
@@ -235,7 +235,7 @@ export default function ProfilePage() {
 
 								{actionData?.success ? (
 									<div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-										{actionData.message ?? 'Gerät erfolgreich übernommen.'}
+										{actionData.message ?? t('device_successfully_claimed')}
 									</div>
 								) : null}
 							</div>
