@@ -1,34 +1,25 @@
-import { Info, Check, Copy } from 'lucide-react'
-import { useState } from 'react'
+import { Check, Copy, Info } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
 	type ActionFunctionArgs,
-	data,
-	Form,
 	type LoaderFunctionArgs,
+	Form,
 	redirect,
 	useActionData,
 	useLoaderData,
 	useNavigation,
 } from 'react-router'
 import ErrorMessage from '~/components/error-message'
-import { createBoxTransfer } from '~/lib/transfer-service.server'
+import { getBoxTransfer, createBoxTransfer } from '~/lib/transfer-service.server'
 import { getDevice } from '~/models/device.server'
-import { type Claim } from '~/schema'
+import  { type Claim } from '~/schema'
 import { getUserId } from '~/utils/session.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-	const userId = await getUserId(request)
-	if (!userId) return redirect('/')
-
-	const deviceId = params.deviceId
-	if (!deviceId) throw new Response('Missing deviceId', { status: 400 })
-
-	const device = await getDevice({ id: deviceId })
-	if (!device) throw new Response('Device not found', { status: 404 })
-	if (device.user.id !== userId) throw new Response('Forbidden', { status: 403 })
-
-	return { deviceId, deviceName: device.name ?? device.id }
+type LoaderData = {
+	deviceId: string
+	deviceName: string
+	existingTransfer: Claim | null
 }
 
 type ActionData = {
@@ -38,16 +29,61 @@ type ActionData = {
 	transfer?: Claim
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function loader({
+	request,
+	params,
+}: LoaderFunctionArgs): Promise<LoaderData | Response> {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
 	const deviceId = params.deviceId
 	if (!deviceId) {
-		return data<ActionData>(
-			{ success: false, error: 'Missing deviceId' },
-			{ status: 400 },
-		)
+		throw new Response('Missing deviceId', { status: 400 })
+	}
+
+	const device = await getDevice({ id: deviceId })
+	if (!device) {
+		throw new Response('Device not found', { status: 404 })
+	}
+
+	if (device.user.id !== userId) {
+		throw new Response('Forbidden', { status: 403 })
+	}
+
+	let existingTransfer: Claim | null = null
+
+	try {
+		existingTransfer = await getBoxTransfer(userId, deviceId)
+	} catch (err) {
+		const message = err instanceof Error ? err.message : ''
+		if (
+			!message.includes('Transfer not found') &&
+			!message.includes('expired')
+		) {
+			throw err
+		}
+	}
+
+	return {
+		deviceId,
+		deviceName: device.name ?? device.id,
+		existingTransfer,
+	}
+}
+
+export async function action({
+	request,
+	params,
+}: ActionFunctionArgs): Promise<ActionData | Response> {
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
+
+	const deviceId = params.deviceId
+	if (!deviceId) {
+		return {
+			success: false,
+			error: 'Missing deviceId',
+		}
 	}
 
 	const formData = await request.formData()
@@ -56,63 +92,71 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	const device = await getDevice({ id: deviceId })
 	if (!device) {
-		return data<ActionData>(
-			{ success: false, error: 'Device not found' },
-			{ status: 404 },
-		)
+		return {
+			success: false,
+			error: 'Device not found',
+		}
 	}
 
-	const confirmationTarget = device.name ?? device.id
-	if (confirmation !== confirmationTarget) {
-		return data<ActionData>(
-			{
-				success: false,
-				error: `Please type "${confirmationTarget}" to confirm.`,
-			},
-			{ status: 400 },
-		)
+	const deviceName = device.name ?? device.id
+
+	if (confirmation !== deviceName) {
+		return {
+			success: false,
+			error: `Please type "${deviceName}" to confirm.`,
+		}
 	}
 
 	const days = Number(expiration)
 	if (!Number.isFinite(days) || days <= 0) {
-		return data<ActionData>(
-			{ success: false, error: 'Invalid expiration value' },
-			{ status: 400 },
-		)
+		return {
+			success: false,
+			error: 'Invalid expiration value',
+		}
 	}
 
 	const expiresAt = new Date()
 	expiresAt.setDate(expiresAt.getDate() + days)
 
 	try {
-		const transfer = await createBoxTransfer(userId, deviceId, expiresAt.toISOString())
-
-		return data<ActionData>(
-			{
-				success: true,
-				message: 'Box successfully prepared for transfer',
-				transfer,
-			},
-			{ status: 201 },
+		const transfer = await createBoxTransfer(
+			userId,
+			deviceId,
+			expiresAt.toISOString(),
 		)
+
+		return {
+			success: true,
+			message: 'Device successfully prepared for transfer',
+			transfer,
+		}
 	} catch (err) {
-		const message =
-			err instanceof Error ? err.message : 'Failed to create transfer'
-
-		return data<ActionData>(
-			{ success: false, error: message },
-			{ status: 400 },
-		)
+		return {
+			success: false,
+			error:
+				err instanceof Error ? err.message : 'Failed to create transfer.',
+		}
 	}
 }
 
 export default function EditDeviceTransfer() {
-	const { deviceName } = useLoaderData<typeof loader>()
+	const { deviceName, existingTransfer } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
-	const { t }= useTranslation("device-transfer")
+	const { t } = useTranslation('device-transfer')
 
 	const [copied, setCopied] = useState(false)
+
+	const isSubmitting = navigation.state === 'submitting'
+	const transfer = actionData?.transfer ?? existingTransfer
+	const transferToken = transfer?.token
+	const transferExpiresAt = transfer?.expiresAt
+
+	useEffect(() => {
+		if (!copied) return
+		const timeout = window.setTimeout(() => setCopied(false), 2000)
+		return () => window.clearTimeout(timeout)
+	}, [copied])
 
 	const handleCopyToken = async () => {
 		if (!transferToken) return
@@ -120,20 +164,10 @@ export default function EditDeviceTransfer() {
 		try {
 			await navigator.clipboard.writeText(transferToken)
 			setCopied(true)
-
-			window.setTimeout(() => {
-				setCopied(false)
-			}, 2000)
 		} catch (err) {
 			console.error('Failed to copy token:', err)
 		}
 	}
-
-
-	const transferToken = actionData?.transfer?.token
-	const transferExpiresAt = actionData?.transfer?.expiresAt
-
-	const isSubmitting = navigation.state === 'submitting'
 
 	return (
 		<div className="grid grid-rows-1">
@@ -154,15 +188,6 @@ export default function EditDeviceTransfer() {
 							<p className="my-1 inline-flex">
 								<Info className="mr-1 inline h-5 w-5 align-sub" />
 								{t('transfer_device')}
-							</p>
-							<hr className="my-4 border-[#f7e1b5]" />
-							<p className="my-1">
-								<Trans
-									i18nKey="type_to_confirm"
-									ns="device-transfer"
-									values={{ deviceName }}
-									components={{ b: <b /> }}
-								/>
 							</p>
 						</div>
 
@@ -193,14 +218,14 @@ export default function EditDeviceTransfer() {
 						<div className="my-3">
 							<label
 								htmlFor="type"
-								className="txt-base block font-bold tracking-normal"
+								className="txt-base block tracking-normal"
 							>
-								<Trans
-									i18nKey="type_to_confirm"
-									ns="device-transfer"
-									values={{ deviceName }}
-									components={{ b: <b /> }}
-								/>
+									<Trans
+										ns="device-transfer"
+										i18nKey="type_to_confirm"
+										values={{ deviceName }}
+										components={{ b: <b /> }}
+									/>
 							</label>
 
 							<div className="mt-1">
@@ -216,12 +241,10 @@ export default function EditDeviceTransfer() {
 
 						<button
 							type="submit"
-							disabled={isSubmitting}
+							disabled={isSubmitting || existingTransfer !== null}
 							className="my-4 block w-full rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[12px] py-[6px] text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c] disabled:cursor-not-allowed disabled:opacity-70"
 						>
-							{isSubmitting
-								? 'Creating transfer...'
-								: 'I understand, transfer this device.'}
+							{isSubmitting ? t('submitting') : t('submit')}
 						</button>
 					</Form>
 
@@ -232,39 +255,52 @@ export default function EditDeviceTransfer() {
 					) : null}
 
 					{transferToken ? (
-						<div className="mt-2 flex items-center gap-2">
-							<code className="block flex-1 rounded bg-white px-3 py-2 text-base">
-								{transferToken}
-							</code>
+						<div className="mt-4 rounded border border-green-200 bg-green-50 p-4 text-green-800">
+							<p className="font-bold">
+								{actionData?.transfer
+									? t('transfer_created')
+									: t('active_token')}
+							</p>
+							<p className="mt-2">{t('give_token')}</p>
 
-							<button
-								type="button"
-								onClick={handleCopyToken}
-								className="inline-flex items-center gap-2 rounded border border-green-300 bg-green-100 px-3 py-2 text-sm text-green-800 hover:bg-green-200"
-								aria-label={copied ? 'Token copied' : 'Copy token'}
-								title={copied ? 'Copied' : 'Copy'}
-							>
-								{copied ? (
-									<>
-										<Check className="h-4 w-4" />
-										{t('copied')}
-									</>
-								) : (
-									<>
-										<Copy className="h-4 w-4" />
-										{t('copy')}
-									</>
-								)}
-							</button>
+							<div className="mt-2 flex items-center gap-2">
+								<code className="block flex-1 rounded bg-white px-3 py-2 text-base">
+									{transferToken}
+								</code>
+
+								<button
+									type="button"
+									onClick={handleCopyToken}
+									className="inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
+									aria-label={copied ? t('copied') : t('copy')}
+									title={copied ? t('copied') : t('copy')}
+								>
+									{copied ? (
+										<>
+											<Check className="h-4 w-4" />
+											{t('copied')}
+										</>
+									) : (
+										<>
+											<Copy className="h-4 w-4" />
+											{t('copy')}
+										</>
+									)}
+								</button>
+							</div>
+
+							{transferExpiresAt ? (
+								<p className="mt-3 text-sm">
+									{t('valid_until')}{' '}
+									<b>
+										{new Date(transferExpiresAt).toLocaleString(t('locale'), {
+											dateStyle: 'medium',
+											timeStyle: 'short',
+										})}
+									</b>
+								</p>
+							) : null}
 						</div>
-					) : null}
-					{transferExpiresAt ? (
-						<p className="mt-3 text-sm">
-							{t('valid_until')}{' '}
-							<b>
-								{new Date(transferExpiresAt).toLocaleString()}
-							</b>
-						</p>
 					) : null}
 				</div>
 			</div>

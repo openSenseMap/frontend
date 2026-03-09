@@ -199,8 +199,15 @@ export default function ProfilePage() {
 							{t('devices')}
 						</div>
 
+						{profile?.user?.devices && (
+							<DataTable
+								columns={getColumns(columnsTranslation, { isOwner })}
+								data={profile.user.devices}
+							/>
+						)}
+
 						{isOwner ? (
-							<div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-dark-boxes">
+							<div className="my-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-dark-boxes">
 								<h3 className="mb-2 text-lg font-semibold dark:text-dark-text">
 									{t('take_over_device')}
 								</h3>
@@ -214,7 +221,7 @@ export default function ProfilePage() {
 									<input
 										name="token"
 										type="text"
-										placeholder="Transfer-Token eingeben"
+										placeholder={t('example_token')}
 										className="w-full rounded-md border border-gray-300 px-3 py-2 text-base dark:border-gray-600 dark:bg-dark-background dark:text-dark-text"
 									/>
 
@@ -240,13 +247,6 @@ export default function ProfilePage() {
 								) : null}
 							</div>
 						) : null}
-
-						{profile?.user?.devices && (
-							<DataTable
-								columns={getColumns(columnsTranslation, { isOwner })}
-								data={profile.user.devices}
-							/>
-						)}
 					</div>
 				</div>
 			</div>

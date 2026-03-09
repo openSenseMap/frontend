@@ -8,5 +8,6 @@
 	"take_over_device": "Take over device",
 	"taking_over": "Taking over...",
 	"device_successfully_claimed": "Device successfully claimed.",
-	"enter_transfer_token": "Enter a transfer token here to add a device to your account."
+	"enter_transfer_token": "Enter a transfer token here to add a device to your account.",
+	"example_token": "e.g. 89e764ecbcf8"
 }

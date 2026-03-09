@@ -1,5 +1,6 @@
 {
     "transfer_created": "Transfer created",
+    "active_token": "Active token",
     "give_token": "Give this token to the new owner",
     "transfer_device": "Transfer this device to another user!",
     "1_day": "1 day",
@@ -11,5 +12,7 @@
     "expiration": "Expiration",
     "valid_until": "Valid until:",
     "copy": "copy",
-    "copied": "copied"
+    "copied": "copied",
+    "submit": "I understand, transfer this device.",
+    "submitting": "Creating Token..."
 }

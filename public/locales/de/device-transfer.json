@@ -1,5 +1,6 @@
 {
     "transfer_created": "Transfer erstellt",
+    "active_token": "Aktives Token",
     "give_token": "Gib dieses Token dem neuen Besitzer",
     "transfer_device": "Übergib dieses Gerät einem anderen Nutzer",
     "1_day": "1 Tag",
@@ -11,5 +12,7 @@
     "expiration": "Gültigkeit",
     "valid_until": "Gültig bis:",
     "copy": "kopieren",
-    "copied": "kopiert"
+    "copied": "kopiert",
+    "submit": "Ich verstehe, Token erstellen um Gerät zu übertragen.",
+    "submitting": "Erstelle Token..."
 }

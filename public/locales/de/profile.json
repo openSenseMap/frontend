@@ -8,5 +8,6 @@
 	"take_over_device": "Gerät übernehmen",
 	"taking_over": "Übernehme...",
 	"device_successfully_claimed": "Gerät erfolgreich übernommen.",
-	"enter_transfer_token": "Füge hier einen Transfer-Token ein, um ein Gerät in dein Konto zu übernehmen."
+	"enter_transfer_token": "Füge hier einen Transfer-Token ein, um ein Gerät in dein Konto zu übernehmen.",
+	"example_token": "z.B. 89e764ecbcf8"
 }
