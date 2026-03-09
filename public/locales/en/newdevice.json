@@ -3,10 +3,11 @@
 	"prev": "Previous",
 	"next": "Next",
 	"submit": "Submit",
+	"submitting": "Submitting...",
 	"step": "Step",
 	"of": "of",
 	"back": "Back",
-	"Complete": "Complete",
+	"complete": "Complete",
 
 	"select_device": "Select Device",
 	"Device": "Device",
@@ -37,8 +38,12 @@
 	"add_tag": "Add a tag",
 	"optional": "optional",
 
+	"connection_type": "Connection type",
+
 	"select_sensors": "Select sensors",
 	"sensor_selection": "Sensor selection",
+    "selectedSensors_one": "{{count}} sensor selected",
+	"selectedSensors_other": "{{count}} sensors selected",
 	"add_sensor": "Add Sensor",
 	"sensor_selection_info_text": "Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.",
 	"select_sensors_text": "Select the sensors you want to use by clicking on the cards. You can add the same sensor multiple times.",
@@ -57,10 +62,12 @@
 	"includes": "Includes",
 	"delete": "Delete",
 	"title": "Title",
+	"clear_all": "Clear all",
 
 	"advanced": "Advanced",
 	"advanced_text": "Advanced connectivity settings for your device. You can only choose one option.",
 	"ttn_info_text": "The openSenseMap offers an integration with <0>TheThingsNetwork</0>. Documentation for the parameters is provided on <1>GitHub</1>",
+	"configuration": "Configuration",
 	"mqtt_configuration": "MQTT Configuration",
 	"mqtt_config_text": "Configure your MQTT settings for data streaming",
 	"enable_mqtt": "Enable MQTT",
@@ -79,6 +86,7 @@
 	"mqtt_message_format_info": "The format the MQTT messages are in.",
 	"mqtt_decode_options_info": "A json encoded string with options for decoding the message. `jsonPath` for `json`.",
 	"mqtt_connect_options_info": "A json encoded string with options to supply to the MQTT client",
+	"loading": "Loading",
 
 	"location": "Location",
 	"location_info_text": "Select the device's location by clicking on the map or entering latitude and longitude coordinates manually. Drag the marker on the map to adjust the location if needed.",

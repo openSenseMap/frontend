@@ -1,7 +1,9 @@
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
-import { useEffect, useState } from "react";
+import { T } from "node_modules/vitest/dist/chunks/traces.d.402V_yFI";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { ArrayFieldTemplate } from "~/components/rjsf/arrayFieldTemplate";
 import { CheckboxWidget } from "~/components/rjsf/checkboxWidget";
 import { FieldTemplate } from "~/components/rjsf/fieldTemplate";
@@ -27,6 +29,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
   const { watch, setValue, resetField } = useFormContext();
   const [schemas, setSchemas] = useState<Record<string, { schema: any; uiSchema: any }>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const { t } = useTranslation('newdevice')
 
 
   const loadSchema = async (slug: string) => {
@@ -68,7 +71,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
         return (
           <Card key={intg.id} className="w-full mb-6">
             <CardHeader>
-              <CardTitle>{intg.name} Configuration</CardTitle>
+              <CardTitle>{intg.name} {t('configuration')}</CardTitle>
               {intg.description && (
                 <CardDescription>{intg.description}</CardDescription>
               )}
@@ -77,7 +80,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor={`${intg.slug}Enabled`} className="text-base font-semibold">
-                  Enable {intg.name}
+                  {t('enable')} {intg.name}
                 </Label>
                 <Switch
                   id={`${intg.slug}Enabled`}
@@ -90,7 +93,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
                 <>
                   {isLoading && (
                     <p className="text-sm text-muted-foreground">
-                      Loading {intg.name} configuration…
+                      {t('loading')} {intg.name} {t('configuration')}...
                     </p>
                   )}
 
