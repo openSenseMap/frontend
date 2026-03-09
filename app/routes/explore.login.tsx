@@ -29,7 +29,7 @@ import { Checkbox } from '~/components/ui/checkbox'
 import { toast } from '~/components/ui/use-toast'
 import { setLanguageCookie } from '~/lib/set-language.server'
 import { verifyLogin } from '~/models/user.server'
-import { safeRedirect, validateEmail } from '~/utils'
+import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -40,40 +40,60 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
-	const email = formData.get('email')
+	const identifier = formData.get('identifier')
 	const password = formData.get('password')
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 	const remember = formData.get('remember')
 
-	if (!validateEmail(email)) {
+	if (typeof identifier !== 'string' || identifier.trim().length === 0) {
 		return data(
-			{ errors: { email: 'Email is invalid', password: null } },
+			{
+				errors: {
+					identifier: 'Email or username is required',
+					password: null,
+				},
+			},
 			{ status: 400 },
 		)
 	}
 
 	if (typeof password !== 'string' || password.length === 0) {
 		return data(
-			{ errors: { password: 'Password is required', email: null } },
+			{
+				errors: {
+					password: 'Password is required',
+					identifier: null,
+				},
+			},
 			{ status: 400 },
 		)
 	}
 
 	if (password.length < 8) {
 		return data(
-			{ errors: { password: 'Password is too short', email: null } },
+			{
+				errors: {
+					password: 'Password is too short',
+					identifier: null,
+				},
+			},
 			{ status: 400 },
 		)
 	}
 
-	const user = await verifyLogin(email, password)
+	const user = await verifyLogin(identifier, password)
 	const userLocale = user?.language
 		? user.language.split(/[_-]/)[0].toLowerCase()
 		: 'en'
 
 	if (!user) {
 		return data(
-			{ errors: { email: 'Invalid email or password', password: null } },
+			{
+				errors: {
+					identifier: 'Invalid email, username or password',
+					password: null,
+				},
+			},
 			{ status: 400 },
 		)
 	}
@@ -81,7 +101,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	return createUserSession({
 		request,
 		userId: user.id,
-		remember: remember === 'on' ? true : false,
+		remember: remember === 'on',
 		redirectTo,
 		headers: {
 			'Set-Cookie': await setLanguageCookie(userLocale),
@@ -96,15 +116,15 @@ export const meta: MetaFunction = () => {
 export default function LoginPage() {
 	const [searchParams] = useSearchParams()
 	const actionData = useActionData<typeof action>()
-	const emailRef = React.useRef<HTMLInputElement>(null)
+	const identifierRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
 
 	const { t } = useTranslation('login')
 	const navigation = useNavigation()
 
 	React.useEffect(() => {
-		if (actionData?.errors?.email) {
-			emailRef.current?.focus()
+		if (actionData?.errors?.identifier) {
+			identifierRef.current?.focus()
 		} else if (actionData?.errors?.password) {
 			passwordRef.current?.focus()
 		}
@@ -145,24 +165,24 @@ export default function LoginPage() {
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="email">{t('email_label')}</Label>
-							<Input
-								ref={emailRef}
-								id="email"
-								required
-								autoFocus={true}
-								name="email"
-								type="email"
-								autoComplete="email"
-								aria-invalid={actionData?.errors?.email ? true : undefined}
-								aria-describedby="email-error"
-								placeholder={t('example_placeholder')}
-							/>
-							{actionData?.errors?.email && (
-								<div className="mt-1 text-sm text-red-500" id="email-error">
-									{t(actionData.errors.email)}
-								</div>
-							)}
+							<Label htmlFor="identifier">{t('email_or_username_label')}</Label>
+								<Input
+									ref={identifierRef}
+									id="identifier"
+									required
+									autoFocus={true}
+									name="identifier"
+									type="text"
+									autoComplete="username"
+									aria-invalid={actionData?.errors?.identifier ? true : undefined}
+									aria-describedby="identifier-error"
+									placeholder={t('example_placeholder')}
+								/>
+								{actionData?.errors?.identifier && (
+									<div className="mt-1 text-sm text-red-500" id="identifier-error">
+										{t(actionData.errors.identifier)}
+									</div>
+								)}
 						</div>
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
