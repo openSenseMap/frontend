@@ -145,7 +145,7 @@ export default function DeviceOverview() {
 									</TableCell>
 								</TableRow>
 
-								{deviceData?.apiKey && (
+								{userId === deviceData?.userId && (
 									<TableRow>
 										<TableCell className="border-r-[1px]">
 											{t('api_key_label')}
