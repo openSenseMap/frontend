@@ -4,7 +4,7 @@ import { Info, Slash } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { type FieldErrors, FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Form, useLoaderData, useSubmit } from 'react-router'
+import { Form, useLoaderData, useSubmit, useNavigation } from 'react-router'
 import { z } from 'zod'
 import { AdvancedStep } from './advanced-info'
 import { DeviceSelectionStep } from './device-info'
@@ -159,6 +159,8 @@ export default function NewDeviceStepper() {
 	const { toast } = useToast()
 	const { t } = useTranslation('newdevice')
 	const [isFirst, setIsFirst] = useState(false)
+	const navigation = useNavigation()
+	const isSubmitting = navigation.state === 'submitting'
 
 	useEffect(() => {
 		setIsFirst(stepper.isFirst)
@@ -286,12 +288,12 @@ export default function NewDeviceStepper() {
 							type="button"
 							variant="secondary"
 							onClick={stepper.prev}
-							disabled={isFirst}
+							disabled={isFirst || isSubmitting}
 						>
 							{t('back')}
 						</Button>
-						<Button type="submit">
-							{stepper.isLast ? t('complete') : t('next')}
+						<Button type="submit" disabled={isSubmitting}>
+							{isSubmitting ? t('submitting') : stepper.isLast ? t('complete') : t('next')}
 						</Button>
 					</div>
 				</Form>
