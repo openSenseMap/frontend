@@ -8,7 +8,6 @@
 	"of": "of",
 	"back": "Back",
 	"complete": "Complete",
-
 	"select_device": "Select Device",
 	"Device": "Device",
 	"device_selection": "Device Selection",
@@ -17,7 +16,6 @@
 	"device_selection_info_text": "Select a device model from the available options",
 	"own_device": "Custom Device",
 	"select_device_info_text": "Your device is not in the list? Add it to the <0>sensorWiki</0> to use it on the openSenseMap.",
-
 	"general": "General",
 	"general_info": "General Information",
 	"general_text": "Please submit additional information about your device.",
@@ -37,12 +35,10 @@
 	"expiration_date": "Expiration Date:",
 	"add_tag": "Add a tag",
 	"optional": "optional",
-
 	"connection_type": "Connection type",
-
 	"select_sensors": "Select sensors",
 	"sensor_selection": "Sensor selection",
-    "selectedSensors_one": "{{count}} sensor selected",
+	"selectedSensors_one": "{{count}} sensor selected",
 	"selectedSensors_other": "{{count}} sensors selected",
 	"add_sensor": "Add Sensor",
 	"sensor_selection_info_text": "Select sensors for your device by choosing from predefined groups or individual sensors based on your device model. If using a custom device, configure sensors manually.",
@@ -63,7 +59,6 @@
 	"delete": "Delete",
 	"title": "Title",
 	"clear_all": "Clear all",
-
 	"advanced": "Advanced",
 	"advanced_text": "Advanced connectivity settings for your device. You can only choose one option.",
 	"ttn_info_text": "The openSenseMap offers an integration with <0>TheThingsNetwork</0>. Documentation for the parameters is provided on <1>GitHub</1>",
@@ -87,7 +82,6 @@
 	"mqtt_decode_options_info": "A json encoded string with options for decoding the message. `jsonPath` for `json`.",
 	"mqtt_connect_options_info": "A json encoded string with options to supply to the MQTT client",
 	"loading": "Loading",
-
 	"location": "Location",
 	"location_info_text": "Select the device's location by clicking on the map or entering latitude and longitude coordinates manually. Drag the marker on the map to adjust the location if needed.",
 	"location_text": "Click on the map to choose a location for your device. You can also enter your coordinates manually or use the geosearch.",
@@ -98,9 +92,9 @@
 	"enter longitude": "Enter longitude (-180 to 180)",
 	"height": "Height",
 	"height_info_text": "Height above sea level of your selected location in meters. If you have set up your device above ground level (e.g. high building), you should add this to the derived height. The height is espacially important if you have connected a sensor that meassures air pressure to make this meassurements compareable.",
-
 	"summary": "Your device summary",
 	"summary_text": "Please check if everything is setup correctly.",
 	"summary_general": "Your general Information",
-	"summary_sensors": "Your sensors"
+	"summary_sensors": "Your sensors",
+	"no_integrations_available": "There are currently no integrations available. Please try again later. You may add integrations from the device settings at any time after the device has been created."
 }
