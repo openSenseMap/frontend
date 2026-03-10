@@ -28,16 +28,6 @@ export const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			method: 'GET',
 			skipTos: true
 		},
-		// {
-		//   path: `statistics/idw`,
-		//   method: "GET",
-
-		// },
-		// {
-		//   path: `statistics/descriptive`,
-		//   method: "GET",
-
-		// },
 		{
 			path: `boxes`,
 			method: 'GET',
@@ -48,10 +38,10 @@ export const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			method: 'GET',
 			skipTos: true
 		},
-		// {
-		//   path: `boxes/:boxId`,
-		//   method: "GET",
-		// },
+		{
+			path: `boxes/:boxId`,
+			method: 'GET',
+		},
 		{
 			path: `boxes/:boxId/sensors`,
 			method: 'GET',
@@ -62,18 +52,6 @@ export const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			method: 'GET',
 			skipTos: true
 		},
-		// {
-		//   path: `boxes/:boxId/data/:sensorId`,
-		//   method: "GET",
-		// },
-		// {
-		//   path: `boxes/:boxId/locations`,
-		//   method: "GET",
-		// },
-		// {
-		//   path: `boxes/data`,
-		//   method: "POST",
-		// },
 		{
 			path: `boxes/:boxId/data`,
 			method: 'POST',
@@ -201,44 +179,6 @@ export const routes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			skipTos: false
 		},
 	],
-	// management: [
-	//   {
-	//     path: `${managementPath}/boxes`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/boxes/:boxId`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/boxes/:boxId`,
-	//     method: "PUT",
-	//   },
-	//   {
-	//     path: `${managementPath}/boxes/delete`,
-	//     method: "POST",
-	//   },
-	//   {
-	//     path: `${managementPath}/users`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/:userId`,
-	//     method: "GET",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/:userId`,
-	//     method: "PUT",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/delete`,
-	//     method: "POST",
-	//   },
-	//   {
-	//     path: `${managementPath}/users/:userId/exec`,
-	//     method: "POST",
-	//   },
-	// ],
 }
 
 export async function loader({}: LoaderFunctionArgs) {
