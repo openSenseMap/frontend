@@ -7,6 +7,7 @@ import {
 	arrayContains,
 	and,
 	between,
+	isNull,
 	type ExtractTablesWithRelations,
 } from 'drizzle-orm'
 import { type PgTransaction } from 'drizzle-orm/pg-core'
@@ -433,6 +434,7 @@ export async function getDevices(
 
 export async function getDevices(format: DevicesFormat = 'json') {
 	const devices = await drizzleClient.query.device.findMany({
+		where: (device, { isNull }) => isNull(device.archivedAt),
 		columns: {
 			id: true,
 			name: true,
@@ -476,6 +478,8 @@ export async function getDevicesWithSensors() {
 		})
 		.from(device)
 		.leftJoin(sensor, eq(sensor.deviceId, device.id))
+		.where(isNull(device.archivedAt))
+
 	const geojson: GeoJSON.FeatureCollection<Point, any> = {
 		type: 'FeatureCollection',
 		features: [],
