@@ -1,4 +1,4 @@
-import { Check, Copy, Info } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
@@ -11,6 +11,7 @@ import {
 	useNavigation,
 } from 'react-router'
 import ErrorMessage from '~/components/error-message'
+import { Callout } from '~/components/ui/alert'
 import { getBoxTransfer, createBoxTransfer } from '~/lib/transfer-service.server'
 import { getDevice } from '~/models/device.server'
 import  { type Claim } from '~/schema'
@@ -176,20 +177,22 @@ export default function EditDeviceTransfer() {
 					<Form method="post" noValidate>
 						<div>
 							<div className="mt-2 flex justify-between">
-								<div>
+								<div className="space-y-0.5">
 									<h1 className="text-4xl">Transfer</h1>
+									<p className="text-muted-foreground">
+										{t('transfer_device')}
+									</p>
 								</div>
 							</div>
 						</div>
 
 						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
-						<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-							<p className="my-1 inline-flex">
-								<Info className="mr-1 inline h-5 w-5 align-sub" />
-								{t('transfer_device')}
-							</p>
-						</div>
+							<div className='my-6'>
+							<Callout variant="warning">
+								<p>{t('transfer_info')}</p>
+							</Callout>
+							</div>
 
 						<div>
 							<label

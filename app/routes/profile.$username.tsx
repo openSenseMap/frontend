@@ -126,14 +126,10 @@ export default function ProfilePage() {
 	const { profile, sensorsCount, measurementsCount, requestingUserId } =
 		useLoaderData<typeof loader>()
 
-	const actionData = useActionData<typeof action>()
-	const navigation = useNavigation()
-
 	const { t } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
 
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
-	const isSubmitting = navigation.state === 'submitting'
 
 	return (
 		<div className="h-full bg-slate-100">
@@ -205,48 +201,6 @@ export default function ProfilePage() {
 								data={profile.user.devices}
 							/>
 						)}
-
-						{isOwner ? (
-							<div className="my-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-dark-boxes">
-								<h3 className="mb-2 text-lg font-semibold dark:text-dark-text">
-									{t('take_over_device')}
-								</h3>
-								<p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-									{t('enter_transfer_token')}
-								</p>
-
-								<Form method="post" replace className="flex flex-col gap-3 sm:flex-row smitems-start">
-									<input type="hidden" name="intent" value="claim-device" />
-
-									<input
-										name="token"
-										type="text"
-										placeholder={t('example_token')}
-										className="w-full rounded-md border border-gray-300 px-3 py-2 text-base dark:border-gray-600 dark:bg-dark-background dark:text-dark-text"
-									/>
-
-									<button
-										type="submit"
-										disabled={isSubmitting}
-										className="rounded-md bg-light-green px-4 py-2 text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-dark-green"
-									>
-										{isSubmitting ? t('taking_over') : t('take_over_device')}
-									</button>
-								</Form>
-
-								{actionData?.error ? (
-									<div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-										{actionData.error}
-									</div>
-								) : null}
-
-								{actionData?.success ? (
-									<div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-										{actionData.message ?? t('device_successfully_claimed')}
-									</div>
-								) : null}
-							</div>
-						) : null}
 					</div>
 				</div>
 			</div>
