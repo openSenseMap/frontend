@@ -9,6 +9,7 @@ import {
 	between,
 	isNull,
 	type ExtractTablesWithRelations,
+	isNotNull,
 } from 'drizzle-orm'
 import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
@@ -434,7 +435,7 @@ export async function getDevices(
 
 export async function getDevices(format: DevicesFormat = 'json') {
 	const devices = await drizzleClient.query.device.findMany({
-		where: (device, { isNull }) => isNull(device.archivedAt),
+		where: (device) => isNull(device.archivedAt),
 		columns: {
 			id: true,
 			name: true,
@@ -462,6 +463,24 @@ export async function getDevices(format: DevicesFormat = 'json') {
 		return geojson
 	}
 
+	return devices
+}
+
+export async function getArchivedDevices(){
+	const devices = await drizzleClient.query.device.findMany({
+		where: (device) => isNotNull(device.archivedAt),
+		columns: {
+			id: true,
+			name: true,
+			latitude: true,
+			longitude: true,
+			exposure: true,
+			status: true,
+			createdAt: true,
+			tags: true,
+			archivedAt: true
+		},
+	})
 	return devices
 }
 
