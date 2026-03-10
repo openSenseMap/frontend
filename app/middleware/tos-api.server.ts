@@ -1,68 +1,76 @@
-import { getUserFromJwt } from "~/lib/jwt";
-import { getTosRequirementForUser } from "~/models/tos.server";
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8" },
-  });
-}
+import { apiRoutes } from '~/lib/api-routes'
+import { getUserFromJwt } from '~/lib/jwt'
+import { getTosRequirementForUser } from '~/models/tos.server'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-type AllowRule = {
-  method: HttpMethod | '*'
-  pathname: string | RegExp
+
+function json(body: unknown, status = 200) {
+	return new Response(JSON.stringify(body), {
+		status,
+		headers: { 'content-type': 'application/json; charset=utf-8' },
+	})
 }
 
-const API_TOS_ALLOWLIST: AllowRule[] = [
-  { method: 'POST', pathname: '/api/users/refresh-auth' },
-  { method: 'POST', pathname: '/api/users/sign-out' },
+type CompiledRule = {
+	method: HttpMethod | '*'
+	matcher: RegExp
+}
 
-  { method: 'DELETE', pathname: '/api/users/me' },
+/**
+ * Convert a route pattern like "/api/users/me/boxes/:boxId"
+ * into a regex like ^/api/users/me/boxes/[^/]+$
+ */
+function routeToRegex(apiPathPattern: string) {
+	const escaped = apiPathPattern
+		.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // escape regex special chars
+		.replace(/\\:([A-Za-z0-9_]+)/g, '[^/]+') // replace ":param" segments
+	return new RegExp(`^${escaped}$`)
+}
 
-  { method: 'POST', pathname: '/api/users/me/accept-tos' },
+/**
+ * Build allowlist from route metadata:
+ * - `auth` routes with `skipTos: true` bypass ToS checks
+ */
+const API_TOS_ALLOWLIST: CompiledRule[] = [
+	...apiRoutes.auth
+		.filter((r: any) => r.skipTos)
+		.map((r: any) => ({
+			method: r.method as HttpMethod,
+			matcher: routeToRegex(`/api/${r.path}`),
+		})),
 ]
 
 function isAllowedApi(request: Request, pathname: string) {
-  const method = request.method as HttpMethod
-
-  return API_TOS_ALLOWLIST.some((rule) => {
-    if (rule.method !== '*' && rule.method !== method) return false
-
-    if (rule.pathname instanceof RegExp) {
-      return rule.pathname.test(pathname)
-    }
-
-    return rule.pathname === pathname
-  })
+	const method = request.method as HttpMethod
+	return API_TOS_ALLOWLIST.some((rule) => {
+		if (rule.method !== '*' && rule.method !== method) return false
+		return rule.matcher.test(pathname)
+	})
 }
 
 export async function tosApiMiddleware(
-  { request }: { request: Request },
-  next: () => Promise<Response>,
+	{ request }: { request: Request },
+	next: () => Promise<Response>,
 ) {
-  const url = new URL(request.url);
+	const url = new URL(request.url)
 
-  const jwtUser = await getUserFromJwt(request);
-  if (typeof jwtUser !== "object") {
-    return next();
-  }
+	const jwtUser = await getUserFromJwt(request)
+	if (typeof jwtUser !== 'object') return next()
 
-  if (isAllowedApi(request, url.pathname)) {
-    return next();
-  }
+	if (isAllowedApi(request, url.pathname)) return next()
 
-  const req = await getTosRequirementForUser(jwtUser.id);
-  if (req.mustBlock && req.tos) {
-    return json(
-      {
-        code: "tos_required",
-        tosVersionId: req.tos.id,
-        effectiveFrom: req.tos.effectiveFrom,
-      },
-      428,
-    );
-  }
+	const req = await getTosRequirementForUser(jwtUser.id)
+	if (req.mustBlock && req.tos) {
+		return json(
+			{
+				code: 'tos_required',
+				tosVersionId: req.tos.id,
+				effectiveFrom: req.tos.effectiveFrom,
+				acceptBy: req.tos.acceptBy,
+			},
+			428,
+		)
+	}
 
-  return next();
+	return next()
 }
