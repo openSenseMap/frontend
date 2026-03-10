@@ -1,4 +1,5 @@
 import { ArrowLeft, ClipboardCopy, CopyCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	redirect,
@@ -13,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { getDeviceWithoutSensors } from '~/models/device.server'
 import { getSensorsFromDevice } from '~/models/sensor.server'
 import { getUserId } from '~/utils/session.server'
-import { useEffect, useState } from 'react'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await getUserId(request)
@@ -38,7 +38,11 @@ export default function DeviceOverview() {
 		null,
 	)
 
-	const copyToClipboard = async (id, value) => {
+	const copyToClipboard = async (
+		id: string,
+		value: string | undefined | null,
+	) => {
+		if (value === undefined || value === null) return
 		await navigator.clipboard.writeText(value)
 		setCopiedToClipboard(id)
 	}
