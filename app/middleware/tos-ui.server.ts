@@ -32,7 +32,7 @@ export async function tosUiMiddleware(
   if (!userId) return next();
 
   const req = await getTosRequirementForUser(userId);
-  if (req.required && req.tos) {
+  if (req.mustBlock && req.tos) {
     const redirectTo = url.pathname + url.search;
     throw redirect(`/tos-required?redirectTo=${encodeURIComponent(redirectTo)}`)
   }

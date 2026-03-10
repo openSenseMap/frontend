@@ -20,7 +20,7 @@ import {
 	DialogTitle,
 } from '~/components/ui/dialog'
 import { drizzleClient } from '~/db.server'
-import { getCurrentEffectiveTos, getTosRequirementForUser, ONE_DAY_MS, TOS_GRACE_DAYS } from '~/models/tos.server'
+import { getCurrentEffectiveTos, getTosRequirementForUser } from '~/models/tos.server'
 import { tosUserState } from '~/schema/tos'
 import { requireUser } from '~/utils/session.server'
 
@@ -70,15 +70,12 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	const now = new Date()
-	const graceUntil = new Date(now.getTime() + TOS_GRACE_DAYS * ONE_DAY_MS)
 
 	await drizzleClient
 		.insert(tosUserState)
 		.values({
 			userId: user.id,
 			tosVersionId: current.id,
-			firstSeenAt: now,
-			graceUntil,
 			acceptedAt: now,
 		})
 		.onConflictDoUpdate({

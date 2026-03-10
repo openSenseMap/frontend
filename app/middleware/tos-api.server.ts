@@ -53,7 +53,7 @@ export async function tosApiMiddleware(
   }
 
   const req = await getTosRequirementForUser(jwtUser.id);
-  if (req.required && req.tos) {
+  if (req.mustBlock && req.tos) {
     return json(
       {
         code: "tos_required",
