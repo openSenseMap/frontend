@@ -6,17 +6,17 @@ import {
   messageAllUsers,
 } from "./actions/campaign";
 import {
-  updateCampaignEvent,
-  createCampaignEvent,
-  deleteCampaignEvent,
-} from "./actions/events";
-import {
   publishCommentAction,
   deleteCommentAction,
   updateCommentAction,
   publishPostAction,
   getCommentsAction
 } from "./actions/comments";
+import {
+  updateCampaignEvent,
+  createCampaignEvent,
+  deleteCampaignEvent,
+} from "./actions/events";
 
 export {
   participate,

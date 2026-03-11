@@ -6,7 +6,6 @@ import { de, enGB } from 'date-fns/locale'
 import { getUserLocale } from 'get-user-locale'
 import { Clock, CalendarSearch, CalendarClock } from 'lucide-react'
 import * as React from 'react'
-// import { useSearchParams, useSubmit } from "@remix-run/react";
 import { type DateRange } from 'react-day-picker'
 
 import { useTranslation } from 'react-i18next'

@@ -1,10 +1,8 @@
-import { campaign, type Campaign } from "~/schema/campaign";
-import type { User } from "~/schema";
-import { generateSlug } from "~/lib/slug";
-import { json } from "@remix-run/node";
-import { drizzleClient } from "~/db.server";
-import { drizzle } from "drizzle-orm/postgres-js";
 import { count, eq } from "drizzle-orm";
+import { drizzleClient } from "~/db.server";
+import { generateSlug } from "~/lib/slug";
+import  { type User } from "~/schema";
+import { campaign, type Campaign } from "~/schema/campaign";
 
 export function getCampaign({ slug }: Pick<Campaign, "slug">, userId: string) {
   return drizzleClient.query.campaign.findFirst({

@@ -1,11 +1,11 @@
+import { t } from "i18next";
+import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { t } from "i18next";
-import { ChevronDown } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
 type Props = {

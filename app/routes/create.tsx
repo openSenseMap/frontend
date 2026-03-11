@@ -1,6 +1,6 @@
-import { Link, NavLink, Outlet } from "@remix-run/react";
 import { createContext, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, NavLink, Outlet } from "react-router";
 
 interface FeaturesContextType {
   countries: string[];

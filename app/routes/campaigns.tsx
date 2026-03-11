@@ -1,23 +1,21 @@
-import { Link, NavLink, Outlet } from "@remix-run/react";
-import { Button } from "~/components/ui/button";
 import { MenuIcon, PlusIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import Notification from "~/components/header/notification";
-import { useLoaderData } from "@remix-run/react";
-import { json, type LoaderArgs } from "@remix-run/server-runtime";
-import { getUser } from "~/session.server";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, NavLink, Outlet, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+// import Notification from "~/components/header/notification";
+import { Button } from "~/components/ui/button";
+import { getUser } from "~/utils/session.server";
 
-export async function loader({ request }: LoaderArgs) {
-  return json({
+export async function loader({ request }: LoaderFunctionArgs) {
+  return {
     user: await getUser(request),
-  });
+  };
 }
 
 export default function CampaignsPage() {
@@ -136,7 +134,7 @@ export default function CampaignsPage() {
           )}
 
           <div className="ml-auto mr-2 mt-2 flex gap-2">
-            {data?.user?.email ? <Notification /> : null}
+            {/* {data?.user?.email ? <Notification /> : null} */}
 
             <Button size="lg" className=" bg-green-300 text-lg">
               <Link

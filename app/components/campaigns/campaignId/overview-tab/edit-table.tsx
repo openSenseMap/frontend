@@ -1,49 +1,44 @@
 import {
+  ChevronDown,
+  SaveIcon,
+  XIcon,
+} from "lucide-react";
+// import { priorityEnum, exposureEnum } from "~/schema";
+import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Form } from "react-router";
+import { CountryDropdown } from "../../overview/country-dropdown";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Campaign } from "~/schema";
-// import type { Campaign } from "@prisma/client";
-import { Form } from "@remix-run/react";
-import { Switch } from "@/components/ui/switch";
-import {
-  ChevronDown,
-  EditIcon,
-  SaveIcon,
-  TrashIcon,
-  XIcon,
-} from "lucide-react";
-import Markdown from "markdown-to-jsx";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { priorityEnum, exposureEnum } from "~/schema";
-// import { Priority, Exposure } from "@prisma/client";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState, useRef } from "react";
 import { MarkdownEditor } from "~/markdown.client";
-import { ClientOnly } from "remix-utils";
-import { useTranslation } from "react-i18next";
-import { CountryDropdown } from "../../overview/country-dropdown";
+
+function ClientOnly({ children }: { children: () => React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? <>{children()}</> : null;
+}
 
 type EditTableProps = {
   setEditMode: any;
@@ -56,7 +51,7 @@ export default function EditTable({
   campaign,
   phenomena,
 }: EditTableProps) {
-  const descriptionRef = useRef();
+  const descriptionRef = useRef('');
   const [title, setTitle] = useState<string>(campaign.title);
   const [editDescription, setEditDescription] = useState<string | undefined>(
     campaign.description
@@ -161,13 +156,13 @@ export default function EditTable({
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Priorities</SelectLabel>
-                    {Object.keys(priorityEnum).map((key: string) => {
+                    {/* {Object.keys(priorityEnum).map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
                         </SelectItem>
                       );
-                    })}
+                    })} */}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -284,13 +279,13 @@ export default function EditTable({
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Exposures</SelectLabel>
-                    {Object.keys(exposureEnum).map((key: string) => {
+                    {/* {Object.keys(exposureEnum).map((key: string) => {
                       return (
                         <SelectItem key={key} value={key}>
                           {key}
                         </SelectItem>
                       );
-                    })}
+                    })} */}
                   </SelectGroup>
                 </SelectContent>
               </Select>

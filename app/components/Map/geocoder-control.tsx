@@ -1,6 +1,6 @@
-import type { ControlPosition } from "react-map-gl";
-import { useControl } from "react-map-gl";
 import maplibregl from "maplibre-gl";
+import  { type ControlPosition, useControl  } from "react-map-gl";
+
 // import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 // resolve import error
 const MaplibreGeocoder = require("@maplibre/maplibre-gl-geocoder");

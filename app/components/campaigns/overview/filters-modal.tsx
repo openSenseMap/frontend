@@ -1,3 +1,8 @@
+import { ChevronDown, FilterIcon } from "lucide-react";
+import  { type Dispatch, type SetStateAction, useState  } from "react";
+import { useTranslation } from "react-i18next";
+import PhenomenaSelect from "../phenomena-select";
+import { CountryDropdown } from "./country-dropdown";
 import {
   Dialog,
   DialogContent,
@@ -6,21 +11,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { CountryDropdown } from "./country-dropdown";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverArrow,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -30,14 +26,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, FilterIcon } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
+
 import { exposureEnum } from "~/schema";
 // import { Exposure } from "@prisma/client";
-import { useTranslation } from "react-i18next";
-import PhenomenaSelect from "../phenomena-select";
 
 type FiltersModalProps = {
   phenomena: string[];

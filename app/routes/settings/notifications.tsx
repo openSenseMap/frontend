@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form } from "react-router";
 import { Separator } from "~/components/ui/separator";
 
 export default function NotificationsPage() {

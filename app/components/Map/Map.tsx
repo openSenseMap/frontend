@@ -1,6 +1,5 @@
-import type { MapProps, MapRef } from "react-map-gl";
-import { NavigationControl, Map as ReactMap } from "react-map-gl";
 import { forwardRef } from "react";
+import  { type MapProps, type MapRef, NavigationControl, Map as ReactMap  } from "react-map-gl";
 
 const Map = forwardRef<MapRef, MapProps>(
   (

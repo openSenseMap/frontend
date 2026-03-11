@@ -1,7 +1,7 @@
 import MDEditor from "@uiw/react-md-editor";
-import { iconConfig } from "./editor-icon-config";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeVideo from "rehype-video";
+import { iconConfig } from "./editor-icon-config";
 
 type MDEditorProps = {
   comment: string | undefined;

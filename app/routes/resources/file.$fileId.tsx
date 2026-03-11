@@ -1,4 +1,3 @@
-// import { type DataFunctionArgs } from "@remix-run/node";
 // import { prisma } from "~/db.server";
 
 // export async function loader({ params }: DataFunctionArgs) {

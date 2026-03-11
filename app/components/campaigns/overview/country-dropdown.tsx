@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
 import { countryListAlpha2 } from "./all-countries-object";
-import { CountryFlagIcon } from "~/components/ui/country-flag";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { CountryFlagIcon } from "~/components/ui/country-flag";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
 type CountryDropdownProps = {

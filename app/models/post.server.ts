@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
-import { type Post, User, post } from "~/schema";
+import { type Post, type User, post } from "~/schema";
 
 export function createPost({
     content,

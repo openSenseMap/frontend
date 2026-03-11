@@ -907,48 +907,48 @@ export async function addOrReplaceDeviceApiKey(
 	return { apiKey: result[0].apiKey }
 }
 
-export async function createDevice(
-  deviceData: any,
-  userId: string | undefined,
-) {
-  // hack to register to OSEM API
-  const authData = await fetch(
-    `${process.env.OSEM_API_TESTING_URL}/users/sign-in`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: `${process.env.TESTING_ACCOUNT}`,
-        password: `${process.env.TESTING_PW}`,
-      }),
-    },
-  ).then((res) => res.json());
+// export async function createDevice(
+//   deviceData: any,
+//   userId: string | undefined,
+// ) {
+//   // hack to register to OSEM API
+//   const authData = await fetch(
+//     `${process.env.OSEM_API_TESTING_URL}/users/sign-in`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         email: `${process.env.TESTING_ACCOUNT}`,
+//         password: `${process.env.TESTING_PW}`,
+//       }),
+//     },
+//   ).then((res) => res.json());
 
-  let sensorArray: any = [];
-  Object.values(deviceData.sensors).forEach((sensorsOfPhenomenon: any) => {
-    sensorsOfPhenomenon.forEach((sensor: any) => {
-      sensorArray.push({
-        name: sensor[0],
-        title: sensor[2],
-        sensorType: sensor[1],
-        unit: sensor[3],
-      });
-    });
-  });
-  const registeredDevice = await createDeviceOsemAPI(
-    { ...deviceData, sensors: sensorArray },
-    authData.token,
-  );
-  const newDevicePostgres = await createDevicePostgres(
-    registeredDevice.data,
-    userId,
-    sensorArray,
-    deviceData,
-  );
-  return newDevicePostgres;
-}
+//   let sensorArray: any = [];
+//   Object.values(deviceData.sensors).forEach((sensorsOfPhenomenon: any) => {
+//     sensorsOfPhenomenon.forEach((sensor: any) => {
+//       sensorArray.push({
+//         name: sensor[0],
+//         title: sensor[2],
+//         sensorType: sensor[1],
+//         unit: sensor[3],
+//       });
+//     });
+//   });
+//   const registeredDevice = await createDeviceOsemAPI(
+//     { ...deviceData, sensors: sensorArray },
+//     authData.token,
+//   );
+//   const newDevicePostgres = await createDevicePostgres(
+//     registeredDevice.data,
+//     userId,
+//     sensorArray,
+//     deviceData,
+//   );
+//   return newDevicePostgres;
+// }
 
 export async function createDevicePostgres(
   deviceData: any,

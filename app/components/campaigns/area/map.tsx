@@ -1,9 +1,12 @@
+import normalize from "@mapbox/geojson-normalize";
+import  { type FeatureCollection, type GeoJsonProperties, type Geometry } from "geojson";
+import flatten from "geojson-flatten";
 import { TrashIcon } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useState } from "react";
+import  { type Dispatch, type SetStateAction, useCallback, useState  } from "react";
+
 import { useTranslation } from "react-i18next";
-import type { MapLayerMouseEvent, PopupProps } from "react-map-gl";
-import { MapProvider, Source, Layer, Popup } from "react-map-gl";
+import  { type MapLayerMouseEvent, type PopupProps, MapProvider, Source, Layer, Popup  } from "react-map-gl";
+
 import { Map } from "~/components/map";
 import DrawControl from "~/components/Map/draw-control";
 import GeocoderControl from "~/components/Map/geocoder-control";
@@ -14,9 +17,6 @@ import {
   PopoverArrow,
   PopoverContent,
 } from "~/components/ui/popover";
-import normalize from "@mapbox/geojson-normalize";
-import flatten from "geojson-flatten";
-import type { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 
 type MapProps = {
   mapRef: any;

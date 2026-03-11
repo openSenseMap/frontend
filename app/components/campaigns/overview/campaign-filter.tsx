@@ -1,13 +1,4 @@
-import { Form, useSearchParams } from "@remix-run/react";
-import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Switch } from "~/components/ui/switch";
+import clsx from "clsx";
 import {
   AlertCircleIcon,
   ArrowDownAZIcon,
@@ -15,13 +6,22 @@ import {
   ChevronUp,
   FilterXIcon,
 } from "lucide-react";
-// import { Priority } from "@prisma/client";
-import { priorityEnum } from "~/schema";
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { Form, useSearchParams } from "react-router";
 import FiltersModal from "./filters-modal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
+import { Switch } from "~/components/ui/switch";
+// import { Priority } from "@prisma/client";
+// import { priorityEnum } from "~/schema";
 
 type FilterProps = {
   switchDisabled: boolean;
@@ -167,7 +167,7 @@ value={filterObject.searchTerm}
                     setFilterObject({ ...filterObject, priority: e })
                   }
                 >
-                  {Object.keys(priorityEnum).map(
+                  {/* {Object.keys(priorityEnum).map(
                     (priority: string, index: number) => {
                       return (
                         <DropdownMenuRadioItem key={index} value={priority}>
@@ -175,7 +175,7 @@ value={filterObject.searchTerm}
                         </DropdownMenuRadioItem>
                       );
                     }
-                  )}
+                  )} */}
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>

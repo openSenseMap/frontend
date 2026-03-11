@@ -1,6 +1,5 @@
-import { MultiSelect } from "../ui/multi-select";
+import { MultiSelect, type DataItem  } from "../ui/multi-select";
 import { countryListAlpha2 } from "./overview/all-countries-object";
-import type { DataItem } from "../ui/multi-select";
 
 type Props = {
   selectedCountry?: DataItem;

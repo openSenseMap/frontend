@@ -1,27 +1,24 @@
-// import type { Campaign, CampaignBookmark, User } from "@prisma/client";
-import type { Campaign } from "~/schema";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PlusIcon, StarIcon } from "lucide-react";
+import Markdown from "markdown-to-jsx";
+import { useTranslation } from "react-i18next";
+import { Link, Form } from "react-router";
+import Pagination from "./pagination";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Link, Form } from "@remix-run/react";
-import { ExposureBadge, PriorityBadge } from "./campaign-badges";
-import { PlusIcon, StarIcon } from "lucide-react";
-import { Progress } from "~/components/ui/progress";
-import Markdown from "markdown-to-jsx";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CountryFlagIcon } from "~/components/ui/country-flag";
-import { useTranslation } from "react-i18next";
-import Pagination from "./pagination";
+import { Progress } from "~/components/ui/progress";
+import  { type Campaign } from "~/schema";
 
 type CampaignGridProps = {
   campaigns: any[];

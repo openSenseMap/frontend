@@ -1,19 +1,17 @@
 import { createId } from "@paralleldrive/cuid2";
 import {
-  pgTable,
-  boolean,
-  text,
-  timestamp,
-  doublePrecision,
-  varchar,
-} from "drizzle-orm/pg-core";
-import {
     relations,
     type InferInsertModel,
     type InferSelectModel,
   } from "drizzle-orm";
-import { user } from "./user";
+import {
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { campaign } from "./campaign";
+import { user } from "./user";
 
 export const post = pgTable("post", {
   id: text("id").primaryKey().notNull()

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzleClient } from "~/db.server";
-import { type Comment, User, comment } from "~/schema";
+import { type Comment, type User, comment } from "~/schema";
 
 export function createComment({
   content,

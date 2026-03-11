@@ -1,9 +1,8 @@
 // code from https://github.com/AustinGil/npm/blob/main/app/components/Pagination.jsx
 
-import React from "react";
-import { Link, useSearchParams } from "@remix-run/react";
-import { Button } from "~/components/ui/button";
+import { Link, useSearchParams } from "react-router";
 import { listPageOptions } from "./list-page-options";
+import { Button } from "~/components/ui/button";
 
 const Pagination = ({
   totalPages = Number.MAX_SAFE_INTEGER,

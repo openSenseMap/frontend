@@ -1,9 +1,9 @@
+import { InfoIcon } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { InfoIcon } from "lucide-react";
 
 type InfoCardProps = {
   content: any;

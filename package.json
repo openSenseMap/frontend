@@ -40,7 +40,7 @@
     "@mantine/hooks": "^8.1.2",
     "@mapbox/mapbox-gl-geocoder": "^5.1.2",
     "@mjackson/form-data-parser": "^0.9.1",
-    "@novu/notification-center": "^2.0.0",
+    "@novu/react": "^3.14.1",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

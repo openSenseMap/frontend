@@ -4,8 +4,8 @@
 // forces draw.create on creation of second vertex
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import numeral from "numeral";
 import lineDistance from "@turf/line-distance";
+import numeral from "numeral";
 
 const RadiusMode = MapboxDraw.modes.draw_line_string;
 
@@ -146,7 +146,7 @@ RadiusMode.clickAnywhere = function (state: any, e: any) {
     e.lngLat.lat
   );
   if (state.direction === "forward") {
-    state.currentVertexPosition += 1; // eslint-disable-line
+    state.currentVertexPosition += 1;  
     state.line.updateCoordinate(
       state.currentVertexPosition,
       e.lngLat.lng,

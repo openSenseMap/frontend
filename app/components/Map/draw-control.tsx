@@ -1,9 +1,8 @@
 import MapboxDraw, { modes } from "@mapbox/mapbox-gl-draw";
-import { useControl } from "react-map-gl";
+import { useControl, type MapRef, type ControlPosition  } from "react-map-gl";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import { CircleMode, DragCircleMode } from "maplibre-gl-draw-circle";
 import DrawRectangle from "mapbox-gl-draw-rectangle-mode";
-import type { MapRef, ControlPosition } from "react-map-gl";
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
   position?: ControlPosition;

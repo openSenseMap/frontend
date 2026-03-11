@@ -1,39 +1,4 @@
-import { Input } from "~/components/ui/input";
-import {
-  Layer,
-  LngLatBounds,
-  LngLatLike,
-  MapLayerMouseEvent,
-  MapProvider,
-  MapRef,
-  MapboxEvent,
-  Marker,
-  Source,
-} from "react-map-gl";
-import { Map } from "~/components/map";
-import {
-  ChangeEvent,
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import type { BBox } from "geojson";
-import PointLayer from "~/components/campaigns/overview/map/point-layer";
 // import { Campaign, Exposure, Priority, Prisma } from "@prisma/client";
-import { Campaign, exposureEnum, priorityEnum } from "~/schema";
-import { Link } from "@remix-run/react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "~/components/ui/label";
-import { CountryDropdown } from "../country-dropdown";
 import PhenomenaSelect from "../../phenomena-select";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -45,8 +10,43 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { addDays, format } from "date-fns";
-import { DateRange } from "react-day-picker";
-import { DataItem } from "~/components/ui/multi-select";
+import type { BBox } from "geojson";
+import {
+  type ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { type DateRange } from "react-day-picker";
+import {
+  Layer,
+  LngLatBounds,
+  LngLatLike,
+  type MapLayerMouseEvent,
+  MapProvider,
+  type MapRef,
+  MapboxEvent,
+  Marker,
+  Source,
+} from "react-map-gl";
+import { Link } from "react-router";
+import { CountryDropdown } from "../country-dropdown";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import PointLayer from "~/components/campaigns/overview/map/point-layer";
+import { Map } from "~/components/map";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { type DataItem } from "~/components/ui/multi-select";
+import { type Campaign} from "~/schema";
 
 export default function CampaignMap({
   campaigns,

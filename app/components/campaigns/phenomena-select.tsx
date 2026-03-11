@@ -1,6 +1,6 @@
-import type { Dispatch, SetStateAction } from "react";
-import type { DataItem } from "../ui/multi-select";
-import { MultiSelect } from "../ui/multi-select";
+import  { type Dispatch, type SetStateAction } from "react";
+import  { type DataItem, MultiSelect  } from "../ui/multi-select";
+
 
 type PhenomenaSelectProps = {
   phenomena: string[];

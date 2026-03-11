@@ -1,3 +1,13 @@
+import clsx from "clsx";
+import {
+  AlertCircleIcon,
+  ArrowDownAZIcon,
+  ChevronDown,
+  FilterXIcon,
+} from "lucide-react";
+import  { type Dispatch, type SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
+import FiltersModal from "./filters-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,19 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
-import FiltersModal from "./filters-modal";
 import { Switch } from "~/components/ui/switch";
-import {
-  AlertCircleIcon,
-  ArrowDownAZIcon,
-  ChevronDown,
-  FilterXIcon,
-} from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
-import { useTranslation } from "react-i18next";
 // import { Priority } from "@prisma/client";
-import { priorityEnum, zodPriorityEnum } from "~/schema";
-import clsx from "clsx";
+import { priorityEnum, type zodPriorityEnum } from "~/schema";
 
 type FiltersBarProps = {
   phenomena: string[];

@@ -1,15 +1,15 @@
 //code from https://craft.mxkaske.dev/post/fancy-multi-select
 
+import clsx from "clsx";
+import { Command as CommandPrimitive } from "cmdk";
 import { X } from "lucide-react";
 import * as React from "react";
 
-import clsx from "clsx";
-import { Command as CommandPrimitive } from "cmdk";
+import { useEffect } from "react";
 import { Badge } from "./badge";
 import { Command, CommandGroup, CommandItem } from "./command";
 import { Label } from "./label";
 import { ScrollArea } from "./scroll-area";
-import { useEffect } from "react";
 
 export type DataItem = Record<"value" | "label", string>;
 

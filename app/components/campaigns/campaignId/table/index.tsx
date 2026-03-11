@@ -1,18 +1,12 @@
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import type { Campaign } from "~/schema";
-// import type { Campaign } from "@prisma/client";
-import { Form } from "@remix-run/react";
-import { Switch } from "@/components/ui/switch";
 import Markdown from "markdown-to-jsx";
-import { priorityEnum, exposureEnum } from "~/schema";
+// import { priorityEnum, exposureEnum } from "~/schema";
+import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { Form } from "react-router";
+import { CountryDropdown } from "../../overview/country-dropdown";
+import { EditButton, CancelButton, SaveButton } from "./buttons";
+import { EditDescription } from "./edit-components/description";
+import PhenomenaDropdown from "./edit-components/phenomena";
 import {
   Select,
   SelectContent,
@@ -22,12 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { CountryDropdown } from "../../overview/country-dropdown";
-import PhenomenaDropdown from "./edit-components/phenomena";
-import { EditButton, CancelButton, SaveButton } from "./buttons";
-import { EditDescription } from "./edit-components/description";
+import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type EditTableProps = {
   owner: boolean;
@@ -40,7 +38,7 @@ export default function CampaignTable({
   campaign,
   phenomena,
 }: EditTableProps) {
-  const descriptionRef = useRef();
+  const descriptionRef = useRef('');
   const [editMode, setEditMode] = useState(false);
   const [title, setTitle] = useState<string>(campaign.title);
   const [editDescription, setEditDescription] = useState<string | undefined>(
@@ -131,13 +129,13 @@ export default function CampaignTable({
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Priorities</SelectLabel>
-                      {priorityEnum.enumValues.map((key: string) => {
+                      {/* {priorityEnum.enumValues.map((key: string) => {
                         return (
                           <SelectItem key={key} value={key}>
                             {key}
                           </SelectItem>
                         );
-                      })}
+                      })} */}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -240,13 +238,13 @@ export default function CampaignTable({
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Exposures</SelectLabel>
-                      {exposureEnum.enumValues.map((key: string) => {
+                      {/* {exposureEnum.enumValues.map((key: string) => {
                         return (
                           <SelectItem key={key} value={key}>
                             {key}
                           </SelectItem>
                         );
-                      })}
+                      })} */}
                     </SelectGroup>
                   </SelectContent>
                 </Select>

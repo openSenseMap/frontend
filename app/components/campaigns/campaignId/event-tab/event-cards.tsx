@@ -1,7 +1,10 @@
+import { EditIcon, TrashIcon } from "lucide-react";
+import Markdown from "markdown-to-jsx";
+import { useEffect, useState } from "react";
+import { Form } from "react-router";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -9,18 +12,18 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { EditIcon, TrashIcon } from "lucide-react";
-import { Form } from "@remix-run/react";
-import { ClientOnly } from "remix-utils";
 import { MarkdownEditor } from "~/markdown.client";
-import Markdown from "markdown-to-jsx";
+
+function ClientOnly({ children }: { children: () => React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? <>{children()}</> : null;
+}
 
 type EventCardsProps = {
   events: any[];

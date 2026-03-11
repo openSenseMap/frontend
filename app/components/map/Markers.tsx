@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import type { CircleLayer, MarkerProps } from "react-map-gl";
-import { Layer, Marker, Source } from "react-map-gl";
+import  { type CircleLayer, type MarkerProps, Layer, Marker, Source  } from "react-map-gl";
 
 const triggerHoverLayerStyle: CircleLayer = {
   id: "point",

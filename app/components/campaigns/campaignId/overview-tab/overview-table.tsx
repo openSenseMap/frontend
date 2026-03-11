@@ -1,24 +1,22 @@
+import { HoverCardContent, HoverCardTrigger } from "@radix-ui/react-hover-card";
+import { EditIcon } from "lucide-react";
+import Markdown from "markdown-to-jsx";
+import { useState, useRef } from "react";
+import EditTable from "./edit-table";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Campaign } from "~/schema";
-// import type { Campaign } from "@prisma/client";
-import { Form } from "@remix-run/react";
-import { EditIcon, SaveIcon, TrashIcon, XIcon } from "lucide-react";
-import Markdown from "markdown-to-jsx";
-import { Button } from "~/components/ui/button";
-import { useState, useRef } from "react";
-import EditTable from "./edit-table";
-import { CountryFlagIcon } from "~/components/ui/country-flag";
+
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import { CountryFlagIcon } from "~/components/ui/country-flag";
 import { HoverCard } from "~/components/ui/hover-card";
-import { HoverCardContent, HoverCardTrigger } from "@radix-ui/react-hover-card";
+import  { type Campaign } from "~/schema";
 
 type OverviewTableProps = {
   campaign: Campaign;
@@ -35,7 +33,7 @@ export default function OverviewTable({
   const [editDescription, setEditDescription] = useState<string | undefined>(
     ""
   );
-  const descriptionRef = useRef();
+  const descriptionRef = useRef('');
   const instructions = campaign.instructions
     ? campaign.instructions.toString()
     : "";

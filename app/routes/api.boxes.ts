@@ -1,5 +1,5 @@
 import {
-	LoaderFunctionArgs,
+	type LoaderFunctionArgs,
 	type ActionFunction,
 	type ActionFunctionArgs,
 } from 'react-router'
@@ -9,9 +9,9 @@ import { getUserFromJwt } from '~/lib/jwt'
 import {
 	createDevice,
 	findDevices,
-	FindDevicesOptions,
+	type FindDevicesOptions,
 } from '~/models/device.server'
-import { Device, type User } from '~/schema'
+import { type Device, type User } from '~/schema'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**
