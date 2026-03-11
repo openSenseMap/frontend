@@ -1,10 +1,14 @@
-name: 🚀 Deploy
+name: 🏗️ Build
 on:
   push:
     branches:
       - main
       - dev
   pull_request: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   actions: write
@@ -13,24 +17,21 @@ permissions:
 
 jobs:
   lint:
-    name: ⬣ ESLint
+    name: ⬣ Lint
     runs-on: ubuntu-latest
     steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 16
+          cache: npm
+          cache-dependency-path: ./package.json
+          node-version-file: .nvmrc
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+      - name: 📥 Install deps
+        run: npm install
 
       - name: 🔬 Lint
         run: npm run lint
@@ -39,144 +40,126 @@ jobs:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
     steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 16
+          cache: npm
+          cache-dependency-path: ./package.json
+          node-version-file: .nvmrc
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+      - name: 📥 Install deps
+        run: npm install
+
+      - name: 🧾 Generate OpenAPI spec
+        run: npm run build:docs
 
       - name: 🔎 Type check
         run: npm run typecheck --if-present
 
   vitest:
-    name: ⚡ Vitest
+    name: ⚡ Test
     runs-on: ubuntu-latest
+    permissions:
+      # Required to checkout the code
+      contents: read
+      # Required to put a comment into the pull-request
+      pull-requests: write
     steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
-
-      - name: ⚡ Run vitest
-        run: npm run test -- --coverage
-
-  cypress:
-    name: ⚫️ Cypress
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 16
+          cache: npm
+          cache-dependency-path: ./package.json
+          node-version-file: .nvmrc
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+      - name: 📥 Install deps
+        run: npm install
 
       - name: 🐳 Docker compose
+        # we need a postgres container for runnign the tests
         # the sleep is just there to give time for postgres to get started
-        run: docker-compose up -d && sleep 60
+        run: docker compose -f docker-compose.ci.yml up -d && sleep 30
         env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres'
 
       - name: 🛠 Setup Database
-        uses: nick-fields/retry@v2.8.3
+        uses: nick-fields/retry@v3.0.2
         with:
           timeout_minutes: 10
-          max_attempts: 3
+          max_attempts: 5
+          retry_wait_seconds: 45
           retry_on: error
-          command: npx prisma migrate reset --force
+          command: npm run db:migrate
 
-      - name: ⚙️ Build
-        run: npm run build
+      - name: ⚡ Run vitest
+        run: npm run test:coverage
 
-      - name: 🌳 Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          start: npm run start:mocks
-          wait-on: "http://localhost:8811"
-        env:
-          PORT: "8811"
+      - name: 🧐 Report Coverage
+        uses: davelosert/vitest-coverage-report-action@v2
+
+      - name: 🗑️ Cleanup
+        if: always()
+        run: docker compose down
 
   build:
     name: 🐳 Build
     # only build/deploy main branch on pushes
-    if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push' }}
+    # if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          version: v0.9.1
+        uses: docker/setup-buildx-action@v4
 
       # Setup cache
       - name: ⚡️ Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Docker meta
+      - name: 📋 Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/opensensemap/frontend
 
+      - name: 👓 Read .nvmrc
+        id: nvmrc
+        run: |
+          echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
       - name: 🔑 GitHub Registry Auth
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐳 Docker build
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v7
         with:
           context: .
+          file: ./other/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             COMMIT_SHA=${{ github.sha }}
+            NODE_VERSION=${{ steps.nvmrc.outputs.NODE_VERSION }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 

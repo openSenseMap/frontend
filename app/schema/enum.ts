@@ -1,30 +1,45 @@
-import { pgEnum } from "drizzle-orm/pg-core";
-import { z } from "zod";
+import { pgEnum } from 'drizzle-orm/pg-core'
+import { z } from 'zod'
 
-export const exposureEnum = pgEnum("exposure", [
-  "indoor",
-  "outdoor",
-  "mobile",
-  "unknown",
-]);
-
-const exposureZodEnum = z.enum(exposureEnum.enumValues)
-
-
-export type zodExposureEnum = z.infer<typeof exposureZodEnum>
-
-export const priorityEnum = pgEnum("priority", [
-  "urgent",
-  "high",
-  "medium",
-  "low"
+// Enum for device exposure types
+export const DeviceExposureEnum = pgEnum('exposure', [
+	'indoor',
+	'outdoor',
+	'mobile',
+	'unknown',
 ])
 
-const priorityZodEnum = z.enum(priorityEnum.enumValues)
+// Zod schema for validating device exposure types
+export const DeviceExposureZodEnum = z.enum(DeviceExposureEnum.enumValues)
 
+// Type inferred from the Zod schema for device exposure types
+export type DeviceExposureType = z.infer<typeof DeviceExposureZodEnum>
 
-export type zodPriorityEnum = z.infer<typeof priorityZodEnum>
+// Enum for device status types
+export const DeviceStatusEnum = pgEnum('status', ['active', 'inactive', 'old'])
 
-export const statusEnum = pgEnum("status", ["active", "inactive", "old"]);
+// Zod schema for validating device status types
+export const DeviceStatusZodEnum = z.enum(DeviceStatusEnum.enumValues)
 
-export const deviceModelEnum = pgEnum("model", ["HOME_V2_LORA"]);
+// Type inferred from the Zod schema for device status types
+export type DeviceStatusType = z.infer<typeof DeviceStatusZodEnum>
+
+// Enum for device model types
+export const DeviceModelEnum = pgEnum('model', [
+	'homeV2Lora',
+	'homeV2Ethernet',
+	'homeV2Wifi',
+	'homeEthernet',
+	'homeWifi',
+	'homeEthernetFeinstaub',
+	'homeWifiFeinstaub',
+	'luftdaten_sds011',
+	'luftdaten_sds011_dht11',
+	'luftdaten_sds011_dht22',
+	'luftdaten_sds011_bmp180',
+	'luftdaten_sds011_bme280',
+	'hackair_home_v2',
+	'senseBox:Edu',
+	'luftdaten.info',
+	'custom',
+])

@@ -1,0 +1,1 @@
+ALTER TABLE "device" ALTER COLUMN "model" SET DEFAULT 'custom';

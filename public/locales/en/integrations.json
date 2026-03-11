@@ -1,0 +1,7 @@
+{
+	"title": "Integrations",
+	"description": "We support different data communication protocols and offer specific integrations for them.",
+	"HTTP API": "HTTP API",
+	"MQTT": "MQTT",
+	"TTN": "TTN v3 (LoRa WAN)"
+}

@@ -1,255 +1,228 @@
-import { Form, Link, useNavigation, useSearchParams } from "@remix-run/react";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/components/ui/use-toast";
-import { useLoaderData } from "@remix-run/react";
-import type { loader } from "~/routes/explore";
 import {
-  Bars3Icon,
-  // UserCircleIcon,
-  CpuChipIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon,
-  ArrowLeftOnRectangleIcon,
-  PlusCircleIcon,
-  GlobeAltIcon,
-  PuzzlePieceIcon,
-  QuestionMarkCircleIcon,
-  EnvelopeIcon,
-  IdentificationIcon,
-  LockClosedIcon,
-  CurrencyEuroIcon,
-  UserGroupIcon,
-  UserIcon,
-  ArrowTopRightOnSquareIcon,
-} from "@heroicons/react/24/outline";
+	Globe,
+	LogIn,
+	LogOut,
+	Puzzle,
+	Menu as MenuIcon,
+	FileLock2,
+	Coins,
+	User2,
+	ExternalLink,
+	Settings,
+	Compass,
+} from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import Spinner from "~/components/spinner";
-import ProfileVisibilitySwitch from "~/components/profile-visibility-switch";
-
-export function useFirstRender() {
-  const firstRender = useRef(true);
-
-  useEffect(() => {
-    firstRender.current = false;
-  }, []);
-
-  return firstRender.current;
-}
+	Form,
+	Link,
+	useMatches,
+	useNavigation,
+	useSearchParams,
+} from 'react-router'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import Spinner from '~/components/spinner'
+import { toast } from '~/components/ui/use-toast'
+import { useOptionalUser } from '~/utils'
 
 export default function Menu() {
-  const [searchParams] = useSearchParams();
-  const redirectTo =
-    // @ts-ignore
-    searchParams.size > 0 ? "/explore?" + searchParams.toString() : "/explore";
-  const data = useLoaderData<typeof loader>();
-  const [open, setOpen] = useState(false);
-  const { toast } = useToast();
-  const navigation = useNavigation();
-  const isLoggingOut = Boolean(navigation.state === "submitting");
-  const [timeToToast, setTimeToToast] = useState<Boolean>(false);
+	const [searchParams] = useSearchParams()
+	const redirectTo =
+		searchParams.size > 0 ? '/explore?' + searchParams.toString() : '/explore'
+	const [open, setOpen] = useState(false)
+	const navigation = useNavigation()
+	const isLoggingOut = Boolean(navigation.state === 'submitting')
+	const user = useOptionalUser()
+	const matches = useMatches()
 
-  const { t } = useTranslation("menu");
+	const { t } = useTranslation('menu')
 
-  const firstRender = useFirstRender();
+	return (
+		<DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+			<DropdownMenuTrigger asChild>
+				<div className="pointer-events-auto box-border h-10 w-10">
+					<button
+						type="button"
+						className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
+					>
+						{!user ? (
+							<MenuIcon className="mx-auto h-6 w-6" />
+						) : (
+							<User2 className="mx-auto h-6 w-6" />
+						)}
+					</button>
+				</div>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
+				className="w-56 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95"
+				align="end"
+				forceMount
+			>
+				<div
+					className={
+						navigation.state === 'loading' ? 'pointer-events-none' : ''
+					}
+				>
+					<DropdownMenuLabel className="font-normal">
+						{!user ? (
+							<div className="flex flex-col space-y-1">
+								<p className="text-sm font-medium leading-none">{t('title')}</p>
+								<p className="text-xs leading-none text-muted-foreground">
+									{t('subtitle')}
+								</p>
+							</div>
+						) : (
+							<div className="flex flex-col space-y-1 p-2">
+								<p className="text-sm font-medium leading-none">
+									{/* Max Mustermann */}
+									{user?.name}
+								</p>
+								<p className="text-xs leading-none text-muted-foreground">
+									{user?.email}
+								</p>
+							</div>
+						)}
+					</DropdownMenuLabel>
+					<DropdownMenuSeparator />
+					{user && (
+						<DropdownMenuGroup>
+							{navigation.state === 'loading' && (
+								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+									<Spinner />
+								</div>
+							)}
+							{!(matches[1].pathname === '/explore') && (
+								<Link to="/explore">
+									<DropdownMenuItem className="cursor-pointer">
+										<Compass className="mr-2 h-5 w-5" />
+										<span>{t('explore_label')}</span>
+									</DropdownMenuItem>
+								</Link>
+							)}
+							{!(matches[1].pathname === '/profile') && (
+								<Link to="/profile/me">
+									<DropdownMenuItem className="cursor-pointer">
+										<User2 className="mr-2 h-5 w-5" />
+										{t('profile_label')}
+									</DropdownMenuItem>
+								</Link>
+							)}
 
-  useEffect(() => {
-    if (!firstRender && !timeToToast) {
-      setTimeToToast(true);
-    } else if (!firstRender && timeToToast) {
-      if (data.user === null) {
-        toast({
-          description: t("toast_logout_success"),
-        });
-      }
-      if (data.user !== null) {
-        const creationDate = Date.parse(data.user.createdAt);
-        const now = Date.now();
-        const diff = now - creationDate;
-        if (diff < 10000) {
-          toast({
-            description: t("toast_user_creation_success"),
-          });
-          setTimeout(() => {
-            toast({
-              description: t("toast_login_success"),
-            });
-          }, 100);
-        } else {
-          toast({
-            description: t("toast_login_success"),
-          });
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.user, toast, firstRender]);
+							{!(matches[1].pathname === '/settings') && (
+								<Link to="/settings/profile">
+									<DropdownMenuItem className="cursor-pointer">
+										<Settings className="mr-2 h-5 w-5" />
+										<span>{t('settings_label')}</span>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+								</Link>
+							)}
+						</DropdownMenuGroup>
+					)}
+					<DropdownMenuGroup>
+						<Link to="https://docs.sensebox.de/" target="_blank">
+							<DropdownMenuItem className="cursor-pointer">
+								<Puzzle className="mr-2 h-5 w-5" />
+								<span>{t('tutorials_label')}</span>
+								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+							</DropdownMenuItem>
+						</Link>
 
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <div className="pointer-events-auto box-border h-10 w-10">
-          <button
-            type="button"
-            className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
-          >
-            {data.user === null ? (
-              <Bars3Icon className="mx-auto h-6 w-6" />
-            ) : (
-              <UserIcon className="mx-auto h-6 w-6" />
-            )}
-          </button>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <div
-          className={
-            navigation.state === "loading" ? "pointer-events-none" : ""
-          }
-        >
-          <DropdownMenuLabel className="font-normal">
-            {data.user === null ? (
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{t("title")}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {t("subtitle")}
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {data.user.name}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {data.user.email}
-                </p>
-              </div>
-            )}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {data.user !== null ? (
-            <DropdownMenuGroup>
-              {navigation.state === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50">
-                  <Spinner />
-                </div>
-              )}
-              {data.profile && (
-                <DropdownMenuItem>
-                  <UserIcon className="mr-2 h-5 w-5" />
-                  <Link to="/profile/me"> Profile</Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem>
-                <Cog6ToothIcon className="mr-2 h-5 w-5" />
-                <Link to="/settings/account">{t("settings_label")}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CpuChipIcon className="mr-2 h-5 w-5" />
-                <Link to="/profile/me">{t("my_devices_label")}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <PlusCircleIcon className="mr-2 h-5 w-5" />
-                <span>{t("add_device_label")}</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </DropdownMenuGroup>
-          ) : null}
-          <DropdownMenuGroup>
-            <Link to="https://docs.sensebox.de/" target="_blank">
-              <DropdownMenuItem>
-                <PuzzlePieceIcon className="mr-2 h-5 w-5" />
-                <span>{t("tutorials_label")}</span>
-                <ArrowTopRightOnSquareIcon className="ml-auto h-4 w-4 text-gray-300" />
-              </DropdownMenuItem>
-            </Link>
-            <Link to="https://docs.opensensemap.org/" target="_blank">
-              <DropdownMenuItem>
-                <GlobeAltIcon className="mr-2 h-5 w-5" />
-                <span>{t("api_docs_label")}</span>
-                <ArrowTopRightOnSquareIcon className="ml-auto h-4 w-4 text-gray-300" />
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <QuestionMarkCircleIcon className="mr-2 h-5 w-5" />
-              <span>{t("faq_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <EnvelopeIcon className="mr-2 h-5 w-5" />
-              <span>{t("contact_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <IdentificationIcon className="mr-2 h-5 w-5" />
-              <span>{t("imprint_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LockClosedIcon className="mr-2 h-5 w-5" />
-              <span>{t("data_protection_label")}</span>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <CurrencyEuroIcon className="mr-2 h-5 w-5" />
-              <span>{t("donate_label")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <UserGroupIcon className="mr-2 h-5 w-5" />
-              <span>{t("promotion_label")}</span>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            {data.user === null ? (
-              <Link
-                to={{
-                  pathname: "login",
-                  search: searchParams.toString(),
-                }}
-                onClick={() => setOpen(false)}
-              >
-                <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
-                  <ArrowRightOnRectangleIcon className="mr-2 h-5 w-5" />
-                  <span className="text-green-100">{t("login_label")}</span>
-                </button>
-              </Link>
-            ) : (
-              <Form
-                action="/logout"
-                method="post"
-                onSubmit={() => {
-                  setOpen(false);
-                  // toast({
-                  //   description: "Logging out ...",
-                  // });
-                }}
-              >
-                <input type="hidden" name="redirectTo" value={redirectTo} />
-                <button
-                  type="submit"
-                  className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
-                  disabled={isLoggingOut}
-                >
-                  <ArrowLeftOnRectangleIcon className="mr-2 h-5 w-5" />
-                  <span className="text-red-500">{t("logout_label")}</span>
-                </button>
-              </Form>
-            )}
-          </DropdownMenuGroup>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+						<Link to="https://docs.opensensemap.org/" target="_blank">
+							<DropdownMenuItem className="cursor-pointer">
+								<Globe className="mr-2 h-5 w-5" />
+								<span>{t('api_docs_label')}</span>
+								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+							</DropdownMenuItem>
+						</Link>
+					</DropdownMenuGroup>
+					<DropdownMenuSeparator />
+					<DropdownMenuGroup>
+						<Link to={'/privacy'}>
+							<DropdownMenuItem className="cursor-pointer">
+								<FileLock2 className="mr-2 h-5 w-5" />
+								<span>{t('data_protection_label')}</span>
+							</DropdownMenuItem>
+						</Link>
+					</DropdownMenuGroup>
+					<DropdownMenuSeparator />
+
+					<DropdownMenuGroup>
+						<Link
+							to={
+								'https://www.betterplace.org/de/projects/89947-opensensemap-org-die-freie-karte-fuer-umweltdaten'
+							}
+							target="_blank"
+						>
+							<DropdownMenuItem
+								onSelect={(e) => e.preventDefault()}
+								className="cursor-pointer"
+							>
+								<Coins className="mr-2 inline h-5 w-5" />
+								<span> {t('donate_label')}</span>
+								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+							</DropdownMenuItem>
+						</Link>
+					</DropdownMenuGroup>
+
+					<DropdownMenuSeparator />
+
+					<DropdownMenuGroup>
+						<DropdownMenuItem
+							onSelect={(e) => {
+								// Prevent dropdown from closing
+								e.preventDefault()
+							}}
+						>
+							{!user ? (
+								<Link
+									to={{
+										pathname: 'login',
+										search: searchParams.toString(),
+									}}
+									onClick={() => setOpen(false)}
+									className="w-full cursor-pointer"
+								>
+									<button className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
+										<LogIn className="mr-2 h-5 w-5" />
+										<span className="text-light-green">{t('login_label')}</span>
+									</button>
+								</Link>
+							) : (
+								<Form
+									action="/logout"
+									method="post"
+									onSubmit={() => {
+										setOpen(false)
+										toast({
+											description: 'Successfully logged out.',
+										})
+									}}
+									className="w-full cursor-pointer"
+								>
+									<input type="hidden" name="redirectTo" value={redirectTo} />
+									<button
+										type="submit"
+										className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+										disabled={isLoggingOut}
+									>
+										<LogOut className="mr-2 h-5 w-5" />
+										<span className="text-red-500">{t('logout_label')}</span>
+									</button>
+								</Form>
+							)}
+						</DropdownMenuItem>
+					</DropdownMenuGroup>
+				</div>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
 }

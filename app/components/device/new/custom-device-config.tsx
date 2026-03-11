@@ -1,0 +1,118 @@
+import { X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { type Sensor } from './sensors-info'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '~/components/ui/separator'
+
+export function CustomDeviceConfig() {
+	const { setValue, watch } = useFormContext()
+
+	// Initialize state from form context
+	const [sensors, setSensors] = useState<Sensor[]>(
+		() => watch('selectedSensors') || [],
+	)
+	const [newSensor, setNewSensor] = useState<Sensor>({
+		title: '',
+		unit: '',
+		sensorType: '',
+	})
+	const { t } = useTranslation('newdevice');
+
+	// Sync state with form context on mount
+	useEffect(() => {
+		const savedSensors = watch('selectedSensors') || []
+		if (savedSensors.length > 0) {
+			setSensors(savedSensors)
+		}
+	}, [watch])
+
+	const updateNewSensor = (field: keyof Sensor, value: string) => {
+		setNewSensor((prev) => ({ ...prev, [field]: value }))
+	}
+
+	const addSensor = () => {
+		if (newSensor.title && newSensor.unit && newSensor.sensorType) {
+			const updatedSensors = [...sensors, newSensor]
+			setSensors(updatedSensors)
+			setValue('selectedSensors', updatedSensors) // Sync with form
+			setNewSensor({ title: '', unit: '', sensorType: '' })
+		}
+	}
+
+	const removeSensor = (index: number) => {
+		const updatedSensors = sensors.filter((_, i) => i !== index)
+		setSensors(updatedSensors)
+		setValue('selectedSensors', updatedSensors) // Sync with form
+	}
+
+	return (
+		<div className="space-y-4 p-2">
+			<div>
+				<div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+					<div>
+						<Label htmlFor="phenomenon">{t('phenomenon')}</Label>
+						<Input
+							id="phenomenon"
+							value={newSensor.title}
+							onChange={(e) => updateNewSensor('title', e.target.value)}
+							placeholder="e.g., Temperature"
+						/>
+					</div>
+					<div>
+						<Label htmlFor="unit">{t('unit')}</Label>
+						<Input
+							id="unit"
+							value={newSensor.unit}
+							onChange={(e) => updateNewSensor('unit', e.target.value)}
+							placeholder="e.g., °C"
+						/>
+					</div>
+					<div>
+						<Label htmlFor="type">{t('type')}</Label>
+						<Input
+							id="type"
+							value={newSensor.sensorType}
+							onChange={(e) => updateNewSensor('sensorType', e.target.value)}
+							placeholder="e.g., HDC1080"
+						/>
+					</div>
+				</div>
+				<Button
+					onClick={addSensor}
+					disabled={
+						!newSensor.title || !newSensor.unit || !newSensor.sensorType
+					}
+				>
+					{t('Add Sensor')}
+				</Button>
+			</div>
+
+			{sensors.length > 0 && <Separator />}
+			{sensors.map((sensor, index) => (
+				<Card key={index} className="mb-2">
+					<CardContent className="flex items-center justify-between p-4">
+						<div>
+							<span className="font-medium">{sensor.title}</span> ({sensor.unit}
+							) - {sensor.sensorType}
+						</div>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={(e) => {
+								e.preventDefault()
+								removeSensor(index)
+							}}
+						>
+							<X className="h-4 w-4" />
+						</Button>
+					</CardContent>
+				</Card>
+			))}
+		</div>
+	)
+}

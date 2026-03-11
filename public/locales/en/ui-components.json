@@ -1,0 +1,9 @@
+{
+	"callout": {
+		"callout_title_note": "Note",
+		"callout_title_tip": "Tip",
+		"callout_title_important": "Important",
+		"callout_title_warning": "Warning",
+		"callout_title_caution": "Caution"
+	}
+}

@@ -1,217 +1,214 @@
-# Remix Blues Stack
-
-![The Remix Blues Stack](https://repository-images.githubusercontent.com/461012689/37d5bd8b-fa9c-4ab0-893c-f0a199d5012d)
-
-Learn more about [Remix Stacks](https://remix.run/stacks).
-
-```
-npx create-remix@latest --template remix-run/blues-stack
-```
-
-## What's in the stack
-
-- [Multi-region Fly app deployment](https://fly.io/docs/reference/scaling/) with [Docker](https://www.docker.com/)
-- [Multi-region Fly PostgreSQL Cluster](https://fly.io/docs/getting-started/multi-region-databases/)
-- Healthcheck endpoint for [Fly backups region fallbacks](https://fly.io/docs/reference/configuration/#services-http_checks)
-- [GitHub Actions](https://github.com/features/actions) for deploy on merge to production and staging environments
-- Email/Password Authentication with [cookie-based sessions](https://remix.run/docs/en/v1/api/remix#createcookiesessionstorage)
-- Database ORM with [Prisma](https://prisma.io)
-- Styling with [Tailwind](https://tailwindcss.com/)
-- End-to-end testing with [Cypress](https://cypress.io)
-- Local third party request mocking with [MSW](https://mswjs.io)
-- Unit testing with [Vitest](https://vitest.dev) and [Testing Library](https://testing-library.com)
-- Code formatting with [Prettier](https://prettier.io)
-- Linting with [ESLint](https://eslint.org)
-- Static Types with [TypeScript](https://typescriptlang.org)
-
-Not a fan of bits of the stack? Fork it, change it, and use `npx create-remix --template your/repo`! Make it your own.
-
-## Quickstart
-
-Click this button to create a [Gitpod](https://gitpod.io) workspace with the project set up, Postgres started, and Fly pre-installed
-
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/remix-run/blues-stack/tree/main)
-
-## Development
-
-- This step only applies if you've opted out of having the CLI install dependencies for you:
-
-  ```sh
-  npx remix init
-  ```
-
-- Start the Postgres Database in [Docker](https://www.docker.com/get-started):
-
-  ```sh
-  npm run docker
-  ```
-
-  > **Note:** The npm script will complete while Docker sets up the container in the background. Ensure that Docker has finished and your container is running before proceeding.
-
-- Initial setup:
-
-  ```sh
-  npm run setup
-  ```
-
-- Run the first build:
-
-  ```sh
-  npm run build
-  ```
-
-- Start dev server:
-
-  ```sh
-  npm run dev
-  ```
-
-This starts your app in development mode, rebuilding assets on file changes.
-
-The database seed script creates a new user with some data you can use to get started:
-
-- Email: `rachel@remix.run`
-- Password: `racheliscool`
-
-If you'd prefer not to use Docker, you can also use Fly's Wireguard VPN to connect to a development database (or even your production database). You can find the instructions to set up Wireguard [here](https://fly.io/docs/reference/private-networking/#install-your-wireguard-app), and the instructions for creating a development database [here](https://fly.io/docs/reference/postgres/).
-
-### Relevant code:
-
-This is a pretty simple note-taking app, but it's a good example of how you can build a full stack app with Prisma and Remix. The main functionality is creating users, logging in and out, and creating and deleting notes.
-
-- creating users, and logging in and out [./app/models/user.server.ts](./app/models/user.server.ts)
-- user sessions, and verifying them [./app/session.server.ts](./app/session.server.ts)
-- creating, and deleting notes [./app/models/note.server.ts](./app/models/note.server.ts)
-
-## Deployment
-
-This Remix Stack comes with two GitHub Actions that handle automatically deploying your app to production and staging environments.
-
-Prior to your first deployment, you'll need to do a few things:
-
-- [Install Fly](https://fly.io/docs/getting-started/installing-flyctl/)
-
-- Sign up and log in to Fly
-
-  ```sh
-  fly auth signup
-  ```
-
-  > **Note:** If you have more than one Fly account, ensure that you are signed into the same account in the Fly CLI as you are in the browser. In your terminal, run `fly auth whoami` and ensure the email matches the Fly account signed into the browser.
-
-- Create two apps on Fly, one for staging and one for production:
-
-  ```sh
-  fly apps create frontend-d00c
-  fly apps create frontend-d00c-staging
-  ```
-
-  > **Note:** Once you've successfully created an app, double-check the `fly.toml` file to ensure that the `app` key is the name of the production app you created. This Stack [automatically appends a unique suffix at init](https://github.com/remix-run/blues-stack/blob/4c2f1af416b539187beb8126dd16f6bc38f47639/remix.init/index.js#L29) which may not match the apps you created on Fly. You will likely see [404 errors in your Github Actions CI logs](https://community.fly.io/t/404-failure-with-deployment-with-remix-blues-stack/4526/3) if you have this mismatch.
-
-- Initialize Git.
-
-  ```sh
-  git init
-  ```
-
-- Create a new [GitHub Repository](https://repo.new), and then add it as the remote for your project. **Do not push your app yet!**
-
-  ```sh
-  git remote add origin <ORIGIN_URL>
-  ```
-
-- Add a `FLY_API_TOKEN` to your GitHub repo. To do this, go to your user settings on Fly and create a new [token](https://web.fly.io/user/personal_access_tokens/new), then add it to [your repo secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) with the name `FLY_API_TOKEN`.
-
-- Add a `SESSION_SECRET` to your fly app secrets, to do this you can run the following commands:
-
-  ```sh
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app frontend-d00c
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app frontend-d00c-staging
-  ```
-
-  > **Note:** When creating the staging secret, you may get a warning from the Fly CLI that looks like this:
-  >
-  > ```
-  > WARN app flag 'frontend-d00c-staging' does not match app name in config file 'frontend-d00c'
-  > ```
-  >
-  > This simply means that the current directory contains a config that references the production app we created in the first step. Ignore this warning and proceed to create the secret.
-
-  If you don't have openssl installed, you can also use [1password](https://1password.com/password-generator/) to generate a random secret, just replace `$(openssl rand -hex 32)` with the generated secret.
-
-- Create a database for both your staging and production environments. Run the following:
-
-  ```sh
-  fly postgres create --name frontend-d00c-db
-  fly postgres attach --app frontend-d00c frontend-d00c-db
-
-  fly postgres create --name frontend-d00c-staging-db
-  fly postgres attach --app frontend-d00c-staging frontend-d00c-staging-db
-  ```
-
-  > **Note:** You'll get the same warning for the same reason when attaching the staging database that you did in the `fly set secret` step above. No worries. Proceed!
-
-Fly will take care of setting the `DATABASE_URL` secret for you.
-
-Now that everything is set up you can commit and push your changes to your repo. Every commit to your `main` branch will trigger a deployment to your production environment, and every commit to your `dev` branch will trigger a deployment to your staging environment.
-
-If you run into any issues deploying to Fly, make sure you've followed all of the steps above and if you have, then post as many details about your deployment (including your app name) to [the Fly support community](https://community.fly.io). They're normally pretty responsive over there and hopefully can help resolve any of your deployment issues and questions.
-
-### Multi-region deploys
-
-Once you have your site and database running in a single region, you can add more regions by following [Fly's Scaling](https://fly.io/docs/reference/scaling/) and [Multi-region PostgreSQL](https://fly.io/docs/getting-started/multi-region-databases/) docs.
-
-Make certain to set a `PRIMARY_REGION` environment variable for your app. You can use `[env]` config in the `fly.toml` to set that to the region you want to use as the primary region for both your app and database.
-
-#### Testing your app in other regions
-
-Install the [ModHeader](https://modheader.com/) browser extension (or something similar) and use it to load your app with the header `fly-prefer-region` set to the region name you would like to test.
-
-You can check the `x-fly-region` header on the response to know which region your request was handled by.
-
-## GitHub Actions
-
-We use GitHub Actions for continuous integration and deployment. Anything that gets into the `main` branch will be deployed to production after running tests/build/etc. Anything in the `dev` branch will be deployed to staging.
-
-## Testing
-
-### Cypress
-
-We use Cypress for our End-to-End tests in this project. You'll find those in the `cypress` directory. As you make changes, add to an existing file or create a new file in the `cypress/e2e` directory to test your changes.
-
-We use [`@testing-library/cypress`](https://testing-library.com/cypress) for selecting elements on the page semantically.
-
-To run these tests in development, run `npm run test:e2e:dev` which will start the dev server for the app as well as the Cypress client. Make sure the database is running in docker as described above.
-
-We have a utility for testing authenticated features without having to go through the login flow:
-
-```ts
-cy.login();
-// you are now logged in as a new user
+![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/openSenseMap.png)
+
+This repository contains the code of the new _openSenseMap_ frontend running at
+[https://beta.opensensemap.org](https://beta.opensensemap.org).
+
+Originally, the _openSenseMap_ was built as part of the bachelor thesis of
+[@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics,
+University of Münster). Between 2016 and 2022 development was partly funded by
+the German Ministry of Education and Research (BMBF) in the projets senseBox and
+senseBox Pro. This version has been developed by
+[@mpfeil](https://github.com/mpfeil) and
+[@freds-dev](https://github.com/freds-dev).
+
+<img width="1438" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/a7bf16fb-44a2-4a21-9c0f-d4bf431ab9b5">
+
+## Project setup
+
+If you do need to set the project up locally yourself, feel free to follow these
+instructions:
+
+### System Requirements
+
+- [Node.js](https://nodejs.org/) >= 24.0.0 (see [.nvmrc](./.nvmrc))
+- [npm](https://npmjs.com/) >= 11.0.0
+- [git](https://git-scm.com/) >= 2.38.0
+- [Docker](https://www.docker.com) >= 27.0.0
+
+### Variables
+
+You can configure the API endpoint and/or map tiles using the following
+environmental variables:
+
+| ENV                 | Default value                        |
+| ------------------- | ------------------------------------ |
+| OSEM_API_URL        | https://api.testing.opensensemap.org |
+| DATABASE_URL        | <YOUR_POSTGRES_URL>                  |
+| MAPBOX_ACCESS_TOKEN | <YOUR_MAPBOX_ACCESS_TOKEN>           |
+
+You can create a copy of `.env.example`, rename it to `.env` and set the values.
+
+### Setup Steps
+
+1. Clone the repo: `git clone https://github.com/openSenseMap/frontend`
+2. Copy `.env.example` into `.env`
+3. Run `npm install` to install dependencies
+4. Optionally run `docker compose up` to start a docker container running your
+   local postgres DB
+   - If it is the first time doing this, you may need to bootstrap the database
+     by running `npm run db:setup`
+   - If you want some example data run `npm run db:seed`. **WARNING**: Do not
+     run this on a production database. It will delete all existing data.
+5. Run `npm run dev` to start the local server
+
+### Contributing
+
+We welcome all kind of constructive contributions to this project. If you are
+planning to implement a new feature or change something, please create an issue
+first.
+
+Afterwards follow these steps:
+
+1. Fork this repository
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Make and commit your changes
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new pull request against this repository's `dev` branch, linking
+   your issue.
+
+#### How the repository is organized
+
+```shell
+├── app                 # main directory where most of the application code lives
+│   ├── components      # reusable/ general purpose components
+│   ├── lib
+│   ├── models
+│   ├── routes          # app/ api routes
+│   ├── schema
+│   └── utils
+├── db                  # code for seeding/ migration of database
+├── drizzle             # database migrations
+├── other
+├── public              # static assets
+├── server
+├── tests               # automated tests, same structure as the app/ folder with tests placed according to the files they test
+│   ├── routes          # tests for (resource/ api) routes
+├── types
+├── ...
 ```
 
-We also have a utility to auto-delete the user at the end of your test. Just make sure to add this in each test file:
+#### openSenseMap API
 
-```ts
-afterEach(() => {
-  cy.cleanupUser();
-});
+The api is implemented using
+[Remix resource routes](https://remix.run/docs/en/main/guides/resource-routes).
+Resource routes may not export a component but only
+[loaders](https://remix.run/docs/en/main/route/loader) (for `GET` requests) and
+[actions](https://remix.run/docs/en/main/route/action) (for `POST`, `PUT`,
+`DELETE` etc) and therefore live in `.ts` (not `.tsx`) files. All resource
+routes start with `api` (e.g. `api.user.ts` for `/api/user`).
+
+The api logic is shared with the frontend. Therefore api routes should not
+implement the actual business logic of an endpoint. They are responsible for
+checking the request for validity and for transforming the data into the correct
+output format. Logic should be implemented in corresponding services, that may
+be used by loaders/ actions of page routes that access the same functionality.
+
+For example: User registration is possible from both the api and the frontend.
+The logic for it is implemented in `lib/user.service.ts` and it is being used by
+both `api.user.ts` (resource route) as well as `explore.register.tsx` (page
+route), preventing duplication of common logic while also providing the
+flexibility to adjust the outputs to the needs of the respective use case.
+
+##### Documenting an API Route
+
+The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads
+the JSDoc-annotated source code in the api-routes and generates an
+openAPI(Swagger) specification and is rendered using
+[Swaggger UI](https://swagger.io/tools/swagger-ui/). The
+[JSDoc annotations](https://github.com/Surnet/swagger-jsdoc) is usually added
+before the loader or action function in the API Routes. The documentation will
+then be automatically generated from the JSDoc annotations in all the api
+routes. When testing the api during development do not forget to change the
+server to [Development Server](http://localhost:3000). To authorize a user you
+must provide the token obtained after sign-in. You can just copy and paste the
+token in the value field and then hit the authorize button.
+
+##### JSDoc Example
+
+Here's an example of how to document an API route using JSDoc annotations:
+
+```javascript
+/**
+ * @openapi
+ * /api/users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     description: Retrieve a single user by their unique identifier
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Unique identifier of the user
+ *         schema:
+ *           type: string
+ *           example: "12345"
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "12345"
+ *                 name:
+ *                   type: string
+ *                   example: "John Doe"
+ *                 email:
+ *                   type: string
+ *                   example: "john.doe@example.com"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-01-15T10:30:00Z"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error
+ */
+export async function loader({ params }) {
+	const { id } = params
+
+	try {
+		const user = await getUserById(id)
+		if (!user) {
+			throw new Response('User not found', { status: 404 })
+		}
+		return Response.json({ user })
+	} catch (error) {
+		throw new Response('Internal server error', { status: 500 })
+	}
+}
 ```
 
-That way, we can keep your local db clean and keep your tests isolated from one another.
+This JSDoc annotation will automatically generate comprehensive API
+documentation including endpoint details, parameters, response schemas, and
+example values.
 
-### Vitest
+#### Testing
 
-For lower level tests of utilities and individual components, we use `vitest`. We have DOM-specific assertion helpers via [`@testing-library/jest-dom`](https://testing-library.com/jest-dom).
+Tests are placed in the [tests/](./tests/) folder whose structure is similar to
+the [app/](./app/) folder. When adding a test, use the same name as the file you
+are testing but change the file extension to `.spec.ts`, e.g. when creating
+tests for [`./app/utils`](./app/utils.ts) name the test file
+[`./tests/utils.spec.ts`](./tests/utils.spec.ts).
 
-### Type Checking
+To run the tests, make sure you have a working database connection (e.g. by
+running `docker compose up` with the corresponding environment variables to use
+your local database). Then simply run `npm test`.
 
-This project uses TypeScript. It's recommended to get TypeScript set up for your editor to get a really great in-editor experience with type checking and auto-complete. To run type checking across the whole project, run `npm run typecheck`.
+## License
 
-### Linting
-
-This project uses ESLint for linting. That is configured in `.eslintrc.js`.
-
-### Formatting
-
-We use [Prettier](https://prettier.io/) for auto-formatting in this project. It's recommended to install an editor plugin (like the [VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) to get auto-formatting on save. There's also a `npm run format` script you can run to format all files in the project.
+[MIT](LICENSE) - Matthias Pfeil 2015 - now

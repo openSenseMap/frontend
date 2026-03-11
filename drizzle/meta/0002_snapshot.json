@@ -1,242 +1,8 @@
 {
-  "id": "c922cec0-ac0b-4f85-bcad-4a32bb9a751c",
-  "prevId": "4b88ef59-afc6-41e0-9c3f-88707099e99a",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "comment": {
-      "name": "comment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "post_id": {
-          "name": "post_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "campaignSlug": {
-          "name": "campaignSlug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "post": {
-      "name": "post",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(191)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        },
-        "campaignSlug": {
-          "name": "campaignSlug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "campaign": {
-      "name": "campaign",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "owner_id": {
-          "name": "owner_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "feature": {
-          "name": "feature",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "instructions": {
-          "name": "instructions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "countries": {
-          "name": "countries",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "priority": {
-          "name": "priority",
-          "type": "priority",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "minimumParticipants": {
-          "name": "minimumParticipants",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 1
-        },
-        "startDate": {
-          "name": "startDate",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "endDate": {
-          "name": "endDate",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "phenomena": {
-          "name": "phenomena",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "centerpoint": {
-          "name": "centerpoint",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "exposure": {
-          "name": "exposure",
-          "type": "exposure",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hardwareAvailable": {
-          "name": "hardwareAvailable",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "campaign_slug_unique": {
-          "name": "campaign_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
-        }
-      }
-    },
-    "device": {
+    "public.device": {
       "name": "device",
       "schema": "",
       "columns": {
@@ -258,8 +24,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "useAuth": {
-          "name": "useAuth",
+        "use_auth": {
+          "name": "use_auth",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
@@ -320,7 +86,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "sensorWikiModel": {
           "name": "sensorWikiModel",
@@ -334,12 +100,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "measurement": {
+    "public.measurement": {
       "name": "measurement",
       "schema": "",
       "columns": {
-        "sensorId": {
-          "name": "sensorId",
+        "sensor_id": {
+          "name": "sensor_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -362,17 +128,17 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "measurement_sensorId_time_unique": {
-          "name": "measurement_sensorId_time_unique",
-          "nullsNotDistinct": false,
+        "measurement_sensor_id_time_unique": {
+          "name": "measurement_sensor_id_time_unique",
           "columns": [
-            "sensorId",
+            "sensor_id",
             "time"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "password": {
+    "public.password": {
       "name": "password",
       "schema": "",
       "columns": {
@@ -394,21 +160,21 @@
         "password_user_id_user_id_fk": {
           "name": "password_user_id_user_id_fk",
           "tableFrom": "password",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile": {
+    "public.profile": {
       "name": "profile",
       "schema": "",
       "columns": {
@@ -443,29 +209,29 @@
         "profile_user_id_user_id_fk": {
           "name": "profile_user_id_user_id_fk",
           "tableFrom": "profile",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_username_unique": {
           "name": "profile_username_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "profile_image": {
+    "public.profile_image": {
       "name": "profile_image",
       "schema": "",
       "columns": {
@@ -519,21 +285,21 @@
         "profile_image_profile_id_profile_id_fk": {
           "name": "profile_image_profile_id_profile_id_fk",
           "tableFrom": "profile_image",
-          "tableTo": "profile",
           "columnsFrom": [
             "profile_id"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "sensor": {
+    "public.sensor": {
       "name": "sensor",
       "schema": "",
       "columns": {
@@ -555,8 +321,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "sensorType": {
-          "name": "sensorType",
+        "sensor_type": {
+          "name": "sensor_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -624,7 +390,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -688,52 +454,48 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
   },
   "enums": {
-    "model": {
+    "public.model": {
       "name": "model",
-      "values": {
-        "HOME_V2_LORA": "HOME_V2_LORA"
-      }
+      "schema": "public",
+      "values": [
+        "HOME_V2_LORA"
+      ]
     },
-    "exposure": {
+    "public.exposure": {
       "name": "exposure",
-      "values": {
-        "indoor": "indoor",
-        "outdoor": "outdoor",
-        "mobile": "mobile",
-        "unknown": "unknown"
-      }
+      "schema": "public",
+      "values": [
+        "indoor",
+        "outdoor",
+        "mobile",
+        "unknown"
+      ]
     },
-    "priority": {
-      "name": "priority",
-      "values": {
-        "urgent": "urgent",
-        "high": "high",
-        "medium": "medium",
-        "low": "low"
-      }
-    },
-    "status": {
+    "public.status": {
       "name": "status",
-      "values": {
-        "active": "active",
-        "inactive": "inactive",
-        "old": "old"
-      }
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "old"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "04d81e70-5422-45b0-9a9d-3a75736a2f43",
+  "prevId": "67d8dfcf-df55-49e7-8ab7-eadb52bb1772"
 }
