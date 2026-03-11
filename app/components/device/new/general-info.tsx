@@ -65,17 +65,17 @@ export function GeneralInfoStep() {
 		icon: React.ReactNode
 		label: string
 	}[] = [
-		{ value: 'outdoor', icon: <Cloud className="h-6 w-6" />, label: 'Outdoor' },
-		{ value: 'indoor', icon: <Home className="h-6 w-6" />, label: 'Indoor' },
+		{ value: 'outdoor', icon: <Cloud className="h-6 w-6" />, label: t('outdoor') },
+		{ value: 'indoor', icon: <Home className="h-6 w-6" />, label: t('indoor') },
 		{
 			value: 'mobile',
 			icon: <Bike className="h-6 w-6" />,
-			label: 'Mobile',
+			label: t('mobile'),
 		},
 		{
 			value: 'unknown',
 			icon: <HelpCircle className="h-6 w-6" />,
-			label: 'Unknown',
+			label: t('unknown'),
 		},
 	]
 

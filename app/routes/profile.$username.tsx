@@ -1,12 +1,20 @@
 import { useTranslation } from 'react-i18next'
-import { type LoaderFunctionArgs, redirect, useLoaderData } from 'react-router'
+import {
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+	Form,
+	redirect,
+	useActionData,
+	useLoaderData,
+	useNavigation,
+} from 'react-router'
 import invariant from 'tiny-invariant'
-import ErrorMessage from '~/components/error-message'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { userNameFromURl } from '~/lib/user-service.server'
+import { claimBox } from '~/lib/transfer-service.server'
 import {
 	getProfileByUserId,
 	getProfileSensorsAndMeasurementsCount,
@@ -14,73 +22,110 @@ import {
 import { formatCount, getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
 
+type ActionData = {
+	success: boolean
+	message?: string
+	error?: string
+	claimedBoxId?: string
+}
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const requestingUserId = await getUserId(request)
 	invariant(typeof requestingUserId === 'string')
-	// Get username or userid from URL params
 	invariant(typeof params.username === 'string')
 	const username = userNameFromURl(params.username)
 	let sensorsCount = '0'
 	let measurementsCount = '0'
 
 	if (username) {
-		// Check if user exists
 		const profile = await getProfileByUserId(requestingUserId)
 		if (profile) {
-			// Get sensors and measurements count
 			const counts = await getProfileSensorsAndMeasurementsCount(profile)
 			sensorsCount = counts.sensorsCount
 			measurementsCount = counts.measurementsCount
 		}
-		// If the user exists and their profile is public, fetch their data or
+
 		if (
 			(!profile || !profile.public) &&
 			requestingUserId !== profile?.user?.id
 		) {
 			return redirect('/explore')
-		} else {
-			// const profileMail = profile?.user?.email || ''
-			// Get the access token using the getMyBadgesAccessToken function
-			// const authToken = await getMyBadgesAccessToken().then((authData) => {
-			//   return authData.access_token;
-			// });
+		}
 
-			// // Retrieve the user's backpack data and all available badges from the server
-			// const backpackData = await getUserBackpack(profileMail, authToken).then(
-			//   (backpackData: MyBadge[]) => {
-			//     return getUniqueActiveBadges(backpackData);
-			//   },
-			// );
-
-			// const allBadges = await getAllBadges(authToken).then((allBadges) => {
-			//   return allBadges.result as BadgeClass[];
-			// });
-
-			// Return the fetched data as JSON
-			return {
-				// userBackpack: backpackData || [],
-				// allBadges: allBadges,
-				profile: profile,
-				requestingUserId: requestingUserId,
-				sensorsCount: sensorsCount,
-				measurementsCount: measurementsCount,
-			}
+		return {
+			profile,
+			requestingUserId,
+			sensorsCount,
+			measurementsCount,
 		}
 	}
 
-	// If the user data couldn't be fetched, return an empty JSON response
 	return {
-		// userBackpack: [],
-		// allBadges: [],
 		profile: null,
-		requestingUserId: requestingUserId,
+		requestingUserId,
 		sensorsCount,
 		measurementsCount,
 	}
 }
 
-export default function () {
-	// Get the data from the loader function using the useLoaderData hook
+export async function action({ request, params }: ActionFunctionArgs) {
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
+
+	const username = params.username
+	if (!username) {
+		return {
+			success: false,
+			error: 'Missing username.',
+		} satisfies ActionData
+	}
+
+	const profile = await getProfileByUserId(userId)
+	if (!profile || profile.userId !== userId) {
+		return {
+			success: false,
+			error: 'You can only claim a device from your own profile page.',
+		} satisfies ActionData
+	}
+
+	const formData = await request.formData()
+	const intent = formData.get('intent')?.toString()
+	const token = formData.get('token')?.toString().trim()
+
+	if (intent !== 'claim-device') {
+		return {
+			success: false,
+			error: 'Unknown action.',
+		} satisfies ActionData
+	}
+
+	if (!token) {
+		return {
+			success: false,
+			error: 'Please enter a transfer token.',
+		} satisfies ActionData
+	}
+
+	try {
+		const result = await claimBox(userId, token)
+
+		return {
+			success: true,
+			message: result.message,
+			claimedBoxId: result.boxId,
+		} satisfies ActionData
+	} catch (err) {
+		const message =
+			err instanceof Error ? err.message : 'Failed to claim device.'
+
+		return {
+			success: false,
+			error: message,
+		} satisfies ActionData
+	}
+}
+
+export default function ProfilePage() {
 	const { profile, sensorsCount, measurementsCount, requestingUserId } =
 		useLoaderData<typeof loader>()
 
@@ -88,8 +133,6 @@ export default function () {
 	const columnsTranslation = useTranslation('data-table')
 
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
-
-	// const sortedBadges = sortBadges(allBadges, userBackpack);
 
 	return (
 		<div className="h-full bg-slate-100">
@@ -123,6 +166,7 @@ export default function () {
 							</p>
 						</div>
 					</div>
+
 					<div className="grid grid-cols-2 gap-4 md:pt-6">
 						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
 							<span className="text-2xl font-bold dark:text-dark-green">
@@ -148,89 +192,24 @@ export default function () {
 								{t('measurements')}
 							</span>
 						</div>
-						{/* <div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
-							<span className="text-2xl font-bold dark:text-dark-green">
-								{userBackpack.length}
-							</span>
-							<span className="text-sm text-gray-500 dark:text-gray-400">
-								{t("badges")}
-							</span>
-						</div> */}
 					</div>
 				</div>
+
 				<div className="flex w-full flex-col gap-6 md:w-2/3">
-					{/* <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background">
-						<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
-							Badges
-						</div>
-						<section className="w-full py-12 md:py-16 lg:py-20">
-							<div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-								{sortedBadges.map((badge: BadgeClass) => {
-									return (
-										<Link
-											to={badge.openBadgeId}
-											target="_blank"
-											rel="noopener noreferrer"
-											key={badge.entityId}
-										>
-											<div
-												className={cn(
-													'flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 dark:border-gray-800 dark:text-dark-text',
-													userBackpack.some((obj: MyBadge | null) => {
-														return (
-															obj !== null &&
-															obj.badgeclass === badge.entityId &&
-															!obj.revoked
-														)
-													})
-														? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
-														: 'bg-gray-100 dark:bg-dark-boxes',
-												)}
-											>
-												<img
-													alt="Design"
-													className="h-6 w-6 rounded-full"
-													height={24}
-													src={badge.image}
-													style={{
-														aspectRatio: '24/24',
-														objectFit: 'cover',
-													}}
-													width={24}
-												/>
-												<span className="text-sm font-medium">
-													{badge.name}
-												</span>
-											</div>
-										</Link>
-									)
-								})}
-							</div>
-						</section>
-					</div> */}
 					<div className="rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background">
+						<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
+							{t('devices')}
+						</div>
+
 						{profile?.user?.devices && (
-							<>
-								<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
-									{t('devices')}
-								</div>
-								<DataTable
-									columns={getColumns(columnsTranslation, { isOwner })}
-									data={profile?.user.devices}
-								/>
-							</>
+							<DataTable
+								columns={getColumns(columnsTranslation, { isOwner })}
+								data={profile.user.devices}
+							/>
 						)}
 					</div>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

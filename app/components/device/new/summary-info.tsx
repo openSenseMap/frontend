@@ -63,21 +63,26 @@ export function SummaryInfo() {
 		<div className="space-y-6">
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				{sections.map((section, index) => (
-					<Card key={index} className="overflow-hidden">
+					<Card key={index} className="overflow-hidden border border-border bg-card shadow-sm">
 						<CardContent className="p-0">
-							<div className="to-purple-500 flex items-center space-x-2 bg-gradient-to-r from-blue-500 p-4">
-								{section.icon}
-								<h4 className="text-lg font-semibold text-white">
+							<div className="flex items-center gap-3 border-b bg-muted/40 px-4 py-3">
+								<div className="flex h-9 w-9 items-center justify-center rounded-md bg-background text-muted-foreground shadow-sm">
+									{section.icon}
+								</div>
+								<h4 className="text-sm font-semibold tracking-tight text-foreground">
 									{t(section.title)}
 								</h4>
 							</div>
+
 							<div className="space-y-2 p-4">
 								{section.data.map((item: any, idx: any) => (
-									<div key={idx} className="flex items-center justify-between">
-										<span className="text-sm text-gray-500">{t(item.label)}:</span>
-										<Badge variant="secondary" className="font-mono">
-											{t(item.value)}
-										</Badge>
+									<div key={idx} className="flex items-start justify-between gap-4">
+										<span className="text-sm text-muted-foreground">
+											{t(item.label)}:
+										</span>
+										<span className="max-w-[60%] text-right text-sm font-medium text-foreground">
+											{item.value}
+										</span>
 									</div>
 								))}
 							</div>
