@@ -6,6 +6,7 @@ import {
 	Link,
 	useFetcher,
 	useLoaderData,
+	useRevalidator,
 	type LoaderFunctionArgs,
 } from 'react-router'
 import LanguageSelector from '~/components/landing/header/language-selector'
@@ -63,10 +64,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Imprint() {
 	const data = useLoaderData<typeof loader>()
 	const [, i18n] = useTranslation()
-	const fetcher = useFetcher()
+	const revalidator = useRevalidator()
 
-	const reloadOnLanguageChanged = useEffectEvent(() => {
-		fetcher.reset()
+	const reloadOnLanguageChanged = useEffectEvent(async () => {
+		await revalidator.revalidate()
 	})
 
 	useEffect(() => {
