@@ -110,8 +110,11 @@ export default function () {
 						</Avatar>
 						<div>
 							<h3 className="text-2xl font-semibold dark:text-dark-text">
-								{profile?.user?.name || ''}
+								{profile?.displayName || ''}
 							</h3>
+							<h4 className="text-lg dark:text-dark-text">
+								{profile?.user?.name || ''}
+							</h4>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
 								{t('user_since')}{' '}
 								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
