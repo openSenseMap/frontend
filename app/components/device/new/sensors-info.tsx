@@ -149,8 +149,7 @@ export function SensorSelectionStep() {
 		<div className="flex h-full flex-col">
 			<div className="mb-4 flex items-center justify-between">
 				<p className="text-sm text-muted-foreground">
-					{selectedSensors.length} {t('sensor')}
-					{selectedSensors.length !== 1 ? 's' : ''} {t('selected')}
+					{t('selectedSensors', { count: selectedSensors.length })}
 				</p>
 				{selectedSensors.length > 0 && (
 					<button

@@ -1,9 +1,17 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import {
+	LoaderFunctionArgs,
+	type ActionFunction,
+	type ActionFunctionArgs,
+} from 'react-router'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { CreateBoxSchema } from '~/lib/devices-service.server'
+import { BoxesQuerySchema, CreateBoxSchema } from '~/lib/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
-import { createDevice } from '~/models/device.server'
-import { type User } from '~/schema'
+import {
+	createDevice,
+	findDevices,
+	FindDevicesOptions,
+} from '~/models/device.server'
+import { Device, type User } from '~/schema'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**
@@ -323,6 +331,45 @@ import { StandardResponse } from '~/utils/response-utils'
  *                     type: string
  *                     example: "25.13"
  */
+export async function loader({ request }: LoaderFunctionArgs) {
+	const url = new URL(request.url)
+	const queryObj = Object.fromEntries(url.searchParams)
+	const parseResult = BoxesQuerySchema.safeParse(queryObj)
+
+	if (!parseResult.success) {
+		const { fieldErrors } = parseResult.error.flatten()
+		if (fieldErrors.format)
+			throw StandardResponse.unprocessableContent('Invalid format parameter')
+
+		throw StandardResponse.unprocessableContent(
+			`${parseResult.error.flatten()}`,
+		)
+	}
+
+	const params: FindDevicesOptions = parseResult.data
+
+	const devices = await findDevices(params)
+
+	if (params.format === 'geojson') {
+		const geojson = {
+			type: 'FeatureCollection',
+			features: devices.map((device: Device) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: [device.longitude, device.latitude],
+				},
+				properties: {
+					...device,
+				},
+			})),
+		}
+
+		return geojson
+	} else {
+		return devices
+	}
+}
 
 export const action: ActionFunction = async ({
 	request,

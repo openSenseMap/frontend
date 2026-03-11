@@ -1,8 +1,12 @@
 {
-    "back_to_dashboard": "Zurück zum Dashboard",
-    "device_overview": "Übersicht des Geräts",
-    "show_details": "Gerätedetails und Sensoren",
-    "device": "Gerät",
-    "exposure": "Standort",
-    "sensors": "Sensoren"
+	"back_to_dashboard": "Zurück zum Dashboard",
+	"device_overview": "Übersicht des Geräts",
+	"show_details": "Gerätedetails und Sensoren",
+	"device": "Gerät",
+	"exposure": "Standort",
+	"sensors": "Sensoren",
+	"name_label": "Name",
+	"model_label": "Modell",
+	"tags_label": "Tags",
+	"api_key_label": "API Key"
 }

@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
 import { Label } from '~/components/ui/label'
@@ -35,6 +36,7 @@ const connectionTypes = ['Wifi', 'Lora', 'Ethernet']
 
 export function DeviceSelectionStep() {
 	const { setValue, watch } = useFormContext()
+	const { t } = useTranslation('newdevice')
 
 	// Watch the existing values from the form state
 	const model = watch('model')
@@ -154,7 +156,7 @@ export function DeviceSelectionStep() {
 											<Separator className="my-2" />
 											<div className="w-full max-w-xs">
 												<h4 className="mb-2 text-sm font-medium">
-													Connection Type:
+													{t('connection_type')}
 												</h4>
 												<RadioGroup
 													value={selectedConnectionType}

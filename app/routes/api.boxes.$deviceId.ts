@@ -1,5 +1,6 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { deleteDevice } from '~/lib/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
 import {
 	DeviceUpdateError,
@@ -7,6 +8,7 @@ import {
 	updateDevice,
 	type UpdateDeviceArgs,
 } from '~/models/device.server'
+import { type Device, type User } from '~/schema'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**
@@ -122,6 +124,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	switch (request.method) {
 		case 'PUT':
 			return await put(request, jwtResponse, deviceId)
+		case 'DELETE':
+			return await del(request, jwtResponse, deviceId)
 		default:
 			return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
 	}
@@ -250,5 +254,30 @@ async function put(request: Request, user: any, deviceId: string) {
 			},
 			{ status: 500 },
 		)
+	}
+}
+
+async function del(request: Request, user: User, deviceId: string) {
+	const device = (await getDevice({ id: deviceId })) as unknown as Device
+
+	if (!device) throw StandardResponse.notFound('Device not found')
+
+	const body = await request.json()
+
+	if (!body.password)
+		throw StandardResponse.badRequest(
+			'Password is required for device deletion',
+		)
+
+	try {
+		const deleted = await deleteDevice(user, device, body.password)
+
+		if (deleted === 'unauthorized')
+			return StandardResponse.unauthorized('Password incorrect')
+
+		return StandardResponse.ok(null)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
 	}
 }
