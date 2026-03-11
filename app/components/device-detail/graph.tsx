@@ -542,14 +542,14 @@ export default function Graph({
 						</div>
 					)}
 					<div
-						className="flex cursor-move flex-wrap items-center justify-between gap-x-2 gap-y-2 px-2 pt-2"
+						className="flex cursor-move flex-wrap items-center justify-between gap-2 px-2 pt-2"
 						id="graphTop"
 					>
-						<div className="flex min-w-0 flex-wrap items-center gap-2">
+						<div className="flex flex-grow flex-wrap items-center gap-2">
 							<DateRangeFilter />
 							<AggregationFilter />
 						</div>
-						<div className="flex shrink-0 items-center justify-end gap-4">
+						<div className="ml-auto flex items-center justify-end gap-4">
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
@@ -597,7 +597,7 @@ export default function Graph({
 							/>
 						</div>
 					</div>
-					<div className="flex min-h-0 flex-1 w-full items-center justify-center">
+					<div className="flex min-h-0 w-full flex-1 items-center justify-center">
 						{(sensors[0].data.length === 0 && sensors[1] === undefined) ||
 						(sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
 							<div>There is no data for the selected time period.</div>

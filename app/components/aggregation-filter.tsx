@@ -57,7 +57,7 @@ export function AggregationFilter() {
 		>
 			<SelectPrimitive.Trigger
 				className={
-					'flex h-10 w-full items-center justify-between bg-transparent px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400'
+					'flex h-10 items-center justify-between bg-transparent px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400'
 				}
 			>
 				<div className="inline-flex h-8 items-center justify-center whitespace-nowrap rounded-md border border-slate-200 bg-white text-sm font-medium ring-offset-white transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50 dark:focus-visible:ring-slate-300">
