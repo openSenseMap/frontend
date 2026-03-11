@@ -534,7 +534,7 @@ export default function Graph({
 			>
 				<div
 					ref={nodeRef}
-					className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 right-4 top-14 z-40 flex flex-col gap-4 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-auto md:right-4 md:top-auto md:h-[35%] md:max-h-[35%] md:w-[60vw]"
+					className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:bottom-[30px] md:left-auto md:right-4 md:top-auto md:h-[35%] md:max-h-[35%] md:w-[60vw]"
 				>
 					{navigation.state === 'loading' && (
 						<div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
@@ -542,14 +542,14 @@ export default function Graph({
 						</div>
 					)}
 					<div
-						className="flex cursor-move items-center justify-between px-2 pt-2"
+						className="flex cursor-move flex-wrap items-center justify-between gap-2 px-2 pt-2"
 						id="graphTop"
 					>
-						<div className="flex items-center justify-center gap-4">
+						<div className="flex flex-grow flex-wrap items-center gap-2">
 							<DateRangeFilter />
 							<AggregationFilter />
 						</div>
-						<div className="flex items-center justify-end gap-4">
+						<div className="ml-auto flex items-center justify-end gap-4">
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
@@ -597,7 +597,7 @@ export default function Graph({
 							/>
 						</div>
 					</div>
-					<div className="flex h-full w-full items-center justify-center">
+					<div className="flex min-h-0 w-full flex-1 items-center justify-center">
 						{(sensors[0].data.length === 0 && sensors[1] === undefined) ||
 						(sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
 							<div>There is no data for the selected time period.</div>
