@@ -11,6 +11,7 @@
 	"profile_settings": "Profile Settings",
 	"profile_settings_description": "This is how others see your profile.",
 	"username": "Username",
+	"username_change_warning": "Changing your username will make <strong>{{oldUsername}}</strong> available to others. Any existing links (e.g. <code>/profile/{{oldUsername}}</code>) will no longer work.",
 	"displayName": "Profile name",
 	"if_public": "If your profile is public, this is how people will see you.",
 	"enter_username": "Enter your new username",

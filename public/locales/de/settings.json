@@ -10,6 +10,7 @@
   "profile_settings": "Profileinstellungen",
   "profile_settings_description": "Das ist, wie andere dein Profil sehen.",
   "username": "Benutzername",
+  "username_change_warning": "Durch die Änderung Ihres Benutzernamens wird <strong>{{oldUsername}}</strong> für andere verfügbar. Alle bestehenden Links (z. B. <code>/profile/{{oldUsername}}</code>) funktionieren dann nicht mehr.",
   "displayName": "Profilname",
   "if_public": "Wenn dein Profil öffentlich ist, ist das wie andere Menschen dich sehen werden.",
   "enter_username": "Gib deinen Benutzernamen ein",

@@ -1,6 +1,6 @@
 import { CheckLine, OctagonAlert } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import {
 	Form,
 	useActionData,
@@ -13,6 +13,7 @@ import {
 	useSearchParams,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { Callout } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import {
 	Card,
@@ -272,6 +273,16 @@ export default function EditUserProfilePage() {
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 						/>
+						{name !== (userData?.name ?? '') && (
+							 <Callout variant="warning">
+								<Trans
+									i18nKey="username_change_warning"
+									ns="settings"
+									values={{ oldUsername: userData?.name ?? '' }}
+									components={{ strong: <strong />, code: <code /> }}
+								/>
+							</Callout>
+						)}
 					</div>
 
 					<div className="grid gap-2">
