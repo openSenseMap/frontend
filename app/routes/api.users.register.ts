@@ -10,7 +10,7 @@ function mapRegistrationError(code: string): string {
 			return 'Username is required.'
 		case 'username_length':
 			return 'Username must be at least 3 characters long and not more than 40.'
-		case 'username_invalid_characters':
+		case 'username_invalid':
 			return 'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.'
 		case 'username_already_taken':
 			return 'Username is already taken.'

@@ -55,14 +55,27 @@ export const validateEmail = (email: string): EmailValidation => {
 }
 
 export type PasswordValidation = {
-	isValid: boolean
-	required?: boolean
-	length?: boolean
+    isValid: boolean
+    required?: boolean
+    length?: boolean
+    complexity?: boolean
 } & RegistrationInputValidation
+
 export const validatePassword = (password: string): PasswordValidation => {
-	if (password.length === 0)
-		return { isValid: false, required: true, validationKind: 'password' }
-	if (password.length < 8)
-		return { isValid: false, length: true, validationKind: 'password' }
-	return { isValid: true, validationKind: 'password' }
+    if (password.length === 0)
+        return { isValid: false, required: true, validationKind: 'password' }
+
+    const isLongEnough = password.length >= 15
+    const meetsComplexity =
+        password.length >= 8 &&
+        /[0-9]/.test(password) &&
+        /[a-z]/.test(password)
+
+    if (isLongEnough || meetsComplexity)
+        return { isValid: true, validationKind: 'password' }
+
+    if (password.length < 8)
+        return { isValid: false, length: true, validationKind: 'password' }
+
+    return { isValid: false, complexity: true, validationKind: 'password' }
 }

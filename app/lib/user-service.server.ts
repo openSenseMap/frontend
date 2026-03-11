@@ -51,13 +51,14 @@ type RegisterUserResult =
 			code:
 				| 'username_required'
 				| 'username_length'
-				| 'username_invalid_characters'
+				| 'username_invalid'
 				| 'username_already_taken'
 				| 'email_required'
 				| 'email_invalid'
 				| 'email_already_taken'
 				| 'password_required'
 				| 'password_too_short'
+				| 'password_too_weak'
 				| 'registration_failed'
 	  }
 /**
@@ -89,7 +90,7 @@ export const registerUser = async (
 				: usernameValidation.length
 					? 'username_length'
 					: usernameValidation.invalidCharacters
-						? 'username_invalid_characters'
+						? 'username_invalid'
 						: 'registration_failed',
 		}
 	}
@@ -127,11 +128,13 @@ export const registerUser = async (
 			ok: false,
 			field: 'password',
 			code: passwordValidation.required
-				? 'password_required'
-				: passwordValidation.length
-					? 'password_too_short'
-					: 'registration_failed',
-		}
+					? 'password_required'
+					: passwordValidation.length
+						? 'password_too_short'
+						: passwordValidation.complexity
+							? 'password_too_weak'
+							: 'registration_failed',
+						}
 	}
 
 	const newUsers = await createUser(

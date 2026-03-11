@@ -222,6 +222,9 @@ export default function RegisterDialog() {
 								type="text"
 								autoFocus={true}
 							/>
+							<p className="text-xs text-muted-foreground">
+									{t('username_hint')} 
+							</p>
 							{actionData?.errors?.username && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
 									{t(actionData.errors.username)}
@@ -260,6 +263,9 @@ export default function RegisterDialog() {
 								aria-invalid={actionData?.errors?.password ? true : undefined}
 								aria-describedby="password-error"
 							/>
+							<p className="text-xs text-muted-foreground">
+									{t('password_hint')} 
+							</p>
 							{actionData?.errors?.password && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
 									{t(actionData.errors.password)}
