@@ -8,8 +8,8 @@ import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
 import { type User, type Device } from '~/schema'
 
 const DEVICE_TEST_USER = {
-	name: 'deviceUpdateSensorsTest',
-	email: 'test@deviceSensors.endpoint',
+	name: 'deviceUpdateDeviceSensorsTest',
+	email: 'test@deviceSensorsTest.endpoint',
 	password: 'highlySecurePasswordForTesting',
 }
 
@@ -32,6 +32,8 @@ describe('Device Sensors API: updating sensors', () => {
 			'en_US',
 		)
 
+		console.log("registration", registration)
+
 		expect(registration.ok).toBe(true)
 
 		if (!registration.ok) {
@@ -40,7 +42,7 @@ describe('Device Sensors API: updating sensors', () => {
 			)
 		}
 
-		const user = registration.user
+		user = registration.user
 		const { token } = await createToken(user)
 		jwt = token
 

@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { type ActionFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
@@ -40,9 +41,10 @@ describe('openSenseMap API Routes: /users/register', () => {
 
 		it('should deny registering a user with the same email', async () => {
 			// Arrange
-			const params = new URLSearchParams()
-			for (const [key, value] of Object.entries(VALID_USER))
-				params.append(key, value)
+			const params = new URLSearchParams({
+				...VALID_USER,
+				name: randomUUID().toString(), // fresh username, same email
+			})
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -65,9 +67,9 @@ describe('openSenseMap API Routes: /users/register', () => {
 
 		it('should deny registering a user with too short password', async () => {
 			const params = new URLSearchParams({
-				name: 'tester',
+				name: 'tester123',
 				password: 'short',
-				email: 'address@email.com',
+				email: 'addresstesting@email.com',
 			})
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
