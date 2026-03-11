@@ -9,10 +9,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	if (!user) {
 		return redirect('/explore/login')
 	} else {
-		const profile = await getProfileByUserId(user.id)
-		if (!profile) {
-			throw new Error()
-		}
-		return redirect('/profile/' + profile.username)
+		return redirect('/profile/' + user.name)
 	}
 }

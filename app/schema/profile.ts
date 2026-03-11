@@ -16,11 +16,14 @@ export const profile = pgTable('profile', {
 		.primaryKey()
 		.notNull()
 		.$defaultFn(() => createId()),
-	username: text('username').unique().notNull(),
+	displayName: text('display_name').notNull(),
 	public: boolean('public').default(false),
-	userId: text('user_id').references(() => user.id, {
-		onDelete: 'cascade',
-		onUpdate: 'cascade',
+	userId: text('user_id')
+		.notNull()
+		.unique()	
+		.references(() => user.id, {
+			onDelete: 'cascade',
+			onUpdate: 'cascade',
 	}),
 })
 

@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { type LoaderFunctionArgs, redirect, useLoaderData } from 'react-router'
+import invariant from 'tiny-invariant'
 import ErrorMessage from '~/components/error-message'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
-	getProfileByUsername,
+	getProfileByUserId,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
 import { formatCount, getInitials } from '~/utils/misc'
@@ -14,6 +15,7 @@ import { getUserId } from '~/utils/session.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const requestingUserId = await getUserId(request)
+	invariant(typeof requestingUserId === 'string')
 	// Get username or userid from URL params
 	const username = params.username
 	let sensorsCount = '0'
@@ -21,7 +23,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	if (username) {
 		// Check if user exists
-		const profile = await getProfileByUsername(username)
+		const profile = await getProfileByUserId(requestingUserId)
 		if (profile) {
 			// Get sensors and measurements count
 			const counts = await getProfileSensorsAndMeasurementsCount(profile)
@@ -101,7 +103,7 @@ export default function () {
 								/>
 							) : null}
 							<AvatarFallback>
-								{getInitials(profile?.username ?? '')}
+								{getInitials(profile?.displayName ?? '')}
 							</AvatarFallback>
 						</Avatar>
 						<div>
