@@ -8,8 +8,8 @@ import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
 import { type User, type Device } from '~/schema'
 
 const TEST_USER = {
-	name: 'feinstaubAddonUpdateTestUser',
-	email: 'feinstaubUpdate.addon@test',
+	name: 'feinstaubAddonTestUser',
+	email: 'feinstaub.addon@test',
 	password: 'secureTestPassword123!',
 }
 
@@ -29,14 +29,23 @@ describe('Device API: Feinstaub Addon behavior', () => {
 	let queryableDevice: Device | null = null
 
 	beforeAll(async () => {
-		const testUser = await registerUser(
+		const registration = await registerUser(
 			TEST_USER.name,
 			TEST_USER.email,
 			TEST_USER.password,
 			'en_US',
 		)
-		user = testUser as User
-		const { token: t } = await createToken(testUser as User)
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		user = registration.user
+
+		const { token: t } = await createToken(registration.user)
 		jwt = t
 
 		queryableDevice = await createDevice(
@@ -46,7 +55,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 				longitude: 12,
 				tags: ['newgroup'],
 			},
-			(testUser as User).id,
+			user.id,
 		)
 	})
 

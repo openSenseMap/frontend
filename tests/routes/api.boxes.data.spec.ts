@@ -40,13 +40,21 @@ describe('openSenseMap API: /boxes/data', () => {
 	beforeAll(async () => {
 		await deleteUserByEmail(BOXES_DATA_TEST_USER.email)
 
-		const testUser = await registerUser(
+		const registration = await registerUser(
 			BOXES_DATA_TEST_USER.name,
 			BOXES_DATA_TEST_USER.email,
 			BOXES_DATA_TEST_USER.password,
 			'en_US',
 		)
-		user = testUser as User
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		const user = registration.user
 		const t = await createToken(user)
 		jwt = t.token
 

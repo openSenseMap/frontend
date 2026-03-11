@@ -8,8 +8,8 @@ import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
 import { type User, type Device } from '~/schema'
 
 const DEVICE_TEST_USER = {
-	name: 'deviceTestUpdateSensors',
-	email: 'test@deviceSensorsUpdate.endpoint',
+	name: 'deviceUpdateSensorsTest',
+	email: 'test@deviceSensors.endpoint',
 	password: 'highlySecurePasswordForTesting',
 }
 
@@ -25,13 +25,22 @@ const generateMinimalDevice = () => ({
 
 describe('Device Sensors API: updating sensors', () => {
 	beforeAll(async () => {
-		const testUser = await registerUser(
+		const registration = await registerUser(
 			DEVICE_TEST_USER.name,
 			DEVICE_TEST_USER.email,
 			DEVICE_TEST_USER.password,
 			'en_US',
 		)
-		user = testUser as User
+
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		const user = registration.user
 		const { token } = await createToken(user)
 		jwt = token
 

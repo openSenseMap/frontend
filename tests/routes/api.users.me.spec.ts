@@ -16,12 +16,20 @@ describe('openSenseMap API Routes: /users', () => {
 	let jwt: string = ''
 
 	beforeAll(async () => {
-		const user = await registerUser(
+		const registration = await registerUser(
 			ME_TEST_USER.name,
 			ME_TEST_USER.email,
 			ME_TEST_USER.password,
 			'en_US',
 		)
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+		const user = registration.user
 		const { token: t } = await createToken(user as User)
 		jwt = t
 	})

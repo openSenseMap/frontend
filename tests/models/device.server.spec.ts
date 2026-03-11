@@ -4,7 +4,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 import { type User } from '~/schema'
 
 const DEVICE_MODEL_TEST_USER = {
-	name: 'device model tester',
+	name: 'device-model-tester',
 	email: 'test@devicemodel.me',
 	password: 'some secure password',
 }
@@ -14,12 +14,21 @@ describe('Device Model: createDevice', () => {
 	let createdDeviceIds: string[] = []
 
 	beforeAll(async () => {
-		const user = await registerUser(
+		const registration = await registerUser(
 			DEVICE_MODEL_TEST_USER.name,
 			DEVICE_MODEL_TEST_USER.email,
 			DEVICE_MODEL_TEST_USER.password,
 			'en_US',
 		)
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		const user = registration.user
 		userId = (user as User).id
 	})
 

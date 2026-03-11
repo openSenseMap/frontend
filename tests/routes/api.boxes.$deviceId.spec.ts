@@ -34,14 +34,22 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 	let queryableDevice: Device | null = null
 
 	beforeAll(async () => {
-		const testUser = await registerUser(
+		const registration = await registerUser(
 			DEVICE_TEST_USER.name,
 			DEVICE_TEST_USER.email,
 			DEVICE_TEST_USER.password,
 			'en_US',
 		)
-		user = testUser as User
-		const { token: t } = await createToken(testUser as User)
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		user = registration.user
+		const { token: t } = await createToken(user as User)
 		jwt = t
 
 		queryableDevice = await createDevice(
@@ -52,7 +60,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				tags: ['testgroup'],
 				useAuth: false,
 			},
-			(testUser as User).id,
+			(user as User).id,
 		)
 	})
 

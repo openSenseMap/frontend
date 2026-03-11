@@ -111,12 +111,21 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 	}
 
 	beforeAll(async () => {
-		const user = await registerUser(
+		const registration = await registerUser(
 			TEST_USER.name,
 			TEST_USER.email,
 			TEST_USER.password,
 			'en_US',
 		)
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		const user = registration.user
 		userId = (user as User).id
 		const device = await createDevice(TEST_BOX, userId)
 		deviceId = device.id

@@ -25,13 +25,22 @@ describe('openSenseMap API Routes: /tags', () => {
 	let deviceId: string = ''
 
 	beforeAll(async () => {
-		const user = await registerUser(
+		const registration = await registerUser(
 			TAGS_TEST_USER.name,
 			TAGS_TEST_USER.email,
 			TAGS_TEST_USER.password,
 			'en_US',
 		)
-		userId = (user as User).id
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		const user = registration.user
+		userId = user.id
 	})
 
 	it('should return empty array of tags when none are there', async () => {
