@@ -543,6 +543,6 @@ export const signIn = async (
 	return { user, jwt: token, refreshToken }
 }
 
-export const userNameToURl = (username: string) => encodeURIComponent(username);
-export const userNameFromURl = (username: string) => decodeURIComponent(username);
+export const userNameToURl = (username: string): string => encodeURIComponent(username);
+export const userNameFromURl = (username: string): string => decodeURIComponent(username);
 

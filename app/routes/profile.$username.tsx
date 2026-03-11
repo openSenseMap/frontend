@@ -6,6 +6,7 @@ import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { userNameFromURl } from '~/lib/user-service.server'
 import {
 	getProfileByUserId,
 	getProfileSensorsAndMeasurementsCount,
@@ -17,7 +18,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const requestingUserId = await getUserId(request)
 	invariant(typeof requestingUserId === 'string')
 	// Get username or userid from URL params
-	const username = params.username
+	invariant(typeof params.username === 'string')
+	const username = userNameFromURl(params.username)
 	let sensorsCount = '0'
 	let measurementsCount = '0'
 
