@@ -3,7 +3,6 @@ import Download from './download'
 import Home from './home'
 import Menu from './menu'
 import NavBar from './nav-bar'
-// import { useLoaderData } from "@remix-run/react";
 // import Notification from "./notification";
 // import type { loader } from "~/routes/explore.$deviceId._index";
 

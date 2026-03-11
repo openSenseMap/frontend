@@ -1,0 +1,292 @@
+import { ChevronDown, FilterIcon } from "lucide-react";
+import  { type Dispatch, type SetStateAction, useState  } from "react";
+import { useTranslation } from "react-i18next";
+import PhenomenaSelect from "../phenomena-select";
+import { CountryDropdown } from "./country-dropdown";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "~/components/ui/button";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { ScrollArea } from "~/components/ui/scroll-area";
+
+import { exposureEnum } from "~/schema";
+// import { Exposure } from "@prisma/client";
+
+type FiltersModalProps = {
+  phenomena: string[];
+  phenomenaState: {
+    [k: string]: any;
+  };
+  setPhenomenaState: Dispatch<
+    SetStateAction<{
+      [k: string]: any;
+    }>
+  >;
+  filterObject: {
+    searchTerm: string;
+    priority: string;
+    country: string;
+    exposure: string;
+    phenomena: string[];
+    time_range: {
+      startDate: string;
+      endDate: string;
+    };
+  };
+  setFilterObject: Dispatch<
+    SetStateAction<{
+      searchTerm: string;
+      priority: string;
+      country: string;
+      exposure: string;
+      phenomena: string[];
+      time_range: {
+        startDate: string;
+        endDate: string;
+      };
+    }>
+  >;
+};
+
+export default function FiltersModal({
+  phenomena,
+  phenomenaState,
+  setPhenomenaState,
+  filterObject,
+  setFilterObject,
+}: FiltersModalProps) {
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [phenomenaDropdown, setPhenomenaDropdownOpen] = useState(false);
+  const [localFilterObject, setLocalFilterObject] = useState({
+    country: "",
+    exposure: "",
+    phenomena: [] as string[],
+    time_range: {
+      startDate: "",
+      endDate: "",
+    },
+  });
+  const { t } = useTranslation("campaign-filters-modal");
+
+  return (
+    <Dialog open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
+      <DialogTrigger>
+        <Button variant="outline" className="flex w-fit gap-2" size="lg">
+          {t("more filters")} <FilterIcon className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      {/* <DialogOverlay> */}
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("more filters")}</DialogTitle>
+        </DialogHeader>
+        <CountryDropdown
+          setCountry={(e) =>
+            setLocalFilterObject({ ...localFilterObject, country: e })
+          }
+        />
+        <Select
+          onValueChange={(e) =>
+            setLocalFilterObject({ ...localFilterObject, exposure: e })
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select exposure" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>{t("exposures")}</SelectLabel>
+              {Object.keys(exposureEnum).map((key: string) => {
+                return (
+                  <SelectItem key={key} value={key}>
+                    {key}
+                  </SelectItem>
+                );
+              })}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <PhenomenaSelect
+          phenomena={phenomena}
+          // setSelectedPhenomena={setSelectedPhenomena}
+          setLocalFilterObject={setLocalFilterObject}
+          localFilterObject={localFilterObject}
+        />
+        {/* <DropdownMenu
+          open={phenomenaDropdown}
+          onOpenChange={setPhenomenaDropdownOpen}
+          // modal={false}
+        >
+          <DropdownMenuTrigger asChild>
+            <Button className="w-full truncate" variant="outline">
+              {Object.keys(phenomenaState)
+                .filter((key) => phenomenaState[key])
+                .join(", ")}
+              {Object.keys(phenomenaState).filter((key) => phenomenaState[key])
+                .length > 0 ? (
+                <></>
+              ) : (
+                <span>{t("phenomena")}</span>
+              )}
+              <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <ScrollArea className="h-24">
+              {phenomena.map((p: any) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={p}
+                    checked={phenomenaState[p]}
+                    onCheckedChange={() => {
+                      setPhenomenaState({
+                        ...phenomenaState,
+                        [p]: !phenomenaState[p],
+                      });
+                    }}
+                    onSelect={(event) => event.preventDefault()}
+                  >
+                    {p}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </ScrollArea>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button className="w-full" variant="outline">
+              <span>{t("organizations")}</span>
+              <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <p>TODO: Organizations here</p>
+          </DropdownMenuContent>
+        </DropdownMenu> */}
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button className="mx-auto w-fit" variant="outline">
+              {t("time range")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="flex flex-col gap-2">
+              <div className="mx-auto">
+                <label
+                  htmlFor="startDate"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {t("from")}
+                </label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  onChange={(e) =>
+                    setLocalFilterObject({
+                      ...localFilterObject,
+                      time_range: {
+                        ...localFilterObject.time_range,
+                        startDate: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div className="mx-auto">
+                <label
+                  htmlFor="endDate"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {t("to")}
+                </label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  onChange={(e) =>
+                    setLocalFilterObject({
+                      ...localFilterObject,
+                      time_range: {
+                        ...localFilterObject.time_range,
+                        endDate: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <Button className="mx-auto" onClick={() => setPopoverOpen(false)}>
+                {t("apply")}
+              </Button>
+            </div>
+            <PopoverArrow />
+          </PopoverContent>
+        </Popover>
+
+        <DialogFooter className="flex w-full justify-between">
+          <Button
+            onClick={() => setMoreFiltersOpen(false)}
+            variant="destructive"
+            className="mr-auto"
+          >
+            {t("cancel")}
+          </Button>
+          <Button
+            onClick={() => {
+              setFilterObject({
+                ...filterObject,
+                country: localFilterObject.country,
+                exposure: localFilterObject.exposure,
+                phenomena: localFilterObject.phenomena,
+                time_range: localFilterObject.time_range,
+              });
+              setLocalFilterObject({
+                country: "",
+                exposure: "",
+                phenomena: [],
+                time_range: {
+                  startDate: "",
+                  endDate: "",
+                },
+              });
+
+              setMoreFiltersOpen(false);
+            }}
+          >
+            {t("apply")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+      {/* </DialogOverlay> */}
+    </Dialog>
+  );
+}

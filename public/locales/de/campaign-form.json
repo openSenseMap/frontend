@@ -1,0 +1,12 @@
+{
+  "title": "Titel",
+  "description": "Beschreibung",
+  "priority": "Priorität",
+  "participants": "Mindestanzahl Teilnehmer",
+  "sensors": "Gewünschte Anzahl Sensoren",
+  "startDate": "Beginn",
+  "endDate": "Abschluss",
+  "phenomena": "Phänomene",
+  "exposure": "Einsatzgebiet",
+  "hardware_available": "Hardware verfügbar"
+}

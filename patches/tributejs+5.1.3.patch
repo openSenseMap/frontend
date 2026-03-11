@@ -1,0 +1,22 @@
+diff --git a/node_modules/tributejs/dist/tribute.js b/node_modules/tributejs/dist/tribute.js
+index 3100f68..c1c7158 100644
+--- a/node_modules/tributejs/dist/tribute.js
++++ b/node_modules/tributejs/dist/tribute.js
+@@ -95,7 +95,7 @@
+     };
+   }
+ 
+-  if (window && typeof window.CustomEvent !== "function") {
++  if (typeof window != 'undefined' && typeof window.CustomEvent !== "function") {
+     var CustomEvent$1 = function CustomEvent(event, params) {
+       params = params || {
+         bubbles: false,
+@@ -1830,7 +1830,7 @@
+         if (typeof item === "undefined") return "".concat(this.current.collection.trigger).concat(this.current.mentionText);
+ 
+         if (this.range.isContentEditable(this.current.element)) {
+-          return '<span class="tribute-mention">' + (this.current.collection.trigger + item.original[this.current.collection.fillAttr]) + "</span>";
++          return '<span className="tribute-mention">' + (this.current.collection.trigger + item.original[this.current.collection.fillAttr]) + "</span>";
+         }
+ 
+         return this.current.collection.trigger + item.original[this.current.collection.fillAttr];
