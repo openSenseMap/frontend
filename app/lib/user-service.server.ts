@@ -31,6 +31,7 @@ import {
 	createUser,
 	deleteUserByEmail,
 	getUserByEmail,
+	getUserByUsername,
 	preparePasswordHash,
 	updateUserEmail,
 	updateUserlocale,
@@ -42,6 +43,23 @@ import { passwordResetRequest, user, type User } from '~/schema'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
+type RegisterUserResult =
+	| { ok: true; user: User }
+	| {
+			ok: false
+			field: 'username' | 'email' | 'password' | 'form'
+			code:
+				| 'username_required'
+				| 'username_length'
+				| 'username_invalid_characters'
+				| 'username_already_taken'
+				| 'email_required'
+				| 'email_invalid'
+				| 'email_already_taken'
+				| 'password_required'
+				| 'password_too_short'
+				| 'registration_failed'
+	  }
 /**
  * Register a new user with the database.
  * @param {string} username Username for the new user profile
@@ -57,45 +75,105 @@ export const registerUser = async (
 	email: string,
 	password: string,
 	language: 'de_DE' | 'en_US',
-): Promise<
-	UsernameValidation | EmailValidation | PasswordValidation | User | null
-> => {
-	const usernameValidation = validateUsername(username)
-	if (!usernameValidation.isValid) return usernameValidation
+): Promise<RegisterUserResult> => {
+	const normalizedUsername = username.trim()
+	const normalizedEmail = email.trim().toLowerCase()
 
-	const emailValidation = validateEmail(email)
-	if (!emailValidation.isValid) return emailValidation
+	const usernameValidation = validateUsername(normalizedUsername)
+	if (!usernameValidation.isValid) {
+		return {
+			ok: false,
+			field: 'username',
+			code: usernameValidation.required
+				? 'username_required'
+				: usernameValidation.length
+					? 'username_length'
+					: usernameValidation.invalidCharacters
+						? 'username_invalid_characters'
+						: 'registration_failed',
+		}
+	}
+
+	const existingUserByUsername = await getUserByUsername(normalizedUsername)
+	if (existingUserByUsername) {
+		return {
+			ok: false,
+			field: 'username',
+			code: 'username_already_taken',
+		}
+	}
+
+	const emailValidation = validateEmail(normalizedEmail)
+	if (!emailValidation.isValid) {
+		return {
+			ok: false,
+			field: 'email',
+			code: emailValidation.required ? 'email_required' : 'email_invalid',
+		}
+	}
+
+	const existingUserByEmail = await getUserByEmail(normalizedEmail)
+	if (existingUserByEmail) {
+		return {
+			ok: false,
+			field: 'email',
+			code: 'email_already_taken',
+		}
+	}
 
 	const passwordValidation = validatePassword(password)
-	if (!passwordValidation.isValid) return passwordValidation
+	if (!passwordValidation.isValid) {
+		return {
+			ok: false,
+			field: 'password',
+			code: passwordValidation.required
+				? 'password_required'
+				: passwordValidation.length
+					? 'password_too_short'
+					: 'registration_failed',
+		}
+	}
 
-	const existingUser = await getUserByEmail(email)
-	if (existingUser) return null // no new user is created -> null
+	const newUsers = await createUser(
+		normalizedUsername,
+		normalizedEmail,
+		language,
+		password,
+	)
 
-	const newUsers = await createUser(username, email, language, password)
-	if (newUsers.length === 0)
-		throw new Error('Something went wrong creating the user profile!')
+	if (newUsers.length === 0) {
+		return {
+			ok: false,
+			field: 'form',
+			code: 'registration_failed',
+		}
+	}
 
 	invariant(
 		newUsers.length === 1,
 		'Expected to only get a single user account returned',
 	)
 
-	const lng = (newUsers[0].language?.split('_')[0] as 'de' | 'en') ?? 'en'
+	const newUser = newUsers[0]
+	const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+
 	await sendMail({
-		recipientAddress: newUsers[0].email,
-		recipientName: newUsers[0].name,
+		recipientAddress: newUser.email,
+		recipientName: newUser.name,
 		subject: NewUserEmailSubject[lng],
 		body: NewUserEmail({
-			user: { name: newUsers[0].name },
-			email: newUsers[0].email,
-			token: newUsers[0].emailConfirmationToken ?? '',
+			user: { name: newUser.name },
+			email: newUser.email,
+			token: newUser.emailConfirmationToken ?? '',
 			language: lng,
 		}),
 	})
 
-	return newUsers[0]
-}
+	return {
+		ok: true,
+		user: newUser,
+	}
+}	  
 
 /**
  * Updates an existing user setting using the provided properties given to this function.
@@ -464,3 +542,7 @@ export const signIn = async (
 	const { token, refreshToken } = await createToken(user)
 	return { user, jwt: token, refreshToken }
 }
+
+export const userNameToURl = (username: string) => encodeURIComponent(username);
+export const userNameFromURl = (username: string) => decodeURIComponent(username);
+

@@ -16,8 +16,9 @@ export type UsernameValidation = {
  * username is valid. If it is false, the other fields indicate the type of issue in the given username.
  */
 export const validateUsername = (username: string): UsernameValidation => {
-	const nameValidRegex =
-		/^[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s][^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t]{1,39}[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s]$/
+	// - alphanumeric or hyphen
+	// - no leading, trailing or consecutive hyphens
+	const nameValidRegex = /^(?!-)(?!.*--)[a-zA-Z0-9-]+(?<!-)$/
 
 	if (username.length === 0)
 		return { isValid: false, required: true, validationKind: 'username' }
