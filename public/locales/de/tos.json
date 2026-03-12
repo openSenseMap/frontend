@@ -1,0 +1,8 @@
+{
+    "tos_update": "Änderung der Nutzungsbedingungen",
+    "must_accept": "Sie müssen die aktuellen Nutzungsbedingungen akzeptieren, um die App weiterhin nutzen zu können.",
+    "tos_agree": "Ich stimme den <termsLink> Nutzungsbedingungen </termsLink> zu.",
+    "delete_account": "Sie können ihr <deleteLink>Konto weiterhin löschen </deleteLink>.",
+    "continue": "Weiter",
+    "not_configured": "Nutzungsbedingungen wurden nicht konfiguriert."
+}

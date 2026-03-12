@@ -47,6 +47,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/sensors', () => {
 			DEVICE_SENSORS_USER.email,
 			DEVICE_SENSORS_USER.password,
 			'en_US',
+			true
 		)
 
 		const device = await createDevice(DEVICE_SENSOR_BOX, (user as User).id)

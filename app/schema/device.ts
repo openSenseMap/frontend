@@ -49,8 +49,13 @@ export const device = pgTable('device', {
 	expiresAt: date('expires_at', { mode: 'date' }),
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),
-	userId: text('user_id').notNull(),
 	sensorWikiModel: text('sensor_wiki_model'),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, {
+			onDelete: 'cascade',
+			onUpdate: 'cascade',
+		}),
 })
 
 // Many-to-many relation between device - location

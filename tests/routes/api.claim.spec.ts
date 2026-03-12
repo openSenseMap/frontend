@@ -13,7 +13,7 @@ const CLAIM_TEST_USER = generateTestUserCredentials()
 
 const createTestUser = async (suffix: string): Promise<User> => {
 	const u = generateTestUserCredentials()
-	const result = await registerUser(u.name, u.email, u.password, 'en_US')
+	const result = await registerUser(u.name, u.email, u.password, 'en_US', true)
 
 	if (!result || (typeof result === 'object' && 'isValid' in result)) {
 		throw new Error('Failed to create test user')
@@ -44,6 +44,7 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			CLAIM_TEST_USER.email,
 			CLAIM_TEST_USER.password,
 			'en_US',
+			true
 		)
 		user = testUser as User
 		const { token: t } = await createToken(testUser as User)
@@ -219,6 +220,7 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 				`claimer${Date.now()}@test.com`,
 				'password123',
 				'en_US',
+				true
 			)
 			const { token: newUserJwt } = await createToken(newUser as User)
 

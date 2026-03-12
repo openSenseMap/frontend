@@ -239,6 +239,34 @@
       "when": 1772009671134,
       "tag": "0033_caag-retention-policies",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1773047162857,
+      "tag": "0034_striped_punisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1773047232187,
+      "tag": "0035_strong_alex_wilder",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1773052746270,
+      "tag": "0036_blue_stardust",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1773135331164,
+      "tag": "0037_clean_vermin",
+      "breakpoints": true
     }
   ]
 }

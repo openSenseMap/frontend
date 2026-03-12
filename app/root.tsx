@@ -14,9 +14,11 @@ import {
 	type MetaFunction,
 } from 'react-router'
 import { useChangeLanguage } from 'remix-i18next/react'
+import { type Route } from './+types/root'
 import { Toaster } from './components/ui/toaster'
 import { i18nCookie } from './cookies'
 import i18next from './i18next.server'
+import { tosUiMiddleware } from './middleware/tos-ui.server'
 import { getEnv } from './utils/env.server'
 import { getUser } from './utils/session.server'
 
@@ -79,6 +81,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		},
 	)
 }
+
+export const middleware: Route.MiddlewareFunction[] = [tosUiMiddleware];
 
 export let handle = {
 	// In the handle export, we can add a i18n key with namespaces our route

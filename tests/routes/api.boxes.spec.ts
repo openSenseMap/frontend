@@ -33,6 +33,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			BOXES_TEST_USER.email,
 			BOXES_TEST_USER.password,
 			'en_US',
+			true
 		)
 		user = testUser as User
 		const { token } = await createToken(testUser as User)
