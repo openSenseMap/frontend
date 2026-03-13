@@ -4,6 +4,7 @@ import {
 	rest,
 	type RestClient,
 } from '@directus/sdk'
+import { type supportedLanguages } from '~/i18next-options'
 
 const directusUrl = process.env.DIRECTUS_URL || 'http://localhost:8055'
 
@@ -14,7 +15,7 @@ export type UseCase = {
 	title: string
 	description: string
 	content: string
-	language: 'de' | 'en'
+	language: (typeof supportedLanguages)[number]
 }
 
 export type Feature = {
@@ -22,7 +23,7 @@ export type Feature = {
 	title: string
 	description: string
 	icon: string
-	language: 'de' | 'en'
+	language: (typeof supportedLanguages)[number]
 }
 
 export type Partner = {
@@ -32,10 +33,23 @@ export type Partner = {
 	link: string
 }
 
+export type StaticPage = {
+	slug: string
+	language: StaticPageTranslation[]
+}
+export type StaticPageTranslation = {
+	static_pages_slug: string
+	static_pages_languages_code: string
+	title: string
+	content: string
+}
+
 type DirectusCollection = {
 	use_cases: UseCase[]
 	features: Feature[]
 	partners: Partner[]
+	static_pages: StaticPage[]
+	static_pages_translations: StaticPageTranslation[]
 }
 
 const directus = createDirectus<DirectusCollection>(directusUrl).with(rest())
