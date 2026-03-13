@@ -49,6 +49,7 @@ const BASE_DEVICE_COLUMNS = {
 	status: true,
 	createdAt: true,
 	updatedAt: true,
+	archivedAt: true,
 	expiresAt: true,
 	useAuth: true,
 	apiKey: true,
