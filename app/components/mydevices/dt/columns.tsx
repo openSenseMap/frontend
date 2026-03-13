@@ -47,13 +47,13 @@ export function getColumns(
 					)
 				},
 				cell: ({ row }) => {
-					const senseBox = row.original
-					const isArchived = !!senseBox.archivedAt
+					const device = row.original
+					const isArchived = !!device.archivedAt
 
 					return (
 						<div className="flex items-center gap-2">
 							<span className={isArchived ? 'text-muted-foreground line-through opacity-70' : ''}>
-								{senseBox.name}
+								{device.name}
 							</span>
 							{isArchived ? (
 								<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
@@ -120,16 +120,15 @@ export function getColumns(
 				<div className="pl-0 dark:text-white">{t('sensebox_id')}</div>
 			),
 			cell: ({ row }) => {
-				const senseBox = row.original
+				const device = row.original
 
 				return (
-					// <div className="text-right font-medium">
 					<div className="flex items-center">
 						<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
-							{senseBox?.id}
+							{device?.id}
 						</code>
 						<ClipboardCopy
-							onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+							onClick={() => navigator.clipboard.writeText(device?.id)}
 							className="ml-[6px] mr-1 inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
 						/>
 					</div>
