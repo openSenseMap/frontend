@@ -56,14 +56,31 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 	let jwt2: string
 
 	beforeAll(async () => {
-		const u = await registerUser(USER.name, USER.email, USER.password, 'en_US')
-		const u2 = await registerUser(
+		const registration1 = await registerUser(USER.name, USER.email, USER.password, 'en_US')
+		const registration2 = await registerUser(
 			USER2.name,
 			USER2.email,
 			USER2.password,
 			'en_US',
 		)
-		const d = await createDevice(DEVICE, (u as User).id)
+
+		expect(registration1.ok).toBe(true)
+		expect(registration2.ok).toBe(true)
+
+		if (!registration1.ok) {
+			throw new Error(
+				`Test setup failed: ${registration1.field} -> ${registration1.code}`,
+			)
+		}
+
+		if (!registration2.ok) {
+			throw new Error(
+				`Test setup failed: ${registration2.field} -> ${registration2.code}`,
+			)
+		}
+		const u1 = registration1.user
+		const u2 = registration2.user
+		const d = await createDevice(DEVICE, u1.id)
 		const s = await getSensors(d.id)
 		MEASUREMENTS.forEach((m) => (m.sensor_id = s[0].id))
 		await insertMeasurements(MEASUREMENTS)
@@ -71,10 +88,10 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 		deviceId = d.id
 		sensorId = s[0].id
 
-		const t = await createToken(u as User)
+		const t = await createToken(u1)
 		jwt = t.token
 
-		const t2 = await createToken(u2 as User)
+		const t2 = await createToken(u2)
 		jwt2 = t2.token
 	})
 

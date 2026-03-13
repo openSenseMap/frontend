@@ -8,13 +8,15 @@ import {
 	useLoaderData,
 	useNavigation,
 } from 'react-router'
+import invariant from 'tiny-invariant'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { userNameFromURl } from '~/lib/user-service.server'
 import { claimBox } from '~/lib/transfer-service.server'
 import {
-	getProfileByUsername,
+	getProfileByUserId,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
 import { formatCount, getInitials } from '~/utils/misc'
@@ -29,13 +31,14 @@ type ActionData = {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const requestingUserId = await getUserId(request)
-	const username = params.username
+	invariant(typeof requestingUserId === 'string')
+	invariant(typeof params.username === 'string')
+	const username = userNameFromURl(params.username)
 	let sensorsCount = '0'
 	let measurementsCount = '0'
 
 	if (username) {
-		const profile = await getProfileByUsername(username)
-
+		const profile = await getProfileByUserId(requestingUserId)
 		if (profile) {
 			const counts = await getProfileSensorsAndMeasurementsCount(profile)
 			sensorsCount = counts.sensorsCount
@@ -77,7 +80,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		} satisfies ActionData
 	}
 
-	const profile = await getProfileByUsername(username)
+	const profile = await getProfileByUserId(userId)
 	if (!profile || profile.userId !== userId) {
 		return {
 			success: false,
@@ -145,13 +148,16 @@ export default function ProfilePage() {
 								/>
 							) : null}
 							<AvatarFallback>
-								{getInitials(profile?.username ?? '')}
+								{getInitials(profile?.displayName ?? '')}
 							</AvatarFallback>
 						</Avatar>
 						<div>
 							<h3 className="text-2xl font-semibold dark:text-dark-text">
-								{profile?.user?.name || ''}
+								{profile?.displayName || ''}
 							</h3>
+							<h4 className="text-lg dark:text-dark-text">
+								{profile?.user?.name || ''}
+							</h4>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
 								{t('user_since')}{' '}
 								{new Date(profile?.user?.createdAt || '').toLocaleDateString(

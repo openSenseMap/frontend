@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { eq, or } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
 import { createProfileWithTransaction } from './profile.server'
 import { drizzleClient } from '~/db.server'
@@ -170,11 +170,17 @@ export async function createUser(
 }
 
 export async function verifyLogin(
-	email: User['email'],
-	password: Password['hash'],
+	identifier: string,
+	password: string,
 ) {
+	const trimmedIdentifier = identifier.trim()
+
 	const userWithPassword = await drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.email, email),
+		where: (user, { eq, or }) =>
+			or(
+				eq(user.email, trimmedIdentifier),
+				eq(user.name, trimmedIdentifier),
+			),
 		with: {
 			profile: true,
 			password: true,
@@ -185,7 +191,6 @@ export async function verifyLogin(
 		return null
 	}
 
-	//* compare stored password with entered one
 	const isValid = await bcrypt.compare(
 		preparePasswordHash(password),
 		userWithPassword.password.hash,
@@ -195,9 +200,6 @@ export async function verifyLogin(
 		return null
 	}
 
-	//* exclude password property (using spread operator)
-	//* const userWithoutPassword: {id: string; email: string;createdAt: Date; updatedAt: Date;}
 	const { password: _password, ...userWithoutPassword } = userWithPassword
-
 	return userWithoutPassword
 }

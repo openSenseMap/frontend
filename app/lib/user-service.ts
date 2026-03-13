@@ -16,8 +16,9 @@ export type UsernameValidation = {
  * username is valid. If it is false, the other fields indicate the type of issue in the given username.
  */
 export const validateUsername = (username: string): UsernameValidation => {
-	const nameValidRegex =
-		/^[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s][^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t]{1,39}[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s]$/
+	// - alphanumeric or hyphen
+	// - no leading, trailing or consecutive hyphens
+	const nameValidRegex = /^(?!-)(?!.*--)[a-zA-Z0-9-]+(?<!-)$/
 
 	if (username.length === 0)
 		return { isValid: false, required: true, validationKind: 'username' }
@@ -54,14 +55,27 @@ export const validateEmail = (email: string): EmailValidation => {
 }
 
 export type PasswordValidation = {
-	isValid: boolean
-	required?: boolean
-	length?: boolean
+    isValid: boolean
+    required?: boolean
+    length?: boolean
+    complexity?: boolean
 } & RegistrationInputValidation
+
 export const validatePassword = (password: string): PasswordValidation => {
-	if (password.length === 0)
-		return { isValid: false, required: true, validationKind: 'password' }
-	if (password.length < 8)
-		return { isValid: false, length: true, validationKind: 'password' }
-	return { isValid: true, validationKind: 'password' }
+    if (password.length === 0)
+        return { isValid: false, required: true, validationKind: 'password' }
+
+    const isLongEnough = password.length >= 15
+    const meetsComplexity =
+        password.length >= 8 &&
+        /[0-9]/.test(password) &&
+        /[a-z]/.test(password)
+
+    if (isLongEnough || meetsComplexity)
+        return { isValid: true, validationKind: 'password' }
+
+    if (password.length < 8)
+        return { isValid: false, length: true, validationKind: 'password' }
+
+    return { isValid: false, complexity: true, validationKind: 'password' }
 }

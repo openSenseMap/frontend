@@ -1,6 +1,7 @@
 {
 	"login_label": "Einloggen",
 	"email_label": "E-Mail",
+	"email_or_username_label": "E-Mail oder Benutzername",
 	"password_label": "Passwort",
 	"transition_label": "Wird eingeloggt...",
 	"remember_label": "Eingeloggt bleiben",
