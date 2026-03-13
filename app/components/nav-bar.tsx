@@ -65,7 +65,7 @@ export function NavBar() {
 										</Link>
 
 										<Link to="/device/transfer">
-											<DropdownMenuItem disabled>
+											<DropdownMenuItem>
 												<span>{t('transfer_device')}</span>
 											</DropdownMenuItem>
 										</Link>
