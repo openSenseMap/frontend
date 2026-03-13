@@ -199,6 +199,11 @@ export default function ProfilePage() {
 							<DataTable
 								columns={getColumns(columnsTranslation, { isOwner })}
 								data={profile.user.devices}
+									getRowClassName={(device) =>
+										device.archivedAt
+											? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
+											: ''
+									}
 							/>
 						)}
 					</div>

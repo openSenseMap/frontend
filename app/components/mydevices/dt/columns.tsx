@@ -19,6 +19,7 @@ export type SenseBox = {
 	name: string
 	exposure: Device['exposure']
 	createdAt: Date
+	archivedAt: Date | null
 	// model: string;
 }
 
@@ -31,20 +32,37 @@ export function getColumns(
 	const { t } = useTranslation
 	const isOwner = opts?.isOwner ?? false
 	return [
-		{
+	  {
 			accessorKey: 'name',
-			header: ({ column }) => {
-				return (
-					<Button
-						variant="ghost"
-						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-						className={colStyle}
-					>
-						{t('name')}
-						<ArrowUpDown className="ml-2 h-4 w-4" />
-					</Button>
-				)
-			},
+				header: ({ column }) => {
+					return (
+						<Button
+							variant="ghost"
+							onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+							className={colStyle}
+						>
+							{t('name')}
+							<ArrowUpDown className="ml-2 h-4 w-4" />
+						</Button>
+					)
+				},
+				cell: ({ row }) => {
+					const device = row.original
+					const isArchived = !!device.archivedAt
+
+					return (
+						<div className="flex items-center gap-2">
+							<span className={isArchived ? 'text-muted-foreground line-through opacity-70' : ''}>
+								{device.name}
+							</span>
+							{isArchived ? (
+								<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
+									{t('archived')}
+								</span>
+							) : null}
+						</div>
+					)
+				},
 		},
 		{
 			accessorKey: 'createdAt',
@@ -102,16 +120,15 @@ export function getColumns(
 				<div className="pl-0 dark:text-white">{t('sensebox_id')}</div>
 			),
 			cell: ({ row }) => {
-				const senseBox = row.original
+				const device = row.original
 
 				return (
-					// <div className="text-right font-medium">
 					<div className="flex items-center">
 						<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
-							{senseBox?.id}
+							{device?.id}
 						</code>
 						<ClipboardCopy
-							onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+							onClick={() => navigator.clipboard.writeText(device?.id)}
 							className="ml-[6px] mr-1 inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
 						/>
 					</div>
@@ -124,7 +141,8 @@ export function getColumns(
 				<div className="text-center dark:text-white">{t('actions')}</div>
 			),
 			cell: ({ row }) => {
-				const senseBox = row.original
+				const device = row.original
+				const isArchived = !!device.archivedAt
 
 				return (
 					<DropdownMenu>
@@ -134,49 +152,66 @@ export function getColumns(
 								<Ellipsis className="h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
+
 						<DropdownMenuContent
 							align="end"
 							className="dark:bg-dark-background dark:text-dark-text"
 						>
-							<DropdownMenuLabel>Actions</DropdownMenuLabel>
+							<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
 							<DropdownMenuSeparator />
+
 							<DropdownMenuItem asChild>
-								<a href={`/device/${senseBox.id}/overview`}>{t('overview')}</a>
+								<a href={`/device/${device.id}/overview`}>{t('overview')}</a>
 							</DropdownMenuItem>
-							<DropdownMenuItem asChild>
-								<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
+
+							<DropdownMenuItem disabled={isArchived} asChild>
+								<a href={`/explore/${device.id}`}>{t('show_on_map')}</a>
 							</DropdownMenuItem>
+
 							{isOwner ? (
 								<>
-							<DropdownMenuItem asChild>
-								<a href={`/device/${senseBox.id}/edit/general`}>{t('edit')}</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild>
-								<a href={`/device/${senseBox.id}/dataupload`}>
-									{t('data_upload')}
-								</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild>
-								<a
-									href="https://sensebox.de/de/go-home"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									{t('support')}
-								</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild
-								onClick={() => navigator.clipboard.writeText(senseBox?.id)}
-								className="cursor-pointer"
-							>
-								{t('copy_id')}
-							</DropdownMenuItem>
-							</>
-						): null }
+									<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
+										{isArchived ? (
+											<span>{t('edit')}</span>
+										) : (
+											<a href={`/device/${device.id}/edit/general`}>
+												{t('edit')}
+											</a>
+										)}
+									</DropdownMenuItem>
+
+									<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
+										{isArchived ? (
+											<span>{t('data_upload')}</span>
+										) : (
+											<a href={`/device/${device.id}/dataupload`}>
+												{t('data_upload')}
+											</a>
+										)}
+									</DropdownMenuItem>
+
+									<DropdownMenuItem disabled={isArchived} asChild>
+										<a
+											href="https://sensebox.de/de/go-home"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{t('support')}
+										</a>
+									</DropdownMenuItem>
+
+									<DropdownMenuItem
+										onClick={() => navigator.clipboard.writeText(device.id)}
+										className="cursor-pointer"
+									>
+										{t('copy_id')}
+									</DropdownMenuItem>
+								</>
+							) : null}
 						</DropdownMenuContent>
 					</DropdownMenu>
 				)
 			},
-		},
+		}
 	]
 }
