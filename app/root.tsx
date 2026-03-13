@@ -111,13 +111,13 @@ export function App() {
 	useChangeLanguage(data.locale)
 
 	return (
-		<html lang={data.locale} dir={i18n.dir()} className={clsx('light')}>
+		<html lang={data.locale} dir={i18n.dir()} className={clsx('light h-full')}>
 			<head>
 				<Meta />
 				{/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
 				<Links />
 			</head>
-			<body className="dark:bg-dark-background dark:text-dark-text">
+			<body className="h-full dark:bg-dark-background dark:text-dark-text">
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
