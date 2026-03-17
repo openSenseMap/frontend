@@ -28,14 +28,22 @@ describe('openSenseMap API Routes: /boxes', () => {
 	const grouptag = 'testgroup' + Math.random()
 
 	beforeAll(async () => {
-		const testUser = await registerUser(
+		const registration = await registerUser(
 			BOXES_TEST_USER.name,
 			BOXES_TEST_USER.email,
 			BOXES_TEST_USER.password,
 			'en_US',
 		)
-		user = testUser as User
-		const { token } = await createToken(testUser as User)
+
+		expect(registration.ok).toBe(true)
+		
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+		user = registration.user
+		const { token } = await createToken(user)
 		jwt = token
 
 		queryableDevice = await createDevice(
@@ -46,7 +54,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				tags: [grouptag],
 				useAuth: false,
 			},
-			(testUser as User).id,
+			user.id,
 		)
 		createdDeviceIds.push(queryableDevice.id)
 	})

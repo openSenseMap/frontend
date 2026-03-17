@@ -49,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
 	const profile = await getProfileByUserId(userId)
 	const formData = await request.formData()
-	const username = formData.get('username')
+	const displayName = formData.get('displayName')
 	const isPublic = formData.get('isPublic')
 
 	if (!profile || !userId) {
@@ -61,7 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const updatedProfile = await updateProfile(
 		profile?.id as string,
-		username as string,
+		displayName as string,
 		isPublic === 'on',
 	)
 
@@ -75,7 +75,7 @@ export default function EditUserProfilePage() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 
-	const [username, setUsername] = useState(data.profile.username)
+	const [displayName, setDisplayName] = useState(data.profile.displayName)
 	const [isPublic, setIsPublic] = useState(data.profile.public || false)
 
 	const { t } = useTranslation('settings')
@@ -112,7 +112,7 @@ export default function EditUserProfilePage() {
 					<div className="w-1/2 justify-center space-y-6">
 						<div className="space-y-2">
 							<div className="flex items-center space-x-2">
-								<Label htmlFor="username">{t('username')}</Label>
+								<Label htmlFor="displayName">{t('displayName')}</Label>
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger asChild>
@@ -128,11 +128,11 @@ export default function EditUserProfilePage() {
 								min={3}
 								max={40}
 								type="text"
-								id="username"
-								name="username"
-								placeholder={t('enter_username')}
-								defaultValue={username}
-								onChange={(e) => setUsername(e.target.value)}
+								id="displayName"
+								name="displayName"
+								placeholder={t('enter_display_name')}
+								defaultValue={displayName}
+								onChange={(e) => setDisplayName(e.target.value)}
 							/>
 						</div>
 						<div className="space-y-2">
@@ -173,7 +173,7 @@ export default function EditUserProfilePage() {
 									src={'/resources/file/' + data.profile.profileImage?.id}
 								/>
 								<AvatarFallback>
-									{getInitials(data.profile?.username ?? '')}
+									{getInitials(data.profile?.displayName ?? '')}
 								</AvatarFallback>
 							</Avatar>
 							<Link
@@ -192,7 +192,7 @@ export default function EditUserProfilePage() {
 					<Button
 						type="submit"
 						disabled={
-							username === data.profile.username &&
+							displayName === data.profile.displayName &&
 							isPublic === data.profile.public
 						}
 					>

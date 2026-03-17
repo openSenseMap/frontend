@@ -15,6 +15,7 @@ import {
 } from '~/lib/mobile-box-helper'
 import { getDevice } from '~/models/device.server'
 import { getSensorsWithLastMeasurement } from '~/models/sensor.server'
+import { getDeviceImageUrl } from '~/utils/s3.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const locale = await i18next.getLocale(request)
@@ -58,15 +59,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const startDate = url.searchParams.get('date_from') || undefined
 	const endDate = url.searchParams.get('date_to') || undefined
 
+	let deviceImageUrl: string | null = null
+
+	if (device?.image) {
+		try {
+			deviceImageUrl = await getDeviceImageUrl(device.image)
+		} catch (error) {
+			console.error('Failed to create signed device image URL:', error)
+		}
+	}
+
 	// Combine the device data with the selected sensors and return the result as JSON + add env variable
 	const data = {
-		device: device,
+		device,
+		deviceImageUrl,
 		sensors: sensorsWithLastestMeasurement,
-		aggregation: aggregation,
+		aggregation,
 		fromDate: startDate,
 		toDate: endDate,
 		OSEM_API_URL: process.env.OSEM_API_URL,
-		locale: locale,
+		locale,
 	}
 
 	return data

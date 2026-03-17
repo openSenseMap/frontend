@@ -28,13 +28,21 @@ describe('openSenseMap API Routes: /users', () => {
 	describe('/me/boxes', () => {
 		describe('GET', async () => {
 			beforeAll(async () => {
-				const user = await registerUser(
+				const registration = await registerUser(
 					BOXES_TEST_USER.name,
 					BOXES_TEST_USER.email,
 					BOXES_TEST_USER.password,
 					'en_US',
 				)
-				const { token } = await createToken(user as User)
+				expect(registration.ok).toBe(true)
+
+				if (!registration.ok) {
+					throw new Error(
+						`Test setup failed: ${registration.field} -> ${registration.code}`,
+					)
+				}
+				const user = registration.user
+				const { token } = await createToken(user)
 				jwt = token
 				const device = await createDevice(TEST_BOX, (user as User).id)
 				deviceId = device.id
@@ -103,12 +111,22 @@ describe('openSenseMap API Routes: /users', () => {
 			})
 
 			it('should return empty boxes array for user with no devices', async () => {
-				const userWithNoDevices = await registerUser(
-					'No Devices User',
+				const registration = await registerUser(
+					'NoDevicesUser',
 					'nodevices@test.com',
 					'password123',
 					'en_US',
 				)
+
+				expect(registration.ok).toBe(true)
+				if (!registration.ok) {
+					throw new Error(
+						`Test setup failed: ${registration.field} -> ${registration.code}`,
+					)
+				}
+
+				const userWithNoDevices = registration.user
+
 				const { token: noDevicesJwt } = await createToken(
 					userWithNoDevices as User,
 				)

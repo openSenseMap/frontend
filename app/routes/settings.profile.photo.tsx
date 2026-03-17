@@ -164,7 +164,7 @@ export default function PhotoChooserModal() {
 							}
 						/>
 						<AvatarFallback>
-							{getInitials(data.profile?.username ?? '')}
+							{getInitials(data.profile?.displayName ?? '')}
 						</AvatarFallback>
 					</Avatar>
 					{/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}

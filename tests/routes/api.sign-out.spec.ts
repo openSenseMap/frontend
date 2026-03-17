@@ -13,12 +13,19 @@ describe('openSenseMap API Routes: /users', () => {
 	describe('/sign-out', () => {
 		let jwt: string = ''
 		beforeAll(async () => {
-			const user = await registerUser(
+			const registration = await registerUser(
 				VALID_SIGN_OUT_TEST_USER.name,
 				VALID_SIGN_OUT_TEST_USER.email,
 				VALID_SIGN_OUT_TEST_USER.password,
 				'en_US',
 			)
+			expect(registration.ok).toBe(true)
+			if (!registration.ok) {
+				throw new Error(
+					`Test setup failed: ${registration.field} -> ${registration.code}`,
+				)
+			}
+			const user = registration.user
 			;({ token: jwt } = await createToken(user as User))
 		})
 

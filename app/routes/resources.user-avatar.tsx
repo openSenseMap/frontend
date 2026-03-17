@@ -30,10 +30,10 @@ export function UserAvatar() {
 			<AvatarImage
 				className="aspect-auto h-full w-full rounded-full object-cover"
 				src={'/resources/file/' + fetcher.data?.profile?.profileImage?.id}
-				alt={fetcher.data?.profile.username}
+				alt={fetcher.data?.profile.displayName}
 			/>
 			<AvatarFallback>
-				{getInitials(fetcher.data?.profile?.username ?? '')}
+				{getInitials(fetcher.data?.profile?.displayName ?? '')}
 			</AvatarFallback>
 		</Avatar>
 	)

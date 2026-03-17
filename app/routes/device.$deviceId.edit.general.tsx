@@ -16,7 +16,11 @@ import { updateDevice, deleteDevice } from '~/lib/devices-service.server'
 import { getDevice, getDeviceWithoutSensors } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
 import { type Device } from '~/schema'
-import { uploadDeviceImage, deleteDeviceImage } from '~/utils/s3.server'
+import {
+	uploadDeviceImage,
+	deleteDeviceImage,
+	getDeviceImageUrl,
+} from '~/utils/s3.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
@@ -27,13 +31,22 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	const deviceID = params.deviceId
 	invariant(typeof deviceID === 'string', 'Device id not found.')
 
-	if (typeof deviceID !== 'string') {
-		return redirect('/profile/me')
-	}
-
 	const deviceData = await getDeviceWithoutSensors({ id: deviceID })
 
-	return { device: deviceData }
+	let imageUrl: string | null = null
+
+	if (deviceData?.image) {
+		try {
+			imageUrl = await getDeviceImageUrl(deviceData.image)
+		} catch (error) {
+			console.error('Failed to create presigned image URL:', error)
+		}
+	}
+
+	return {
+		device: deviceData,
+		imageUrl,
+	}
 }
 
 //*****************************************************
@@ -99,7 +112,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	switch (intent) {
 		case 'save': {
-			let imageUrl: string | undefined
+			let imageKey: string | undefined
 
 			if (image && image.size > 0 && image.name !== '') {
 				const validTypes = [
@@ -134,7 +147,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				}
 
 				try {
-					imageUrl = await uploadDeviceImage(deviceID, image)
+					imageKey = await uploadDeviceImage(deviceID, image)
 				} catch (error) {
 					console.error('Image upload error:', error)
 					return data({
@@ -154,7 +167,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				description: String(description),
 				website: String(website),
 				grouptag,
-				...(imageUrl && { image: imageUrl }),
+				...(imageKey && { image: imageKey }),
 			})
 
 			if (result === 'unauthorized')
@@ -237,7 +250,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 //**********************************
 export default function () {
-	const { device } = useLoaderData<typeof loader>()
+	const { device, imageUrl } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const [passwordDelVal, setPasswordVal] = useState('')
 	const nameRef = React.useRef<HTMLInputElement>(null)
@@ -250,7 +263,7 @@ export default function () {
 	const [website, setWebsite] = useState(device?.website || '')
 
 	const [imagePreview, setImagePreview] = useState<string | null>(
-		device?.image || null,
+		imageUrl || null,
 	)
 	const [imageFile, setImageFile] = useState<File | null>(null)
 	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
