@@ -6,8 +6,9 @@ import {
 } from 'drizzle-orm'
 import { pgTable, boolean, text, timestamp } from 'drizzle-orm/pg-core'
 import { v4 as uuidv4 } from 'uuid'
+import { actionToken } from './action-token'
 import { device } from './device'
-import { password, passwordResetRequest } from './password'
+import { password} from './password'
 import { profile } from './profile'
 import { refreshToken } from './refreshToken'
 import { tosVersion } from './tos'
@@ -49,10 +50,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
 	}),
 	devices: many(device),
 	refreshToken: many(refreshToken),
-	passwordResetRequest: one(passwordResetRequest, {
-		fields: [user.id],
-		references: [passwordResetRequest.userId],
-	}),
+	actionTokens: many(actionToken),
 }))
 
 /**
