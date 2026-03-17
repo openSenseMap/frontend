@@ -11,6 +11,7 @@ const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 export const password = pgTable('password', {
 	hash: text('hash').notNull(),
 	userId: text('user_id')
+		.primaryKey()
 		.references(() => user.id, {
 			onDelete: 'cascade',
 			onUpdate: 'cascade',
