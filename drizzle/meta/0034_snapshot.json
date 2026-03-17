@@ -1,6 +1,6 @@
 {
-  "id": "0b3c20ee-7221-4347-87f2-acfbc296d0d0",
-  "prevId": "2b328f08-9cdd-4a4f-a611-cd519981dd08",
+  "id": "1a28ba10-b068-44e1-a093-c9b3b4374ca3",
+  "prevId": "2df45cfc-982c-4c7c-b2e7-6fe47039d121",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -107,6 +107,12 @@
           "notNull": true,
           "default": "now()"
         },
+        "orphaned_at": {
+          "name": "orphaned_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
         "expires_at": {
           "name": "expires_at",
           "type": "date",
@@ -125,35 +131,21 @@
           "primaryKey": false,
           "notNull": true
         },
-        "sensor_wiki_model": {
-          "name": "sensor_wiki_model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "sensor_wiki_model": {
+          "name": "sensor_wiki_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "device_user_id_user_id_fk": {
-          "name": "device_user_id_user_id_fk",
-          "tableFrom": "device",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
