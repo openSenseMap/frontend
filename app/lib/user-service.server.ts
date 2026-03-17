@@ -28,6 +28,7 @@ import {
 	validateUsername,
 } from './user-service'
 import { drizzleClient } from '~/db.server'
+import { generateRawActionToken, hashActionToken } from '~/models/token.server'
 import { getCurrentEffectiveTos } from '~/models/tos.server'
 import {
 	createUser,
@@ -40,7 +41,7 @@ import {
 	updateUserPassword,
 	verifyLogin,
 } from '~/models/user.server'
-import { passwordResetRequest, user, type User } from '~/schema'
+import { actionToken, passwordResetRequest, user, type User } from '~/schema'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -346,16 +347,24 @@ export const requestPasswordReset = async (email: string) => {
 
 	if (!user) return
 
-	const token = uuidv4()
+	const rawToken = generateRawActionToken()
+  	const tokenHash = hashActionToken(rawToken)
 	await drizzleClient
-		.insert(passwordResetRequest)
-		.values({ userId: user.id })
+		.insert(actionToken)
+		.values({
+		userId: user.id,
+		purpose: 'password_reset',
+		tokenHash,
+		expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS),
+		consumedAt: null,
+		})
 		.onConflictDoUpdate({
-			target: passwordResetRequest.userId,
-			set: {
-				token: token,
-				expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS), // 12 hours from now
-			},
+		target: [actionToken.userId, actionToken.purpose],
+		set: {
+			tokenHash,
+			expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS),
+			consumedAt: null,
+		},
 		})
 
 	const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
@@ -365,7 +374,7 @@ export const requestPasswordReset = async (email: string) => {
 		subject: PasswordResetEmailSubject[lng],
 		body: PasswordResetEmail({
 			user: { email: user.email, name: user.name },
-			token: token,
+			token: rawToken,
 			language: lng,
 		}),
 	})

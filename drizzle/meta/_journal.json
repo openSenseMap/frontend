@@ -253,6 +253,13 @@
       "when": 1773740608732,
       "tag": "0035_young_preak",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1773741333336,
+      "tag": "0036_easy_vapor",
+      "breakpoints": true
     }
   ]
 }
