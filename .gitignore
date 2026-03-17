@@ -25,5 +25,5 @@ measurements.csv
 /coverage
 
 /minio-data
-/rust-data
+/rustfs-data
 /public/openapi.json
