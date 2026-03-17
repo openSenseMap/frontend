@@ -1,6 +1,6 @@
 {
-  "id": "0c229292-a4d0-4722-952c-8e92e9fe6b7a",
-  "prevId": "0b3c20ee-7221-4347-87f2-acfbc296d0d0",
+  "id": "99987b54-db1e-4ba1-ad76-7261014eed8d",
+  "prevId": "1a28ba10-b068-44e1-a093-c9b3b4374ca3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -106,6 +106,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "orphaned_at": {
+          "name": "orphaned_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "expires_at": {
           "name": "expires_at",
@@ -312,7 +318,7 @@
         "user_id": {
           "name": "user_id",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         }
       },
@@ -705,36 +711,10 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "accepted_tos_version_id": {
-          "name": "accepted_tos_version_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "accepted_tos_at": {
-          "name": "accepted_tos_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "user_accepted_tos_version_id_tos_version_id_fk": {
-          "name": "user_accepted_tos_version_id_tos_version_id_fk",
-          "tableFrom": "user",
-          "tableTo": "tos_version",
-          "columnsFrom": [
-            "accepted_tos_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "user_email_unique": {
@@ -1085,170 +1065,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.tos_acceptance": {
-      "name": "tos_acceptance",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tos_version_id": {
-          "name": "tos_version_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "accepted_at": {
-          "name": "accepted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "tos_acceptance_user_idx": {
-          "name": "tos_acceptance_user_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "tos_acceptance_user_id_user_id_fk": {
-          "name": "tos_acceptance_user_id_user_id_fk",
-          "tableFrom": "tos_acceptance",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "tos_acceptance_tos_version_id_tos_version_id_fk": {
-          "name": "tos_acceptance_tos_version_id_tos_version_id_fk",
-          "tableFrom": "tos_acceptance",
-          "tableTo": "tos_version",
-          "columnsFrom": [
-            "tos_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "tos_acceptance_user_id_tos_version_id_pk": {
-          "name": "tos_acceptance_user_id_tos_version_id_pk",
-          "columns": [
-            "user_id",
-            "tos_version_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.tos_version": {
-      "name": "tos_version",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "version": {
-          "name": "version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "body": {
-          "name": "body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "effective_from": {
-          "name": "effective_from",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "tos_version_effective_from_idx": {
-          "name": "tos_version_effective_from_idx",
-          "columns": [
-            {
-              "expression": "effective_from",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "tos_version_version_unique": {
-          "name": "tos_version_version_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "version"
           ]
         }
       },
