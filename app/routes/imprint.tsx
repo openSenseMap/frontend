@@ -1,10 +1,9 @@
 import { readItem, readItems } from '@directus/sdk'
-import Markdown, { MarkdownToJSX } from 'markdown-to-jsx/react'
+import Markdown, { type MarkdownToJSX } from 'markdown-to-jsx/react'
 import { useEffect, useEffectEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	Link,
-	useFetcher,
 	useLoaderData,
 	useRevalidator,
 	type LoaderFunctionArgs,

@@ -135,8 +135,16 @@ export function App() {
 
 export function ErrorBoundary() {
 	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
-		</div>
+		<html className={clsx('light h-full')}>
+			<head>
+				<Meta />
+				<Links />
+			</head>
+			<body className="h-full dark:bg-dark-background dark:text-dark-text">
+				<div className="flex h-screen w-screen items-center justify-center">
+					<ErrorMessage />
+				</div>
+			</body>
+		</html>
 	)
 }
