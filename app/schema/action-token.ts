@@ -1,6 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { relations } from 'drizzle-orm'
-import { pgTable, text, timestamp, index } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core'
 import { user } from './user'
 
 export const actionToken = pgTable(
@@ -22,7 +22,10 @@ export const actionToken = pgTable(
     consumedAt: timestamp('consumed_at', { withTimezone: true }),
   },
   (t) => ({
-    userPurposeIdx: index('action_token_user_purpose_idx').on(t.userId, t.purpose),
+    userPurposeUq: uniqueIndex('action_token_user_purpose_uq').on(
+      t.userId,
+      t.purpose,
+    ),
     expiresAtIdx: index('action_token_expires_at_idx').on(t.expiresAt),
   }),
 )
