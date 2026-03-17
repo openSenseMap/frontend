@@ -27,7 +27,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   await drizzleClient
     .insert(tosUserState)
-    .values({ userId: jwtUser.id, tosVersionId: tos.id, acceptedAt: new Date(), graceUntil: new Date() })
+    .values({ userId: jwtUser.id, tosVersionId: tos.id, acceptedAt: new Date(), })
     .onConflictDoNothing();
 
   return new Response(null, { status: 204 });
