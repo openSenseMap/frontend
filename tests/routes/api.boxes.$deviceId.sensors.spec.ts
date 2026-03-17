@@ -42,12 +42,22 @@ describe('openSenseMap API Routes: /boxes/:deviceId/sensors', () => {
 	let deviceId: string = ''
 
 	beforeAll(async () => {
-		const user = await registerUser(
+		const registration = await registerUser(
 			DEVICE_SENSORS_USER.name,
 			DEVICE_SENSORS_USER.email,
 			DEVICE_SENSORS_USER.password,
 			'en_US',
 		)
+
+		expect(registration.ok).toBe(true)
+
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+
+		const user = registration.user
 
 		const device = await createDevice(DEVICE_SENSOR_BOX, (user as User).id)
 		deviceId = device.id
