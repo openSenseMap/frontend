@@ -72,7 +72,7 @@ async function seed() {
 
 	// Create profile for initial user
 	await client.insert(profile).values({
-		username: 'sensei',
+		displayName: 'sensei',
 		public: false,
 		userId: dummyUser.id,
 	})
