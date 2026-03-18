@@ -1,4 +1,7 @@
+import { and, eq, gt, isNull } from 'drizzle-orm'
+import { generateRawActionToken, hashActionToken } from './token.server'
 import { drizzleClient } from '~/db.server'
+import { actionToken, user } from '~/schema'
 import { tosUserState } from '~/schema/tos'
 
 export async function getCurrentEffectiveTos(now = new Date()) {
@@ -58,4 +61,122 @@ export async function getTosRequirementForUser(userId: string, now = new Date())
   const mustBlock = !accepted && now >= acceptBy
 
   return { tos: current, accepted, inGrace, mustBlock, acceptBy }
+}
+
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000
+
+export async function issueTosAcceptanceToken(userId: string) {
+  const rawToken = generateRawActionToken()
+  const tokenHash = hashActionToken(rawToken)
+
+  await drizzleClient
+    .insert(actionToken)
+    .values({
+      userId,
+      purpose: 'tos_acceptance',
+      tokenHash,
+      expiresAt: new Date(Date.now() + TWO_WEEKS_MS),
+      consumedAt: null,
+    })
+    .onConflictDoUpdate({
+      target: [actionToken.userId, actionToken.purpose],
+      set: {
+        tokenHash,
+        expiresAt: new Date(Date.now() + TWO_WEEKS_MS),
+        consumedAt: null,
+      },
+    })
+
+  return rawToken
+}
+
+export async function getValidTosAcceptanceToken(
+  rawToken: string,
+  now = new Date(),
+) {
+  const tokenHash = hashActionToken(rawToken)
+
+  return drizzleClient.query.actionToken.findFirst({
+    where: (t, { and, eq, gt, isNull }) =>
+      and(
+        eq(t.purpose, 'tos_acceptance'),
+        eq(t.tokenHash, tokenHash),
+        gt(t.expiresAt, now),
+        isNull(t.consumedAt),
+      ),
+  })
+}
+
+export async function getActiveTosAcceptanceTokenById(
+  tokenId: string,
+  userId: string,
+  now = new Date(),
+) {
+  return drizzleClient.query.actionToken.findFirst({
+    where: (t, { and, eq, gt, isNull }) =>
+      and(
+        eq(t.id, tokenId),
+        eq(t.userId, userId),
+        eq(t.purpose, 'tos_acceptance'),
+        gt(t.expiresAt, now),
+        isNull(t.consumedAt),
+      ),
+  })
+}
+
+export async function acceptCurrentTosViaEmailFlow({
+  tokenId,
+  userId,
+  now = new Date(),
+}: {
+  tokenId: string
+  userId: string
+  now?: Date
+}): Promise<'success' | 'forbidden' | 'not_configured'> {
+  return drizzleClient.transaction(async (tx) => {
+    const consumed = await tx
+      .update(actionToken)
+      .set({ consumedAt: now })
+      .where(
+        and(
+          eq(actionToken.id, tokenId),
+          eq(actionToken.userId, userId),
+          eq(actionToken.purpose, 'tos_acceptance'),
+          gt(actionToken.expiresAt, now),
+          isNull(actionToken.consumedAt),
+        ),
+      )
+      .returning({ userId: actionToken.userId })
+
+    if (consumed.length === 0) return 'forbidden'
+
+    const current = await tx.query.tosVersion.findFirst({
+      where: (t, { lte }) => lte(t.effectiveFrom, now),
+      orderBy: (t, { desc }) => [desc(t.effectiveFrom)],
+    })
+
+    if (!current) return 'not_configured'
+
+    await tx
+      .insert(tosUserState)
+      .values({
+        userId,
+        tosVersionId: current.id,
+        acceptedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [tosUserState.userId, tosUserState.tosVersionId],
+        set: { acceptedAt: now },
+      })
+
+    await tx
+      .update(user)
+      .set({
+        acceptedTosVersionId: current.id,
+        acceptedTosAt: now,
+      })
+      .where(eq(user.id, userId))
+
+    return 'success'
+  })
 }
