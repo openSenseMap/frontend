@@ -1,9 +1,17 @@
+import { readdirSync } from 'node:fs'
+import { resolve } from 'node:path'
 import Backend from 'i18next-fs-backend/cjs' // Even though unintuitive, cjs is what we want: https://github.com/i18next/i18next-fs-backend/issues/57
 import { initReactI18next } from 'react-i18next'
 import { createI18nextMiddleware } from 'remix-i18next/middleware'
 import 'i18next'
 import { i18nCookie } from '~/cookies'
 import i18nextOptions from '~/i18next-options'
+
+const getNamespaces = () => {
+	return readdirSync(resolve(`./public/locales/${i18nextOptions.fallbackLng}/`))
+		.filter((f) => f.endsWith('.json'))
+		.map((f) => f.replace('.json', ''))
+}
 
 export const [i18nextMiddleware, getLocale, getInstance] =
 	createI18nextMiddleware({
@@ -31,7 +39,8 @@ export const [i18nextMiddleware, getLocale, getInstance] =
 			// },
 		},
 		i18next: {
-			backend: { loadPath: './public/locales/{{lng}}/{{ns}}.json' },
+			backend: { loadPath: resolve('./public/locales/{{lng}}/{{ns}}.json') },
+			ns: getNamespaces(),
 			defaultNS: i18nextOptions.defaultNS,
 		},
 		plugins: [Backend, initReactI18next],

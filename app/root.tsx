@@ -1,6 +1,7 @@
 import tailwindStylesheetUrl from '/app/styles/tailwind.css?url'
 import appStylesheetUrl from '/app/styles/app.css?url'
 import clsx from 'clsx'
+import { invariant } from 'node_modules/@formatjs/intl/src/utils'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -10,6 +11,7 @@ import {
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	useRouteLoaderData,
 	type LoaderFunctionArgs,
 	type MetaFunction,
 } from 'react-router'
@@ -17,11 +19,11 @@ import { type Route } from './+types/root'
 import { Toaster } from './components/ui/toaster'
 import { i18nCookie } from './cookies'
 import i18next from './i18next.server'
-import { i18nextMiddleware } from './middleware/i18next.server'
+import { i18nextMiddleware } from './middleware/i18next'
 import { getEnv } from './utils/env.server'
 import { getUser } from './utils/session.server'
 
-export const middleware = [i18nextMiddleware]
+export const middleware: Route.MiddlewareFunction[] = [i18nextMiddleware]
 
 export const links = () => {
 	return [
@@ -78,6 +80,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			headers: { 'Set-Cookie': await i18nCookie.serialize(locale) },
 		},
 	)
+}
+
+export const useRootRouteLoaderData = () => {
+	const rootData = useRouteLoaderData<typeof loader>('root')
+	invariant(rootData !== undefined, 'root loader should always return data')
+	return rootData
 }
 
 export default function App({
