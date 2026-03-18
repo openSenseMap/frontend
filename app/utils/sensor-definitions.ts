@@ -113,7 +113,7 @@ export const sensorDefinitions = {
 		unit: 'µg/m³',
 		sensorType: 'SDS 011',
 		icon: 'osem-cloud',
-		image: '',
+		image: '/sensor_images/SDS011.png',
 	},
 	sps30_pm10: {
 		title: 'PM10',
@@ -204,7 +204,7 @@ export const sensorDefinitions = {
 		unit: 'µg/m³',
 		sensorType: 'SDS 011',
 		icon: 'osem-cloud',
-		image: '',
+		image: '/sensor_images/SDS011.png',
 	},
 	sps30_pm1: {
 		title: 'PM1',
@@ -244,6 +244,7 @@ export const sensorDefinitions = {
 		unit: '°C',
 		sensorType: 'HDC1008',
 		icon: 'osem-thermometer',
+		image: '/sensor_images/HDC1008.png',
 	},
 	sps30_pm4: {
 		title: 'PM4',
@@ -325,12 +326,13 @@ export const sensorDefinitions = {
 		unit: 'hPa',
 		sensorType: 'BMP280',
 		icon: 'osem-barometer',
-		image: '',
+		image: '/sensor_images/BMP280.png',
 	},
 	hdc1008_humidity: {
 		title: 'rel. Luftfeuchte',
 		unit: '%',
 		sensorType: 'HDC1008',
 		icon: 'osem-humidity',
+		image: '/sensor_images/HDC1008.png',
 	},
 }
