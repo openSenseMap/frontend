@@ -3,12 +3,8 @@ import { useMediaQuery } from '@mantine/hooks'
 import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-	type LoaderFunctionArgs,
-	data,
-	Link,
-	useLoaderData,
-} from 'react-router'
+import { data, Link, useLoaderData } from 'react-router'
+import { type Route } from './+types/_index'
 import Footer from '~/components/landing/footer'
 import { GlobeComponent } from '~/components/landing/globe.client'
 import Header from '~/components/landing/header/header'
@@ -19,13 +15,10 @@ import Partners from '~/components/landing/sections/partners'
 import PricingPlans from '~/components/landing/sections/pricing-plans'
 import Stats from '~/components/landing/stats'
 import { type supportedLanguages } from '~/i18next-options'
-import i18next from '~/i18next.server'
 import { type Partner, getDirectusClient } from '~/lib/directus'
-import { getLatestDevices } from '~/models/device.server'
-import { getUserByUsername } from '~/models/user.server'
-import { getUserId, getUserName } from '~/utils/session.server'
-import { Route } from './+types/_index'
 import { getLocale } from '~/middleware/i18next'
+import { getLatestDevices } from '~/models/device.server'
+import { getUserId, getUserName } from '~/utils/session.server'
 
 const sections = [
 	{
