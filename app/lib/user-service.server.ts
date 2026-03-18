@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { and, eq, gt, isNull } from 'drizzle-orm'
 import ConfirmEmailAddress, {
 	subject as ConfirmEmailAddressSubject,
 } from 'emails/confirm-email'
@@ -14,7 +14,6 @@ import ResendEmailConfirmationEmail, {
 	subject as ResendEmailConfirmationSubject,
 } from 'emails/resend-email-confirmation'
 import invariant from 'tiny-invariant'
-import { v4 as uuidv4 } from 'uuid'
 import { createToken, revokeToken } from './jwt'
 
 import { sendMail } from './mail.server'
@@ -28,12 +27,13 @@ import {
 	validateUsername,
 } from './user-service'
 import { drizzleClient } from '~/db.server'
-import { generateRawActionToken, hashActionToken } from '~/models/token.server'
-import { getCurrentEffectiveTos } from '~/models/tos.server'
+import { generateRawActionToken, hashActionToken, issueEmailConfirmationToken } from '~/models/token.server'
+import { getCurrentEffectiveTos, issueTosAcceptanceToken } from '~/models/tos.server'
 import {
 	createUser,
 	deleteUserByEmail,
 	getUserByEmail,
+	getUserById,
 	preparePasswordHash,
 	updateUserEmail,
 	updateUserlocale,
@@ -41,7 +41,8 @@ import {
 	updateUserPassword,
 	verifyLogin,
 } from '~/models/user.server'
-import { actionToken, passwordResetRequest, user, type User } from '~/schema'
+import { actionToken, tosVersion, user, type User } from '~/schema'
+import TosAnnouncementEmail from 'emails/update-tos'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -56,55 +57,59 @@ const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
  * with the given email already exists.
  */
 export const registerUser = async (
-	username: string,
-	email: string,
-	password: string,
-	language: 'de_DE' | 'en_US',
-	tosAccepted: boolean,
+  username: string,
+  email: string,
+  password: string,
+  language: 'de_DE' | 'en_US',
+  tosAccepted: boolean,
 ): Promise<
-	UsernameValidation | EmailValidation | PasswordValidation | User | null
+  UsernameValidation | EmailValidation | PasswordValidation | User | null
 > => {
-	const usernameValidation = validateUsername(username)
-	if (!usernameValidation.isValid) return usernameValidation
+  const usernameValidation = validateUsername(username)
+  if (!usernameValidation.isValid) return usernameValidation
 
-	const emailValidation = validateEmail(email)
-	if (!emailValidation.isValid) return emailValidation
+  const emailValidation = validateEmail(email)
+  if (!emailValidation.isValid) return emailValidation
 
-	const passwordValidation = validatePassword(password)
-	if (!passwordValidation.isValid) return passwordValidation
+  const passwordValidation = validatePassword(password)
+  if (!passwordValidation.isValid) return passwordValidation
 
-	const tosValidation = validateTosAccepted(tosAccepted)
-	if(!tosValidation.isValid) return tosValidation
+  const tosValidation = validateTosAccepted(tosAccepted)
+  if (!tosValidation.isValid) return tosValidation
 
-	const tos = await getCurrentEffectiveTos()
-	invariant(tos, 'Expected tos to be configured.')
+  const tos = await getCurrentEffectiveTos()
+  invariant(tos, 'Expected tos to be configured.')
 
-	const existingUser = await getUserByEmail(email)
-	if (existingUser) return null // no new user is created -> null
+  const existingUser = await getUserByEmail(email)
+  if (existingUser) return null
 
-	const newUsers = await createUser(username, email, language, password, tos.id)
-	if (newUsers.length === 0)
-		throw new Error('Something went wrong creating the user profile!')
+  const newUsers = await createUser(username, email, language, password, tos.id)
+  if (newUsers.length === 0) {
+    throw new Error('Something went wrong creating the user profile!')
+  }
 
-	invariant(
-		newUsers.length === 1,
-		'Expected to only get a single user account returned',
-	)
+  invariant(
+    newUsers.length === 1,
+    'Expected to only get a single user account returned',
+  )
 
-	const lng = (newUsers[0].language?.split('_')[0] as 'de' | 'en') ?? 'en'
-	await sendMail({
-		recipientAddress: newUsers[0].email,
-		recipientName: newUsers[0].name,
-		subject: NewUserEmailSubject[lng],
-		body: NewUserEmail({
-			user: { name: newUsers[0].name },
-			email: newUsers[0].email,
-			token: newUsers[0].emailConfirmationToken ?? '',
-			language: lng,
-		}),
-	})
+  const newUser = newUsers[0]
+  const token = await issueEmailConfirmationToken(newUser.id)
 
-	return newUsers[0]
+  const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+  await sendMail({
+    recipientAddress: newUser.email,
+    recipientName: newUser.name,
+    subject: NewUserEmailSubject[lng],
+    body: NewUserEmail({
+      user: { name: newUser.name },
+      email: newUser.email,
+      token,
+      language: lng,
+    }),
+  })
+
+  return newUser
 }
 
 /**
@@ -118,155 +123,155 @@ export const registerUser = async (
  * messages have been produced during the update procedure (e.g. for each field updated).
  */
 export const updateUserDetails = async (
-	user: User,
-	jwtString: string,
-	details: {
-		email?: string
-		language?: 'de_DE' | 'en_US'
-		name?: string
-		currentPassword?: string
-		newPassword?: string
-	},
+  user: User,
+  jwtString: string,
+  details: {
+    email?: string
+    language?: 'de_DE' | 'en_US'
+    name?: string
+    currentPassword?: string
+    newPassword?: string
+  },
 ): Promise<{
-	updated: boolean
-	signOut: boolean
-	messages: string[]
-	updatedUser: User
+  updated: boolean
+  signOut: boolean
+  messages: string[]
+  updatedUser: User
 }> => {
-	const { email, language, name, currentPassword, newPassword } = details
-	const messages = []
+  const { email, language, name, currentPassword, newPassword } = details
+  const messages: string[] = []
 
-	// don't allow email and password change in one request
-	if (email && newPassword) {
-		messages.push(
-			'You cannot change your email address and password in the same request.',
-		)
-		return {
-			updated: false,
-			signOut: false,
-			messages: messages,
-			updatedUser: user,
-		}
-	}
+  if (email && newPassword) {
+    messages.push(
+      'You cannot change your email address and password in the same request.',
+    )
+    return {
+      updated: false,
+      signOut: false,
+      messages,
+      updatedUser: user,
+    }
+  }
 
-	// for password and email changes, require parameter currentPassword to be valid
-	if ((newPassword && newPassword !== '') || (email && email !== '')) {
-		if (!currentPassword) {
-			messages.push(
-				'To change your password or email address, please supply your current password.',
-			)
-			return {
-				updated: false,
-				signOut: false,
-				messages: messages,
-				updatedUser: user,
-			}
-		}
+  if ((newPassword && newPassword !== '') || (email && email !== '')) {
+    if (!currentPassword) {
+      messages.push(
+        'To change your password or email address, please supply your current password.',
+      )
+      return {
+        updated: false,
+        signOut: false,
+        messages,
+        updatedUser: user,
+      }
+    }
 
-		const login = await verifyLogin(user.email, currentPassword)
-		if (login === null) {
-			messages.push('Password incorrect')
-			return {
-				updated: false,
-				signOut: false,
-				messages: messages,
-				updatedUser: user,
-			}
-		}
+    const login = await verifyLogin(user.email, currentPassword)
+    if (login === null) {
+      messages.push('Password incorrect')
+      return {
+        updated: false,
+        signOut: false,
+        messages,
+        updatedUser: user,
+      }
+    }
 
-		if (newPassword && validatePassword(newPassword).isValid === false) {
-			messages.push('New password should have at least 8 characters')
-			return {
-				updated: false,
-				signOut: false,
-				messages: messages,
-				updatedUser: user,
-			}
-		}
-	}
+    if (newPassword && validatePassword(newPassword).isValid === false) {
+      messages.push('New password should have at least 8 characters')
+      return {
+        updated: false,
+        signOut: false,
+        messages,
+        updatedUser: user,
+      }
+    }
+  }
 
-	// If specified, make sure the email is valid
-	if (email && !validateEmail(email).isValid) {
-		messages.push('Invalid email address')
-		return {
-			updated: false,
-			signOut: false,
-			messages: messages,
-			updatedUser: user,
-		}
-	}
+  if (email && !validateEmail(email).isValid) {
+    messages.push('Invalid email address')
+    return {
+      updated: false,
+      signOut: false,
+      messages,
+      updatedUser: user,
+    }
+  }
 
-	// If specified, make sure the username is valid
-	if (name && !validateUsername(name).isValid) {
-		messages.push('Invalid username')
-		return {
-			updated: false,
-			signOut: false,
-			messages: messages,
-			updatedUser: user,
-		}
-	}
+  if (name && !validateUsername(name).isValid) {
+    messages.push('Invalid username')
+    return {
+      updated: false,
+      signOut: false,
+      messages,
+      updatedUser: user,
+    }
+  }
 
-	let signOut = false
-	let hasChanges = false
+  let signOut = false
+  let hasChanges = false
 
-	if (name && user.name !== name) {
-		await updateUserName(user.email, name)
-		messages.push('Name changed.')
-		hasChanges = true
-	}
+  if (name && user.name !== name) {
+    await updateUserName(user.email, name)
+    messages.push('Name changed.')
+    hasChanges = true
+  }
 
-	if (language && user.language !== language) {
-		await updateUserlocale(user.email, language)
-		messages.push('Language changed.')
-		hasChanges = true
-	}
+  if (language && user.language !== language) {
+    await updateUserlocale(user.email, language)
+    messages.push('Language changed.')
+    hasChanges = true
+  }
 
-	if (email && user.email !== email && validateEmail(email).isValid) {
-		const [updatedUser] = await updateUserEmail(user, email)
-		messages.push(
-			'E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address',
-		)
-		hasChanges = true
+  if (email && user.email !== email) {
+    await updateUserEmail(user, email)
 
-		const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-		await sendMail({
-			recipientAddress: email,
-			recipientName: user.name,
-			subject: ConfirmEmailAddressSubject[lng],
-			body: ConfirmEmailAddress({
-				user: { name: user.name },
-				email: email,
-				token: updatedUser.emailConfirmationToken || '',
-				language: lng,
-			}),
-		})
-	}
+    const token = await issueEmailConfirmationToken(user.id)
+    const effectiveLanguage = (language ?? user.language)?.split('_')[0] as 'de' | 'en' | undefined
+    const lng = effectiveLanguage ?? 'en'
 
-	if (newPassword) {
-		await updateUserPassword(user.id, newPassword)
-		await revokeToken(user, jwtString)
-		messages.push('Password changed. Please sign in with your new password')
-		signOut = true
-		hasChanges = true
-	}
+    await sendMail({
+      recipientAddress: email,
+      recipientName: name ?? user.name,
+      subject: ConfirmEmailAddressSubject[lng],
+      body: ConfirmEmailAddress({
+        user: { name: name ?? user.name },
+        email,
+        token,
+        language: lng,
+      }),
+    })
 
-	if (hasChanges) {
-		const updatedUser = await getUserByEmail(email ?? user.email)
-		return {
-			updated: true,
-			signOut,
-			messages,
-			updatedUser: updatedUser ?? user,
-		}
-	}
+    messages.push(
+      'E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address',
+    )
+    hasChanges = true
+  }
 
-	return {
-		updated: false,
-		messages: [],
-		signOut: false,
-		updatedUser: user,
-	}
+  if (newPassword) {
+    await updateUserPassword(user.id, newPassword)
+    await revokeToken(user, jwtString)
+    messages.push('Password changed. Please sign in with your new password')
+    signOut = true
+    hasChanges = true
+  }
+
+  if (hasChanges) {
+    const updatedUser = await getUserById(user.id)
+    return {
+      updated: true,
+      signOut,
+      messages,
+      updatedUser: updatedUser ?? user,
+    }
+  }
+
+  return {
+    updated: false,
+    messages: [],
+    signOut: false,
+    updatedUser: user,
+  }
 }
 
 /**
@@ -312,27 +317,77 @@ export const deleteUser = async (
  * does not exist or the token is invalid.
  */
 export const confirmEmail = async (
-	emailConfirmationToken: string,
-	emailToConfirm: string,
-): Promise<User | null> => {
-	const u = await drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.unconfirmedEmail, emailToConfirm),
-	})
+  rawToken: string,
+): Promise<'forbidden' | 'expired' | 'success'> => {
+  const now = new Date()
+  const tokenHash = hashActionToken(rawToken)
 
-	if (!u || u.emailConfirmationToken !== emailConfirmationToken) return null
+  const token = await drizzleClient.query.actionToken.findFirst({
+    where: (t, { and, eq }) =>
+      and(
+        eq(t.purpose, 'email_confirmation'),
+        eq(t.tokenHash, tokenHash),
+      ),
+  })
 
-	const updatedUser = await drizzleClient
-		.update(user)
-		.set({
-			emailIsConfirmed: true,
-			emailConfirmationToken: null,
-			email: emailToConfirm,
-			unconfirmedEmail: null,
-		})
-		.where(eq(user.id, u.id))
-		.returning()
+  if (!token) return 'forbidden'
+  if (token.consumedAt) return 'forbidden'
+  if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
-	return updatedUser[0]
+  return drizzleClient.transaction(async (tx) => {
+    const consumed = await tx
+      .update(actionToken)
+      .set({ consumedAt: now })
+      .where(
+        and(
+          eq(actionToken.id, token.id),
+          isNull(actionToken.consumedAt),
+          gt(actionToken.expiresAt, now),
+        ),
+      )
+      .returning({
+        userId: actionToken.userId,
+      })
+
+    const consumedToken = consumed[0]
+    if (!consumedToken) return 'forbidden' as const
+
+    const currentUser = await tx.query.user.findFirst({
+      where: (u, { eq }) => eq(u.id, consumedToken.userId),
+      columns: {
+        id: true,
+        email: true,
+        unconfirmedEmail: true,
+        emailIsConfirmed: true,
+      },
+    })
+
+    if (!currentUser) return 'forbidden' as const
+
+    const pendingEmail = currentUser.unconfirmedEmail?.trim()
+
+    if (pendingEmail) {
+      await tx
+        .update(user)
+        .set({
+          email: pendingEmail.toLowerCase(),
+          unconfirmedEmail: null,
+          emailIsConfirmed: true,
+          updatedAt: now,
+        })
+        .where(eq(user.id, currentUser.id))
+    } else {
+      await tx
+        .update(user)
+        .set({
+          emailIsConfirmed: true,
+          updatedAt: now,
+        })
+        .where(eq(user.id, currentUser.id))
+    }
+
+    return 'success' as const
+  })
 }
 
 /**
@@ -381,42 +436,59 @@ export const requestPasswordReset = async (email: string) => {
 }
 
 /**
- * Resets a users password using a specified passwordResetToken received through an email.
- * @param passwordResetToken A token sent to the user via email to allow a password reset without being logged in.
- * @param newPassword The new password for the user
- * @returns "forbidden" if the user is not entitled to reset the password with the given parameters,
- * "expired" if the {@link passwordResetToken} is expired,
- * "invalid_password_format" if the specified new password does not comply with the password requirements,
- * "success" if the password was successfuly set to the {@link newPassword}
+ * Resets a user's password using a password-reset token received by email.
  */
 export const resetPassword = async (
-	passwordResetToken: string,
-	newPassword: string,
+  passwordResetToken: string,
+  newPassword: string,
 ): Promise<'forbidden' | 'expired' | 'invalid_password_format' | 'success'> => {
-	const passwordReset =
-		await drizzleClient.query.passwordResetRequest.findFirst({
-			where: (reset, { eq }) => eq(reset.token, passwordResetToken),
-		})
+  const now = new Date()
+  const tokenHash = hashActionToken(passwordResetToken)
 
-	if (!passwordReset) return 'forbidden'
+  const token = await drizzleClient.query.actionToken.findFirst({
+    where: (t, { and, eq }) =>
+      and(
+        eq(t.purpose, 'password_reset'),
+        eq(t.tokenHash, tokenHash),
+      ),
+  })
 
-	if (Date.now() > passwordReset.expiresAt.getTime()) return 'expired'
+  if (!token) return 'forbidden'
+  if (token.consumedAt) return 'forbidden'
+  if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
-	// Validate new Password
-	if (validatePassword(newPassword).isValid === false)
-		return 'invalid_password_format'
+  if (validatePassword(newPassword).isValid === false) {
+    return 'invalid_password_format'
+  }
 
-	const updated = await updateUserPassword(passwordReset.userId, newPassword)
+  const result = await drizzleClient.transaction(async (tx) => {
+    const consumed = await tx
+      .update(actionToken)
+      .set({ consumedAt: now })
+      .where(
+        and(
+          eq(actionToken.id, token.id),
+          isNull(actionToken.consumedAt),
+          gt(actionToken.expiresAt, now),
+        ),
+      )
+      .returning({
+        userId: actionToken.userId,
+      })
 
-	invariant(updated.length === 1)
-	// invalidate password reset token
-	await drizzleClient
-		.delete(passwordResetRequest)
-		.where(eq(passwordResetRequest.token, passwordResetToken))
+    const consumedToken = consumed[0]
+    if (!consumedToken) return 'forbidden' as const
 
-	// TODO: invalidate refreshToken and active accessTokens
+    const updated = await updateUserPassword(consumedToken.userId, newPassword)
 
-	return 'success'
+    invariant(updated.length === 1)
+
+    // TODO: invalidate refreshToken and active accessTokens
+
+    return 'success' as const
+  })
+
+  return result
 }
 
 /**
@@ -427,6 +499,12 @@ export const resetPassword = async (
  * @returns "already_confirmed" if there is no email confirmation pending,
  * else the updated user containing the new email confirmation token
  */
+const EMAIL_CONFIRMATION_TTL_MS = 24 * ONE_HOUR_MILLIS
+
+/**
+ * Resends the email confirmation for the given user again.
+ * This resets the existing confirmation token for that user/purpose.
+ */
 export const resendEmailConfirmation = async (
   u: User,
 ): Promise<'already_confirmed' | User> => {
@@ -435,29 +513,39 @@ export const resendEmailConfirmation = async (
 
   if (u.emailIsConfirmed && !hasPending) return 'already_confirmed'
 
-  const token = uuidv4()
-  const [savedUser] = await drizzleClient
-    .update(user)
-    .set({ emailConfirmationToken: token })
-    .where(eq(user.id, u.id))
-    .returning()
+  const token = await issueEmailConfirmationToken(u.id)
 
-  const lng = (savedUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-  const recipient = hasPending ? pendingEmail : savedUser.email
+  const lng = (u.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+  const recipient = hasPending ? pendingEmail : u.email
 
   await sendMail({
     recipientAddress: recipient,
-    recipientName: savedUser.name,
+    recipientName: u.name,
     subject: ResendEmailConfirmationSubject[lng],
-    body: ResendEmailConfirmationEmail({
-      user: { name: savedUser.name },
+    body: ConfirmEmailAddress({
+      user: { name: u.name },
       email: recipient,
       token,
       language: lng,
     }),
   })
 
-  return savedUser
+  // const tostoken = await issueTosAcceptanceToken(u.id)
+  // const lang = (u.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+
+  // await sendMail({
+  //   recipientAddress: u.email,
+  //   recipientName: u.name,
+  //   subject: 'Tos update',
+  //   body: TosAnnouncementEmail({
+  //     user: { name: u.name },
+  //     token: tostoken,
+  //     language: lng,
+  //     acceptBy: new Date().toLocaleDateString()
+  //   }),
+  // })
+
+  return u
 }
 
 export const signIn = async (
