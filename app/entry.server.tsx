@@ -26,15 +26,15 @@ export default async function handleRequest(
 	entryContext: EntryContext,
 	routerContext: RouterContextProvider,
 ) {
-	let shellRendered = false
-	let userAgent = request.headers.get('user-agent')
-
-	let readyOption: keyof RenderToPipeableStreamOptions =
-		(userAgent && isbot(userAgent)) || entryContext.isSpaMode
-			? 'onAllReady'
-			: 'onShellReady'
-
 	return new Promise((resolve, reject) => {
+		let shellRendered = false
+		let userAgent = request.headers.get('user-agent')
+
+		let readyOption: keyof RenderToPipeableStreamOptions =
+			(userAgent && isbot(userAgent)) || entryContext.isSpaMode
+				? 'onAllReady'
+				: 'onShellReady'
+
 		let didError = false
 
 		const { pipe, abort } = renderToPipeableStream(
