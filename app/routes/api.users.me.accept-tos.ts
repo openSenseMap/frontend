@@ -1,8 +1,6 @@
 import { type ActionFunctionArgs } from "react-router";
-import { drizzleClient } from "~/db.server";
 import { getUserFromJwt } from "~/lib/jwt";
-import { getCurrentEffectiveTos } from "~/models/tos.server";
-import { tosUserState } from "~/schema/tos";
+import { getCurrentEffectiveTos, markTosAccepted } from "~/models/tos.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== "POST") {
@@ -25,10 +23,7 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  await drizzleClient
-    .insert(tosUserState)
-    .values({ userId: jwtUser.id, tosVersionId: tos.id, acceptedAt: new Date(), })
-    .onConflictDoNothing();
+  await markTosAccepted({ userId: jwtUser.id, tosId: tos.id })
 
   return new Response(null, { status: 204 });
 }
