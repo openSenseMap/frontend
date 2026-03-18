@@ -138,7 +138,7 @@ export default function Index() {
 					style={{
 						/** for some reasons not really worth debugging tailwind does not apply min-h-[calc(100vh-8rem)], so we have to use element styles here */
 						minHeight: 'calc(100vh - 8rem)',
-						scrollSnapAlign: 'center',
+						scrollSnapAlign: 'end',
 					}}
 				>
 					<div className="flex items-center justify-between px-8">
