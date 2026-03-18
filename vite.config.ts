@@ -40,6 +40,7 @@ export default defineConfig(({ mode }) => {
 				reporter: ['text', 'json-summary', 'json'],
 			},
 			testTimeout: 10_000,
+			hookTimeout: process.env.CI ? 30_000 : 10_000,
 		},
 	}
 })

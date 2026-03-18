@@ -306,17 +306,17 @@ export default function DeviceDetailBox() {
 							<div className="no-scrollbar relative flex-1 overflow-y-scroll">
 								<div className="space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
 									<div className="md:w-1/2">
-										{data.device.image ? (
-											<img
-												className="w-full rounded-lg object-cover"
-												alt="device_image"
-												src={data.device.image}
-											></img>
-										) : (
-											<div className="w-full rounded-lg object-cover text-muted-foreground">
-												<ImageIcon strokeWidth={1} className="h-full w-full" />
-											</div>
-										)}
+										{data.deviceImageUrl ? (
+												<img
+													className="w-full rounded-lg object-cover"
+													alt="device_image"
+													src={data.deviceImageUrl}
+												/>
+											) : (
+												<div className="w-full rounded-lg object-cover text-muted-foreground">
+													<ImageIcon strokeWidth={1} className="h-full w-full" />
+												</div>
+											)}
 									</div>
 									<div className="space-y-2 sm:w-1/2">
 										<InfoItem

@@ -1,7 +1,14 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, ClipboardCopy, Ellipsis } from 'lucide-react'
+import {
+	ArrowUpDown,
+	ClipboardCopy,
+	Ellipsis,
+	Globe,
+	LucideMap,
+	LucideMapPin,
+} from 'lucide-react'
 import { type UseTranslationResponse } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +20,7 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { type Device } from '~/schema'
+import { Link } from 'react-router'
 
 export type SenseBox = {
 	id: string
@@ -126,56 +134,65 @@ export function getColumns(
 			cell: ({ row }) => {
 				const senseBox = row.original
 
-				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0">
-								<span className="sr-only">Open menu</span>
-								<Ellipsis className="h-4 w-4" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="end"
-							className="dark:bg-dark-background dark:text-dark-text"
-						>
-							<DropdownMenuLabel>Actions</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem asChild>
-								<a href={`/device/${senseBox.id}/overview`}>{t('overview')}</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild>
-								<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
-							</DropdownMenuItem>
-							{isOwner ? (
-								<>
-							<DropdownMenuItem asChild>
-								<a href={`/device/${senseBox.id}/edit/general`}>{t('edit')}</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild>
-								<a href={`/device/${senseBox.id}/dataupload`}>
-									{t('data_upload')}
-								</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild>
-								<a
-									href="https://sensebox.de/de/go-home"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									{t('support')}
-								</a>
-							</DropdownMenuItem>
-							<DropdownMenuItem asChild
-								onClick={() => navigator.clipboard.writeText(senseBox?.id)}
-								className="cursor-pointer"
+				if (isOwner)
+					return (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" className="h-8 w-8 p-0">
+									<span className="sr-only">Open menu</span>
+									<Ellipsis className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="end"
+								className="dark:bg-dark-background dark:text-dark-text"
 							>
-								{t('copy_id')}
-							</DropdownMenuItem>
-							</>
-						): null }
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)
+								<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem asChild>
+									<a href={`/device/${senseBox.id}/overview`}>
+										{t('overview')}
+									</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<a href={`/device/${senseBox.id}/edit/general`}>
+										{t('edit')}
+									</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<a href={`/device/${senseBox.id}/dataupload`}>
+										{t('data_upload')}
+									</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<a
+										href="https://sensebox.de/de/go-home"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{t('support')}
+									</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									asChild
+									onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+									className="cursor-pointer"
+								>
+									{t('copy_id')}
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)
+				else
+					return (
+						<Link to={`/explore/${senseBox.id}`} title={t('show_on_map')}>
+							<span className="sr-only">Show on map</span>
+							<LucideMapPin className="h-4 w-4" />
+						</Link>
+					)
 			},
 		},
 	]
