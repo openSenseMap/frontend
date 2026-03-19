@@ -49,6 +49,7 @@ const sections = [
 
 export const loader = async ({ context, request }: Route.LoaderArgs) => {
 	const locale = getLocale(context) as (typeof supportedLanguages)[number]
+
 	const directus = getDirectusClient()
 
 	const useCasesResponse = await directus.request(
