@@ -12,14 +12,12 @@ import {
 	Scripts,
 	ScrollRestoration,
 	useRouteLoaderData,
-	type LoaderFunctionArgs,
 	type MetaFunction,
 } from 'react-router'
 import { type Route } from './+types/root'
 import { Toaster } from './components/ui/toaster'
 import { i18nCookie } from './cookies'
-import i18next from './i18next.server'
-import { i18nextMiddleware } from './middleware/i18next'
+import { getLocale, i18nextMiddleware } from './middleware/i18next'
 import { getEnv } from './utils/env.server'
 import { getUser } from './utils/session.server'
 
@@ -67,8 +65,8 @@ export const meta: MetaFunction = () => [
 	{ viewport: 'width=device-width,initial-scale=1' },
 ]
 
-export async function loader({ request }: LoaderFunctionArgs) {
-	const locale = await i18next.getLocale(request)
+export async function loader({ context, request }: Route.LoaderArgs) {
+	const locale = getLocale(context)
 	const user = await getUser(request)
 	return data(
 		{
