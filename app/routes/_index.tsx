@@ -14,7 +14,7 @@ import Integrations from '~/components/landing/sections/integrations'
 import Partners from '~/components/landing/sections/partners'
 import PricingPlans from '~/components/landing/sections/pricing-plans'
 import Stats from '~/components/landing/stats'
-import { type supportedLanguages } from '~/i18next-options'
+import { type SupportedLanguage } from '~/i18next-config'
 import { type Partner, getDirectusClient } from '~/lib/directus'
 import { getLocale } from '~/middleware/i18next'
 import { getLatestDevices } from '~/models/device.server'
@@ -48,7 +48,7 @@ const sections = [
 ]
 
 export const loader = async ({ context, request }: Route.LoaderArgs) => {
-	const locale = getLocale(context) as (typeof supportedLanguages)[number]
+	const locale = getLocale(context) as SupportedLanguage
 
 	const directus = getDirectusClient()
 

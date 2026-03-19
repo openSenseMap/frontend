@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useRevalidator } from 'react-router'
 import { type Route } from './+types/imprint'
 import LanguageSelector from '~/components/landing/header/language-selector'
-import i18nextOptions, { type supportedLanguages } from '~/i18next-options'
+import { i18nextOptions, type SupportedLanguage } from '~/i18next-config'
 import {
 	getDirectusClient,
 	type StaticPageTranslation,
@@ -14,7 +14,7 @@ import {
 import { getLocale } from '~/middleware/i18next'
 
 export const loader = async ({ context }: Route.LoaderArgs) => {
-	const locale = getLocale(context) as (typeof supportedLanguages)[number]
+	const locale = getLocale(context) as SupportedLanguage
 	const locales =
 		locale == i18nextOptions.fallbackLng
 			? [locale]
