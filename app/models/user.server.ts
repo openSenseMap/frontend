@@ -1,7 +1,6 @@
 import crypto from 'node:crypto'
 import bcrypt from 'bcryptjs'
-import { eq, or } from 'drizzle-orm'
-import { v4 as uuidv4 } from 'uuid'
+import { eq } from 'drizzle-orm'
 import { createProfileWithTransaction } from './profile.server'
 import { drizzleClient } from '~/db.server'
 import {
@@ -84,7 +83,6 @@ export const updateUserEmail = (
 		.update(user)
 		.set({
 			unconfirmedEmail: newEmail,
-			emailConfirmationToken: uuidv4(),
 		})
 		.where(eq(user.id, userToUpdate.id))
 		.returning()
@@ -170,7 +168,6 @@ export async function createUser(
 		})
 		await createProfileWithTransaction(t, newUser[0].id, name)
 		if (tosVersionId) {
-			const now = new Date()
 			await t.insert(tosUserState).values({
 				userId: newUser[0].id,
 				tosVersionId,

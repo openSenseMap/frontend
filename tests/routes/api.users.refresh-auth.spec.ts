@@ -30,7 +30,6 @@ describe('openSenseMap API Routes: /users', () => {
 			if (!registration.ok) {
 				throw new Error(
 					`Test setup failed: ${registration.field} -> ${registration.code}`,
-					true
 			)
 			};
 			const user = registration.user;

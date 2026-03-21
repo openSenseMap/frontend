@@ -177,7 +177,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const locale = await i18next.getLocale(request)
 	const language = locale === 'de' ? 'de_DE' : 'en_US'
 
-	const result = await registerUser(username, email, password, language)
+	const result = await registerUser(username, email, password, language, tosAccepted === 'on')
 
 	if (!result.ok) {
 		return data(
@@ -186,6 +186,7 @@ export async function action({ request }: ActionFunctionArgs) {
 					username: result.field === 'username' ? result.code : null,
 					email: result.field === 'email' ? result.code : null,
 					password: result.field === 'password' ? result.code : null,
+					tosAccepted: result.field === 'tos' ? result.code : null,
 					form: result.field === 'form' ? result.code : null,
 				},
 			},
