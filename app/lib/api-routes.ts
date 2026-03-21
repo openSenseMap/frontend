@@ -1,7 +1,7 @@
 type RouteInfo = {
     path: string
     method: 'GET' | 'PUT' | 'POST' | 'DELETE'
-    skipTos: boolean
+    tosExempt: boolean
     deprecationNotice?: string
 }
 
@@ -10,17 +10,17 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
         {
             path: '/',
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: '/stats',
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: '/tags',
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         // {
         //   path: `statistics/idw`,
@@ -35,12 +35,12 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
         {
             path: `boxes`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `boxes/data`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         // {
         //   path: `boxes/:boxId`,
@@ -49,12 +49,12 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
         {
             path: `boxes/:boxId/sensors`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `boxes/:boxId/sensors/:sensorId`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         // {
         //   path: `boxes/:boxId/data/:sensorId`,
@@ -71,64 +71,64 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
         {
             path: `boxes/:boxId/data`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `boxes/:boxId/:sensorId`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/register`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/request-password-reset`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/password-reset`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/confirm-email`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/sign-in`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
     ],
     auth: [
         {
             path: `users/refresh-auth`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/me`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/me`,
             method: 'PUT',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `users/me/boxes`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/me/boxes/:boxId`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         // {
         //   path: `boxes/:boxId/script`,
@@ -137,62 +137,62 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
         {
             path: `boxes`,
             method: 'POST',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/claim`,
             method: 'POST',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/transfer`,
             method: 'POST',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/transfer`,
             method: 'DELETE',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/transfer/:boxId`,
             method: 'GET',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `boxes/transfer/:boxId`,
             method: 'PUT',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/:boxId`,
             method: 'PUT',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/:boxId`,
             method: 'DELETE',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `boxes/:boxId/:sensorId/measurements`,
             method: 'DELETE',
-            skipTos: false
+            tosExempt: false
         },
         {
             path: `users/sign-out`,
             method: 'POST',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/me`,
             method: 'DELETE',
-            skipTos: true
+            tosExempt: true
         },
         {
             path: `users/me/resend-email-confirmation`,
             method: 'POST',
-            skipTos: false
+            tosExempt: false
         },
     ],
     // management: [

@@ -29,11 +29,11 @@ function routeToRegex(apiPathPattern: string) {
 
 /**
  * Build allowlist from route metadata:
- * - `auth` routes with `skipTos: true` bypass ToS checks
+ * - `auth` routes with `tosExempt: true` bypass ToS checks
  */
 const API_TOS_ALLOWLIST: CompiledRule[] = [
 	...apiRoutes.auth
-		.filter((r: any) => r.skipTos)
+		.filter((r: any) => r.tosExempt)
 		.map((r: any) => ({
 			method: r.method as HttpMethod,
 			matcher: routeToRegex(`/api/${r.path}`),
