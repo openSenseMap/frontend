@@ -5,8 +5,8 @@ import {
 } from 'react-router'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
+import { createDevice } from '~/lib/devices-service.server'
 import { createDeviceIntegrations } from '~/lib/integration-service.server'
-import { createDevice } from '~/models/device.server'
 import { getIntegrations } from '~/models/integration.server'
 import { getUser, getUserId } from '~/utils/session.server'
 
@@ -38,6 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 		const devicePayload = {
 			name: data['general-info'].name,
+			description: data['general-info'].description?.trim() || null,
 			exposure: data['general-info'].exposure,
 			expiresAt: data['general-info'].temporaryExpirationDate,
 			tags:
@@ -62,7 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			}),
 		}
 
-		const newDevice = await createDevice(devicePayload, userId)
+		const newDevice = await createDevice(userId, devicePayload)
 
 		await createDeviceIntegrations(newDevice.id, advanced)
 
