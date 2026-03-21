@@ -1,1 +1,0 @@
-ALTER TABLE "user" DROP COLUMN "email_confirmation_token";
