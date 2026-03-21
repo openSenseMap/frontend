@@ -1,14 +1,9 @@
-import { type Route } from '../+types/root'
-import { tosApiMiddleware } from '~/middleware/tos-api.server'
-
 type RouteInfo = {
     path: string
     method: 'GET' | 'PUT' | 'POST' | 'DELETE'
     skipTos: boolean
     deprecationNotice?: string
 }
-
-export const middleware: Route.MiddlewareFunction[] = [tosApiMiddleware];
 
 export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
     noauth: [
