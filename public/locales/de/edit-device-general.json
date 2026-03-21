@@ -1,0 +1,19 @@
+{
+    "no_preview_yet": "Es gibt noch keine Vorschau.",
+    "general": "Allgemein",
+    "exposure": "Standort",
+    "indoor": "drinnen",
+    "outdoor": "draußen",
+    "mobile": "mobil",
+    "unknown": "unbekannt",
+    "description": "Beschreibung",
+    "markdown_supported": "Markdown ist unterstützt.",
+    "preview": "Vorschau",
+    "image": "Bild",
+    "remove_image": "Bild permanent entfernen",
+    "upload_image": "Bild hochladen",
+    "accepted_formats": "Akzeptierte Formate",
+    "add": "Hinzufügen",
+    "delete_device": "Gerät löschen",
+    "delete_device_confirm_info": "Wenn Sie Ihre Station wirklich löschen möchten, geben Sie bitte Ihr aktuelles Passwort ein – dabei werden auch alle Messwerte gelöscht."
+}

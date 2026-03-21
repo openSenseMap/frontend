@@ -1,5 +1,6 @@
 import { Save, Upload, X } from 'lucide-react'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import {
 	type ActionFunctionArgs,
@@ -265,6 +266,7 @@ export default function () {
 	const [tags, setTags] = useState<string[]>(device?.tags ?? [])
 	const [newTag, setNewTag] = useState('')
 	const [website, setWebsite] = useState(device?.website || '')
+	const { t } = useTranslation('edit-device-general')
 
 	const [imagePreview, setImagePreview] = useState<string | null>(
 		imageUrl || null,
@@ -288,7 +290,7 @@ export default function () {
 		if (!value?.trim()) {
 			return (
 				<div className="rounded border border-dashed border-gray-200 p-4 text-sm text-gray-500">
-					Nothing to preview yet.
+					{t('no_preview_yet')}
 				</div>
 			)
 		}
@@ -351,7 +353,7 @@ export default function () {
 						<div>
 							<div className="mt-2 flex justify-between">
 								<div>
-									<h1 className="text-4xl">General</h1>
+									<h1 className="text-4xl">{t('general')}</h1>
 								</div>
 								<div>
 									<button
@@ -400,7 +402,7 @@ export default function () {
 									htmlFor="exposure"
 									className="txt-base block font-bold tracking-normal"
 								>
-									Exposure *
+									{t('exposure')} *
 								</label>
 								<div className="mt-1">
 									<select
@@ -418,10 +420,10 @@ export default function () {
 										}
 										className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 									>
-										<option value="indoor">indoor</option>
-										<option value="outdoor">outdoor</option>
-										<option value="mobile">mobile</option>
-										<option value="unknown">unknown</option>
+										<option value="indoor">{t('indoor')}</option>
+										<option value="outdoor">{t('outdoor')}</option>
+										<option value="mobile">{t('mobile')}</option>
+										<option value="unknown">{t('unknown')}</option>
 									</select>
 								</div>
 							</div>
@@ -432,7 +434,7 @@ export default function () {
 										htmlFor="description"
 										className="txt-base block font-bold tracking-normal"
 									>
-										Description
+										{t('description')}
 									</label>
 
 									<div className="mt-1 grid gap-4 lg:grid-cols-2">
@@ -458,12 +460,12 @@ Installed on the school roof.
 												{description.length} / 5000
 											</p>
 											<p className="mt-1 text-sm text-gray-500">
-												Markdown is supported.
+												{t('markdown_supported')}
 											</p>
 										</div>
 
 										<div>
-											<p className="mb-2 block font-bold tracking-normal">Preview</p>
+											<p className="mb-2 block font-bold tracking-normal">{t('preview')}</p>
 											<MarkdownPreview value={description} />
 										</div>
 									</div>
@@ -496,7 +498,7 @@ Installed on the school roof.
 									htmlFor="image"
 									className="txt-base block font-bold tracking-normal"
 								>
-									Image
+									{t('image')}
 								</label>
 								<div className="mt-1">
 									<div className="relative inline-block">
@@ -522,7 +524,7 @@ Installed on the school roof.
 														name="intent"
 														value="removeImage"
 													>
-														Remove image permanently
+														{t('remove_image')}
 													</Button>
 												)}
 											</>
@@ -533,7 +535,7 @@ Installed on the school roof.
 											>
 												<Upload className="h-8 w-8 text-gray-400" />
 												<span className="mt-2 text-sm text-gray-500">
-													Upload Image
+													{t('upload_image')}
 												</span>
 											</label>
 										)}
@@ -555,7 +557,7 @@ Installed on the school roof.
 									</div>
 								)}
 								<p className="mt-1 text-sm text-gray-500">
-									Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
+									{t('accepted_formats')}: JPEG, PNG, WebP, GIF (max 5MB)
 								</p>
 							</div>
 
@@ -600,7 +602,7 @@ Installed on the school roof.
 										className="flex-1 rounded border border-gray-200 px-2 py-1 text-base"
 									/>
 									<Button type="button" onClick={addTag}>
-										Add
+										{t('add')}
 									</Button>
 								</div>
 								<input
@@ -612,13 +614,12 @@ Installed on the school roof.
 
 							{/* Delete device */}
 							<div>
-								<h1 className="mt-7 text-3xl text-[#FF4136]">Delete device</h1>
+								<h1 className="mt-7 text-3xl text-[#FF4136]">{t('delete_device')}</h1>
 							</div>
 
 							<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
 								<p>
-									If you really want to delete your station, please type your
-									current password - all measurements will be deleted as well.
+									{t('delete_device_confirm_info')}
 								</p>
 							</div>
 							<div>
@@ -646,7 +647,7 @@ Installed on the school roof.
 									disabled={!passwordDelVal}
 									className="mb-5 rounded border border-gray-200 px-4 py-2 text-black hover:bg-[#e6e6e6] disabled:border-[#ccc] disabled:text-[#8a8989]"
 								>
-									Delete device
+									{t('delete_device')}
 								</button>
 							</div>
 						</div>
