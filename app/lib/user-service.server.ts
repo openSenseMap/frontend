@@ -43,7 +43,6 @@ import {
 	verifyLogin,
 } from '~/models/user.server'
 import { actionToken, tosVersion, user, type User } from '~/schema'
-import TosAnnouncementEmail from 'emails/update-tos'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -51,7 +50,7 @@ type RegisterUserResult =
 	| { ok: true; user: User }
 	| {
 			ok: false
-			field: 'username' | 'email' | 'password' | 'form'
+			field: 'username' | 'email' | 'password' | 'tos' | 'form'
 			code:
 				| 'username_required'
 				| 'username_length'
@@ -63,6 +62,7 @@ type RegisterUserResult =
 				| 'password_required'
 				| 'password_too_short'
 				| 'password_too_weak'
+        | 'tos_required'
 				| 'registration_failed'
 	  }
 /**
@@ -80,6 +80,7 @@ export const registerUser = async (
 	email: string,
 	password: string,
 	language: 'de_DE' | 'en_US',
+  tosAccepted: boolean
 ): Promise<RegisterUserResult> => {
 	const normalizedUsername = username.trim()
 	const normalizedEmail = email.trim().toLowerCase()
@@ -141,6 +142,18 @@ export const registerUser = async (
 						}
 	}
 
+  const tosValidation = validateTosAccepted(tosAccepted)
+  if (!tosValidation.isValid) {
+    return {
+      ok: false,
+      field: 'tos',
+      code: 'tos_required',
+    }
+  }
+
+	const tos = await getCurrentEffectiveTos()
+	invariant(tos, 'Expected tos to be configured.')
+
 	const newUsers = await createUser(
 		normalizedUsername,
 		normalizedEmail,
@@ -171,7 +184,7 @@ export const registerUser = async (
 		body: NewUserEmail({
 			user: { name: newUser.name },
 			email: newUser.email,
-			token: newUser.emailConfirmationToken ?? '',
+			token: '',
 			language: lng,
 		}),
 	})

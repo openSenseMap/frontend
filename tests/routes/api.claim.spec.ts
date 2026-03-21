@@ -47,9 +47,18 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			CLAIM_TEST_USER.email,
 			CLAIM_TEST_USER.password,
 			'en_US',
+			true
 		)
-		user = testUser as User
-		const { token: t } = await createToken(testUser as User)
+		expect(testUser.ok).toBe(true)
+
+		if (!testUser.ok) {
+			throw new Error(
+				`Test setup failed: ${testUser.field} -> ${testUser.code}`,
+			)
+		}
+
+		user = testUser.user 
+		const { token: t } = await createToken(user)
 		jwt = t
 
 		queryableDevice = await createDevice(
@@ -211,13 +220,21 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 
 		it('should reject claim with expired transfer token', async () => {
 			// Create a new user to attempt the claim
-			const newUser = await registerUser(
+			const registration = await registerUser(
 				'claimer' + Date.now(),
 				`claimer${Date.now()}@test.com`,
 				'password123',
 				'en_US',
+				true
 			)
-			const { token: newUserJwt } = await createToken(newUser as User)
+			expect(registration.ok).toBe(true)
+
+			if (!registration.ok) {
+				throw new Error(
+					`Test setup failed: ${registration.field} -> ${registration.code}`,
+				)
+			}
+			const { token: newUserJwt } = await createToken(registration.user)
 
 			const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
 				method: 'POST',
@@ -237,7 +254,7 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			expect(body.error).toContain('expired')
 
 			// Cleanup
-			await deleteUserByEmail(newUser.email)
+			await deleteUserByEmail(registration.user.email)
 		})
 	})
 })
