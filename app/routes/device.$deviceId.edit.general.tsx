@@ -1,5 +1,6 @@
 import { Save, Upload, X } from 'lucide-react'
 import React, { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
@@ -260,7 +261,7 @@ export default function () {
 	const passwordDelRef = React.useRef<HTMLInputElement>(null)
 	const [name, setName] = useState(device?.name)
 	const [exposure, setExposure] = useState(device?.exposure)
-	const [description, setDescription] = useState(device?.description)
+	const [description, setDescription] = useState(device?.description || '')
 	const [tags, setTags] = useState<string[]>(device?.tags ?? [])
 	const [newTag, setNewTag] = useState('')
 	const [website, setWebsite] = useState(device?.website || '')
@@ -281,6 +282,26 @@ export default function () {
 
 	const removeTag = (tagToRemove: string) => {
 		setTags(tags.filter((tag) => tag !== tagToRemove))
+	}
+
+	function MarkdownPreview({ value }: { value?: string | null }) {
+		if (!value?.trim()) {
+			return (
+				<div className="rounded border border-dashed border-gray-200 p-4 text-sm text-gray-500">
+					Nothing to preview yet.
+				</div>
+			)
+		}
+
+		return (
+			<div className="rounded border border-gray-200 p-4">
+				<div className="prose max-w-none">
+					<ReactMarkdown>
+						{value}
+					</ReactMarkdown>
+				</div>
+			</div>
+		)
 	}
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -406,27 +427,47 @@ export default function () {
 							</div>
 
 							{/* Description */}
-							<div className="mt-3">
-								<label
-									htmlFor="description"
-									className="txt-base block font-bold tracking-normal"
-								>
-									Description
-								</label>
-								<div className="mt-1">
-									<textarea
-										id="description"
-										name="description"
-										maxLength={300}
-										defaultValue={device?.description || ''}
-										onChange={(e) => setDescription(e.target.value)}
-										className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
-									/>
-									<p className="text-sm text-gray-500">
-										{description?.length || 0} / 300
-									</p>
+								<div className="mt-3">
+									<label
+										htmlFor="description"
+										className="txt-base block font-bold tracking-normal"
+									>
+										Description
+									</label>
+
+									<div className="mt-1 grid gap-4 lg:grid-cols-2">
+										<div>
+											<textarea
+												id="description"
+												name="description"
+												maxLength={5000}
+												value={description}
+												onChange={(e) => setDescription(e.target.value)}
+												placeholder={`## My station
+
+Installed on the school roof.
+
+- Measures PM2.5
+- Measures temperature
+- Updated regularly
+
+[Project website](https://example.com)`}
+												className="min-h-[220px] w-full rounded border border-gray-200 px-2 py-1.5 font-mono text-base"
+											/>
+											<p className="text-sm text-gray-500">
+												{description.length} / 5000
+											</p>
+											<p className="mt-1 text-sm text-gray-500">
+												Markdown is supported.
+											</p>
+										</div>
+
+										<div>
+											<p className="mb-2 block font-bold tracking-normal">Preview</p>
+											<MarkdownPreview value={description} />
+										</div>
+									</div>
 								</div>
-							</div>
 
 							{/* Website */}
 							<div className="mt-3">
