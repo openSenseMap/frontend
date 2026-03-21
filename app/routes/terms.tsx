@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   data,
@@ -8,6 +9,7 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from 'react-router'
+import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import {
   acceptCurrentTosViaEmailFlow,
@@ -27,7 +29,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getTosFlowSession(request)
   const tokenId = session.get('tokenId')
   const userId = session.get('userId')
-
 
   let canAcceptViaEmail = false
   let info:
@@ -96,15 +97,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const session = await getTosFlowSession(request)
   const tokenId = session.get('tokenId')
   const userId = session.get('userId')
-  console.log("token", tokenId)
-  console.log("userId", userId)
 
   if (!tokenId || !userId) {
     return data({ error: 'invalid_or_expired_link' }, { status: 403 })
   }
 
   const result = await acceptCurrentTosViaEmailFlow({ tokenId, userId })
-  console.log("result", result)
 
   if (result === 'not_configured') {
     return data({ error: 'not_configured' }, { status: 500 })
@@ -126,37 +124,57 @@ export default function TermsPage() {
   const actionData = useActionData<typeof action>()
   const [checked, setChecked] = React.useState(false)
 
-  if (!tos) return <div className="p-6">No ToS configured.</div>
+  const { t, i18n } = useTranslation('terms')
+
+  if (!tos) {
+    return <div className="p-6">{t('notConfigured')}</div>
+  }
+
+  const effectiveFromDate = new Date(tos.effectiveFrom).toLocaleDateString(
+    i18n.language,
+  )
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6 p-6">
       <h1 className="text-2xl font-bold">{tos.title}</h1>
+
+      <div className="text-sm text-muted-foreground">
+        {t('effectiveFrom', { date: effectiveFromDate })}
+      </div>
 
       {info === 'accepted' && (
         <div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm">
-          Thank you. You have successfully accepted the Terms of Service.
+          {t('info.accepted')}
         </div>
       )}
 
       {info === 'already_accepted' && (
         <div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-sm">
-          These Terms of Service were already accepted for your account.
+          {t('info.alreadyAccepted')}
         </div>
       )}
 
       {info === 'invalid' && (
         <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          This acceptance link is invalid or expired.
+          {t('info.invalid')}
         </div>
       )}
 
       {info === 'missing' && (
         <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          No acceptance token was provided.
+          {t('info.missing')}
         </div>
       )}
 
-      <div className="prose max-w-none whitespace-pre-wrap">{tos.body}</div>
+      {info === 'not_configured' && (
+        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
+          {t('info.notConfigured')}
+        </div>
+      )}
+
+      <MarkdownContent className="max-w-none">
+        {tos.body}
+      </MarkdownContent>
 
       {canAcceptViaEmail && (
         <Form method="post" className="space-y-4 border-t pt-6">
@@ -172,30 +190,30 @@ export default function TermsPage() {
               onChange={(e) => setChecked(e.target.checked)}
             />
             <label htmlFor="accepted" className="text-sm leading-5">
-              I have read and accept the current Terms of Service.
+              {t('form.acceptLabel')}
             </label>
           </div>
 
           {actionData?.error === 'tos_must_accept' && (
             <div className="text-sm text-red-500">
-              Please confirm that you accept the Terms of Service.
+              {t('form.errors.mustAccept')}
             </div>
           )}
 
           {actionData?.error === 'invalid_or_expired_link' && (
             <div className="text-sm text-red-500">
-              This acceptance link is invalid or expired.
+              {t('form.errors.invalidOrExpiredLink')}
             </div>
           )}
 
           {actionData?.error === 'not_configured' && (
             <div className="text-sm text-red-500">
-              No Terms of Service are currently configured.
+              {t('form.errors.notConfigured')}
             </div>
           )}
 
           <Button type="submit" disabled={!checked}>
-            Accept Terms of Service
+            {t('form.submit')}
           </Button>
         </Form>
       )}
