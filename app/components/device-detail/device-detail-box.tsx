@@ -29,6 +29,7 @@ import {
 	useSearchParams,
 	Link,
 } from 'react-router'
+import { MarkdownContent } from '../markdown-content'
 import SensorIcon from '../sensor-icon'
 import Spinner from '../spinner'
 import {
@@ -159,13 +160,6 @@ export default function DeviceDetailBox() {
 		setOffsetPositionY(data.y)
 	}
 
-	const addLineBreaks = (text: string) =>
-		text.split('\\n').map((text, index) => (
-			<Fragment key={`${text}-${index}`}>
-				{text}
-				<br />
-			</Fragment>
-		))
 
 	useEffect(() => {
 		let interval: any = null
@@ -434,7 +428,9 @@ export default function DeviceDetailBox() {
 												Description
 											</AccordionTrigger>
 											<AccordionContent>
-												{addLineBreaks(data.device.description)}
+												<MarkdownContent>
+													{data?.device.description}
+												</MarkdownContent>
 											</AccordionContent>
 										</AccordionItem>
 									</Accordion>
