@@ -250,36 +250,8 @@
     {
       "idx": 35,
       "version": "7",
-      "when": 1773740608732,
-      "tag": "0035_young_preak",
-      "breakpoints": true
-    },
-    {
-      "idx": 36,
-      "version": "7",
-      "when": 1773741333336,
-      "tag": "0036_easy_vapor",
-      "breakpoints": true
-    },
-    {
-      "idx": 37,
-      "version": "7",
-      "when": 1773743063743,
-      "tag": "0037_flawless_wilson_fisk",
-      "breakpoints": true
-    },
-    {
-      "idx": 38,
-      "version": "7",
-      "when": 1773743940388,
-      "tag": "0038_nostalgic_daimon_hellstrom",
-      "breakpoints": true
-    },
-    {
-      "idx": 39,
-      "version": "7",
-      "when": 1773752699895,
-      "tag": "0039_woozy_albert_cleary",
+      "when": 1773743434472,
+      "tag": "0035_known_wiccan",
       "breakpoints": true
     }
   ]

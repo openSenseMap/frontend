@@ -5,7 +5,7 @@ import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.users.sign-in'
 
 const VALID_SIGN_IN_TEST_USER = {
-	name: 'signing in',
+	name: 'signingIn',
 	email: 'test@sign.in',
 	password: 'some secure password',
 }

@@ -34,6 +34,7 @@ import {
 	deleteUserByEmail,
 	getUserByEmail,
 	getUserById,
+	getUserByUsername,
 	preparePasswordHash,
 	updateUserEmail,
 	updateUserlocale,
@@ -46,6 +47,24 @@ import TosAnnouncementEmail from 'emails/update-tos'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
+type RegisterUserResult =
+	| { ok: true; user: User }
+	| {
+			ok: false
+			field: 'username' | 'email' | 'password' | 'form'
+			code:
+				| 'username_required'
+				| 'username_length'
+				| 'username_invalid'
+				| 'username_already_taken'
+				| 'email_required'
+				| 'email_invalid'
+				| 'email_already_taken'
+				| 'password_required'
+				| 'password_too_short'
+				| 'password_too_weak'
+				| 'registration_failed'
+	  }
 /**
  * Register a new user with the database.
  * @param {string} username Username for the new user profile
@@ -57,60 +76,111 @@ const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
  * with the given email already exists.
  */
 export const registerUser = async (
-  username: string,
-  email: string,
-  password: string,
-  language: 'de_DE' | 'en_US',
-  tosAccepted: boolean,
-): Promise<
-  UsernameValidation | EmailValidation | PasswordValidation | User | null
-> => {
-  const usernameValidation = validateUsername(username)
-  if (!usernameValidation.isValid) return usernameValidation
+	username: string,
+	email: string,
+	password: string,
+	language: 'de_DE' | 'en_US',
+): Promise<RegisterUserResult> => {
+	const normalizedUsername = username.trim()
+	const normalizedEmail = email.trim().toLowerCase()
 
-  const emailValidation = validateEmail(email)
-  if (!emailValidation.isValid) return emailValidation
+	const usernameValidation = validateUsername(normalizedUsername)
+	if (!usernameValidation.isValid) {
+		return {
+			ok: false,
+			field: 'username',
+			code: usernameValidation.required
+				? 'username_required'
+				: usernameValidation.length
+					? 'username_length'
+					: usernameValidation.invalidCharacters
+						? 'username_invalid'
+						: 'registration_failed',
+		}
+	}
 
-  const passwordValidation = validatePassword(password)
-  if (!passwordValidation.isValid) return passwordValidation
+	const existingUserByUsername = await getUserByUsername(normalizedUsername)
+	if (existingUserByUsername) {
+		return {
+			ok: false,
+			field: 'username',
+			code: 'username_already_taken',
+		}
+	}
 
-  const tosValidation = validateTosAccepted(tosAccepted)
-  if (!tosValidation.isValid) return tosValidation
+	const emailValidation = validateEmail(normalizedEmail)
+	if (!emailValidation.isValid) {
+		return {
+			ok: false,
+			field: 'email',
+			code: emailValidation.required ? 'email_required' : 'email_invalid',
+		}
+	}
 
-  const tos = await getCurrentEffectiveTos()
-  invariant(tos, 'Expected tos to be configured.')
+	const existingUserByEmail = await getUserByEmail(normalizedEmail)
+	if (existingUserByEmail) {
+		return {
+			ok: false,
+			field: 'email',
+			code: 'email_already_taken',
+		}
+	}
 
-  const existingUser = await getUserByEmail(email)
-  if (existingUser) return null
+	const passwordValidation = validatePassword(password)
+	if (!passwordValidation.isValid) {
+		return {
+			ok: false,
+			field: 'password',
+			code: passwordValidation.required
+					? 'password_required'
+					: passwordValidation.length
+						? 'password_too_short'
+						: passwordValidation.complexity
+							? 'password_too_weak'
+							: 'registration_failed',
+						}
+	}
 
-  const newUsers = await createUser(username, email, language, password, tos.id)
-  if (newUsers.length === 0) {
-    throw new Error('Something went wrong creating the user profile!')
-  }
+	const newUsers = await createUser(
+		normalizedUsername,
+		normalizedEmail,
+		language,
+		password,
+	)
+
+	if (newUsers.length === 0) {
+		return {
+			ok: false,
+			field: 'form',
+			code: 'registration_failed',
+		}
+	}
 
   invariant(
     newUsers.length === 1,
     'Expected to only get a single user account returned',
   )
 
-  const newUser = newUsers[0]
-  const token = await issueEmailConfirmationToken(newUser.id)
+	const newUser = newUsers[0]
+	const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 
-  const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-  await sendMail({
-    recipientAddress: newUser.email,
-    recipientName: newUser.name,
-    subject: NewUserEmailSubject[lng],
-    body: NewUserEmail({
-      user: { name: newUser.name },
-      email: newUser.email,
-      token,
-      language: lng,
-    }),
-  })
+	await sendMail({
+		recipientAddress: newUser.email,
+		recipientName: newUser.name,
+		subject: NewUserEmailSubject[lng],
+		body: NewUserEmail({
+			user: { name: newUser.name },
+			email: newUser.email,
+			token: newUser.emailConfirmationToken ?? '',
+			language: lng,
+		}),
+	})
 
-  return newUser
-}
+	return {
+		ok: true,
+		user: newUser,
+	}
+}	  
 
 /**
  * Updates an existing user setting using the provided properties given to this function.
@@ -570,3 +640,7 @@ export const signIn = async (
 	const { token, refreshToken } = await createToken(user)
 	return { user, jwt: token, refreshToken }
 }
+
+export const userNameToURl = (username: string): string => encodeURIComponent(username);
+export const userNameFromURl = (username: string): string => decodeURIComponent(username);
+

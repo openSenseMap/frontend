@@ -13,13 +13,16 @@ const CLAIM_TEST_USER = generateTestUserCredentials()
 
 const createTestUser = async (suffix: string): Promise<User> => {
 	const u = generateTestUserCredentials()
-	const result = await registerUser(u.name, u.email, u.password, 'en_US', true)
+	const registration = await registerUser(u.name, u.email, u.password, 'en_US', true)
+	expect(registration.ok).toBe(true)
 
-	if (!result || (typeof result === 'object' && 'isValid' in result)) {
-		throw new Error('Failed to create test user')
+	if (!registration.ok) {
+		throw new Error(
+			`Test setup failed: ${registration.field} -> ${registration.code}`,
+		)
 	}
 
-	return result as User
+	return registration.user
 }
 
 const generateMinimalDevice = (
@@ -44,7 +47,6 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			CLAIM_TEST_USER.email,
 			CLAIM_TEST_USER.password,
 			'en_US',
-			true
 		)
 		user = testUser as User
 		const { token: t } = await createToken(testUser as User)
@@ -52,7 +54,7 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 
 		queryableDevice = await createDevice(
 			{ ...generateMinimalDevice(), latitude: 123, longitude: 12 },
-			(testUser as User).id,
+			user.id,
 		)
 	})
 
@@ -62,7 +64,6 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 
 	describe('POST /boxes/claim', () => {
 		it('should claim a device and transfer ownership from one user to another', async () => {
-			// Create a new transfer for the claim test
 			const createTransferRequest = new Request(`${BASE_URL}/boxes/transfer`, {
 				method: 'POST',
 				headers: {
@@ -82,7 +83,6 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			const newUser = await createTestUser(Date.now().toString())
 			const { token: newUserJwt } = await createToken(newUser)
 
-			// Claim the device
 			const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
 				method: 'POST',
 				headers: {
@@ -122,17 +122,15 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			expect(reusedResponse.status).toBe(410)
 
 			// Cleanup
-			await deleteUserByEmail((newUser as User).email)
+			await deleteUserByEmail(newUser.email)
 		})
 
 		it('should reject claim with invalid content-type', async () => {
-			// Create a fresh device for this test
 			const testDevice = await createDevice(
 				{ ...generateMinimalDevice(), latitude: 456, longitude: 78 },
 				(user as User).id,
 			)
 
-			// Create a transfer for this test
 			const createTransferRequest = new Request(`${BASE_URL}/boxes/transfer`, {
 				method: 'POST',
 				headers: {
@@ -171,13 +169,11 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 		})
 
 		it('should reject claim without Authorization header', async () => {
-			// Create a fresh device for this test
 			const testDevice = await createDevice(
 				{ ...generateMinimalDevice(), latitude: 789, longitude: 101 },
 				(user as User).id,
 			)
 
-			// Create a transfer for this test
 			const createTransferRequest = new Request(`${BASE_URL}/boxes/transfer`, {
 				method: 'POST',
 				headers: {
@@ -220,7 +216,6 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 				`claimer${Date.now()}@test.com`,
 				'password123',
 				'en_US',
-				true
 			)
 			const { token: newUserJwt } = await createToken(newUser as User)
 
@@ -242,7 +237,7 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			expect(body.error).toContain('expired')
 
 			// Cleanup
-			await deleteUserByEmail((newUser as User).email)
+			await deleteUserByEmail(newUser.email)
 		})
 	})
 })

@@ -1,6 +1,7 @@
 {
 	"login_label": "Log in",
 	"email_label": "Email",
+	"email_or_username_label": "Email or username",
 	"password_label": "Password",
 	"transition_label": "Logging in...",
 	"remember_label": "Remember me",

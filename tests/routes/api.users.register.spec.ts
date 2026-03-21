@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { type ActionFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
@@ -41,9 +42,10 @@ describe('openSenseMap API Routes: /users/register', () => {
 
 		it('should deny registering a user with the same email', async () => {
 			// Arrange
-			const params = new URLSearchParams()
-			for (const [key, value] of Object.entries(VALID_USER))
-				params.append(key, value)
+			const params = new URLSearchParams({
+				...VALID_USER,
+				name: randomUUID().toString(), // fresh username, same email
+			})
 			params.append('tosAccepted', 'true')
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
@@ -67,9 +69,9 @@ describe('openSenseMap API Routes: /users/register', () => {
 
 		it('should deny registering a user with too short password', async () => {
 			const params = new URLSearchParams({
-				name: 'tester',
+				name: 'tester123',
 				password: 'short',
-				email: 'address@email.com',
+				email: 'addresstesting@email.com',
 			})
 			const request = new Request(`${BASE_URL}/users/register`, {
 				method: 'POST',
@@ -141,7 +143,7 @@ describe('openSenseMap API Routes: /users/register', () => {
 
 		it('should deny registering a user with invalid email address', async () => {
 			const params = new URLSearchParams({
-				name: 'tester mc testmann',
+				name: 'testmann',
 				password: 'longenough',
 				email: 'invalid',
 			})
@@ -192,7 +194,7 @@ describe('openSenseMap API Routes: /users/register', () => {
 
 		it('should deny registering a user with username not starting with a letter or number', async () => {
 			const params = new URLSearchParams({
-				name: ' username',
+				name: '-username',
 				password: 'longenough',
 				email: 'address@email.com',
 			})
@@ -213,7 +215,7 @@ describe('openSenseMap API Routes: /users/register', () => {
 			)
 			expect(body).toHaveProperty(
 				'message',
-				'Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.',
+				'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.',
 			)
 		})
 
@@ -240,7 +242,7 @@ describe('openSenseMap API Routes: /users/register', () => {
 			)
 			expect(body).toHaveProperty(
 				'message',
-				'Username may only contain alphanumerics (a-zA-Z0-9), dots (.), dashes (-), underscores (_) and spaces, and has to start with either a number or a letter.',
+				'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.',
 			)
 		})
 

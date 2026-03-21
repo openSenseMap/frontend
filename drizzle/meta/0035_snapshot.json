@@ -1,5 +1,5 @@
 {
-  "id": "99987b54-db1e-4ba1-ad76-7261014eed8d",
+  "id": "4cd6d47a-974c-4190-8e2b-29113d56eb56",
   "prevId": "1a28ba10-b068-44e1-a093-c9b3b4374ca3",
   "version": "7",
   "dialect": "postgresql",
@@ -131,35 +131,21 @@
           "primaryKey": false,
           "notNull": true
         },
-        "sensor_wiki_model": {
-          "name": "sensor_wiki_model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "sensor_wiki_model": {
+          "name": "sensor_wiki_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "device_user_id_user_id_fk": {
-          "name": "device_user_id_user_id_fk",
-          "tableFrom": "device",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -318,7 +304,7 @@
         "user_id": {
           "name": "user_id",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         }
       },
@@ -407,8 +393,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "username": {
-          "name": "username",
+        "display_name": {
+          "name": "display_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -424,7 +410,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
@@ -445,11 +431,11 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "profile_username_unique": {
-          "name": "profile_username_unique",
+        "profile_user_id_unique": {
+          "name": "profile_user_id_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "username"
+            "user_id"
           ]
         }
       },
@@ -717,6 +703,13 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "user_name_unique": {
+          "name": "user_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        },
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,

@@ -19,14 +19,22 @@ describe('openSenseMap API Routes: /users', () => {
 		let newJwt: string = ''
 		let refreshToken: string = ''
 		beforeAll(async () => {
-			const user = await registerUser(
+			const registration = await registerUser(
 				VALID_REFRESH_AUTH_TEST_USER.name,
 				VALID_REFRESH_AUTH_TEST_USER.email,
 				VALID_REFRESH_AUTH_TEST_USER.password,
 				'en_US',
 				true
+			);
+			expect(registration.ok).toBe(true)
+			if (!registration.ok) {
+				throw new Error(
+					`Test setup failed: ${registration.field} -> ${registration.code}`,
+					true
 			)
-			;({ token: jwt, refreshToken } = await createToken(user as User))
+			};
+			const user = registration.user;
+			({ token: jwt, refreshToken } = await createToken(user as User))
 		})
 
 		describe('/POST', () => {
