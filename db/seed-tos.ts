@@ -3,10 +3,15 @@ import postgres from 'postgres'
 import { tosVersion } from '../app/schema/tos'
 import { envDBSchema } from './env-schema'
 
+type LocalizedText = {
+  en: string
+  de: string
+}
+
 type SeedTosOptions = {
   version?: string
-  title?: string
-  body?: string
+  title?: LocalizedText
+  body?: LocalizedText
   effectiveFrom?: Date
   acceptBy?: Date
 }
@@ -26,10 +31,12 @@ export async function seedTos(
     .insert(tosVersion)
     .values({
       version: options.version ?? '2026-01',
-      title: options.title ?? 'Terms of Service',
-      body:
-        options.body ??
-        `
+      title: options.title ?? {
+        en: 'Terms of Service',
+        de: 'Nutzungsbedingungen',
+      },
+      body: options.body ?? {
+        en: `
 # Terms of Service
 
 By creating an account or using this service, you agree to these Terms of Service.
@@ -46,6 +53,24 @@ We may process data required to provide and improve the service.
 ## Changes
 We may update these terms from time to time.
         `.trim(),
+        de: `
+# Nutzungsbedingungen
+
+Durch die Erstellung eines Kontos oder die Nutzung dieses Dienstes stimmen Sie diesen Nutzungsbedingungen zu.
+
+## Zulässige Nutzung
+Sie stimmen zu, den Dienst nicht missbräuchlich zu verwenden oder seinen normalen Betrieb zu stören.
+
+## Konten
+Sie sind für die Sicherheit Ihres Kontos verantwortlich.
+
+## Daten
+Wir können Daten verarbeiten, die erforderlich sind, um den Dienst bereitzustellen und zu verbessern.
+
+## Änderungen
+Wir können diese Bedingungen von Zeit zu Zeit aktualisieren.
+        `.trim(),
+      },
       effectiveFrom,
       acceptBy,
       updatedAt: now,
