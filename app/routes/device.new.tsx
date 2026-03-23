@@ -37,7 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		const selectedSensors = data['sensor-selection'].selectedSensors
 
 		const devicePayload = {
-			name: data['general-info'].name,
+			name: data['general-info'].name.trim(),
 			description: data['general-info'].description?.trim() || null,
 			exposure: data['general-info'].exposure,
 			expiresAt: data['general-info'].temporaryExpirationDate,
