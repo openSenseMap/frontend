@@ -8,8 +8,8 @@ CREATE TABLE "tos_user_state" (
 CREATE TABLE "tos_version" (
 	"id" text PRIMARY KEY NOT NULL,
 	"version" text NOT NULL,
-	"title" text NOT NULL,
-	"body" text NOT NULL,
+	"title" jsonb NOT NULL,
+	"body" jsonb NOT NULL,
 	"effective_from" timestamp with time zone NOT NULL,
 	"accept_by" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,

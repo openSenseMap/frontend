@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import { pgTable, text, timestamp, primaryKey, index, integer } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, primaryKey, index, jsonb } from 'drizzle-orm/pg-core'
 import { user } from './user'
 
 export const tosVersion = pgTable(
@@ -9,8 +9,19 @@ export const tosVersion = pgTable(
 
     version: text('version').notNull().unique(),
 
-    title: text('title').notNull(),
-    body: text('body').notNull(),
+    title: jsonb('title')
+      .$type<{
+        en: string
+        de: string
+      }>()
+      .notNull(),
+
+    body: jsonb('body')
+      .$type<{
+        en: string
+        de: string
+      }>()
+      .notNull(),
 
     effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
     acceptBy: timestamp('accept_by', { withTimezone: true }).notNull(),
