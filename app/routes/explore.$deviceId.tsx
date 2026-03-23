@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Outlet, useLoaderData, useMatches } from 'react-router'
+import { MetaFunction, Outlet, useLoaderData, useMatches } from 'react-router'
 import { type Route } from './+types/explore.$deviceId'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
-import ErrorMessage from '~/components/error-message'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import {
@@ -81,6 +80,10 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 	return data
 }
 
+export const meta: Route.MetaFunction = ({ loaderData }: Route.MetaArgs) => {
+	return [{ title: `${loaderData?.device?.name}` }]
+}
+
 // Defining the component that will render the page
 export default function DeviceId() {
 	// Retrieving the data returned by the loader using the useLoaderData hook
@@ -114,13 +117,5 @@ export default function DeviceId() {
 				<Outlet />
 			</HoveredPointContext.Provider>
 		</>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
-		</div>
 	)
 }

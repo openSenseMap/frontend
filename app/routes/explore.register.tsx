@@ -15,7 +15,6 @@ import invariant from 'tiny-invariant'
 import { type Route } from './+types/explore.register'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import ErrorMessage from '~/components/error-message'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
 import {
@@ -281,14 +280,6 @@ export default function RegisterDialog() {
 					</CardFooter>
 				</Form>
 			</Card>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

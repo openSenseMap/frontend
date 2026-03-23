@@ -32,8 +32,6 @@ describe('Device Sensors API: updating sensors', () => {
 			'en_US',
 		)
 
-		console.log("registration", registration)
-
 		expect(registration.ok).toBe(true)
 
 		if (!registration.ok) {

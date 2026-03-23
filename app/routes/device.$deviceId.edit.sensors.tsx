@@ -3,6 +3,7 @@ import {
 	Trash2,
 	ClipboardCopy,
 	Edit,
+	GripVertical,
 	Plus,
 	Save,
 	Undo2,
@@ -26,7 +27,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import ErrorMessage from '~/components/error-message'
 import {
 	addNewSensor,
 	deleteSensor,
@@ -62,7 +62,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	}
 	const updatedSensorsDataJson = JSON.parse(updatedSensorsData)
 
-	for (const sensor of updatedSensorsDataJson) {
+	for (const [index, sensor] of updatedSensorsDataJson.entries()) {
 		if (sensor?.new === true && sensor?.edited === true) {
 			const deviceID = params.deviceId
 			invariant(deviceID, `deviceID not found!`)
@@ -72,17 +72,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				unit: sensor.unit,
 				sensorType: sensor.sensorType,
 				deviceId: deviceID,
+				order: index,
 			})
-		} else if (sensor?.edited === true) {
+		} else if (sensor?.deleted === true) {
+			await deleteSensor(sensor.id)
+		} else if (!sensor?.new) {
 			await updateSensor({
 				id: sensor.id,
 				title: sensor.title,
 				unit: sensor.unit,
 				sensorType: sensor.sensorType,
-				// icon: sensor.icon,
+				order: index,
 			})
-		} else if (sensor?.deleted === true) {
-			await deleteSensor(sensor.id)
 		}
 	}
 
@@ -98,6 +99,8 @@ export default function EditBoxSensors() {
 
 	/* temp impl. until figuring out how to updating state of nested objects  */
 	const [tepmState, setTepmState] = useState(false)
+
+	const dragIndexRef = React.useRef<number | null>(null)
 	//* to view toast on edit-page
 	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
 
@@ -187,12 +190,38 @@ export default function EditBoxSensors() {
 							{sensorsData?.map((sensor: any, index: number) => {
 								return (
 									<li
-										key={sensor.id}
+										key={sensor.id ?? index}
+										draggable={!sensor.editing}
+										onDragStart={() => {
+											dragIndexRef.current = index
+										}}
+										onDragOver={(e) => {
+											e.preventDefault()
+										}}
+										onDrop={() => {
+											const from = dragIndexRef.current
+											if (from === null || from === index) return
+											const reordered = [...sensorsData]
+											const [moved] = reordered.splice(from, 1)
+											reordered.splice(index, 0, moved)
+											setSensorsData(reordered)
+											dragIndexRef.current = null
+										}}
 										className="border-t-[1px] border-solid border-[#e1e4e8] p-4"
 									>
 										<div className="grid grid-cols-12">
+											{/* drag handle */}
+											{!sensor?.editing && (
+												<div className="col-span-1 m-auto flex cursor-grab items-center justify-center text-[#aaa] active:cursor-grabbing">
+													<GripVertical className="h-5 w-5" />
+												</div>
+											)}
+											{sensor?.editing && (
+												<div className="col-span-1" />
+											)}
+
 											{/* left side -> sensor icons list */}
-											<div className="col-span-2 m-auto sm:col-span-2">
+											<div className="col-span-1 m-auto sm:col-span-1">
 												{sensor?.editing ? (
 													<span className="table-cell h-[222px] w-[30%] text-center align-middle">
 														<div className="relative inline-block align-middle">
@@ -334,8 +363,8 @@ export default function EditBoxSensors() {
 																className="form-control"
 																onChange={(e) => {
 																	setTepmState(!tepmState)
-																	sensor.sensorType = e.target.value
-																	if (sensor.sensorType.length === 0) {
+																	sensor.unit = e.target.value
+																	if (sensor.unit.length === 0) {
 																		sensor.notValidInput = true
 																	} else {
 																		sensor.notValidInput = false
@@ -357,8 +386,8 @@ export default function EditBoxSensors() {
 																className="form-control"
 																onChange={(e) => {
 																	setTepmState(!tepmState)
-																	sensor.unit = e.target.value
-																	if (sensor.unit.length === 0) {
+																	sensor.sensorType = e.target.value
+																	if (sensor.sensorType.length === 0) {
 																		sensor.notValidInput = true
 																	} else {
 																		sensor.notValidInput = false
@@ -501,14 +530,6 @@ export default function EditBoxSensors() {
 					</Form>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

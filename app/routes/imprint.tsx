@@ -1,10 +1,10 @@
 import { readItem, readItems } from '@directus/sdk'
-import Markdown, { type MarkdownToJSX } from 'markdown-to-jsx/react'
 import { useEffect, useEffectEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useRevalidator } from 'react-router'
 import { type Route } from './+types/imprint'
 import LanguageSelector from '~/components/landing/header/language-selector'
+import { MarkdownContent } from '~/components/markdown-content'
 import { i18nextOptions, type SupportedLanguage } from '~/i18next-config'
 import {
 	getDirectusClient,
@@ -97,71 +97,8 @@ export default function Imprint({
 			</header>
 			<main className="mx-auto mt-8 flex max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
 				<h1 className="my-4 text-4xl">{title}</h1>
-				<Markdown options={{ overrides: mdOverrides }} children={content} />
+				<MarkdownContent>{content}</MarkdownContent>
 			</main>
 		</>
 	)
-}
-
-const mdOverrides: MarkdownToJSX.Overrides = {
-	h1: {
-		component: ({ children, className, ...props }) => (
-			<h1
-				className={`${className ? className : ''} mb-2 mt-6 text-3xl font-semibold`}
-				{...props}
-			>
-				{children}
-			</h1>
-		),
-	},
-	h2: {
-		component: ({ children, className, ...props }) => (
-			<h2
-				className={`${className ? className : ''} mb-2 mt-6 text-2xl font-semibold`}
-				{...props}
-			>
-				{children}
-			</h2>
-		),
-	},
-	h3: {
-		component: ({ children, className, ...props }) => (
-			<h3
-				className={`${className ? className : ''} mb-2 mt-6 text-lg font-semibold`}
-				{...props}
-			>
-				{children}
-			</h3>
-		),
-	},
-	p: {
-		component: ({ children, className, ...props }) => (
-			<p
-				className={`${className ? className : ''} mb-2 mt-4 text-base`}
-				{...props}
-			>
-				{children}
-			</p>
-		),
-	},
-	a: {
-		component: ({ children, className, ...props }) => (
-			<a
-				className={`${className ? className : ''} text-green-400 hover:underline`}
-				{...props}
-			>
-				{children}
-			</a>
-		),
-	},
-	ul: {
-		component: ({ children, className, ...props }) => (
-			<ul
-				className={`${className ? className : ''} list-inside list-disc space-y-1`}
-				{...props}
-			>
-				{children}
-			</ul>
-		),
-	},
 }

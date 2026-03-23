@@ -253,6 +253,13 @@
       "when": 1773743434472,
       "tag": "0035_known_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1773831932460,
+      "tag": "0036_even_power_man",
+      "breakpoints": true
     }
   ]
 }

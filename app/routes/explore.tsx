@@ -420,11 +420,3 @@ export default function Explore() {
 		</div>
 	)
 }
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
-		</div>
-	)
-}

@@ -3,7 +3,12 @@ import { useMediaQuery } from '@mantine/hooks'
 import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { data, Link, useLoaderData } from 'react-router'
+import {
+	type LoaderFunctionArgs,
+	data,
+	Link,
+	useLoaderData,
+} from 'react-router'
 import { type Route } from './+types/_index'
 import Footer from '~/components/landing/footer'
 import { GlobeComponent } from '~/components/landing/globe.client'

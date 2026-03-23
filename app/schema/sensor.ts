@@ -5,7 +5,7 @@ import {
 	type InferInsertModel,
 	type InferSelectModel,
 } from 'drizzle-orm'
-import { pgTable, text, timestamp, json } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, json, integer } from 'drizzle-orm/pg-core'
 import { device } from './device'
 import { DeviceStatusEnum } from './enum'
 import { type Measurement } from './measurement'
@@ -48,6 +48,7 @@ export const sensor = pgTable('sensor', {
 	sensorWikiUnit: text('sensor_wiki_unit'),
 	lastMeasurement: json('lastMeasurement').$type<LastMeasurement>(),
 	data: json('data'),
+	order: integer('order').default(0),
 })
 
 /**
