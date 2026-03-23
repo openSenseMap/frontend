@@ -14,6 +14,7 @@ import {
 	type MetaFunction,
 } from 'react-router'
 import { useChangeLanguage } from 'remix-i18next/react'
+import ErrorMessage from './components/error-message'
 import { type Route } from './+types/root'
 import { Toaster } from './components/ui/toaster'
 import { i18nCookie } from './cookies'
@@ -131,6 +132,29 @@ export function App() {
 						__html: `window.ENV = ${JSON.stringify(data.ENV)}`,
 					}}
 				/>
+			</body>
+		</html>
+	)
+}
+
+/**
+ * A catch-all error boundary that will render if any error is thrown in the app.
+ * Add a function like this to subpages, if you want to create a more specific
+ * error boundary for that page (e.g. with specific messages, styling etc.).
+ *
+ * Note that error boundaries are shown in place of the parent pages <Outlet />.
+ */
+export function ErrorBoundary() {
+	return (
+		<html className={clsx('light h-full')}>
+			<head>
+				<Meta />
+				<Links />
+			</head>
+			<body className="h-full dark:bg-dark-background dark:text-dark-text">
+				<div className="flex h-screen w-screen items-center justify-center">
+					<ErrorMessage />
+				</div>
 			</body>
 		</html>
 	)

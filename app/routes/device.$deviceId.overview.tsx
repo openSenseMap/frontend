@@ -8,7 +8,6 @@ import {
 	type LoaderFunctionArgs,
 } from 'react-router'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
-import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { getDeviceWithoutSensors } from '~/models/device.server'
@@ -216,14 +215,6 @@ export default function DeviceOverview() {
 					</CardContent>
 				</Card>
 			</main>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }
