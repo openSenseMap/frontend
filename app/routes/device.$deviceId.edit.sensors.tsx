@@ -27,7 +27,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import ErrorMessage from '~/components/error-message'
 import {
 	addNewSensor,
 	deleteSensor,
@@ -531,14 +530,6 @@ export default function EditBoxSensors() {
 					</Form>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

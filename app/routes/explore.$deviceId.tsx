@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import {
 	type LoaderFunctionArgs,
+	type MetaFunction,
 	Outlet,
 	useLoaderData,
 	useMatches,
 } from 'react-router'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
-import ErrorMessage from '~/components/error-message'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import i18next from '~/i18next.server'
@@ -85,6 +85,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	return data
 }
 
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+	return [
+		{ title: `${loaderData?.device?.name}` }
+	]
+}
+
 // Defining the component that will render the page
 export default function DeviceId() {
 	// Retrieving the data returned by the loader using the useLoaderData hook
@@ -118,13 +124,5 @@ export default function DeviceId() {
 				<Outlet />
 			</HoveredPointContext.Provider>
 		</>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
-		</div>
 	)
 }

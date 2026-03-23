@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
@@ -52,17 +51,6 @@ export default function SettingsLayoutPage() {
 						</TabsContent>
 					</Tabs>
 				</div>
-			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="hidden space-y-6 px-10 pb-16 md:block">
-			<NavBar />
-			<div className="flex w-full items-center justify-center">
-				<ErrorMessage />
 			</div>
 		</div>
 	)
