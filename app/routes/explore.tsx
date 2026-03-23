@@ -20,7 +20,6 @@ import {
 } from 'react-router'
 import type Supercluster from 'supercluster'
 import { type Route } from './+types/explore'
-import ErrorMessage from '~/components/error-message'
 import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
