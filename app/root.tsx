@@ -17,8 +17,8 @@ import {
 import { type Route } from './+types/root'
 import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
-import { i18nCookie } from './cookies'
-import { getLocale, i18nextMiddleware } from './middleware/i18next'
+import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
+import { updateUserlocale } from './models/user.server'
 import { getEnv } from './utils/env.server'
 import { getUser } from './utils/session.server'
 
@@ -79,6 +79,30 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			headers: { 'Set-Cookie': await i18nCookie.serialize(locale) },
 		},
 	)
+}
+
+export async function action({ context, request }: Route.ActionArgs) {
+	const formData = await request.formData()
+	const setLang = formData.get('set-language')?.toString() ?? null
+
+	if (setLang === null) return
+
+	const locale = getLocale(context)
+	if (setLang === locale) return
+
+	const user = await getUser(request)
+	// updating the user locale is sufficient,
+	// because the loader will set the cookie to
+	// the user locale on the next request
+	if (user) await updateUserlocale(user.email, setLang)
+	else {
+		return data(
+			{},
+			{
+				headers: { 'Set-Cookie': await i18nCookie.serialize(setLang) },
+			},
+		)
+	}
 }
 
 export const useRootRouteLoaderData = () => {

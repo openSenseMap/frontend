@@ -10,8 +10,8 @@ export default function LanguageSelector() {
 	const toggleLanguage = () => {
 		const newLocale = locale === 'en' ? 'de' : 'en'
 		void fetcher.submit(
-			{ language: newLocale },
-			{ method: 'post', action: '/action/set-language' },
+			{ 'set-language': newLocale },
+			{ method: 'post', action: '/' },
 		)
 	}
 
@@ -21,6 +21,7 @@ export default function LanguageSelector() {
 			size="icon"
 			onClick={toggleLanguage}
 			className="hover:bg-transparent hover:text-black dark:hover:text-white"
+			disabled={fetcher.state !== 'idle'}
 		>
 			<Globe />
 			{locale === 'de' ? <p>DE</p> : <p>EN</p>}
