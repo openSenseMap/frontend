@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
 	type LoaderFunctionArgs,
+	type MetaFunction,
 	Outlet,
 	useLoaderData,
 	useMatches,
@@ -82,6 +83,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	}
 
 	return data
+}
+
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+	return [
+		{ title: `${loaderData?.device?.name}` }
+	]
 }
 
 // Defining the component that will render the page
