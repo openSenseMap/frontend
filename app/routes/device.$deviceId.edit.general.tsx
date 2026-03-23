@@ -11,52 +11,52 @@ import {
 	useOutletContext,
 } from 'react-router'
 import invariant from 'tiny-invariant'
-import ErrorMessage from '~/components/error-message'
 import { Button } from '~/components/ui/button'
 import { updateDevice, deleteDevice } from '~/lib/devices-service.server'
-import {
-	getDevice,
-	getDeviceWithoutSensors,
-} from '~/models/device.server'
+import { getDevice, getDeviceWithoutSensors } from '~/models/device.server'
 import { verifyLogin } from '~/models/user.server'
 import { type Device } from '~/schema'
-import { uploadDeviceImage, deleteDeviceImage, getDeviceImageUrl } from '~/utils/s3.server'
+import {
+	uploadDeviceImage,
+	deleteDeviceImage,
+	getDeviceImageUrl,
+} from '~/utils/s3.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const userId = await getUserId(request)
-  if (!userId) return redirect('/')
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
 
-  const deviceID = params.deviceId
-  invariant(typeof deviceID === 'string', 'Device id not found.')
+	const deviceID = params.deviceId
+	invariant(typeof deviceID === 'string', 'Device id not found.')
 
-  const deviceData = await getDeviceWithoutSensors({ id: deviceID })
+	const deviceData = await getDeviceWithoutSensors({ id: deviceID })
 
-  let imageUrl: string | null = null
+	let imageUrl: string | null = null
 
-  if (deviceData?.image) {
-    try {
-      imageUrl = await getDeviceImageUrl(deviceData.image)
-    } catch (error) {
-      console.error('Failed to create presigned image URL:', error)
-    }
-  }
+	if (deviceData?.image) {
+		try {
+			imageUrl = await getDeviceImageUrl(deviceData.image)
+		} catch (error) {
+			console.error('Failed to create presigned image URL:', error)
+		}
+	}
 
-  return {
-    device: deviceData,
-    imageUrl,
-  }
+	return {
+		device: deviceData,
+		imageUrl,
+	}
 }
 
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
 	const deviceID = params.deviceId
 	const userId = await getUserId(request)
-  invariant(typeof deviceID === 'string', 'Device id not found.')
-  invariant(typeof userId === 'string', 'User id not found.')
+	invariant(typeof deviceID === 'string', 'Device id not found.')
+	invariant(typeof userId === 'string', 'User id not found.')
 
-	const device = await getDevice({id: deviceID}) as Device 
+	const device = (await getDevice({ id: deviceID })) as Device
 
 	const formData = await request.formData()
 
@@ -161,20 +161,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				}
 			}
 
-			const result = await updateDevice(
-				userId,
-				device,
-				{
-					name: String(name),
-					exposure: exposureLowerCase,
-					description: String(description),
-					website: String(website),
-					grouptag,
-					...(imageKey && { image: imageKey }),
-				},
-			)
+			const result = await updateDevice(userId, device, {
+				name: String(name),
+				exposure: exposureLowerCase,
+				description: String(description),
+				website: String(website),
+				grouptag,
+				...(imageKey && { image: imageKey }),
+			})
 
-			if (result === 'unauthorized') throw new Response('Forbidden', { status: 403 })
+			if (result === 'unauthorized')
+				throw new Response('Forbidden', { status: 403 })
 
 			return data({
 				errors: { exposure: null, passwordDelete: null, image: null },
@@ -182,7 +179,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			})
 		}
 		case 'removeImage': {
-			const device = await getDeviceWithoutSensors({ id: deviceID }) as Device
+			const device = (await getDeviceWithoutSensors({ id: deviceID })) as Device
 
 			if (device?.image) {
 				try {
@@ -233,7 +230,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			}
 
 			// Delete device image before deleting device
-			const device = await getDeviceWithoutSensors({ id: deviceID }) as Device
+			const device = (await getDeviceWithoutSensors({ id: deviceID })) as Device
 			if (device?.image) {
 				try {
 					await deleteDeviceImage(device.image)
@@ -612,14 +609,6 @@ export default function () {
 					</Form>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }
