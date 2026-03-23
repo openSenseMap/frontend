@@ -17,9 +17,10 @@ import {
 	LandPlot,
 	Image as ImageIcon,
 } from 'lucide-react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { isTablet, isBrowser } from 'react-device-detect'
 import Draggable, { type DraggableData } from 'react-draggable'
+import { useTranslation } from 'react-i18next'
 import {
 	useLoaderData,
 	useMatches,
@@ -29,6 +30,7 @@ import {
 	useSearchParams,
 	Link,
 } from 'react-router'
+import { MarkdownContent } from '../markdown-content'
 import SensorIcon from '../sensor-icon'
 import Spinner from '../spinner'
 import {
@@ -92,6 +94,7 @@ export default function DeviceDetailBox() {
 	const navigate = useNavigate()
 	const matches = useMatches()
 	const { toast } = useToast()
+	const { t } = useTranslation("device-detail-box")
 
 	const sensorIds = new Set()
 
@@ -159,13 +162,6 @@ export default function DeviceDetailBox() {
 		setOffsetPositionY(data.y)
 	}
 
-	const addLineBreaks = (text: string) =>
-		text.split('\\n').map((text, index) => (
-			<Fragment key={`${text}-${index}`}>
-				{text}
-				<br />
-			</Fragment>
-		))
 
 	useEffect(() => {
 		let interval: any = null
@@ -230,18 +226,18 @@ export default function DeviceDetailBox() {
 									</AlertDialogTrigger>
 									<AlertDialogContent>
 										<AlertDialogHeader>
-											<AlertDialogTitle>Share this link</AlertDialogTitle>
+											<AlertDialogTitle>{t('share_link')}</AlertDialogTitle>
 											<ShareLink />
 										</AlertDialogHeader>
 										<AlertDialogFooter>
-											<AlertDialogCancel>Close</AlertDialogCancel>
+											<AlertDialogCancel>{t('close')}</AlertDialogCancel>
 										</AlertDialogFooter>
 									</AlertDialogContent>
 								</AlertDialog>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" className="h-8 w-8 p-0">
-											<span className="sr-only">Open menu</span>
+											<span className="sr-only">{t('open_menu')}</span>
 											<EllipsisVertical className="h-4 w-4" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -249,14 +245,14 @@ export default function DeviceDetailBox() {
 										align="end"
 										className="dark:bg-dark-background dark:text-dark-text"
 									>
-										<DropdownMenuLabel>Actions</DropdownMenuLabel>
+										<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem
 											className="cursor-pointer"
 											disabled={true}
 										>
 											<Scale className="mr-2 h-4 w-4" />
-											<span>Compare</span>
+											<span>{t('compare')}</span>
 										</DropdownMenuItem>
 										<DropdownMenuItem>
 											<Archive className="mr-2 h-4 w-4" />
@@ -268,7 +264,7 @@ export default function DeviceDetailBox() {
 													title="Open archive"
 													className="w-full cursor-pointer"
 												>
-													Archive
+													{t('open_archive')}
 												</a>
 											</span>
 										</DropdownMenuItem>
@@ -282,7 +278,7 @@ export default function DeviceDetailBox() {
 													title="Open external link"
 													className="w-full cursor-pointer"
 												>
-													External Link
+													{t('open_external_link')}
 												</a>
 											</span>
 										</DropdownMenuItem>
@@ -431,10 +427,12 @@ export default function DeviceDetailBox() {
 									>
 										<AccordionItem value="item-1">
 											<AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-												Description
+												{t('description')}
 											</AccordionTrigger>
 											<AccordionContent>
-												{addLineBreaks(data.device.description)}
+												<MarkdownContent>
+													{data?.device.description}
+												</MarkdownContent>
 											</AccordionContent>
 										</AccordionItem>
 									</Accordion>
@@ -447,7 +445,7 @@ export default function DeviceDetailBox() {
 								>
 									<AccordionItem value="item-1">
 										<AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-											Sensors
+											{t('sensors')}
 										</AccordionTrigger>
 										<AccordionContent>
 											<div
@@ -639,9 +637,9 @@ export default function DeviceDetailBox() {
 							setOpen(true)
 						}}
 					/>
-					<AlertTitle>Compare devices</AlertTitle>
+					<AlertTitle>{t('compare_devices')}</AlertTitle>
 					<AlertDescription className="inline">
-						Choose a device from the map to compare with.
+						{t('choose_device_for_comparison')}
 					</AlertDescription>
 				</Alert>
 			)}
@@ -660,7 +658,7 @@ export default function DeviceDetailBox() {
 								</div>
 							</TooltipTrigger>
 							<TooltipContent>
-								<p>Open device details</p>
+								<p>{t('open_device_details')}</p>
 							</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>

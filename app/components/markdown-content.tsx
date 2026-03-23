@@ -1,4 +1,4 @@
-import ReactMarkdown from 'react-markdown'
+import Markdown from 'markdown-to-jsx'
 
 type MarkdownContentProps = {
   children: string
@@ -11,52 +11,51 @@ export function MarkdownContent({
 }: MarkdownContentProps) {
   return (
     <div className={`prose max-w-none dark:prose-invert ${className}`}>
-      <ReactMarkdown
-        components={{
-          h1: ({ children }) => (
-            <h1 className="mb-4 text-3xl font-bold">{children}</h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="mb-3 mt-8 text-2xl font-semibold">{children}</h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="mb-2 mt-6 text-xl font-semibold">{children}</h3>
-          ),
-          p: ({ children }) => (
-            <p className="mb-3 leading-7">{children}</p>
-          ),
-          ul: ({ children }) => (
-            <ul className="mb-4 list-disc pl-6">{children}</ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="mb-4 list-decimal pl-6">{children}</ol>
-          ),
-          li: ({ children }) => (
-            <li className="mb-1 leading-7">{children}</li>
-          ),
-          strong: ({ children }) => (
-            <strong className="font-semibold">{children}</strong>
-          ),
-          hr: () => <hr className="my-6 border-border" />,
-          blockquote: ({ children }) => (
-            <blockquote className="my-4 border-l-4 pl-4 italic text-muted-foreground">
-              {children}
-            </blockquote>
-          ),
-          a: ({ children, href }) => (
-            <a
-              href={href}
-              className="underline underline-offset-2"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {children}
-            </a>
-          ),
+      <Markdown
+        options={{
+          overrides: {
+            h1: {
+              component: ({ children }) => (
+                <h1 className="text-3xl font-bold mb-4">{children}</h1>
+              ),
+            },
+            h2: {
+              component: ({ children }) => (
+                <h2 className="text-2xl font-semibold mb-3">{children}</h2>
+              ),
+            },
+            p: {
+              component: ({ children }) => (
+                <p className="mb-3 leading-7">{children}</p>
+              ),
+            },
+            a: {
+              component: ({ children, href }) => (
+                <a
+                  href={href}
+                  className="text-blue-600 underline hover:text-blue-800"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {children}
+                </a>
+              ),
+            },
+            ul: {
+              component: ({ children, className, ...props }) => (
+                <ul
+                  className={`${className ?? ''} list-inside list-disc space-y-1`}
+                  {...props}
+                >
+                  {children}
+                </ul>
+              ),
+            },
+          },
         }}
       >
         {children}
-      </ReactMarkdown>
+      </Markdown>
     </div>
   )
 }
