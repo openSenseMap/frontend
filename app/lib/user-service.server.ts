@@ -159,6 +159,7 @@ export const registerUser = async (
 		normalizedEmail,
 		language,
 		password,
+    tos.id
 	)
 
 	if (newUsers.length === 0) {
