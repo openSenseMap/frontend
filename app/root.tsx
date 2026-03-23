@@ -14,8 +14,8 @@ import {
 	type MetaFunction,
 } from 'react-router'
 import { useChangeLanguage } from 'remix-i18next/react'
-import ErrorMessage from './components/error-message'
 import { type Route } from './+types/root'
+import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
 import { i18nCookie } from './cookies'
 import i18next from './i18next.server'

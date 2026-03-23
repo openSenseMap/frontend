@@ -10,7 +10,6 @@ import {
 	Cpu,
 	ArrowLeft,
 	NotepadText,
-	Trash,
 } from 'lucide-react'
 import { useState } from 'react'
 import {
