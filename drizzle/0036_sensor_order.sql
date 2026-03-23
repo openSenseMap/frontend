@@ -1,1 +1,0 @@
-ALTER TABLE "sensor" ADD COLUMN "order" integer DEFAULT 0;
