@@ -19,6 +19,13 @@ async function getUserAcceptance(userId: string, tosVersionId: string) {
   })
 }
 
+export function getTosLocale(language: string | null | undefined): 'en' | 'de' {
+  if (!language) return 'en'
+
+  if (language.startsWith('de')) return 'de'
+  return 'en'
+}
+
 export async function markTosAccepted({
   userId,
   tosId,

@@ -1,222 +1,244 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Form,
-  data,
-  redirect,
-  useActionData,
-  useLoaderData,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+	Form,
+	data,
+	redirect,
+	useActionData,
+	useLoaderData,
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
 } from 'react-router'
 import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import {
-  acceptCurrentTosViaEmailFlow,
-  getActiveTosAcceptanceTokenById,
-  getCurrentEffectiveTos,
-  getTosRequirementForUser,
+	acceptCurrentTosViaEmailFlow,
+	getActiveTosAcceptanceTokenById,
+	getCurrentEffectiveTos,
+	getTosLocale,
+	getTosRequirementForUser,
 } from '~/models/tos.server'
+import { getUser } from '~/utils/session.server'
 import {
-  getTosFlowSession,
-  tosFlowSessionStorage,
+	getTosFlowSession,
+	tosFlowSessionStorage,
 } from '~/utils/tos-session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url)
-  const tos = await getCurrentEffectiveTos()
+	const url = new URL(request.url)
+	const tos = await getCurrentEffectiveTos()
 
-  const session = await getTosFlowSession(request)
-  const tokenId = session.get('tokenId')
-  const userId = session.get('userId')
+	const currentUser = await getUser(request)
 
-  let canAcceptViaEmail = false
-  let info:
-    | 'accepted'
-    | 'already_accepted'
-    | 'invalid'
-    | 'missing'
-    | 'not_configured'
-    | null = null
+	const session = await getTosFlowSession(request)
+	const tokenId = session.get('tokenId')
+	const tokenUserId = session.get('userId')
 
-  const tosLink = url.searchParams.get('tosLink')
-  if (
-    tosLink === 'accepted' ||
-    tosLink === 'already_accepted' ||
-    tosLink === 'invalid' ||
-    tosLink === 'missing' ||
-    tosLink === 'not_configured'
-  ) {
-    info = tosLink
-  }
+	let canAcceptViaEmail = false
+	let info:
+		| 'accepted'
+		| 'already_accepted'
+		| 'invalid'
+		| 'missing'
+		| 'not_configured'
+		| null = null
 
-  let headers: HeadersInit | undefined
+	const tosLink = url.searchParams.get('tosLink')
+	if (
+		tosLink === 'accepted' ||
+		tosLink === 'already_accepted' ||
+		tosLink === 'invalid' ||
+		tosLink === 'missing' ||
+		tosLink === 'not_configured'
+	) {
+		info = tosLink
+	}
 
-  if (tokenId && userId) {
-    const token = await getActiveTosAcceptanceTokenById(tokenId, userId)
+	let headers: HeadersInit | undefined
 
-    if (!token) {
-      headers = {
-        'Set-Cookie': await tosFlowSessionStorage.destroySession(session),
-      }
-      info ??= 'invalid'
-    } else {
-      const req = await getTosRequirementForUser(userId)
-      canAcceptViaEmail = !!req.tos && !req.accepted
+	if (tokenId && tokenUserId) {
+		const token = await getActiveTosAcceptanceTokenById(tokenId, tokenUserId)
 
-      if (req.accepted) {
-        headers = {
-          'Set-Cookie': await tosFlowSessionStorage.destroySession(session),
-        }
-        info ??= 'already_accepted'
-      }
-    }
-  }
+		if (!token) {
+			headers = {
+				'Set-Cookie': await tosFlowSessionStorage.destroySession(session),
+			}
+			info ??= 'invalid'
+		} else {
+			const req = await getTosRequirementForUser(tokenUserId)
+			canAcceptViaEmail = !!req.tos && !req.accepted
 
-  if (!tos) {
-    return data(
-      { tos: null, canAcceptViaEmail: false, info: info ?? 'not_configured' },
-      { status: 500, headers },
-    )
-  }
+			if (req.accepted) {
+				headers = {
+					'Set-Cookie': await tosFlowSessionStorage.destroySession(session),
+				}
+				info ??= 'already_accepted'
+			}
+		}
+	}
 
-  return data({ tos, canAcceptViaEmail, info }, { headers })
+	if (!tos) {
+		return data(
+			{
+				tos: null,
+				canAcceptViaEmail: false,
+				info: info ?? 'not_configured',
+			},
+			{ status: 500, headers },
+		)
+	}
+
+	const locale = getTosLocale(currentUser?.language ?? null)
+
+	const localizedTos = {
+		...tos,
+		title: tos.title?.[locale] ?? tos.title?.en ?? '',
+		body: tos.body?.[locale] ?? tos.body?.en ?? '',
+		locale,
+	}
+
+	return data(
+		{
+			tos: localizedTos,
+			canAcceptViaEmail,
+			info,
+		},
+		{ headers },
+	)
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData()
+	const formData = await request.formData()
 
-  if (formData.get('intent') !== 'accept_tos_from_email') {
-    return data({ error: 'invalid_intent' }, { status: 400 })
-  }
+	if (formData.get('intent') !== 'accept_tos_from_email') {
+		return data({ error: 'invalid_intent' }, { status: 400 })
+	}
 
-  if (formData.get('accepted') !== 'on') {
-    return data({ error: 'tos_must_accept' }, { status: 400 })
-  }
+	if (formData.get('accepted') !== 'on') {
+		return data({ error: 'tos_must_accept' }, { status: 400 })
+	}
 
-  const session = await getTosFlowSession(request)
-  const tokenId = session.get('tokenId')
-  const userId = session.get('userId')
+	const session = await getTosFlowSession(request)
+	const tokenId = session.get('tokenId')
+	const userId = session.get('userId')
 
-  if (!tokenId || !userId) {
-    return data({ error: 'invalid_or_expired_link' }, { status: 403 })
-  }
+	if (!tokenId || !userId) {
+		return data({ error: 'invalid_or_expired_link' }, { status: 403 })
+	}
 
-  const result = await acceptCurrentTosViaEmailFlow({ tokenId, userId })
+	const result = await acceptCurrentTosViaEmailFlow({ tokenId, userId })
 
-  if (result === 'not_configured') {
-    return data({ error: 'not_configured' }, { status: 500 })
-  }
+	if (result === 'not_configured') {
+		return data({ error: 'not_configured' }, { status: 500 })
+	}
 
-  if (result !== 'success') {
-    return data({ error: 'invalid_or_expired_link' }, { status: 403 })
-  }
+	if (result !== 'success') {
+		return data({ error: 'invalid_or_expired_link' }, { status: 403 })
+	}
 
-  return redirect('/terms?tosLink=accepted', {
-    headers: {
-      'Set-Cookie': await tosFlowSessionStorage.destroySession(session),
-    },
-  })
+	return redirect('/terms?tosLink=accepted', {
+		headers: {
+			'Set-Cookie': await tosFlowSessionStorage.destroySession(session),
+		},
+	})
 }
 
 export default function TermsPage() {
-  const { tos, canAcceptViaEmail, info } = useLoaderData<typeof loader>()
-  const actionData = useActionData<typeof action>()
-  const [checked, setChecked] = React.useState(false)
+	const { tos, canAcceptViaEmail, info } = useLoaderData<typeof loader>()
+	const actionData = useActionData<typeof action>()
+	const [checked, setChecked] = React.useState(false)
 
-  const { t, i18n } = useTranslation('terms')
+	const { t, i18n } = useTranslation('terms')
 
-  if (!tos) {
-    return <div className="p-6">{t('notConfigured')}</div>
-  }
+	if (!tos) {
+		return <div className="p-6">{t('notConfigured')}</div>
+	}
 
-  const effectiveFromDate = new Date(tos.effectiveFrom).toLocaleDateString(
-    i18n.language,
-  )
+	const effectiveFromDate = new Date(tos.effectiveFrom).toLocaleDateString(
+		i18n.language,
+	)
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">{tos.title}</h1>
+	return (
+		<div className="mx-auto max-w-3xl space-y-6 p-6">
+			<h1 className="text-2xl font-bold">{tos.title}</h1>
 
-      <div className="text-sm text-muted-foreground">
-        {t('effectiveFrom', { date: effectiveFromDate })}
-      </div>
+			<div className="text-sm text-muted-foreground">
+				{t('effectiveFrom', { date: effectiveFromDate })}
+			</div>
 
-      {info === 'accepted' && (
-        <div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm">
-          {t('info.accepted')}
-        </div>
-      )}
+			{info === 'accepted' && (
+				<div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm">
+					{t('info.accepted')}
+				</div>
+			)}
 
-      {info === 'already_accepted' && (
-        <div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-sm">
-          {t('info.alreadyAccepted')}
-        </div>
-      )}
+			{info === 'already_accepted' && (
+				<div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-sm">
+					{t('info.alreadyAccepted')}
+				</div>
+			)}
 
-      {info === 'invalid' && (
-        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          {t('info.invalid')}
-        </div>
-      )}
+			{info === 'invalid' && (
+				<div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
+					{t('info.invalid')}
+				</div>
+			)}
 
-      {info === 'missing' && (
-        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          {t('info.missing')}
-        </div>
-      )}
+			{info === 'missing' && (
+				<div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
+					{t('info.missing')}
+				</div>
+			)}
 
-      {info === 'not_configured' && (
-        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          {t('info.notConfigured')}
-        </div>
-      )}
+			{info === 'not_configured' && (
+				<div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
+					{t('info.notConfigured')}
+				</div>
+			)}
 
-      <MarkdownContent className="max-w-none">
-        {tos.body}
-      </MarkdownContent>
+			<MarkdownContent className="max-w-none">{tos.body}</MarkdownContent>
 
-      {canAcceptViaEmail && (
-        <Form method="post" className="space-y-4 border-t pt-6">
-          <input type="hidden" name="intent" value="accept_tos_from_email" />
+			{canAcceptViaEmail && (
+				<Form method="post" className="space-y-4 border-t pt-6">
+					<input type="hidden" name="intent" value="accept_tos_from_email" />
 
-          <div className="flex items-start gap-2">
-            <input
-              id="accepted"
-              name="accepted"
-              type="checkbox"
-              className="mt-1 h-4 w-4"
-              checked={checked}
-              onChange={(e) => setChecked(e.target.checked)}
-            />
-            <label htmlFor="accepted" className="text-sm leading-5">
-              {t('form.acceptLabel')}
-            </label>
-          </div>
+					<div className="flex items-start gap-2">
+						<input
+							id="accepted"
+							name="accepted"
+							type="checkbox"
+							className="mt-1 h-4 w-4"
+							checked={checked}
+							onChange={(e) => setChecked(e.target.checked)}
+						/>
+						<label htmlFor="accepted" className="text-sm leading-5">
+							{t('form.acceptLabel')}
+						</label>
+					</div>
 
-          {actionData?.error === 'tos_must_accept' && (
-            <div className="text-sm text-red-500">
-              {t('form.errors.mustAccept')}
-            </div>
-          )}
+					{actionData?.error === 'tos_must_accept' && (
+						<div className="text-sm text-red-500">
+							{t('form.errors.mustAccept')}
+						</div>
+					)}
 
-          {actionData?.error === 'invalid_or_expired_link' && (
-            <div className="text-sm text-red-500">
-              {t('form.errors.invalidOrExpiredLink')}
-            </div>
-          )}
+					{actionData?.error === 'invalid_or_expired_link' && (
+						<div className="text-sm text-red-500">
+							{t('form.errors.invalidOrExpiredLink')}
+						</div>
+					)}
 
-          {actionData?.error === 'not_configured' && (
-            <div className="text-sm text-red-500">
-              {t('form.errors.notConfigured')}
-            </div>
-          )}
+					{actionData?.error === 'not_configured' && (
+						<div className="text-sm text-red-500">
+							{t('form.errors.notConfigured')}
+						</div>
+					)}
 
-          <Button type="submit" disabled={!checked}>
-            {t('form.submit')}
-          </Button>
-        </Form>
-      )}
-    </div>
-  )
+					<Button type="submit" disabled={!checked}>
+						{t('form.submit')}
+					</Button>
+				</Form>
+			)}
+		</div>
+	)
 }
