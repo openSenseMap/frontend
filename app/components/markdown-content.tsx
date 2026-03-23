@@ -41,6 +41,16 @@ export function MarkdownContent({
                 </a>
               ),
             },
+            ul: {
+              component: ({ children, className, ...props }) => (
+                <ul
+                  className={`${className ?? ''} list-inside list-disc space-y-1`}
+                  {...props}
+                >
+                  {children}
+                </ul>
+              ),
+            },
           },
         }}
       >
