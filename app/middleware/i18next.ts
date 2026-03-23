@@ -5,6 +5,7 @@ import { initReactI18next } from 'react-i18next'
 import { createI18nextMiddleware } from 'remix-i18next/middleware'
 import { i18nCookie } from '~/cookies'
 import { i18nextOptions } from '~/i18next-config'
+import { getUser } from '~/utils/session.server'
 
 const getNamespaces = () => {
 	return readdirSync(resolve(`./public/locales/${i18nextOptions.fallbackLng}/`))
@@ -18,24 +19,23 @@ export const [i18nextMiddleware, getLocale, getInstance] =
 			supportedLanguages: [...i18nextOptions.supportedLngs],
 			fallbackLanguage: i18nextOptions.fallbackLng,
 			cookie: i18nCookie,
-			// findLocale: async (request) => {
-			// 	const user = await getUser(request)
-			// 	if (user?.language)
-			// 		return user.language.slice(0, 2)
+			findLocale: async (request) => {
+				const user = await getUser(request)
+				if (user?.language) return user.language.slice(0, 2)
 
-			// 	const acceptLanguage = request.headers.get('accept-language')
-			// 	if (acceptLanguage) {
-			// 		const browserLang = acceptLanguage
-			// 			.split(',')[0]
-			// 			.split('-')[0]
-			// 			.toLowerCase()
+				const acceptLanguage = request.headers.get('accept-language')
+				if (acceptLanguage) {
+					const browserLang = acceptLanguage
+						.split(',')[0]
+						.split('-')[0]
+						.toLowerCase()
 
-			// 		if (supportedLngs.includes(browserLang as any))
-			// 			return browserLang
-			// 	}
+					if (i18nextOptions.supportedLngs.includes(browserLang as any))
+						return browserLang
+				}
 
-			// 	return null
-			// },
+				return null
+			},
 		},
 		i18next: {
 			backend: { loadPath: resolve('./public/locales/{{lng}}/{{ns}}.json') },
