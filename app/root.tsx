@@ -133,6 +133,13 @@ export function App() {
 	)
 }
 
+/**
+ * A catch-all error boundary that will render if any error is thrown in the app.
+ * Add a function like this to subpages, if you want to create a more specific
+ * error boundary for that page (e.g. with specific messages, styling etc.).
+ *
+ * Note that error boundaries are shown in place of the parent pages <Outlet />.
+ */
 export function ErrorBoundary() {
 	return (
 		<html className={clsx('light h-full')}>
