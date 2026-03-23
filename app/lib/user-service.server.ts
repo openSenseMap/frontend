@@ -10,17 +10,12 @@ import NewUserEmail, { subject as NewUserEmailSubject } from 'emails/new-user'
 import PasswordResetEmail, {
 	subject as PasswordResetEmailSubject,
 } from 'emails/password-reset'
-import ResendEmailConfirmationEmail, {
-	subject as ResendEmailConfirmationSubject,
-} from 'emails/resend-email-confirmation'
+import {	subject as ResendEmailConfirmationSubject } from 'emails/resend-email-confirmation'
 import invariant from 'tiny-invariant'
 import { createToken, revokeToken } from './jwt'
 
 import { sendMail } from './mail.server'
 import {
-	type EmailValidation,
-	type PasswordValidation,
-	type UsernameValidation,
 	validateEmail,
 	validatePassword,
 	validateTosAccepted,
@@ -28,7 +23,7 @@ import {
 } from './user-service'
 import { drizzleClient } from '~/db.server'
 import { generateRawActionToken, hashActionToken, issueEmailConfirmationToken } from '~/models/token.server'
-import { getCurrentEffectiveTos, issueTosAcceptanceToken } from '~/models/tos.server'
+import { getCurrentEffectiveTos } from '~/models/tos.server'
 import {
 	createUser,
 	deleteUserByEmail,
@@ -42,7 +37,7 @@ import {
 	updateUserPassword,
 	verifyLogin,
 } from '~/models/user.server'
-import { actionToken, tosVersion, user, type User } from '~/schema'
+import { actionToken, user, type User } from '~/schema'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -393,12 +388,10 @@ export const deleteUser = async (
 }
 
 /**
- * Confirms a users email address by processing the token sent to the user and updating
- * the profile when successful.
- * @param emailConfirmationToken Token sent to the user via mail to the to-be-confirmed address
- * @param emailToConfirm To-be-confirmed addresss
- * @returns The updated user profile when successful or null when the specified user
- * does not exist or the token is invalid.
+ * Confirms a user's email address by validating the raw token sent to them and updating
+ * their profile on success.
+ * @param rawToken Raw token sent to the user via email to the to-be-confirmed address
+ * @returns 'success' | 'forbidden' (invalid/already consumed token) | 'expired'
  */
 export const confirmEmail = async (
   rawToken: string,
@@ -577,16 +570,6 @@ export const resetPassword = async (
 
 /**
  * Resends the email confirmation for the given user again.
- * This will reset existing email confirmation tokens and therefore
- * make outstanding requests invalid.
- * @param u The user to resend the email confirmation
- * @returns "already_confirmed" if there is no email confirmation pending,
- * else the updated user containing the new email confirmation token
- */
-const EMAIL_CONFIRMATION_TTL_MS = 24 * ONE_HOUR_MILLIS
-
-/**
- * Resends the email confirmation for the given user again.
  * This resets the existing confirmation token for that user/purpose.
  */
 export const resendEmailConfirmation = async (
@@ -613,21 +596,6 @@ export const resendEmailConfirmation = async (
       language: lng,
     }),
   })
-
-  // const tostoken = await issueTosAcceptanceToken(u.id)
-  // const lang = (u.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-
-  // await sendMail({
-  //   recipientAddress: u.email,
-  //   recipientName: u.name,
-  //   subject: 'Tos update',
-  //   body: TosAnnouncementEmail({
-  //     user: { name: u.name },
-  //     token: tostoken,
-  //     language: lng,
-  //     acceptBy: new Date().toLocaleDateString()
-  //   }),
-  // })
 
   return u
 }
