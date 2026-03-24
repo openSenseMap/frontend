@@ -49,6 +49,7 @@
 	"Model": "Modell",
 	"sensor": "Sensor",
 	"phenomenon": "Phänomen",
+	"phenomena": "Phänomene",
 	"mqtt_enabled": "MQTT aktiviert",
 	"ttn_enabled": "TTN aktiviert",
 	"yes": "Ja",

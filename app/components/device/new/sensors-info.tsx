@@ -194,8 +194,10 @@ export function SensorSelectionStep() {
 										<div className="text-left">
 											<p className="font-medium">{group.sensorType}</p>
 											<p className="text-xs text-muted-foreground">
-												{group.sensors.length} {t('phenomenon')}
-												{group.sensors.length !== 1 ? 's' : ''}
+												{group.sensors.length}{' '}
+												{group.sensors.length !== 1
+													? t('phenomena')
+													: t('phenomenon')}
 											</p>
 										</div>
 									</div>
