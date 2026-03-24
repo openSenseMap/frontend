@@ -6,4 +6,8 @@ export const i18nextOptions = {
 	defaultNS: 'common',
 } satisfies InitOptions
 
+/**
+ * This type is representing the supported languages in the app.
+ * Derived from {@link i18nextOptions.supportedLngs}.
+ */
 export type SupportedLanguage = (typeof i18nextOptions.supportedLngs)[number]

@@ -12,6 +12,8 @@ const hydrate = async () => {
 	await i18next
 		.use(initReactI18next)
 		.use(I18NextHttpBackend)
+		// The language detector only uses htmlTag which is set
+		// in root.tsx, so it won't cause hydration mismatches.
 		.use(I18nextBrowserLanguageDetector)
 		.init({
 			...i18nextOptions,

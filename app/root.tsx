@@ -75,6 +75,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			locale: locale,
 			ENV: getEnv(),
 		},
+		// setting the cookie is required here to make sure we keep the server and client
+		// instance of i18n in synch
 		{
 			headers: { 'Set-Cookie': await i18nCookie.serialize(locale) },
 		},
@@ -105,6 +107,11 @@ export async function action({ context, request }: Route.ActionArgs) {
 	}
 }
 
+/**
+ * Convenience hook to get the {@link loader} data of the root route in order to access
+ * e.g. the current locale, user or others.
+ * @returns The loader data of the root route
+ */
 export const useRootRouteLoaderData = () => {
 	const rootData = useRouteLoaderData<typeof loader>('root')
 	invariant(rootData !== undefined, 'root loader should always return data')

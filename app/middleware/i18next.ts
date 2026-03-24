@@ -12,9 +12,12 @@ invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')
 invariant(process.env.NODE_ENV, 'NODE_ENV must be set')
 
 const { SESSION_SECRET, NODE_ENV } = process.env
-
 const IS_PROD = NODE_ENV === 'production'
 
+/**
+ * Runs a scan of the locales directory to determine all available translation namespaces.
+ * @returns An array of all available translation namespaces
+ */
 const getNamespaces = () => {
 	return readdirSync(resolve(`./public/locales/${i18nextOptions.fallbackLng}/`))
 		.filter((f) => f.endsWith('.json'))
@@ -34,6 +37,8 @@ export const [i18nextMiddleware, getLocale, getInstance] =
 			supportedLanguages: [...i18nextOptions.supportedLngs],
 			fallbackLanguage: i18nextOptions.fallbackLng,
 			cookie: i18nCookie,
+			// findLocale prefers a user's saved language to make sure their choice is respected.
+			// It then falls back to the cookie value and finally the accept-language header (for first time visits).
 			findLocale: async (request) => {
 				const user = await getUser(request)
 				if (user?.language) return user.language.slice(0, 2)
