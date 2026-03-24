@@ -260,6 +260,13 @@
       "when": 1773831932460,
       "tag": "0036_even_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1774359445495,
+      "tag": "0037_tiresome_pixie",
+      "breakpoints": true
     }
   ]
 }
