@@ -173,6 +173,8 @@ export const registerUser = async (
 	const newUser = newUsers[0]
 	const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 
+  const token = await issueEmailConfirmationToken(newUser.id)
+
 	await sendMail({
 		recipientAddress: newUser.email,
 		recipientName: newUser.name,
@@ -180,7 +182,7 @@ export const registerUser = async (
 		body: NewUserEmail({
 			user: { name: newUser.name },
 			email: newUser.email,
-			token: '',
+			token,
 			language: lng,
 		}),
 	})
