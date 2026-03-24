@@ -11,38 +11,37 @@ import { type User, type Profile, profile, measurement } from '~/schema'
 import type * as schema from '~/schema'
 import { formatCount } from '~/utils/misc'
 
-export async function getProfileByUserId(id: Profile['id']) {
+export async function getProfileByUserId(userId: User['id']) {
 	return drizzleClient.query.profile.findFirst({
-		where: (profile, { eq }) => eq(profile.userId, id),
+		where: (profile, { eq }) => eq(profile.userId, userId),
 		with: {
 			profileImage: true,
+			user: {
+				with: {
+					devices: true
+				}
+			}
 		},
 	})
 }
 
-export async function getProfileByUsername(username: Profile['username']) {
-	return drizzleClient.query.profile.findFirst({
-		where: (profile, { eq }) => eq(profile.username, username),
-		with: {
-			user: {
-				with: {
-					devices: true,
-				},
-			},
-			profileImage: true,
-		},
-	})
+export async function getProfileByUsername(username: string) {
+  const userRecord = await drizzleClient.query.user.findFirst({
+    where: (u, { eq }) => eq(u.name, username),
+  })
+  if (!userRecord) return null
+  return getProfileByUserId(userRecord.id)
 }
 
 export async function updateProfile(
 	id: Profile['id'],
-	username: Profile['username'],
+	displayName: Profile['displayName'],
 	visibility: Profile['public'],
 ) {
 	try {
 		const result = await drizzleClient
 			.update(profile)
-			.set({ username, public: visibility })
+			.set({ displayName, public: visibility })
 			.where(eq(profile.id, id))
 		return result
 	} catch (error) {
@@ -52,10 +51,10 @@ export async function updateProfile(
 
 export async function createProfile(
 	userId: User['id'],
-	username: Profile['username'],
+	displayName: Profile['displayName'],
 ) {
 	return drizzleClient.transaction((t) =>
-		createProfileWithTransaction(t, userId, username),
+		createProfileWithTransaction(t, userId, displayName),
 	)
 }
 
@@ -66,10 +65,10 @@ export async function createProfileWithTransaction(
 		ExtractTablesWithRelations<typeof schema>
 	>,
 	userId: User['id'],
-	username: Profile['username'],
+	displayName: Profile['displayName'],
 ) {
 	return transaction.insert(profile).values({
-		username,
+		displayName,
 		public: false,
 		userId,
 	})

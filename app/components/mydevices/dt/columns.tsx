@@ -1,8 +1,14 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, ClipboardCopy, Ellipsis } from 'lucide-react'
+import {
+	ArrowUpDown,
+	ClipboardCopy,
+	Ellipsis,
+	LucideMapPin,
+} from 'lucide-react'
 import { type UseTranslationResponse } from 'react-i18next'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
 	DropdownMenu,
@@ -32,37 +38,43 @@ export function getColumns(
 	const { t } = useTranslation
 	const isOwner = opts?.isOwner ?? false
 	return [
-	  {
+		{
 			accessorKey: 'name',
-				header: ({ column }) => {
-					return (
-						<Button
-							variant="ghost"
-							onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-							className={colStyle}
-						>
-							{t('name')}
-							<ArrowUpDown className="ml-2 h-4 w-4" />
-						</Button>
-					)
-				},
-				cell: ({ row }) => {
-					const device = row.original
-					const isArchived = !!device.archivedAt
+			header: ({ column }) => {
+				return (
+					<Button
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+						className={colStyle}
+					>
+						{t('name')}
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+					</Button>
+				)
+			},
+			cell: ({ row }) => {
+				const device = row.original
+				const isArchived = !!device.archivedAt
 
-					return (
-						<div className="flex items-center gap-2">
-							<span className={isArchived ? 'text-muted-foreground line-through opacity-70' : ''}>
-								{device.name}
+				return (
+					<div className="flex items-center gap-2">
+						<span
+							className={
+								isArchived
+									? 'text-muted-foreground line-through opacity-70'
+									: ''
+							}
+						>
+							{device.name}
+						</span>
+						{isArchived ? (
+							<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
+								{t('archived')}
 							</span>
-							{isArchived ? (
-								<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
-									{t('archived')}
-								</span>
-							) : null}
-						</div>
-					)
-				},
+						) : null}
+					</div>
+				)
+			},
 		},
 		{
 			accessorKey: 'createdAt',
@@ -144,74 +156,72 @@ export function getColumns(
 				const device = row.original
 				const isArchived = !!device.archivedAt
 
-				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0">
-								<span className="sr-only">Open menu</span>
-								<Ellipsis className="h-4 w-4" />
-							</Button>
-						</DropdownMenuTrigger>
-
-						<DropdownMenuContent
-							align="end"
-							className="dark:bg-dark-background dark:text-dark-text"
-						>
-							<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-
-							<DropdownMenuItem asChild>
-								<a href={`/device/${device.id}/overview`}>{t('overview')}</a>
-							</DropdownMenuItem>
-
-							<DropdownMenuItem disabled={isArchived} asChild>
-								<a href={`/explore/${device.id}`}>{t('show_on_map')}</a>
-							</DropdownMenuItem>
-
-							{isOwner ? (
-								<>
-									<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
-										{isArchived ? (
-											<span>{t('edit')}</span>
-										) : (
-											<a href={`/device/${device.id}/edit/general`}>
-												{t('edit')}
-											</a>
-										)}
-									</DropdownMenuItem>
-
-									<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
-										{isArchived ? (
-											<span>{t('data_upload')}</span>
-										) : (
-											<a href={`/device/${device.id}/dataupload`}>
-												{t('data_upload')}
-											</a>
-										)}
-									</DropdownMenuItem>
-
-									<DropdownMenuItem disabled={isArchived} asChild>
-										<a
-											href="https://sensebox.de/de/go-home"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{t('support')}
+				if (isOwner)
+					return (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" className="h-8 w-8 p-0">
+									<span className="sr-only">Open menu</span>
+									<Ellipsis className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="end"
+								className="dark:bg-dark-background dark:text-dark-text"
+							>
+								<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem asChild>
+									<a href={`/device/${device.id}/overview`}>{t('overview')}</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem disabled={isArchived} asChild>
+									<a href={`/explore/${device.id}`}>{t('show_on_map')}</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
+									{isArchived ? (
+										<span>{t('edit')}</span>
+									) : (
+										<a href={`/device/${device.id}/edit/general`}>
+											{t('edit')}
 										</a>
-									</DropdownMenuItem>
-
-									<DropdownMenuItem
-										onClick={() => navigator.clipboard.writeText(device.id)}
-										className="cursor-pointer"
+									)}
+								</DropdownMenuItem>
+								<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
+									{isArchived ? (
+										<span>{t('data_upload')}</span>
+									) : (
+										<a href={`/device/${device.id}/dataupload`}>
+											{t('data_upload')}
+										</a>
+									)}
+								</DropdownMenuItem>
+								<DropdownMenuItem disabled={isArchived} asChild>
+									<a
+										href="https://sensebox.de/de/go-home"
+										target="_blank"
+										rel="noopener noreferrer"
 									>
-										{t('copy_id')}
-									</DropdownMenuItem>
-								</>
-							) : null}
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)
+										{t('support')}
+									</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									asChild
+									onClick={() => navigator.clipboard.writeText(device.id)}
+									className="cursor-pointer"
+								>
+									{t('copy_id')}
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)
+				else
+					return (
+						<Link to={`/explore/${device.id}`} title={t('show_on_map')}>
+							<span className="sr-only">Show on map</span>
+							<LucideMapPin className="h-4 w-4" />
+						</Link>
+					)
 			},
-		}
+		},
 	]
 }

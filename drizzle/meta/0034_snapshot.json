@@ -1,5 +1,5 @@
 {
-  "id": "70db0852-369c-47bf-9b12-f9b6f8295fbf",
+  "id": "1a28ba10-b068-44e1-a093-c9b3b4374ca3",
   "prevId": "2df45cfc-982c-4c7c-b2e7-6fe47039d121",
   "version": "7",
   "dialect": "postgresql",
@@ -107,8 +107,8 @@
           "notNull": true,
           "default": "now()"
         },
-        "archived_at": {
-          "name": "archived_at",
+        "orphaned_at": {
+          "name": "orphaned_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false

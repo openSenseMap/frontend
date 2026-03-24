@@ -37,19 +37,28 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 	let transferClaimId: string = ''
 
 	beforeAll(async () => {
-		const testUser = await registerUser(
+		const registration = await registerUser(
 			TRANSFER_TEST_USER.name,
 			TRANSFER_TEST_USER.email,
 			TRANSFER_TEST_USER.password,
 			'en_US',
 		)
-		user = testUser as User
-		const { token: t } = await createToken(testUser as User)
+
+		expect(registration.ok).toBe(true)
+		
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+		user = registration.user
+
+		const { token: t } = await createToken(user)
 		jwt = t
 
 		queryableDevice = await createDevice(
 			{ ...generateMinimalDevice(), latitude: 123, longitude: 12 },
-			(testUser as User).id,
+			user.id,
 		)
 	})
 
@@ -134,12 +143,20 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 
 		it('should reject if user does not own the device', async () => {
 			// Create another user
-			const otherUser = await registerUser(
+			const registration = await registerUser(
 				'other' + Date.now(),
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
 			)
+			expect(registration.ok).toBe(true)
+		
+			if (!registration.ok) {
+				throw new Error(
+					`Test setup failed: ${registration.field} -> ${registration.code}`,
+				)
+			}
+			const otherUser = registration.user
 			const { token: otherJwt } = await createToken(otherUser as User)
 
 			const request = new Request(`${BASE_URL}/boxes/transfer`, {
@@ -191,12 +208,20 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 		})
 
 		it('should reject if user does not own the device', async () => {
-			const otherUser = await registerUser(
+			const registration = await registerUser(
 				'other' + Date.now(),
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
 			)
+			expect(registration.ok).toBe(true)
+		
+			if (!registration.ok) {
+				throw new Error(
+					`Test setup failed: ${registration.field} -> ${registration.code}`,
+				)
+			}
+			const otherUser = registration.user
 			const { token: otherJwt } = await createToken(otherUser as User)
 
 			const request = new Request(

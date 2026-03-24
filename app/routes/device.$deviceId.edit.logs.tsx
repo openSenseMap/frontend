@@ -21,7 +21,6 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table'
-import ErrorMessage from '~/components/error-message'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { useToast } from '~/components/ui/use-toast'
@@ -228,14 +227,6 @@ export default function Logs() {
 					)}
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

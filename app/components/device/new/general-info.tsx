@@ -4,6 +4,7 @@ import { useFormContext, useFieldArray } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { MarkdownContent } from '~/components/markdown-content'
 import { Badge } from '~/components/ui/badge'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
@@ -24,6 +25,8 @@ export function GeneralInfoStep() {
 		control,
 		name: 'tags', // Tags array
 	})
+
+	const description = watch('description') || ''
 
 	const currentExposure = watch('exposure') // Watch exposure value
 
@@ -80,7 +83,7 @@ export function GeneralInfoStep() {
 	]
 
 	return (
-		<div className="flex h-full flex-col justify-evenly space-y-4 p-2">
+		<div className="flex h-full flex-col space-y-4 p-2">
 			<div>
 				<Label htmlFor="name">Name</Label>
 				<Input
@@ -90,6 +93,44 @@ export function GeneralInfoStep() {
 					className="w-full rounded-md border p-2"
 				/>
 			</div>
+			<div className="grid gap-4 lg:grid-cols-2">
+			<div className="space-y-2">
+				<Label htmlFor="description">{t('description')}</Label>
+				<textarea
+					id="description"
+					{...register('description')}
+					maxLength={5000}
+					placeholder={`## ${t('my_station')}
+
+		${t('installed_on_roof')}
+
+		- PM2.5
+		- Temperature
+
+		[${t('project_website')}](https://example.com)`}
+					className="min-h-[220px] w-full rounded-md border p-3 font-mono text-sm"
+				/>
+				<div className="text-sm text-muted-foreground">
+					{description.length} / 5000
+				</div>
+				<div className="text-sm text-muted-foreground">
+					{t('markdown_supported')}
+				</div>
+			</div>
+
+			<div className="space-y-2">
+				<Label>{t('preview')}</Label>
+				<div className="min-h-[220px] rounded-md border p-3">
+					{description.trim() ? (
+						<MarkdownContent>{description}</MarkdownContent>
+					) : (
+						<p className="text-sm text-muted-foreground">
+							{t('nothing_to_preview')}
+						</p>
+					)}
+				</div>
+			</div>
+		</div>
 			<div>
 				<Label htmlFor="exposure">{t('exposure')}</Label>
 				<div className="mt-2 flex flex-wrap gap-2">

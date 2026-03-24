@@ -10,11 +10,13 @@ import {
 	useLoaderData,
 	useNavigation,
 } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { Callout } from '~/components/ui/alert'
-import { getBoxTransfer, createBoxTransfer } from '~/lib/transfer-service.server'
+import {
+	getBoxTransfer,
+	createBoxTransfer,
+} from '~/lib/transfer-service.server'
 import { getDevice } from '~/models/device.server'
-import  { type Claim } from '~/schema'
+import { type Claim } from '~/schema'
 import { getUserId } from '~/utils/session.server'
 
 type LoaderData = {
@@ -134,8 +136,7 @@ export async function action({
 	} catch (err) {
 		return {
 			success: false,
-			error:
-				err instanceof Error ? err.message : 'Failed to create transfer.',
+			error: err instanceof Error ? err.message : 'Failed to create transfer.',
 		}
 	}
 }
@@ -188,11 +189,11 @@ export default function EditDeviceTransfer() {
 
 						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
-							<div className='my-6'>
+						<div className="my-6">
 							<Callout variant="warning">
 								<p>{t('transfer_info')}</p>
 							</Callout>
-							</div>
+						</div>
 
 						<div>
 							<label
@@ -219,16 +220,13 @@ export default function EditDeviceTransfer() {
 						</div>
 
 						<div className="my-3">
-							<label
-								htmlFor="type"
-								className="txt-base block tracking-normal"
-							>
-									<Trans
-										ns="device-transfer"
-										i18nKey="type_to_confirm"
-										values={{ deviceName }}
-										components={{ b: <b /> }}
-									/>
+							<label htmlFor="type" className="txt-base block tracking-normal">
+								<Trans
+									ns="device-transfer"
+									i18nKey="type_to_confirm"
+									values={{ deviceName }}
+									components={{ b: <b /> }}
+								/>
 							</label>
 
 							<div className="mt-1">
@@ -258,7 +256,7 @@ export default function EditDeviceTransfer() {
 					) : null}
 
 					{transferToken ? (
-						<div className="mt-4 rounded border border-green-200 bg-green-50 p-4 text-green-800">
+						<div className="text-green-800 mt-4 rounded border border-green-200 bg-green-50 p-4">
 							<p className="font-bold">
 								{actionData?.transfer
 									? t('transfer_created')
@@ -274,7 +272,7 @@ export default function EditDeviceTransfer() {
 								<button
 									type="button"
 									onClick={handleCopyToken}
-									className="inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
+									className="text-green-800 inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm hover:bg-green-100"
 									aria-label={copied ? t('copied') : t('copy')}
 									title={copied ? t('copied') : t('copy')}
 								>
@@ -307,14 +305,6 @@ export default function EditDeviceTransfer() {
 					) : null}
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

@@ -16,7 +16,6 @@ import {
 import invariant from 'tiny-invariant'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import ErrorMessage from '~/components/error-message'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
 import {
@@ -27,8 +26,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
+import { registerUser } from '~/lib/user-service.server'
 import {
-	createUser,
 	getUserByEmail,
 	getUserByUsername,
 } from '~/models/user.server'
@@ -141,14 +140,28 @@ export async function action({ request }: ActionFunctionArgs) {
 	const locale = await i18next.getLocale(request)
 	const language = locale === 'de' ? 'de_DE' : 'en_US'
 
-	const user = await createUser(username, email, language, password)
+	const result = await registerUser(username, email, password, language)
+
+	if (!result.ok) {
+		return data(
+			{
+				errors: {
+					username: result.field === 'username' ? result.code : null,
+					email: result.field === 'email' ? result.code : null,
+					password: result.field === 'password' ? result.code : null,
+					form: result.field === 'form' ? result.code : null,
+				},
+			},
+			{ status: 400 },
+		)
+}
 
 	return createUserSession({
-		request,
-		userId: user[0].id,
-		remember: false,
-		redirectTo,
-	})
+	request,
+	userId: result.user.id,
+	remember: false,
+	redirectTo,
+})
 }
 
 export const meta: MetaFunction = () => {
@@ -208,6 +221,9 @@ export default function RegisterDialog() {
 								type="text"
 								autoFocus={true}
 							/>
+							<p className="text-xs text-muted-foreground">
+									{t('username_hint')} 
+							</p>
 							{actionData?.errors?.username && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
 									{t(actionData.errors.username)}
@@ -246,6 +262,9 @@ export default function RegisterDialog() {
 								aria-invalid={actionData?.errors?.password ? true : undefined}
 								aria-describedby="password-error"
 							/>
+							<p className="text-xs text-muted-foreground">
+									{t('password_hint')} 
+							</p>
 							{actionData?.errors?.password && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
 									{t(actionData.errors.password)}
@@ -264,14 +283,6 @@ export default function RegisterDialog() {
 					</CardFooter>
 				</Form>
 			</Card>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

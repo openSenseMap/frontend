@@ -2,18 +2,17 @@ import { useTranslation } from 'react-i18next'
 import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
-	Form,
 	redirect,
-	useActionData,
 	useLoaderData,
-	useNavigation,
 } from 'react-router'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { claimBox } from '~/lib/transfer-service.server'
+import { userNameFromURl } from '~/lib/user-service.server'
 import {
+	getProfileByUserId,
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
@@ -28,41 +27,30 @@ type ActionData = {
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-	const requestingUserId = await getUserId(request)
-	const username = params.username
-	let sensorsCount = '0'
-	let measurementsCount = '0'
+  const requestingUserId = await getUserId(request)
 
-	if (username) {
-		const profile = await getProfileByUsername(username)
+  const username = userNameFromURl(params.username as string)
+  if (!username) {
+    return { profile: null, requestingUserId, sensorsCount: '0', measurementsCount: '0' }
+  }
 
-		if (profile) {
-			const counts = await getProfileSensorsAndMeasurementsCount(profile)
-			sensorsCount = counts.sensorsCount
-			measurementsCount = counts.measurementsCount
-		}
+  const profile = await getProfileByUsername(username)
 
-		if (
-			(!profile || !profile.public) &&
-			requestingUserId !== profile?.user?.id
-		) {
-			return redirect('/explore')
-		}
+  if (!profile) return redirect('/explore')
 
-		return {
-			profile,
-			requestingUserId,
-			sensorsCount,
-			measurementsCount,
-		}
-	}
+  // Block access only if private AND not the owner
+  if (!profile.public && requestingUserId !== profile.userId) {
+    return redirect('/explore')
+  }
 
-	return {
-		profile: null,
-		requestingUserId,
-		sensorsCount,
-		measurementsCount,
-	}
+  const counts = await getProfileSensorsAndMeasurementsCount(profile)
+
+  return {
+    profile,
+    requestingUserId,
+    sensorsCount: counts.sensorsCount,
+    measurementsCount: counts.measurementsCount,
+  }
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -77,7 +65,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		} satisfies ActionData
 	}
 
-	const profile = await getProfileByUsername(username)
+	const profile = await getProfileByUserId(userId)
 	if (!profile || profile.userId !== userId) {
 		return {
 			success: false,
@@ -145,13 +133,16 @@ export default function ProfilePage() {
 								/>
 							) : null}
 							<AvatarFallback>
-								{getInitials(profile?.username ?? '')}
+								{getInitials(profile?.displayName ?? '')}
 							</AvatarFallback>
 						</Avatar>
 						<div>
 							<h3 className="text-2xl font-semibold dark:text-dark-text">
-								{profile?.user?.name || ''}
+								{profile?.displayName || ''}
 							</h3>
+							<h4 className="text-lg dark:text-dark-text">
+								{profile?.user?.name || ''}
+							</h4>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
 								{t('user_since')}{' '}
 								{new Date(profile?.user?.createdAt || '').toLocaleDateString(

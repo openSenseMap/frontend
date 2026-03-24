@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import {
 	type LoaderFunctionArgs,
+	type MetaFunction,
 	Outlet,
 	useLoaderData,
 	useMatches,
 } from 'react-router'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
-import ErrorMessage from '~/components/error-message'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import i18next from '~/i18next.server'
@@ -16,6 +16,7 @@ import {
 } from '~/lib/mobile-box-helper'
 import { getDevice } from '~/models/device.server'
 import { getSensorsWithLastMeasurement } from '~/models/sensor.server'
+import { getDeviceImageUrl } from '~/utils/s3.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const locale = await i18next.getLocale(request)
@@ -59,18 +60,35 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const startDate = url.searchParams.get('date_from') || undefined
 	const endDate = url.searchParams.get('date_to') || undefined
 
+	let deviceImageUrl: string | null = null
+
+	if (device?.image) {
+		try {
+			deviceImageUrl = await getDeviceImageUrl(device.image)
+		} catch (error) {
+			console.error('Failed to create signed device image URL:', error)
+		}
+	}
+
 	// Combine the device data with the selected sensors and return the result as JSON + add env variable
 	const data = {
-		device: device,
+		device,
+		deviceImageUrl,
 		sensors: sensorsWithLastestMeasurement,
-		aggregation: aggregation,
+		aggregation,
 		fromDate: startDate,
 		toDate: endDate,
 		OSEM_API_URL: process.env.OSEM_API_URL,
-		locale: locale,
+		locale,
 	}
 
 	return data
+}
+
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+	return [
+		{ title: `${loaderData?.device?.name}` }
+	]
 }
 
 // Defining the component that will render the page
@@ -106,13 +124,5 @@ export default function DeviceId() {
 				<Outlet />
 			</HoveredPointContext.Provider>
 		</>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
-		</div>
 	)
 }

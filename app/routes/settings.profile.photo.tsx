@@ -15,7 +15,6 @@ import {
 	useNavigate,
 } from 'react-router'
 import { z } from 'zod'
-import ErrorMessage from '~/components/error-message'
 import { LabelButton } from '~/components/label-button'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
@@ -165,7 +164,7 @@ export default function PhotoChooserModal() {
 							}
 						/>
 						<AvatarFallback>
-							{getInitials(data.profile?.username ?? '')}
+							{getInitials(data.profile?.displayName ?? '')}
 						</AvatarFallback>
 					</Avatar>
 					{/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
@@ -200,13 +199,5 @@ export default function PhotoChooserModal() {
 				</Form>
 			</DialogContent>
 		</Dialog>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
-		</div>
 	)
 }

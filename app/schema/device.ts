@@ -47,6 +47,7 @@ export const device = pgTable('device', {
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 	archivedAt: timestamp('archived_at'),
+	orphanedAt: timestamp('orphaned_at'),
 	expiresAt: date('expires_at', { mode: 'date' }),
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),

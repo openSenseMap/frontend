@@ -50,6 +50,7 @@ const BASE_DEVICE_COLUMNS = {
 	createdAt: true,
 	updatedAt: true,
 	archivedAt: true,
+	orphanedAt: true,
 	expiresAt: true,
 	useAuth: true,
 	apiKey: true,
@@ -160,7 +161,7 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			userId: true,
 			useAuth: true,
 			model: true,
-			apiKey: true
+			apiKey: true,
 		},
 	})
 }
@@ -207,7 +208,7 @@ type SensorUpdateArgs = {
 
 export async function updateDevice(
 	deviceId: string,
-	args: UpdateDeviceArgs
+	args: UpdateDeviceArgs,
 ): Promise<Device> {
 	const setColumns: Record<string, any> = {}
 	const updatableFields: (keyof UpdateDeviceArgs)[] = [
@@ -467,7 +468,7 @@ export async function getDevices(format: DevicesFormat = 'json') {
 	return devices
 }
 
-export async function getArchivedDevices(){
+export async function getArchivedDevices() {
 	const devices = await drizzleClient.query.device.findMany({
 		where: (device) => isNotNull(device.archivedAt),
 		columns: {
@@ -479,7 +480,7 @@ export async function getArchivedDevices(){
 			status: true,
 			createdAt: true,
 			tags: true,
-			archivedAt: true
+			archivedAt: true,
 		},
 	})
 	return devices
