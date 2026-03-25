@@ -126,6 +126,7 @@ describe('measurement server helper', () => {
 			DEVICE_SENSORS_ID_USER.email,
 			DEVICE_SENSORS_ID_USER.password,
 			'en_US',
+			true
 		)
 
 		expect(registration.ok).toBe(true)

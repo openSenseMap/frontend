@@ -8,7 +8,6 @@ describe('openSenseMap API Routes: /users', () => {
 			it('should deny email confirmation with wrong token', async () => {
 				const params = new URLSearchParams({
 					token: 'invalid_email-reset_token',
-					email: 'tester@test.test',
 				})
 
 				const request = new Request(`${BASE_URL}/users/confirm-email`, {

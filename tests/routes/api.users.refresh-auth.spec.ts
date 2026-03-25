@@ -24,12 +24,13 @@ describe('openSenseMap API Routes: /users', () => {
 				VALID_REFRESH_AUTH_TEST_USER.email,
 				VALID_REFRESH_AUTH_TEST_USER.password,
 				'en_US',
+				true
 			);
 			expect(registration.ok).toBe(true)
 			if (!registration.ok) {
 				throw new Error(
 					`Test setup failed: ${registration.field} -> ${registration.code}`,
-				)
+			)
 			};
 			const user = registration.user;
 			({ token: jwt, refreshToken } = await createToken(user as User))

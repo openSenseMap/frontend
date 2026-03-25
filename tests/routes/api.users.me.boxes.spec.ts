@@ -33,6 +33,7 @@ describe('openSenseMap API Routes: /users', () => {
 					BOXES_TEST_USER.email,
 					BOXES_TEST_USER.password,
 					'en_US',
+					true
 				)
 				expect(registration.ok).toBe(true)
 
@@ -116,6 +117,7 @@ describe('openSenseMap API Routes: /users', () => {
 					'nodevices@test.com',
 					'password123',
 					'en_US',
+					true
 				)
 
 				expect(registration.ok).toBe(true)

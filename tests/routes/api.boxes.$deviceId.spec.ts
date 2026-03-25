@@ -39,6 +39,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			DEVICE_TEST_USER.email,
 			DEVICE_TEST_USER.password,
 			'en_US',
+			true
 		)
 		expect(registration.ok).toBe(true)
 

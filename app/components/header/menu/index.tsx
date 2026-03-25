@@ -10,6 +10,7 @@ import {
 	ExternalLink,
 	Settings,
 	Compass,
+	ScrollText,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -150,6 +151,23 @@ export default function Menu() {
 							<DropdownMenuItem className="cursor-pointer">
 								<FileLock2 className="mr-2 h-5 w-5" />
 								<span>{t('data_protection_label')}</span>
+							</DropdownMenuItem>
+						</Link>
+					</DropdownMenuGroup>
+					<DropdownMenuGroup>
+						<Link
+							to={
+								'/terms'
+							}
+							target="_blank"
+						>
+							<DropdownMenuItem
+								onSelect={(e) => e.preventDefault()}
+								className="cursor-pointer"
+							>
+								<ScrollText className="mr-2 inline h-5 w-5" />
+								<span> {t('tos')}</span>
+								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
 							</DropdownMenuItem>
 						</Link>
 					</DropdownMenuGroup>
