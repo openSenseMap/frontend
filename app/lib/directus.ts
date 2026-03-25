@@ -4,7 +4,7 @@ import {
 	rest,
 	type RestClient,
 } from '@directus/sdk'
-import { type supportedLanguages } from '~/i18next-options'
+import { type SupportedLanguage } from '~/i18next-config'
 
 const directusUrl = process.env.DIRECTUS_URL || 'http://localhost:8055'
 
@@ -15,7 +15,7 @@ export type UseCase = {
 	title: string
 	description: string
 	content: string
-	language: (typeof supportedLanguages)[number]
+	language: SupportedLanguage
 }
 
 export type Feature = {
@@ -23,7 +23,7 @@ export type Feature = {
 	title: string
 	description: string
 	icon: string
-	language: (typeof supportedLanguages)[number]
+	language: SupportedLanguage
 }
 
 export type Partner = {
