@@ -116,6 +116,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			TEST_USER.email,
 			TEST_USER.password,
 			'en_US',
+			true
 		)
 		expect(registration.ok).toBe(true)
 

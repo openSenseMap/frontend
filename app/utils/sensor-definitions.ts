@@ -4,6 +4,7 @@ export const sensorDefinitions = {
 		unit: 'm/s',
 		sensorType: 'WINDSPEED',
 		icon: 'osem-particulate-matter',
+		image: '',
 	},
 	dht22_temperature: {
 		title: 'Temperatur',
@@ -16,16 +17,14 @@ export const sensorDefinitions = {
 		unit: '°C',
 		sensorType: 'BME680',
 		icon: 'osem-thermometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1559804795009-bme_v2_top.png',
+		image: '/sensor_images/BME680.jpg',
 	},
 	smt50_soilmoisture: {
 		title: 'Bodenfeuchte',
 		unit: '%',
 		sensorType: 'SMT50',
 		icon: 'osem-thermometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1572259222502-SMT50_freigestellt_02.png',
+		image: '/sensor_images/SMT50.jpg',
 	},
 	sht3x_temperature: {
 		title: 'Temperatur',
@@ -56,8 +55,7 @@ export const sensorDefinitions = {
 		unit: '%',
 		sensorType: 'BME680',
 		icon: 'osem-humidity',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1559804795009-bme_v2_top.png',
+		image: '/sensor_images/BME680.jpg',
 	},
 	bme280_humidity: {
 		title: 'rel. Luftfeuchte',
@@ -82,8 +80,7 @@ export const sensorDefinitions = {
 		unit: 'μW/cm²',
 		sensorType: 'VEML6070',
 		icon: 'osem-brightness',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1525169435852-v+uv%20bottom.png',
+		image: '/sensor_images/VEML6070.jpg',
 	},
 	sht3x_humidity: {
 		title: 'rel. Luftfeuchte',
@@ -96,14 +93,14 @@ export const sensorDefinitions = {
 		unit: 'hPa',
 		sensorType: 'BME680',
 		icon: 'osem-barometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1559804795009-bme_v2_top.png',
+		image: '/sensor_images/BME680.jpg',
 	},
 	tsl45315_lightintensity: {
 		title: 'Beleuchtungsstärke',
 		unit: 'lx',
 		sensorType: 'TSL45315',
 		icon: 'osem-brightness',
+		image: '',
 	},
 	bmp180_temperature: {
 		title: 'Temperatur',
@@ -116,22 +113,21 @@ export const sensorDefinitions = {
 		unit: 'µg/m³',
 		sensorType: 'SDS 011',
 		icon: 'osem-cloud',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1526395407421-nova_sensor_top.png',
+		image: '/sensor_images/SDS011.png',
 	},
 	sps30_pm10: {
 		title: 'PM10',
 		unit: 'µg/m³',
 		sensorType: 'SPS30',
 		icon: 'osem-cloud',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1692346699679-feinstaub1-frei.png',
+		image: '/sensor_images/SPS30.jpg',
 	},
 	soundlevelmeter: {
 		title: 'Lautstärke',
 		unit: 'dB (A)',
 		sensorType: 'SOUNDLEVELMETER',
 		icon: 'osem-thermometer',
+		image: '/sensor_images/SoundLevelSensor.jpg',
 	},
 	pms7003_pm25: {
 		title: 'PM2.5',
@@ -144,8 +140,7 @@ export const sensorDefinitions = {
 		unit: 'kOhm',
 		sensorType: 'BME680',
 		icon: 'osem-thermometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1559804795009-bme_v2_top.png',
+		image: '/sensor_images/BME680.jpg',
 	},
 	dnms_la_min: {
 		title: 'Schalldruckpegel (Min)',
@@ -170,8 +165,7 @@ export const sensorDefinitions = {
 		unit: '°C',
 		sensorType: 'DPS310',
 		icon: 'osem-thermometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1646750298501-1646737282568-sensebox-dps310_1.png',
+		image: '/sensor_images/DPS310.jpg',
 	},
 	pms7003_pm10: {
 		title: 'PM10',
@@ -184,16 +178,14 @@ export const sensorDefinitions = {
 		unit: 'µg/m³',
 		sensorType: 'SPS30',
 		icon: 'osem-cloud',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1692346699679-feinstaub1-frei.png',
+		image: '/sensor_images/SPS30.jpg',
 	},
 	dps310_pressure: {
 		title: 'Luftdruck',
 		unit: 'hPa',
 		sensorType: 'DPS310',
 		icon: 'osem-barometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1646750298501-1646737282568-sensebox-dps310_1.png',
+		image: '/sensor_images/DPS310.jpg',
 	},
 	bme280_pressure_hpa: {
 		title: 'Luftdruck',
@@ -212,16 +204,14 @@ export const sensorDefinitions = {
 		unit: 'µg/m³',
 		sensorType: 'SDS 011',
 		icon: 'osem-cloud',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1526395407421-nova_sensor_top.png',
+		image: '/sensor_images/SDS011.png',
 	},
 	sps30_pm1: {
 		title: 'PM1',
 		unit: 'µg/m³',
 		sensorType: 'SPS30',
 		icon: 'osem-cloud',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1692346699679-feinstaub1-frei.png',
+		image: '/sensor_images/SPS30.jpg',
 	},
 	pms1003_pm01: {
 		title: 'PM01',
@@ -234,8 +224,7 @@ export const sensorDefinitions = {
 		unit: '°C',
 		sensorType: 'HDC1080',
 		icon: 'osem-thermometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1524084036826-hds%20top.png',
+		image: '/sensor_images/HDC1080.jpg',
 	},
 	pms1003_pm25: {
 		title: 'PM2.5',
@@ -248,22 +237,21 @@ export const sensorDefinitions = {
 		unit: 'ppm',
 		sensorType: 'SCD30',
 		icon: 'osem-co2',
-		image:
-			'https://docs.sensebox.de/assets/images/scd30-973734bd98521f41d3dae483191456aa.png',
+		image: '/sensor_images/SCD30.jpg',
 	},
 	hdc1008_temperature: {
 		title: 'Temperatur',
 		unit: '°C',
 		sensorType: 'HDC1008',
 		icon: 'osem-thermometer',
+		image: '/sensor_images/HDC1008.png',
 	},
 	sps30_pm4: {
 		title: 'PM4',
 		unit: 'µg/m³',
 		sensorType: 'SPS30',
 		icon: 'osem-cloud',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1692346699679-feinstaub1-frei.png',
+		image: '/sensor_images/SPS30.jpg',
 	},
 	pms1003_pm10: {
 		title: 'PM10',
@@ -294,8 +282,7 @@ export const sensorDefinitions = {
 		unit: '%',
 		sensorType: 'HDC1080',
 		icon: 'osem-humidity',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1524084036826-hds%20top.png',
+		image: '/sensor_images/HDC1080.jpg',
 	},
 	pms3003_pm01: {
 		title: 'PM01',
@@ -314,8 +301,7 @@ export const sensorDefinitions = {
 		unit: '°C',
 		sensorType: 'SMT50',
 		icon: 'osem-thermometer',
-		image:
-			'https://sensebox.kaufen/api/public/uploads/1572259222502-SMT50_freigestellt_02.png',
+		image: '/sensor_images/SMT50.jpg',
 	},
 	dht11_humidity: {
 		title: 'rel. Luftfeuchte',
@@ -340,11 +326,13 @@ export const sensorDefinitions = {
 		unit: 'hPa',
 		sensorType: 'BMP280',
 		icon: 'osem-barometer',
+		image: '/sensor_images/BMP280.png',
 	},
 	hdc1008_humidity: {
 		title: 'rel. Luftfeuchte',
 		unit: '%',
 		sensorType: 'HDC1008',
 		icon: 'osem-humidity',
+		image: '/sensor_images/HDC1008.png',
 	},
 }

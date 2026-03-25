@@ -45,7 +45,7 @@ export const action: ActionFunction = async ({
 		const password = data.password
 		const language = data.language as 'de_DE' | 'en_US'
 
-		const registration = await registerUser(username, email, password, language)
+		const registration = await registerUser(username, email, password, language, true)
 
 		if (!registration.ok) {
 			return StandardResponse.badRequest(

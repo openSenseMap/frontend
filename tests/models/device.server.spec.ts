@@ -19,6 +19,7 @@ describe('Device Model: createDevice', () => {
 			DEVICE_MODEL_TEST_USER.email,
 			DEVICE_MODEL_TEST_USER.password,
 			'en_US',
+			true
 		)
 		expect(registration.ok).toBe(true)
 
