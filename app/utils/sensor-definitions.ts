@@ -100,7 +100,7 @@ export const sensorDefinitions = {
 		unit: 'lx',
 		sensorType: 'TSL45315',
 		icon: 'osem-brightness',
-		image: '',
+		image: '/sensor_images/VEML6070.jpg',
 	},
 	bmp180_temperature: {
 		title: 'Temperatur',
@@ -147,6 +147,7 @@ export const sensorDefinitions = {
 		unit: 'db (A)',
 		sensorType: 'DNMS',
 		icon: 'osem-volume-up',
+		image: '/sensor_images/DNMS.jpg',
 	},
 	dht22_humidity: {
 		title: 'rel. Luftfeuchte',
@@ -276,6 +277,7 @@ export const sensorDefinitions = {
 		unit: 'db (A)',
 		sensorType: 'DNMS',
 		icon: 'osem-volume-up',
+		image: '/sensor_images/DNMS.jpg',
 	},
 	hdc1080_humidity: {
 		title: 'rel. Luftfeuchte',
@@ -320,6 +322,7 @@ export const sensorDefinitions = {
 		unit: 'db (A)',
 		sensorType: 'DNMS',
 		icon: 'osem-volume-up',
+		image: '/sensor_images/DNMS.jpg',
 	},
 	bmp280_pressure: {
 		title: 'Luftdruck',
