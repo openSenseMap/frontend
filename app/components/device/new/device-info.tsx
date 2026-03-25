@@ -13,24 +13,24 @@ const devices = [
 	{
 		name: 'senseBox:Home',
 		image: '/device_images/senseBox_Home.jpg',
-		isIcon: false,
+		imageHasPadding: false,
 	},
 	{
 		name: 'senseBox:Edu',
 		image: '/device_images/senseBox_edu.jpg',
-		isIcon: false,
+		imageHasPadding: false,
 	},
 	{
 		name: 'luftdaten.info',
 		image:
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdpbmQiPjxwYXRoIGQ9Ik0xMi44IDE5LjZBMiAyIDAgMSAwIDE0IDE2SDIiLz48cGF0aCBkPSJNMTcuNSA4YTIuNSAyLjUgMCAxIDEgMiA0SDIiLz48cGF0aCBkPSJNOS44IDQuNEEyIDIgMCAxIDEgMTEgOEgyIi8+PC9zdmc+',
-		isIcon: true,
+		imageHasPadding: true,
 	},
 	{
 		name: 'custom',
 		image:
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdyZW5jaCI+PHBhdGggZD0iTTE0LjcgNi4zYTEgMSAwIDAgMCAwIDEuNGwxLjYgMS42YTEgMSAwIDAgMCAxLjQgMGwzLjc3LTMuNzdhNiA2IDAgMCAxLTcuOTQgNy45NGwtNi45MSA2LjkxYTIuMTIgMi4xMiAwIDAgMS0zLTNsNi45MS02LjkxYTYgNiAwIDAgMSA3Ljk0LTcuOTRsLTMuNzYgMy43NnoiLz48L3N2Zz4=',
-		isIcon: true,
+		imageHasPadding: true,
 	},
 ]
 
@@ -140,10 +140,10 @@ export function DeviceSelectionStep() {
 									alt={device.name}
 									className={cn(
 										'w-24 self-stretch',
-										device.isIcon ? 'object-contain p-4' : 'object-cover',
+										device.imageHasPadding ? 'object-contain p-4' : 'object-cover',
 									)}
 								/>
-								<div className="flex flex-1 flex-col justify-center p-3">
+								<div className="flex min-w-0 flex-1 flex-col justify-center p-3">
 									{selectedDevice === 'senseBox:Home' && (
 										<Button
 											variant="ghost"
@@ -157,7 +157,7 @@ export function DeviceSelectionStep() {
 											<X className="h-4 w-4" />
 										</Button>
 									)}
-									<h3 className="text-lg font-semibold">{device.name}</h3>
+									<h3 className="break-words text-lg font-semibold">{device.name}</h3>
 									{device.name === 'senseBox:Home' &&
 										selectedDevice === 'senseBox:Home' && (
 											<>

@@ -1,3 +1,4 @@
+import { Cpu } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -184,12 +185,16 @@ export function SensorSelectionStep() {
 							<AccordionTrigger className="hover:no-underline">
 								<div className="flex w-full items-center justify-between pr-4">
 									<div className="flex items-center gap-3">
-										{group.image && (
+										{group.image ? (
 											<img
 												src={group.image}
 												alt={group.sensorType}
 												className="h-10 w-10 rounded object-cover"
 											/>
+										) : (
+											<div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+												<Cpu className="h-5 w-5 text-muted-foreground" />
+											</div>
 										)}
 										<div className="text-left">
 											<p className="font-medium">{group.sensorType}</p>
