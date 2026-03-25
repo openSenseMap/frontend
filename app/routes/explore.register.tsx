@@ -191,14 +191,18 @@ export async function action({ request }: ActionFunctionArgs) {
 			},
 			{ status: 400 },
 		)
-}
+	}
+
+	if (!result.emailSent) {
+		return data({ emailDeliveryFailed: true }, { status: 200 })
+	}
 
 	return createUserSession({
-	request,
-	userId: result.user.id,
-	remember: false,
-	redirectTo,
-})
+		request,
+		userId: result.user.id,
+		remember: false,
+		redirectTo,
+	})
 }
 
 export const meta: MetaFunction = () => {
@@ -215,14 +219,42 @@ export default function RegisterDialog() {
 	const passwordRef = React.useRef<HTMLInputElement>(null)
 
 	React.useEffect(() => {
-		if (actionData?.errors?.username) {
-			usernameRef.current?.focus()
-		} else if (actionData?.errors?.email) {
-			emailRef.current?.focus()
-		} else if (actionData?.errors?.password) {
-			passwordRef.current?.focus()
+		if (actionData && 'errors' in actionData) {
+			if (actionData.errors?.username) {
+				usernameRef.current?.focus()
+			} else if (actionData.errors?.email) {
+				emailRef.current?.focus()
+			} else if (actionData.errors?.password) {
+				passwordRef.current?.focus()
+			}
 		}
 	}, [actionData])
+
+	if (actionData && 'emailDeliveryFailed' in actionData && actionData.emailDeliveryFailed) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<Link
+					to={{
+						pathname: '/explore',
+						search: searchParams.toString(),
+					}}
+				>
+					<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
+				</Link>
+				<Card className="z-50 w-full max-w-md">
+					<CardHeader>
+						<CardTitle className="text-2xl font-bold">{t('account_created')}</CardTitle>
+						<CardDescription>{t('email_delivery_failed_description')}</CardDescription>
+					</CardHeader>
+					<CardFooter className="flex flex-col items-center gap-2">
+						<Link to="/explore/login" className="w-full">
+							<Button className="w-full bg-light-blue">{t('go_to_login')}</Button>
+						</Link>
+					</CardFooter>
+				</Card>
+			</div>
+		)
+	}
 
 	return (
 		<div className="flex h-screen items-center justify-center">

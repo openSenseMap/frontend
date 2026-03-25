@@ -25,5 +25,9 @@
 	"agree_tos_prefix": "I agree to the",
 	"terms_of_service": "Terms of Service",
 	"agree_tos_suffix": ".",
-	"tos_must_accept": "The terms of service must be accepted."
+	"tos_must_accept": "The terms of service must be accepted.",
+
+	"account_created": "Account Created",
+	"email_delivery_failed_description": "Your account was successfully created, but we couldn't send the confirmation email. Please log in and resend it from your account settings. If this issue persists, consider opening a bug report.",
+	"go_to_login": "Go to Login"
 }

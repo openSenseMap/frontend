@@ -25,5 +25,9 @@
 	"agree_tos_prefix": "Ich stimme den",
 	"terms_of_service": "Nutzungsbedingungen",
 	"agree_tos_suffix": "zu.",
-	"tos_must_accept": "Den Nutzungsbedingungen muss zugestimmt werden."
+	"tos_must_accept": "Den Nutzungsbedingungen muss zugestimmt werden.",
+
+	"account_created": "Konto erstellt",
+	"email_delivery_failed_description": "Dein Konto wurde erfolgreich erstellt, aber wir konnten keine Bestätigungs-E-Mail senden. Bitte logge dich ein und sende sie erneut über deine Kontoeinstellungen. Wenn dieses Problem weiterhin besteht, kannst du einen Fehlerbericht einreichen.",
+	"go_to_login": "Zur Anmeldung"
 }
