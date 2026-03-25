@@ -20,7 +20,7 @@ import {
 	type LoaderFunctionArgs,
 	useLoaderData,
 } from 'react-router'
-import { EditDviceSidebarNav } from '~/components/mydevices/edit-device/edit-device-sidebar-nav'
+import { EditDeviceSidebarNav } from '~/components/mydevices/edit-device/edit-device-sidebar-nav'
 import { NavBar } from '~/components/nav-bar'
 import { Separator } from '~/components/ui/separator'
 import { getLucideIcon } from '~/lib/lucide-icon-map'
@@ -156,7 +156,7 @@ export default function EditBox() {
 			<div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
 				{/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
 				<aside className="-mx-4 lg:w-1/5">
-					<EditDviceSidebarNav items={sidebarNavItems} />
+					<EditDeviceSidebarNav items={sidebarNavItems} />
 				</aside>
 				<div className="flex-1">
 					<Outlet context={[setToastOpen]} />

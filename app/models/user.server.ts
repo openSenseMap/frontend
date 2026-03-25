@@ -1,7 +1,6 @@
 import crypto from 'node:crypto'
 import bcrypt from 'bcryptjs'
-import { eq, or } from 'drizzle-orm'
-import { v4 as uuidv4 } from 'uuid'
+import { eq } from 'drizzle-orm'
 import { createProfileWithTransaction } from './profile.server'
 import { drizzleClient } from '~/db.server'
 import {
@@ -9,6 +8,7 @@ import {
 	type User,
 	password as passwordTable,
 	user,
+	tosUserState
 } from '~/schema'
 
 export async function getUserById(id: User['id']) {
@@ -83,7 +83,6 @@ export const updateUserEmail = (
 		.update(user)
 		.set({
 			unconfirmedEmail: newEmail,
-			emailConfirmationToken: uuidv4(),
 		})
 		.where(eq(user.id, userToUpdate.id))
 		.returning()
@@ -147,6 +146,7 @@ export async function createUser(
 	email: User['email'],
 	language: User['language'],
 	password: string,
+	tosVersionId?: string
 ) {
 	const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13) // make salt_factor configurable oSeM API uses 13 by default
 
@@ -158,6 +158,8 @@ export async function createUser(
 				email,
 				language,
 				unconfirmedEmail: email,
+				acceptedTosVersionId: tosVersionId,
+        		acceptedTosAt: new Date(), 
 			})
 			.returning()
 		await t.insert(passwordTable).values({
@@ -165,6 +167,13 @@ export async function createUser(
 			userId: newUser[0].id,
 		})
 		await createProfileWithTransaction(t, newUser[0].id, name)
+		if (tosVersionId) {
+			await t.insert(tosUserState).values({
+				userId: newUser[0].id,
+				tosVersionId,
+				acceptedAt: new Date()
+				}).onConflictDoNothing()
+		}
 		return newUser
 	})
 }

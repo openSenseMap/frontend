@@ -6,10 +6,12 @@ import {
 } from 'drizzle-orm'
 import { pgTable, boolean, text, timestamp } from 'drizzle-orm/pg-core'
 import { v4 as uuidv4 } from 'uuid'
+import { actionToken } from './action-token'
 import { device } from './device'
-import { password, passwordResetRequest } from './password'
+import { password} from './password'
 import { profile } from './profile'
 import { refreshToken } from './refreshToken'
+import { tosVersion } from './tos'
 
 /**
  * Table
@@ -25,11 +27,10 @@ export const user = pgTable('user', {
 	role: text('role').$type<'admin' | 'user'>().default('user'),
 	language: text('language').default('en_US'),
 	emailIsConfirmed: boolean('email_is_confirmed').default(false),
-	emailConfirmationToken: text('email_confirmation_token').$defaultFn(() =>
-		uuidv4(),
-	),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	acceptedTosVersionId: text('accepted_tos_version_id').references(() => tosVersion.id),
+	acceptedTosAt: timestamp('accepted_tos_at', { withTimezone: true }),
 })
 
 /**
@@ -46,10 +47,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
 	}),
 	devices: many(device),
 	refreshToken: many(refreshToken),
-	passwordResetRequest: one(passwordResetRequest, {
-		fields: [user.id],
-		references: [passwordResetRequest.userId],
-	}),
+	actionTokens: many(actionToken),
 }))
 
 /**
