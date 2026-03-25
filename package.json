@@ -9,7 +9,7 @@
     "build:drizzle": "npm run db:generate",
     "build:react-router": "react-router build",
     "build:docs": "tsx ./scripts/generate-openapi.ts",
-    "start": "cross-env NODE_ENVf=production react-router-serve ./build/server/index.js",
+    "start": "cross-env NODE_ENV=production react-router-serve ./build/server/index.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
