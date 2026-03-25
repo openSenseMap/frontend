@@ -10,7 +10,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 	}[]
 }
 
-export function EditDviceSidebarNav({
+export function EditDeviceSidebarNav({
 	className,
 	items,
 	...props

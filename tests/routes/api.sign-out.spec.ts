@@ -18,6 +18,7 @@ describe('openSenseMap API Routes: /users', () => {
 				VALID_SIGN_OUT_TEST_USER.email,
 				VALID_SIGN_OUT_TEST_USER.password,
 				'en_US',
+				true
 			)
 			expect(registration.ok).toBe(true)
 			if (!registration.ok) {

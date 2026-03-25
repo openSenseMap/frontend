@@ -34,6 +34,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 			TEST_USER.email,
 			TEST_USER.password,
 			'en_US',
+			true
 		)
 		expect(registration.ok).toBe(true)
 
