@@ -6,41 +6,40 @@ export const action: ActionFunction = async ({
 	request,
 }: ActionFunctionArgs) => {
 	let formData = new FormData()
+
 	try {
 		formData = await request.formData()
 	} catch {
-		// Just continue, it will fail in the next check
-		// The try catch block handles an exception that occurs if the
-		// request was sent without x-www-form-urlencoded content-type header
+		// Continue so the missing-token validation below handles malformed requests.
 	}
 
-	if (
-		!formData.has('token') ||
-		formData.get('token')?.toString().trim().length === 0
-	)
-		return StandardResponse.badRequest('No email confirmation token specified.')
+	const token = formData.get('token')?.toString().trim()
 
-	if (
-		!formData.has('email') ||
-		formData.get('email')?.toString().trim().length === 0
-	)
-		return StandardResponse.badRequest('No email address to confirm specified.')
+	if (!token) {
+		return StandardResponse.badRequest(
+			'No email confirmation token specified.',
+		)
+	}
 
 	try {
-		const updatedUser = await confirmEmail(
-			formData.get('token')!.toString(),
-			formData.get('email')!.toString(),
-		)
+		const result = await confirmEmail(token)
 
-		if (updatedUser === null)
+		if (result === 'success') {
+			return StandardResponse.ok({
+				code: 'Ok',
+				message: 'E-Mail successfully confirmed. Thank you',
+			})
+		}
+
+		if (result === 'expired') {
 			return StandardResponse.forbidden(
 				'Invalid or expired confirmation token.',
 			)
+		}
 
-		return StandardResponse.ok({
-			code: 'Ok',
-			message: 'E-Mail successfully confirmed. Thank you',
-		})
+		return StandardResponse.forbidden(
+			'Invalid or expired confirmation token.',
+		)
 	} catch (err) {
 		console.warn(err)
 		return StandardResponse.internalServerError()

@@ -5,15 +5,15 @@ import {
 	redirect,
 	useLoaderData,
 } from 'react-router'
-import invariant from 'tiny-invariant'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
-import { userNameFromURl } from '~/lib/user-service.server'
 import { claimBox } from '~/lib/transfer-service.server'
+import { userNameFromURl } from '~/lib/user-service.server'
 import {
 	getProfileByUserId,
+	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/models/profile.server'
 import { formatCount, getInitials } from '~/utils/misc'
@@ -27,42 +27,30 @@ type ActionData = {
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-	const requestingUserId = await getUserId(request)
-	invariant(typeof requestingUserId === 'string')
-	invariant(typeof params.username === 'string')
-	const username = userNameFromURl(params.username)
-	let sensorsCount = '0'
-	let measurementsCount = '0'
+  const requestingUserId = await getUserId(request)
 
-	if (username) {
-		const profile = await getProfileByUserId(requestingUserId)
-		if (profile) {
-			const counts = await getProfileSensorsAndMeasurementsCount(profile)
-			sensorsCount = counts.sensorsCount
-			measurementsCount = counts.measurementsCount
-		}
+  const username = userNameFromURl(params.username as string)
+  if (!username) {
+    return { profile: null, requestingUserId, sensorsCount: '0', measurementsCount: '0' }
+  }
 
-		if (
-			(!profile || !profile.public) &&
-			requestingUserId !== profile?.user?.id
-		) {
-			return redirect('/explore')
-		}
+  const profile = await getProfileByUsername(username)
 
-		return {
-			profile,
-			requestingUserId,
-			sensorsCount,
-			measurementsCount,
-		}
-	}
+  if (!profile) return redirect('/explore')
 
-	return {
-		profile: null,
-		requestingUserId,
-		sensorsCount,
-		measurementsCount,
-	}
+  // Block access only if private AND not the owner
+  if (!profile.public && requestingUserId !== profile.userId) {
+    return redirect('/explore')
+  }
+
+  const counts = await getProfileSensorsAndMeasurementsCount(profile)
+
+  return {
+    profile,
+    requestingUserId,
+    sensorsCount: counts.sensorsCount,
+    measurementsCount: counts.measurementsCount,
+  }
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -202,6 +190,11 @@ export default function ProfilePage() {
 							<DataTable
 								columns={getColumns(columnsTranslation, { isOwner })}
 								data={profile.user.devices}
+									getRowClassName={(device) =>
+										device.archivedAt
+											? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
+											: ''
+									}
 							/>
 						)}
 					</div>

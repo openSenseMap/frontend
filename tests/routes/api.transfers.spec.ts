@@ -42,6 +42,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			TRANSFER_TEST_USER.email,
 			TRANSFER_TEST_USER.password,
 			'en_US',
+			true
 		)
 
 		expect(registration.ok).toBe(true)
@@ -148,6 +149,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
+				true
 			)
 			expect(registration.ok).toBe(true)
 		
@@ -213,6 +215,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
+				true
 			)
 			expect(registration.ok).toBe(true)
 		
