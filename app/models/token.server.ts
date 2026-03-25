@@ -23,14 +23,12 @@ export async function issueEmailConfirmationToken(userId: string) {
       purpose: 'email_confirmation',
       tokenHash,
       expiresAt: new Date(Date.now() + EMAIL_CONFIRMATION_TTL_MS),
-      consumedAt: null,
     })
     .onConflictDoUpdate({
       target: [actionToken.userId, actionToken.purpose],
       set: {
         tokenHash,
         expiresAt: new Date(Date.now() + EMAIL_CONFIRMATION_TTL_MS),
-        consumedAt: null,
       },
     })
 

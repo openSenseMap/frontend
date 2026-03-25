@@ -393,7 +393,7 @@ export const deleteUser = async (
  * Confirms a user's email address by validating the raw token sent to them and updating
  * their profile on success.
  * @param rawToken Raw token sent to the user via email to the to-be-confirmed address
- * @returns 'success' | 'forbidden' (invalid/already consumed token) | 'expired'
+ * @returns 'success' | 'forbidden' | 'expired'
  */
 export const confirmEmail = async (
   rawToken: string,
@@ -410,34 +410,14 @@ export const confirmEmail = async (
   })
 
   if (!token) return 'forbidden'
-  if (token.consumedAt) return 'forbidden'
   if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
   return drizzleClient.transaction(async (tx) => {
-    const consumed = await tx
-      .update(actionToken)
-      .set({ consumedAt: now })
-      .where(
-        and(
-          eq(actionToken.id, token.id),
-          isNull(actionToken.consumedAt),
-          gt(actionToken.expiresAt, now),
-        ),
-      )
-      .returning({
-        userId: actionToken.userId,
-      })
-
-    const consumedToken = consumed[0]
-    if (!consumedToken) return 'forbidden' as const
-
     const currentUser = await tx.query.user.findFirst({
-      where: (u, { eq }) => eq(u.id, consumedToken.userId),
+      where: (u, { eq }) => eq(u.id, token.userId),
       columns: {
         id: true,
-        email: true,
         unconfirmedEmail: true,
-        emailIsConfirmed: true,
       },
     })
 
@@ -465,6 +445,19 @@ export const confirmEmail = async (
         .where(eq(user.id, currentUser.id))
     }
 
+    const deleted = await tx
+      .delete(actionToken)
+      .where(
+        and(
+          eq(actionToken.id, token.id),
+          eq(actionToken.tokenHash, tokenHash),
+          gt(actionToken.expiresAt, now),
+        ),
+      )
+      .returning({ id: actionToken.id })
+
+    if (deleted.length === 0) return 'forbidden' as const
+
     return 'success' as const
   })
 }
@@ -475,43 +468,42 @@ export const confirmEmail = async (
  * @param email The email address to request a password reset for
  */
 export const requestPasswordReset = async (email: string) => {
-	const user = await drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.email, email.toLowerCase()),
-	})
+  const user = await drizzleClient.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, email.toLowerCase()),
+  })
 
-	if (!user) return
+  if (!user) return
 
-	const rawToken = generateRawActionToken()
-  	const tokenHash = hashActionToken(rawToken)
-	await drizzleClient
-		.insert(actionToken)
-		.values({
-		userId: user.id,
-		purpose: 'password_reset',
-		tokenHash,
-		expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS),
-		consumedAt: null,
-		})
-		.onConflictDoUpdate({
-		target: [actionToken.userId, actionToken.purpose],
-		set: {
-			tokenHash,
-			expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS),
-			consumedAt: null,
-		},
-		})
+  const rawToken = generateRawActionToken()
+  const tokenHash = hashActionToken(rawToken)
 
-	const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
-	await sendMail({
-		recipientAddress: user.email,
-		recipientName: user.name,
-		subject: PasswordResetEmailSubject[lng],
-		body: PasswordResetEmail({
-			user: { email: user.email, name: user.name },
-			token: rawToken,
-			language: lng,
-		}),
-	})
+  await drizzleClient
+    .insert(actionToken)
+    .values({
+      userId: user.id,
+      purpose: 'password_reset',
+      tokenHash,
+      expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS),
+    })
+    .onConflictDoUpdate({
+      target: [actionToken.userId, actionToken.purpose],
+      set: {
+        tokenHash,
+        expiresAt: new Date(Date.now() + 12 * ONE_HOUR_MILLIS),
+      },
+    })
+
+  const lng = (user.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+  await sendMail({
+    recipientAddress: user.email,
+    recipientName: user.name,
+    subject: PasswordResetEmailSubject[lng],
+    body: PasswordResetEmail({
+      user: { email: user.email, name: user.name },
+      token: rawToken,
+      language: lng,
+    }),
+  })
 }
 
 /**
@@ -533,7 +525,6 @@ export const resetPassword = async (
   })
 
   if (!token) return 'forbidden'
-  if (token.consumedAt) return 'forbidden'
   if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
   if (validatePassword(newPassword).isValid === false) {
@@ -541,26 +532,21 @@ export const resetPassword = async (
   }
 
   const result = await drizzleClient.transaction(async (tx) => {
-    const consumed = await tx
-      .update(actionToken)
-      .set({ consumedAt: now })
+    const updated = await updateUserPassword(token.userId, newPassword)
+    invariant(updated.length === 1)
+
+    const deleted = await tx
+      .delete(actionToken)
       .where(
         and(
           eq(actionToken.id, token.id),
-          isNull(actionToken.consumedAt),
+          eq(actionToken.tokenHash, tokenHash),
           gt(actionToken.expiresAt, now),
         ),
       )
-      .returning({
-        userId: actionToken.userId,
-      })
+      .returning({ id: actionToken.id })
 
-    const consumedToken = consumed[0]
-    if (!consumedToken) return 'forbidden' as const
-
-    const updated = await updateUserPassword(consumedToken.userId, newPassword)
-
-    invariant(updated.length === 1)
+    if (deleted.length === 0) return 'forbidden' as const
 
     // TODO: invalidate refreshToken and active accessTokens
 

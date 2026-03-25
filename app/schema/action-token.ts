@@ -19,7 +19,6 @@ export const actionToken = pgTable(
     tokenHash: text('token_hash').notNull().unique(),
 
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    consumedAt: timestamp('consumed_at', { withTimezone: true }),
   },
   (t) => ({
     userPurposeUq: uniqueIndex('action_token_user_purpose_uq').on(

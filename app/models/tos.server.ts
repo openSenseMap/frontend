@@ -83,14 +83,12 @@ export async function issueTosAcceptanceToken(userId: string) {
       purpose: 'tos_acceptance',
       tokenHash,
       expiresAt: new Date(Date.now() + TWO_WEEKS_MS),
-      consumedAt: null,
     })
     .onConflictDoUpdate({
       target: [actionToken.userId, actionToken.purpose],
       set: {
         tokenHash,
         expiresAt: new Date(Date.now() + TWO_WEEKS_MS),
-        consumedAt: null,
       },
     })
 
@@ -109,7 +107,6 @@ export async function getValidTosAcceptanceToken(
         eq(t.purpose, 'tos_acceptance'),
         eq(t.tokenHash, tokenHash),
         gt(t.expiresAt, now),
-        isNull(t.consumedAt),
       ),
   })
 }
@@ -126,7 +123,6 @@ export async function getActiveTosAcceptanceTokenById(
         eq(t.userId, userId),
         eq(t.purpose, 'tos_acceptance'),
         gt(t.expiresAt, now),
-        isNull(t.consumedAt),
       ),
   })
 }
@@ -142,15 +138,13 @@ export async function acceptCurrentTosViaEmailFlow({
 }): Promise<'success' | 'forbidden' | 'not_configured'> {
   return drizzleClient.transaction(async (tx) => {
     const consumed = await tx
-      .update(actionToken)
-      .set({ consumedAt: now })
+      .delete(actionToken)
       .where(
         and(
           eq(actionToken.id, tokenId),
           eq(actionToken.userId, userId),
           eq(actionToken.purpose, 'tos_acceptance'),
           gt(actionToken.expiresAt, now),
-          isNull(actionToken.consumedAt),
         ),
       )
       .returning({ userId: actionToken.userId })
