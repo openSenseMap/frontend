@@ -1,7 +1,6 @@
 import tailwindStylesheetUrl from '/app/styles/tailwind.css?url'
 import appStylesheetUrl from '/app/styles/app.css?url'
 import clsx from 'clsx'
-import { invariant } from 'node_modules/@formatjs/intl/src/utils'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -14,6 +13,7 @@ import {
 	useRouteLoaderData,
 	type MetaFunction,
 } from 'react-router'
+import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
 import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
