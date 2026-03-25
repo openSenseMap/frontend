@@ -281,6 +281,13 @@
       "when": 1774424856884,
       "tag": "0039_simple_wallow",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1774432426934,
+      "tag": "0040_luxuriant_mathemanic",
+      "breakpoints": true
     }
   ]
 }
