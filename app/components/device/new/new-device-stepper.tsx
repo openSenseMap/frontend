@@ -35,6 +35,11 @@ const generalInfoSchema = z.object({
 		.string()
 		.min(2, 'Name must be at least 2 characters')
 		.min(1, 'Name is required'),
+	description: z
+		.string()
+		.max(5000, 'Description should not exceed 5000 characters')	
+		.optional()
+		.nullable(),
 	exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown'], {
 		errorMap: () => ({ message: 'Exposure is required' }),
 	}),

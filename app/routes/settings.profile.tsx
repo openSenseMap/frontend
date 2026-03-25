@@ -11,7 +11,6 @@ import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
 } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import {
@@ -203,13 +202,5 @@ export default function EditUserProfilePage() {
 				<Outlet />
 			</Card>
 		</Form>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
-		</div>
 	)
 }

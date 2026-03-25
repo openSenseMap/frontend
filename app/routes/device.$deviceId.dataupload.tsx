@@ -10,7 +10,6 @@ import {
 	useNavigation,
 	useParams,
 } from 'react-router'
-import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -248,14 +247,6 @@ export default function DataUpload({ actionData }: any) {
 					</main>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

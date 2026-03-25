@@ -20,7 +20,6 @@ import {
 } from 'react-router'
 
 import invariant from 'tiny-invariant'
-import ErrorMessage from '~/components/error-message'
 import {
 	getDeviceWithoutSensors,
 	updateDeviceLocation,
@@ -254,14 +253,6 @@ export default function EditLocation() {
 					</Form>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }
