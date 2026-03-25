@@ -74,7 +74,7 @@
     "@rjsf/validator-ajv8": "^6.2.5",
     "@stepperize/react": "^5.1.6",
     "@tanstack/react-table": "^8.21.3",
-    "@turf/bbox": "^7.2.0",
+    "@turf/bbox": "^7.3.4",
     "@turf/helpers": "^7.2.0",
     "@types/mapbox-gl": "^2.7.21",
     "@types/react-tagsinput": "^3.20.6",
