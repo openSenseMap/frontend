@@ -9,6 +9,7 @@ import {
 	measurements1hourView,
 	measurements1monthView,
 	measurements1yearView,
+	sensor,
 } from '~/schema'
 import {
 	type MinimalDevice,
@@ -286,4 +287,15 @@ export async function deleteMeasurementsForTime(date: Date) {
 	return await drizzleClient
 		.delete(measurement)
 		.where(eq(measurement.time, date))
+}
+
+export async function deleteMeasurementsForDevice(deviceId: string) {
+	const sensorIds = drizzleClient
+		.select({ id: sensor.id })
+		.from(sensor)
+		.where(eq(sensor.deviceId, deviceId))
+
+	return await drizzleClient
+		.delete(measurement)
+		.where(inArray(measurement.sensorId, sensorIds))
 }

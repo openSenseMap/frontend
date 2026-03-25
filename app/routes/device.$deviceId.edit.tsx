@@ -10,6 +10,7 @@ import {
 	Cpu,
 	ArrowLeft,
 	NotepadText,
+	Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -89,6 +90,11 @@ export default function EditBox() {
 			title: 'Transfer',
 			href: `/device/${deviceId}/edit/transfer`,
 			icon: ArrowRightLeft,
+		},
+		{
+			title: 'Delete Measurements',
+			href: `/device/${deviceId}/edit/delete-measurements`,
+			icon: Trash2,
 		},
 	]
 
