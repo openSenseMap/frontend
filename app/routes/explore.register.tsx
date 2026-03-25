@@ -230,6 +230,8 @@ export default function RegisterDialog() {
 		}
 	}, [actionData])
 
+	const actionErrors = actionData && 'errors' in actionData ? actionData.errors : undefined
+
 	if (actionData && 'emailDeliveryFailed' in actionData && actionData.emailDeliveryFailed) {
 		return (
 			<div className="flex h-screen items-center justify-center">
@@ -293,9 +295,9 @@ export default function RegisterDialog() {
 							<p className="text-xs text-muted-foreground">
 									{t('username_hint')} 
 							</p>
-							{actionData?.errors?.username && (
+							{actionErrors?.username && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
-									{t(actionData.errors.username)}
+									{t(actionErrors?.username)}
 								</div>
 							)}
 						</div>
@@ -310,12 +312,12 @@ export default function RegisterDialog() {
 								autoFocus={true}
 								name="email"
 								autoComplete="email"
-								aria-invalid={actionData?.errors?.email ? true : undefined}
+								aria-invalid={actionErrors?.email ? true : undefined}
 								aria-describedby="email-error"
 							/>
-							{actionData?.errors?.email && (
+							{actionErrors?.email && (
 								<div className="mt-1 text-sm text-red-500" id="email-error">
-									{t(actionData.errors.email)}
+									{t(actionErrors?.email)}
 								</div>
 							)}
 						</div>
@@ -328,15 +330,15 @@ export default function RegisterDialog() {
 								ref={passwordRef}
 								name="password"
 								autoComplete="new-password"
-								aria-invalid={actionData?.errors?.password ? true : undefined}
+								aria-invalid={actionErrors?.password ? true : undefined}
 								aria-describedby="password-error"
 							/>
 							<p className="text-xs text-muted-foreground">
 									{t('password_hint')} 
 							</p>
-							{actionData?.errors?.password && (
+							{actionErrors?.password && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
-									{t(actionData.errors.password)}
+									{t(actionErrors?.password)}
 								</div>
 							)}
 						</div>
@@ -346,7 +348,7 @@ export default function RegisterDialog() {
 								name="tosAccepted"
 								type="checkbox"
 								className="mt-1 h-4 w-4"
-								aria-invalid={actionData?.errors?.tosAccepted ? true : undefined}
+								aria-invalid={actionErrors?.tosAccepted ? true : undefined}
 								aria-describedby="tos-error"
 							/>
 							<Label htmlFor="tosAccepted" className="text-sm leading-5">
@@ -357,9 +359,9 @@ export default function RegisterDialog() {
 								{t('agree_tos_suffix')}
 							</Label>
 						</div>
-						{actionData?.errors?.tosAccepted && (
+						{actionErrors?.tosAccepted && (
 							<div className="mt-1 text-sm text-red-500" id="tos-error">
-								{t(actionData.errors.tosAccepted)}
+								{t(actionErrors?.tosAccepted)}
 							</div>
 						)}
 					</CardContent>
