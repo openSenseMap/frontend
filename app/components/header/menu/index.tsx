@@ -129,14 +129,6 @@ export default function Menu() {
 						</DropdownMenuGroup>
 					)}
 					<DropdownMenuGroup>
-						<Link to="https://docs.sensebox.de/" target="_blank">
-							<DropdownMenuItem className="cursor-pointer">
-								<Puzzle className="mr-2 h-5 w-5" />
-								<span>{t('tutorials_label')}</span>
-								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
-							</DropdownMenuItem>
-						</Link>
-
 						<Link to="https://docs.opensensemap.org/" target="_blank">
 							<DropdownMenuItem className="cursor-pointer">
 								<Globe className="mr-2 h-5 w-5" />
@@ -155,12 +147,7 @@ export default function Menu() {
 						</Link>
 					</DropdownMenuGroup>
 					<DropdownMenuGroup>
-						<Link
-							to={
-								'/terms'
-							}
-							target="_blank"
-						>
+						<Link to={'/terms'} target="_blank">
 							<DropdownMenuItem
 								onSelect={(e) => e.preventDefault()}
 								className="cursor-pointer"
