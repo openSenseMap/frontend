@@ -20,6 +20,7 @@ describe('openSenseMap API Routes: /users', () => {
 					RESEND_EMAIL_USER.email,
 					RESEND_EMAIL_USER.password,
 					'en_US',
+					true
 				)
 				expect(registration.ok).toBe(true)
 		

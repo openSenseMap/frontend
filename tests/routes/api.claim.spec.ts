@@ -13,7 +13,7 @@ const CLAIM_TEST_USER = generateTestUserCredentials()
 
 const createTestUser = async (suffix: string): Promise<User> => {
 	const u = generateTestUserCredentials()
-	const registration = await registerUser(u.name, u.email, u.password, 'en_US')
+	const registration = await registerUser(u.name, u.email, u.password, 'en_US', true)
 	expect(registration.ok).toBe(true)
 
 	if (!registration.ok) {
@@ -42,7 +42,22 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 	let queryableDevice: Device | null = null
 
 	beforeAll(async () => {
-		user = await createTestUser('main')
+		const testUser = await registerUser(
+			CLAIM_TEST_USER.name,
+			CLAIM_TEST_USER.email,
+			CLAIM_TEST_USER.password,
+			'en_US',
+			true
+		)
+		expect(testUser.ok).toBe(true)
+
+		if (!testUser.ok) {
+			throw new Error(
+				`Test setup failed: ${testUser.field} -> ${testUser.code}`,
+			)
+		}
+
+		user = testUser.user 
 		const { token: t } = await createToken(user)
 		jwt = t
 
@@ -204,8 +219,22 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 		})
 
 		it('should reject claim with expired transfer token', async () => {
-			const newUser = await createTestUser(Date.now().toString())
-			const { token: newUserJwt } = await createToken(newUser)
+			// Create a new user to attempt the claim
+			const registration = await registerUser(
+				'claimer' + Date.now(),
+				`claimer${Date.now()}@test.com`,
+				'password123',
+				'en_US',
+				true
+			)
+			expect(registration.ok).toBe(true)
+
+			if (!registration.ok) {
+				throw new Error(
+					`Test setup failed: ${registration.field} -> ${registration.code}`,
+				)
+			}
+			const { token: newUserJwt } = await createToken(registration.user)
 
 			const claimRequest = new Request(`${BASE_URL}/boxes/claim`, {
 				method: 'POST',
@@ -225,7 +254,7 @@ describe('openSenseMap API Routes: /boxes/claim', () => {
 			expect(body.error).toContain('expired')
 
 			// Cleanup
-			await deleteUserByEmail(newUser.email)
+			await deleteUserByEmail(registration.user.email)
 		})
 	})
 })

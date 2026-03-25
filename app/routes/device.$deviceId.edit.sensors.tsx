@@ -124,7 +124,7 @@ export default function EditBoxSensors() {
 				}
 			}
 		}
-	}, [actionData, sensorsData, setToastOpen])
+	}, [actionData, setToastOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
 	return (
 		<div className="grid grid-rows-1">

@@ -19,10 +19,14 @@ import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
 import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { updateUserlocale } from './models/user.server'
+import { tosUiMiddleware } from './middleware/tos-ui.server'
 import { getEnv } from './utils/env.server'
 import { getUser } from './utils/session.server'
 
-export const middleware: Route.MiddlewareFunction[] = [i18nextMiddleware]
+export const middleware: Route.MiddlewareFunction[] = [
+	i18nextMiddleware,
+	tosUiMiddleware,
+]
 
 export const links = () => {
 	return [
