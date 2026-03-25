@@ -7,7 +7,7 @@ import {
 import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
 import { drizzleClient } from '~/db.server'
-import { type User, type Profile, profile, measurement, user } from '~/schema'
+import { type User, type Profile, profile, measurement } from '~/schema'
 import type * as schema from '~/schema'
 import { formatCount } from '~/utils/misc'
 
@@ -23,6 +23,14 @@ export async function getProfileByUserId(userId: User['id']) {
 			}
 		},
 	})
+}
+
+export async function getProfileByUsername(username: string) {
+  const userRecord = await drizzleClient.query.user.findFirst({
+    where: (u, { eq }) => eq(u.name, username),
+  })
+  if (!userRecord) return null
+  return getProfileByUserId(userRecord.id)
 }
 
 export async function updateProfile(

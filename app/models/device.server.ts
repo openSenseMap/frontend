@@ -7,7 +7,9 @@ import {
 	arrayContains,
 	and,
 	between,
+	isNull,
 	type ExtractTablesWithRelations,
+	isNotNull,
 } from 'drizzle-orm'
 import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
@@ -47,6 +49,7 @@ const BASE_DEVICE_COLUMNS = {
 	status: true,
 	createdAt: true,
 	updatedAt: true,
+	archivedAt: true,
 	orphanedAt: true,
 	expiresAt: true,
 	useAuth: true,
@@ -180,7 +183,7 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			userId: true,
 			useAuth: true,
 			model: true,
-			apiKey: true
+			apiKey: true,
 		},
 	})
 }
@@ -227,7 +230,7 @@ type SensorUpdateArgs = {
 
 export async function updateDevice(
 	deviceId: string,
-	args: UpdateDeviceArgs
+	args: UpdateDeviceArgs,
 ): Promise<Device> {
 	const setColumns: Record<string, any> = {}
 	const updatableFields: (keyof UpdateDeviceArgs)[] = [
@@ -456,6 +459,7 @@ export async function getDevices(
 
 export async function getDevices(format: DevicesFormat = 'json') {
 	const devices = await drizzleClient.query.device.findMany({
+		where: (device) => isNull(device.archivedAt),
 		columns: {
 			id: true,
 			name: true,
@@ -486,6 +490,24 @@ export async function getDevices(format: DevicesFormat = 'json') {
 	return devices
 }
 
+export async function getArchivedDevices() {
+	const devices = await drizzleClient.query.device.findMany({
+		where: (device) => isNotNull(device.archivedAt),
+		columns: {
+			id: true,
+			name: true,
+			latitude: true,
+			longitude: true,
+			exposure: true,
+			status: true,
+			createdAt: true,
+			tags: true,
+			archivedAt: true,
+		},
+	})
+	return devices
+}
+
 export async function getDevicesWithSensors() {
 	const rows = await drizzleClient
 		.select({
@@ -499,6 +521,8 @@ export async function getDevicesWithSensors() {
 		})
 		.from(device)
 		.leftJoin(sensor, eq(sensor.deviceId, device.id))
+		.where(isNull(device.archivedAt))
+
 	const geojson: GeoJSON.FeatureCollection<Point, any> = {
 		type: 'FeatureCollection',
 		features: [],

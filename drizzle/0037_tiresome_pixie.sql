@@ -1,0 +1,1 @@
+ALTER TABLE "device" ADD COLUMN "archived_at" timestamp;
