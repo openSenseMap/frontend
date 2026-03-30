@@ -47,13 +47,9 @@ import { createUserSession, getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const url = new URL(request.url)
-	console.log('LOGIN LOADER request.url:', request.url)
-	console.log('LOGIN LOADER redirectTo param:', url.searchParams.get('redirectTo'))
-
 	const userId = await getUserId(request)
 	if (userId) {
 		const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
-		console.log('LOGIN LOADER user already logged in, redirecting to:', redirectTo)
 		return redirect(redirectTo)
 	}
 
@@ -68,11 +64,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	const password = formData.get('password')
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 	const remember = formData.get('remember')
-
-	const rawRedirectTo = formData.get('redirectTo')
-
-	console.log('LOGIN ACTION rawRedirectTo:', rawRedirectTo)
-	console.log('LOGIN ACTION safe redirectTo:', redirectTo)
 
 	if (typeof identifier !== 'string' || identifier.trim().length === 0) {
 		return data(
@@ -141,8 +132,6 @@ export default function LoginPage() {
 	const actionData = useActionData<typeof action>()
 	const identifierRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
-
-	console.log('LOGIN COMPONENT loader redirectTo:', loaderData.redirectTo)
 
 	const { t } = useTranslation('login')
 	const navigation = useNavigation()
