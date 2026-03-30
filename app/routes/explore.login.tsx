@@ -11,6 +11,7 @@ import {
 	useActionData,
 	useNavigation,
 	useSearchParams,
+	useLoaderData,
 } from 'react-router'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,10 +31,35 @@ import { verifyLogin } from '~/models/user.server'
 import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 
+// export async function loader({ request }: LoaderFunctionArgs) {
+// 	const userId = await getUserId(request)
+// 	const url = new URL(request.url)
+// 	const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
+// 	console.log("redirecting to", redirectTo)
+// 	if (userId) {
+// 		const url = new URL(request.url)
+// 		const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
+// 		console.log('LOGIN LOADER already logged in, redirecting to:', redirectTo)
+// 		return redirect(redirectTo)
+// 	}
+// 	return data({ redirectTo })
+// }
+
 export async function loader({ request }: LoaderFunctionArgs) {
+	const url = new URL(request.url)
+	console.log('LOGIN LOADER request.url:', request.url)
+	console.log('LOGIN LOADER redirectTo param:', url.searchParams.get('redirectTo'))
+
 	const userId = await getUserId(request)
-	if (userId) return redirect('/explore')
-	return {}
+	if (userId) {
+		const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
+		console.log('LOGIN LOADER user already logged in, redirecting to:', redirectTo)
+		return redirect(redirectTo)
+	}
+
+	return data({
+		redirectTo: safeRedirect(url.searchParams.get('redirectTo'), '/explore'),
+	})
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -42,6 +68,11 @@ export async function action({ request }: ActionFunctionArgs) {
 	const password = formData.get('password')
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 	const remember = formData.get('remember')
+
+	const rawRedirectTo = formData.get('redirectTo')
+
+	console.log('LOGIN ACTION rawRedirectTo:', rawRedirectTo)
+	console.log('LOGIN ACTION safe redirectTo:', redirectTo)
 
 	if (typeof identifier !== 'string' || identifier.trim().length === 0) {
 		return data(
@@ -106,9 +137,12 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
 	const [searchParams] = useSearchParams()
+	const loaderData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const identifierRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
+
+	console.log('LOGIN COMPONENT loader redirectTo:', loaderData.redirectTo)
 
 	const { t } = useTranslation('login')
 	const navigation = useNavigation()
@@ -148,6 +182,11 @@ export default function LoginPage() {
 					</div>
 				)}
 				<Form method="post" className="space-y-6" noValidate>
+					<input
+						type="hidden"
+						name="redirectTo"
+						value={loaderData.redirectTo}
+					/>
 					<CardHeader className="space-y-1 text-center">
 						<CardTitle className="text-2xl font-bold">
 							{t('welcome_back')}
