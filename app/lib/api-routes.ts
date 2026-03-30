@@ -103,6 +103,11 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
             method: 'POST',
             tosExempt: true
         },
+        {
+            path: `discourse/sso`,
+            method: 'GET',
+            tosExempt: true,
+        }
     ],
     auth: [
         {
