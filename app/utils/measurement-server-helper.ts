@@ -98,18 +98,26 @@ export async function findOrCreateLocations(
 		const toInsert = newLocations.filter(
 			(newLocation) => !foundLocationsContain(foundLocations, newLocation),
 		)
+		const uniqueToInsert = toInsert.filter(
+			(newLocation, index, arr) =>
+				arr.findIndex(
+					(candidate) =>
+						candidate.lng === newLocation.lng && candidate.lat === newLocation.lat,
+				) === index,
+		)
 
 		const inserted =
-			toInsert.length > 0
+			uniqueToInsert.length > 0
 				? await tx
 						.insert(location)
 						.values(
-							toInsert.map((newLocation) => {
+							uniqueToInsert.map((newLocation) => {
 								return {
 									location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
 								}
 							}),
 						)
+						.onConflictDoNothing()
 						.returning()
 				: []
 
