@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
-// import { ModeToggle } from "../../mode-toggle";
-import LanguageSelector from './language-selector'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+import LanguageSelector from './language-selector'
 
 const links = [
 	{

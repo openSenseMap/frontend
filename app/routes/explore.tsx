@@ -16,18 +16,17 @@ import {
 	useSearchParams,
 	useLoaderData,
 	useParams,
-	type LoaderFunctionArgs,
 	type LinksFunction,
 } from 'react-router'
 import type Supercluster from 'supercluster'
-import ErrorMessage from '~/components/error-message'
+import { type Route } from './+types/explore'
 import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import ClusterLayer from '~/components/map/layers/cluster/cluster-layer'
 import Legend, { type LegendValue } from '~/components/map/legend'
-import i18next from '~/i18next.server'
+import { getLocale } from '~/middleware/i18next'
 import { getDevices, getDevicesWithSensors } from '~/models/device.server'
 import { getMeasurement } from '~/models/measurement.query.server'
 import { getProfileByUserId } from '~/models/profile.server'
@@ -110,9 +109,9 @@ export type DeviceClusterProperties =
 			}
 	  >
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
 	//* Get filter params
-	let locale = await i18next.getLocale(request)
+	let locale = getLocale(context)
 	const url = new URL(request.url)
 	const filterParams = url.search
 	const urlFilterParams = new URLSearchParams(url.search)
@@ -417,14 +416,6 @@ export default function Explore() {
 					</div>
 				</div>
 			</MapProvider>
-		</div>
-	)
-}
-
-export function ErrorBoundary() {
-	return (
-		<div className="flex h-screen w-screen items-center justify-center">
-			<ErrorMessage />
 		</div>
 	)
 }

@@ -12,23 +12,25 @@ import { cn } from '~/lib/utils'
 const devices = [
 	{
 		name: 'senseBox:Home',
-		image:
-			'https://sensebox.kaufen/api//public/uploads/thumbs/thumb--1525013086964-mcu_one_top.png',
+		image: '/device_images/senseBox_Home.jpg',
+		imageHasPadding: true,
 	},
 	{
 		name: 'senseBox:Edu',
-		image:
-			'https://sensebox.kaufen/api//public/uploads/thumbs/thumb--1524084284270-mcu%20top.png',
+		image: '/device_images/senseBox_edu.jpg',
+		imageHasPadding: true,
 	},
 	{
 		name: 'luftdaten.info',
 		image:
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdpbmQiPjxwYXRoIGQ9Ik0xMi44IDE5LjZBMiAyIDAgMSAwIDE0IDE2SDIiLz48cGF0aCBkPSJNMTcuNSA4YTIuNSAyLjUgMCAxIDEgMiA0SDIiLz48cGF0aCBkPSJNOS44IDQuNEEyIDIgMCAxIDEgMTEgOEgyIi8+PC9zdmc+',
+		imageHasPadding: false,
 	},
 	{
 		name: 'custom',
 		image:
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdyZW5jaCI+PHBhdGggZD0iTTE0LjcgNi4zYTEgMSAwIDAgMCAwIDEuNGwxLjYgMS42YTEgMSAwIDAgMCAxLjQgMGwzLjc3LTMuNzdhNiA2IDAgMCAxLTcuOTQgNy45NGwtNi45MSA2LjkxYTIuMTIgMi4xMiAwIDAgMS0zLTNsNi45MS02LjkxYTYgNiAwIDAgMSA3Ljk0LTcuOTRsLTMuNzYgMy43NnoiLz48L3N2Zz4=',
+		imageHasPadding: false,
 	},
 ]
 
@@ -104,7 +106,9 @@ export function DeviceSelectionStep() {
 			<div
 				className={cn(
 					'grid gap-6',
-					selectedDevice === 'senseBox:Home' ? 'grid-cols-1' : 'grid-cols-2',
+					selectedDevice === 'senseBox:Home'
+						? 'grid-cols-1'
+						: 'grid-cols-1 lg:grid-cols-2',
 				)}
 			>
 				{devices.map((device) => {
@@ -118,7 +122,7 @@ export function DeviceSelectionStep() {
 						<Card
 							key={device.name}
 							className={cn(
-								'transform cursor-pointer transition-all duration-300 ease-in-out hover:scale-105',
+								'relative transform cursor-pointer overflow-hidden transition-all duration-300 ease-in-out hover:scale-105',
 								selectedDevice === device.name
 									? 'bg-primary/10 ring-2 ring-primary'
 									: 'hover:bg-gray-50',
@@ -130,56 +134,65 @@ export function DeviceSelectionStep() {
 								handleDeviceChange(device.name)
 							}}
 						>
-							<CardContent className="flex flex-col items-center space-y-4 p-2">
-								{selectedDevice === 'senseBox:Home' && (
-									<Button
-										variant="ghost"
-										size="icon"
-										className="absolute right-2 top-2"
-										onClick={(e) => {
-											e.stopPropagation()
-											handleClose()
-										}}
-									>
-										<X className="h-4 w-4" />
-									</Button>
-								)}
+							<CardContent className="flex flex-row p-0">
 								<img
 									src={device.image}
 									alt={device.name}
-									className="h-24 w-24"
-								/>
-								<h3 className="text-lg font-semibold">{device.name}</h3>
-								{device.name === 'senseBox:Home' &&
-									selectedDevice === 'senseBox:Home' && (
-										<>
-											<Separator className="my-2" />
-											<div className="w-full max-w-xs">
-												<h4 className="mb-2 text-sm font-medium">
-													{t('connection_type')}
-												</h4>
-												<RadioGroup
-													value={selectedConnectionType}
-													onValueChange={(value) =>
-														handleConnectionTypeChange(value)
-													}
-													className="flex flex-col space-y-1"
-												>
-													{connectionTypes.map((type) => (
-														<div
-															key={type}
-															className="flex items-center space-x-2"
-														>
-															<RadioGroupItem value={type} id={type} />
-															<Label htmlFor={type} className="text-sm">
-																{type}
-															</Label>
-														</div>
-													))}
-												</RadioGroup>
-											</div>
-										</>
+									className={cn(
+										'w-24 self-stretch',
+										device.imageHasPadding
+											? 'object-cover'
+											: 'object-contain p-4',
 									)}
+								/>
+								<div className="flex min-w-0 flex-1 flex-col justify-center p-3">
+									{selectedDevice === 'senseBox:Home' && (
+										<Button
+											variant="ghost"
+											size="icon"
+											className="absolute right-2 top-2"
+											onClick={(e) => {
+												e.stopPropagation()
+												handleClose()
+											}}
+										>
+											<X className="h-4 w-4" />
+										</Button>
+									)}
+									<h3 className="break-words text-lg font-semibold">
+										{device.name}
+									</h3>
+									{device.name === 'senseBox:Home' &&
+										selectedDevice === 'senseBox:Home' && (
+											<>
+												<Separator className="my-2" />
+												<div className="w-full max-w-xs">
+													<h4 className="mb-2 text-sm font-medium">
+														{t('connection_type')}
+													</h4>
+													<RadioGroup
+														value={selectedConnectionType}
+														onValueChange={(value) =>
+															handleConnectionTypeChange(value)
+														}
+														className="flex flex-col space-y-1"
+													>
+														{connectionTypes.map((type) => (
+															<div
+																key={type}
+																className="flex items-center space-x-2"
+															>
+																<RadioGroupItem value={type} id={type} />
+																<Label htmlFor={type} className="text-sm">
+																	{type}
+																</Label>
+															</div>
+														))}
+													</RadioGroup>
+												</div>
+											</>
+										)}
+								</div>
 							</CardContent>
 						</Card>
 					)

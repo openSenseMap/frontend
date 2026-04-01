@@ -1,0 +1,1 @@
+ALTER TABLE "action_token" DROP COLUMN "consumed_at";

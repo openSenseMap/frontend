@@ -40,11 +40,13 @@ import {
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[]
 	data: TData[]
+	getRowClassName?: (row: TData) => string
 }
 
 export function DataTable<TData, TValue>({
 	columns,
 	data,
+	getRowClassName,
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = React.useState<SortingState>([
 		{ id: 'createdAt', desc: true },
@@ -72,8 +74,8 @@ export function DataTable<TData, TValue>({
 			},
 		},
 	})
-	const tableColsWidth = [30, 30, 30, 40]
 
+	const tableColsWidth = [30, 30, 30, 40]
 	const { t } = useTranslation('data-table')
 
 	return (
@@ -94,27 +96,27 @@ export function DataTable<TData, TValue>({
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead key={header.id}>
-											{header.isPlaceholder
-												? null
-												: flexRender(
-														header.column.columnDef.header,
-														header.getContext(),
-													)}
-										</TableHead>
-									)
-								})}
+								{headerGroup.headers.map((header) => (
+									<TableHead key={header.id}>
+										{header.isPlaceholder
+											? null
+											: flexRender(
+													header.column.columnDef.header,
+													header.getContext(),
+												)}
+									</TableHead>
+								))}
 							</TableRow>
 						))}
 					</TableHeader>
+
 					<TableBody className="dark:text-dark-text">
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
 								<TableRow
 									key={row.id}
 									data-state={row.getIsSelected() && 'selected'}
+									className={getRowClassName?.(row.original) ?? ''}
 								>
 									{row.getVisibleCells().map((cell, index) => (
 										<TableCell
@@ -152,7 +154,6 @@ export function DataTable<TData, TValue>({
 							onValueChange={(value) => {
 								table.setPageSize(Number(value))
 							}}
-							// disabled={isPending}
 						>
 							<SelectTrigger className="h-8 w-16 dark:border-dark-text">
 								<SelectValue />

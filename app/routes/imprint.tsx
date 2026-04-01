@@ -1,32 +1,26 @@
 import { readItem, readItems } from '@directus/sdk'
-import Markdown, { MarkdownToJSX } from 'markdown-to-jsx/react'
 import { useEffect, useEffectEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-	Link,
-	useFetcher,
-	useLoaderData,
-	useRevalidator,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { Link, useRevalidator } from 'react-router'
+import { type Route } from './+types/imprint'
 import LanguageSelector from '~/components/landing/header/language-selector'
-import i18nextOptions, { type supportedLanguages } from '~/i18next-options'
-import i18next from '~/i18next.server'
+import { MarkdownContent } from '~/components/markdown-content'
+import { i18nextOptions, type SupportedLanguage } from '~/i18next-config'
 import {
 	getDirectusClient,
 	type StaticPageTranslation,
 	type StaticPage,
 } from '~/lib/directus'
+import { getLocale } from '~/middleware/i18next'
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-	const locale = (await i18next.getLocale(
-		request,
-	)) as (typeof supportedLanguages)[number]
+export const loader = async ({ context }: Route.LoaderArgs) => {
+	const locale = getLocale(context) as SupportedLanguage
 	const locales =
 		locale == i18nextOptions.fallbackLng
 			? [locale]
 			: [locale, i18nextOptions.fallbackLng]
 	const directus = getDirectusClient()
+
 	return directus
 		.request<StaticPage>(readItem('static_pages', 'imprint'))
 		.then((data) => {
@@ -61,8 +55,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		})
 }
 
-export default function Imprint() {
-	const data = useLoaderData<typeof loader>()
+export default function Imprint({
+	loaderData: { title, content },
+}: Route.ComponentProps) {
 	const [, i18n] = useTranslation()
 	const revalidator = useRevalidator()
 
@@ -101,75 +96,9 @@ export default function Imprint() {
 				</nav>
 			</header>
 			<main className="mx-auto mt-8 flex max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
-				<h1 className="my-4 text-4xl">{data.title}</h1>
-				<Markdown
-					options={{ overrides: mdOverrides }}
-					children={data.content}
-				/>
+				<h1 className="my-4 text-4xl">{title}</h1>
+				<MarkdownContent>{content}</MarkdownContent>
 			</main>
 		</>
 	)
-}
-
-const mdOverrides: MarkdownToJSX.Overrides = {
-	h1: {
-		component: ({ children, className, ...props }) => (
-			<h1
-				className={`${className ? className : ''} mb-2 mt-6 text-3xl font-semibold`}
-				{...props}
-			>
-				{children}
-			</h1>
-		),
-	},
-	h2: {
-		component: ({ children, className, ...props }) => (
-			<h2
-				className={`${className ? className : ''} mb-2 mt-6 text-2xl font-semibold`}
-				{...props}
-			>
-				{children}
-			</h2>
-		),
-	},
-	h3: {
-		component: ({ children, className, ...props }) => (
-			<h3
-				className={`${className ? className : ''} mb-2 mt-6 text-lg font-semibold`}
-				{...props}
-			>
-				{children}
-			</h3>
-		),
-	},
-	p: {
-		component: ({ children, className, ...props }) => (
-			<p
-				className={`${className ? className : ''} mb-2 mt-4 text-base`}
-				{...props}
-			>
-				{children}
-			</p>
-		),
-	},
-	a: {
-		component: ({ children, className, ...props }) => (
-			<a
-				className={`${className ? className : ''} text-green-400 hover:underline`}
-				{...props}
-			>
-				{children}
-			</a>
-		),
-	},
-	ul: {
-		component: ({ children, className, ...props }) => (
-			<ul
-				className={`${className ? className : ''} list-inside list-disc space-y-1`}
-				{...props}
-			>
-				{children}
-			</ul>
-		),
-	},
 }

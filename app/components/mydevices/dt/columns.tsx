@@ -5,11 +5,10 @@ import {
 	ArrowUpDown,
 	ClipboardCopy,
 	Ellipsis,
-	Globe,
-	LucideMap,
 	LucideMapPin,
 } from 'lucide-react'
 import { type UseTranslationResponse } from 'react-i18next'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
 	DropdownMenu,
@@ -20,13 +19,14 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { type Device } from '~/schema'
-import { Link } from 'react-router'
 
 export type SenseBox = {
 	id: string
 	name: string
 	exposure: Device['exposure']
 	createdAt: Date
+	archivedAt: Date | null
+	model: Device['model']
 	// model: string;
 }
 
@@ -51,6 +51,29 @@ export function getColumns(
 						{t('name')}
 						<ArrowUpDown className="ml-2 h-4 w-4" />
 					</Button>
+				)
+			},
+			cell: ({ row }) => {
+				const device = row.original
+				const isArchived = !!device.archivedAt
+
+				return (
+					<div className="flex items-center gap-2">
+						<span
+							className={
+								isArchived
+									? 'text-muted-foreground line-through opacity-70'
+									: ''
+							}
+						>
+							{device.name}
+						</span>
+						{isArchived ? (
+							<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
+								{t('archived')}
+							</span>
+						) : null}
+					</div>
 				)
 			},
 		},
@@ -107,19 +130,18 @@ export function getColumns(
 		{
 			accessorKey: 'id',
 			header: () => (
-				<div className="pl-0 dark:text-white">{t('sensebox_id')}</div>
+				<div className="pl-0 dark:text-white">{t('device_id')}</div>
 			),
 			cell: ({ row }) => {
-				const senseBox = row.original
+				const device = row.original
 
 				return (
-					// <div className="text-right font-medium">
 					<div className="flex items-center">
 						<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
-							{senseBox?.id}
+							{device?.id}
 						</code>
 						<ClipboardCopy
-							onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+							onClick={() => navigator.clipboard.writeText(device?.id)}
 							className="ml-[6px] mr-1 inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
 						/>
 					</div>
@@ -132,7 +154,8 @@ export function getColumns(
 				<div className="text-center dark:text-white">{t('actions')}</div>
 			),
 			cell: ({ row }) => {
-				const senseBox = row.original
+				const device = row.original
+				const isArchived = !!device.archivedAt
 
 				if (isOwner)
 					return (
@@ -150,35 +173,45 @@ export function getColumns(
 								<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem asChild>
-									<a href={`/device/${senseBox.id}/overview`}>
-										{t('overview')}
-									</a>
+									<a href={`/device/${device.id}/overview`}>{t('overview')}</a>
 								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<a href={`/explore/${senseBox.id}`}>{t('show_on_map')}</a>
+								<DropdownMenuItem disabled={isArchived} asChild>
+									<a href={`/explore/${device.id}`}>{t('show_on_map')}</a>
 								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<a href={`/device/${senseBox.id}/edit/general`}>
-										{t('edit')}
-									</a>
+								<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
+									{isArchived ? (
+										<span>{t('edit')}</span>
+									) : (
+										<a href={`/device/${device.id}/edit/general`}>
+											{t('edit')}
+										</a>
+									)}
 								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<a href={`/device/${senseBox.id}/dataupload`}>
-										{t('data_upload')}
-									</a>
+								<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
+									{isArchived ? (
+										<span>{t('data_upload')}</span>
+									) : (
+										<a href={`/device/${device.id}/dataupload`}>
+											{t('data_upload')}
+										</a>
+									)}
 								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<a
-										href="https://sensebox.de/de/go-home"
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{t('support')}
-									</a>
-								</DropdownMenuItem>
+								{((device.model?.toLowerCase() ?? '').indexOf('sensebox') >=
+									0 ||
+									(device.model?.toLowerCase() ?? '').indexOf('home') >= 0) && (
+									<DropdownMenuItem disabled={isArchived} asChild>
+										<a
+											href="https://sensebox.de/de/go-home"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{t('support')}
+										</a>
+									</DropdownMenuItem>
+								)}
 								<DropdownMenuItem
 									asChild
-									onClick={() => navigator.clipboard.writeText(senseBox?.id)}
+									onClick={() => navigator.clipboard.writeText(device.id)}
 									className="cursor-pointer"
 								>
 									{t('copy_id')}
@@ -188,7 +221,7 @@ export function getColumns(
 					)
 				else
 					return (
-						<Link to={`/explore/${senseBox.id}`} title={t('show_on_map')}>
+						<Link to={`/explore/${device.id}`} title={t('show_on_map')}>
 							<span className="sr-only">Show on map</span>
 							<LucideMapPin className="h-4 w-4" />
 						</Link>

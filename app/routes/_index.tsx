@@ -9,6 +9,7 @@ import {
 	Link,
 	useLoaderData,
 } from 'react-router'
+import { type Route } from './+types/_index'
 import Footer from '~/components/landing/footer'
 import { GlobeComponent } from '~/components/landing/globe.client'
 import Header from '~/components/landing/header/header'
@@ -18,11 +19,10 @@ import Integrations from '~/components/landing/sections/integrations'
 import Partners from '~/components/landing/sections/partners'
 import PricingPlans from '~/components/landing/sections/pricing-plans'
 import Stats from '~/components/landing/stats'
-import { type supportedLanguages } from '~/i18next-options'
-import i18next from '~/i18next.server'
+import { type SupportedLanguage } from '~/i18next-config'
 import { type Partner, getDirectusClient } from '~/lib/directus'
+import { getLocale } from '~/middleware/i18next'
 import { getLatestDevices } from '~/models/device.server'
-import { getUserByUsername } from '~/models/user.server'
 import { getUserId, getUserName } from '~/utils/session.server'
 
 const sections = [
@@ -52,10 +52,9 @@ const sections = [
 	},
 ]
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-	let locale = (await i18next.getLocale(
-		request,
-	)) as (typeof supportedLanguages)[number]
+export const loader = async ({ context, request }: Route.LoaderArgs) => {
+	const locale = getLocale(context) as SupportedLanguage
+
 	const directus = getDirectusClient()
 
 	const useCasesResponse = await directus.request(
@@ -82,15 +81,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		}),
 	)
 
-	//* Get user Id from session
 	const userId = await getUserId(request)
 	const userName = await getUserName(request)
-	const user = userName ? await getUserByUsername(userName) : null
-	if (user) {
-		locale = user.language
-			?.split(/[_-]/)[0]
-			.toLowerCase() as (typeof supportedLanguages)[number]
-	} //update the locale in the index route loader if user is logged in
 	const stats = await fetch('https://api.opensensemap.org/stats').then(
 		(res) => {
 			return res.json()
@@ -152,7 +144,7 @@ export default function Index() {
 					style={{
 						/** for some reasons not really worth debugging tailwind does not apply min-h-[calc(100vh-8rem)], so we have to use element styles here */
 						minHeight: 'calc(100vh - 8rem)',
-						scrollSnapAlign: 'center',
+						scrollSnapAlign: 'end',
 					}}
 				>
 					<div className="flex items-center justify-between px-8">

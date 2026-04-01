@@ -69,6 +69,7 @@ export function getSensors(deviceId: Sensor['deviceId']) {
 export function getSensorsFromDevice(deviceId: Sensor['deviceId']) {
 	return drizzleClient.query.sensor.findMany({
 		where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
+		orderBy: (sensor, { asc }) => [asc(sensor.order)],
 	})
 }
 
@@ -167,12 +168,14 @@ export function addNewSensor({
 	unit,
 	sensorType,
 	deviceId,
-}: Pick<Sensor, 'title' | 'unit' | 'sensorType' | 'deviceId'>) {
+	order,
+}: Pick<Sensor, 'title' | 'unit' | 'sensorType' | 'deviceId' | 'order'>) {
 	return drizzleClient.insert(sensor).values({
 		title,
 		unit,
 		sensorType,
 		deviceId,
+		order,
 	})
 }
 
@@ -180,14 +183,16 @@ export function updateSensor({
 	id,
 	title,
 	unit,
-	sensorType, // icon,
-}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType'>) {
+	sensorType,
+	order,
+}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'order'>) {
 	return drizzleClient
 		.update(sensor)
 		.set({
 			title,
 			unit,
 			sensorType,
+			order,
 		})
 		.where(eq(sensor.id, id))
 }

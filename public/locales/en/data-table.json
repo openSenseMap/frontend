@@ -9,7 +9,7 @@
 	"next_page": "Next page",
 	"last_page": "Last page",
 
-	"sensebox_id": "Sensebox ID",
+	"device_id": "Device ID",
 	"actions": "Actions",
 	"name": "Name",
 	"createdAt": "Created at",
@@ -20,5 +20,6 @@
 	"edit": "Edit",
 	"data_upload": "Data upload",
 	"support": "Support",
-	"copy_id": "Copy ID"
+	"copy_id": "Copy ID",
+	"delete": "Delete"
 }
