@@ -319,12 +319,12 @@ export default function RegisterDialog() {
 								</div>
 							)}
 						</div>
-						<div className="flex items-start gap-2">
+						<div className="flex items-center gap-2">
 							<input
 								id="tosAccepted"
 								name="tosAccepted"
 								type="checkbox"
-								className="mt-1 h-4 w-4"
+								className="h-4 w-4"
 								aria-invalid={
 									actionData?.errors?.tosAccepted ? true : undefined
 								}
@@ -343,6 +343,21 @@ export default function RegisterDialog() {
 								{t('agree_tos_suffix')}
 							</Label>
 						</div>
+						<div className="flex items-center gap-2">
+							<Label className="text-sm leading-5">
+								{t('privacy_policy_prefix')}{' '}
+								<Link
+									to="/privacy"
+									className="underline"
+									target="_blank"
+									rel="noreferrer"
+								>
+									{t('privacy_policy')}
+								</Link>
+								{'.'}
+							</Label>
+						</div>
+
 						{actionData?.errors?.tosAccepted && (
 							<div className="mt-1 text-sm text-red-500" id="tos-error">
 								{t(actionData.errors.tosAccepted)}
