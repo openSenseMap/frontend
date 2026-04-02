@@ -319,12 +319,12 @@ export default function RegisterDialog() {
 								</div>
 							)}
 						</div>
-						<div className="flex items-start gap-2">
+						<div className="flex items-center gap-2">
 							<input
 								id="tosAccepted"
 								name="tosAccepted"
 								type="checkbox"
-								className="mt-1 h-4 w-4"
+								className="h-4 w-4"
 								aria-invalid={
 									actionData?.errors?.tosAccepted ? true : undefined
 								}
