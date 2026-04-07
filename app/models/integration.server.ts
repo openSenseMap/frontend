@@ -26,3 +26,45 @@ export async function isValidServiceKey(serviceKey: string | null): Promise<bool
 
   return false;
 }
+
+export async function reconcileDeviceIntegrations({
+  deviceId,
+  validSensorIds,
+}: {
+  deviceId: string
+  validSensorIds: string[]
+}) {
+  const integrations = await drizzleClient.query.integration.findMany()
+
+  for (const intg of integrations) {
+    const serviceKey = process.env[intg.serviceKey]
+    if (!serviceKey) {
+      console.warn(`Service key '${intg.serviceKey}' not configured`)
+      continue
+    }
+
+    try {
+      const res = await fetch(
+        `${intg.serviceUrl}/integrations/${deviceId}/reconcile-sensors`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-service-key': serviceKey,
+          },
+          body: JSON.stringify({ validSensorIds }),
+        },
+      )
+
+      if (!res.ok && res.status !== 404) {
+        const text = await res.text()
+        console.error(`Failed to reconcile ${intg.slug} integration`, {
+          status: res.status,
+          body: text,
+        })
+      }
+    } catch (error) {
+      console.error(`Error reconciling ${intg.slug} integration`, error)
+    }
+  }
+}
