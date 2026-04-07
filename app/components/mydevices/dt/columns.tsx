@@ -136,25 +136,6 @@ export function getColumns(
 				const device = row.original
 
 				return (
-					// <div className="text-right font-medium">
-					<div className="flex items-center">
-						<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
-							{senseBox?.id}
-						</code>
-						<ClipboardCopy
-							onClick={() => navigator.clipboard.writeText(senseBox?.id)}
-							className="ml-[6px] mr-1 inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
-						/>
-					</div>
-				)
-			},
-		},
-		{
-			id: 'actions',
-			header: () => <div className="text-center dark:text-white">Actions</div>,
-			cell: ({ row }) => {
-				const senseBox = row.original
-				return (
 					<div className="flex items-center">
 						<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
 							{device?.id}
@@ -206,9 +187,6 @@ export function getColumns(
 										</a>
 									)}
 								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<a href={`/device/${device.id}/script`}>Script</a>
-								</DropdownMenuItem>
 								<DropdownMenuItem disabled={isArchived} asChild={!isArchived}>
 									{isArchived ? (
 										<span>{t('data_upload')}</span>
@@ -218,6 +196,13 @@ export function getColumns(
 										</a>
 									)}
 								</DropdownMenuItem>
+								{((device.model?.toLowerCase() ?? '').indexOf('sensebox') >=
+									0 ||
+									(device.model?.toLowerCase() ?? '').indexOf('home') >= 0) && (
+									<DropdownMenuItem disabled={isArchived} asChild>
+										<a href={`/device/${device.id}/script`}>{t('script')}</a>
+									</DropdownMenuItem>
+								)}
 								{((device.model?.toLowerCase() ?? '').indexOf('sensebox') >=
 									0 ||
 									(device.model?.toLowerCase() ?? '').indexOf('home') >= 0) && (

@@ -61,8 +61,11 @@ const handleSketch = async (
 	}
 
 	const boxForSketch = buildBoxForSketch(box, formEntries)
-	const encoding = ''
-	return templateSketcher.generateSketch(boxForSketch, { encoding })
+	const sketch = templateSketcher.generateSketch(boxForSketch, { encoding: '' })
+	return new Response(sketch, {
+		status: 200,
+		headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+	})
 }
 
 export const loader: LoaderFunction = async ({

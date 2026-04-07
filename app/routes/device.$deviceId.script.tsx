@@ -1,13 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
 	redirect,
 	Link,
 	useLoaderData,
-	Form,
 	type LoaderFunctionArgs,
 } from 'react-router'
-import { useTranslation } from 'react-i18next'
 import ErrorMessage from '~/components/error-message'
 import { NavBar } from '~/components/nav-bar'
 import { Button } from '~/components/ui/button'
@@ -33,23 +32,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return { deviceData, sensorsData }
 }
 
-//*****************************************************
-export async function action() {
-	return {}
-}
-
 //**********************************
 export default function DeviceOnverview() {
 	const { deviceData } = useLoaderData<typeof loader>()
-	const [sketch, setSketch] = useState(String || null)
+	const [sketch, setSketch] = useState<string>('')
+	const [isCompiling, setIsCompiling] = useState(false)
 	const { t } = useTranslation('script')
+	const formRef = useRef<HTMLFormElement>(null)
+	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault()
-		if (!deviceData?.id) return
+	const generateSketch = useCallback(async () => {
+		if (!deviceData?.id || !formRef.current) return
 
-		const formData = new FormData(event.currentTarget)
-
+		const formData = new FormData(formRef.current)
 		const enableDebug = (formData.get('enable_debug') !== null).toString()
 		const displayEnabled = (formData.get('display_enabled') !== null).toString()
 
@@ -57,7 +52,6 @@ export default function DeviceOnverview() {
 		for (const [key, value] of formData.entries()) {
 			if (typeof value === 'string') params.append(key, value)
 		}
-
 		params.set('enable_debug', enableDebug)
 		params.set('display_enabled', displayEnabled)
 
@@ -65,9 +59,49 @@ export default function DeviceOnverview() {
 			`/api/boxes/${deviceData.id}/script?${params.toString()}`,
 			{ method: 'GET' },
 		)
-
+		if (!response.ok) return
 		const text = await response.text()
 		setSketch(text)
+	}, [deviceData?.id])
+
+	const handleFormChange = useCallback(() => {
+		if (debounceRef.current) clearTimeout(debounceRef.current)
+		debounceRef.current = setTimeout(() => {
+			void generateSketch()
+		}, 300)
+	}, [generateSketch])
+
+	useEffect(() => {
+		void generateSketch()
+		return () => {
+			if (debounceRef.current) clearTimeout(debounceRef.current)
+		}
+	}, [generateSketch])
+
+	const handleCompile = async () => {
+		if (!sketch || !deviceData?.id) return
+		setIsCompiling(true)
+		try {
+			const response = await fetch(`/api/boxes/${deviceData.id}/compile`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ board: 'sensebox-mcu', sketch }),
+			})
+			if (!response.ok) {
+				const err = await response.json().catch(() => ({ message: 'Compile failed' }))
+				console.error('Compile error:', err.message)
+				return
+			}
+			const blob = await response.blob()
+			const url = URL.createObjectURL(blob)
+			const a = document.createElement('a')
+			a.href = url
+			a.download = `firmware-${deviceData.id}.bin`
+			a.click()
+			URL.revokeObjectURL(url)
+		} finally {
+			setIsCompiling(false)
+		}
 	}
 
 	return (
@@ -82,7 +116,7 @@ export default function DeviceOnverview() {
 					</Link>
 				</div>
 				<div className="flex-grow bg-white p-4 dark:bg-dark-boxes dark:text-dark-text">
-					<Form method="post" noValidate onSubmit={handleSubmit}>
+					<form ref={formRef} noValidate onChange={handleFormChange}>
 						{/* Heading */}
 						<div>
 							{/* Title */}
@@ -99,8 +133,7 @@ export default function DeviceOnverview() {
 						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
 						<div className="space-y-5 pt-4">
-							{/* <Form method="post" className="space-y-6" noValidate> */}
-							{/* PORT */}
+								{/* PORT */}
 							<div>
 								<label
 									htmlFor="port"
@@ -113,7 +146,6 @@ export default function DeviceOnverview() {
 									<select
 										id="port"
 										name="port"
-										onChange={(e) => console.log(e)}
 										className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 									>
 										<option value="Serial1">{t('serial_1')}</option>
@@ -135,7 +167,6 @@ export default function DeviceOnverview() {
 									<select
 										id="soilDigitalPort"
 										name="soilDigitalPort"
-										onChange={(e) => console.log(e)}
 										className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 									>
 										<option value="A">A</option>
@@ -158,7 +189,6 @@ export default function DeviceOnverview() {
 									<select
 										id="soundMeterPort"
 										name="soundMeterPort"
-										onChange={(e) => console.log(e)}
 										className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 									>
 										<option value="A">A</option>
@@ -259,11 +289,15 @@ export default function DeviceOnverview() {
 								</label>
 							</div>
 
-							<Button type="submit">{t('compile_sketch')}</Button>
-
-							{/* </Form> */}
+							<Button
+								type="button"
+								onClick={handleCompile}
+								disabled={isCompiling || !sketch}
+							>
+								{isCompiling ? t('compiling') : t('compile_sketch')}
+							</Button>
 						</div>
-					</Form>
+					</form>
 					<div className="py-6">
 						<span className="py-1 text-sm text-gray-500 dark:text-gray-400">
 							{t('your_sketch')}
@@ -273,6 +307,7 @@ export default function DeviceOnverview() {
 							placeholder={t('enter_connection_options')}
 							className="!min-h-[320px] resize-none"
 							value={sketch}
+							readOnly
 						/>
 					</div>
 				</div>

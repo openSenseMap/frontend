@@ -10,8 +10,9 @@
 	"wifi_ssid": "WLAN SSID",
 	"wifi_password": "WLAN Passwort",
 	"enable_debug": "Debug aktivieren",
-	"display_enabled": "Display aktiviert",
-	"compile_sketch": "Sketch kompilieren",
+	"display_enabled": "Display aktivieren",
+	"compile_sketch": "Kompilieren & Herunterladen",
+	"compiling": "Wird kompiliert...",
 	"your_sketch": "Dein Sketch",
 	"enter_connection_options": "Bitte Formular ausfüllen."
 }

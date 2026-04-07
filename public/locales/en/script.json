@@ -11,7 +11,8 @@
 	"wifi_password": "WiFi Password",
 	"enable_debug": "Enable Debug",
 	"display_enabled": "Display Enabled",
-	"compile_sketch": "Compile Sketch",
+	"compile_sketch": "Compile & Download",
+	"compiling": "Compiling...",
 	"your_sketch": "Your Sketch",
 	"enter_connection_options": "Please fill the form."
 }
