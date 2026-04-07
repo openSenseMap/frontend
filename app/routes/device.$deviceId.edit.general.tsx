@@ -16,6 +16,7 @@ import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import { updateDevice, deleteDevice } from '~/lib/devices-service.server'
 import { getDevice, getDeviceWithoutSensors } from '~/models/device.server'
+import { deleteDeviceIntegrations } from '~/models/integration.server'
 import { verifyLogin } from '~/models/user.server'
 import { type Device } from '~/schema'
 import {
@@ -239,6 +240,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				} catch (error) {
 					console.error('Failed to delete device image:', error)
 				}
+			}
+
+			const integrationDeletionResults = await deleteDeviceIntegrations(deviceID)
+
+			const failedDeletions = integrationDeletionResults.filter((result) => !result.ok)
+			if (failedDeletions.length > 0) {
+				console.error('Failed to delete one or more integrations before device deletion', {
+					deviceID,
+					failedDeletions,
+				})
 			}
 
 			await deleteDevice(user, device, passwordDelete)
