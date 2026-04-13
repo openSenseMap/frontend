@@ -61,7 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		console.warn(err)
 		return data(
 			{
-				errors: { email: 'An error occurred. Please try again later.' },
+				errors: { email: 'generic_error_try_again' },
 				success: false,
 			},
 			{ status: 500 },
