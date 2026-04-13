@@ -1,0 +1,19 @@
+{
+	"back_to_dashboard": "Zurück zum Dashboard",
+	"configuration": "Konfiguration",
+	"fine_dust_port": "Feinstaubsensor Port",
+	"serial_1": "Serial 1",
+	"serial_2": "Serial 2",
+	"soil_moisture_temp": "Bodenfeuchte und -temperatur",
+	"sound_level_port": "Schallpegel Port",
+	"wind_port": "Wind Port",
+	"wifi_ssid": "WLAN SSID",
+	"wifi_password": "WLAN Passwort",
+	"enable_debug": "Debug aktivieren",
+	"display_enabled": "Display aktivieren",
+	"compile_sketch": "Kompilieren & Herunterladen",
+	"compiling": "Wird kompiliert...",
+	"your_sketch": "Dein Sketch",
+	"enter_connection_options": "Bitte Formular ausfüllen.",
+	"no_script_for_model": "Für das Modell deines Geräts gibt es derzeit keine Sketch-Generierung. Wenn du helfen möchtest, sie hinzuzufügen, komm zu uns auf GitHub."
+}

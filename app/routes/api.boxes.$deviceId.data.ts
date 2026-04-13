@@ -75,6 +75,15 @@ export const action: ActionFunction = async ({
 		if (err.name === 'UnsupportedMediaTypeError')
 			return StandardResponse.unsupportedMediaType(err.message)
 
+		if (err.name === 'ArchivedDeviceError')
+			return new Response(
+				JSON.stringify({ message: err.message || 'Archived devices are read-only' }),
+				{
+					status: 409,
+					headers: { 'Content-Type': 'application/json; charset=utf-8' },
+				},
+			)
+
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',
 		)

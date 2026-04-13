@@ -108,11 +108,17 @@ export default function DeviceId() {
 				value={{ hoveredPoint, setHoveredPoint: setHoveredPointDebug }}
 			>
 				{/* If the box is mobile, iterate over selected sensors and show trajectory */}
-				{data.device?.exposure === 'mobile' && !isSensorView && (
-					<MobileOverviewLayer
-						locations={data.device.locations as unknown as LocationPoint[]}
-					/>
-				)}
+				{data.device?.exposure === 'mobile' &&
+					!isSensorView &&
+					Array.isArray(data.device?.locations) &&
+					data.device.locations.length > 0 && (
+						<MobileOverviewLayer
+							locations={data.device.locations.map((location) => ({
+								time: String(location.time),
+								geometry: location.geometry,
+							}))}
+						/>
+					)}
 				<DeviceDetailBox />
 				<Outlet />
 			</HoveredPointContext.Provider>

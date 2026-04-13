@@ -1,4 +1,5 @@
 import { type BoxesDataColumn } from './api-schemas/boxes-data-query-schema'
+import { assertDeviceIsWritable } from './devices-service.server'
 import { validLngLat } from './location'
 import { decodeMeasurements, hasDecoder } from '~/lib/decoding-service.server'
 import {
@@ -136,6 +137,8 @@ export const postNewMeasurements = async (
 		throw new Error('NotFoundError: Device not found')
 	}
 
+	assertDeviceIsWritable(device)
+
 	if (device.useAuth  && !isTrustedService) {
 		if (device.apiKey !== authorization) {
 			const error = new Error('Device access token not valid!')
@@ -182,6 +185,8 @@ export const postSingleMeasurement = async (
 			error.name = 'NotFoundError'
 			throw error
 		}
+
+		assertDeviceIsWritable(device)
 
 		const sensor = device.sensors?.find((s: any) => s.id === sensorId)
 		if (!sensor) {
