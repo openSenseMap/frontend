@@ -111,13 +111,9 @@ export default function EditBoxSensors() {
 			setToastOpen(true)
 			// window.location.reload();
 			//* reset sensor data elements
-			for (let index = 0; index < sensorsData.length; index++) {
+			for (let index = sensorsData.length - 1; index >= 0; index--) {
 				const sensor = sensorsData[index]
-				if (sensor.new == true && sensor.notValidInput == true) {
-					sensorsData.splice(index, 1)
-				} else if (sensor.deleted) {
-					sensorsData.splice(index, 1)
-				} else if (sensor.new == true && sensor.notValidInput == true) {
+				if (sensor.deleted || (sensor.new == true && sensor.notValidInput == true)) {
 					sensorsData.splice(index, 1)
 				} else if (sensor.editing == true) {
 					delete sensor.editing

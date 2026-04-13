@@ -115,7 +115,7 @@ export default function DeviceOverview() {
 										{t('tags_label')}
 									</TableCell>
 									<TableCell className="border-r-[1px] font-semibold">
-										{deviceData?.tags}
+										{deviceData?.tags?.join(', ')}
 									</TableCell>
 								</TableRow>
 
