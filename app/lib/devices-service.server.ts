@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+	ArchivedDeviceError,
 	createDevice as createDeviceInDb,
 	deleteDevice as deleteDeviceById,
 	updateDevice as updateDeviceById,
@@ -244,6 +245,14 @@ export const BoxesQuerySchema = z.object({
 
 export type BoxesQueryParams = z.infer<typeof BoxesQuerySchema>
 
+export function assertDeviceIsWritable(
+	device: Pick<Device, 'id' | 'archivedAt'>,
+): void {
+	if (device.archivedAt) {
+		throw new ArchivedDeviceError(device.id)
+	}
+}
+
 
 /**
  * Updates a device after verifying the user is entitled (device owner).
@@ -254,14 +263,15 @@ export type BoxesQueryParams = z.infer<typeof BoxesQuerySchema>
  * @returns The updated device, or "unauthorized" if not entitled
  */
 export const updateDevice = async (
-  userId: User['id'],
-  device: Device,
-  args: UpdateDeviceArgs,
-): Promise<Device | 'unauthorized'> => {
-  if (device.userId !== userId) return 'unauthorized'
-  return updateDeviceById(device.id, args)
-}
+	userId: User['id'],
+	device: Device,
+	args: UpdateDeviceArgs,
+): Promise<Device | 'unauthorized' | 'archived'> => {
+	if (device.userId !== userId) return 'unauthorized'
+	assertDeviceIsWritable(device)
 
+	return updateDeviceById(device.id, args)
+}
 /**
  * Deletes a device after verifiying that the user is entitled by checking
  * the password.

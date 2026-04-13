@@ -76,6 +76,23 @@ export class DeviceUpdateError extends Error {
 	}
 }
 
+export class ArchivedDeviceError extends Error {
+	constructor(deviceId?: string) {
+		super(
+			deviceId
+				? `Device ${deviceId} is archived and read-only`
+				: 'Archived devices are read-only',
+		)
+		this.name = 'ArchivedDeviceError'
+	}
+}
+
+export function assertDeviceIsMutable(device: Pick<Device, 'id' | 'archivedAt'>) {
+	if (device.archivedAt) {
+		throw new ArchivedDeviceError(device.id)
+	}
+}
+
 export function getDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
 		where: (device, { eq }) => eq(device.id, id),
@@ -192,14 +209,26 @@ export type DeviceWithoutSensors = Awaited<
 	ReturnType<typeof getDeviceWithoutSensors>
 >
 
-export function updateDeviceLocation({
+export async function updateDeviceLocation({
 	id,
 	latitude,
 	longitude,
 }: Pick<Device, 'id' | 'latitude' | 'longitude'>) {
+	const [existingDevice] = await drizzleClient
+		.select()
+		.from(device)
+		.where(eq(device.id, id))
+		.limit(1)
+
+	if (!existingDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	assertDeviceIsMutable(existingDevice)
+
 	return drizzleClient
 		.update(device)
-		.set({ latitude: latitude, longitude: longitude })
+		.set({ latitude, longitude, updatedAt: sql`NOW()` })
 		.where(eq(device.id, id))
 }
 
@@ -232,48 +261,56 @@ export async function updateDevice(
 	deviceId: string,
 	args: UpdateDeviceArgs,
 ): Promise<Device> {
-	const setColumns: Record<string, any> = {}
-	const updatableFields: (keyof UpdateDeviceArgs)[] = [
-		'name',
-		'exposure',
-		'description',
-		'website',
-		'image',
-		'model',
-		'useAuth',
-		'link',
-	]
+	const result = await drizzleClient.transaction(async (tx) => {
+		const [existingDevice] = await tx
+			.select()
+			.from(device)
+			.where(eq(device.id, deviceId))
+			.limit(1)
 
-	for (const field of updatableFields) {
-		if (args[field] !== undefined) {
-			// Handle empty string -> null for specific fields (backwards compatibility)
-			if (
-				(field === 'description' || field === 'link' || field === 'image') &&
-				args[field] === ''
-			) {
-				setColumns[field] = null
-			} else {
-				setColumns[field] = args[field]
+		if (!existingDevice) {
+			throw new DeviceUpdateError(`Device ${deviceId} not found`, 404)
+		}
+
+		assertDeviceIsMutable(existingDevice)
+
+		const setColumns: Record<string, any> = {}
+		const updatableFields: (keyof UpdateDeviceArgs)[] = [
+			'name',
+			'exposure',
+			'description',
+			'website',
+			'image',
+			'model',
+			'useAuth',
+			'link',
+		]
+
+		for (const field of updatableFields) {
+			if (args[field] !== undefined) {
+				if (
+					(field === 'description' || field === 'link' || field === 'image') &&
+					args[field] === ''
+				) {
+					setColumns[field] = null
+				} else {
+					setColumns[field] = args[field]
+				}
 			}
 		}
-	}
 
-	if ('grouptag' in args) {
-		if (Array.isArray(args.grouptag)) {
-			// Empty array -> null for backwards compatibility
-			setColumns['tags'] = args.grouptag.length === 0 ? null : args.grouptag
-		} else if (args.grouptag != null) {
-			// Empty string -> null
-			setColumns['tags'] = args.grouptag === '' ? null : [args.grouptag]
-		} else {
-			setColumns['tags'] = null
+		if ('grouptag' in args) {
+			if (Array.isArray(args.grouptag)) {
+				setColumns['tags'] = args.grouptag.length === 0 ? null : args.grouptag
+			} else if (args.grouptag != null) {
+				setColumns['tags'] = args.grouptag === '' ? null : [args.grouptag]
+			} else {
+				setColumns['tags'] = null
+			}
 		}
-	}
 
-	const result = await drizzleClient.transaction(async (tx) => {
 		if (args.location) {
 			const { lat, lng } = args.location
-
 			const pointWKT = `POINT(${lng} ${lat})`
 
 			const [existingLocation] = await tx
@@ -314,22 +351,14 @@ export async function updateDevice(
 			setColumns['longitude'] = lng
 		}
 
-		let updatedDevice
+		let updatedDevice = existingDevice
+
 		if (Object.keys(setColumns).length > 0) {
 			;[updatedDevice] = await tx
 				.update(device)
 				.set({ ...setColumns, updatedAt: sql`NOW()` })
 				.where(eq(device.id, deviceId))
 				.returning()
-
-			if (!updatedDevice) {
-				throw new DeviceUpdateError(`Device ${deviceId} not found`, 404)
-			}
-		} else {
-			;[updatedDevice] = await tx
-				.select()
-				.from(device)
-				.where(eq(device.id, deviceId))
 
 			if (!updatedDevice) {
 				throw new DeviceUpdateError(`Device ${deviceId} not found`, 404)
@@ -359,9 +388,7 @@ export async function updateDevice(
 				const hasEdited = 'edited' in s
 				const hasNew = 'new' in s
 
-				if (!hasDeleted && !hasEdited && !hasNew) {
-					continue
-				}
+				if (!hasDeleted && !hasEdited && !hasNew) continue
 
 				if (hasDeleted) {
 					if (!s._id) {
@@ -424,8 +451,9 @@ export async function updateDevice(
 			}
 		}
 
-		if (args.useAuth === true && !updatedDevice.apiKey)
+		if (args.useAuth === true && !updatedDevice.apiKey) {
 			await addOrReplaceDeviceApiKey(updatedDevice, tx)
+		}
 
 		return updatedDevice
 	})
