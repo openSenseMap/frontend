@@ -100,11 +100,7 @@ function Legend({
 		onColorChange && onColorChange(minColor, maxColor)
 	}, [minColor, maxColor, onColorChange])
 
-	const sensorData = sensor.data! as unknown as {
-		value: String
-		location: { x: number; y: number; id: number }
-		createdAt: Date
-	}[]
+	const sensorData = Array.isArray(sensor.data) ? sensor.data : []
 
 	const minValue = Math.min(...sensorData.map((d) => Number(d.value)))
 	const maxValue = Math.max(...sensorData.map((d) => Number(d.value)))

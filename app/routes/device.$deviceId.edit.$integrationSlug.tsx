@@ -212,6 +212,8 @@ export default function EditIntegration() {
 				templates={{ FieldTemplate, ArrayFieldTemplate, BaseInputTemplate }}
 				onChange={(e: any) => setFormData(e.formData)}
 				onSubmit={handleSubmit}
+				omitExtraData
+				liveOmit
 			>
 				<button type="submit" className="mt-4 h-12 w-12 rounded-full border">
 					<Save className="mx-auto h-6 w-6" />
