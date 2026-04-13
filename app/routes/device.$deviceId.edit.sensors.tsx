@@ -27,6 +27,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { reconcileDeviceIntegrations } from '~/models/integration.server'
 import {
 	addNewSensor,
 	deleteSensor,
@@ -53,41 +54,54 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 //*****************************************************
 export async function action({ request, params }: ActionFunctionArgs) {
-	//* ToDo: upadte it to include button clicks inside form
-	const formData = await request.formData()
-	const { updatedSensorsData } = Object.fromEntries(formData)
+  const userId = await getUserId(request)
+  if (!userId) return redirect('/')
 
-	if (typeof updatedSensorsData !== 'string') {
-		return { isUpdated: false }
-	}
-	const updatedSensorsDataJson = JSON.parse(updatedSensorsData)
+  const formData = await request.formData()
+  const { updatedSensorsData } = Object.fromEntries(formData)
 
-	for (const [index, sensor] of updatedSensorsDataJson.entries()) {
-		if (sensor?.new === true && sensor?.edited === true) {
-			const deviceID = params.deviceId
-			invariant(deviceID, `deviceID not found!`)
+  if (typeof updatedSensorsData !== 'string') {
+    return { isUpdated: false }
+  }
 
-			await addNewSensor({
-				title: sensor.title,
-				unit: sensor.unit,
-				sensorType: sensor.sensorType,
-				deviceId: deviceID,
-				order: index,
-			})
-		} else if (sensor?.deleted === true) {
-			await deleteSensor(sensor.id)
-		} else if (!sensor?.new) {
-			await updateSensor({
-				id: sensor.id,
-				title: sensor.title,
-				unit: sensor.unit,
-				sensorType: sensor.sensorType,
-				order: index,
-			})
-		}
-	}
+  const deviceId = params.deviceId
+  invariant(deviceId, 'deviceID not found!')
 
-	return { isUpdated: true }
+  const updatedSensorsDataJson = JSON.parse(updatedSensorsData)
+
+  for (const [index, sensor] of updatedSensorsDataJson.entries()) {
+    if (sensor?.new === true && sensor?.edited === true) {
+      await addNewSensor({
+        title: sensor.title,
+        unit: sensor.unit,
+        sensorType: sensor.sensorType,
+        deviceId,
+        order: index,
+      })
+    } else if (sensor?.deleted === true) {
+      await deleteSensor(sensor.id)
+    } else if (!sensor?.new) {
+      await updateSensor({
+        id: sensor.id,
+        title: sensor.title,
+        unit: sensor.unit,
+        sensorType: sensor.sensorType,
+        order: index,
+      })
+    }
+  }
+
+  const currentSensors = await getSensorsFromDevice(deviceId)
+  const validSensorIds = currentSensors
+    .map((sensor: any) => sensor._id || sensor.id)
+    .filter(Boolean)
+
+  await reconcileDeviceIntegrations({
+    deviceId,
+    validSensorIds,
+  })
+
+  return { isUpdated: true }
 }
 
 //**********************************
