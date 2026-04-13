@@ -62,7 +62,7 @@ export default function EditBoxSensors() {
 		if (!response.ok) return
 		const text = await response.text()
 		setSketch(text)
-	}, [deviceData?.id])
+	}, [deviceData?.id, deviceData?.apiKey])
 
 	const handleFormChange = useCallback(() => {
 		if (debounceRef.current) clearTimeout(debounceRef.current)
