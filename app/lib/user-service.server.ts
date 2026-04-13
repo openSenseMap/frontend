@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { and, eq, gt, isNull } from 'drizzle-orm'
+import { and, eq, gt } from 'drizzle-orm'
 import ConfirmEmailAddress, {
 	subject as ConfirmEmailAddressSubject,
 } from 'emails/confirm-email'
@@ -42,7 +42,7 @@ import { actionToken, user, type User } from '~/schema'
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
 type RegisterUserResult =
-	| { ok: true; user: User }
+	| { ok: true; user: User; emailSent: boolean }
 	| {
 			ok: false
 			field: 'username' | 'email' | 'password' | 'tos' | 'form'
@@ -175,21 +175,28 @@ export const registerUser = async (
 
   const token = await issueEmailConfirmationToken(newUser.id)
 
-	await sendMail({
-		recipientAddress: newUser.email,
-		recipientName: newUser.name,
-		subject: NewUserEmailSubject[lng],
-		body: NewUserEmail({
-			user: { name: newUser.name },
-			email: newUser.email,
-			token,
-			language: lng,
-		}),
-	})
+	let emailSent = true
+	try {
+		await sendMail({
+			recipientAddress: newUser.email,
+			recipientName: newUser.name,
+			subject: NewUserEmailSubject[lng],
+			body: NewUserEmail({
+				user: { name: newUser.name },
+				email: newUser.email,
+				token,
+				language: lng,
+			}),
+		})
+	} catch (err) {
+		console.error('Failed to send registration confirmation email:', err)
+		emailSent = false
+	}
 
 	return {
 		ok: true,
 		user: newUser,
+		emailSent,
 	}
 }	  
 

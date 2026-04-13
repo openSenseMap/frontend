@@ -42,6 +42,8 @@
 	"sending": "Sending...",
 	"verification_email_sent": "Verification email sent",
 	"verification_email_failed": "Failed to send verification email",
+	"email_change_delivery_failed": "Email address updated, but we couldn't send the confirmation email. Please use the resend button to try again.",
+	"verification_link_invalid": "Verification link is invalid or has expired.",
 	"email_already_confirmed": "Email is already confirmed",
 	"language": "Language",
 	"select_language": "Select language",
