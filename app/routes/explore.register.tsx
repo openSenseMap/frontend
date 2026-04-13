@@ -1,8 +1,6 @@
-import i18next from 'app/i18next.server'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
 	type MetaFunction,
 	data,
@@ -14,6 +12,7 @@ import {
 	useSearchParams,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/explore.register'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Spinner from '~/components/spinner'
@@ -27,11 +26,9 @@ import {
 	CardTitle,
 } from '~/components/ui/card'
 import { registerUser } from '~/lib/user-service.server'
+import { getLocale } from '~/middleware/i18next'
 import { getCurrentEffectiveTos } from '~/models/tos.server'
-import {
-	getUserByEmail,
-	getUserByUsername,
-} from '~/models/user.server'
+import { getUserByEmail, getUserByUsername } from '~/models/user.server'
 import { safeRedirect, validateEmail, validateName } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 
@@ -41,9 +38,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return {}
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ context, request }: Route.ActionArgs) {
 	const formData = await request.formData()
-	const { username, email, password, tosAccepted } = Object.fromEntries(formData)
+	const { username, email, password, tosAccepted } =
+		Object.fromEntries(formData)
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 
 	if (!username || typeof username !== 'string') {
@@ -92,7 +90,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	if (!validateEmail(email)) {
 		return data(
-			{ errors: { username: null, email: 'email_invalid', password: null, tosAccepted: null, } },
+			{
+				errors: {
+					username: null,
+					email: 'email_invalid',
+					password: null,
+					tosAccepted: null,
+				},
+			},
 			{ status: 400 },
 		)
 	}
@@ -173,10 +178,16 @@ export async function action({ request }: ActionFunctionArgs) {
 	invariant(typeof username === 'string', 'username must be a string')
 
 	//* get current locale
-	const locale = await i18next.getLocale(request)
+	const locale = getLocale(context)
 	const language = locale === 'de' ? 'de_DE' : 'en_US'
 
-	const result = await registerUser(username, email, password, language, tosAccepted === 'on')
+	const result = await registerUser(
+		username,
+		email,
+		password,
+		language,
+		tosAccepted === 'on',
+	)
 
 	if (!result.ok) {
 		return data(
@@ -230,9 +241,14 @@ export default function RegisterDialog() {
 		}
 	}, [actionData])
 
-	const actionErrors = actionData && 'errors' in actionData ? actionData.errors : undefined
+	const actionErrors =
+		actionData && 'errors' in actionData ? actionData.errors : undefined
 
-	if (actionData && 'emailDeliveryFailed' in actionData && actionData.emailDeliveryFailed) {
+	if (
+		actionData &&
+		'emailDeliveryFailed' in actionData &&
+		actionData.emailDeliveryFailed
+	) {
 		return (
 			<div className="flex h-screen items-center justify-center">
 				<Link
@@ -245,12 +261,18 @@ export default function RegisterDialog() {
 				</Link>
 				<Card className="z-50 w-full max-w-md">
 					<CardHeader>
-						<CardTitle className="text-2xl font-bold">{t('account_created')}</CardTitle>
-						<CardDescription>{t('email_delivery_failed_description')}</CardDescription>
+						<CardTitle className="text-2xl font-bold">
+							{t('account_created')}
+						</CardTitle>
+						<CardDescription>
+							{t('email_delivery_failed_description')}
+						</CardDescription>
 					</CardHeader>
 					<CardFooter className="flex flex-col items-center gap-2">
 						<Link to="/explore/login" className="w-full">
-							<Button className="w-full bg-light-blue">{t('go_to_login')}</Button>
+							<Button className="w-full bg-light-blue">
+								{t('go_to_login')}
+							</Button>
 						</Link>
 					</CardFooter>
 				</Card>
@@ -293,7 +315,7 @@ export default function RegisterDialog() {
 								autoFocus={true}
 							/>
 							<p className="text-xs text-muted-foreground">
-									{t('username_hint')} 
+								{t('username_hint')}
 							</p>
 							{actionErrors?.username && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
@@ -334,7 +356,7 @@ export default function RegisterDialog() {
 								aria-describedby="password-error"
 							/>
 							<p className="text-xs text-muted-foreground">
-									{t('password_hint')} 
+								{t('password_hint')}
 							</p>
 							{actionErrors?.password && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
@@ -342,23 +364,43 @@ export default function RegisterDialog() {
 								</div>
 							)}
 						</div>
-						<div className="flex items-start gap-2">
+						<div className="flex items-center gap-2">
 							<input
 								id="tosAccepted"
 								name="tosAccepted"
 								type="checkbox"
-								className="mt-1 h-4 w-4"
+								className="h-4 w-4"
 								aria-invalid={actionErrors?.tosAccepted ? true : undefined}
 								aria-describedby="tos-error"
 							/>
 							<Label htmlFor="tosAccepted" className="text-sm leading-5">
 								{t('agree_tos_prefix')}{' '}
-								<Link to="/terms" className="underline" target="_blank" rel="noreferrer">
+								<Link
+									to="/terms"
+									className="underline"
+									target="_blank"
+									rel="noreferrer"
+								>
 									{t('terms_of_service')}
 								</Link>{' '}
 								{t('agree_tos_suffix')}
 							</Label>
 						</div>
+						<div className="flex items-center gap-2">
+							<Label className="text-sm leading-5">
+								{t('privacy_policy_prefix')}{' '}
+								<Link
+									to="/privacy"
+									className="underline"
+									target="_blank"
+									rel="noreferrer"
+								>
+									{t('privacy_policy')}
+								</Link>
+								{'.'}
+							</Label>
+						</div>
+
 						{actionErrors?.tosAccepted && (
 							<div className="mt-1 text-sm text-red-500" id="tos-error">
 								{t(actionErrors?.tosAccepted)}
