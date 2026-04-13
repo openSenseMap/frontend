@@ -26,6 +26,7 @@ export type SenseBox = {
 	exposure: Device['exposure']
 	createdAt: Date
 	archivedAt: Date | null
+	model: Device['model']
 	// model: string;
 }
 
@@ -129,7 +130,7 @@ export function getColumns(
 		{
 			accessorKey: 'id',
 			header: () => (
-				<div className="pl-0 dark:text-white">{t('sensebox_id')}</div>
+				<div className="pl-0 dark:text-white">{t('device_id')}</div>
 			),
 			cell: ({ row }) => {
 				const device = row.original
@@ -195,15 +196,19 @@ export function getColumns(
 										</a>
 									)}
 								</DropdownMenuItem>
-								<DropdownMenuItem disabled={isArchived} asChild>
-									<a
-										href="https://sensebox.de/de/go-home"
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{t('support')}
-									</a>
-								</DropdownMenuItem>
+								{((device.model?.toLowerCase() ?? '').indexOf('sensebox') >=
+									0 ||
+									(device.model?.toLowerCase() ?? '').indexOf('home') >= 0) && (
+									<DropdownMenuItem disabled={isArchived} asChild>
+										<a
+											href="https://sensebox.de/de/go-home"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{t('support')}
+										</a>
+									</DropdownMenuItem>
+								)}
 								<DropdownMenuItem
 									asChild
 									onClick={() => navigator.clipboard.writeText(device.id)}

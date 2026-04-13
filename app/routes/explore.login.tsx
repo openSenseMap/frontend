@@ -26,7 +26,6 @@ import {
 } from '~/components/ui/card'
 import { Checkbox } from '~/components/ui/checkbox'
 import { toast } from '~/components/ui/use-toast'
-import { setLanguageCookie } from '~/lib/set-language.server'
 import { verifyLogin } from '~/models/user.server'
 import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
@@ -81,10 +80,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	const user = await verifyLogin(identifier, password)
-	const userLocale = user?.language
-		? user.language.split(/[_-]/)[0].toLowerCase()
-		: 'en'
-
 	if (!user) {
 		return data(
 			{
@@ -102,9 +97,6 @@ export async function action({ request }: ActionFunctionArgs) {
 		userId: user.id,
 		remember: remember === 'on',
 		redirectTo,
-		headers: {
-			'Set-Cookie': await setLanguageCookie(userLocale),
-		},
 	})
 }
 
@@ -165,23 +157,26 @@ export default function LoginPage() {
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="identifier">{t('email_or_username_label')}</Label>
-								<Input
-									ref={identifierRef}
-									id="identifier"
-									required
-									autoFocus={true}
-									name="identifier"
-									type="text"
-									autoComplete="username"
-									aria-invalid={actionData?.errors?.identifier ? true : undefined}
-									aria-describedby="identifier-error"
-									placeholder={t('example_placeholder')}
-								/>
-								{actionData?.errors?.identifier && (
-									<div className="mt-1 text-sm text-red-500" id="identifier-error">
-										{t(actionData.errors.identifier)}
-									</div>
-								)}
+							<Input
+								ref={identifierRef}
+								id="identifier"
+								required
+								autoFocus={true}
+								name="identifier"
+								type="text"
+								autoComplete="username"
+								aria-invalid={actionData?.errors?.identifier ? true : undefined}
+								aria-describedby="identifier-error"
+								placeholder={t('example_placeholder')}
+							/>
+							{actionData?.errors?.identifier && (
+								<div
+									className="mt-1 text-sm text-red-500"
+									id="identifier-error"
+								>
+									{t(actionData.errors.identifier)}
+								</div>
+							)}
 						</div>
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">

@@ -25,5 +25,9 @@
 	"agree_tos_prefix": "Ich stimme den",
 	"terms_of_service": "Nutzungsbedingungen",
 	"agree_tos_suffix": "zu.",
-	"tos_must_accept": "Den Nutzungsbedingungen muss zugestimmt werden."
+	"tos_must_accept": "Den Nutzungsbedingungen muss zugestimmt werden.",
+
+	"privacy_policy_prefix": "Informationen zur Verarbeitung Deiner personenbezogenen Daten findest du in unserer",
+	"privacy_policy": "Datenschutzerklärung",
+	"privacy_policy_suffix": "."
 }

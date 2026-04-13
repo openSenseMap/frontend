@@ -12,7 +12,7 @@
 	"transition": "Creating account...",
 	"already_account": "Already have an account?",
 	"login": "Log in",
-	"username_hint":"Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+	"username_hint": "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 	"username_required": "Username is required",
 	"username_already_taken": "This username is already taken",
 	"username_min_characters": "Please use at least 4 characters.",
@@ -25,5 +25,9 @@
 	"agree_tos_prefix": "I agree to the",
 	"terms_of_service": "Terms of Service",
 	"agree_tos_suffix": ".",
-	"tos_must_accept": "The terms of service must be accepted."
+	"tos_must_accept": "The terms of service must be accepted.",
+
+	"privacy_policy_prefix": "Information on the processing of your personal data can be found in our",
+	"privacy_policy": "privacy policy",
+	"privacy_policy_suffix": "."
 }
