@@ -5,8 +5,10 @@ import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { getDeviceWithoutSensors } from '~/models/device.server'
 import { getSensorsFromDevice } from '~/models/sensor.server'
-import { device } from '~/schema'
 import { getUserId } from '~/utils/session.server'
+
+const OSEM_GITHUB_URL =
+	process.env.OSEM_GITHUB_URL || 'https://github.com/OpenSenseMap/'
 
 //*****************************************************
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -112,12 +114,12 @@ export default function EditBoxSensors() {
 						<div className="flex flex-col items-center justify-center gap-4 py-16 text-center text-gray-500">
 							<p className="text-base">{t('no_script_for_model')}</p>
 							<a
-								href="https://github.com/openSenseMap/frontend"
+								href={OSEM_GITHUB_URL}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-light-green underline dark:text-dark-green"
 							>
-								github.com/openSenseMap/frontend
+								{OSEM_GITHUB_URL}
 							</a>
 						</div>
 					) : (
