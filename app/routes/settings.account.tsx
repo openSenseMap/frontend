@@ -164,13 +164,26 @@ export async function action({ request }: ActionFunctionArgs) {
 	if (wantsEmailChange) {
 		const [updatedUser] = await updateUserEmail(user, email)
 
-		await resendEmailConfirmation(updatedUser)
+		try {
+			await resendEmailConfirmation(updatedUser)
+		} catch (err) {
+			console.error('Failed to send email confirmation after email change:', err)
+			return data(
+				{
+					intent: 'update-profile',
+					errors: { name: null, email: null, passwordUpdate: null },
+					emailDeliveryFailed: true,
+				},
+				{ status: 200 },
+			)
+		}
 	}
 
 	return data(
 		{
 			intent: 'update-profile',
 			errors: { name: null, email: null, passwordUpdate: null },
+			emailDeliveryFailed: false,
 		},
 		{ status: 200 },
 	)
@@ -228,6 +241,11 @@ export default function EditUserProfilePage() {
 
 		if (actionData.errors?.email) {
 			toast({ title: String(actionData.errors.email), variant: 'destructive' })
+			return
+		}
+
+		if ('emailDeliveryFailed' in actionData && actionData.emailDeliveryFailed) {
+			toast({ title: t('email_change_delivery_failed'), variant: 'destructive' })
 			return
 		}
 
