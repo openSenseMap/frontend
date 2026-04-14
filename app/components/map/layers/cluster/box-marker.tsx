@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { type MarkerProps, Marker, useMap } from 'react-map-gl'
 import { useMatches, useNavigate, useSearchParams } from 'react-router'
 import { useGlobalCompareMode } from '~/components/device-detail/useGlobalCompareMode'
+import { validLngLat } from '~/lib/location'
 import { cn } from '~/lib/utils'
 import { type Device } from '~/schema'
 
@@ -50,6 +51,8 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
 
 		return 0
 	}
+
+	if (!validLngLat(props.longitude, props.latitude)) return null
 
 	return (
 		<Marker

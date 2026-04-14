@@ -1,10 +1,9 @@
-// scripts/generate-openapi.ts
 import { writeFileSync } from "node:fs";
-import { openapiSpecification } from "../app/lib/openapi.js";
+import { combinedOpenapiSpecification } from "../app/lib/openapi.combined.js";
 
 writeFileSync(
   "./public/openapi.json",
-  JSON.stringify(openapiSpecification(), null, 2),
+  JSON.stringify(combinedOpenapiSpecification(), null, 2),
 );
 
 console.info("✅ OpenAPI spec generated");

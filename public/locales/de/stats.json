@@ -1,5 +1,5 @@
 {
-  "devices": "Stationen",
-  "measurements_total": "Messungen (insgesamt)",
-  "measurements_per_minute": "Messungen (pro Minute)"
+	"devices": "Stationen",
+	"measurements_total": "Messungen (insgesamt)",
+	"measurements_per_minute": "Messungen (pro Minute)"
 }

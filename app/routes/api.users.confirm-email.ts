@@ -1,80 +1,47 @@
-import { type ActionFunction, type ActionFunctionArgs } from "react-router";
-import { confirmEmail } from "~/lib/user-service.server";
+import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { confirmEmail } from '~/lib/user-service.server'
+import { StandardResponse } from '~/utils/response-utils'
 
 export const action: ActionFunction = async ({
-  request,
+	request,
 }: ActionFunctionArgs) => {
-  let formData = new FormData();
-  try {
-    formData = await request.formData();
-  } catch {
-    // Just continue, it will fail in the next check
-    // The try catch block handles an exception that occurs if the
-    // request was sent without x-www-form-urlencoded content-type header
-  }
+	let formData = new FormData()
 
-  if (
-    !formData.has("token") ||
-    formData.get("token")?.toString().trim().length === 0
-  )
-    return Response.json(
-      { message: "No email confirmation token specified." },
-      {
-        status: 400,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      },
-    );
+	try {
+		formData = await request.formData()
+	} catch {
+		// Continue so the missing-token validation below handles malformed requests.
+	}
 
-  if (
-    !formData.has("email") ||
-    formData.get("email")?.toString().trim().length === 0
-  )
-    return Response.json(
-      { message: "No email address to confirm specified." },
-      {
-        status: 400,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      },
-    );
+	const token = formData.get('token')?.toString().trim()
 
-  try {
-    const updatedUser = await confirmEmail(
-      formData.get("token")!.toString(),
-      formData.get("email")!.toString(),
-    );
+	if (!token) {
+		return StandardResponse.badRequest(
+			'No email confirmation token specified.',
+		)
+	}
 
-    if (updatedUser === null)
-      return Response.json(
-        {
-          code: "Forbidden",
-          message: "Invalid or expired confirmation token.",
-        },
-        {
-          status: 403,
-          headers: {
-            "content-type": "application/json; charset=utf-8",
-          },
-        },
-      );
+	try {
+		const result = await confirmEmail(token)
 
-    return Response.json(
-      {
-        code: "Ok",
-        message: "E-Mail successfully confirmed. Thank you",
-      },
-      {
-        status: 200,
-        headers: {
-          "content-type": "application/json; charset=utf-8",
-        },
-      },
-    );
-  } catch (err) {
-    console.warn(err);
-    return new Response("Internal Server Error", { status: 500 });
-  }
-};
+		if (result === 'success') {
+			return StandardResponse.ok({
+				code: 'Ok',
+				message: 'E-Mail successfully confirmed. Thank you',
+			})
+		}
+
+		if (result === 'expired') {
+			return StandardResponse.forbidden(
+				'Invalid or expired confirmation token.',
+			)
+		}
+
+		return StandardResponse.forbidden(
+			'Invalid or expired confirmation token.',
+		)
+	} catch (err) {
+		console.warn(err)
+		return StandardResponse.internalServerError()
+	}
+}

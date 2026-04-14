@@ -1,97 +1,324 @@
-import  { type LoaderFunctionArgs, redirect , Form  } from "react-router";
-import ErrorMessage from "~/components/error-message";
-import { getUserId } from "~/utils/session.server";
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router'
+import { Button } from '~/components/ui/button'
+import { Textarea } from '~/components/ui/textarea'
+import { getDeviceWithoutSensors } from '~/models/device.server'
+import { getSensorsFromDevice } from '~/models/sensor.server'
+import { getUserId } from '~/utils/session.server'
+
+const OSEM_GITHUB_URL =
+	process.env.OSEM_GITHUB_URL || 'https://github.com/OpenSenseMap/'
 
 //*****************************************************
-export async function loader({ request }: LoaderFunctionArgs) {
-  //* if user is not logged in, redirect to home
-  const userId = await getUserId(request);
-  if (!userId) return redirect("/");
+export async function loader({ request, params }: LoaderFunctionArgs) {
+	//* if user is not logged in, redirect to home
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
 
-  return "";
+	if (!params.deviceId) {
+		throw new Response('Device not found', { status: 502 })
+	}
+	//* get device data
+	const deviceData = await getDeviceWithoutSensors({ id: params.deviceId })
+	//* get sensors data
+	const sensorsData = await getSensorsFromDevice(params.deviceId)
+
+	return { deviceData, sensorsData }
 }
 
 //*****************************************************
 export async function action() {
-  return "";
+	return ''
 }
 
 //**********************************
 export default function EditBoxSensors() {
-  const dummyScript =
-    "#include <SPI.h> \n#include <Ethernet.h>\n/*\n   Zusätzliche Sensorbibliotheken, -Variablen etc im Folgenden einfügen.\n*/";
+	const { deviceData } = useLoaderData<typeof loader>()
+	const [sketch, setSketch] = useState<string>('')
+	const [isCompiling, setIsCompiling] = useState(false)
+	const { t } = useTranslation('script')
+	const formRef = useRef<HTMLFormElement>(null)
+	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  return (
-    <div className="grid grid-rows-1">
-      <div className="flex min-h-full items-center justify-center">
-        <div className="mx-auto w-full font-helvetica text-[14px]">
-          {/* Form */}
-          <Form method="post" noValidate>
-            {/* Heading */}
-            <div>
-              {/* Title */}
-              <div className="mt-2 flex justify-between">
-                <div>
-                  <h1 className=" text-4xl">Script</h1>
-                </div>
-              </div>
-            </div>
+	const generateSketch = useCallback(async () => {
+		if (!deviceData?.id || !formRef.current) return
+		const formData = new FormData(formRef.current)
+		const enableDebug = (formData.get('enable_debug') !== null).toString()
+		const displayEnabled = (formData.get('display_enabled') !== null).toString()
 
-            {/* divider */}
-            <hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+		const params = new URLSearchParams()
+		for (const [key, value] of formData.entries()) {
+			if (typeof value === 'string') params.append(key, value)
+		}
+		params.set('enable_debug', enableDebug)
+		params.set('display_enabled', displayEnabled)
+		if (deviceData.apiKey) params.set('access_token', deviceData.apiKey)
 
-            <textarea
-              className="my-5 h-[350px] w-full rounded-[1px] border-[#ccc] font-monospace text-[90%]"
-              defaultValue={dummyScript}
-            ></textarea>
+		const response = await fetch(
+			`/api/boxes/${deviceData.id}/script?${params.toString()}`,
+			{ method: 'GET' },
+		)
+		if (!response.ok) return
+		const text = await response.text()
+		setSketch(text)
+	}, [deviceData?.id, deviceData?.apiKey])
 
-            <div className="rounded-[3px] border border-[#ddd]">
-              <div className="border-b border-b-[ddd] bg-[#f5f5f5] px-[10px] py-[15px] text-[#333]">
-                Help section
-              </div>
-              <ul>
-                <li className="border-b border-b-[#ddd] px-[10px] py-[15px]">
-                  <div className=" rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-                    <p>
-                      A guided instruction including the upload of the sketch is
-                      available here:
-                      <a
-                        href="https://en.docs.sensebox.de/category/sensebox-home/"
-                        className="cursor-pointer text-[#4eaf47]"
-                      >
-                        &nbsp;senseBox:home Documentation (english)
-                      </a>
-                    </p>
-                  </div>
-                </li>
+	const handleFormChange = useCallback(() => {
+		if (debounceRef.current) clearTimeout(debounceRef.current)
+		debounceRef.current = setTimeout(() => {
+			void generateSketch()
+		}, 300)
+	}, [generateSketch])
 
-                <li className="px-[10px] py-[15px]">
-                  <div className=" rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-                    <p>
-                      If you would like to upload the Sketch with the Arduino
-                      IDE you can find more information
-                      <a
-                        href="https://en.docs.sensebox.de/category/arduino/"
-                        className="cursor-pointer text-[#4eaf47]"
-                      >
-                        &nbsp; here.
-                      </a>
-                    </p>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </Form>
-        </div>
-      </div>
-    </div>
-  );
-}
+	useEffect(() => {
+		void generateSketch()
+		return () => {
+			if (debounceRef.current) clearTimeout(debounceRef.current)
+		}
+	}, [generateSketch])
 
-export function ErrorBoundary() {
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <ErrorMessage />
-    </div>
-  );
+	const handleCompile = async () => {
+		if (!sketch || !deviceData?.id) return
+		setIsCompiling(true)
+		try {
+			const response = await fetch(`/api/boxes/${deviceData.id}/compile`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ board: 'sensebox-mcu', sketch }),
+			})
+			if (!response.ok) {
+				const err = await response
+					.json()
+					.catch(() => ({ message: 'Compile failed' }))
+				console.error('Compile error:', err.message)
+				return
+			}
+			const blob = await response.blob()
+			const url = URL.createObjectURL(blob)
+			const a = document.createElement('a')
+			a.href = url
+			a.download = `sketch-${deviceData.id}.bin`
+			a.click()
+			URL.revokeObjectURL(url)
+		} finally {
+			setIsCompiling(false)
+		}
+	}
+
+	return (
+		<div className="grid grid-rows-1">
+			<div className="flex min-h-full items-center justify-center">
+				<div className="flex-grow bg-white p-4 dark:bg-dark-boxes dark:text-dark-text">
+					{deviceData?.model !== 'homeV2Wifi' ? (
+						<div className="flex flex-col items-center justify-center gap-4 py-16 text-center text-gray-500">
+							<p className="text-base">{t('no_script_for_model')}</p>
+							<a
+								href={OSEM_GITHUB_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-light-green underline dark:text-dark-green"
+							>
+								{OSEM_GITHUB_URL}
+							</a>
+						</div>
+					) : (
+						<>
+							<form ref={formRef} noValidate onChange={handleFormChange}>
+								<div>
+									<div className="mt-2 flex justify-between">
+										<div>
+											<span className="text-2xl font-bold text-light-green dark:text-dark-green">
+												{t('configuration')}
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+
+								<div className="space-y-5 pt-4">
+									{/* PORT */}
+									<div>
+										<label
+											htmlFor="port"
+											className="txt-base block font-bold tracking-normal"
+										>
+											{t('fine_dust_port')}
+										</label>
+
+										<div className="mt-1">
+											<select
+												id="port"
+												name="port"
+												className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
+											>
+												<option value="Serial1">{t('serial_1')}</option>
+												<option value="Serial2">{t('serial_2')}</option>
+											</select>
+										</div>
+									</div>
+
+									{/* Soil moisture & temp port */}
+									<div>
+										<label
+											htmlFor="soilDigitalPort"
+											className="txt-base block font-bold tracking-normal"
+										>
+											{t('soil_moisture_temp')}
+										</label>
+
+										<div className="mt-1">
+											<select
+												id="soilDigitalPort"
+												name="soilDigitalPort"
+												className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
+											>
+												<option value="A">A</option>
+												<option value="B">B</option>
+												<option value="C">C</option>
+											</select>
+										</div>
+									</div>
+
+									{/* sound port */}
+									<div>
+										<label
+											htmlFor="soundMeterPort"
+											className="txt-base block font-bold tracking-normal"
+										>
+											{t('sound_level_port')}
+										</label>
+
+										<div className="mt-1">
+											<select
+												id="soundMeterPort"
+												name="soundMeterPort"
+												className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
+											>
+												<option value="A">A</option>
+												<option value="B">B</option>
+												<option value="C">C</option>
+											</select>
+										</div>
+									</div>
+
+									{/* Windspeed port */}
+									<div>
+										<label
+											htmlFor="windSpeedPort"
+											className="txt-base block font-bold tracking-normal"
+										>
+											{t('wind_port')}
+										</label>
+
+										<div className="mt-1">
+											<select
+												id="windSpeedPort"
+												name="windSpeedPort"
+												className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
+											>
+												<option value="A">A</option>
+												<option value="B">B</option>
+												<option value="C">C</option>
+											</select>
+										</div>
+									</div>
+
+									{/* WIFI SSID */}
+									<div>
+										<label
+											htmlFor="ssid"
+											className="txt-base block font-bold tracking-normal"
+										>
+											{t('wifi_ssid')}
+										</label>
+
+										<div className="mt-1">
+											<input
+												id="ssid"
+												required
+												autoFocus={true}
+												name="ssid"
+												type="text"
+												aria-describedby="name-error"
+												className="w-full rounded border border-gray-200 px-2 py-1 text-base"
+											/>
+										</div>
+									</div>
+
+									{/* WIFI PAasword */}
+									<div>
+										<label
+											htmlFor="password"
+											className="txt-base block font-bold tracking-normal"
+										>
+											{t('wifi_password')}
+										</label>
+
+										<div className="mt-1">
+											<input
+												id="password"
+												required
+												autoFocus={true}
+												name="password"
+												type="password"
+												aria-describedby="name-error"
+												className="w-full rounded border border-gray-200 px-2 py-1 text-base"
+											/>
+										</div>
+									</div>
+									<div className="flex flex-col gap-3">
+										<label className="flex items-center gap-2">
+											<input
+												id="enable_debug"
+												name="enable_debug"
+												type="checkbox"
+												className="h-4 w-4"
+											/>
+											<span className="txt-base font-bold tracking-normal">
+												{t('enable_debug')}
+											</span>
+										</label>
+
+										<label className="flex items-center gap-2">
+											<input
+												id="display_enabled"
+												name="display_enabled"
+												type="checkbox"
+												className="h-4 w-4"
+											/>
+											<span className="txt-base font-bold tracking-normal">
+												{t('display_enabled')}
+											</span>
+										</label>
+									</div>
+
+									<Button
+										type="button"
+										onClick={handleCompile}
+										disabled={isCompiling || !sketch}
+									>
+										{isCompiling ? t('compiling') : t('compile_sketch')}
+									</Button>
+								</div>
+							</form>
+							<div className="py-6">
+								<span className="py-1 text-sm text-gray-500 dark:text-gray-400">
+									{t('your_sketch')}
+								</span>
+								<Textarea
+									id="mqtt-connection-options"
+									placeholder={t('enter_connection_options')}
+									className="!min-h-[320px] resize-none"
+									value={sketch}
+									readOnly
+								/>
+							</div>
+						</>
+					)}
+				</div>
+			</div>
+		</div>
+	)
 }

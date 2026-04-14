@@ -1,5 +1,6 @@
-import { type LoaderFunctionArgs } from "react-router";
-import { getSensors } from "~/models/sensor.server";
+import { type LoaderFunctionArgs } from 'react-router'
+import { getSensors } from '~/models/sensor.server'
+import { StandardResponse } from '~/utils/response-utils'
 
 /**
  * @openapi
@@ -55,7 +56,7 @@ import { getSensors } from "~/models/sensor.server";
  *                   type: string
  *             example:
  *               error: "Failed to fetch sensors"
- * 
+ *
  * components:
  *   schemas:
  *     Sensor:
@@ -79,31 +80,19 @@ import { getSensors } from "~/models/sensor.server";
  */
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-
-    const url = new URL(request.url);
-    const deviceId = url.searchParams.get("deviceId");
-    if (!deviceId) {
-        return new Response(JSON.stringify({ error: "deviceId is required" }), {
-            status: 400,
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-    }
-    try{
-        const sensors = await getSensors(deviceId);
-        return new Response(JSON.stringify(sensors), {
-            headers: {
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-            },
-        });
-    }catch(error){
-        return new Response(JSON.stringify({ error: "Failed to fetch sensors" }), {
-            status: 500,
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-    }
+	const url = new URL(request.url)
+	const deviceId = url.searchParams.get('deviceId')
+	if (!deviceId) return StandardResponse.badRequest('deviceId is required')
+	try {
+		const sensors = await getSensors(deviceId)
+		return new Response(JSON.stringify(sensors), {
+			status: 200,
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+				'Cache-Control': 'no-cache',
+			},
+		})
+	} catch (error) {
+		return StandardResponse.internalServerError('Failed to fetch sensors')
+	}
 }

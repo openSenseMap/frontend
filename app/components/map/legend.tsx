@@ -67,7 +67,7 @@ export default function Legend({ title, values }: LegendProps) {
 									return (
 										<div
 											key={i}
-											className={`absolute top-0 ml-4 flex h-12 flex-col items-center `}
+											className={`absolute top-0 ml-4 flex h-12 flex-col items-center`}
 											style={{
 												right: v.position,
 											}}

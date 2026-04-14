@@ -32,23 +32,32 @@ export const device = pgTable('device', {
 		.$defaultFn(() => createId()),
 	name: text('name').notNull(),
 	image: text('image'),
+	website: text('website'),
 	description: text('description'),
 	tags: text('tags')
 		.array()
 		.default(sql`ARRAY[]::text[]`),
 	link: text('link'),
 	useAuth: boolean('use_auth'),
+	apiKey: text('apiKey'),
 	exposure: DeviceExposureEnum('exposure'),
 	status: DeviceStatusEnum('status').default('inactive'),
-	model: DeviceModelEnum('model'),
+	model: DeviceModelEnum('model').default('custom'),
 	public: boolean('public').default(false),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	archivedAt: timestamp('archived_at'),
+	orphanedAt: timestamp('orphaned_at'),
 	expiresAt: date('expires_at', { mode: 'date' }),
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),
-	userId: text('user_id').notNull(),
 	sensorWikiModel: text('sensor_wiki_model'),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, {
+			onDelete: 'cascade',
+			onUpdate: 'cascade',
+		}),
 })
 
 // Many-to-many relation between device - location

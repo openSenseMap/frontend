@@ -1,19 +1,39 @@
 services:
   postgres:
-    # image: timescale/timescaledb:2.10.2-pg14
-    image: timescale/timescaledb-ha:pg15-arm64
+    image: timescale/timescaledb-ha:pg18
     # Preload pg_cron extension
     # https://github.com/timescale/timescaledb-docker-ha/issues/293
-    # Extension is created with prisma
     command:
       - -cshared_preload_libraries=timescaledb,pg_cron
+      - -ccron.database_name=postgres
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       # - ./pgdata:/home/postgres/pgdata
       - ./db/imports:/home/postgres/imports
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - '8025:8025'
+      - '1025:1025'
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs
+    environment:
+      RUSTFS_ACCESS_KEY: rustfsadmin
+      RUSTFS_SECRET_KEY: rustfsadmin123
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ADDRESS: ":9000"
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Admin UI
+    volumes:
+      - ./rustfs-data:/data
+    command: ["/data"]

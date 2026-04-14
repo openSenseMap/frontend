@@ -1,171 +1,182 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
-  --color-black: #121212;
-  --color-white: #ffffff;
-  /* Logo Colors */
-  --logo-green: #4fae48;
-  --logo-blue: #00b4e4;
+	--color-black: #121212;
+	--color-white: #ffffff;
+	/* Logo Colors */
+	--logo-green: #4fae48;
+	--logo-blue: #00b4e4;
 
-  /* Light Theme Colors */
-  --light-menu: #727373;
-  --light-text: #363636;
-  --light-green: #3d843f;
-  --light-blue: #037ea1;
+	/* Light Theme Colors */
+	--light-menu: #727373;
+	--light-text: #363636;
+	--light-green: #3d843f;
+	--light-blue: #037ea1;
 
-  /* Dark Theme Colors */
-  --dark-menu: #d2d1d0;
-  --dark-text: #d2d1d0;
-  --dark-green: #6fa161;
-  --dark-blue: #0386aa;
-  --dark-background: #242424;
-  --dark-boxes: #3b3a3a;
+	/* Dark Theme Colors */
+	--dark-menu: #d2d1d0;
+	--dark-text: #d2d1d0;
+	--dark-green: #6fa161;
+	--dark-blue: #0386aa;
+	--dark-background: #242424;
+	--dark-boxes: #3b3a3a;
 
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-600: #475569;
-  --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
-  --color-zinc-50: #fafafa;
-  --color-zinc-100: #f4f4f5;
-  --color-zinc-200: #e4e4e7;
-  --color-zinc-300: #d4d4d8;
-  --color-zinc-400: #a1a1aa;
-  --color-zinc-500: #71717a;
-  --color-zinc-600: #52525b;
-  --color-zinc-700: #3f3f46;
-  --color-zinc-800: #27272a;
-  --color-zinc-900: #18181b;
-  --color-blue-100: #3d9cce;
-  --color-blue-200: #1879af;
-  --color-blue-500: #3b82f6;
-  --color-blue-700: #1d4ed8;
-  --color-blue-50: #f8fafc;
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
-  --color-gray-950: #030712;
-  --color-green-50: #f0fdf4;
-  --color-green-100: #dcfce7;
-  --color-green-200: #bbf7d0;
-  --color-green-300: #86efac;
-  --color-green-400: #4ade80;
-  --color-green-500: #22c55e;
-  --color-green-600: #16a34a;
-  --color-green-700: #15803d;
-  --color-green-800: #166534;
-  --color-green-900: #14532d;
-  --color-green-950: #052e16;
-  --color-red-500: #f10000;
-  --color-red-700: #b91c1c;
-  --color-orange-500: #f97316;
-  --color-violet-500: #7f00ff;
-  --color-yellow-500: #eab308;
-  --color-yellow-sensorWiki: #ffdd57;
-  --color-headerBorder: #e3e3e3;
+	--color-slate-50: #f8fafc;
+	--color-slate-100: #f1f5f9;
+	--color-slate-200: #e2e8f0;
+	--color-slate-300: #cbd5e1;
+	--color-slate-400: #94a3b8;
+	--color-slate-500: #64748b;
+	--color-slate-600: #475569;
+	--color-slate-700: #334155;
+	--color-slate-800: #1e293b;
+	--color-slate-900: #0f172a;
+	--color-zinc-50: #fafafa;
+	--color-zinc-100: #f4f4f5;
+	--color-zinc-200: #e4e4e7;
+	--color-zinc-300: #d4d4d8;
+	--color-zinc-400: #a1a1aa;
+	--color-zinc-500: #71717a;
+	--color-zinc-600: #52525b;
+	--color-zinc-700: #3f3f46;
+	--color-zinc-800: #27272a;
+	--color-zinc-900: #18181b;
+	--color-blue-50: #eff6ff;
+	--color-blue-100: #3d9cce;
+	--color-blue-200: #1879af;
+	--color-blue-400: #60a5fa;
+	--color-blue-500: #3b82f6;
+	--color-blue-700: #1d4ed8;
+	--color-gray-50: #f9fafb;
+	--color-gray-100: #f3f4f6;
+	--color-gray-200: #e5e7eb;
+	--color-gray-300: #d1d5db;
+	--color-gray-400: #9ca3af;
+	--color-gray-500: #6b7280;
+	--color-gray-600: #4b5563;
+	--color-gray-700: #374151;
+	--color-gray-800: #1f2937;
+	--color-gray-900: #111827;
+	--color-gray-950: #030712;
+	--color-green-50: #f0fdf4;
+	--color-green-100: #dcfce7;
+	--color-green-200: #bbf7d0;
+	--color-green-300: #86efac;
+	--color-green-400: #4ade80;
+	--color-green-500: #22c55e;
+	--color-green-600: #16a34a;
+	--color-green-700: #15803d;
+	--color-green-800: #166534;
+	--color-green-900: #14532d;
+	--color-green-950: #052e16;
+	--color-red-50: #fef2f2;
+	--color-red-100: #fee2e2;
+	--color-red-200: #fecaca;
+	--color-red-400: #f87171;
+	--color-red-500: #ef4444;
+	--color-red-700: #b91c1c;
+	--color-orange-500: #f97316;
+	--color-violet-50: #f5f3ff;
+	--color-violet-100: #ede9fe;
+	--color-violet-200: #ddd6fe;
+	--color-violet-400: #a78bfa;
+	--color-violet-500: #8b5cf6;
+	--color-violet-700: #6d28d9;
+	--color-yellow-50: #fefce8;
+	--color-yellow-100: #fef9c3;
+	--color-yellow-200: #fef08a;
+	--color-yellow-400: #facc15;
+	--color-yellow-500: #eab308;
+	--color-yellow-700: #a16207;
+	--color-yellow-sensorWiki: #ffdd57;
+	--color-headerBorder: #e3e3e3;
 
-  /* shadcn color definitions */
-  --background: 0 0% 100%;
-  --foreground: 222.2 47.4% 11.2%;
+	/* shadcn color definitions */
+	--background: 0 0% 100%;
+	--foreground: 222.2 47.4% 11.2%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+	--muted: 210 40% 96.1%;
+	--muted-foreground: 215.4 16.3% 46.9%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 47.4% 11.2%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 222.2 47.4% 11.2%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 47.4% 11.2%;
+	--card: 0 0% 100%;
+	--card-foreground: 222.2 47.4% 11.2%;
 
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+	--border: 214.3 31.8% 91.4%;
+	--input: 214.3 31.8% 91.4%;
 
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
+	--primary: 222.2 47.4% 11.2%;
+	--primary-foreground: 210 40% 98%;
 
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
+	--secondary: 210 40% 96.1%;
+	--secondary-foreground: 222.2 47.4% 11.2%;
 
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+	--accent: 210 40% 96.1%;
+	--accent-foreground: 222.2 47.4% 11.2%;
 
-  --destructive: 0 100% 50%;
-  --destructive-foreground: 210 40% 98%;
+	--destructive: 0 100% 50%;
+	--destructive-foreground: 210 40% 98%;
 
-  --ring: 215 20.2% 65.1%;
+	--ring: 215 20.2% 65.1%;
 
-  /* shadcn radius definition */
-  --radius: 0.5rem;
+	/* shadcn radius definition */
+	--radius: 0.5rem;
 }
 
 .dark {
-  /* shadcn dark mode color definitions */
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
+	/* shadcn dark mode color definitions */
+	--background: 224 71% 4%;
+	--foreground: 213 31% 91%;
 
-  --muted: 223 47% 11%;
-  --muted-foreground: 215.4 16.3% 56.9%;
+	--muted: 223 47% 11%;
+	--muted-foreground: 215.4 16.3% 56.9%;
 
-  --popover: 224 71% 4%;
-  --popover-foreground: 215 20.2% 65.1%;
+	--popover: 224 71% 4%;
+	--popover-foreground: 215 20.2% 65.1%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 47.4% 11.2%;
+	--card: 0 0% 100%;
+	--card-foreground: 222.2 47.4% 11.2%;
 
-  --border: 216 34% 17%;
-  --input: 216 34% 17%;
+	--border: 216 34% 17%;
+	--input: 216 34% 17%;
 
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 1.2%;
+	--primary: 210 40% 98%;
+	--primary-foreground: 222.2 47.4% 1.2%;
 
-  --secondary: 222.2 47.4% 11.2%;
-  --secondary-foreground: 210 40% 98%;
+	--secondary: 222.2 47.4% 11.2%;
+	--secondary-foreground: 210 40% 98%;
 
-  --accent: 216 34% 17%;
-  --accent-foreground: 210 40% 98%;
+	--accent: 216 34% 17%;
+	--accent-foreground: 210 40% 98%;
 
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 210 40% 98%;
+	--destructive: 0 63% 31%;
+	--destructive-foreground: 210 40% 98%;
 
-  --ring: 216 34% 17%;
+	--ring: 216 34% 17%;
 
-  /* shadcn dark mode radius definition */
-  --radius: 0.5rem;
+	/* shadcn dark mode radius definition */
+	--radius: 0.5rem;
 }
 
 kbd {
-  background-color: #eee;
-  border-radius: 3px;
-  border: 1px solid #b4b4b4;
-  box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.2),
-    0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
-  color: #333;
-  display: inline-block;
-  font-size: 0.85em;
-  font-weight: 700;
-  line-height: 1;
-  padding: 2px 4px;
-  margin-top: 2px;
-  margin-bottom: 4px;
-  vertical-align: middle;
-  white-space: nowrap;
+	background-color: #eee;
+	border-radius: 3px;
+	border: 1px solid #b4b4b4;
+	box-shadow:
+		0 1px 1px rgba(0, 0, 0, 0.2),
+		0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+	color: #333;
+	display: inline-block;
+	font-size: 0.85em;
+	font-weight: 700;
+	line-height: 1;
+	padding: 2px 4px;
+	margin-top: 2px;
+	margin-bottom: 4px;
+	vertical-align: middle;
+	white-space: nowrap;
 }
 
 .mapboxgl-ctrl-geocoder {
-  width: 500px !important;
+	width: 500px !important;
 }

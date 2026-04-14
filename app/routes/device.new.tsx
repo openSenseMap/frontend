@@ -1,77 +1,90 @@
-import { type ActionFunctionArgs, redirect, type LoaderFunctionArgs } from "react-router";
-import ValidationStepperForm from "~/components/device/new/new-device-stepper";
-import { NavBar } from "~/components/nav-bar";
-import { createDevice } from "~/models/device.server";
-import { getUser, getUserId } from "~/utils/session.server";
+import {
+	type ActionFunctionArgs,
+	redirect,
+	type LoaderFunctionArgs,
+} from 'react-router'
+import ValidationStepperForm from '~/components/device/new/new-device-stepper'
+import { NavBar } from '~/components/nav-bar'
+import { createDevice } from '~/lib/devices-service.server'
+import { createDeviceIntegrations } from '~/lib/integration-service.server'
+import { getIntegrations } from '~/models/integration.server'
+import { getUser, getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await getUser(request);
-  if (!user) {
-    return redirect("/login");
-  }
-  return {};
+	const user = await getUser(request)
+	if (!user) {
+		return redirect('/explore/login')
+	}
+	const integrations = await getIntegrations()
+
+	return { integrations }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const rawData = formData.get("formData") as string;
+	const formData = await request.formData()
+	const rawData = formData.get('formData') as string
 
-  try {
-    const userId = await getUserId(request);
+	try {
+		const userId = await getUserId(request)
 
-    if (!userId) {
-      throw new Error("User is not authenticated.");
-    }
+		if (!userId) {
+			throw new Error('User is not authenticated.')
+		}
 
-    const data = JSON.parse(rawData);
+		const data = JSON.parse(rawData)
+		const advanced = data.advanced
 
-    // Map sensors from nested objects to a flat array
-    const sensors = data["sensor-selection"].selectedSensors.map(
-      (sensor: any) => ({
-        title: sensor.title,
-        sensorType: sensor.sensorType,
-        unit: sensor.unit,
-      }),
-    );
+		const selectedSensors = data['sensor-selection'].selectedSensors
 
-    // Construct the device payload
-    const devicePayload = {
-      name: data["general-info"].name,
-      exposure: data["general-info"].exposure,
-      expiresAt: data["general-info"].temporaryExpirationDate,
-      tags:
-        data["general-info"].tags?.map((tag: { value: string }) => tag.value) ||
-        [],
-      latitude: data.location.latitude,
-      longitude: data.location.longitude,
-      model: data["device-selection"].model,
-      sensors,
-      mqttEnabled: data.advanced.mqttEnabled,
-      ttnEnabled: data.advanced.ttnEnabled,
-    };
+		const devicePayload = {
+			name: data['general-info'].name.trim(),
+			description: data['general-info'].description?.trim() || null,
+			exposure: data['general-info'].exposure,
+			expiresAt: data['general-info'].temporaryExpirationDate,
+			tags:
+				data['general-info'].tags?.map((tag: { value: string }) => tag.value) ||
+				[],
+			latitude: data.location.latitude,
+			longitude: data.location.longitude,
 
-    // Call server function
-    const newDevice = await createDevice(devicePayload, userId);
-    console.log("🚀 ~ New Device Created:", newDevice);
+			...(data['device-selection'].model !== 'custom' && {
+				model: data['device-selection'].model,
 
-    return redirect("/profile/me");
-  } catch (error) {
-    console.error("Error creating device:", error);
-    return redirect("/profile/me");
-  }
+				sensorTemplates: selectedSensors.map((sensor: any) => sensor.id),
+			}),
+
+			...(data['device-selection'].model === 'custom' && {
+				sensors: selectedSensors.map((sensor: any) => ({
+					title: sensor.title,
+					sensorType: sensor.sensorType,
+					unit: sensor.unit,
+					icon: sensor.icon,
+				})),
+			}),
+		}
+
+		const newDevice = await createDevice(userId, devicePayload)
+
+		await createDeviceIntegrations(newDevice.id, advanced)
+
+		return redirect('/profile/me')
+	} catch (error) {
+		console.error('Error creating device:', error)
+		return redirect('/profile/me')
+	}
 }
 
 export default function NewDevice() {
-  return (
-    <div className="flex flex-col h-screen">
-      <NavBar />
-      <div className="flex-grow bg-gray-100 overflow-auto">
-        <div className="flex h-full w-full justify-center py-10">
-          <div className="w-full h-full flex items-center justify-center rounded-lg p-6 dark:shadow-none dark:bg-transparent dark:text-dark-text">
-            <ValidationStepperForm />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+	return (
+		<div className="flex h-screen flex-col">
+			<NavBar />
+			<div className="flex-grow overflow-auto bg-gray-100">
+				<div className="flex h-full w-full justify-center py-10">
+					<div className="flex h-full w-full items-center justify-center rounded-lg p-6 dark:bg-transparent dark:text-dark-text dark:shadow-none">
+						<ValidationStepperForm />
+					</div>
+				</div>
+			</div>
+		</div>
+	)
 }

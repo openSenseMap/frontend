@@ -1,213 +1,205 @@
+import { useTranslation } from 'react-i18next'
 import {
-  type LoaderFunctionArgs,
-  redirect,
-  Link,
-  useLoaderData,
-} from "react-router";
-import ErrorMessage from "~/components/error-message";
-import { columns } from "~/components/mydevices/dt/columns";
-import { DataTable } from "~/components/mydevices/dt/data-table";
-import { NavBar } from "~/components/nav-bar";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { cn } from "~/lib/utils";
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+	redirect,
+	useLoaderData,
+} from 'react-router'
+import { getColumns } from '~/components/mydevices/dt/columns'
+import { DataTable } from '~/components/mydevices/dt/data-table'
+import { NavBar } from '~/components/nav-bar'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { claimBox } from '~/lib/transfer-service.server'
+import { userNameFromURl } from '~/lib/user-service.server'
 import {
-  getAllBadges,
-  getMyBadgesAccessToken,
-  getUserBackpack,
-  type MyBadge,
-} from "~/models/badge.server";
-import { getProfileByUsername } from "~/models/profile.server";
-import { getUniqueActiveBadges, sortBadges, type BadgeClass } from "~/utils";
-import { getInitials } from "~/utils/misc";
-import { getUserId } from "~/utils/session.server";
+	getProfileByUserId,
+	getProfileByUsername,
+	getProfileSensorsAndMeasurementsCount,
+} from '~/models/profile.server'
+import { formatCount, getInitials } from '~/utils/misc'
+import { getUserId } from '~/utils/session.server'
+
+type ActionData = {
+	success: boolean
+	message?: string
+	error?: string
+	claimedBoxId?: string
+}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  const requestingUserId = await getUserId(request);
-  // Get username or userid from URL params
-  const username = params.username;
+  const requestingUserId = await getUserId(request)
 
-  if (username) {
-    // Check if user exists
-    const profile = await getProfileByUsername(username);
-    // If the user exists and their profile is public, fetch their data or
-    if (
-      (!profile || !profile.public) &&
-      requestingUserId !== profile?.user?.id
-    ) {
-      return redirect("/explore");
-    } else {
-      const profileMail = profile?.user?.email || "";
-      // Get the access token using the getMyBadgesAccessToken function
-      const authToken = await getMyBadgesAccessToken().then((authData) => {
-        return authData.access_token;
-      });
-
-      // Retrieve the user's backpack data and all available badges from the server
-      const backpackData = await getUserBackpack(profileMail, authToken).then(
-        (backpackData: MyBadge[]) => {
-          return getUniqueActiveBadges(backpackData);
-        },
-      );
-
-      const allBadges = await getAllBadges(authToken).then((allBadges) => {
-        return allBadges.result as BadgeClass[];
-      });
-
-      // Return the fetched data as JSON
-      return {
-        userBackpack: backpackData || [],
-        allBadges: allBadges,
-        profile: profile,
-        requestingUserId: requestingUserId,
-      };
-    }
+  const username = userNameFromURl(params.username as string)
+  if (!username) {
+    return { profile: null, requestingUserId, sensorsCount: '0', measurementsCount: '0' }
   }
 
-  // If the user data couldn't be fetched, return an empty JSON response
+  const profile = await getProfileByUsername(username)
+
+  if (!profile) return redirect('/explore')
+
+  // Block access only if private AND not the owner
+  if (!profile.public && requestingUserId !== profile.userId) {
+    return redirect('/explore')
+  }
+
+  const counts = await getProfileSensorsAndMeasurementsCount(profile)
+
   return {
-    userBackpack: [],
-    allBadges: [],
-    profile: null,
-    requestingUserId: requestingUserId,
-  };
+    profile,
+    requestingUserId,
+    sensorsCount: counts.sensorsCount,
+    measurementsCount: counts.measurementsCount,
+  }
 }
 
-export default function () {
-  // Get the data from the loader function using the useLoaderData hook
-  const { allBadges, userBackpack, profile } = useLoaderData<typeof loader>();
+export async function action({ request, params }: ActionFunctionArgs) {
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
 
-  const sortedBadges = sortBadges(allBadges, userBackpack);
+	const username = params.username
+	if (!username) {
+		return {
+			success: false,
+			error: 'Missing username.',
+		} satisfies ActionData
+	}
 
-  return (
-    <div className="h-full bg-slate-100">
-      <NavBar />
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full md:pt-4 p-8">
-        <div className="bg-white dark:bg-dark-background shadow-lg p-6 rounded-xl flex flex-col gap-6 w-full md:w-1/3">
-          <div className="flex items-center gap-4 dark:text-dark-text">
-            <Avatar className="h-16 w-16">
-              <AvatarImage
-                className="aspect-auto w-full h-full rounded-full object-cover"
-                src={"/resources/file/" + profile?.profileImage?.id}
-              />
-              <AvatarFallback>
-                {getInitials(profile?.username ?? "")}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="text-2xl font-semibold dark:text-dark-text">
-                {profile?.user?.name || ""}
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                User since{" "}
-                {new Date(profile?.user?.createdAt || "").toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 md:pt-6">
-            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
-              <span className="text-2xl font-bold dark:text-dark-green">
-                {profile?.user?.devices.length}
-              </span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
-                Devices
-              </span>
-            </div>
-            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
-              <span className="text-2xl font-bold dark:text-dark-green">
-                coming soon
-              </span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
-                Sensors
-              </span>
-            </div>
-            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
-              <span className="text-2xl font-bold dark:text-dark-green">
-                coming soon
-              </span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
-                Measurements
-              </span>
-            </div>
-            <div className="bg-gray-100 dark:bg-dark-boxes rounded-lg p-4 flex flex-col items-center">
-              <span className="text-2xl font-bold dark:text-dark-green">
-                {userBackpack.length}
-              </span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
-                Badges
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-6 w-full md:w-2/3">
-          <div className="bg-white dark:bg-dark-background shadow-lg p-6 rounded-xl">
-            <div className="text-3xl font-semibold mb-4 text-light-green dark:text-dark-green">
-              Badges
-            </div>
-            <section className="w-full py-12 md:py-16 lg:py-20">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {sortedBadges.map((badge: BadgeClass) => {
-                  return (
-                    <Link
-                      to={badge.openBadgeId}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      key={badge.entityId}
-                    >
-                      <div
-                        className={cn(
-                          "flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 dark:border-gray-800 dark:text-dark-text",
-                          userBackpack.some((obj: MyBadge | null) => {
-                            return (
-                              obj !== null &&
-                              obj.badgeclass === badge.entityId &&
-                              !obj.revoked
-                            );
-                          })
-                            ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-                            : "bg-gray-100 dark:bg-dark-boxes",
-                        )}
-                      >
-                        <img
-                          alt="Design"
-                          className="h-6 w-6 rounded-full"
-                          height={24}
-                          src={badge.image}
-                          style={{
-                            aspectRatio: "24/24",
-                            objectFit: "cover",
-                          }}
-                          width={24}
-                        />
-                        <span className="text-sm font-medium">
-                          {badge.name}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
-          <div className="bg-white dark:bg-dark-background shadow-lg p-6 rounded-xl">
-            {profile?.user?.devices && (
-              <>
-                <div className="text-3xl font-semibold mb-4 text-light-green dark:text-dark-green">
-                  Devices
-                </div>
-                <DataTable columns={columns} data={profile?.user.devices} />
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+	const profile = await getProfileByUserId(userId)
+	if (!profile || profile.userId !== userId) {
+		return {
+			success: false,
+			error: 'You can only claim a device from your own profile page.',
+		} satisfies ActionData
+	}
+
+	const formData = await request.formData()
+	const intent = formData.get('intent')?.toString()
+	const token = formData.get('token')?.toString().trim()
+
+	if (intent !== 'claim-device') {
+		return {
+			success: false,
+			error: 'Unknown action.',
+		} satisfies ActionData
+	}
+
+	if (!token) {
+		return {
+			success: false,
+			error: 'Please enter a transfer token.',
+		} satisfies ActionData
+	}
+
+	try {
+		const result = await claimBox(userId, token)
+
+		return {
+			success: true,
+			message: result.message,
+			claimedBoxId: result.boxId,
+		} satisfies ActionData
+	} catch (err) {
+		const message =
+			err instanceof Error ? err.message : 'Failed to claim device.'
+
+		return {
+			success: false,
+			error: message,
+		} satisfies ActionData
+	}
 }
 
-export function ErrorBoundary() {
-  return (
-    <div className="w-full flex items-center justify-center">
-      <ErrorMessage />
-    </div>
-  );
+export default function ProfilePage() {
+	const { profile, sensorsCount, measurementsCount, requestingUserId } =
+		useLoaderData<typeof loader>()
+
+	const { t } = useTranslation('profile')
+	const columnsTranslation = useTranslation('data-table')
+
+	const isOwner = !!profile?.userId && requestingUserId === profile.userId
+
+	return (
+		<div className="h-full bg-slate-100">
+			<NavBar />
+			<div className="flex w-full flex-col gap-6 p-8 md:flex-row md:gap-8 md:pt-4">
+				<div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background md:w-1/3">
+					<div className="flex items-center gap-4 dark:text-dark-text">
+						<Avatar className="h-16 w-16">
+							{profile?.profileImage?.id ? (
+								<AvatarImage
+									className="aspect-auto h-full w-full rounded-full object-cover"
+									src={`/resources/file/${profile.profileImage.id}`}
+								/>
+							) : null}
+							<AvatarFallback>
+								{getInitials(profile?.displayName ?? '')}
+							</AvatarFallback>
+						</Avatar>
+						<div>
+							<h3 className="text-2xl font-semibold dark:text-dark-text">
+								{profile?.displayName || ''}
+							</h3>
+							<h4 className="text-lg dark:text-dark-text">
+								{profile?.user?.name || ''}
+							</h4>
+							<p className="text-sm text-gray-500 dark:text-gray-400">
+								{t('user_since')}{' '}
+								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
+									t('locale'),
+								)}
+							</p>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-2 gap-4 md:pt-6">
+						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
+							<span className="text-2xl font-bold dark:text-dark-green">
+								{formatCount(profile?.user?.devices.length || 0)}
+							</span>
+							<span className="text-sm text-gray-500 dark:text-gray-400">
+								{t('devices')}
+							</span>
+						</div>
+						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
+							<span className="text-2xl font-bold dark:text-dark-green">
+								{sensorsCount}
+							</span>
+							<span className="text-sm text-gray-500 dark:text-gray-400">
+								{t('sensors')}
+							</span>
+						</div>
+						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
+							<span className="text-2xl font-bold dark:text-dark-green">
+								{measurementsCount}
+							</span>
+							<span className="text-sm text-gray-500 dark:text-gray-400">
+								{t('measurements')}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div className="flex w-full flex-col gap-6 md:w-2/3">
+					<div className="rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background">
+						<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
+							{t('devices')}
+						</div>
+
+						{profile?.user?.devices && (
+							<DataTable
+								columns={getColumns(columnsTranslation, { isOwner })}
+								data={profile.user.devices}
+									getRowClassName={(device) =>
+										device.archivedAt
+											? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
+											: ''
+									}
+							/>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	)
 }

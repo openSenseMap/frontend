@@ -8,7 +8,6 @@ import useKeyboardNav from '../header/nav-bar/use-keyboard-nav'
 import SearchListItem from './search-list-item'
 import { goTo } from '~/lib/search-map-helper'
 
-
 interface SearchListProps {
 	searchResultsLocation: any[]
 	searchResultsDevice: any[]

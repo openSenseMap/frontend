@@ -1,215 +1,295 @@
-import { useState, useEffect } from "react";
-import { useFormContext } from "react-hook-form";
-import { z } from "zod";
-import { CustomDeviceConfig } from "./custom-device-config";
-import { Card, CardContent } from "~/components/ui/card";
-import { cn } from "~/lib/utils";
-import { getSensorsForModel } from "~/utils/model-definitions";
+import { Cpu } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { z } from 'zod'
+import { CustomDeviceConfig } from './custom-device-config'
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from '~/components/ui/accordion'
+import { Badge } from '~/components/ui/badge'
+import { Checkbox } from '~/components/ui/checkbox'
+import { Label } from '~/components/ui/label'
+import { cn } from '~/lib/utils'
+import { getSensorsForModel } from '~/utils/model-definitions'
 
 export const sensorSchema = z.object({
-  title: z.string(),
-  unit: z.string(),
-  sensorType: z.string(),
-  icon: z.string().optional(),
-  image: z.string().optional(),
-});
+	title: z.string(),
+	unit: z.string(),
+	sensorType: z.string(),
+	icon: z.string().optional(),
+	image: z.string().optional(),
+	id: z.string().optional(),
+})
 
-export type Sensor = z.infer<typeof sensorSchema>;
+export type Sensor = z.infer<typeof sensorSchema>
 
 type SensorGroup = {
-  sensorType: string;
-  sensors: Sensor[];
-  image?: string;
-};
+	sensorType: string
+	sensors: Sensor[]
+	image?: string
+}
 
 export function SensorSelectionStep() {
-  const { watch, setValue } = useFormContext();
-  const selectedDevice = watch("model");
-  const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
-    null,
-  );
-  const [sensors, setSensors] = useState<Sensor[]>([]);
-  const [selectedSensors, setSelectedSensors] = useState<Sensor[]>([]);
+	const { watch, setValue } = useFormContext()
+	const selectedDevice = watch('model')
+	const { t } = useTranslation('newdevice')
+	const [selectedDeviceModel, setSelectedDeviceModel] = useState<string | null>(
+		null,
+	)
+	const [sensors, setSensors] = useState<Sensor[]>([])
+	const [selectedSensors, setSelectedSensors] = useState<Sensor[]>([])
 
-  useEffect(() => {
-    if (selectedDevice) {
-      const deviceModel = selectedDevice.startsWith("homeV2")
-        ? "senseBoxHomeV2"
-        : selectedDevice;
-      setSelectedDeviceModel(deviceModel);
+	useEffect(() => {
+		if (selectedDevice) {
+			const deviceModel = selectedDevice.startsWith('homeV2')
+				? 'senseBoxHomeV2'
+				: selectedDevice
+			setSelectedDeviceModel(deviceModel)
 
-      const fetchSensors = () => {
-        const fetchedSensors = getSensorsForModel(deviceModel);
-        setSensors(fetchedSensors);
-      };
-      fetchSensors();
-    }
-  }, [selectedDevice]);
+			if (deviceModel !== 'custom') {
+				const fetchedSensors = getSensorsForModel(deviceModel)
+				setSensors(fetchedSensors ?? [])
+			} else {
+				setSensors([])
+			}
+		}
+	}, [selectedDevice])
 
-  useEffect(() => {
-    const savedSelectedSensors = watch("selectedSensors") || [];
-    setSelectedSensors(savedSelectedSensors);
-  }, [watch]);
+	useEffect(() => {
+		const savedSelectedSensors = watch('selectedSensors') || []
+		setSelectedSensors(savedSelectedSensors)
+	}, [watch])
 
-  const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
-    const grouped = sensors.reduce(
-      (acc, sensor) => {
-        if (!acc[sensor.sensorType]) {
-          acc[sensor.sensorType] = [];
-        }
-        acc[sensor.sensorType].push(sensor);
-        return acc;
-      },
-      {} as Record<string, Sensor[]>,
-    );
+	const groupSensorsByType = (sensors: Sensor[]): SensorGroup[] => {
+		if (!sensors || sensors.length === 0) return []
 
-    return Object.entries(grouped).map(([sensorType, sensors]) => ({
-      sensorType,
-      sensors,
-      image: sensors.find((sensor) => sensor.image)?.image,
-    }));
-  };
+		const grouped = sensors.reduce(
+			(acc, sensor) => {
+				if (!acc[sensor.sensorType]) {
+					acc[sensor.sensorType] = []
+				}
+				acc[sensor.sensorType].push(sensor)
+				return acc
+			},
+			{} as Record<string, Sensor[]>,
+		)
 
-  const sensorGroups = groupSensorsByType(sensors);
+		return Object.entries(grouped).map(([sensorType, sensors]) => ({
+			sensorType,
+			sensors,
+			image: sensors.find((sensor) => sensor.image)?.image,
+		}))
+	}
 
-  const handleGroupToggle = (group: SensorGroup) => {
-    const isGroupSelected = group.sensors.every((sensor) =>
-      selectedSensors.some(
-        (s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-      ),
-    );
+	const sensorGroups = groupSensorsByType(sensors)
 
-    const updatedSensors = isGroupSelected
-      ? selectedSensors.filter(
-          (s) =>
-            !group.sensors.some(
-              (sensor) =>
-                s.title === sensor.title && s.sensorType === sensor.sensorType,
-            ),
-        )
-      : [
-          ...selectedSensors,
-          ...group.sensors.filter(
-            (sensor) =>
-              !selectedSensors.some(
-                (s) =>
-                  s.title === sensor.title &&
-                  s.sensorType === sensor.sensorType,
-              ),
-          ),
-        ];
+	const isSensorSelected = (sensor: Sensor) =>
+		selectedSensors.some(
+			(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
+		)
 
-    setSelectedSensors(updatedSensors);
-    setValue("selectedSensors", updatedSensors);
-  };
+	const isGroupFullySelected = (group: SensorGroup) =>
+		group.sensors.every((sensor) => isSensorSelected(sensor))
 
-  const handleSensorToggle = (sensor: Sensor) => {
-    const isAlreadySelected = selectedSensors.some(
-      (s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-    );
+	const isGroupPartiallySelected = (group: SensorGroup) =>
+		group.sensors.some((sensor) => isSensorSelected(sensor)) &&
+		!isGroupFullySelected(group)
 
-    const updatedSensors = isAlreadySelected
-      ? selectedSensors.filter(
-          (s) =>
-            !(s.title === sensor.title && s.sensorType === sensor.sensorType),
-        )
-      : [...selectedSensors, sensor];
+	const getSelectedCountForGroup = (group: SensorGroup) =>
+		group.sensors.filter((sensor) => isSensorSelected(sensor)).length
 
-    setSelectedSensors(updatedSensors);
-    setValue("selectedSensors", updatedSensors);
-  };
+	const handleSensorToggle = (sensor: Sensor) => {
+		const isAlreadySelected = isSensorSelected(sensor)
 
-  if (!selectedDevice) {
-    return <p className="text-center text-lg">Please select a device first.</p>;
-  }
+		const updatedSensors = isAlreadySelected
+			? selectedSensors.filter(
+					(s) =>
+						!(s.title === sensor.title && s.sensorType === sensor.sensorType),
+				)
+			: [...selectedSensors, sensor]
 
-  if (selectedDevice === "Custom") {
-    return <CustomDeviceConfig />;
-  }
+		setSelectedSensors(updatedSensors)
+		setValue('selectedSensors', updatedSensors)
+	}
 
-  return (
-    <div className="flex flex-col items-center h-full">
-      <div className="container mx-auto p-4 bg-white rounded-md overflow-auto space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sensorGroups.map((group) => {
-            const isGroupSelected = group.sensors.every((sensor) =>
-              selectedSensors.some(
-                (s) =>
-                  s.title === sensor.title &&
-                  s.sensorType === sensor.sensorType,
-              ),
-            );
+	const handleGroupToggle = (group: SensorGroup) => {
+		const isFullySelected = isGroupFullySelected(group)
 
-            return (
-              <Card
-                key={group.sensorType}
-                className={cn(
-                  "overflow-hidden cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105",
-                  isGroupSelected
-                    ? "ring-2 ring-primary shadow-lg"
-                    : "hover:shadow-md",
-                )}
-                onClick={
-                  selectedDeviceModel === "senseBoxHomeV2"
-                    ? () => handleGroupToggle(group)
-                    : undefined
-                }
-              >
-                <CardContent className="p-6">
-                  <h3
-                    className="text-xl font-semibold break-words mb-4"
-                    style={{ wordBreak: "break-word", whiteSpace: "normal" }}
-                    title={group.sensorType}
-                  >
-                    {group.sensorType}
-                  </h3>
+		const updatedSensors = isFullySelected
+			? selectedSensors.filter(
+					(s) =>
+						!group.sensors.some(
+							(sensor) =>
+								s.title === sensor.title && s.sensorType === sensor.sensorType,
+						),
+				)
+			: [
+					...selectedSensors,
+					...group.sensors.filter((sensor) => !isSensorSelected(sensor)),
+				]
 
-                  <ul className="mb-4 space-y-2">
-                    {group.sensors.map((sensor) => {
-                      const isSelected = selectedSensors.some(
-                        (s) =>
-                          s.title === sensor.title &&
-                          s.sensorType === sensor.sensorType,
-                      );
+		setSelectedSensors(updatedSensors)
+		setValue('selectedSensors', updatedSensors)
+	}
 
-                      return (
-                        <li
-                          key={sensor.title}
-                          className={cn(
-                            "text-sm text-gray-600 cursor-pointer px-2 py-1 rounded-md",
-                            isSelected
-                              ? "bg-primary text-white"
-                              : "hover:bg-gray-100",
-                          )}
-                          onClick={
-                            selectedDeviceModel !== "senseBoxHomeV2"
-                              ? (e) => {
-                                  e.stopPropagation();
-                                  handleSensorToggle(sensor);
-                                }
-                              : undefined
-                          }
-                        >
-                          {sensor.title} ({sensor.unit})
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <div className="rounded-md h-32 w-32 flex items-center justify-center">
-                    {group.image && (
-                      <img
-                        src={group.image}
-                        alt={`${group.sensorType} placeholder`}
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
+	if (!selectedDevice) {
+		return <p className="text-center text-lg">{t('device_not_selected')}</p>
+	}
+
+	if (selectedDevice === 'custom') {
+		return <CustomDeviceConfig />
+	}
+
+	const isSenseBoxHomeV2 = selectedDeviceModel === 'senseBoxHomeV2'
+
+	return (
+		<div className="flex h-full flex-col">
+			<div className="mb-4 flex items-center justify-between">
+				<p className="text-sm text-muted-foreground">
+					{t('selectedSensors', { count: selectedSensors.length })}
+				</p>
+				{selectedSensors.length > 0 && (
+					<button
+						type="button"
+						className="text-sm text-destructive hover:underline"
+						onClick={() => {
+							setSelectedSensors([])
+							setValue('selectedSensors', [])
+						}}
+					>
+						{t('clear_all')}
+					</button>
+				)}
+			</div>
+
+			<Accordion type="multiple" className="w-full space-y-2">
+				{sensorGroups.map((group) => {
+					const isFullySelected = isGroupFullySelected(group)
+					const isPartiallySelected = isGroupPartiallySelected(group)
+					const selectedCount = getSelectedCountForGroup(group)
+
+					return (
+						<AccordionItem
+							key={group.sensorType}
+							value={group.sensorType}
+							className={cn(
+								'rounded-lg border px-4',
+								isFullySelected && 'border-primary bg-primary/5',
+								isPartiallySelected && 'border-primary/50',
+							)}
+						>
+							<AccordionTrigger className="hover:no-underline">
+								<div className="flex w-full items-center justify-between pr-4">
+									<div className="flex items-center gap-3">
+										{group.image ? (
+											<img
+												src={group.image}
+												alt={group.sensorType}
+												className="h-10 w-10 rounded object-cover"
+											/>
+										) : (
+											<div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+												<Cpu className="h-5 w-5 text-muted-foreground" />
+											</div>
+										)}
+										<div className="text-left">
+											<p className="font-medium">{group.sensorType}</p>
+											<p className="text-xs text-muted-foreground">
+												{group.sensors.length}{' '}
+												{group.sensors.length !== 1
+													? t('phenomena')
+													: t('phenomenon')}
+											</p>
+										</div>
+									</div>
+									{selectedCount > 0 && (
+										<Badge variant="secondary" className="ml-2">
+											{selectedCount} {t('selected')}
+										</Badge>
+									)}
+								</div>
+							</AccordionTrigger>
+							<AccordionContent className="pb-4">
+								<div className="space-y-3 pt-2">
+									<div
+										className="flex items-center space-x-3 rounded-md bg-muted/50 p-3"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<Checkbox
+											id={`group-${group.sensorType}`}
+											checked={isFullySelected}
+											data-state={
+												isPartiallySelected ? 'indeterminate' : undefined
+											}
+											onCheckedChange={() => handleGroupToggle(group)}
+										/>
+										<Label
+											htmlFor={`group-${group.sensorType}`}
+											className="cursor-pointer font-medium"
+										>
+											{t('select_all_phenomenons')}
+										</Label>
+									</div>
+
+									{!isSenseBoxHomeV2 && (
+										<div className="ml-2 space-y-2 border-l-2 border-muted pl-4">
+											{group.sensors.map((sensor) => {
+												const isSelected = isSensorSelected(sensor)
+												const sensorId = `sensor-${group.sensorType}-${sensor.title}`
+
+												return (
+													<div
+														key={sensor.title}
+														className={cn(
+															'flex items-center space-x-3 rounded-md p-2 transition-colors',
+															isSelected
+																? 'bg-primary/10'
+																: 'hover:bg-muted/50',
+														)}
+														onClick={(e) => e.stopPropagation()}
+													>
+														<Checkbox
+															id={sensorId}
+															checked={isSelected}
+															onCheckedChange={() => handleSensorToggle(sensor)}
+														/>
+														<Label
+															htmlFor={sensorId}
+															className="flex cursor-pointer items-center gap-2"
+														>
+															<span>{sensor.title}</span>
+															<span className="text-xs text-muted-foreground">
+																({sensor.unit})
+															</span>
+														</Label>
+													</div>
+												)
+											})}
+										</div>
+									)}
+
+									{isSenseBoxHomeV2 && (
+										<div className="ml-2 space-y-1 text-sm text-muted-foreground">
+											<p className="font-medium text-foreground">
+												{t('includes')}:
+											</p>
+											{group.sensors.map((sensor) => (
+												<p key={sensor.title} className="ml-2">
+													• {sensor.title} ({sensor.unit})
+												</p>
+											))}
+										</div>
+									)}
+								</div>
+							</AccordionContent>
+						</AccordionItem>
+					)
+				})}
+			</Accordion>
+		</div>
+	)
 }

@@ -1,0 +1,11 @@
+{
+	"dataUploadHeading": "Manueller Datenupload",
+	"dataUploadExplanation": "Hier können Sie Messwerte für diese senseBox hochladen. Dies kann für senseBoxen nützlich sein, die ihre Messwerte auf einer SD-Karte protokollieren, wenn keine direkte Kommunikation mit openSenseMap möglich ist. Wählen Sie entweder eine Datei aus oder kopieren Sie die Daten in das Textfeld. Die akzeptierten Datenformate sind <2>hier<2> beschrieben.",
+	"uploadFileLabel": "Datei hochladen",
+	"selectFormatLabel": "Format auswählen",
+	"inputTextAreaPlaceholder": "Messdaten hier einfügen...",
+	"textAreaCutoffHint": "Nur die ersten 3000 Zeichen von {{length}} werden angezeigt",
+	"uploadButtonLabel": "Hochladen",
+	"successMessage": "Messdaten erfolgreich hochgeladen",
+	"errorMessage": "Messdaten konnten nicht erfolgreich hochgeladen werden: {{message}}"
+}

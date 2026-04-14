@@ -1,0 +1,16 @@
+{
+	"user_since": "Benutzer*in seit",
+	"locale": "de",
+	"devices": "Geräte",
+	"sensors": "Sensoren",
+	"measurements": "Messungen",
+	"badges": "Badges",
+	"take_over_device": "Gerät übernehmen",
+	"transfer_device": "Gerät übertragen",
+	"import_device": "Importiere Gerät in deinen Account.",
+	"taking_over": "Übernehme...",
+	"device_successfully_claimed": "Gerät erfolgreich übernommen.",
+	"enter_transfer_token": "Füge hier einen Transfer-Token ein, um ein Gerät in dein Konto zu übernehmen.",
+	"example_token": "z.B. 89e764ecbcf8",
+	"back_to_dashboard": "Zurück zum Dashboard"
+}

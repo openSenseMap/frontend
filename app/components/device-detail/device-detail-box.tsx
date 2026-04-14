@@ -17,9 +17,10 @@ import {
 	LandPlot,
 	Image as ImageIcon,
 } from 'lucide-react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { isTablet, isBrowser } from 'react-device-detect'
 import Draggable, { type DraggableData } from 'react-draggable'
+import { useTranslation } from 'react-i18next'
 import {
 	useLoaderData,
 	useMatches,
@@ -29,6 +30,7 @@ import {
 	useSearchParams,
 	Link,
 } from 'react-router'
+import { MarkdownContent } from '../markdown-content'
 import SensorIcon from '../sensor-icon'
 import Spinner from '../spinner'
 import {
@@ -92,6 +94,7 @@ export default function DeviceDetailBox() {
 	const navigate = useNavigate()
 	const matches = useMatches()
 	const { toast } = useToast()
+	const { t } = useTranslation("device-detail-box")
 
 	const sensorIds = new Set()
 
@@ -107,11 +110,11 @@ export default function DeviceDetailBox() {
 
 	const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>()
 	useEffect(() => {
-		const sortedSensors = [...data.sensors].sort(
+		const sortedSensors = [...(data.sensors as any)].sort(
 			(a, b) => (a.id as unknown as number) - (b.id as unknown as number),
 		)
 		setSensors(sortedSensors)
-	}, [data.sensors])
+	}, [data])
 
 	const [searchParams] = useSearchParams()
 
@@ -159,13 +162,6 @@ export default function DeviceDetailBox() {
 		setOffsetPositionY(data.y)
 	}
 
-	const addLineBreaks = (text: string) =>
-		text.split('\\n').map((text, index) => (
-			<Fragment key={`${text}-${index}`}>
-				{text}
-				<br />
-			</Fragment>
-		))
 
 	useEffect(() => {
 		let interval: any = null
@@ -230,18 +226,18 @@ export default function DeviceDetailBox() {
 									</AlertDialogTrigger>
 									<AlertDialogContent>
 										<AlertDialogHeader>
-											<AlertDialogTitle>Share this link</AlertDialogTitle>
+											<AlertDialogTitle>{t('share_link')}</AlertDialogTitle>
 											<ShareLink />
 										</AlertDialogHeader>
 										<AlertDialogFooter>
-											<AlertDialogCancel>Close</AlertDialogCancel>
+											<AlertDialogCancel>{t('close')}</AlertDialogCancel>
 										</AlertDialogFooter>
 									</AlertDialogContent>
 								</AlertDialog>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" className="h-8 w-8 p-0">
-											<span className="sr-only">Open menu</span>
+											<span className="sr-only">{t('open_menu')}</span>
 											<EllipsisVertical className="h-4 w-4" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -249,14 +245,14 @@ export default function DeviceDetailBox() {
 										align="end"
 										className="dark:bg-dark-background dark:text-dark-text"
 									>
-										<DropdownMenuLabel>Actions</DropdownMenuLabel>
+										<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem
 											className="cursor-pointer"
 											disabled={true}
 										>
 											<Scale className="mr-2 h-4 w-4" />
-											<span>Compare</span>
+											<span>{t('compare')}</span>
 										</DropdownMenuItem>
 										<DropdownMenuItem>
 											<Archive className="mr-2 h-4 w-4" />
@@ -268,7 +264,7 @@ export default function DeviceDetailBox() {
 													title="Open archive"
 													className="w-full cursor-pointer"
 												>
-													Archive
+													{t('open_archive')}
 												</a>
 											</span>
 										</DropdownMenuItem>
@@ -282,7 +278,7 @@ export default function DeviceDetailBox() {
 													title="Open external link"
 													className="w-full cursor-pointer"
 												>
-													External Link
+													{t('open_external_link')}
 												</a>
 											</span>
 										</DropdownMenuItem>
@@ -306,17 +302,17 @@ export default function DeviceDetailBox() {
 							<div className="no-scrollbar relative flex-1 overflow-y-scroll">
 								<div className="space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
 									<div className="md:w-1/2">
-										{data.device.image ? (
-											<img
-												className="w-full rounded-lg object-cover"
-												alt="device_image"
-												src={data.device.image}
-											></img>
-										) : (
-											<div className="w-full rounded-lg object-cover text-muted-foreground">
-												<ImageIcon strokeWidth={1} className="h-full w-full" />
-											</div>
-										)}
+										{data.deviceImageUrl ? (
+												<img
+													className="w-full rounded-lg object-cover"
+													alt="device_image"
+													src={data.deviceImageUrl}
+												/>
+											) : (
+												<div className="w-full rounded-lg object-cover text-muted-foreground">
+													<ImageIcon strokeWidth={1} className="h-full w-full" />
+												</div>
+											)}
 									</div>
 									<div className="space-y-2 sm:w-1/2">
 										<InfoItem
@@ -431,10 +427,12 @@ export default function DeviceDetailBox() {
 									>
 										<AccordionItem value="item-1">
 											<AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-												Description
+												{t('description')}
 											</AccordionTrigger>
 											<AccordionContent>
-												{addLineBreaks(data.device.description)}
+												<MarkdownContent>
+													{data?.device.description}
+												</MarkdownContent>
 											</AccordionContent>
 										</AccordionItem>
 									</Accordion>
@@ -447,7 +445,7 @@ export default function DeviceDetailBox() {
 								>
 									<AccordionItem value="item-1">
 										<AccordionTrigger className="font-bold dark:dark:text-zinc-100">
-											Sensors
+											{t('sensors')}
 										</AccordionTrigger>
 										<AccordionContent>
 											<div
@@ -466,7 +464,7 @@ export default function DeviceDetailBox() {
 																	return (
 																		<Card
 																			key={sensor.id}
-																			className=""
+																			className="flex h-full flex-col"
 																			onClick={() =>
 																				toast({
 																					title:
@@ -479,7 +477,7 @@ export default function DeviceDetailBox() {
 																		>
 																			<label
 																				htmlFor={sensor.id}
-																				className="cursor-pointer"
+																				className="flex h-full cursor-pointer flex-col"
 																			>
 																				<input
 																					className="peer hidden"
@@ -498,18 +496,22 @@ export default function DeviceDetailBox() {
 																					)}
 																				/>
 																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-																					<CardTitle className="text-sm font-medium">
+																					<CardTitle
+																						className="truncate text-sm font-medium"
+																						title={sensor.title || ''}
+																					>
 																						{sensor.title}
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
-																						className="h-4 w-4 text-muted-foreground"
+																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				<CardContent>
+																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
-																							{sensor.value}
+																							{sensor.lastMeasurement?.value ??
+																								'–'}
 																						</div>
 																						<p className="text-xs text-muted-foreground">
 																							{sensor.unit}
@@ -527,10 +529,9 @@ export default function DeviceDetailBox() {
 																							}
 																						></div>
 																						<p className="text-xs text-muted-foreground">
-																							{formatDistanceToNow(
-																								new Date(sensor.time),
-																							)}{' '}
-																							ago
+																							{sensor.lastMeasurement
+																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
+																								: 'No recent data'}
 																						</p>
 																					</div>
 																				</CardFooter>
@@ -539,14 +540,21 @@ export default function DeviceDetailBox() {
 																	)
 																}
 																return (
-																	<Link key={sensor.id} to={sensorLink}>
+																	<Link
+																		key={sensor.id}
+																		to={sensorLink}
+																		className="h-full"
+																	>
 																		<Card
 																			key={sensor.id}
-																			className={isSensorActive(sensor.id)}
+																			className={clsx(
+																				'flex h-full flex-col',
+																				isSensorActive(sensor.id),
+																			)}
 																		>
 																			<label
 																				htmlFor={sensor.id}
-																				className="cursor-pointer"
+																				className="flex h-full cursor-pointer flex-col"
 																			>
 																				<input
 																					className="peer hidden"
@@ -565,18 +573,22 @@ export default function DeviceDetailBox() {
 																					)}
 																				/>
 																				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-																					<CardTitle className="text-sm font-medium">
+																					<CardTitle
+																						className="truncate text-sm font-medium"
+																						title={sensor.title || ''}
+																					>
 																						{sensor.title}
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
-																						className="h-4 w-4 text-muted-foreground"
+																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				<CardContent>
+																				<CardContent className="flex-grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
-																							{sensor.value}
+																							{sensor.lastMeasurement?.value ??
+																								'–'}
 																						</div>
 																						<p className="text-xs text-muted-foreground">
 																							{sensor.unit}
@@ -594,10 +606,9 @@ export default function DeviceDetailBox() {
 																							}
 																						></div>
 																						<p className="text-xs text-muted-foreground">
-																							{formatDistanceToNow(
-																								new Date(sensor.time),
-																							)}{' '}
-																							ago
+																							{sensor.lastMeasurement
+																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
+																								: 'No recent data'}
 																						</p>
 																					</div>
 																				</CardFooter>
@@ -626,9 +637,9 @@ export default function DeviceDetailBox() {
 							setOpen(true)
 						}}
 					/>
-					<AlertTitle>Compare devices</AlertTitle>
+					<AlertTitle>{t('compare_devices')}</AlertTitle>
 					<AlertDescription className="inline">
-						Choose a device from the map to compare with.
+						{t('choose_device_for_comparison')}
 					</AlertDescription>
 				</Alert>
 			)}
@@ -642,12 +653,12 @@ export default function DeviceDetailBox() {
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<div className="px-4 py-2 ">
+								<div className="px-4 py-2">
 									<ChevronUp />
 								</div>
 							</TooltipTrigger>
 							<TooltipContent>
-								<p>Open device details</p>
+								<p>{t('open_device_details')}</p>
 							</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>

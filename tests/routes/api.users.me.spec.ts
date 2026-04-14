@@ -1,428 +1,434 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { BASE_URL } from "vitest.setup";
-import { createToken } from "~/lib/jwt";
-import { registerUser } from "~/lib/user-service.server";
-import { deleteUserByEmail } from "~/models/user.server";
-import { loader as meLoader, action as meAction } from "~/routes/api.users.me";
-import { type User } from "~/schema";
+import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
+import { BASE_URL } from 'vitest.setup'
+import { createToken } from '~/lib/jwt'
+import { registerUser } from '~/lib/user-service.server'
+import { deleteUserByEmail } from '~/models/user.server'
+import { loader as meLoader, action as meAction } from '~/routes/api.users.me'
+import { type User } from '~/schema'
 
-const ME_TEST_USER = {
-  name: "meTest",
-  email: "test@me.endpoint",
-  password: "highlySecurePasswordForTesting",
-};
+const ME_TEST_USER = generateTestUserCredentials()
 
-const ME_UPDATE_EMAIL = "test.updated@me.endpoint";
-const ME_UPDATE_NAME = "me2Test";
+const ME_UPDATE_EMAIL = 'test.updated@me.endpoint'
+const ME_UPDATE_NAME = 'me2Test'
 
-describe("openSenseMap API Routes: /users", () => {
-  let jwt: string = "";
+describe('openSenseMap API Routes: /users', () => {
+	let jwt: string = ''
 
-  beforeAll(async () => {
-    const user = await registerUser(
-      ME_TEST_USER.name,
-      ME_TEST_USER.email,
-      ME_TEST_USER.password,
-      "en_US",
-    );
-    const { token: t } = await createToken(user as User);
-    jwt = t;
-  });
+	beforeAll(async () => {
+		const registration = await registerUser(
+			ME_TEST_USER.name,
+			ME_TEST_USER.email,
+			ME_TEST_USER.password,
+			'en_US',
+			true
+		)
+		expect(registration.ok).toBe(true)
 
-  describe("/me", () => {
-    describe("GET", () => {
-      it("should allow users to request their details", async () => {
-        // Arrange
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${jwt}` },
-        });
+		if (!registration.ok) {
+			throw new Error(
+				`Test setup failed: ${registration.field} -> ${registration.code}`,
+			)
+		}
+		const user = registration.user
+		const { token: t } = await createToken(user as User)
+		jwt = t
+	})
 
-        // Act
-        const dataFunctionValue = await meLoader({
-          request: request,
-        } as LoaderFunctionArgs);
-        const response = dataFunctionValue as Response;
-        const body = await response?.json();
+	describe('/me', () => {
+		describe('GET', () => {
+			it('should allow users to request their details', async () => {
+				// Arrange
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'GET',
+					headers: { Authorization: `Bearer ${jwt}` },
+				})
 
-        // Assert
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe(
-          "application/json; charset=utf-8",
-        );
-        expect(body).toMatchObject({
-          code: "Ok",
-          data: { me: { email: ME_TEST_USER.email } },
-        });
-      });
-    });
+				// Act
+				const dataFunctionValue = await meLoader({
+					request: request,
+				} as LoaderFunctionArgs)
+				const response = dataFunctionValue as Response
+				const body = await response?.json()
 
-    describe("PUT", () => {
-      it("should deny to change email and password at the same time", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: "new-email@email.www",
-            newPassword: "87654321",
-          }),
-        });
+				// Assert
+				expect(response.status).toBe(200)
+				expect(response.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
+				)
+				expect(body).toMatchObject({
+					code: 'Ok',
+					data: { me: { email: ME_TEST_USER.email } },
+				})
+			})
+		})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
-        const body = await response.json();
+		describe('PUT', () => {
+			it('should deny to change email and password at the same time', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						email: 'new-email@email.www',
+						newPassword: '87654321',
+					}),
+				})
 
-        expect(response.status).toBe(400);
-        expect(body).toHaveProperty(
-          "message",
-          "You cannot change your email address and password in the same request.",
-        );
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
+				const body = await response.json()
 
-      it("should deny to change email without current passsword", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: "new-email@email.www" }),
-        });
+				expect(response.status).toBe(400)
+				expect(body).toHaveProperty(
+					'message',
+					'You cannot change your email address and password in the same request.',
+				)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
-        const body = await response.json();
+			it('should deny to change email without current passsword', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ email: 'new-email@email.www' }),
+				})
 
-        expect(response.status).toBe(400);
-        expect(body).toHaveProperty(
-          "message",
-          "To change your password or email address, please supply your current password.",
-        );
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
+				const body = await response.json()
 
-      it("should deny to change email with wrong current passsword", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: "new-email@email.www",
-            currentPassword: "wrongpassword",
-          }),
-        });
+				expect(response.status).toBe(400)
+				expect(body).toHaveProperty(
+					'message',
+					'To change your password or email address, please supply your current password.',
+				)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
-        const body = await response.json();
+			it('should deny to change email with wrong current passsword', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						email: 'new-email@email.www',
+						currentPassword: 'wrongpassword',
+					}),
+				})
 
-        expect(response.status).toBe(400);
-        expect(response.headers.get("content-type")).toBe(
-          "application/json; charset=utf-8",
-        );
-        expect(body).toHaveProperty("message", "Password incorrect");
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
+				const body = await response.json()
 
-      it("should allow to change email with correct current passsword", async () => {
-        // Change email
-        const putRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: ME_UPDATE_EMAIL,
-            currentPassword: ME_TEST_USER.password,
-          }),
-        });
-        const putResponse = (await meAction({
-          request: putRequest,
-        } as ActionFunctionArgs)) as Response;
-        const putBody = await putResponse.json();
+				expect(response.status).toBe(400)
+				expect(response.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
+				)
+				expect(body).toHaveProperty('message', 'Password incorrect')
+			})
 
-        expect(putResponse.status).toBe(200);
-        expect(putBody).toHaveProperty(
-          "message",
-          "User successfully saved. E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address",
-        );
+			it('should allow to change email with correct current passsword', async () => {
+				// Change email
+				const putRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						email: ME_UPDATE_EMAIL,
+						currentPassword: ME_TEST_USER.password,
+					}),
+				})
+				const putResponse = (await meAction({
+					request: putRequest,
+				} as ActionFunctionArgs)) as Response
+				const putBody = await putResponse.json()
 
-        // Fetch updated user
-        const getRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${jwt}` },
-        });
-        const getResponse = (await meLoader({
-          request: getRequest,
-        } as ActionFunctionArgs)) as Response;
-        const getBody = await getResponse.json();
+				expect(putResponse.status).toBe(200)
+				expect(putBody).toHaveProperty(
+					'message',
+					'User successfully saved. E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address',
+				)
 
-        expect(getResponse.status).toBe(200);
-        expect(getBody.data.me.email).toBe(ME_TEST_USER.email);
-      });
+				// Fetch updated user
+				const getRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'GET',
+					headers: { Authorization: `Bearer ${jwt}` },
+				})
+				const getResponse = (await meLoader({
+					request: getRequest,
+				} as ActionFunctionArgs)) as Response
+				const getBody = await getResponse.json()
 
-      it("should allow to change name", async () => {
-        // Change name
-        const putRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: ME_UPDATE_NAME }),
-        });
-        const putResponse = (await meAction({
-          request: putRequest,
-        } as ActionFunctionArgs)) as Response;
-        const putBody = await putResponse.json();
+				expect(getResponse.status).toBe(200)
+				expect(getBody.data.me.email).toBe(ME_TEST_USER.email)
+			})
 
-        expect(putResponse.status).toBe(200);
-        expect(putBody).toHaveProperty(
-          "message",
-          "User successfully saved. Name changed.",
-        );
+			it('should allow to change name', async () => {
+				// Change name
+				const putRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ name: ME_UPDATE_NAME }),
+				})
+				const putResponse = (await meAction({
+					request: putRequest,
+				} as ActionFunctionArgs)) as Response
+				const putBody = await putResponse.json()
 
-        // Fetch updated user
-        const getRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${jwt}` },
-        });
-        const getResponse = (await meLoader({
-          request: getRequest,
-        } as ActionFunctionArgs)) as Response;
-        const getBody = await getResponse.json();
+				expect(putResponse.status).toBe(200)
+				expect(putBody).toHaveProperty(
+					'message',
+					'User successfully saved. Name changed.',
+				)
 
-        expect(getResponse.status).toBe(200);
-        expect(getBody.data.me.name).toBe(ME_UPDATE_NAME);
-      });
+				// Fetch updated user
+				const getRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'GET',
+					headers: { Authorization: `Bearer ${jwt}` },
+				})
+				const getResponse = (await meLoader({
+					request: getRequest,
+				} as ActionFunctionArgs)) as Response
+				const getBody = await getResponse.json()
 
-      it("should return that no changed properties are applied and user remains unchanged", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: ME_UPDATE_NAME }),
-        });
+				expect(getResponse.status).toBe(200)
+				expect(getBody.data.me.name).toBe(ME_UPDATE_NAME)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
-        const body = await response.json();
+			it('should return that no changed properties are applied and user remains unchanged', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ name: ME_UPDATE_NAME }),
+				})
 
-        expect(response.status).toBe(200);
-        expect(body).toHaveProperty(
-          "message",
-          "No changed properties supplied. User remains unchanged.",
-        );
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
+				const body = await response.json()
 
-      it("should deny to change name to existing name", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: ME_UPDATE_NAME,
-            currentPassword: ME_TEST_USER.password,
-          }),
-        });
+				expect(response.status).toBe(200)
+				expect(body).toHaveProperty(
+					'message',
+					'No changed properties supplied. User remains unchanged.',
+				)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
-        const body = await response.json();
+			it('should deny to change name to existing name', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						name: ME_UPDATE_NAME,
+						currentPassword: ME_TEST_USER.password,
+					}),
+				})
 
-        expect(response.status).toBe(200);
-        expect(body).toHaveProperty(
-          "message",
-          "No changed properties supplied. User remains unchanged.",
-        );
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
+				const body = await response.json()
 
-      it("should deny to change password with too short new password", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            newPassword: "short",
-            currentPassword: ME_TEST_USER.password,
-          }),
-        });
+				expect(response.status).toBe(200)
+				expect(body).toHaveProperty(
+					'message',
+					'No changed properties supplied. User remains unchanged.',
+				)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
-        const body = await response.json();
+			it('should deny to change password with too short new password', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						newPassword: 'short',
+						currentPassword: ME_TEST_USER.password,
+					}),
+				})
 
-        expect(response.status).toBe(400);
-        expect(body).toHaveProperty(
-          "message",
-          "New password should have at least 8 characters",
-        );
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
+				const body = await response.json()
 
-      it("should deny to change email to invalid email", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: "invalid email",
-            currentPassword: ME_TEST_USER.password,
-          }),
-        });
+				expect(response.status).toBe(400)
+				expect(body).toHaveProperty(
+					'message',
+					'New password should have at least 8 characters',
+				)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
+			it('should deny to change email to invalid email', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						email: 'invalid email',
+						currentPassword: ME_TEST_USER.password,
+					}),
+				})
 
-        expect(response.status).toBe(400);
-      });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
 
-      it("should deny to change name to invalid name", async () => {
-        const request = new Request(`${BASE_URL}/users/me`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: " invalid name",
-            currentPassword: ME_TEST_USER.password,
-          }),
-        });
+				expect(response.status).toBe(400)
+			})
 
-        const response = (await meAction({
-          request,
-        } as ActionFunctionArgs)) as Response;
+			it('should deny to change name to invalid name', async () => {
+				const request = new Request(`${BASE_URL}/users/me`, {
+					method: 'PUT',
+					headers: {
+						Authorization: `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						name: ' invalid name',
+						currentPassword: ME_TEST_USER.password,
+					}),
+				})
 
-        expect(response.status).toBe(400);
-      });
-    });
+				const response = (await meAction({
+					request,
+				} as ActionFunctionArgs)) as Response
 
-    describe("DELETE", () => {
-      it("should deny to delete user without jwt", async () => {
-        // Arrange
-        const deleteRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "DELETE",
-        });
+				expect(response.status).toBe(400)
+			})
+		})
 
-        // Act
-        const deleteResponse = (await meAction({
-          request: deleteRequest,
-        } as ActionFunctionArgs)) as Response;
+		describe('DELETE', () => {
+			it('should deny to delete user without jwt', async () => {
+				// Arrange
+				const deleteRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'DELETE',
+				})
 
-        // Assert
-        expect(deleteResponse.status).toBe(403);
-      });
+				// Act
+				const deleteResponse = (await meAction({
+					request: deleteRequest,
+				} as ActionFunctionArgs)) as Response
 
-      it("should deny to delete user without password parameter", async () => {
-        // Attempt to delete user without password parameter
-        const deleteRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${jwt}` },
-          // No body
-        });
-        const deleteResponse = (await meAction({
-          request: deleteRequest,
-        } as ActionFunctionArgs)) as Response;
+				// Assert
+				expect(deleteResponse.status).toBe(403)
+			})
 
-        // Assert: Should return 400 Bad Request
-        expect(deleteResponse.status).toBe(400);
-      });
+			it('should deny to delete user without password parameter', async () => {
+				// Attempt to delete user without password parameter
+				const deleteRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'DELETE',
+					headers: { Authorization: `Bearer ${jwt}` },
+					// No body
+				})
+				const deleteResponse = (await meAction({
+					request: deleteRequest,
+				} as ActionFunctionArgs)) as Response
 
-      it("should deny to delete user with empty password parameter", async () => {
-        // Prepare the body with an empty password
-        const deleteParams = new URLSearchParams();
-        deleteParams.append("password", "");
+				// Assert: Should return 400 Bad Request
+				expect(deleteResponse.status).toBe(400)
+			})
 
-        // Attempt to delete user with empty password
-        const deleteRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization: `Bearer ${jwt}`,
-          },
-          body: deleteParams.toString(),
-        });
+			it('should deny to delete user with empty password parameter', async () => {
+				// Prepare the body with an empty password
+				const deleteParams = new URLSearchParams()
+				deleteParams.append('password', '')
 
-        const deleteResponse = (await meAction({
-          request: deleteRequest,
-        } as ActionFunctionArgs)) as Response;
+				// Attempt to delete user with empty password
+				const deleteRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: deleteParams.toString(),
+				})
 
-        expect(deleteResponse.status).toBe(400);
-      });
+				const deleteResponse = (await meAction({
+					request: deleteRequest,
+				} as ActionFunctionArgs)) as Response
 
-      it("should deny to delete user with wrong password parameter", async () => {
-        // Prepare the body with an incorrect password
-        const deleteParams = new URLSearchParams();
-        deleteParams.append("password", `${ME_TEST_USER.password}hallo`);
+				expect(deleteResponse.status).toBe(400)
+			})
 
-        // Attempt to delete user with wrong password
-        const deleteRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization: `Bearer ${jwt}`,
-          },
-          body: deleteParams.toString(),
-        });
+			it('should deny to delete user with wrong password parameter', async () => {
+				// Prepare the body with an incorrect password
+				const deleteParams = new URLSearchParams()
+				deleteParams.append('password', `${ME_TEST_USER.password}hallo`)
 
-        const deleteResponse = (await meAction({
-          request: deleteRequest,
-        } as ActionFunctionArgs)) as Response;
-        const deleteBody = await deleteResponse.json();
+				// Attempt to delete user with wrong password
+				const deleteRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: deleteParams.toString(),
+				})
 
-        // Assertions
-        expect(deleteResponse.status).toBe(401);
-        expect(deleteResponse.headers.get("content-type")).toBe(
-          "application/json; charset=utf-8",
-        );
-        expect(deleteBody).toHaveProperty("message", "Password incorrect");
-      });
+				const deleteResponse = (await meAction({
+					request: deleteRequest,
+				} as ActionFunctionArgs)) as Response
+				const deleteBody = await deleteResponse.json()
 
-      it("should allow to delete user with correct password parameter", async () => {
-        // Prepare the body with the correct password
-        const deleteParams = new URLSearchParams();
-        deleteParams.append("password", ME_TEST_USER.password);
+				// Assertions
+				expect(deleteResponse.status).toBe(401)
+				expect(deleteResponse.headers.get('content-type')).toBe(
+					'application/json; charset=utf-8',
+				)
+				expect(deleteBody).toHaveProperty('message', 'Password incorrect')
+			})
 
-        // Attempt to delete user with correct password
-        const deleteRequest = new Request(`${BASE_URL}/users/me`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization: `Bearer ${jwt}`,
-          },
-          body: deleteParams.toString(),
-        });
+			it('should allow to delete user with correct password parameter', async () => {
+				// Prepare the body with the correct password
+				const deleteParams = new URLSearchParams()
+				deleteParams.append('password', ME_TEST_USER.password)
 
-        const deleteResponse = (await meAction({
-          request: deleteRequest,
-        } as ActionFunctionArgs)) as Response;
-        expect(deleteResponse.status).toBe(200);
-      });
-    });
+				// Attempt to delete user with correct password
+				const deleteRequest = new Request(`${BASE_URL}/users/me`, {
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						Authorization: `Bearer ${jwt}`,
+					},
+					body: deleteParams.toString(),
+				})
 
-    afterAll(async () => {
-      // delete the valid test user
-      await deleteUserByEmail(ME_TEST_USER.email);
-      await deleteUserByEmail(ME_UPDATE_EMAIL);
-    });
-  });
-});
+				const deleteResponse = (await meAction({
+					request: deleteRequest,
+				} as ActionFunctionArgs)) as Response
+				expect(deleteResponse.status).toBe(200)
+			})
+		})
+
+		afterAll(async () => {
+			// delete the valid test user
+			await deleteUserByEmail(ME_TEST_USER.email)
+			await deleteUserByEmail(ME_UPDATE_EMAIL)
+		})
+	})
+})

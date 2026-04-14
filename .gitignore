@@ -23,3 +23,7 @@ measurements.csv
 .react-router/
 
 /coverage
+
+/minio-data
+/rustfs-data
+/public/openapi.json
