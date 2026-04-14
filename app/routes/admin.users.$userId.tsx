@@ -346,7 +346,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="passwordReset"
-											className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
 										>
 											Reset password
 										</button>
@@ -355,7 +355,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendWelcomeMail"
-											className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
 										>
 											Resend Welcome Mail
 										</button>
@@ -364,7 +364,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendEmailConfirmation"
-											className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
 										>
 											Resend Email Confirmation
 										</button>
@@ -375,7 +375,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="delete"
-											className="inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-red-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700"
 											onClick={(e) => {
 												const ok = window.confirm(
 													'Are you sure you want to delete this user?',
@@ -390,7 +390,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="update"
-											className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
 										>
 											Update user
 										</button>
