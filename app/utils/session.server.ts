@@ -112,6 +112,18 @@ export async function requireUser(request: Request) {
 	throw await logout({ request: request, redirectTo: '/explore' })
 }
 
+export async function requireAdmin(
+	request: Request,
+) {
+	const user = await requireUser(request)
+
+	if (user.role !== 'admin') {
+		throw redirect('/explore')
+	}
+
+	return user
+}
+
 export async function createUserSession({
 	request,
 	userId,
