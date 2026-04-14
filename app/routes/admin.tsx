@@ -1,11 +1,8 @@
 import { Outlet } from 'react-router'
-import  { type Route } from './+types/admin'
-import { requireAdmin } from '~/utils/session.server'
+import { type Route } from './+types/admin'
+import { requireAdminMiddleware } from '~/utils/session.server'
 
-export async function loader({ request }: Route.LoaderArgs) {
-	await requireAdmin(request)
-	return null
-}
+export const middleware: Route.MiddlewareFunction[] = [requireAdminMiddleware]
 
 export default function AdminLayout() {
 	return (

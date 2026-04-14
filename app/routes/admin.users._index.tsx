@@ -1,13 +1,9 @@
 import { Link } from 'react-router'
-import  { type Route } from './+types/admin.users._index'
+import { type Route } from './+types/admin.users._index'
 import { getUsers } from '~/models/user.server'
-import { requireAdmin } from '~/utils/session.server'
 
-export async function loader({ request }: Route.LoaderArgs) {
-	await requireAdmin(request)
-
+export async function loader({}: Route.LoaderArgs) {
 	const users = await getUsers()
-
 	return { users }
 }
 
@@ -17,9 +13,9 @@ export default function AdminUsersIndexRoute({
 	const { users } = loaderData
 
 	return (
-		<div className="flex flex-col w-full">
+		<div className="flex w-full flex-col">
 			<div className="flex">
-				<span className="text-lg font-bold p-4">
+				<span className="p-4 text-lg font-bold">
 					Total users: {users.length}
 				</span>
 			</div>

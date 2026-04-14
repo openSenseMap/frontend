@@ -1,14 +1,10 @@
 import { Link } from 'react-router'
-import  { type Route } from './+types/admin.devices._index'
+import { type Route } from './+types/admin.devices._index'
 import { getDevices } from '~/models/device.server'
-import { requireAdmin } from '~/utils/session.server'
 
-export async function loader({ request }: Route.LoaderArgs) {
-	await requireAdmin(request)
-
+export async function loader({}: Route.LoaderArgs) {
 	const devices = await getDevices('json')
-
-	return ({ devices })
+	return { devices }
 }
 
 export default function AdminDevicesIndexRoute({
@@ -17,9 +13,9 @@ export default function AdminDevicesIndexRoute({
 	const { devices } = loaderData
 
 	return (
-		<div className="flex flex-col w-full">
+		<div className="flex w-full flex-col">
 			<div className="flex">
-				<span className="text-lg font-bold p-4">
+				<span className="p-4 text-lg font-bold">
 					Total devices: {devices.length}
 				</span>
 			</div>

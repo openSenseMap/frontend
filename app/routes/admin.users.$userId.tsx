@@ -1,7 +1,6 @@
 import { Form, Link, redirect, useActionData } from 'react-router'
 import invariant from 'tiny-invariant'
-import  { type Route } from './+types/admin.users.$userId'
-
+import { type Route } from './+types/admin.users.$userId'
 import { getUserDevices } from '~/models/device.server'
 import {
 	deleteUserById,
@@ -9,7 +8,7 @@ import {
 	getUserById,
 	updateUserById,
 } from '~/models/user.server'
-import { requireAdmin } from '~/utils/session.server'
+import { adminUserContext } from '~/utils/session.server'
 
 type ActionData = {
 	error?: boolean
@@ -21,9 +20,7 @@ type ActionData = {
 	}
 }
 
-export async function loader({ request, params }: Route.LoaderArgs) {
-	await requireAdmin(request)
-
+export async function loader({ params }: Route.LoaderArgs) {
 	invariant(params.userId, 'Expected params.userId')
 
 	const [user, devices] = await Promise.all([
@@ -41,9 +38,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export async function action({
 	request,
 	params,
+	context,
 }: Route.ActionArgs): Promise<Response | ActionData> {
-	const adminUser = await requireAdmin(request)
-
+	const adminUser = context.get(adminUserContext)
+	invariant(adminUser, 'Expected admin user in context')
 	invariant(params.userId, 'Expected params.userId')
 
 	const formData = await request.formData()
@@ -167,9 +165,7 @@ export default function AdminUserDetailRoute({
 						{actionData?.message ? (
 							<p
 								className={
-									actionData.error
-										? 'mb-4 text-red-600'
-										: 'mb-4 text-green-700'
+									actionData.error ? 'text-red-600 mb-4' : 'mb-4 text-green-700'
 								}
 							>
 								{actionData.message}
@@ -196,7 +192,7 @@ export default function AdminUserDetailRoute({
 													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.name ? (
-													<p className="mt-1 text-sm text-red-600">
+													<p className="text-red-600 mt-1 text-sm">
 														{actionData.fieldErrors.name}
 													</p>
 												) : null}
@@ -217,7 +213,7 @@ export default function AdminUserDetailRoute({
 													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.email ? (
-													<p className="mt-1 text-sm text-red-600">
+													<p className="text-red-600 mt-1 text-sm">
 														{actionData.fieldErrors.email}
 													</p>
 												) : null}
@@ -232,7 +228,7 @@ export default function AdminUserDetailRoute({
 																name="email-confirmed"
 																type="checkbox"
 																defaultChecked={Boolean(user.emailIsConfirmed)}
-																className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+																className="text-indigo-600 h-4 w-4 rounded border-gray-300"
 															/>
 														</div>
 														<div className="ml-3 text-sm">
@@ -259,10 +255,10 @@ export default function AdminUserDetailRoute({
 													id="language"
 													name="language"
 													defaultValue={user.language ?? ''}
-													className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.language ? (
-													<p className="mt-1 text-sm text-red-600">
+													<p className="text-red-600 mt-1 text-sm">
 														{actionData.fieldErrors.language}
 													</p>
 												) : null}
@@ -278,7 +274,7 @@ export default function AdminUserDetailRoute({
 												<select
 													id="role"
 													name="role"
-													className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm sm:text-sm"
 													defaultValue={user.role ?? 'user'}
 												>
 													<option value="admin">Admin</option>
@@ -299,7 +295,7 @@ export default function AdminUserDetailRoute({
 													id="user-id"
 													defaultValue={user.id}
 													disabled
-													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
 												/>
 											</div>
 
@@ -316,7 +312,7 @@ export default function AdminUserDetailRoute({
 													id="created-at"
 													defaultValue={String(user.createdAt)}
 													disabled
-													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
 												/>
 											</div>
 
@@ -333,7 +329,7 @@ export default function AdminUserDetailRoute({
 													id="updated-at"
 													defaultValue={String(user.updatedAt)}
 													disabled
-													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
 												/>
 											</div>
 										</div>
@@ -346,7 +342,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="passwordReset"
-											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-sm"
 										>
 											Reset password
 										</button>
@@ -355,7 +351,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendWelcomeMail"
-											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-sm"
 										>
 											Resend Welcome Mail
 										</button>
@@ -364,7 +360,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendEmailConfirmation"
-											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-sm"
 										>
 											Resend Email Confirmation
 										</button>
@@ -375,7 +371,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="delete"
-											className="inline-flex justify-center rounded-md border border-transparent bg-red-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700"
 											onClick={(e) => {
 												const ok = window.confirm(
 													'Are you sure you want to delete this user?',
@@ -390,7 +386,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="update"
-											className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
 										>
 											Update user
 										</button>
@@ -461,7 +457,9 @@ export default function AdminUserDetailRoute({
 								</table>
 
 								{devices.length === 0 ? (
-									<p className="text-sm text-gray-500">This user has no devices.</p>
+									<p className="text-sm text-gray-500">
+										This user has no devices.
+									</p>
 								) : null}
 							</div>
 						</div>

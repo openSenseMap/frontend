@@ -1,17 +1,9 @@
-// import maplibreStyles from 'maplibre-gl/dist/maplibre-gl.css?url'
 import { useCallback, useMemo, useState } from 'react'
-import { Marker, type MarkerDragEvent } from 'react-map-gl'
-import {
-	Form,
-	Link,
-	redirect,
-	useActionData,
-  type LinksFunction
-} from 'react-router'
+import { type MarkerDragEvent } from 'react-map-gl'
+import { Form, Link, redirect, useActionData } from 'react-router'
 import invariant from 'tiny-invariant'
-import  { type Route } from './+types/admin.devices.$deviceId'
+import { type Route } from './+types/admin.devices.$deviceId'
 
-import Map from '~/components/map'
 import {
 	getDevice,
 	updateDevice,
@@ -19,13 +11,6 @@ import {
 	type UpdateDeviceArgs,
 } from '~/models/device.server'
 import { getUsers } from '~/models/user.server'
-import { requireAdmin } from '~/utils/session.server'
-
-
-
-// export const links: LinksFunction = () => [
-// 	{ rel: 'stylesheet', href: maplibreStyles },
-// ]
 
 type ActionData = {
 	formError?: string
@@ -36,13 +21,11 @@ type ActionData = {
 	}
 }
 
-export async function loader({ request, params }: Route.LoaderArgs) {
-	await requireAdmin(request)
-
+export async function loader({ params }: Route.LoaderArgs) {
 	invariant(params.deviceId, 'Expected params.deviceId')
 
 	const [device, users] = await Promise.all([
-		getDevice({id: params.deviceId}),
+		getDevice({ id: params.deviceId }),
 		getUsers(),
 	])
 
@@ -60,8 +43,6 @@ export async function action({
 	request,
 	params,
 }: Route.ActionArgs): Promise<ActionData | Response> {
-	await requireAdmin(request)
-
 	invariant(params.deviceId, 'Expected params.deviceId')
 
 	const formData = await request.formData()
@@ -156,11 +137,6 @@ export default function AdminDeviceDetailRoute({
 		return users.find((user) => user.id === deviceOwner) ?? null
 	}, [users, deviceOwner])
 
-	const onMarkerDragEnd = useCallback((event: MarkerDragEvent) => {
-		const { lng, lat } = event.lngLat
-		setDeviceLocation([lng, lat])
-	}, [])
-
 	return (
 		<>
 			<div className="mb-4">
@@ -211,7 +187,7 @@ export default function AdminDeviceDetailRoute({
 												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
 											/>
 											{actionData?.fieldErrors?.name ? (
-												<p className="mt-1 text-sm text-red-600">
+												<p className="text-red-600 mt-1 text-sm">
 													{actionData.fieldErrors.name}
 												</p>
 											) : null}
@@ -229,7 +205,7 @@ export default function AdminDeviceDetailRoute({
 												onChange={(e) => setDeviceOwner(e.target.value)}
 												id="owner"
 												disabled
-												className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm disabled:bg-gray-100"
+												className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm disabled:bg-gray-100"
 											>
 												{users.map((user) => (
 													<option key={user.id} value={user.id}>
@@ -459,7 +435,7 @@ export default function AdminDeviceDetailRoute({
 												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
 											/>
 											{actionData?.fieldErrors?.longitude ? (
-												<p className="mt-1 text-sm text-red-600">
+												<p className="text-red-600 mt-1 text-sm">
 													{actionData.fieldErrors.longitude}
 												</p>
 											) : null}
@@ -485,7 +461,7 @@ export default function AdminDeviceDetailRoute({
 												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
 											/>
 											{actionData?.fieldErrors?.latitude ? (
-												<p className="mt-1 text-sm text-red-600">
+												<p className="text-red-600 mt-1 text-sm">
 													{actionData.fieldErrors.latitude}
 												</p>
 											) : null}
@@ -504,7 +480,7 @@ export default function AdminDeviceDetailRoute({
 												id="device-id"
 												defaultValue={device.id}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
 											/>
 										</div>
 
@@ -521,7 +497,7 @@ export default function AdminDeviceDetailRoute({
 												id="status"
 												defaultValue={device.status ?? ''}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
 											/>
 										</div>
 
@@ -538,7 +514,7 @@ export default function AdminDeviceDetailRoute({
 												id="created-at"
 												defaultValue={String(device.createdAt)}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
 											/>
 										</div>
 
@@ -555,7 +531,7 @@ export default function AdminDeviceDetailRoute({
 												id="updated-at"
 												defaultValue={String(device.updatedAt)}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
 											/>
 										</div>
 
@@ -572,7 +548,7 @@ export default function AdminDeviceDetailRoute({
 												id="public"
 												defaultValue={device.public ? 'yes' : 'no'}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
 											/>
 										</div>
 									</div>
@@ -583,7 +559,7 @@ export default function AdminDeviceDetailRoute({
 										type="submit"
 										name="_action"
 										value="delete"
-										className="inline-flex justify-center rounded-md border border-transparent bg-red-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700"
+										className="inline-flex justify-center rounded-md border border-transparent bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700"
 										onClick={(e) => {
 											const ok = window.confirm(
 												'Are you sure you want to delete this device?',
@@ -598,7 +574,7 @@ export default function AdminDeviceDetailRoute({
 										type="submit"
 										name="_action"
 										value="update"
-										className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+										className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
 									>
 										Update device
 									</button>
