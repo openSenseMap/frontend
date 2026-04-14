@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { count, eq, sql } from 'drizzle-orm'
 import { createProfileWithTransaction } from './profile.server'
 import { drizzleClient } from '~/db.server'
 import {
@@ -8,7 +8,8 @@ import {
 	type User,
 	password as passwordTable,
 	user,
-	tosUserState
+	tosUserState,
+	device
 } from '~/schema'
 
 export async function getUserById(id: User['id']) {
@@ -70,6 +71,10 @@ export async function deleteUserByEmail(email: User['email']) {
 	return drizzleClient.delete(user).where(eq(user.email, email))
 }
 
+export async function deleteUserById(id: User['id']) {
+	return drizzleClient.delete(user).where(eq(user.id, id))
+}
+
 //* user name shouldn't be unique
 /* export async function getUserByName(name: User["name"]) {
   return prisma.user.findUnique({ where: { name } });
@@ -126,8 +131,67 @@ export async function updateUserlocale(
 		.where(eq(user.email, email))
 }
 
+type UpdateUserArgs = {
+	name: string
+	email: string
+	language: string
+	role: 'admin' | 'user'
+	emailIsConfirmed: boolean
+}
+
+export async function updateUserById(
+	id: string,
+	args: UpdateUserArgs,
+) {
+	const [updated] = await drizzleClient
+		.update(user)
+		.set({
+			name: args.name,
+			email: args.email,
+			language: args.language,
+			role: args.role,
+			emailIsConfirmed: args.emailIsConfirmed,
+			updatedAt: sql`NOW()`,
+		})
+		.where(eq(user.id, id))
+		.returning()
+
+	if (!updated) {
+		throw new Error(`User ${id} not found`)
+	}
+
+	return updated
+}
+
 export async function getUsers() {
 	return drizzleClient.query.user.findMany()
+}
+
+export async function getUsersForAdminList() {
+	return drizzleClient
+		.select({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			role: user.role,
+			language: user.language,
+			emailIsConfirmed: user.emailIsConfirmed,
+			createdAt: user.createdAt,
+			updatedAt: user.updatedAt,
+			devicesCount: count(device.id),
+		})
+		.from(user)
+		.leftJoin(device, eq(device.userId, user.id))
+		.groupBy(
+			user.id,
+			user.name,
+			user.email,
+			user.role,
+			user.language,
+			user.emailIsConfirmed,
+			user.createdAt,
+			user.updatedAt,
+		)
 }
 
 export const preparePasswordHash = function preparePasswordHash(
