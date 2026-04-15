@@ -17,8 +17,6 @@ const TEST_BOX = {
 	latitude: 0,
 	longitude: 0,
 	model: 'luftdaten.info',
-	mqttEnabled: false,
-	ttnEnabled: false,
 }
 
 describe('openSenseMap API Routes: /users', () => {
