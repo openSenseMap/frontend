@@ -9,6 +9,7 @@ import {
 	measurements1hourView,
 	measurements1monthView,
 	measurements1yearView,
+	device
 } from '~/schema'
 import {
 	type MinimalDevice,
@@ -19,6 +20,7 @@ import {
 	insertMeasurementsWithLocation,
 	updateLastMeasurements,
 } from '~/utils/measurement-server-helper'
+import { ArchivedDeviceError } from './device.server'
 
 // This function retrieves measurements from the database based on the provided parameters.
 export function getMeasurement(
@@ -175,16 +177,15 @@ export function getMeasurement(
 }
 
 export async function saveMeasurements(
-	device: MinimalDevice,
+	minimalDevice: MinimalDevice,
 	measurements: MeasurementWithLocation[],
 ): Promise<void> {
 	if (!device) throw new Error('No device given!')
 	if (!Array.isArray(measurements)) throw new Error('Array expected')
 
-	const sensorIds = device.sensors.map((s: any) => s.id)
+	const sensorIds = minimalDevice.sensors.map((s: any) => s.id)
 	const lastMeasurements: Record<string, NonNullable<LastMeasurement>> = {}
 
-	// Validate and prepare measurements
 	for (let i = measurements.length - 1; i >= 0; i--) {
 		const m = measurements[i]
 
@@ -197,9 +198,9 @@ export async function saveMeasurements(
 		}
 
 		const now = new Date()
-		const maxFutureTime = 30 * 1000 // 30 seconds
-
+		const maxFutureTime = 30 * 1000
 		const measurementTime = new Date(m.createdAt || Date.now())
+
 		if (measurementTime.getTime() > now.getTime() + maxFutureTime) {
 			const error = new Error(
 				`Measurement timestamp is too far in the future: ${measurementTime.toISOString()}`,
@@ -221,21 +222,31 @@ export async function saveMeasurements(
 		}
 	}
 
-	// Track measurements that update device location (those with explicit locations)
 	const deviceLocationUpdates = getLocationUpdates(measurements)
-	const locations = await findOrCreateLocations(deviceLocationUpdates)
 
-	// First, update device locations for all measurements with explicit locations
-	// This ensures the location history is complete before we infer locations
-	await addLocationUpdates(deviceLocationUpdates, device.id, locations)
-
-	// Note that the insertion of measurements and update of sensors need to be in one
-	// transaction, since otherwise other updates could get in between and the data would be
-	// inconsistent. This shouldn't be a problem for the updates above.
 	await drizzleClient.transaction(async (tx) => {
-		// Now process each measurement and infer locations if needed
-		await insertMeasurementsWithLocation(measurements, locations, device.id, tx)
-		// Update sensor lastMeasurement values
+		const [currentDevice] = await tx
+			.select({
+				id: device.id,
+				archivedAt: device.archivedAt,
+			})
+			.from(device)
+			.where(eq(device.id, device.id))
+			.limit(1)
+
+		if (!currentDevice) {
+			const error = new Error('Device not found')
+			error.name = 'NotFoundError'
+			throw error
+		}
+
+		if (currentDevice.archivedAt) {
+			throw new ArchivedDeviceError(currentDevice.id)
+		}
+
+		const locations = await findOrCreateLocations(deviceLocationUpdates)
+		await addLocationUpdates(deviceLocationUpdates, minimalDevice.id, locations)
+		await insertMeasurementsWithLocation(measurements, locations, minimalDevice.id, tx)
 		await updateLastMeasurements(lastMeasurements, tx)
 	})
 }
