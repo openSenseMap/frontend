@@ -2,9 +2,10 @@ import {
 	createContext,
 	createCookieSessionStorage,
 	redirect,
+	RouterContext,
+	RouterContextProvider,
 } from 'react-router'
 import invariant from 'tiny-invariant'
-import { Context } from 'vm'
 import { getUserById } from '~/models/user.server'
 import { type User } from '~/schema'
 
@@ -119,10 +120,9 @@ export async function requireUser(request: Request) {
 
 export const adminUserContext = createContext<User | null>(null)
 export async function requireAdminMiddleware(
-	{ request, context }: { request: Request; context: Context },
+	{ request, context }: { request: Request; context: RouterContextProvider },
 	next: () => Promise<Response>,
 ) {
-	console.log('hello world')
 	const user = await requireUser(request)
 	if (user.role !== 'admin') throw redirect('/explore')
 
@@ -135,7 +135,6 @@ export async function createUserSession({
 	userId,
 	remember,
 	redirectTo,
-	headers,
 }: {
 	request: Request
 	userId: string
