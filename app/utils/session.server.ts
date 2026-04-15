@@ -120,7 +120,10 @@ export async function requireUser(request: Request) {
 
 export const adminUserContext = createContext<User | null>(null)
 export async function requireAdminMiddleware(
-	{ request, context }: { request: Request; context: RouterContextProvider },
+	{
+		request,
+		context,
+	}: { request: Request; context: Readonly<RouterContextProvider> },
 	next: () => Promise<Response>,
 ) {
 	const user = await requireUser(request)
