@@ -130,5 +130,6 @@ export async function action(args: ActionFunctionArgs) {
 		request: args.request,
 		params: args.params as any,
 		context: args.context as any,
+		unstable_url: new URL(args.request.url)
 	})
 }

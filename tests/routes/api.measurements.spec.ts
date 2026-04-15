@@ -1,6 +1,7 @@
 import { type AppLoadContext, type ActionFunctionArgs } from 'react-router'
 import { csvExampleData, jsonSubmitData, byteSubmitData } from 'tests/data'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
+import { makeActionArgs } from 'tests/utils/react-router-args'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
 import { registerUser } from '~/lib/user-service.server'
@@ -80,11 +81,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				},
 			)
 
-			const response: any = await postSingleMeasurementAction({
-				request,
-				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postSingleMeasurementAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId, sensorId: sensorIds[0] },
+				}),
+			)
 
 			expect(response).toBeInstanceOf(Response)
 			expect(response.status).toBe(201)
@@ -104,11 +105,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				},
 			)
 
-			const response: any = await postSingleMeasurementAction({
-				request,
-				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postSingleMeasurementAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId, sensorId: sensorIds[0] },
+				}),
+			)
 
 			expect(response.status).toBe(401)
 			const body = await response.json()
@@ -130,11 +131,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				},
 			)
 
-			const response: any = await postSingleMeasurementAction({
-				request,
-				params: { deviceId: deviceId, sensorId: sensorIds[1] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postSingleMeasurementAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId, sensorId: sensorIds[1] },
+				}),
+			)
 
 			expect(response.status).toBe(201)
 			expect(await response.text()).toBe('Measurement saved in box')
@@ -155,11 +156,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				},
 			)
 
-			const response: any = await postSingleMeasurementAction({
-				request,
-				params: { deviceId: deviceId, sensorId: sensorIds[1] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postSingleMeasurementAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId, sensorId: sensorIds[1] },
+				}),
+			)
 
 			expect(response.status).toBe(422)
 		})
@@ -181,11 +182,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				body: csvPayload,
 			})
 
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId: deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 
 			expect(response.status).toBe(201)
 			expect(await response.text()).toContain('Measurements saved in box')
@@ -203,11 +204,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				body: csvPayload,
 			})
 
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId: deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 
 			expect(response.status).toBe(201)
 		})
@@ -224,11 +225,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				body: csvPayload,
 			})
 
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId: deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 
 			expect(response.status).toBe(422)
 		})
@@ -249,11 +250,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				body: byteSubmitData(sensors) as unknown as BodyInit,
 			})
 
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId: deviceId },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 
 			expect(response.status).toBe(201)
 			expect(await response.text()).toContain('Measurements saved in box')
@@ -287,11 +288,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 				body: byteSubmitData(sensors, true) as unknown as BodyInit,
 			})
 
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId: deviceId },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 
 			expect(response.status).toBe(201)
 			expect(await response.text()).toBe('Measurements saved in box')
@@ -351,11 +352,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			body: bytes,
 		})
 
-		const response: any = await postMeasurementsAction({
-			request,
-			params: { deviceId: deviceId },
-			context: {} as AppLoadContext,
-		} as ActionFunctionArgs)
+		const response: any = await postMeasurementsAction(
+			makeActionArgs(request, {
+				params: { deviceId: deviceId },
+			}),
+		)
 
 		console.log('response invalid sensor', response)
 
@@ -373,11 +374,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			body: new Uint8Array(0),
 		})
 
-		const response: any = await postMeasurementsAction({
-			request,
-			params: { deviceId: deviceId },
-			context: {} as AppLoadContext,
-		} as ActionFunctionArgs)
+		const response: any = await postMeasurementsAction(
+			makeActionArgs(request, {
+				params: { deviceId: deviceId },
+			}),
+		)
 
 		expect(response.status).toBe(422) // Unprocessable Entity
 	})
@@ -431,11 +432,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const before = new Date()
 
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 
 			const after = new Date()
 
@@ -469,11 +470,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			const before = new Date()
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 			const after = new Date()
 
 			expect(response.status).toBe(201)
@@ -505,11 +506,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			const before = new Date()
-			const response: any = await postMeasurementsAction({
-				request,
-				params: { deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			const response: any = await postMeasurementsAction(
+				makeActionArgs(request, {
+					params: { deviceId: deviceId },
+				}),
+			)
 			const after = new Date()
 
 			expect(response.status).toBe(201)

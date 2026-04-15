@@ -1,3 +1,4 @@
+import { makeActionArgs } from 'tests/utils/react-router-args'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
@@ -123,11 +124,11 @@ describe('Device API: Feinstaub Addon behavior', () => {
 			body: JSON.stringify(updatePayload),
 		}) as unknown as Request
 
-		const response: any = await deviceUpdateAction({
-			request,
-			params: { deviceId: device.id },
-			context: {} as any,
-		})
+		const response = await deviceUpdateAction(
+			makeActionArgs(request, {
+				params: { deviceId: device.id },
+			}),
+		)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -154,11 +155,11 @@ describe('Device API: Feinstaub Addon behavior', () => {
 		}) as unknown as Request
 
 		// Second PUT should be idempotent — same sensors
-		const secondResponse: any = await deviceUpdateAction({
-			request: secondRequest,
-			params: { deviceId: device.id },
-			context: {} as any,
-		})
+		const secondResponse = await deviceUpdateAction(
+			makeActionArgs(secondRequest, {
+				params: { deviceId: device.id },
+			}),
+		)
 
 		expect(secondResponse.status).toBe(200)
 		const secondData = await secondResponse.json()
@@ -187,11 +188,11 @@ describe('Device API: Feinstaub Addon behavior', () => {
 			body: JSON.stringify(updatePayload),
 		}) as unknown as Request
 
-		const response: any = await deviceUpdateAction({
-			request,
-			params: { deviceId: device.id },
-			context: {} as any,
-		})
+		const response = await deviceUpdateAction(
+			makeActionArgs(request, {
+				params: { deviceId: device.id },
+			}),
+		)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()

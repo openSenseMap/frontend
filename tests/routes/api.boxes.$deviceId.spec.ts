@@ -1,9 +1,5 @@
-import {
-	type AppLoadContext,
-	type LoaderFunctionArgs,
-	type ActionFunctionArgs,
-} from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
+import { makeActionArgs, makeLoaderArgs } from 'tests/utils/react-router-args'
 import { BASE_URL } from 'vitest.setup'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
@@ -76,11 +72,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			})
 
 			// Act
-			const dataFunctionValue = await deviceLoader({
-				request: request,
-				params: { deviceId: queryableDevice!.id },
-				context: {} as AppLoadContext,
-			} as LoaderFunctionArgs)
+			const dataFunctionValue = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			const response = dataFunctionValue as Response
 
@@ -145,11 +141,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 			const data = await response.json()
 
 			expect(response.status).toBe(200)
@@ -201,11 +197,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response: any = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(response.status).toBe(200)
 
@@ -246,11 +242,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -271,11 +267,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -296,11 +292,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -322,11 +318,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -350,11 +346,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response = await deviceAction({
-				request,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const response = await deviceAction(
+				makeActionArgs(request, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -387,11 +383,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				},
 			)
 
-			const badDeleteResponse = await deviceAction({
-				request: badDeleteRequest,
-				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const badDeleteResponse = await deviceAction(
+				makeActionArgs(badDeleteRequest, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(badDeleteResponse).toBeInstanceOf(Response)
 			expect(badDeleteResponse.status).toBe(401)
@@ -416,11 +412,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				},
 			)
 
-			const validDeleteResponse = await deviceAction({
-				request: validDeleteRequest,
-				params: { deviceId: deletableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			const validDeleteResponse = await deviceAction(
+				makeActionArgs(validDeleteRequest, {
+					params: { deviceId: queryableDevice?.id },
+				}),
+			)
 
 			expect(validDeleteResponse).toBeInstanceOf(Response)
 			expect(validDeleteResponse.status).toBe(200)
@@ -438,11 +434,11 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				},
 			)
 
-			const getDeletedResponse = await deviceLoader({
-				request: getDeletedRequest,
-				params: { deviceId: deletableDevice?.id },
-				context: {} as AppLoadContext,
-			} as LoaderFunctionArgs)
+			const getDeletedResponse = await deviceLoader(
+				makeLoaderArgs(getDeletedRequest, {
+					params: { deviceId: deletableDevice?.id },
+				}),
+			)
 
 			expect(getDeletedResponse).toBeInstanceOf(Response)
 			expect(getDeletedResponse.status).toBe(404)
