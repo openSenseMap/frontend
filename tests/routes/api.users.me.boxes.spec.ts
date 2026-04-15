@@ -1,12 +1,13 @@
 import { type LoaderFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { loader } from '~/routes/api.users.me.boxes'
-import { type User } from '~/schema'
+import { integration, type User } from '~/schema'
 
 const BOXES_TEST_USER = generateTestUserCredentials()
 const TEST_BOX = {
@@ -17,8 +18,6 @@ const TEST_BOX = {
 	latitude: 0,
 	longitude: 0,
 	model: 'luftdaten.info',
-	mqttEnabled: false,
-	ttnEnabled: false,
 }
 
 describe('openSenseMap API Routes: /users', () => {
@@ -28,6 +27,25 @@ describe('openSenseMap API Routes: /users', () => {
 	describe('/me/boxes', () => {
 		describe('GET', async () => {
 			beforeAll(async () => {
+				// seed integrations if they dont exist
+				await drizzleClient.insert(integration).values([
+					{
+						name: 'MQTT',
+						slug: 'mqtt',
+						serviceUrl: 'http://mqtt-test-service',
+						serviceKey: 'MQTT_SERVICE_KEY',
+						icon: 'message-square-text',
+						order: 1,
+					},
+					{
+						name: 'The Things Network',
+						slug: 'ttn',
+						serviceUrl: 'http://ttn-test-service',
+						serviceKey: 'TTN_SERVICE_KEY',
+						icon: 'antenna',
+						order: 2,
+					},
+				]).onConflictDoNothing()
 				const registration = await registerUser(
 					BOXES_TEST_USER.name,
 					BOXES_TEST_USER.email,
