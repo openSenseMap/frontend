@@ -218,7 +218,7 @@ export default function DeviceDashboard() {
 											<span className="align-bottom text-[18px]">
 												{sensor.title}{' '}
 											</span>
-											<span className="rounded border px-[2px] py-[1px] text-xs">
+											<span className="rounded border px-[2px] py-px text-xs">
 												{sensor.sensorType}
 											</span>
 										</CardDescription>

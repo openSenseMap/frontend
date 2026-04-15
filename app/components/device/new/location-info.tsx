@@ -96,7 +96,7 @@ export function LocationStep() {
 
 	return (
 		<div className="flex h-full w-full flex-col">
-			<div className="flex-grow">
+			<div className="grow">
 				<Map
 					ref={mapRef}
 					initialViewState={{

@@ -75,7 +75,7 @@ export default function Imprint({
 			<header>
 				<nav className="relative mx-auto flex h-16 max-w-7xl justify-between py-6 dark:border-gray-300 dark:bg-black">
 					<div className="container flex flex-wrap items-center justify-between px-4 font-serif">
-						<div className="flex max-w-screen-xl flex-wrap items-center justify-between">
+						<div className="flex max-w-(--breakpoint-xl) flex-wrap items-center justify-between">
 							<Link to="/" className="flex items-center md:pr-10">
 								<img
 									src="/logo.png"

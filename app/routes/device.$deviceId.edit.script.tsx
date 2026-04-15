@@ -109,7 +109,7 @@ export default function EditBoxSensors() {
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
-				<div className="flex-grow bg-white p-4 dark:bg-dark-boxes dark:text-dark-text">
+				<div className="grow bg-white p-4 dark:bg-dark-boxes dark:text-dark-text">
 					{deviceData?.model !== 'homeV2Wifi' ? (
 						<div className="flex flex-col items-center justify-center gap-4 py-16 text-center text-gray-500">
 							<p className="text-base">{t('no_script_for_model')}</p>
@@ -310,7 +310,7 @@ export default function EditBoxSensors() {
 								<Textarea
 									id="mqtt-connection-options"
 									placeholder={t('enter_connection_options')}
-									className="!min-h-[320px] resize-none"
+									className="min-h-[320px]! resize-none"
 									value={sketch}
 									readOnly
 								/>

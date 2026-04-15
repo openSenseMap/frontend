@@ -75,7 +75,7 @@ export default function ShareLink() {
 			<div className="mt-4 flex items-center justify-between gap-2 py-2">
 				<Link className="mr-2 h-5 w-5" />
 				<Input
-					className="w-full bg-transparent outline-none"
+					className="w-full bg-transparent outline-hidden"
 					type="text"
 					disabled={true}
 					defaultValue={window.location.href}
@@ -88,7 +88,7 @@ export default function ShareLink() {
 							description: 'Go ahead and share your link! 🎉',
 						})
 					}}
-					className="inline-flex h-9 transform items-center justify-center rounded-md bg-primary px-2 py-2 text-sm font-medium text-primary-foreground shadow transition-transform active:scale-75"
+					className="inline-flex h-9 transform items-center justify-center rounded-md bg-primary px-2 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-transform active:scale-75"
 				>
 					<Copy className="mr-2 h-5 w-5" />
 					Copy

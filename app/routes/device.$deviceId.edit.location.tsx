@@ -192,7 +192,7 @@ export default function EditLocation() {
 											className={
 												'w-full rounded border border-gray-200 px-2 py-1 text-base' +
 												(!marker.latitude
-													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000]'
+													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 													: '')
 											}
 										/>
@@ -230,7 +230,7 @@ export default function EditLocation() {
 											className={
 												'w-full rounded border border-gray-200 px-2 py-1 text-base' +
 												(!marker.longitude
-													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000]'
+													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 													: '')
 											}
 										/>

@@ -34,7 +34,7 @@ export function NavBar() {
 	return (
 		<div className="border-b bg-white p-4 dark:bg-dark-background dark:text-dark-text">
 			<div className="flex h-16 items-center justify-between">
-				<div className="flex max-w-screen-xl flex-wrap items-center justify-between">
+				<div className="flex max-w-(--breakpoint-xl) flex-wrap items-center justify-between">
 					<Link to="/explore" className="flex items-center md:pr-4">
 						<img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
 					</Link>

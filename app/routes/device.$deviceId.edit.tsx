@@ -104,7 +104,7 @@ export default function EditBox() {
 						duration={3000}
 						onOpenChange={setToastOpen}
 						className={clsx(
-							'inset-x-4 bottom-4 z-50 w-auto rounded-lg border-[1px] border-[#bce8f1] shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full',
+							'inset-x-4 bottom-4 z-50 w-auto rounded-lg border border-[#bce8f1] shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full',
 							'bg-[#d9edf7] dark:bg-gray-800',
 							'radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right',
 							'radix-state-closed:animate-toast-hide',
@@ -113,7 +113,7 @@ export default function EditBox() {
 							'radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y',
 							'radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y',
 							'radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;',
-							'focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75',
+							'focus-visible:ring-purple-500 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-opacity-75',
 						)}
 					>
 						<div className="flex">

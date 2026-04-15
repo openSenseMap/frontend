@@ -63,10 +63,10 @@ export function SummaryInfo() {
 		<div className="space-y-6">
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				{sections.map((section, index) => (
-					<Card key={index} className="overflow-hidden border border-border bg-card shadow-sm">
+					<Card key={index} className="overflow-hidden border border-border bg-card shadow-xs">
 						<CardContent className="p-0">
 							<div className="flex items-center gap-3 border-b bg-muted/40 px-4 py-3">
-								<div className="flex h-9 w-9 items-center justify-center rounded-md bg-background text-muted-foreground shadow-sm">
+								<div className="flex h-9 w-9 items-center justify-center rounded-md bg-background text-muted-foreground shadow-xs">
 									{section.icon}
 								</div>
 								<h4 className="text-sm font-semibold tracking-tight text-foreground">

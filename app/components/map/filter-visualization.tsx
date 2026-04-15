@@ -100,7 +100,7 @@ export default function FilterVisualization() {
 					</div>
 					<button
 						onClick={() => onRemoveFilter(key)}
-						className="ml-2 text-blue-500 hover:text-blue-700 focus:outline-none"
+						className="ml-2 text-blue-500 hover:text-blue-700 focus:outline-hidden"
 						aria-label={`Remove ${key} filter`}
 					>
 						<X className="text-white" size={14} />
