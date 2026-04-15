@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
-import { type MarkerDragEvent } from 'react-map-gl'
+import { useMemo, useState } from 'react'
 import { Form, Link, redirect, useActionData } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/admin.devices.$deviceId'
