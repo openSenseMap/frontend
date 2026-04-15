@@ -8,7 +8,7 @@ import {
 	Marker,
 	type MarkerProps,
 	type ControlPosition,
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 
 type GeocoderControlProps = Omit<
 	GeocoderOptions,

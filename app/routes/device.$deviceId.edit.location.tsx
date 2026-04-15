@@ -7,7 +7,7 @@ import {
 	MapProvider,
 	Marker,
 	NavigationControl,
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 import {
 	type ActionFunctionArgs,
 	type LinksFunction,
