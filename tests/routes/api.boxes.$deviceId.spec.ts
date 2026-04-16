@@ -72,8 +72,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			})
 
 			// Act
-			const dataFunctionValue = await deviceAction(
-				makeActionArgs(request, {
+			const dataFunctionValue = await deviceLoader(
+				makeLoaderArgs(request, {
 					params: { deviceId: queryableDevice?.id },
 				}),
 			)
@@ -414,7 +414,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 
 			const validDeleteResponse = await deviceAction(
 				makeActionArgs(validDeleteRequest, {
-					params: { deviceId: queryableDevice?.id },
+					params: { deviceId: deletableDevice?.id },
 				}),
 			)
 
