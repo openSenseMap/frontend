@@ -1,12 +1,14 @@
-import  {
-	type ActionFunctionArgs,
-	type AppLoadContext,
-	type LoaderFunctionArgs,
-	type Params,
-} from 'react-router'
+import  { type AppLoadContext, type Params } from 'react-router'
 
 type RouteParams = Params<string>
 type RouteContext = AppLoadContext
+
+type TestRouteArgs = {
+	request: Request
+	params: RouteParams
+	context: RouteContext
+	unstable_url: URL
+}
 
 export function makeLoaderArgs(
 	request: Request,
@@ -14,7 +16,7 @@ export function makeLoaderArgs(
 		params?: RouteParams
 		context?: RouteContext
 	},
-): LoaderFunctionArgs {
+): TestRouteArgs {
 	return {
 		request,
 		params: options?.params ?? {},
@@ -29,7 +31,7 @@ export function makeActionArgs(
 		params?: RouteParams
 		context?: RouteContext
 	},
-): ActionFunctionArgs {
+): TestRouteArgs {
 	return {
 		request,
 		params: options?.params ?? {},
