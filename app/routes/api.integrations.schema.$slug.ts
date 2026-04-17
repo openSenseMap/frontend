@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { type LoaderFunctionArgs } from "react-router";
+import { type Route } from "./+types/api.integrations.schema.$slug";
 import { drizzleClient } from "~/db.server";
 import { integration } from "~/schema/integration";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
   const { slug } = params;
 
   if (!slug) {

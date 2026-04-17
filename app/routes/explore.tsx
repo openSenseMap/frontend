@@ -3,13 +3,13 @@ import { type FeatureCollection, type Point } from 'geojson'
 import mapboxglcss from 'mapbox-gl/dist/mapbox-gl.css?url'
 import { useState, useRef } from 'react'
 import {
-	type MapLayerMouseEvent,
 	type MapRef,
 	MapProvider,
 	Layer,
 	Source,
 	Marker,
-} from 'react-map-gl'
+	type MapMouseEvent,
+} from 'react-map-gl/mapbox'
 import {
 	Outlet,
 	useNavigate,
@@ -311,11 +311,11 @@ export default function Explore() {
 	//   ],
 	// ]);
 
-	const onMapClick = (e: MapLayerMouseEvent) => {
+	const onMapClick = (e: MapMouseEvent) => {
 		if (e.features && e.features.length > 0) {
 			const feature = e.features[0]
 
-			if (feature.layer.id === 'phenomenon-layer') {
+			if (feature.layer?.id === 'phenomenon-layer') {
 				void navigate(
 					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
 				)
@@ -323,7 +323,7 @@ export default function Explore() {
 		}
 	}
 
-	const handleMouseMove = (e: mapboxgl.MapLayerMouseEvent) => {
+	const handleMouseMove = (e: MapMouseEvent) => {
 		if (e.features && e.features.length > 0) {
 			mapRef!.current!.getCanvas().style.cursor = 'pointer'
 		} else {

@@ -1,8 +1,5 @@
-import {
-	type Params,
-	type LoaderFunction,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { type Params } from 'react-router'
+import { type Route } from './+types/api.boxes.$deviceId.locations'
 import { getLocations } from '~/models/device.server'
 import { parseDateParam, parseEnumParam } from '~/utils/param-utils'
 import { StandardResponse } from '~/utils/response-utils'
@@ -95,10 +92,10 @@ import { StandardResponse } from '~/utils/response-utils'
  *                   type: string
  */
 
-export const loader: LoaderFunction = async ({
+export const loader = async ({
 	request,
 	params,
-}: LoaderFunctionArgs): Promise<Response> => {
+}: Route.LoaderArgs): Promise<Response> => {
 	try {
 		const collected = collectParameters(request, params)
 		if (collected instanceof Response) return collected

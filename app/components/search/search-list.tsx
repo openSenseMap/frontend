@@ -1,6 +1,6 @@
 import { Cpu, Globe, MapPin } from 'lucide-react'
 import { useState, useEffect, useCallback, useContext } from 'react'
-import { useMap } from 'react-map-gl'
+import { useMap } from 'react-map-gl/mapbox'
 import { useMatches, useNavigate, useSearchParams } from 'react-router'
 import { useGlobalCompareMode } from '../device-detail/useGlobalCompareMode'
 import { NavbarContext } from '../header/nav-bar'

@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.boxes.data'
 import { parseBoxesDataQuery } from '~/lib/api-schemas/boxes-data-query-schema'
 import { transformMeasurement } from '~/lib/measurement-service.server'
 import { streamMeasurements } from '~/models/measurement.stream.server'
@@ -18,7 +18,7 @@ function createDownloadFilename(
 		.replace('T', '_')}.${format}`
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	try {
 		const params = await parseBoxesDataQuery(request)
 
@@ -125,10 +125,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	}
 }
 
-export async function action(args: ActionFunctionArgs) {
+export async function action(args: Route.ActionArgs) {
 	return loader({
 		request: args.request,
 		params: args.params as any,
 		context: args.context as any,
-	})
+		unstable_url: new URL(args.request.url),
+	} as Route.LoaderArgs)
 }

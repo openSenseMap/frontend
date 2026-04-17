@@ -1,10 +1,8 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.users.password-reset'
 import { resetPassword } from '~/lib/user-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	let formData = new FormData()
 	try {
 		formData = await request.formData()

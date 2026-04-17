@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	redirect,
 	useLoaderData,
 } from 'react-router'
+import { type Route } from './+types/profile.$username'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
@@ -26,7 +25,7 @@ type ActionData = {
 	claimedBoxId?: string
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const requestingUserId = await getUserId(request)
 
   const username = userNameFromURl(params.username as string)
@@ -53,7 +52,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 

@@ -1,5 +1,5 @@
-import { type ActionFunctionArgs } from 'react-router'
 import z from 'zod'
+import { type Route } from './+types/api.boxes.$deviceId.$sensorId.measurements'
 import { getUserFromJwt } from '~/lib/jwt'
 import { getUserDevices } from '~/models/device.server'
 import {
@@ -9,7 +9,7 @@ import {
 } from '~/models/measurement.server'
 import { StandardResponse } from '~/utils/response-utils'
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	try {
 		const { deviceId, sensorId } = params
 		if (!deviceId || !sensorId)

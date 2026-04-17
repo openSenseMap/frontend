@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { type FeatureCollection, type Point } from 'geojson'
 import { CalendarClock } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Source, Layer, useMap, Popup } from 'react-map-gl'
+import { Source, Layer, useMap, Popup } from 'react-map-gl/mapbox'
 import MapLegend from './mobile-overview-legend'
 import {
 	type LocationPoint,

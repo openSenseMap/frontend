@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.boxes.$deviceId'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { deleteDevice } from '~/lib/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
@@ -71,7 +71,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *       500:
  *         description: Internal server error
  */
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
 	const { deviceId } = params
 
 	if (!deviceId) return StandardResponse.badRequest('Device ID is required.')
@@ -101,7 +101,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	}
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const { deviceId } = params
 
 	if (!deviceId) {

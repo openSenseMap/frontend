@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit.script'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { getDeviceWithoutSensors } from '~/models/device.server'
@@ -11,7 +12,7 @@ const OSEM_GITHUB_URL =
 	process.env.OSEM_GITHUB_URL || 'https://github.com/OpenSenseMap/'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')

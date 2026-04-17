@@ -1,6 +1,6 @@
-import { type ActionFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.users.request-password-reset'
 import { registerUser } from '~/lib/user-service.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.users.request-password-reset'
@@ -15,7 +15,7 @@ describe('openSenseMap API Routes: /users', () => {
 				VALID_USER.email,
 				VALID_USER.password,
 				'en_US',
-				true
+				true,
 			)
 		})
 
@@ -34,7 +34,7 @@ describe('openSenseMap API Routes: /users', () => {
 
 				const response = (await action({
 					request,
-				} as ActionFunctionArgs)) as Response
+				} as Route.ActionArgs)) as Response
 
 				expect(response.status).toBe(200)
 			})

@@ -6,9 +6,8 @@ import {
 	redirect,
 	useActionData,
 	useLoaderData,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/terms'
 import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import {
@@ -24,7 +23,7 @@ import {
 	tosFlowSessionStorage,
 } from '~/utils/tos-session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const tos = await getCurrentEffectiveTos()
 
@@ -107,7 +106,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	)
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	if (formData.get('intent') !== 'accept_tos_from_email') {

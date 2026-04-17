@@ -5,8 +5,6 @@ import { eq } from 'drizzle-orm'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type LoaderFunctionArgs,
-	type ActionFunctionArgs,
 	data,
 	redirect,
 	Form,
@@ -15,6 +13,7 @@ import {
 	useNavigate,
 } from 'react-router'
 import { z } from 'zod'
+import { type Route } from './+types/settings.profile.photo'
 import { LabelButton } from '~/components/label-button'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
@@ -54,7 +53,7 @@ const PhotoFormSchema = z.object({
 	),
 })
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
 	const user = await getUserById(userId)
 	const profile = await getProfileByUserId(userId)
@@ -65,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { user, profile }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await parseFormData(
 		request,

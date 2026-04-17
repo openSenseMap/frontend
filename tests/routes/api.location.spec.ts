@@ -1,8 +1,9 @@
 import { eq, sql } from 'drizzle-orm'
-import { type AppLoadContext, type ActionFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
+import { type Route as postSingleRoute } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId'
+import { type Route as postMeasurementRoute } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.data'
 import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
@@ -116,7 +117,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			TEST_USER.email,
 			TEST_USER.password,
 			'en_US',
-			true
+			true,
 		)
 		expect(registration.ok).toBe(true)
 
@@ -165,8 +166,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			const response: any = await postSingleMeasurementAction({
 				request,
 				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			expect(response).toBeInstanceOf(Response)
 			expect(response.status).toBe(201)
@@ -199,8 +199,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			const response: any = await postSingleMeasurementAction({
 				request,
 				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			expect(response).toBeInstanceOf(Response)
 			expect(response.status).toBe(201)
@@ -233,8 +232,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Get current location after first post
 			const locationAfterCurrent = await getDeviceCurrentLocation(deviceId)
@@ -264,8 +262,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			const response: any = await postSingleMeasurementAction({
 				request,
 				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
 
@@ -309,8 +306,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			const response: any = await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
 
@@ -358,8 +354,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Second, set a different location at time T (now)
 			const time2 = new Date()
@@ -384,8 +379,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Now post a measurement without location at T-1 minute (between the two locations)
 			const time3 = new Date(Date.now() - 60000)
@@ -409,8 +403,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Get all measurements and check their inferred locations
 			const measurements = await getSensorMeasurements(testSensorId!)
@@ -469,8 +462,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Second post: measurement2 at T-2ms without location
 			const time2 = new Date(now.getTime() - 2)
@@ -494,8 +486,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Third post: measurement1 at T-4ms with location [5,5,5]
 			const time1 = new Date(now.getTime() - 4)
@@ -520,8 +511,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			await postSingleMeasurementAction({
 				request,
 				params: { deviceId: testDevice.id, sensorId: testSensorId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			// Get all measurements and verify their locations
 			const measurements = await getSensorMeasurements(testSensorId!)
@@ -571,8 +561,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			const response: any = await postSingleMeasurementAction({
 				request,
 				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			expect(response.status).toBe(422)
 			const errorData = await response.json()
@@ -601,8 +590,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 			const response: any = await postSingleMeasurementAction({
 				request,
 				params: { deviceId: deviceId, sensorId: sensorIds[0] },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+			} as postSingleRoute.ActionArgs)
 
 			expect(response.status).toBe(422)
 			const errorData = await response.json()
@@ -633,9 +621,8 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 
 			const response: any = await postMeasurementsAction({
 				request,
-				params: { deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+				params: { deviceId: deviceId },
+			} as postMeasurementRoute.ActionArgs)
 
 			expect(response).toBeInstanceOf(Response)
 			expect(response.status).toBe(201)
@@ -675,9 +662,8 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 
 			const response: any = await postMeasurementsAction({
 				request,
-				params: { deviceId },
-				context: {} as AppLoadContext,
-			} satisfies ActionFunctionArgs)
+				params: { deviceId: deviceId },
+			} as postMeasurementRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
 

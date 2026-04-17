@@ -1,5 +1,6 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.transfer'
+import { type Route as TransferDetailRoute } from '.react-router/types/app/routes/+types/api.transfer.$deviceId'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice } from '~/models/device.server'
@@ -42,11 +43,11 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			TRANSFER_TEST_USER.email,
 			TRANSFER_TEST_USER.password,
 			'en_US',
-			true
+			true,
 		)
 
 		expect(registration.ok).toBe(true)
-		
+
 		if (!registration.ok) {
 			throw new Error(
 				`Test setup failed: ${registration.field} -> ${registration.code}`,
@@ -76,7 +77,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 
 			const response = (await transferAction({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 
 			const body = await response.json()
 
@@ -116,7 +117,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 
 			const response = (await transferAction({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 
 			expect(response.status).toBe(400)
 			const body = await response.json()
@@ -135,7 +136,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 
 			const response = (await transferAction({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 
 			expect(response.status).toBe(404)
 			const body = await response.json()
@@ -149,10 +150,10 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
-				true
+				true,
 			)
 			expect(registration.ok).toBe(true)
-		
+
 			if (!registration.ok) {
 				throw new Error(
 					`Test setup failed: ${registration.field} -> ${registration.code}`,
@@ -172,7 +173,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 
 			const response = (await transferAction({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 
 			expect(response.status).toBe(403)
 			const body = await response.json()
@@ -198,7 +199,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			const response = (await transferLoader({
 				request,
 				params: { deviceId: queryableDevice!.id },
-			} as unknown as LoaderFunctionArgs)) as Response
+			} as TransferDetailRoute.LoaderArgs)) as Response
 
 			const body = await response.json()
 
@@ -215,10 +216,10 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 				`other${Date.now()}@test.com`,
 				'password123',
 				'en_US',
-				true
+				true,
 			)
 			expect(registration.ok).toBe(true)
-		
+
 			if (!registration.ok) {
 				throw new Error(
 					`Test setup failed: ${registration.field} -> ${registration.code}`,
@@ -240,7 +241,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			const response = (await transferLoader({
 				request,
 				params: { deviceId: queryableDevice!.id },
-			} as unknown as LoaderFunctionArgs)) as Response
+			} as TransferDetailRoute.LoaderArgs)) as Response
 
 			expect(response.status).toBe(403)
 			const body = await response.json()
@@ -274,7 +275,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			const response = (await transferUpdateAction({
 				request,
 				params: { deviceId: queryableDevice!.id },
-			} as unknown as ActionFunctionArgs)) as Response
+			} as TransferDetailRoute.ActionArgs)) as Response
 
 			const body = await response.json()
 
@@ -311,7 +312,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			const response = (await transferUpdateAction({
 				request,
 				params: { deviceId: queryableDevice!.id },
-			} as unknown as ActionFunctionArgs)) as Response
+			} as TransferDetailRoute.ActionArgs)) as Response
 
 			expect(response.status).toBe(400)
 			const body = await response.json()
@@ -340,7 +341,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			const response = (await transferUpdateAction({
 				request,
 				params: { deviceId: queryableDevice!.id },
-			} as unknown as ActionFunctionArgs)) as Response
+			} as TransferDetailRoute.ActionArgs)) as Response
 
 			expect(response.status).toBe(400)
 			const body = await response.json()
@@ -364,7 +365,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 
 			const response = (await transferAction({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 
 			expect(response.status).toBe(204)
 
@@ -387,7 +388,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			const verifyResponse = (await transferUpdateAction({
 				request: verifyRequest,
 				params: { deviceId: queryableDevice!.id },
-			} as unknown as ActionFunctionArgs)) as Response
+			} as TransferDetailRoute.ActionArgs)) as Response
 
 			expect(verifyResponse.status).toBe(404)
 			const verifyBody = await verifyResponse.json()

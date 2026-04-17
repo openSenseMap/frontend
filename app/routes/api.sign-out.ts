@@ -1,11 +1,9 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.sign-out'
 import { getUserFromJwt, revokeToken } from '~/lib/jwt'
 import { type User } from '~/schema'
 import { StandardResponse } from '~/utils/response-utils'
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		// We deliberately make casts and stuff like that, so everything
 		// but the happy path will result in an internal server error.

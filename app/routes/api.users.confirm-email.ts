@@ -1,10 +1,8 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.users.confirm-email'
 import { confirmEmail } from '~/lib/user-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	let formData = new FormData()
 
 	try {
@@ -16,9 +14,7 @@ export const action: ActionFunction = async ({
 	const token = formData.get('token')?.toString().trim()
 
 	if (!token) {
-		return StandardResponse.badRequest(
-			'No email confirmation token specified.',
-		)
+		return StandardResponse.badRequest('No email confirmation token specified.')
 	}
 
 	try {
@@ -37,9 +33,7 @@ export const action: ActionFunction = async ({
 			)
 		}
 
-		return StandardResponse.forbidden(
-			'Invalid or expired confirmation token.',
-		)
+		return StandardResponse.forbidden('Invalid or expired confirmation token.')
 	} catch (err) {
 		console.warn(err)
 		return StandardResponse.internalServerError()

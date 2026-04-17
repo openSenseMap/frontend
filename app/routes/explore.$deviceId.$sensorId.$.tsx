@@ -1,5 +1,6 @@
 import { addDays } from 'date-fns'
-import { redirect, type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { redirect, useLoaderData } from 'react-router'
+import { type Route } from './+types/explore.$deviceId.$sensorId.$'
 import Graph from '~/components/device-detail/graph'
 import MobileBoxView from '~/components/map/layers/mobile/mobile-box-view'
 import {
@@ -15,7 +16,7 @@ interface SensorWithColor extends SensorWithMeasurementData {
 	color: string
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
 	const { deviceId, sensorId } = params
 	const sensorId2 = params['*']
 

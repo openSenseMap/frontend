@@ -1,16 +1,8 @@
 import { InfoIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-	Form,
-	Link,
-	Outlet,
-	useActionData, // useFormAction,
-	// useNavigation,
-	useLoaderData,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { Form, Link, Outlet, useActionData, useLoaderData } from 'react-router'
+import { type Route } from './+types/settings.profile'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import {
@@ -35,7 +27,7 @@ import { getProfileByUserId, updateProfile } from '~/models/profile.server'
 import { getInitials } from '~/utils/misc'
 import { requireUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
 	const profile = await getProfileByUserId(userId)
 	if (!profile) {
@@ -45,7 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { profile }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const userId = await requireUserId(request)
 	const profile = await getProfileByUserId(userId)
 	const formData = await request.formData()
@@ -103,7 +95,7 @@ export default function EditUserProfilePage() {
 
 	return (
 		<Form method="post">
-			<Card className="space-y-6 dark:border-white dark:bg-dark-boxes">
+			<Card className="dark:bg-dark-boxes space-y-6 dark:border-white">
 				<CardHeader>
 					<CardTitle>{t('profile_settings')}</CardTitle>
 					<CardDescription>{t('profile_settings_description')}</CardDescription>
@@ -116,7 +108,7 @@ export default function EditUserProfilePage() {
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger asChild>
-											<InfoIcon className="h-4 w-4 text-muted-foreground" />
+											<InfoIcon className="text-muted-foreground h-4 w-4" />
 										</TooltipTrigger>
 										<TooltipContent>
 											<p>{t('if_public')}</p>
@@ -141,7 +133,7 @@ export default function EditUserProfilePage() {
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger asChild>
-											<InfoIcon className="h-4 w-4 text-muted-foreground" />
+											<InfoIcon className="text-muted-foreground h-4 w-4" />
 										</TooltipTrigger>
 										<TooltipContent>
 											<p>
@@ -179,7 +171,7 @@ export default function EditUserProfilePage() {
 							<Link
 								preventScrollReset
 								to="photo"
-								className="border-night-700 bg-night-500 pointer-events-auto absolute -right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
+								className="border-night-700 bg-night-500 pointer-events-auto absolute top-3 -right-3 flex h-4 w-4 items-center justify-center rounded-full border-4 p-5"
 								title={t('change_profile_photo')}
 								aria-label={t('change_profile_photo')}
 							>

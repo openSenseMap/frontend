@@ -1,9 +1,9 @@
-import { type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.claim'
 import { getUserFromJwt } from '~/lib/jwt'
 import { claimBox } from '~/lib/transfer-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	const contentType = request.headers.get('content-type')
 	if (!contentType || !contentType.includes('application/json'))
 		return StandardResponse.unsupportedMediaType(

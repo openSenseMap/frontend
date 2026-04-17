@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.transfer.$deviceId'
 import { getUserFromJwt } from '~/lib/jwt'
 import {
 	getBoxTransfer,
@@ -6,7 +6,7 @@ import {
 } from '~/lib/transfer-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
-export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
 	const jwtResponse = await getUserFromJwt(request)
 
 	if (typeof jwtResponse === 'string')
@@ -38,7 +38,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 	}
 }
 
-export const action = async ({ params, request }: ActionFunctionArgs) => {
+export const action = async ({ params, request }: Route.ActionArgs) => {
 	const jwtResponse = await getUserFromJwt(request)
 
 	if (typeof jwtResponse === 'string')

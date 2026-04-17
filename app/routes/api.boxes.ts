@@ -1,8 +1,4 @@
-import {
-	type LoaderFunctionArgs,
-	type ActionFunction,
-	type ActionFunctionArgs,
-} from 'react-router'
+import { type Route } from './+types/api.boxes'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { BoxesQuerySchema, CreateBoxSchema } from '~/lib/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
@@ -331,7 +327,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *                     type: string
  *                     example: "25.13"
  */
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const queryObj = Object.fromEntries(url.searchParams)
 	const parseResult = BoxesQuerySchema.safeParse(queryObj)
@@ -371,9 +367,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	}
 }
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		// Check authentication
 		const jwtResponse = await getUserFromJwt(request)

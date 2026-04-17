@@ -8,11 +8,10 @@ import {
 	useLoaderData,
 	data,
 	redirect,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	useSearchParams,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/settings.account'
 import { Callout } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import {
@@ -44,7 +43,7 @@ import {
 } from '~/models/user.server'
 import { getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -54,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return user
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const intent = String(formData.get('intent') ?? '')
 

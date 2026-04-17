@@ -1,5 +1,5 @@
-import { type ActionFunctionArgs } from 'react-router'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.users.sign-in'
 import { registerUser } from '~/lib/user-service.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.users.sign-in'
@@ -18,7 +18,7 @@ describe('openSenseMap API Routes: /users', () => {
 				VALID_SIGN_IN_TEST_USER.email,
 				VALID_SIGN_IN_TEST_USER.password,
 				'en_US',
-				true
+				true,
 			)
 		})
 
@@ -37,7 +37,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Act
 				const dataFunctionValue = await action({
 					request,
-				} as ActionFunctionArgs)
+				} as Route.ActionArgs)
 				const response = dataFunctionValue as Response
 
 				// Assert
@@ -59,7 +59,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Act
 				const dataFunctionValue = await action({
 					request,
-				} as ActionFunctionArgs)
+				} as Route.ActionArgs)
 				const response = dataFunctionValue as Response
 				const body = await response?.json()
 
@@ -87,7 +87,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Act
 				const dataFunctionValue = await action({
 					request,
-				} as ActionFunctionArgs)
+				} as Route.ActionArgs)
 				const response = dataFunctionValue as Response
 				const body = await response?.json()
 
@@ -115,7 +115,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Act
 				const dataFunctionValue = await action({
 					request,
-				} as ActionFunctionArgs)
+				} as Route.ActionArgs)
 				const response = dataFunctionValue as Response
 				const body = await response?.json()
 
@@ -143,7 +143,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Act
 				const dataFunctionValue = await action({
 					request,
-				} as ActionFunctionArgs)
+				} as Route.ActionArgs)
 				const response = dataFunctionValue as Response
 
 				// Assert

@@ -1,8 +1,9 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router' 
+import { redirect } from 'react-router' 
+import { type Route } from './+types/profile.me'
 import { userNameToURl } from '~/lib/user-service.server'
 import { getUser } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
 
 	if (!user) {

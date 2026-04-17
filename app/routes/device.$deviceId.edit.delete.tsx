@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	Form,
 	data,
 	redirect,
@@ -10,6 +8,7 @@ import {
 	useLoaderData,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.delete'
 import { Button } from '~/components/ui/button'
 import {
 	Card,
@@ -25,7 +24,7 @@ import { verifyLogin } from '~/models/user.server'
 import { deleteDeviceImage } from '~/utils/s3.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -38,7 +37,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return data({ device })
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 

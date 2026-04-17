@@ -7,11 +7,9 @@ import {
 	MapProvider,
 	Marker,
 	NavigationControl,
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 import {
-	type ActionFunctionArgs,
 	type LinksFunction,
-	type LoaderFunctionArgs,
 	redirect,
 	Form,
 	useActionData,
@@ -20,6 +18,7 @@ import {
 } from 'react-router'
 
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.location'
 import {
 	getDeviceWithoutSensors,
 	updateDeviceLocation,
@@ -27,7 +26,7 @@ import {
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -55,7 +54,7 @@ export const links: LinksFunction = () => {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const { latitude, longitude } = Object.fromEntries(formData)
 

@@ -1,6 +1,7 @@
-import { type Params, type LoaderFunctionArgs } from 'react-router'
+import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.users.me.boxes.$deviceId'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice } from '~/models/device.server'
@@ -36,10 +37,10 @@ describe('openSenseMap API Routes: /users', () => {
 					BOX_TEST_USER.email,
 					BOX_TEST_USER.password,
 					'en_US',
-					true
+					true,
 				)
 				expect(registration.ok).toBe(true)
-		
+
 				if (!registration.ok) {
 					throw new Error(
 						`Test setup failed: ${registration.field} -> ${registration.code}`,
@@ -54,10 +55,10 @@ describe('openSenseMap API Routes: /users', () => {
 					OTHER_TEST_USER.email,
 					OTHER_TEST_USER.password,
 					'en_US',
-					true
+					true,
 				)
 				expect(otherRegistration.ok).toBe(true)
-		
+
 				if (!otherRegistration.ok) {
 					throw new Error(
 						`Test setup failed: ${otherRegistration.field} -> ${otherRegistration.code}`,
@@ -69,7 +70,7 @@ describe('openSenseMap API Routes: /users', () => {
 
 				const device = await createDevice(BOX_TEST_USER_BOX, (user as User).id)
 				deviceId = device.id
-			}) 
+			})
 
 			it('should let users retrieve one of their boxes with all fields', async () => {
 				// Act: Get single box
@@ -81,7 +82,7 @@ describe('openSenseMap API Routes: /users', () => {
 				const singleBoxResponse = (await loader({
 					request: singleBoxRequest,
 					params,
-				} as LoaderFunctionArgs)) as Response
+				} as Route.LoaderArgs)) as Response
 				await singleBoxResponse.json()
 				// Assert: Response for single box
 				expect(singleBoxResponse.status).toBe(200)
@@ -101,7 +102,7 @@ describe('openSenseMap API Routes: /users', () => {
 				const forbiddenResponse = (await loader({
 					request: forbiddenRequest,
 					params,
-				} as LoaderFunctionArgs)) as Response
+				} as Route.LoaderArgs)) as Response
 				const forbiddenBody = await forbiddenResponse.json()
 				// Assert: Forbidden response
 				expect(forbiddenResponse.status).toBe(403)
@@ -113,7 +114,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// delete the valid test user
 				await deleteUserByEmail(BOX_TEST_USER.email)
 				await deleteUserByEmail(OTHER_TEST_USER.email)
-			}) 
+			})
 		})
 	})
 })
