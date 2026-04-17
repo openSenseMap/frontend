@@ -1,10 +1,9 @@
-import { type ActionFunction } from 'react-router'
 import { type Route } from './+types/api.boxes.$deviceId.$sensorId'
 import { postSingleMeasurement } from '~/lib/measurement-service.server'
 import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
 
-export const action: ActionFunction = async ({
+export const action = async ({
 	request,
 	params,
 }: Route.ActionArgs): Promise<Response> => {
@@ -58,10 +57,12 @@ export const action: ActionFunction = async ({
 			(err.name === 'ModelError' && err.type === 'UnprocessableEntityError')
 		)
 			return StandardResponse.unprocessableContent(err.message)
-		
+
 		if (err.name === 'ArchivedDeviceError')
 			return new Response(
-				JSON.stringify({ message: err.message || 'Archived devices are read-only' }),
+				JSON.stringify({
+					message: err.message || 'Archived devices are read-only',
+				}),
 				{
 					status: 409,
 					headers: { 'Content-Type': 'application/json; charset=utf-8' },
