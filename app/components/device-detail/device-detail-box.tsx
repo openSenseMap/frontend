@@ -198,11 +198,11 @@ export default function DeviceDetailBox() {
 						<div
 							id="deviceDetailBox"
 							className={
-								'shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-sm md:max-h-[calc(100vh-8rem)]'
+								'shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs md:max-h-[calc(100vh-8rem)]'
 							}
 						>
 							{navigation.state === 'loading' && (
-								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
 									<Spinner />
 								</div>
 							)}
@@ -507,7 +507,7 @@ export default function DeviceDetailBox() {
 																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				<CardContent className="flex-grow">
+																				<CardContent className="grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
 																							{sensor.lastMeasurement?.value ??
@@ -584,7 +584,7 @@ export default function DeviceDetailBox() {
 																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
 																					/>
 																				</CardHeader>
-																				<CardContent className="flex-grow">
+																				<CardContent className="grow">
 																					<div className="flex flex-row items-center space-x-2">
 																						<div className="text-2xl font-bold">
 																							{sensor.lastMeasurement?.value ??

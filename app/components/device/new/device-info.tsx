@@ -159,7 +159,7 @@ export function DeviceSelectionStep() {
 											<X className="h-4 w-4" />
 										</Button>
 									)}
-									<h3 className="break-words text-lg font-semibold">
+									<h3 className="wrap-break-word text-lg font-semibold">
 										{device.name}
 									</h3>
 									{device.name === 'senseBox:Home' &&

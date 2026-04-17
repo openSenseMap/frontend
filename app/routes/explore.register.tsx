@@ -292,7 +292,7 @@ export default function RegisterDialog() {
 			</Link>
 			<Card className="z-50 w-full max-w-md">
 				{navigation.state === 'loading' && (
-					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
 						<Spinner />
 					</div>
 				)}

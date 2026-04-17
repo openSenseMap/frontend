@@ -67,7 +67,7 @@ export function ColorPicker({
 				<Input
 					id="custom"
 					value={colorPickerState.color}
-					className="flex-grow"
+					className="grow"
 					onChange={(e) => {
 						handleColorChange(e.target.value, colorPickerState.index)
 						setColorPickerState({ ...colorPickerState, color: e.target.value })
