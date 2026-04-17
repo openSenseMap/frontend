@@ -65,29 +65,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 	const user = await getUser(request)
 
-	// Not logged in? Bounce to the normal login page and come back here afterward.
 	if (!user) {
 		const loginRedirect = buildAbsoluteLoginRedirect(request)
 		throw redirect(loginRedirect)
-
-		// throw redirect(buildAbsoluteLoginRedirect(request))
 	}
 
-	// You should only send verified emails unless you intentionally want
-	// Discourse to require activation.
 	if (!user.email) {
 		throw new Response('User has no email', { status: 400 })
 	}
 
-	// Pick a username value that is stable and acceptable to Discourse.
-	// Often this is a slug/handle, not a display name.
 	const username =
 		user.name ??
 		`user_${user.id}`
 
 	const outgoing = new URLSearchParams()
 	outgoing.set('nonce', nonce)
-	outgoing.set('external_id', String(user.id)) // stable forever
+	outgoing.set('external_id', String(user.id)) 
 	outgoing.set('email', user.email)
 	outgoing.set('username', username)
 
@@ -95,14 +88,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		outgoing.set('name', user.name)
 	}
 
-	// Only use this if your app has NOT verified email yet:
-	// outgoing.set('require_activation', 'true')
+	if (!user.emailIsConfirmed) {
+		outgoing.set('require_activation', 'true')
+	}
 
-	// Optional examples:
-	// outgoing.set('avatar_url', user.avatarUrl)
-	// outgoing.set('bio', user.bio ?? '')
-	// outgoing.set('add_groups', 'beta-testers')
-	// outgoing.set('locale', 'en')
 
 	const responsePayload = encodeDiscoursePayload(outgoing)
 	const responseSig = signPayload(responsePayload)
