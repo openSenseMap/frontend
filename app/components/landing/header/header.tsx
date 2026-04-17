@@ -42,7 +42,7 @@ export default function Header() {
 		>
 			<div className="container z-50 mx-auto flex flex-wrap items-center justify-between px-4 font-serif">
 				{/* Osem Logo*/}
-				<div className="flex max-w-screen-xl flex-wrap items-center justify-between">
+				<div className="flex max-w-(--breakpoint-xl) flex-wrap items-center justify-between">
 					{/* Osem Logo*/}
 					<Link to="/" className="flex items-center md:pr-10">
 						<img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
@@ -84,7 +84,7 @@ export default function Header() {
 							onClick={() => setOpenMenu(!openMenu)}
 							data-collapse-toggle="navbar-cta"
 							type="button"
-							className="inline-flex items-center rounded-lg p-2 px-6 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 lg:hidden"
+							className="inline-flex items-center rounded-lg p-2 px-6 text-sm text-gray-500 hover:bg-gray-100 focus:outline-hidden focus:ring-2 focus:ring-gray-200 lg:hidden"
 							aria-controls="navbar-cta"
 							aria-expanded="false"
 						>

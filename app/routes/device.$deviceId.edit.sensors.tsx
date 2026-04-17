@@ -195,7 +195,7 @@ export default function EditBoxSensors() {
 							</p>
 						</div>
 
-						<ul className="mt-0 rounded-[3px] border-[1px] border-solid border-[#d1d5da] pt-0">
+						<ul className="mt-0 rounded-[3px] border border-solid border-[#d1d5da] pt-0">
 							{sensorsData?.map((sensor: any, index: number) => {
 								return (
 									<li
@@ -216,7 +216,7 @@ export default function EditBoxSensors() {
 											setSensorsData(reordered)
 											dragIndexRef.current = null
 										}}
-										className="border-t-[1px] border-solid border-[#e1e4e8] p-4"
+										className="border-t border-solid border-[#e1e4e8] p-4"
 									>
 										<div className="grid grid-cols-12">
 											{/* drag handle */}
@@ -255,7 +255,7 @@ export default function EditBoxSensors() {
 																		id="dropdownDefaultButton"
 																		type="button"
 																		// className="btn btn-default"
-																		className="btn btn-default rounded-bl-none rounded-tl-none border-l-[0px] px-[1px] pb-[4px] pt-[5px]"
+																		className="btn btn-default rounded-bl-none rounded-tl-none border-l-0 px-px pb-[4px] pt-[5px]"
 																		data-dropdown-toggle="dropdown"
 																	>
 																		<ChevronDownIcon className="m-0 inline h-6 w-6 p-0" />
@@ -295,7 +295,7 @@ export default function EditBoxSensors() {
 												)}
 											</div>
 											{/* middle -> sensor attributes */}
-											<div className="col-span-8 border-r-[1px] border-solid border-[#e1e4e8] sm:col-span-8">
+											<div className="col-span-8 border-r border-solid border-[#e1e4e8] sm:col-span-8">
 												{/* shown by default */}
 												{!sensor?.editing && (
 													<span className="table-cell align-middle leading-[1.75]">
@@ -338,7 +338,7 @@ export default function EditBoxSensors() {
 														<div className="mb-4">
 															<label
 																htmlFor="phenomenom"
-																className="mb-1 inline-block font-[700]"
+																className="mb-1 inline-block font-bold"
 															>
 																Phenomenon:
 															</label>
@@ -361,7 +361,7 @@ export default function EditBoxSensors() {
 														<div className="mb-4">
 															<label
 																htmlFor="unit"
-																className="mb-1 inline-block font-[700]"
+																className="mb-1 inline-block font-bold"
 															>
 																Unit:
 															</label>
@@ -384,7 +384,7 @@ export default function EditBoxSensors() {
 														<div className="mb-4">
 															<label
 																htmlFor="type"
-																className="mb-1 inline-block font-[700]"
+																className="mb-1 inline-block font-bold"
 															>
 																Type
 															</label>

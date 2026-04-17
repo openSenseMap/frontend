@@ -168,7 +168,7 @@ export default function AdminDeviceDetailRoute({
 
 					<div className="mt-5 md:col-span-2 md:mt-0">
 						<Form method="post">
-							<div className="overflow-hidden shadow sm:rounded-md">
+							<div className="overflow-hidden shadow-sm sm:rounded-md">
 								<div className="bg-white px-4 py-5 sm:p-6">
 									<div className="grid grid-cols-6 gap-6">
 										<div className="col-span-6 sm:col-span-3">
@@ -183,7 +183,7 @@ export default function AdminDeviceDetailRoute({
 												name="name"
 												id="name"
 												defaultValue={device.name}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											{actionData?.fieldErrors?.name ? (
 												<p className="text-red-600 mt-1 text-sm">
@@ -204,7 +204,7 @@ export default function AdminDeviceDetailRoute({
 												onChange={(e) => setDeviceOwner(e.target.value)}
 												id="owner"
 												disabled
-												className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm disabled:bg-gray-100"
+												className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-xs disabled:bg-gray-100"
 											>
 												{users.map((user) => (
 													<option key={user.id} value={user.id}>
@@ -232,7 +232,7 @@ export default function AdminDeviceDetailRoute({
 												name="grouptag"
 												id="grouptag"
 												defaultValue={(device.tags ?? []).join(',')}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											<p className="mt-1 text-xs text-gray-500">
 												Comma-separated
@@ -251,7 +251,7 @@ export default function AdminDeviceDetailRoute({
 												id="description"
 												defaultValue={device.description ?? ''}
 												rows={4}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 										</div>
 
@@ -267,7 +267,7 @@ export default function AdminDeviceDetailRoute({
 												name="website"
 												id="website"
 												defaultValue={device.website ?? ''}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 										</div>
 
@@ -283,7 +283,7 @@ export default function AdminDeviceDetailRoute({
 												name="link"
 												id="link"
 												defaultValue={device.link ?? ''}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 										</div>
 
@@ -299,7 +299,7 @@ export default function AdminDeviceDetailRoute({
 												name="image"
 												id="image"
 												defaultValue={device.image ?? ''}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 										</div>
 
@@ -315,7 +315,7 @@ export default function AdminDeviceDetailRoute({
 												name="model"
 												id="model"
 												defaultValue={device.model ?? ''}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 										</div>
 
@@ -431,7 +431,7 @@ export default function AdminDeviceDetailRoute({
 													const [, lat] = deviceLocation
 													setDeviceLocation([Number(e.target.value), lat])
 												}}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											{actionData?.fieldErrors?.longitude ? (
 												<p className="text-red-600 mt-1 text-sm">
@@ -457,7 +457,7 @@ export default function AdminDeviceDetailRoute({
 													const [lng] = deviceLocation
 													setDeviceLocation([lng, Number(e.target.value)])
 												}}
-												className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											{actionData?.fieldErrors?.latitude ? (
 												<p className="text-red-600 mt-1 text-sm">
@@ -479,7 +479,7 @@ export default function AdminDeviceDetailRoute({
 												id="device-id"
 												defaultValue={device.id}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs"
 											/>
 										</div>
 
@@ -496,7 +496,7 @@ export default function AdminDeviceDetailRoute({
 												id="status"
 												defaultValue={device.status ?? ''}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs"
 											/>
 										</div>
 
@@ -513,7 +513,7 @@ export default function AdminDeviceDetailRoute({
 												id="created-at"
 												defaultValue={String(device.createdAt)}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs"
 											/>
 										</div>
 
@@ -530,7 +530,7 @@ export default function AdminDeviceDetailRoute({
 												id="updated-at"
 												defaultValue={String(device.updatedAt)}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs"
 											/>
 										</div>
 
@@ -547,7 +547,7 @@ export default function AdminDeviceDetailRoute({
 												id="public"
 												defaultValue={device.public ? 'yes' : 'no'}
 												disabled
-												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
+												className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs"
 											/>
 										</div>
 									</div>
@@ -558,7 +558,7 @@ export default function AdminDeviceDetailRoute({
 										type="submit"
 										name="_action"
 										value="delete"
-										className="inline-flex justify-center rounded-md border border-transparent bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700"
+										className="inline-flex justify-center rounded-md border border-transparent bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-red-700"
 										onClick={(e) => {
 											const ok = window.confirm(
 												'Are you sure you want to delete this device?',
@@ -573,7 +573,7 @@ export default function AdminDeviceDetailRoute({
 										type="submit"
 										name="_action"
 										value="update"
-										className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+										className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-blue-700"
 									>
 										Update device
 									</button>

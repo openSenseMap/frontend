@@ -47,7 +47,7 @@ export default function EntryLogs({
 						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-muted-foreground text-muted-foreground">
 							<Activity className="h-5 w-5" />
 						</div>
-						<div className="flex-grow">
+						<div className="grow">
 							<p className="mb-2 text-sm font-medium">
 								{entryLogs[entryLogs.length - 1].content}
 							</p>
@@ -99,7 +99,7 @@ export default function EntryLogs({
 					<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary">
 						<Activity className="h-5 w-5 text-primary-foreground" />
 					</div>
-					<div className="flex-grow">
+					<div className="grow">
 						<p className="mb-2 text-sm font-medium">{entryLogs[0].content}</p>
 						<div className="flex items-center text-xs text-muted-foreground">
 							<Clock className="mr-1 h-3 w-3" />
@@ -144,7 +144,7 @@ function LogList({ entryLogs = [] }: { entryLogs: LogEntry[] }) {
 						<div className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary">
 							<Activity className="h-5 w-5 text-primary-foreground" />
 						</div>
-						<div className="flex-grow">
+						<div className="grow">
 							<Card className="p-4 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 								<p className="mb-2 text-sm font-medium">{log.content}</p>
 								<div className="flex items-center text-xs text-muted-foreground">
@@ -155,7 +155,7 @@ function LogList({ entryLogs = [] }: { entryLogs: LogEntry[] }) {
 						</div>
 						{index < entryLogs.length - 1 && (
 							<div
-								className="absolute bottom-0 left-5 top-10 w-[1px] bg-border"
+								className="absolute bottom-0 left-5 top-10 w-px bg-border"
 								aria-hidden="true"
 							/>
 						)}

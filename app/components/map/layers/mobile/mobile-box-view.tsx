@@ -106,7 +106,7 @@ function Legend({
 	const maxValue = Math.max(...sensorData.map((d) => Number(d.value)))
 
 	return (
-		<div className="z-50 flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-sm">
+		<div className="z-50 flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-xs">
 			<span className="font-semibold">{sensor.title}</span>
 			<div
 				className="flex w-full items-center justify-between rounded-sm p-1"
@@ -115,7 +115,7 @@ function Legend({
 				}}
 			>
 				<div
-					className="cursor-pointer rounded bg-white px-0.5 shadow-sm"
+					className="cursor-pointer rounded bg-white px-0.5 shadow-xs"
 					onClick={() => minColorInputRef.current?.click()}
 				>
 					{minValue}
@@ -129,7 +129,7 @@ function Legend({
 					/>
 				</div>
 				<span
-					className="cursor-pointer rounded bg-white px-0.5 shadow-sm"
+					className="cursor-pointer rounded bg-white px-0.5 shadow-xs"
 					onClick={() => maxColorInputRef.current?.click()}
 				>
 					{maxValue}

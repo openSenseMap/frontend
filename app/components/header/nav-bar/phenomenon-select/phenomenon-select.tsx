@@ -75,12 +75,12 @@ export function PhenomenonSelect() {
         </div>
       </ScrollArea>
       <div className="flex justify-between py-1">
-        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
+        <Label className="rounded-[5px] border border-slate-200 px-2 py-px text-base leading-[2.2]">
           Results {data.filteredDevices.features.length}
         </Label>
         <Button
           variant="outline"
-          className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
+          className=" px-2 py-px text-base rounded-[5px] border border-slate-200"
           onClick={() => {
             searchParams.delete("exposure");
             searchParams.delete("status");

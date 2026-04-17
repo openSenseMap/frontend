@@ -173,7 +173,7 @@ export default function AdminUserDetailRoute({
 						) : null}
 
 						<Form method="post">
-							<div className="overflow-hidden shadow sm:rounded-md">
+							<div className="overflow-hidden shadow-sm sm:rounded-md">
 								<div className="bg-white px-4 py-5 sm:p-6">
 									<fieldset>
 										<div className="grid grid-cols-6 gap-6">
@@ -189,7 +189,7 @@ export default function AdminUserDetailRoute({
 													name="name"
 													id="name"
 													defaultValue={user.name}
-													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 shadow-xs sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.name ? (
 													<p className="text-red-600 mt-1 text-sm">
@@ -210,7 +210,7 @@ export default function AdminUserDetailRoute({
 													name="email"
 													id="email"
 													defaultValue={user.email}
-													className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 shadow-xs sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.email ? (
 													<p className="text-red-600 mt-1 text-sm">
@@ -255,7 +255,7 @@ export default function AdminUserDetailRoute({
 													id="language"
 													name="language"
 													defaultValue={user.language ?? ''}
-													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-xs sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.language ? (
 													<p className="text-red-600 mt-1 text-sm">
@@ -274,7 +274,7 @@ export default function AdminUserDetailRoute({
 												<select
 													id="role"
 													name="role"
-													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-xs sm:text-sm"
 													defaultValue={user.role ?? 'user'}
 												>
 													<option value="admin">Admin</option>
@@ -295,7 +295,7 @@ export default function AdminUserDetailRoute({
 													id="user-id"
 													defaultValue={user.id}
 													disabled
-													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs sm:text-sm"
 												/>
 											</div>
 
@@ -312,7 +312,7 @@ export default function AdminUserDetailRoute({
 													id="created-at"
 													defaultValue={String(user.createdAt)}
 													disabled
-													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs sm:text-sm"
 												/>
 											</div>
 
@@ -329,7 +329,7 @@ export default function AdminUserDetailRoute({
 													id="updated-at"
 													defaultValue={String(user.updatedAt)}
 													disabled
-													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
+													className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-xs sm:text-sm"
 												/>
 											</div>
 										</div>
@@ -342,7 +342,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="passwordReset"
-											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-sm"
+											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs"
 										>
 											Reset password
 										</button>
@@ -351,7 +351,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendWelcomeMail"
-											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-sm"
+											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs"
 										>
 											Resend Welcome Mail
 										</button>
@@ -360,7 +360,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendEmailConfirmation"
-											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-sm"
+											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs"
 										>
 											Resend Email Confirmation
 										</button>
@@ -371,7 +371,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="delete"
-											className="inline-flex justify-center rounded-md border border-transparent bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-red-700"
 											onClick={(e) => {
 												const ok = window.confirm(
 													'Are you sure you want to delete this user?',
@@ -386,7 +386,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="update"
-											className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+											className="inline-flex justify-center rounded-md border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-blue-700"
 										>
 											Update user
 										</button>
@@ -415,7 +415,7 @@ export default function AdminUserDetailRoute({
 					</div>
 
 					<div className="mt-5 md:col-span-2 md:mt-0">
-						<div className="overflow-hidden shadow sm:rounded-md">
+						<div className="overflow-hidden shadow-sm sm:rounded-md">
 							<div className="space-y-6 bg-white px-4 py-5 sm:p-6">
 								<table>
 									<thead className="border-2 border-black">
