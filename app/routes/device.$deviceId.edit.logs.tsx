@@ -1,8 +1,6 @@
 import { Save, Trash } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	data,
 	redirect,
 	Form,
@@ -12,6 +10,7 @@ import {
 } from 'react-router'
 
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.logs'
 import { Switch } from '@/components/ui/switch'
 import {
 	Table,
@@ -33,7 +32,7 @@ import {
 import { type LogEntry } from '~/schema/log-entry'
 import { getUserId } from '~/utils/session.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -46,7 +45,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return { logEntries: logEntries }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	try {
 		const formData = await request.formData()
 		const { intent, content, logEntryId, isPublic } =

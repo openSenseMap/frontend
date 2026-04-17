@@ -1,4 +1,5 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type ActionFunction } from 'react-router'
+import { type Route } from './+types/api.boxes.$deviceId.data'
 import { postNewMeasurements } from '~/lib/measurement-service.server'
 import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
@@ -21,7 +22,7 @@ import { StandardResponse } from '~/utils/response-utils'
 export const action: ActionFunction = async ({
 	request,
 	params,
-}: ActionFunctionArgs): Promise<Response> => {
+}: Route.ActionArgs): Promise<Response> => {
 	try {
 		const deviceId = params.deviceId
 		if (deviceId === undefined)

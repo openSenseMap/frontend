@@ -1,8 +1,9 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router'
+import { redirect } from 'react-router'
+import { type Route } from './+types/account.confirm-email'
 import { confirmEmail } from '~/lib/user-service.server'
 import { getUserSession, authSessionStorage } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url)
   const token = url.searchParams.get('token')
 

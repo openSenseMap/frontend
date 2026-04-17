@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.getsensors'
 import { getSensors } from '~/models/sensor.server'
 import { StandardResponse } from '~/utils/response-utils'
 
@@ -79,7 +79,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *         - name
  */
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
 	const url = new URL(request.url)
 	const deviceId = url.searchParams.get('deviceId')
 	if (!deviceId) return StandardResponse.badRequest('deviceId is required')

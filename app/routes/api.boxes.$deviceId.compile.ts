@@ -1,11 +1,12 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type ActionFunction } from 'react-router'
+import { type Route } from './+types/api.boxes.$deviceId.compile'
 
 const COMPILER_URL = 'https://compiler.sensebox.de/compile'
 
 export const action: ActionFunction = async ({
 	request,
 	params,
-}: ActionFunctionArgs): Promise<Response> => {
+}: Route.ActionArgs): Promise<Response> => {
 	const { deviceId } = params
 	if (!deviceId) {
 		return Response.json(

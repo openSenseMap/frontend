@@ -11,6 +11,7 @@ import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/settings.profile'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import {
@@ -35,7 +36,7 @@ import { getProfileByUserId, updateProfile } from '~/models/profile.server'
 import { getInitials } from '~/utils/misc'
 import { requireUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
 	const profile = await getProfileByUserId(userId)
 	if (!profile) {
@@ -45,7 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { profile }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const userId = await requireUserId(request)
 	const profile = await getProfileByUserId(userId)
 	const formData = await request.formData()

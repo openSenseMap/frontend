@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	type MetaFunction,
 	Form,
 	Link,
@@ -14,6 +12,7 @@ import {
 	useSearchParams,
 } from 'react-router'
 
+import { type Route } from './+types/account.password-reset'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
 import {
@@ -44,7 +43,7 @@ type ActionData = {
 	}
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (userId) return redirect('/explore')
 
@@ -54,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data<LoaderData>({ token: token?.trim() || null })
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const token = formData.get('token')?.toString().trim() ?? ''
 	const newPassword = formData.get('newPassword')?.toString() ?? ''

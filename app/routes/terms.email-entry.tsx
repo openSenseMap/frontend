@@ -1,11 +1,12 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router'
+import { redirect } from 'react-router'
+import { type Route } from './+types/terms.email-entry'
 import {
   getTosRequirementForUser,
   getValidTosAcceptanceToken,
 } from '~/models/tos.server'
 import { getTosFlowSession, tosFlowSessionStorage } from '~/utils/tos-session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url)
   const rawToken = url.searchParams.get('token')?.trim()
 

@@ -10,12 +10,11 @@ import {
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
-	type LoaderFunctionArgs,
 	redirect,
 	Form,
 	useLoaderData,
-	type ActionFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit.security'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Callout } from '~/components/ui/alert'
 import {
@@ -25,7 +24,7 @@ import {
 } from '~/models/device.server'
 import { getUserId } from '~/utils/session.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -36,7 +35,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return { key: device?.apiKey, deviceAuthEnabled: device?.useAuth ?? false }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const { deviceId } = params
 	if (typeof deviceId !== 'string') throw 'deviceID not found'
 

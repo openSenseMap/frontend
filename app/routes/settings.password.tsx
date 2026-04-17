@@ -1,14 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	data,
 	redirect,
 	Form,
 	useActionData,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/settings.password'
 import { useToast } from '@/components/ui/use-toast'
 import { Button } from '~/components/ui/button'
 import {
@@ -26,7 +25,7 @@ import { validatePassLength, validatePassType } from '~/utils'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -34,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const intent = formData.get('intent')
 	const currPass = formData.get('currentPassword')

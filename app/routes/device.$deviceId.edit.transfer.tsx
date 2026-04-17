@@ -2,14 +2,13 @@ import { Check, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	Form,
 	redirect,
 	useActionData,
 	useLoaderData,
 	useNavigation,
 } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit.transfer'
 import { Callout } from '~/components/ui/alert'
 import {
 	getBoxTransfer,
@@ -35,7 +34,7 @@ type ActionData = {
 export async function loader({
 	request,
 	params,
-}: LoaderFunctionArgs): Promise<LoaderData | Response> {
+}: Route.LoaderArgs): Promise<LoaderData | Response> {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -77,7 +76,7 @@ export async function loader({
 export async function action({
 	request,
 	params,
-}: ActionFunctionArgs): Promise<ActionData | Response> {
+}: Route.ActionArgs): Promise<ActionData | Response> {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 

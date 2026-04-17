@@ -1,4 +1,5 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type ActionFunction } from 'react-router'
+import { type Route } from './+types/api.users.register'
 import { createToken } from '~/lib/jwt'
 import { parseUserRegistrationData } from '~/lib/request-parsing'
 import { registerUser } from '~/lib/user-service.server'
@@ -32,7 +33,7 @@ function mapRegistrationError(code: string): string {
 
 export const action: ActionFunction = async ({
 	request,
-}: ActionFunctionArgs) => {
+}: Route.ActionArgs) => {
 	if (request.method !== 'POST') {
 		return StandardResponse.methodNotAllowed('')
 	}

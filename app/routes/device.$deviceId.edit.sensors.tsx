@@ -16,10 +16,9 @@ import {
 	useActionData,
 	useLoaderData,
 	useOutletContext,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.sensors'
 import {
 	DropdownMenu,
 	DropdownMenuGroup,
@@ -38,7 +37,7 @@ import { assignIcon, getIcon, iconsList } from '~/utils/sensoricons'
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -53,7 +52,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
   const userId = await getUserId(request)
   if (!userId) return redirect('/')
 

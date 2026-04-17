@@ -1,4 +1,5 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import { type LoaderFunction } from 'react-router'
+import { type Route } from './+types/api.users.me.boxes'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
 import { getUserDevices } from '~/models/device.server'
@@ -7,7 +8,7 @@ import { StandardResponse } from '~/utils/response-utils'
 
 export const loader: LoaderFunction = async ({
   request,
-}: LoaderFunctionArgs) => {
+}: Route.LoaderArgs) => {
   try {
     const jwtResponse = await getUserFromJwt(request)
 

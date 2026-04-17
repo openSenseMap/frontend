@@ -8,9 +8,8 @@ import {
 	redirect,
 	useFetcher,
 	useLoaderData,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit.$integrationSlug'
 import { ArrayFieldTemplate } from '~/components/rjsf/arrayFieldTemplate'
 import { CheckboxWidget } from '~/components/rjsf/checkboxWidget'
 import { FieldTemplate } from '~/components/rjsf/fieldTemplate'
@@ -23,7 +22,7 @@ import { getUserId } from '~/utils/session.server'
 // =====================================================
 // Loader
 // =====================================================
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -93,7 +92,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 // =====================================================
 // Action
 // =====================================================
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const { deviceId, integrationSlug } = params
 
 	if (!deviceId || !integrationSlug) {

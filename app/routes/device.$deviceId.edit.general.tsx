@@ -2,8 +2,6 @@ import { Save, Upload, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	data,
 	redirect,
 	Form,
@@ -12,6 +10,7 @@ import {
 	useOutletContext,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.general'
 import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import { updateDevice, deleteDevice } from '~/lib/devices-service.server'
@@ -26,7 +25,7 @@ import {
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -52,7 +51,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const deviceID = params.deviceId
 	const userId = await getUserId(request)
 	invariant(typeof deviceID === 'string', 'Device id not found.')

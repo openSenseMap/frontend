@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
-import { type LoaderFunctionArgs, useFetcher } from 'react-router'
+import { useFetcher } from 'react-router'
+import { type Route } from './+types/resources.user-avatar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { getProfileByUserId } from '~/models/profile.server'
 import { getInitials } from '~/utils/misc'
 import { requireUser } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const profile = await getProfileByUserId(user.id)
 

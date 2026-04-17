@@ -7,9 +7,8 @@ import {
 	redirect,
 	useActionData,
 	useLoaderData,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/tos-required'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
@@ -31,7 +30,7 @@ function safeRedirectTo(value: string | null, fallback = '/') {
 	return value
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const url = new URL(request.url)
 	const redirectTo = safeRedirectTo(url.searchParams.get('redirectTo'), '/')
@@ -48,7 +47,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data({ tos, redirectTo })
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const formData = await request.formData()
 

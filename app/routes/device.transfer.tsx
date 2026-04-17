@@ -1,13 +1,13 @@
 import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
-  type ActionFunctionArgs,
   Form,
   Link,
   redirect,
   useActionData,
   useNavigation,
 } from 'react-router'
+import { type Route } from './+types/device.transfer'
 import Home from '~/components/header/home'
 import { Separator } from '~/components/ui/separator'
 import { claimBox } from '~/lib/transfer-service.server'
@@ -20,7 +20,7 @@ type ActionData = {
   claimedBoxId?: string
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const userId = await getUserId(request)
   if (!userId) return redirect('/')
 

@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	type MetaFunction,
 	data,
 	redirect,
@@ -12,6 +10,7 @@ import {
 	useNavigation,
 	useSearchParams,
 } from 'react-router'
+import { type Route } from './+types/explore.login'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Spinner from '~/components/spinner'
@@ -30,13 +29,13 @@ import { verifyLogin } from '~/models/user.server'
 import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (userId) return redirect('/explore')
 	return {}
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const identifier = formData.get('identifier')
 	const password = formData.get('password')

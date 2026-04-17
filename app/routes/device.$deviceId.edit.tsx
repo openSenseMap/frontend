@@ -17,9 +17,9 @@ import {
 	Link,
 	Outlet,
 	useParams,
-	type LoaderFunctionArgs,
 	useLoaderData,
 } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit'
 import { EditDeviceSidebarNav } from '~/components/mydevices/edit-device/edit-device-sidebar-nav'
 import { NavBar } from '~/components/nav-bar'
 import { Separator } from '~/components/ui/separator'
@@ -28,7 +28,7 @@ import { getIntegrations } from '~/models/integration.server'
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')

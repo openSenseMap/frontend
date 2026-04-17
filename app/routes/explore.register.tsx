@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type LoaderFunctionArgs,
 	type MetaFunction,
 	data,
 	redirect,
@@ -32,7 +31,7 @@ import { getUserByEmail, getUserByUsername } from '~/models/user.server'
 import { safeRedirect, validateEmail, validateName } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (userId) return redirect('/')
 	return {}

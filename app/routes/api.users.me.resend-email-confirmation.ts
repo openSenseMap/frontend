@@ -1,11 +1,12 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type ActionFunction } from 'react-router'
+import { type Route } from './+types/api.users.me.resend-email-confirmation'
 import { getUserFromJwt } from '~/lib/jwt'
 import { resendEmailConfirmation } from '~/lib/user-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const action: ActionFunction = async ({
 	request,
-}: ActionFunctionArgs) => {
+}: Route.ActionArgs) => {
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 

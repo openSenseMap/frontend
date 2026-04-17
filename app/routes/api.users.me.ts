@@ -1,9 +1,9 @@
 import {
-	type ActionFunctionArgs,
 	type ActionFunction,
 	type LoaderFunction,
 	type LoaderFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/api.users.me'
 import { getUserFromJwt } from '~/lib/jwt'
 import { deleteUser, updateUserDetails } from '~/lib/user-service.server'
 import { type User } from '~/schema/user'
@@ -275,7 +275,7 @@ import { StandardResponse } from '~/utils/response-utils'
  */
 export const loader: LoaderFunction = async ({
 	request,
-}: LoaderFunctionArgs) => {
+}: Route.LoaderArgs) => {
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 
@@ -293,7 +293,7 @@ export const loader: LoaderFunction = async ({
 
 export const action: ActionFunction = async ({
 	request,
-}: ActionFunctionArgs) => {
+}: Route.ActionArgs) => {
 	const loaderValue = (await loader({
 		request,
 	} as LoaderFunctionArgs)) as Response
