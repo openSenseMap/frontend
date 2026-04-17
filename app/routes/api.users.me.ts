@@ -1,8 +1,4 @@
-import {
-	type ActionFunction,
-	type LoaderFunction,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
 import { type Route } from './+types/api.users.me'
 import { getUserFromJwt } from '~/lib/jwt'
 import { deleteUser, updateUserDetails } from '~/lib/user-service.server'
@@ -273,9 +269,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *           type: string
  *           example: The server was unable to complete your request. Please try again later.
  */
-export const loader: LoaderFunction = async ({
-	request,
-}: Route.LoaderArgs) => {
+export const loader: LoaderFunction = async ({ request }: Route.LoaderArgs) => {
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 
@@ -291,9 +285,7 @@ export const loader: LoaderFunction = async ({
 	}
 }
 
-export const action: ActionFunction = async ({
-	request,
-}: Route.ActionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	const loaderValue = (await loader({
 		request,
 	} as LoaderFunctionArgs)) as Response

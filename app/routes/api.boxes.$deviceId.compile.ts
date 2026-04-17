@@ -1,9 +1,8 @@
-import { type ActionFunction } from 'react-router'
 import { type Route } from './+types/api.boxes.$deviceId.compile'
 
 const COMPILER_URL = 'https://compiler.sensebox.de/compile'
 
-export const action: ActionFunction = async ({
+export const action = async ({
 	request,
 	params,
 }: Route.ActionArgs): Promise<Response> => {

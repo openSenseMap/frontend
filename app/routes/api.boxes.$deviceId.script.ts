@@ -1,9 +1,6 @@
 import SketchTemplater from '@sensebox/sketch-templater'
 
-import {
-	type ActionFunction,
-	type LoaderFunction,
-} from 'react-router'
+import { type LoaderFunction } from 'react-router'
 import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/models/device.server'
 
@@ -92,7 +89,7 @@ export const loader: LoaderFunction = async ({
 	}
 }
 
-export const action: ActionFunction = async ({
+export const action = async ({
 	request,
 	params,
 }: Route.ActionArgs): Promise<Response> => {

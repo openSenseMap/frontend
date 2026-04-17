@@ -1,6 +1,3 @@
-import {
-	type ActionFunction,
-} from 'react-router'
 import { type Route } from './+types/api.boxes'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { BoxesQuerySchema, CreateBoxSchema } from '~/lib/devices-service.server'
@@ -370,9 +367,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 }
 
-export const action: ActionFunction = async ({
-	request,
-}: Route.ActionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		// Check authentication
 		const jwtResponse = await getUserFromJwt(request)

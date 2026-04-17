@@ -1,4 +1,3 @@
-import { type ActionFunction } from 'react-router'
 import { type Route } from './+types/api.users.sign-in'
 import { parseUserSignInData } from '~/lib/request-parsing'
 import { signIn } from '~/lib/user-service.server'
@@ -108,9 +107,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *           format: date-time
  *           description: Last account update timestamp
  */
-export const action: ActionFunction = async ({
-	request,
-}: Route.ActionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		// Parse request data - handles both JSON and form data automatically
 		const data = await parseUserSignInData(request)
