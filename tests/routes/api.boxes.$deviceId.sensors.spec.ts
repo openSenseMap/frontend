@@ -1,6 +1,7 @@
-import { type Params, type LoaderFunctionArgs } from 'react-router'
+import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.sensors'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
@@ -47,7 +48,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/sensors', () => {
 			DEVICE_SENSORS_USER.email,
 			DEVICE_SENSORS_USER.password,
 			'en_US',
-			true
+			true,
 		)
 
 		expect(registration.ok).toBe(true)
@@ -75,7 +76,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/sensors', () => {
 			const dataFunctionValue = await loader({
 				request,
 				params: { deviceId: `${deviceId}` } as Params<string>,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 			const response = dataFunctionValue as Response
 			const body = await response?.json()
 
@@ -98,7 +99,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/sensors', () => {
 			const dataFunctionValue = await loader({
 				request,
 				params: { deviceId: `${deviceId}` } as Params<string>,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 			const response = dataFunctionValue as Response
 			const body = await response?.json()
 

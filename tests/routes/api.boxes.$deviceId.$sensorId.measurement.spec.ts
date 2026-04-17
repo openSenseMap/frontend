@@ -1,6 +1,7 @@
-import { type ActionFunctionArgs, type Params } from 'react-router'
+import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId.measurements'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
@@ -8,7 +9,6 @@ import { insertMeasurements } from '~/models/measurement.server'
 import { getSensors } from '~/models/sensor.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.boxes.$deviceId.$sensorId.measurements'
-import { type User } from '~/schema'
 
 const USER = generateTestUserCredentials()
 const USER2 = generateTestUserCredentials()
@@ -56,13 +56,19 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 	let jwt2: string
 
 	beforeAll(async () => {
-		const registration1 = await registerUser(USER.name, USER.email, USER.password, 'en_US', true)
+		const registration1 = await registerUser(
+			USER.name,
+			USER.email,
+			USER.password,
+			'en_US',
+			true,
+		)
 		const registration2 = await registerUser(
 			USER2.name,
 			USER2.email,
 			USER2.password,
 			'en_US',
-			true
+			true,
 		)
 
 		expect(registration1.ok).toBe(true)
@@ -111,7 +117,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 					deviceId: `${deviceId}`,
 					sensorId: `${sensorId}`,
 				} as Params<string>,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 			const response = dataFunctionValue as Response
 			const body = await response?.json()
 
@@ -135,7 +141,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 					deviceId: `${deviceId}`,
 					sensorId: `${sensorId}`,
 				} as Params<string>,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 			const response = dataFunctionValue as Response
 			const body = await response?.json()
 
@@ -159,7 +165,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 					deviceId: `${deviceId}`,
 					sensorId: `${sensorId}`,
 				} as Params<string>,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 			const response = dataFunctionValue as Response
 			const body = await response?.json()
 
@@ -183,7 +189,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId/:sensorId/measurement', () =
 					deviceId: `${deviceId}`,
 					sensorId: `${sensorId}`,
 				} as Params<string>,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 			const response = dataFunctionValue as Response
 			const body = await response?.json()
 

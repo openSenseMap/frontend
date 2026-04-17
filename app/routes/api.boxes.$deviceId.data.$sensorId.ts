@@ -1,7 +1,4 @@
-import {
-	type Params,
-	type LoaderFunction
-} from 'react-router'
+import { type Params } from 'react-router'
 import { type Route } from './+types/api.boxes.$deviceId.data.$sensorId'
 import {
 	type TransformedMeasurement,
@@ -145,7 +142,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *                   type: string
  */
 
-export const loader: LoaderFunction = async ({
+export const loader = async ({
 	request,
 	params,
 }: Route.LoaderArgs): Promise<Response> => {

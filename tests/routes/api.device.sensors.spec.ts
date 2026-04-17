@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
@@ -111,7 +112,7 @@ describe('Device Sensors API: updating sensors', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: queryableDevice?.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -163,7 +164,7 @@ describe('Device Sensors API: updating sensors', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: queryableDevice?.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -217,7 +218,7 @@ describe('Device Sensors API: updating sensors', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: queryableDevice?.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -262,7 +263,7 @@ describe('Device Sensors API: updating sensors', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: queryableDevice?.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -305,7 +306,7 @@ describe('Device Sensors API: updating sensors', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: queryableDevice?.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -347,7 +348,7 @@ describe('Device Sensors API: updating sensors', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: queryableDevice?.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(400)
 		const data = await response.json()

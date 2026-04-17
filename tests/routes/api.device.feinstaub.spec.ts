@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
+import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
@@ -126,7 +127,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: device.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
@@ -154,9 +155,9 @@ describe('Device API: Feinstaub Addon behavior', () => {
 
 		// Second PUT should be idempotent — same sensors
 		const secondResponse = await deviceUpdateAction({
-			secondRequest,
+			request: secondRequest,
 			params: { deviceId: device.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(secondResponse.status).toBe(200)
 		const secondData = await secondResponse.json()
@@ -188,7 +189,7 @@ describe('Device API: Feinstaub Addon behavior', () => {
 		const response = await deviceUpdateAction({
 			request,
 			params: { deviceId: device.id },
-		})
+		} as Route.ActionArgs)
 
 		expect(response.status).toBe(200)
 		const data = await response.json()
