@@ -1,4 +1,10 @@
-import { createCookieSessionStorage, redirect } from 'react-router'
+import {
+	createContext,
+	createCookieSessionStorage,
+	redirect,
+	RouterContext,
+	RouterContextProvider,
+} from 'react-router'
 import invariant from 'tiny-invariant'
 import { getUserById } from '~/models/user.server'
 import { type User } from '~/schema'
@@ -112,12 +118,26 @@ export async function requireUser(request: Request) {
 	throw await logout({ request: request, redirectTo: '/explore' })
 }
 
+export const adminUserContext = createContext<User | null>(null)
+export async function requireAdminMiddleware(
+	{
+		request,
+		context,
+	}: { request: Request; context: Readonly<RouterContextProvider> },
+	next: () => Promise<Response>,
+) {
+	const user = await requireUser(request)
+	if (user.role !== 'admin') throw redirect('/explore')
+
+	context.set(adminUserContext, user)
+	return next()
+}
+
 export async function createUserSession({
 	request,
 	userId,
 	remember,
 	redirectTo,
-	headers,
 }: {
 	request: Request
 	userId: string
