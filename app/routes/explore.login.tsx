@@ -31,20 +31,6 @@ import { verifyLogin } from '~/models/user.server'
 import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 
-// export async function loader({ request }: LoaderFunctionArgs) {
-// 	const userId = await getUserId(request)
-// 	const url = new URL(request.url)
-// 	const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
-// 	console.log("redirecting to", redirectTo)
-// 	if (userId) {
-// 		const url = new URL(request.url)
-// 		const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
-// 		console.log('LOGIN LOADER already logged in, redirecting to:', redirectTo)
-// 		return redirect(redirectTo)
-// 	}
-// 	return data({ redirectTo })
-// }
-
 export async function loader({ request }: LoaderFunctionArgs) {
 	const url = new URL(request.url)
 	const userId = await getUserId(request)
