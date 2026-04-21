@@ -37,7 +37,7 @@ const generalInfoSchema = z.object({
 		.min(1, 'Name is required'),
 	description: z
 		.string()
-		.max(5000, 'Description should not exceed 5000 characters')	
+		.max(5000, 'Description should not exceed 5000 characters')
 		.optional()
 		.nullable(),
 	exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown'], {
@@ -95,6 +95,14 @@ const sensorsSchema = z.object({
 
 const advancedSchema = z.record(z.any())
 
+const formSchema = z.union([
+	generalInfoSchema,
+	locationSchema,
+	deviceSchema,
+	sensorsSchema,
+	advancedSchema,
+])
+
 export const Stepper = defineStepper(
 	{
 		id: 'general-info',
@@ -146,20 +154,25 @@ type DeviceData = z.infer<typeof deviceSchema>
 type SensorData = z.infer<typeof sensorsSchema>
 type AdvancedData = z.infer<typeof advancedSchema>
 
-type FormData = GeneralInfoData &
-	LocationData &
-	DeviceData &
-	SensorData &
-	AdvancedData
+type FormData =
+	| GeneralInfoData
+	| LocationData
+	| DeviceData
+	| SensorData
+	| AdvancedData
 
 export default function NewDeviceStepper() {
 	const { integrations } = useLoaderData<typeof loader>()
 	const submit = useSubmit()
 	const [formData, setFormData] = useState<Record<string, any>>({})
 	const stepper = Stepper.useStepper()
-	const form = useForm<FormData>({
+	const form = useForm({
 		mode: 'onTouched',
-		resolver: zodResolver(stepper.current.schema),
+		resolver: zodResolver<
+			z.input<typeof formSchema>,
+			any,
+			z.output<typeof formSchema>
+		>(stepper.current.schema),
 	})
 	const { toast } = useToast()
 	const { t } = useTranslation('newdevice')
@@ -298,7 +311,11 @@ export default function NewDeviceStepper() {
 							{t('back')}
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting ? t('submitting') : stepper.isLast ? t('complete') : t('next')}
+							{isSubmitting
+								? t('submitting')
+								: stepper.isLast
+									? t('complete')
+									: t('next')}
 						</Button>
 					</div>
 				</Form>
