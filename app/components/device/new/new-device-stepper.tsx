@@ -41,7 +41,7 @@ const generalInfoSchema = z.object({
 		.optional()
 		.nullable(),
 	exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown'], {
-		errorMap: () => ({ message: 'Exposure is required' }),
+		error: () => 'Exposure is required',
 	}),
 	temporaryExpirationDate: z
 		.string()
@@ -66,15 +66,19 @@ const generalInfoSchema = z.object({
 const locationSchema = z.object({
 	latitude: z.coerce
 		.number({
-			invalid_type_error: 'Latitude must be a valid number',
-			required_error: 'Latitude is required',
+			error: (issue) =>
+				issue.input === undefined
+					? 'Latitude is required'
+					: 'Latitude must be a valid number',
 		})
 		.min(-90, 'Latitude must be greater than or equal to -90')
 		.max(90, 'Latitude must be less than or equal to 90'),
 	longitude: z.coerce
 		.number({
-			invalid_type_error: 'Longitude must be a valid number',
-			required_error: 'Longitude is required',
+			error: (issue) =>
+				issue.input === undefined
+					? 'Longitude is required'
+					: 'Longitude must be a valid number',
 		})
 		.min(-180, 'Longitude must be greater than or equal to -180')
 		.max(180, 'Longitude must be less than or equal to 180'),
@@ -82,7 +86,7 @@ const locationSchema = z.object({
 
 const deviceSchema = z.object({
 	model: z.enum(DeviceModelEnum.enumValues, {
-		errorMap: () => ({ message: 'Please select a device.' }),
+		error: () => 'Please select a device.',
 	}),
 })
 
@@ -93,7 +97,7 @@ const sensorsSchema = z.object({
 		.min(1, 'Please select at least one sensor'),
 })
 
-const advancedSchema = z.record(z.any())
+const advancedSchema = z.record(z.string(), z.any())
 
 const formSchema = z.union([
 	generalInfoSchema,
@@ -200,7 +204,7 @@ export default function NewDeviceStepper() {
 				{ method: 'post' },
 			)
 		} else {
-			stepper.navigation.next()
+			void stepper.navigation.next()
 		}
 	}
 

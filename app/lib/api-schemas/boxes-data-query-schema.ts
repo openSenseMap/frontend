@@ -64,7 +64,7 @@ const BoxesDataQuerySchemaBase = z
 				message: 'from-date is invalid',
 			})
 			.optional()
-			.default(() =>
+			.prefault(() =>
 				new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
 			),
 		toDate: z
@@ -74,11 +74,11 @@ const BoxesDataQuerySchemaBase = z
 				message: 'to-date is invalid',
 			})
 			.optional()
-			.default(() => new Date().toISOString()),
+			.prefault(() => new Date().toISOString()),
 
 		format: z
 			.enum(['csv', 'json'], {
-				errorMap: () => ({ message: "Format must be either 'csv' or 'json'" }),
+				error: () => "Format must be either 'csv' or 'json'",
 			})
 			.default('csv'),
 
@@ -163,7 +163,7 @@ export async function parseBoxesDataQuery(
 	const parseResult = BoxesDataQuerySchemaBase.safeParse(params)
 
 	if (!parseResult.success) {
-		const firstError = parseResult.error.errors[0]
+		const firstError = parseResult.error.issues[0]
 		const message = firstError.message || 'Invalid query parameters'
 
 		if (firstError.path.includes('bbox')) {
