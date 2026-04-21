@@ -1,5 +1,5 @@
-import { conform, useForm } from '@conform-to/react'
-import { getFieldsetConstraint, parse } from '@conform-to/zod'
+import { useForm, getInputProps, getFormProps } from '@conform-to/react'
+import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
 import { eq } from 'drizzle-orm'
 import { useState } from 'react'
@@ -72,12 +72,9 @@ export async function action({ request }: Route.ActionArgs) {
 		async (file: FileUpload) => uploadHandler(file),
 	)
 
-	const submission = parse(formData, { schema: PhotoFormSchema })
+	const submission = parseWithZod(formData, { schema: PhotoFormSchema })
 
-	if (submission.intent !== 'submit') {
-		return { status: 'idle', submission } as const
-	}
-	if (!submission.value) {
+	if (submission.status !== 'success') {
 		return data(
 			{
 				status: 'error',
@@ -87,7 +84,7 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	const { photoFile } = submission.value
+	const { photoFile } = submission.payload as { photoFile: File }
 
 	// Query user profile
 	const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
@@ -125,10 +122,10 @@ export default function PhotoChooserModal() {
 	const actionData = useActionData<typeof action>()
 	const [form, { photoFile }] = useForm({
 		id: 'profile-photo',
-		constraint: getFieldsetConstraint(PhotoFormSchema),
-		lastSubmission: actionData?.submission,
+		constraint: getZodConstraint(PhotoFormSchema),
+		lastResult: actionData?.submission.payload,
 		onValidate({ formData }) {
-			return parse(formData, { schema: PhotoFormSchema })
+			return parseWithZod(formData, { schema: PhotoFormSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
@@ -151,7 +148,7 @@ export default function PhotoChooserModal() {
 					encType="multipart/form-data"
 					className="mt-8 flex flex-col items-center justify-center gap-10"
 					onReset={() => setNewImageSrc(null)}
-					{...form.props}
+					{...getFormProps(form)}
 				>
 					<Avatar className="h-64 w-64">
 						<AvatarImage
@@ -168,7 +165,7 @@ export default function PhotoChooserModal() {
 					</Avatar>
 					{/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
 					<input
-						{...conform.input(photoFile, { type: 'file' })}
+						{...getInputProps(photoFile, { type: 'file' })}
 						type="file"
 						accept="image/*"
 						className="sr-only"
