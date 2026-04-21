@@ -1,4 +1,4 @@
-import { render } from '@react-email/components'
+import { render } from '@react-email'
 import * as dotenv from 'dotenv'
 import nodemailer from 'nodemailer'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
