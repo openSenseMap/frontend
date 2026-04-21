@@ -172,7 +172,7 @@ export default function NewDeviceStepper() {
 			z.input<typeof formSchema>,
 			any,
 			z.output<typeof formSchema>
-		>(stepper.current.schema),
+		>(stepper.state.current.data.schema),
 	})
 	const { toast } = useToast()
 	const { t } = useTranslation('newdevice')
@@ -181,18 +181,18 @@ export default function NewDeviceStepper() {
 	const isSubmitting = navigation.state === 'submitting'
 
 	useEffect(() => {
-		setIsFirst(stepper.isFirst)
-	}, [stepper.isFirst])
+		setIsFirst(stepper.state.isFirst)
+	}, [stepper.state.isFirst])
 
 	const onSubmit = (data: FormData) => {
 		const updatedData = {
 			...formData,
-			[stepper.current.id]: data,
+			[stepper.state.current.data.id]: data,
 		}
 
 		setFormData(updatedData)
 
-		if (stepper.isLast) {
+		if (stepper.state.isLast) {
 			void submit(
 				{
 					formData: JSON.stringify(updatedData),
@@ -200,7 +200,7 @@ export default function NewDeviceStepper() {
 				{ method: 'post' },
 			)
 		} else {
-			stepper.next()
+			stepper.navigation.next()
 		}
 	}
 
@@ -239,9 +239,9 @@ export default function NewDeviceStepper() {
 										<div className="flex gap-2" key={index}>
 											<BreadcrumbItem key={step.id}>
 												<BreadcrumbLink
-													onClick={() => stepper.goTo(step.id)}
+													onClick={() => stepper.navigation.goTo(step.id)}
 													className={` ${
-														stepper.current.index === step.index
+														stepper.state.current.index === step.index
 															? 'font-bold text-black'
 															: 'cursor-pointer text-gray-500 hover:text-black'
 													} `}
@@ -264,10 +264,10 @@ export default function NewDeviceStepper() {
 						{/* Step Header with Info */}
 						<div className="flex items-center justify-start gap-2">
 							<h2 className="text-lg font-medium">
-								{t('step')} {stepper.current.index + 1} {t('of')}{' '}
-								{Stepper.steps.length}: {t(stepper.current.label)}
+								{t('step')} {stepper.state.current.index + 1} {t('of')}{' '}
+								{Stepper.steps.length}: {t(stepper.state.current.data.label)}
 							</h2>
-							{stepper.current.infoKey && (
+							{stepper.state.current.data.infoKey && (
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger
@@ -280,7 +280,7 @@ export default function NewDeviceStepper() {
 											<Info />
 										</TooltipTrigger>
 										<TooltipContent>
-											{t(stepper.current.infoKey)}
+											{t(stepper.state.current.data.infoKey)}
 										</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
@@ -290,7 +290,7 @@ export default function NewDeviceStepper() {
 
 					{/* Form Content */}
 					<div className="h-full overflow-auto">
-						{stepper.switch({
+						{stepper.flow.switch({
 							advanced: () => <AdvancedStep integrations={integrations} />,
 							'general-info': () => <GeneralInfoStep />,
 							location: () => <LocationStep />,
@@ -305,7 +305,7 @@ export default function NewDeviceStepper() {
 						<Button
 							type="button"
 							variant="secondary"
-							onClick={stepper.prev}
+							onClick={() => stepper.navigation.prev()}
 							disabled={isFirst || isSubmitting}
 						>
 							{t('back')}
@@ -313,7 +313,7 @@ export default function NewDeviceStepper() {
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting
 								? t('submitting')
-								: stepper.isLast
+								: stepper.state.isLast
 									? t('complete')
 									: t('next')}
 						</Button>
