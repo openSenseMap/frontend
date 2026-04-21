@@ -181,7 +181,7 @@
     "@types/supercluster": "^7.1.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-react": "^5.18.0",
-    "@vitejs/plugin-react": "^5.1.4",
+    "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
     "csvtojson": "^2.0.14",
@@ -204,8 +204,7 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "6.0.3",
-    "vite": "^7.2.6",
-    "vite-tsconfig-paths": "^5.1.4",
+    "vite": "^8.0.9",
     "vitest": "^4.1.5"
   },
   "engines": {
