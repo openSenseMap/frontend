@@ -23,7 +23,9 @@
 		"forceConsistentCasingInFileNames": true,
 		"paths": {
 			"~/*": ["./app/*"],
-			"@/*": ["./app/*"]
+			"@/*": ["./app/*"],
+			"db/*": ["./db/*"],
+			"emails/*": ["./emails/*"]
 		},
 		"skipLibCheck": true,
 		"rootDirs": [".", "./.react-router/types"],
