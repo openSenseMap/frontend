@@ -25,7 +25,8 @@
 			"~/*": ["./app/*"],
 			"@/*": ["./app/*"],
 			"db/*": ["./db/*"],
-			"emails/*": ["./emails/*"]
+			"emails/*": ["./emails/*"],
+			"tests/*": ["./tests/*"]
 		},
 		"skipLibCheck": true,
 		"rootDirs": [".", "./.react-router/types"],

@@ -8,7 +8,7 @@ import {
 	Container,
 	Text,
 	Link,
-} from '@react-email'
+} from 'react-email'
 
 export interface BaseNewDeviceEmailProps {
 	user: {
