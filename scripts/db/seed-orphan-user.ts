@@ -1,7 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { integration } from "../app/schema/integration";
 import { envDBSchema } from "./env-schema";
+import { user } from "~/schema";
+
+export const ORPHAN_USER_ID = "system_orphan_user";
 
 console.log(`🔌 setting up drizzle client to ${envDBSchema.DATABASE_URL}`);
 
@@ -9,31 +11,25 @@ const queryClient = postgres(envDBSchema.DATABASE_URL, {
   max: 1,
   ssl: envDBSchema.PG_CLIENT_SSL === "true" ? true : false,
 });
+
 const client = drizzle(queryClient);
 
 async function seed() {
-    await client.insert(integration).values([
-  {
-    name: 'MQTT',
-    slug: 'mqtt',
-    serviceUrl: process.env.MQTT_SERVICE_URL!,
-    serviceKey: 'MQTT_SERVICE_KEY',
-    icon: 'message-square-text',
-    order: 1,
-  },
-  {
-    name: 'The Things Network',
-    slug: 'ttn',
-    serviceUrl: process.env.TTN_SERVICE_URL!,
-    serviceKey: 'TTN_SERVICE_KEY',
-    icon: 'antenna',
-    order: 2,
-  },
-]).onConflictDoNothing();
+  await client
+    .insert(user)
+    .values({
+      id: ORPHAN_USER_ID,
+      name: "Orphaned Devices",
+      email: "orphaned@opensensemap.org",
+      emailIsConfirmed: true
+    })
+    .onConflictDoNothing()
+  console.log(`✅ ensured orphan user exists (${ORPHAN_USER_ID})`);
 }
 
 seed()
   .catch((e) => {
+    console.error("❌ failed to seed orphan user");
     console.error(e);
     process.exit(1);
   })

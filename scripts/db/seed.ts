@@ -3,13 +3,8 @@ import bcrypt from 'bcryptjs'
 import csvtojson from 'csvtojson'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { device } from '../app/schema/device'
-import { measurement } from '../app/schema/measurement'
-import { password } from '../app/schema/password'
-import { profile } from '../app/schema/profile'
-import { sensor } from '../app/schema/sensor'
-import { user } from '../app/schema/user'
 import { envDBSchema } from './env-schema'
+import { device, measurement, password, profile, sensor, user } from '~/schema'
 
 console.log(`🔌 setting up drizzle client to ${envDBSchema.DATABASE_URL}`)
 
@@ -79,7 +74,7 @@ async function seed() {
 	console.log(`ℹ️  Create profile sensei 🥷🏼  for account with ${email}`)
 
 	// Import devices and connect it to user
-	const devices = await csvtojson().fromFile('./db/seeds/devices.csv')
+	const devices = await csvtojson().fromFile('../../seeds/devices.csv')
 	let i = 0
 	for await (const csvDevice of devices) {
 		i++
@@ -97,7 +92,7 @@ async function seed() {
 	}
 	process.stdout.write('\n')
 
-	const sensors = await csvtojson().fromFile('./db/seeds/sensors.csv')
+	const sensors = await csvtojson().fromFile('../../seeds/sensors.csv')
 
 	let j = 0
 	for await (const csvSensor of sensors) {

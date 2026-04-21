@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
-import { seedTos } from 'db/seed-tos'
+import { seedTos } from 'scripts/db/seed-tos'
 import { afterEach } from 'vitest'
 import { drizzleClient, pg } from '~/db.server'
 
