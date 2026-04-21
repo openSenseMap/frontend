@@ -182,7 +182,7 @@
     "@types/lodash.debounce": "^4.0.9",
     "@types/mapbox__mapbox-gl-geocoder": "^5.1.1",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^22.15.35",
+    "@types/node": "^24.12.2",
     "@types/node-fetch": "^2.6.13",
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.20.0",
