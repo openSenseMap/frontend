@@ -13,13 +13,11 @@ import {
 } from 'drizzle-orm'
 import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
-import BaseNewDeviceEmail, {
-	messages as BaseNewDeviceMessages,
-} from 'emails/base-new-device'
-import { messages as NewLufdatenDeviceMessages } from 'emails/new-device-luftdaten'
-import { messages as NewSenseboxDeviceMessages } from 'emails/new-device-sensebox'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
+import BaseNewDeviceEmail, { messages as BaseNewDeviceMessages } from '~/emails/base-new-device'
+import { messages as NewLufdatenDeviceMessages} from '~/emails/new-device-luftdaten'
+import { messages as NewSenseboxDeviceMessages} from '~/emails/new-device-sensebox'
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import {

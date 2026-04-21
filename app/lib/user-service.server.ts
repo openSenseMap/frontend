@@ -1,19 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { and, eq, gt } from 'drizzle-orm'
-import ConfirmEmailAddress, {
-	subject as ConfirmEmailAddressSubject,
-} from 'emails/confirm-email'
-import DeleteUserEmail, {
-	subject as DeleteUserEmailSubject,
-} from 'emails/delete-user'
-import NewUserEmail, { subject as NewUserEmailSubject } from 'emails/new-user'
-import PasswordResetEmail, {
-	subject as PasswordResetEmailSubject,
-} from 'emails/password-reset'
-import {	subject as ResendEmailConfirmationSubject } from 'emails/resend-email-confirmation'
 import invariant from 'tiny-invariant'
 import { createToken, revokeToken } from './jwt'
-
 import { sendMail } from './mail.server'
 import {
 	validateEmail,
@@ -22,6 +10,18 @@ import {
 	validateUsername,
 } from './user-service'
 import { drizzleClient } from '~/db.server'
+import ConfirmEmailAddress, {
+	subject as ConfirmEmailAddressSubject,
+} from '~/emails/confirm-email'
+import DeleteUserEmail, {
+	subject as DeleteUserEmailSubject,
+} from '~/emails/delete-user'
+import NewUserEmail, { subject as NewUserEmailSubject } from '~/emails/new-user'
+import PasswordResetEmail, {
+	subject as PasswordResetEmailSubject,
+} from '~/emails/password-reset'
+import {	subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
+
 import { generateRawActionToken, hashActionToken, issueEmailConfirmationToken } from '~/models/token.server'
 import { getCurrentEffectiveTos } from '~/models/tos.server'
 import {
