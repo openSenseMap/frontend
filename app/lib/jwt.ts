@@ -5,8 +5,8 @@ import invariant from 'tiny-invariant'
 import { v4 as uuidv4 } from 'uuid'
 import { getUserByEmail } from '~/db/models/user.server'
 import { drizzleClient } from '~/db.server'
-import { type Device, type User } from '~/schema'
-import { refreshToken, tokenRevocation } from '~/schema/refreshToken'
+import { type Device, type User } from '~/db/schema'
+import { refreshToken, tokenRevocation } from '~/db/schema/refreshToken'
 
 const { sign, verify } = jsonwebtoken
 

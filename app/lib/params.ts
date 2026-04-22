@@ -1,4 +1,4 @@
-import { StandardResponse } from './response-utils'
+import { StandardResponse } from './responses'
 
 /**
  * Parses a parameter from the url search paramaters into a date.

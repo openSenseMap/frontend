@@ -23,7 +23,7 @@ import {
 	getDeviceWithoutSensors,
 	updateDeviceLocation,
 } from '~/db/models/device.server'
-import { getUserId } from '~/utils/session.server'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -101,7 +101,7 @@ export default function EditLocation() {
 		<div className="grid grid-rows-1">
 			{/* location form */}
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica text-[14px]">
+				<div className="font-helvetica mx-auto w-full text-[14px]">
 					{/* Form */}
 					<Form method="post" noValidate>
 						{/* Heading */}
@@ -244,7 +244,7 @@ export default function EditLocation() {
 										longitude: device?.longitude,
 									})
 								}}
-								className="mb-10 mt-4 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline"
+								className="mt-4 mb-10 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline"
 							>
 								Reset location
 							</button>

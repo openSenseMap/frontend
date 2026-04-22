@@ -9,7 +9,7 @@ import {
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
 import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
-import { type User, type Device } from '~/schema'
+import { type User, type Device } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const TEST_USER = {

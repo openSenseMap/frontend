@@ -23,7 +23,7 @@ import { getLatestDevices } from '~/db/models/device.server'
 import { type SupportedLanguage } from '~/i18next-config'
 import { type Partner, getDirectusClient } from '~/lib/directus'
 import { getLocale } from '~/middleware/i18next'
-import { getUserId, getUserName } from '~/utils/session.server'
+import { getUserId, getUserName } from '~/services/session-service.server'
 
 const sections = [
 	{
@@ -149,7 +149,7 @@ export default function Index() {
 				>
 					<div className="flex items-center justify-between px-8">
 						<div className="md:w-1/2">
-							<h1 className="text-5xl font-bold tracking-tight text-light-green dark:text-dark-green">
+							<h1 className="text-light-green dark:text-dark-green text-5xl font-bold tracking-tight">
 								openSenseMap
 							</h1>
 							<motion.div
@@ -157,7 +157,7 @@ export default function Index() {
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ ease: 'easeInOut', duration: 0.5 }}
 							>
-								<p className="ml-6 mt-6 text-lg text-gray-600 dark:text-gray-100">
+								<p className="mt-6 ml-6 text-lg text-gray-600 dark:text-gray-100">
 									{t('introduction')}
 								</p>
 							</motion.div>
@@ -181,7 +181,7 @@ export default function Index() {
 												damping: 10,
 											}}
 										>
-											<button className="mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-green p-2 text-light-green transition-all hover:bg-light-green hover:text-white dark:border-dark-green dark:bg-dark-green dark:text-white">
+											<button className="border-light-green text-light-green hover:bg-light-green dark:border-dark-green dark:bg-dark-green mt-8 rounded-lg border-t-4 border-r-8 border-b-8 border-l-4 border-solid p-2 transition-all hover:text-white dark:text-white">
 												{t('explore')}
 											</button>
 										</motion.div>
@@ -211,7 +211,7 @@ export default function Index() {
 												damping: 10,
 											}}
 										>
-											<button className="mt-8 rounded-lg border-b-8 border-l-4 border-r-8 border-t-4 border-solid border-light-blue p-2 text-light-blue transition-all hover:scale-105 hover:bg-light-blue hover:text-white dark:border-dark-blue dark:bg-dark-blue dark:text-white">
+											<button className="border-light-blue text-light-blue hover:bg-light-blue dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-t-4 border-r-8 border-b-8 border-l-4 border-solid p-2 transition-all hover:scale-105 hover:text-white dark:text-white">
 												{t('donate')}
 											</button>
 										</motion.div>

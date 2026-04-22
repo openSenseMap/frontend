@@ -24,8 +24,8 @@ import {
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
 import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
-import { getInitials } from '~/utils/misc'
-import { requireUserId } from '~/utils/session.server'
+import { getInitials } from '~/lib/strings'
+import { requireUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)

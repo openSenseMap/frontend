@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.boxes.$deviceId.data'
 import { isValidServiceKey } from '~/db/models/integration.server'
 import { postNewMeasurements } from '~/services/measurement-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi

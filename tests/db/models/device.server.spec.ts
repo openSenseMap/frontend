@@ -1,6 +1,6 @@
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
-import { type User } from '~/schema'
+import { type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_MODEL_TEST_USER = {

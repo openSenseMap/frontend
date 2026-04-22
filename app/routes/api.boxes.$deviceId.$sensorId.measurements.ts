@@ -7,7 +7,7 @@ import {
 	deleteSensorMeasurementsForTimes,
 } from '~/db/models/measurement.server'
 import { getUserFromJwt } from '~/lib/jwt'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export async function action({ request, params }: Route.ActionArgs) {
 	try {

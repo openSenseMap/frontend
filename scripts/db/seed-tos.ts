@@ -1,7 +1,7 @@
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { envDBSchema } from './env-schema'
-import { tosVersion } from '~/schema'
+import { tosVersion } from '~/db/schema'
 
 type LocalizedText = {
 	en: string

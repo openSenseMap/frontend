@@ -15,14 +15,14 @@ import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import { getDevice, getDeviceWithoutSensors } from '~/db/models/device.server'
 import { verifyLogin } from '~/db/models/user.server'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 import { updateDevice, deleteDevice } from '~/services/devices-service.server'
 import {
 	uploadDeviceImage,
 	deleteDeviceImage,
 	getDeviceImageUrl,
-} from '~/utils/s3.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+} from '~/lib/s3.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {

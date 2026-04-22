@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.getsensors'
 import { getSensors } from '~/db/models/sensor.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi

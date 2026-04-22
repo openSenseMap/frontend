@@ -2,12 +2,11 @@ import {
 	createContext,
 	createCookieSessionStorage,
 	redirect,
-	RouterContext,
 	type RouterContextProvider,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { getUserById } from '~/db/models/user.server'
-import { type User } from '~/schema'
+import { type User } from '~/db/schema'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')
 

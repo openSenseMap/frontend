@@ -31,10 +31,10 @@ import { getMeasurement } from '~/db/models/measurement.query.server'
 import { getProfileByUserId } from '~/db/models/profile.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { getLocale } from '~/middleware/i18next'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 import { getFilteredDevices } from '~/utils'
-import { getCSV, getJSON, getTXT } from '~/utils/file-exports'
-import { getUser, getUserSession } from '~/utils/session.server'
+import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
+import { getUser, getUserSession } from '~/services/session-service.server'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50

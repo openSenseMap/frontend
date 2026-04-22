@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.users.me.resend-email-confirmation'
 import { getUserFromJwt } from '~/lib/jwt'
 import { resendEmailConfirmation } from '~/services/user-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	try {

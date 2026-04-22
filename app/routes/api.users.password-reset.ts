@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.users.password-reset'
 import { resetPassword } from '~/services/user-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	let formData = new FormData()

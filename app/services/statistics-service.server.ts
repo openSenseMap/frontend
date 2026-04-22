@@ -1,6 +1,6 @@
 import { and, count, gt, lt, sql } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
-import { measurement } from '~/schema'
+import { measurement } from '~/db/schema'
 
 /**
  *

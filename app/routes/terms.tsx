@@ -17,11 +17,11 @@ import {
 	getTosLocale,
 	getTosRequirementForUser,
 } from '~/db/models/tos.server'
-import { getUser } from '~/utils/session.server'
+import { getUser } from '~/services/session-service.server'
 import {
 	getTosFlowSession,
 	tosFlowSessionStorage,
-} from '~/utils/tos-session.server'
+} from '~/services/tos-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)

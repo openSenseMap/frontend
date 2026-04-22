@@ -5,7 +5,7 @@ import { NavBar } from '~/components/nav-bar'
 import { getIntegrations } from '~/db/models/integration.server'
 import { createDevice } from '~/services/devices-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
-import { getUser, getUserId } from '~/utils/session.server'
+import { getUser, getUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)

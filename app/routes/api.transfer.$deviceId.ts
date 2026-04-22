@@ -4,7 +4,7 @@ import {
 	getBoxTransfer,
 	updateBoxTransferExpiration,
 } from '~/services/transfer-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
 	const jwtResponse = await getUserFromJwt(request)

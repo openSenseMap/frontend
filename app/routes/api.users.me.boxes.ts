@@ -3,7 +3,7 @@ import { getUserDevices } from '~/db/models/device.server'
 import { enrichDevicesWithIntegrations } from '~/db/models/integration.server'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	try {

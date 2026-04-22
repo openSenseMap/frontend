@@ -20,8 +20,8 @@ import { Toaster } from './components/ui/toaster'
 import { updateUserlocale } from './db/models/user.server'
 import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
-import { getEnv } from './utils/env.server'
-import { getUser } from './utils/session.server'
+import { getEnv } from './lib/env.server'
+import { getUser } from './services/session-service.server'
 
 export const middleware: Route.MiddlewareFunction[] = [
 	i18nextMiddleware,

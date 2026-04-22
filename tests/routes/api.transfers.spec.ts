@@ -9,7 +9,7 @@ import {
 	action as transferUpdateAction,
 	loader as transferLoader,
 } from '~/routes/api.transfer.$deviceId'
-import { type Device, type User } from '~/schema'
+import { type Device, type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const TRANSFER_TEST_USER = {

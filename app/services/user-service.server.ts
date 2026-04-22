@@ -41,7 +41,7 @@ import PasswordResetEmail, {
 } from '~/emails/password-reset'
 import { subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
 
-import { actionToken, user, type User } from '~/schema'
+import { actionToken, user, type User } from '~/db/schema'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 

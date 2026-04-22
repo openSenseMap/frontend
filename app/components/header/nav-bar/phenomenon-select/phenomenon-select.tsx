@@ -9,10 +9,7 @@ import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { type loader } from '~/routes/explore'
-import {
-	sensorWikiLabel,
-	type SensorWikiLabel,
-} from '~/utils/sensor-wiki-helper'
+import { sensorWikiLabel, type SensorWikiLabel } from '~/lib/sensor-wiki'
 
 export function PhenomenonSelect() {
 	const data = useLoaderData<typeof loader>()
@@ -49,7 +46,7 @@ export function PhenomenonSelect() {
 	return (
 		<div className="flex h-full flex-1 flex-col justify-around gap-2 dark:text-zinc-200">
 			{navigation.state === 'loading' && (
-				<div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-100/30 backdrop-blur-[1.5px]">
 					<Spinner />
 				</div>
 			)}

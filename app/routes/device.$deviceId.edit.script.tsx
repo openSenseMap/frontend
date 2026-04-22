@@ -6,7 +6,7 @@ import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { getDeviceWithoutSensors } from '~/db/models/device.server'
 import { getSensorsFromDevice } from '~/db/models/sensor.server'
-import { getUserId } from '~/utils/session.server'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {

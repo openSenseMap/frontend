@@ -1,8 +1,8 @@
 import { type Route } from './+types/api.users.refresh-auth'
 import { getUserFromJwt, hashJwt, refreshJwt } from '~/lib/jwt'
 import { parseRefreshTokenData } from '~/lib/request-parsing'
-import { type User } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import { type User } from '~/db/schema'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi

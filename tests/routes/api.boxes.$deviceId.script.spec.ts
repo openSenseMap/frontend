@@ -5,7 +5,7 @@ import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.script'
-import { type User } from '~/schema'
+import { type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_SENSORS_USER = generateTestUserCredentials()

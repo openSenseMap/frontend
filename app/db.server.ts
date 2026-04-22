@@ -1,7 +1,7 @@
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres, { type Sql } from 'postgres'
 import invariant from 'tiny-invariant'
-import * as schema from './schema'
+import * as schema from './db/schema'
 
 let drizzleClient: PostgresJsDatabase<typeof schema>
 let pg: Sql<any>

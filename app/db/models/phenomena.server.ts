@@ -1,4 +1,4 @@
-import { type SensorWikiTranslation } from '~/utils/sensor-wiki-helper'
+import { type SensorWikiTranslation } from '~/lib/sensor-wiki'
 
 export type Phenomenon = {
 	id: number

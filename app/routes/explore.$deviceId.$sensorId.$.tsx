@@ -10,7 +10,7 @@ import {
 	categorizeIntoTrips,
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
-import { type SensorWithMeasurementData } from '~/schema'
+import { type SensorWithMeasurementData } from '~/db/schema'
 
 interface SensorWithColor extends SensorWithMeasurementData {
 	color: string

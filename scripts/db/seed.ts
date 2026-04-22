@@ -4,7 +4,14 @@ import csvtojson from 'csvtojson'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { envDBSchema } from './env-schema'
-import { device, measurement, password, profile, sensor, user } from '~/schema'
+import {
+	device,
+	measurement,
+	password,
+	profile,
+	sensor,
+	user,
+} from '~/db/schema'
 
 console.log(`🔌 setting up drizzle client to ${envDBSchema.DATABASE_URL}`)
 

@@ -1,8 +1,8 @@
 import { type Route } from './+types/api.users.me'
 import { getUserFromJwt } from '~/lib/jwt'
-import { type User } from '~/schema/user'
+import { type User } from '~/db/schema/user'
 import { deleteUser, updateUserDetails } from '~/services/user-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi

@@ -11,7 +11,7 @@ import {
 	getSensorsWithLastMeasurement,
 	getSensorWithLastMeasurement,
 } from '~/db/models/sensor.server'
-import { type SensorWithLatestMeasurement } from '~/schema'
+import { type SensorWithLatestMeasurement } from '~/db/schema'
 import {
 	decodeMeasurements,
 	hasDecoder,

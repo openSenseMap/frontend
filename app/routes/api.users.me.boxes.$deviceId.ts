@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.users.me.boxes.$deviceId'
 import { getDevice } from '~/db/models/device.server'
 import { getUserFromJwt } from '~/lib/jwt'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
 	try {

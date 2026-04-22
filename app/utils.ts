@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useMatches } from 'react-router'
 import { type MyBadge } from './db/models/badge.server'
 import { validLngLat } from './lib/location'
-import { type User } from './schema/user'
+import { type User } from './db/schema/user'
 import { validateEmail as validateEmailNew } from './services/user-service'
 
 const DEFAULT_REDIRECT = '/'

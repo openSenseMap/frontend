@@ -8,7 +8,7 @@ import { deleteUserByEmail } from '~/db/models/user.server'
 import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
 import { loader as boxesDataLoader } from '~/routes/api.boxes.data'
-import { device, measurement, sensor } from '~/schema'
+import { device, measurement, sensor } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const BOXES_DATA_TEST_USER = generateTestUserCredentials()

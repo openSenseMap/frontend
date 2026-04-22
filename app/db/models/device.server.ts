@@ -15,9 +15,11 @@ import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
 import { type Point } from 'geojson'
 import { drizzleClient } from '~/db.server'
-import BaseNewDeviceEmail, { messages as BaseNewDeviceMessages } from '~/emails/base-new-device'
-import { messages as NewLufdatenDeviceMessages} from '~/emails/new-device-luftdaten'
-import { messages as NewSenseboxDeviceMessages} from '~/emails/new-device-sensebox'
+import BaseNewDeviceEmail, {
+	messages as BaseNewDeviceMessages,
+} from '~/emails/base-new-device'
+import { messages as NewLufdatenDeviceMessages } from '~/emails/new-device-luftdaten'
+import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sensebox'
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import {
@@ -28,9 +30,9 @@ import {
 	user,
 	type Device,
 	type Sensor,
-} from '~/schema'
-import type * as schema from '~/schema/index'
-import { getSensorsForModel } from '~/utils/model-definitions'
+} from '~/db/schema'
+import type * as schema from '~/db/schema/index'
+import { getSensorsForModel } from '~/lib/model-definitions'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -85,7 +87,9 @@ export class ArchivedDeviceError extends Error {
 	}
 }
 
-export function assertDeviceIsMutable(device: Pick<Device, 'id' | 'archivedAt'>) {
+export function assertDeviceIsMutable(
+	device: Pick<Device, 'id' | 'archivedAt'>,
+) {
 	if (device.archivedAt) {
 		throw new ArchivedDeviceError(device.id)
 	}
@@ -138,26 +142,23 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 	})
 }
 
-export function getUserDevice({
-  id,
-  userId,
-}: Pick<Device, 'id' | 'userId'>) {
-  return drizzleClient.query.device.findFirst({
-    where: (d, { and, eq }) => and(eq(d.id, id), eq(d.userId, userId)),
-    columns: {
-      id: true,
-      name: true,
-      description: true,
-      exposure: true,
-      image: true,
-      tags: true,
-      website: true,
-      updatedAt: true,
-      latitude: true,
-      longitude: true,
-      userId: true,
-    },
-  })
+export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
+	return drizzleClient.query.device.findFirst({
+		where: (d, { and, eq }) => and(eq(d.id, id), eq(d.userId, userId)),
+		columns: {
+			id: true,
+			name: true,
+			description: true,
+			exposure: true,
+			image: true,
+			tags: true,
+			website: true,
+			updatedAt: true,
+			latitude: true,
+			longitude: true,
+			userId: true,
+		},
+	})
 }
 
 export function getLocations(

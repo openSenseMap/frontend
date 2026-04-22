@@ -8,7 +8,7 @@ import {
 	measurements1hourView,
 	measurements1monthView,
 	measurements1yearView,
-} from '~/schema'
+} from '~/db/schema'
 
 // This function retrieves measurements from the database based on the provided parameters.
 export function getMeasurement(

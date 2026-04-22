@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-	Form,
-	useActionData,
-	data,
-	redirect,
-} from 'react-router'
+import { Form, useActionData, data, redirect } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/settings.delete'
 import { Button } from '~/components/ui/button'
@@ -24,7 +19,7 @@ import {
 	getUserByEmail,
 	verifyLogin,
 } from '~/db/models/user.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 
 //*****************************************************
 export async function loader({ request }: Route.LoaderArgs) {
@@ -96,7 +91,7 @@ export default function EditUserProfilePage() {
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
-			<Card className="dark:border-white dark:bg-dark-boxes">
+			<Card className="dark:bg-dark-boxes dark:border-white">
 				<CardHeader>
 					<CardTitle>{t('delete_account')}</CardTitle>
 					<CardDescription>{t('delete_account_description')}</CardDescription>

@@ -7,8 +7,8 @@ import {
 	type UpdateDeviceArgs,
 } from '~/db/models/device.server'
 import { verifyLogin } from '~/db/models/user.server'
-import { type Device, type User } from '~/schema'
-import { deleteDeviceImage } from '~/utils/s3.server'
+import { type Device, type User } from '~/db/schema'
+import { deleteDeviceImage } from '~/lib/s3.server'
 
 export const CreateBoxSchema = z.object({
 	// public API request shape

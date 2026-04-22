@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.stats'
 import { getStatistics } from '~/services/statistics-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	try {

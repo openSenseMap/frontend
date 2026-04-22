@@ -7,7 +7,7 @@ import {
 	device,
 	type Sensor,
 	type SensorWithLatestMeasurement,
-} from '~/schema'
+} from '~/db/schema'
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 

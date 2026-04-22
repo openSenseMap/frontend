@@ -17,8 +17,8 @@ import {
 import { Textarea } from '~/components/ui/textarea'
 import { getDevice } from '~/db/models/device.server'
 import { postNewMeasurements } from '~/services/measurement-service.server'
-import { StandardResponse } from '~/utils/response-utils'
-import { getUserId } from '~/utils/session.server'
+import { StandardResponse } from '~/lib/responses'
+import { getUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home

@@ -4,7 +4,7 @@ import { BASE_URL } from '../../vitest.setup'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
 import { loader as meLoader, action as meAction } from '~/routes/api.users.me'
-import { type User } from '~/schema'
+import { type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const ME_TEST_USER = generateTestUserCredentials()

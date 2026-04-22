@@ -5,7 +5,7 @@ import {
 	removeBoxTransfer,
 	validateTransferParams,
 } from '~/services/transfer-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	const jwtResponse = await getUserFromJwt(request)

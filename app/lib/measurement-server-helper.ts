@@ -7,7 +7,7 @@ import {
 	type Measurement,
 	measurement,
 	sensor,
-} from '~/schema'
+} from '~/db/schema'
 
 export interface MeasurementWithLocation {
 	sensor_id: string
@@ -102,7 +102,8 @@ export async function findOrCreateLocations(
 			(newLocation, index, arr) =>
 				arr.findIndex(
 					(candidate) =>
-						candidate.lng === newLocation.lng && candidate.lat === newLocation.lat,
+						candidate.lng === newLocation.lng &&
+						candidate.lat === newLocation.lat,
 				) === index,
 		)
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { type Phenomenon } from '~/db/models/phenomena.server'
 import { cn } from '~/lib/utils'
-import { sensorWikiLabel } from '~/utils/sensor-wiki-helper'
+import { sensorWikiLabel } from '~/lib/sensor-wiki'
 
 interface SensorFilterProps {
 	className?: React.HTMLAttributes<HTMLDivElement>['className']
@@ -62,7 +62,7 @@ export function SensorFilter(props: SensorFilterProps) {
 									<li className="py-1" key={p.id}>
 										<button
 											className={
-												'flex items-center gap-2 hover:text-light-green ' +
+												'hover:text-light-green flex items-center gap-2 ' +
 												(props.sensor === p.slug ? 'text-light-green' : '')
 											}
 											onClick={() => props.setSensor(p.slug)}

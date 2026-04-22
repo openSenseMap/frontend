@@ -11,7 +11,7 @@ import { type Route } from './+types/device.transfer'
 import Home from '~/components/header/home'
 import { Separator } from '~/components/ui/separator'
 import { claimBox } from '~/services/transfer-service.server'
-import { getUserId } from '~/utils/session.server'
+import { getUserId } from '~/services/session-service.server'
 
 type ActionData = {
 	success: boolean

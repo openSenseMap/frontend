@@ -5,7 +5,7 @@ import FilterTags from './filter-options/filter-tags'
 import useKeyboardNav from './use-keyboard-nav'
 import Search from '~/components/search'
 import { cn } from '~/lib/utils'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 
 interface NavBarHandlerProps {
 	devices: Device[]

@@ -6,7 +6,7 @@ import { createDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
 import { loader } from '~/routes/api.users.me.boxes.$deviceId'
-import { type User } from '~/schema'
+import { type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const BOX_TEST_USER = generateTestUserCredentials()

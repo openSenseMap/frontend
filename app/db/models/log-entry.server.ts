@@ -4,7 +4,7 @@ import {
 	type LogEntry,
 	logEntry,
 	type InsertLogEntry,
-} from '~/schema/log-entry'
+} from '~/db/schema/log-entry'
 
 /**
  * Create a new log entry for a device

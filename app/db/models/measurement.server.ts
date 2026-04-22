@@ -10,8 +10,8 @@ import {
 	measurements1hourView,
 	measurements1monthView,
 	measurements1yearView,
-	device
-} from '~/schema'
+	device,
+} from '~/db/schema'
 import {
 	type MinimalDevice,
 	type MeasurementWithLocation,
@@ -20,7 +20,7 @@ import {
 	addLocationUpdates,
 	insertMeasurementsWithLocation,
 	updateLastMeasurements,
-} from '~/utils/measurement-server-helper'
+} from '~/lib/measurement-server-helper'
 
 // This function retrieves measurements from the database based on the provided parameters.
 export function getMeasurement(
@@ -246,7 +246,12 @@ export async function saveMeasurements(
 
 		const locations = await findOrCreateLocations(deviceLocationUpdates)
 		await addLocationUpdates(deviceLocationUpdates, minimalDevice.id, locations)
-		await insertMeasurementsWithLocation(measurements, locations, minimalDevice.id, tx)
+		await insertMeasurementsWithLocation(
+			measurements,
+			locations,
+			minimalDevice.id,
+			tx,
+		)
 		await updateLastMeasurements(lastMeasurements, tx)
 	})
 }

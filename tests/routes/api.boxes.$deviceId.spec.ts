@@ -9,7 +9,7 @@ import {
 	loader as deviceLoader,
 	action as deviceAction,
 } from '~/routes/api.boxes.$deviceId'
-import { type User, type Device } from '~/schema'
+import { type User, type Device } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_TEST_USER = generateTestUserCredentials()

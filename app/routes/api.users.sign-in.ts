@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.users.sign-in'
 import { parseUserSignInData } from '~/lib/request-parsing'
 import { signIn } from '~/services/user-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 /**
  * @openapi
  * /api/users/sign-in:

@@ -1,7 +1,7 @@
 import { data } from 'react-router'
 import { type Route } from './+types/resources.measurement.$deviceId.$sensorId'
 import { drizzleClient } from '~/db.server'
-import { measurement, type Measurement } from '~/schema'
+import { measurement, type Measurement } from '~/db/schema'
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	if (request.method !== 'POST') {

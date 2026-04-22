@@ -8,9 +8,9 @@ import {
 import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { drizzleClient } from '~/db.server'
-import { deviceToLocation, location } from '~/schema'
-import { type LastMeasurement, sensor, type Sensor } from '~/schema/sensor'
-import { type User } from '~/schema/user'
+import { deviceToLocation, location } from '~/db/schema'
+import { type LastMeasurement, sensor, type Sensor } from '~/db/schema/sensor'
+import { type User } from '~/db/schema/user'
 import { registerUser } from '~/services/user-service.server'
 import {
 	addLocationUpdates,
@@ -23,7 +23,7 @@ import {
 	type Location,
 	type LocationWithId,
 	updateLastMeasurements,
-} from '~/utils/measurement-server-helper'
+} from '~/lib/measurement-server-helper'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 

@@ -6,11 +6,14 @@ import {
 	point,
 } from '@turf/helpers'
 import { type MultiLineString, type Point } from 'geojson'
-import mapboxgl, { type CircleLayerSpecification, type LineLayerSpecification   } from 'mapbox-gl'
+import mapboxgl, {
+	type CircleLayerSpecification,
+	type LineLayerSpecification,
+} from 'mapbox-gl'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Layer, Source, useMap } from 'react-map-gl/mapbox'
 import { HIGH_COLOR, LOW_COLOR, createPalette } from './color-palette'
-import { type Sensor } from '~/schema'
+import { type Sensor } from '~/db/schema'
 
 interface CustomGeoJsonProperties {
 	locationId: number

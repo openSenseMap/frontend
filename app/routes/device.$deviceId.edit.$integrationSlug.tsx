@@ -3,12 +3,7 @@ import validator from '@rjsf/validator-ajv8'
 import { eq } from 'drizzle-orm'
 import { Save } from 'lucide-react'
 import React from 'react'
-import {
-	data,
-	redirect,
-	useFetcher,
-	useLoaderData,
-} from 'react-router'
+import { data, redirect, useFetcher, useLoaderData } from 'react-router'
 import { type Route } from './+types/device.$deviceId.edit.$integrationSlug'
 import { ArrayFieldTemplate } from '~/components/rjsf/arrayFieldTemplate'
 import { CheckboxWidget } from '~/components/rjsf/checkboxWidget'
@@ -16,8 +11,8 @@ import { FieldTemplate } from '~/components/rjsf/fieldTemplate'
 import { BaseInputTemplate } from '~/components/rjsf/inputTemplate'
 import { toast } from '~/components/ui/use-toast'
 import { drizzleClient } from '~/db.server'
-import { integration } from '~/schema/integration'
-import { getUserId } from '~/utils/session.server'
+import { integration } from '~/db/schema/integration'
+import { getUserId } from '~/services/session-service.server'
 
 // =====================================================
 // Loader
@@ -220,7 +215,7 @@ export default function EditIntegration() {
 			</Form>
 
 			{fetcher.data?.error && (
-				<div className="text-red-800 mt-4 rounded border border-red-300 bg-red-50 p-4">
+				<div className="mt-4 rounded border border-red-300 bg-red-50 p-4 text-red-800">
 					{fetcher.data.error}
 				</div>
 			)}

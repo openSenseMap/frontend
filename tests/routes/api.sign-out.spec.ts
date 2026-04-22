@@ -4,7 +4,7 @@ import { BASE_URL } from '../../vitest.setup'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
 import { action } from '~/routes/api.sign-out'
-import { type User } from '~/schema'
+import { type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const VALID_SIGN_OUT_TEST_USER = generateTestUserCredentials()

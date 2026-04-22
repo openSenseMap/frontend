@@ -9,8 +9,8 @@ import {
 	password as passwordTable,
 	user,
 	tosUserState,
-	device
-} from '~/schema'
+	device,
+} from '~/db/schema'
 
 export async function getUserById(id: User['id']) {
 	return drizzleClient.query.user.findFirst({
@@ -24,9 +24,7 @@ export async function getUserByEmail(email: User['email']) {
 	})
 }
 
-export async function getUserByUnconfirmedEmail(
-	unconfirmedEmail: string,
-) {
+export async function getUserByUnconfirmedEmail(unconfirmedEmail: string) {
 	return drizzleClient.query.user.findFirst({
 		where: (user, { eq }) => eq(user.unconfirmedEmail, unconfirmedEmail),
 	})
@@ -139,10 +137,7 @@ type UpdateUserArgs = {
 	emailIsConfirmed: boolean
 }
 
-export async function updateUserById(
-	id: string,
-	args: UpdateUserArgs,
-) {
+export async function updateUserById(id: string, args: UpdateUserArgs) {
 	const [updated] = await drizzleClient
 		.update(user)
 		.set({
@@ -210,7 +205,7 @@ export async function createUser(
 	email: User['email'],
 	language: User['language'],
 	password: string,
-	tosVersionId?: string
+	tosVersionId?: string,
 ) {
 	const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13) // make salt_factor configurable oSeM API uses 13 by default
 
@@ -223,7 +218,7 @@ export async function createUser(
 				language,
 				unconfirmedEmail: email,
 				acceptedTosVersionId: tosVersionId,
-        		acceptedTosAt: new Date(), 
+				acceptedTosAt: new Date(),
 			})
 			.returning()
 		await t.insert(passwordTable).values({
@@ -232,28 +227,25 @@ export async function createUser(
 		})
 		await createProfileWithTransaction(t, newUser[0].id, name)
 		if (tosVersionId) {
-			await t.insert(tosUserState).values({
-				userId: newUser[0].id,
-				tosVersionId,
-				acceptedAt: new Date()
-				}).onConflictDoNothing()
+			await t
+				.insert(tosUserState)
+				.values({
+					userId: newUser[0].id,
+					tosVersionId,
+					acceptedAt: new Date(),
+				})
+				.onConflictDoNothing()
 		}
 		return newUser
 	})
 }
 
-export async function verifyLogin(
-	identifier: string,
-	password: string,
-) {
+export async function verifyLogin(identifier: string, password: string) {
 	const trimmedIdentifier = identifier.trim()
 
 	const userWithPassword = await drizzleClient.query.user.findFirst({
 		where: (user, { eq, or }) =>
-			or(
-				eq(user.email, trimmedIdentifier),
-				eq(user.name, trimmedIdentifier),
-			),
+			or(eq(user.email, trimmedIdentifier), eq(user.name, trimmedIdentifier)),
 		with: {
 			profile: true,
 			password: true,
