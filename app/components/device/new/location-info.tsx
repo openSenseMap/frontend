@@ -8,10 +8,11 @@ import {
 	GeolocateControl,
 	type MapRef,
 	type MarkerDragEvent,
-} from 'react-map-gl/mapbox'
+} from 'react-map-gl/maplibre'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
+
 
 
 export function LocationStep() {
@@ -104,8 +105,8 @@ export function LocationStep() {
 						longitude: marker.longitude ? Number(marker.longitude) : 7,
 						zoom: 3.5,
 					}}
-					mapStyle="mapbox://styles/mapbox/streets-v12"
-					mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
+					mapStyle="mapbox://styles/maplibre/streets-v12"
+					// mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 					style={{
 						width: '100%',
 					}}

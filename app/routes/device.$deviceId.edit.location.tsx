@@ -1,5 +1,5 @@
 import { Save } from 'lucide-react'
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.css?url'
+import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 import React, { useCallback, useState } from 'react'
 import {
 	type MarkerDragEvent,
@@ -7,7 +7,7 @@ import {
 	MapProvider,
 	Marker,
 	NavigationControl,
-} from 'react-map-gl/mapbox'
+} from 'react-map-gl/maplibre'
 import {
 	type LinksFunction,
 	redirect,
@@ -48,7 +48,7 @@ export const links: LinksFunction = () => {
 	return [
 		{
 			rel: 'stylesheet',
-			href: mapboxgl,
+			href: maplibreCss,
 		},
 	]
 }
@@ -137,8 +137,8 @@ export default function EditLocation() {
 										longitude: marker.longitude,
 										zoom: 10,
 									}}
-									mapStyle="mapbox://styles/mapbox/streets-v12"
-									mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
+									mapStyle="https://tiles.openfreemap.org/styles/liberty"
+									// mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 									style={{
 										width: '100%',
 										height: '500px',

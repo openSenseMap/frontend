@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type FeatureCollection, type Point } from 'geojson'
-import mapboxglcss from 'mapbox-gl/dist/mapbox-gl.css?url'
+import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 import { useState, useRef } from 'react'
 import {
 	type MapRef,
@@ -9,7 +9,7 @@ import {
 	Source,
 	Marker,
 	type MapMouseEvent,
-} from 'react-map-gl/mapbox'
+} from 'react-map-gl/maplibre'
 import {
 	Outlet,
 	useNavigate,
@@ -160,7 +160,7 @@ export const links: LinksFunction = () => {
 	return [
 		{
 			rel: 'stylesheet',
-			href: mapboxglcss,
+			href: maplibreCss,
 		},
 	]
 }

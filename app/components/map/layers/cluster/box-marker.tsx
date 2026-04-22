@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Box, Rocket } from 'lucide-react'
 import { useState } from 'react'
-import { type MarkerProps, Marker, useMap } from 'react-map-gl/mapbox'
+import { type MarkerProps, Marker, useMap } from 'react-map-gl/maplibre'
 import { useMatches, useNavigate, useSearchParams } from 'react-router'
 import { useGlobalCompareMode } from '~/components/device-detail/useGlobalCompareMode'
 import { validLngLat } from '~/lib/location'

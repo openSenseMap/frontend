@@ -1,6 +1,6 @@
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.css?url'
+import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 import moment from 'moment'
-import { Map, MapProvider, Marker } from 'react-map-gl/mapbox'
+import { Map, MapProvider, Marker } from 'react-map-gl/maplibre'
 import { type LinksFunction } from 'react-router'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
@@ -94,7 +94,7 @@ export const links: LinksFunction = () => {
 	return [
 		{
 			rel: 'stylesheet',
-			href: mapboxgl,
+			href: maplibreCss,
 		},
 	]
 }
@@ -182,8 +182,7 @@ export default function DeviceDashboard() {
 										longitude: marker.longitude,
 										zoom: 14,
 									}}
-									mapStyle="mapbox://styles/mapbox/streets-v12"
-									mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
+									mapStyle="https://tiles.openfreemap.org/styles/liberty"								
 									style={{
 										width: '100%',
 										height: '200px',

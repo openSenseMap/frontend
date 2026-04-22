@@ -6,7 +6,7 @@ import {
 } from 'geojson'
 import debounce from 'lodash.debounce'
 import { useMemo, useCallback, useState, useEffect } from 'react'
-import { Marker, useMap } from 'react-map-gl/mapbox'
+import { Marker, useMap } from 'react-map-gl/maplibre'
 import { type PointFeature } from 'supercluster'
 import useSupercluster from 'use-supercluster'
 import BoxMarker from './box-marker'
