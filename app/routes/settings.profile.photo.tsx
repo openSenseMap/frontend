@@ -28,8 +28,8 @@ import { getUserById } from '~/db/models/user.server'
 import { profileImage } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { uploadHandler } from '~/lib/file-upload.server'
-import { requireUserId } from '~/services/session-service.server'
 import { getInitials } from '~/lib/strings'
+import { requireUserId } from '~/services/session-service.server'
 
 const MAX_SIZE = 1024 * 1024 * 3 // 3MB
 

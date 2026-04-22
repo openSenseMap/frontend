@@ -11,8 +11,8 @@ import { type PointFeature } from 'supercluster'
 import useSupercluster from 'use-supercluster'
 import BoxMarker from './box-marker'
 import DonutChartCluster from './donut-chart-cluster'
-import { type DeviceClusterProperties } from '~/routes/explore'
 import { type Device } from '~/db/schema'
+import { type DeviceClusterProperties } from '~/routes/explore'
 
 const DEBOUNCE_VALUE = 50
 

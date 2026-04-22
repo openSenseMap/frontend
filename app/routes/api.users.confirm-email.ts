@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.users.confirm-email'
-import { confirmEmail } from '~/services/user-service.server'
 import { StandardResponse } from '~/lib/responses'
+import { confirmEmail } from '~/services/user-service.server'
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	let formData = new FormData()

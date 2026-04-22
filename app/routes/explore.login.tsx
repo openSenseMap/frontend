@@ -26,8 +26,8 @@ import {
 import { Checkbox } from '~/components/ui/checkbox'
 import { toast } from '~/components/ui/use-toast'
 import { verifyLogin } from '~/db/models/user.server'
-import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/services/session-service.server'
+import { safeRedirect } from '~/utils'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)

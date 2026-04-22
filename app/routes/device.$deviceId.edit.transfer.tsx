@@ -12,11 +12,11 @@ import { type Route } from './+types/device.$deviceId.edit.transfer'
 import { Callout } from '~/components/ui/alert'
 import { getDevice } from '~/db/models/device.server'
 import { type Claim } from '~/db/schema'
+import { getUserId } from '~/services/session-service.server'
 import {
 	getBoxTransfer,
 	createBoxTransfer,
 } from '~/services/transfer-service.server'
-import { getUserId } from '~/services/session-service.server'
 
 type LoaderData = {
 	deviceId: string

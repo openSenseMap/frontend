@@ -23,9 +23,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
+import { getUserId } from '~/services/session-service.server'
 import { requestPasswordReset } from '~/services/user-service.server'
 import { validateEmail } from '~/utils'
-import { getUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)

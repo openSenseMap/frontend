@@ -30,11 +30,11 @@ import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
 import { getProfileByUserId } from '~/db/models/profile.server'
 import { getSensors } from '~/db/models/sensor.server'
-import { getLocale } from '~/middleware/i18next'
 import { type Device } from '~/db/schema'
-import { getFilteredDevices } from '~/utils'
 import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
+import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
+import { getFilteredDevices } from '~/utils'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50

@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { drizzleClient } from '~/db.server'
 import { actionToken } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 
 export function generateRawActionToken() {
 	return randomBytes(32).toString('base64url')

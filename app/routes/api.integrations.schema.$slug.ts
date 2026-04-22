@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { type Route } from './+types/api.integrations.schema.$slug'
-import { drizzleClient } from '~/db.server'
 import { integration } from '~/db/schema/integration'
+import { drizzleClient } from '~/db.server'
 
 export async function loader({ params }: Route.LoaderArgs) {
 	const { slug } = params

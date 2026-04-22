@@ -10,8 +10,8 @@ import {
 	categorizeIntoTrips,
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
-import { getLocale } from '~/middleware/i18next'
 import { getDeviceImageUrl } from '~/lib/s3.server'
+import { getLocale } from '~/middleware/i18next'
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)

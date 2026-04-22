@@ -6,9 +6,9 @@ import {
 } from 'drizzle-orm'
 import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
-import { drizzleClient } from '~/db.server'
 import { type User, type Profile, profile, measurement } from '~/db/schema'
 import type * as schema from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 import { formatCount } from '~/lib/numbers'
 
 export async function getProfileByUserId(userId: User['id']) {

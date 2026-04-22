@@ -1,10 +1,10 @@
 import { redirect } from 'react-router'
 import { type Route } from './+types/account.confirm-email'
-import { confirmEmail } from '~/services/user-service.server'
 import {
 	getUserSession,
 	authSessionStorage,
 } from '~/services/session-service.server'
+import { confirmEmail } from '~/services/user-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)

@@ -77,9 +77,9 @@ import { useToast } from '../ui/use-toast'
 import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
 import { useGlobalCompareMode } from './useGlobalCompareMode'
-import { type loader } from '~/routes/explore.$deviceId'
 import { type SensorWithLatestMeasurement } from '~/db/schema'
 import { getArchiveLink } from '~/lib/archive-link'
+import { type loader } from '~/routes/explore.$deviceId'
 
 export interface MeasurementProps {
 	sensorId: string

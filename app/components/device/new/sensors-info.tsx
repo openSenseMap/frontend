@@ -13,8 +13,8 @@ import {
 import { Badge } from '~/components/ui/badge'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
-import { cn } from '~/lib/utils'
 import { getSensorsForModel } from '~/lib/model-definitions'
+import { cn } from '~/lib/utils'
 
 export const sensorSchema = z.object({
 	title: z.string(),

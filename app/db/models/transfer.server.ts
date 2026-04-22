@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { eq, and } from 'drizzle-orm'
-import { drizzleClient } from '~/db.server'
 import { type Claim, claim, type Device } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 
 export interface TransferCode {
 	id: string

@@ -1,6 +1,4 @@
 import { eq, sql, inArray, and } from 'drizzle-orm'
-import { drizzleClient } from '~/db.server'
-import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-schema'
 import {
 	type Measurement,
 	sensor,
@@ -8,6 +6,8 @@ import {
 	type Sensor,
 	type SensorWithLatestMeasurement,
 } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
+import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-schema'
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 

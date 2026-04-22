@@ -5,11 +5,11 @@ import {
 	updateDevice,
 	type UpdateDeviceArgs,
 } from '~/db/models/device.server'
+import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
-import { type Device, type User } from '~/db/schema'
-import { deleteDevice } from '~/services/devices-service.server'
 import { StandardResponse } from '~/lib/responses'
+import { deleteDevice } from '~/services/devices-service.server'
 
 /**
  * @openapi

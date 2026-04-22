@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.sign-out'
-import { getUserFromJwt, revokeToken } from '~/lib/jwt'
 import { type User } from '~/db/schema'
+import { getUserFromJwt, revokeToken } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 
 export const action = async ({ request }: Route.ActionArgs) => {

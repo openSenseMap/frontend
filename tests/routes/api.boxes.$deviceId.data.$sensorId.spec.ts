@@ -10,8 +10,8 @@ import {
 } from '~/db/models/measurement.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
-import { loader } from '~/routes/api.boxes.$deviceId.data.$sensorId'
 import { type Sensor, type Device, type User } from '~/db/schema'
+import { loader } from '~/routes/api.boxes.$deviceId.data.$sensorId'
 import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()

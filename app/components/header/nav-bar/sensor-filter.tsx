@@ -5,8 +5,8 @@ import { Form } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { type Phenomenon } from '~/db/models/phenomena.server'
-import { cn } from '~/lib/utils'
 import { sensorWikiLabel } from '~/lib/sensor-wiki'
+import { cn } from '~/lib/utils'
 
 interface SensorFilterProps {
 	className?: React.HTMLAttributes<HTMLDivElement>['className']

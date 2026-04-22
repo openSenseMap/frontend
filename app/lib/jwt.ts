@@ -4,9 +4,9 @@ import jsonwebtoken, { type JwtPayload, type Algorithm } from 'jsonwebtoken'
 import invariant from 'tiny-invariant'
 import { v4 as uuidv4 } from 'uuid'
 import { getUserByEmail } from '~/db/models/user.server'
-import { drizzleClient } from '~/db.server'
 import { type Device, type User } from '~/db/schema'
 import { refreshToken, tokenRevocation } from '~/db/schema/refreshToken'
+import { drizzleClient } from '~/db.server'
 
 const { sign, verify } = jsonwebtoken
 

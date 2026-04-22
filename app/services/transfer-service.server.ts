@@ -7,8 +7,8 @@ import {
 	removeTransfer,
 	updateTransferExpiration,
 } from '~/db/models/transfer.server'
-import { drizzleClient } from '~/db.server'
 import { claim, type Claim, device } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 
 export const createBoxTransfer = async (
 	userId: string,

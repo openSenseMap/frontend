@@ -22,8 +22,8 @@ import {
 	getCurrentEffectiveTos,
 	getTosRequirementForUser,
 } from '~/db/models/tos.server'
-import { drizzleClient } from '~/db.server'
 import { tosUserState } from '~/db/schema/tos'
+import { drizzleClient } from '~/db.server'
 import { requireUser } from '~/services/session-service.server'
 
 function safeRedirectTo(value: string | null, fallback = '/') {

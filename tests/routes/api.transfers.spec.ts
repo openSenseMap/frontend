@@ -3,13 +3,13 @@ import { type Route as TransferDetailRoute } from '../../.react-router/types/app
 import { BASE_URL } from '../../vitest.setup'
 import { createDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { type Device, type User } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
 import { action as transferAction } from '~/routes/api.transfer'
 import {
 	action as transferUpdateAction,
 	loader as transferLoader,
 } from '~/routes/api.transfer.$deviceId'
-import { type Device, type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const TRANSFER_TEST_USER = {

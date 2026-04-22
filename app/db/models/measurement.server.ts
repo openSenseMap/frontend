@@ -1,6 +1,5 @@
 import { and, desc, eq, gt, gte, inArray, lt, lte, sql } from 'drizzle-orm'
 import { ArchivedDeviceError } from './device.server'
-import { drizzleClient } from '~/db.server'
 import {
 	type LastMeasurement,
 	location,
@@ -12,6 +11,7 @@ import {
 	measurements1yearView,
 	device,
 } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 import {
 	type MinimalDevice,
 	type MeasurementWithLocation,

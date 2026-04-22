@@ -8,8 +8,8 @@ import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 import { ScrollArea } from '~/components/ui/scroll-area'
-import { type loader } from '~/routes/explore'
 import { sensorWikiLabel, type SensorWikiLabel } from '~/lib/sensor-wiki'
+import { type loader } from '~/routes/explore'
 
 export function PhenomenonSelect() {
 	const data = useLoaderData<typeof loader>()

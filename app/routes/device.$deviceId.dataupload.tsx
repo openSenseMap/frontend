@@ -16,8 +16,8 @@ import {
 } from '~/components/ui/select'
 import { Textarea } from '~/components/ui/textarea'
 import { getDevice } from '~/db/models/device.server'
-import { postNewMeasurements } from '~/services/measurement-service.server'
 import { StandardResponse } from '~/lib/responses'
+import { postNewMeasurements } from '~/services/measurement-service.server'
 import { getUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {

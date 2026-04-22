@@ -16,8 +16,8 @@ import {
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { updateUserPassword, verifyLogin } from '~/db/models/user.server'
-import { validatePassLength, validatePassType } from '~/utils'
 import { getUserEmail, getUserId } from '~/services/session-service.server'
+import { validatePassLength, validatePassType } from '~/utils'
 
 //*****************************************************
 export async function loader({ request }: Route.LoaderArgs) {

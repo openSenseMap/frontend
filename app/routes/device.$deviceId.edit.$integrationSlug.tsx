@@ -10,8 +10,8 @@ import { CheckboxWidget } from '~/components/rjsf/checkboxWidget'
 import { FieldTemplate } from '~/components/rjsf/fieldTemplate'
 import { BaseInputTemplate } from '~/components/rjsf/inputTemplate'
 import { toast } from '~/components/ui/use-toast'
-import { drizzleClient } from '~/db.server'
 import { integration } from '~/db/schema/integration'
+import { drizzleClient } from '~/db.server'
 import { getUserId } from '~/services/session-service.server'
 
 // =====================================================

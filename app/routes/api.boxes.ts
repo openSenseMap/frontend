@@ -4,14 +4,14 @@ import {
 	findDevices,
 	type FindDevicesOptions,
 } from '~/db/models/device.server'
+import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
-import { type Device, type User } from '~/db/schema'
+import { StandardResponse } from '~/lib/responses'
 import {
 	BoxesQuerySchema,
 	CreateBoxSchema,
 } from '~/services/devices-service.server'
-import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi

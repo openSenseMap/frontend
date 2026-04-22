@@ -16,12 +16,12 @@ import { Button } from '~/components/ui/button'
 import { getDevice, getDeviceWithoutSensors } from '~/db/models/device.server'
 import { verifyLogin } from '~/db/models/user.server'
 import { type Device } from '~/db/schema'
-import { updateDevice, deleteDevice } from '~/services/devices-service.server'
 import {
 	uploadDeviceImage,
 	deleteDeviceImage,
 	getDeviceImageUrl,
 } from '~/lib/s3.server'
+import { updateDevice, deleteDevice } from '~/services/devices-service.server'
 import { getUserEmail, getUserId } from '~/services/session-service.server'
 
 //*****************************************************

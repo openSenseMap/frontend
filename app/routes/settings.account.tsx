@@ -40,8 +40,8 @@ import {
 	verifyLogin,
 	getUserByAnyEmail,
 } from '~/db/models/user.server'
-import { resendEmailConfirmation } from '~/services/user-service.server'
 import { getUserId } from '~/services/session-service.server'
+import { resendEmailConfirmation } from '~/services/user-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)

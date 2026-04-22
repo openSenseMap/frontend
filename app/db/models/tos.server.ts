@@ -1,8 +1,8 @@
 import { and, eq, gt, isNull } from 'drizzle-orm'
 import { generateRawActionToken, hashActionToken } from './token.server'
-import { drizzleClient } from '~/db.server'
 import { actionToken, user } from '~/db/schema'
 import { tosUserState } from '~/db/schema/tos'
+import { drizzleClient } from '~/db.server'
 
 export async function getCurrentEffectiveTos(now = new Date()) {
 	return drizzleClient.query.tosVersion.findFirst({

@@ -7,9 +7,9 @@ import {
 	getDevice,
 } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { type User, type Device } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
 import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
-import { type User, type Device } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_TEST_USER = {

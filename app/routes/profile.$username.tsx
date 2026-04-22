@@ -10,11 +10,11 @@ import {
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/db/models/profile.server'
+import { formatCount } from '~/lib/numbers'
+import { getInitials } from '~/lib/strings'
+import { getUserId } from '~/services/session-service.server'
 import { claimBox } from '~/services/transfer-service.server'
 import { userNameFromURl } from '~/services/user-service.server'
-import { getInitials } from '~/lib/strings'
-import { formatCount } from '~/lib/numbers'
-import { getUserId } from '~/services/session-service.server'
 
 type ActionData = {
 	success: boolean

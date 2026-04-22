@@ -2,7 +2,6 @@ import crypto from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import { count, eq, sql } from 'drizzle-orm'
 import { createProfileWithTransaction } from './profile.server'
-import { drizzleClient } from '~/db.server'
 import {
 	type Password,
 	type User,
@@ -11,6 +10,7 @@ import {
 	tosUserState,
 	device,
 } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 
 export async function getUserById(id: User['id']) {
 	return drizzleClient.query.user.findFirst({

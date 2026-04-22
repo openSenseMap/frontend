@@ -3,10 +3,10 @@ import { type Route } from '../../.react-router/types/app/routes/+types/api.user
 import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { integration, type User } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
 import { loader } from '~/routes/api.users.me.boxes'
-import { integration, type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const BOXES_TEST_USER = generateTestUserCredentials()

@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.claim'
 import { getUserFromJwt } from '~/lib/jwt'
-import { claimBox } from '~/services/transfer-service.server'
 import { StandardResponse } from '~/lib/responses'
+import { claimBox } from '~/services/transfer-service.server'
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	const contentType = request.headers.get('content-type')

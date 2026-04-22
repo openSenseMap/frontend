@@ -5,10 +5,10 @@ import { type Route } from '../../.react-router/types/app/routes/+types/api.boxe
 import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { device, measurement, sensor } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
 import { loader as boxesDataLoader } from '~/routes/api.boxes.data'
-import { device, measurement, sensor } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const BOXES_DATA_TEST_USER = generateTestUserCredentials()

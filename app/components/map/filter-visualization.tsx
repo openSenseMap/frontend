@@ -1,8 +1,8 @@
 import { X } from 'lucide-react'
 import { Fragment, useEffect } from 'react'
 import { useLoaderData, useNavigate } from 'react-router'
-import { type loader } from '~/routes/explore'
 import { DeviceExposureZodEnum, DeviceStatusZodEnum } from '~/db/schema/enum'
+import { type loader } from '~/routes/explore'
 
 export default function FilterVisualization() {
 	const data = useLoaderData<typeof loader>()

@@ -10,10 +10,10 @@ import {
 	getDevice,
 } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { location, deviceToLocation, measurement, type User } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
-import { location, deviceToLocation, measurement, type User } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const TEST_USER = generateTestUserCredentials()

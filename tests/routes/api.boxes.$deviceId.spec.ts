@@ -4,12 +4,12 @@ import { type Route } from '../../.react-router/types/app/routes/+types/api.boxe
 import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { type User, type Device } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
 import {
 	loader as deviceLoader,
 	action as deviceAction,
 } from '~/routes/api.boxes.$deviceId'
-import { type User, type Device } from '~/db/schema'
 import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_TEST_USER = generateTestUserCredentials()

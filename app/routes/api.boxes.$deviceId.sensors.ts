@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.boxes.$deviceId.sensors'
-import { getLatestMeasurements } from '~/services/measurement-service.server'
 import { StandardResponse } from '~/lib/responses'
+import { getLatestMeasurements } from '~/services/measurement-service.server'
 
 /**
  * @openapi

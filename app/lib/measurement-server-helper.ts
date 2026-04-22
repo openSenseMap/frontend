@@ -1,5 +1,4 @@
 import { desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm'
-import { drizzleClient } from '~/db.server'
 import {
 	deviceToLocation,
 	type LastMeasurement,
@@ -8,6 +7,7 @@ import {
 	measurement,
 	sensor,
 } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 
 export interface MeasurementWithLocation {
 	sensor_id: string

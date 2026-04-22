@@ -1,8 +1,8 @@
 import { type Route } from './+types/api.users.register'
 import { createToken } from '~/lib/jwt'
 import { parseUserRegistrationData } from '~/lib/request-parsing'
-import { registerUser } from '~/services/user-service.server'
 import { StandardResponse } from '~/lib/responses'
+import { registerUser } from '~/services/user-service.server'
 
 function mapRegistrationError(code: string): string {
 	switch (code) {

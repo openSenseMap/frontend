@@ -27,9 +27,9 @@ import {
 import { getCurrentEffectiveTos } from '~/db/models/tos.server'
 import { getUserByEmail, getUserByUsername } from '~/db/models/user.server'
 import { getLocale } from '~/middleware/i18next'
+import { createUserSession, getUserId } from '~/services/session-service.server'
 import { registerUser } from '~/services/user-service.server'
 import { safeRedirect, validateEmail, validateName } from '~/utils'
-import { createUserSession, getUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
