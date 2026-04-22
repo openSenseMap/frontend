@@ -161,7 +161,7 @@ export default function TermsPage() {
 		<div className="mx-auto max-w-3xl space-y-6 p-6">
 			<h1 className="text-2xl font-bold">{tos.title}</h1>
 
-			<div className="text-sm text-muted-foreground">
+			<div className="text-muted-foreground text-sm">
 				{t('effectiveFrom', { date: effectiveFromDate })}
 			</div>
 
