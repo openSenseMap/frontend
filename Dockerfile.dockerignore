@@ -17,4 +17,3 @@ docker-compose.yml
 /.git
 .gitignore
 .prettierignore
-entrypoint.sh
