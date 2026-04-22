@@ -1,8 +1,7 @@
 import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from 'vitest.setup'
-import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.data.$sensorId'
-import { registerUser } from '~/services/user/user-service.server'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.data.$sensorId'
+import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import {
 	deleteMeasurementsForSensor,
@@ -13,6 +12,7 @@ import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.data.$sensorId'
 import { type Sensor, type Device, type User } from '~/schema'
+import { registerUser } from '~/services/user/user-service.server'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 

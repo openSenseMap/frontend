@@ -1,9 +1,9 @@
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from 'vitest.setup'
-import { type Route } from '.react-router/types/app/routes/+types/api.users.request-password-reset'
-import { registerUser } from '~/services/user/user-service.server'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.users.request-password-reset'
+import { BASE_URL } from '../../vitest.setup'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { action } from '~/routes/api.users.request-password-reset'
+import { registerUser } from '~/services/user/user-service.server'
 
 const VALID_USER = generateTestUserCredentials()
 

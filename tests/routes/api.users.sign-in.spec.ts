@@ -1,8 +1,8 @@
-import { BASE_URL } from 'vitest.setup'
-import { type Route } from '.react-router/types/app/routes/+types/api.users.sign-in'
-import { registerUser } from '~/services/user/user-service.server'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.users.sign-in'
+import { BASE_URL } from '../../vitest.setup'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { action } from '~/routes/api.users.sign-in'
+import { registerUser } from '~/services/user/user-service.server'
 
 const VALID_SIGN_IN_TEST_USER = {
 	name: 'signingIn',

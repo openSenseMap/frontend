@@ -1,10 +1,14 @@
 import { csvExampleData, jsonSubmitData, byteSubmitData } from 'tests/data'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { BASE_URL } from 'vitest.setup'
-import { type Route as postSingleRoute } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId'
-import { type Route as postMeasurementRoute } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.data'
-import { createDevice, deleteDevice, getDevice } from '~/db/models/device.server'
+import { type Route as postSingleRoute } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId'
+import { type Route as postMeasurementRoute } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.data'
+import { BASE_URL } from '../../vitest.setup'
+import {
+	createDevice,
+	deleteDevice,
+	getDevice,
+} from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'

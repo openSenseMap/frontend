@@ -143,7 +143,7 @@ const parseQueryParams = async (
 	const parseResult = DeleteQueryParams.safeParse(params)
 
 	if (!parseResult.success) {
-		const firstError = parseResult.error.errors[0]
+		const firstError = parseResult.error.issues[0]
 		const message = firstError.message || 'Invalid query parameters'
 		throw StandardResponse.badRequest(message)
 	}
