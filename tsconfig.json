@@ -1,8 +1,8 @@
 {
 	"exclude": [],
 	"include": [
-		"./app/env.ts",
-		"./app/env.d.ts",
+		"app/env.ts",
+		"app/env.env.d.ts",
 		"**/*.ts",
 		"**/*.tsx",
 		".react-router/types/**/*"

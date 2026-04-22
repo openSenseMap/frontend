@@ -9,19 +9,6 @@ import {
 	validateTosAccepted,
 	validateUsername,
 } from './user-service'
-import { drizzleClient } from '~/db.server'
-import ConfirmEmailAddress, {
-	subject as ConfirmEmailAddressSubject,
-} from '~/emails/confirm-email'
-import DeleteUserEmail, {
-	subject as DeleteUserEmailSubject,
-} from '~/emails/delete-user'
-import NewUserEmail, { subject as NewUserEmailSubject } from '~/emails/new-user'
-import PasswordResetEmail, {
-	subject as PasswordResetEmailSubject,
-} from '~/emails/password-reset'
-import {	subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
-
 import { generateRawActionToken, hashActionToken, issueEmailConfirmationToken } from '~/db/models/token.server'
 import { getCurrentEffectiveTos } from '~/db/models/tos.server'
 import {
@@ -37,6 +24,19 @@ import {
 	updateUserPassword,
 	verifyLogin,
 } from '~/db/models/user.server'
+import { drizzleClient } from '~/db.server'
+import ConfirmEmailAddress, {
+	subject as ConfirmEmailAddressSubject,
+} from '~/emails/confirm-email'
+import DeleteUserEmail, {
+	subject as DeleteUserEmailSubject,
+} from '~/emails/delete-user'
+import NewUserEmail, { subject as NewUserEmailSubject } from '~/emails/new-user'
+import PasswordResetEmail, {
+	subject as PasswordResetEmailSubject,
+} from '~/emails/password-reset'
+import {	subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
+
 import { actionToken, user, type User } from '~/schema'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000

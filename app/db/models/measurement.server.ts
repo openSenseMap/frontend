@@ -1,4 +1,5 @@
 import { and, desc, eq, gt, gte, inArray, lt, lte, sql } from 'drizzle-orm'
+import { ArchivedDeviceError } from './device.server'
 import { drizzleClient } from '~/db.server'
 import {
 	type LastMeasurement,
@@ -20,7 +21,6 @@ import {
 	insertMeasurementsWithLocation,
 	updateLastMeasurements,
 } from '~/utils/measurement-server-helper'
-import { ArchivedDeviceError } from './device.server'
 
 // This function retrieves measurements from the database based on the provided parameters.
 export function getMeasurement(

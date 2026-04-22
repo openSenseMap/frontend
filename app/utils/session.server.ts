@@ -3,7 +3,7 @@ import {
 	createCookieSessionStorage,
 	redirect,
 	RouterContext,
-	RouterContextProvider,
+	type RouterContextProvider,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { getUserById } from '~/db/models/user.server'

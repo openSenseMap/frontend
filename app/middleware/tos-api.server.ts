@@ -1,6 +1,6 @@
+import { getTosRequirementForUser } from '~/db/models/tos.server'
 import { apiRoutes } from '~/lib/api-routes'
 import { getUserFromJwt } from '~/lib/jwt'
-import { getTosRequirementForUser } from '~/db/models/tos.server'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 

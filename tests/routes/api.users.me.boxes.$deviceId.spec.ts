@@ -1,13 +1,13 @@
 import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.users.me.boxes.$deviceId'
-import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/services/user/user-service.server'
+import { BASE_URL } from '../../vitest.setup'
 import { createDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { createToken } from '~/lib/jwt'
 import { loader } from '~/routes/api.users.me.boxes.$deviceId'
 import { type User } from '~/schema'
+import { registerUser } from '~/services/user/user-service.server'
 
 const BOX_TEST_USER = generateTestUserCredentials()
 const BOX_TEST_USER_BOX = {

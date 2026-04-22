@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.boxes.$deviceId.$sensorId'
-import { postSingleMeasurement } from '~/services/measurement/measurement-service.server'
 import { isValidServiceKey } from '~/db/models/integration.server'
+import { postSingleMeasurement } from '~/services/measurement/measurement-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const action = async ({

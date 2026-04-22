@@ -10,12 +10,12 @@ import {
 } from 'react-router'
 import { type Route } from './+types/device.$deviceId.edit.transfer'
 import { Callout } from '~/components/ui/alert'
+import { getDevice } from '~/db/models/device.server'
+import { type Claim } from '~/schema'
 import {
 	getBoxTransfer,
 	createBoxTransfer,
 } from '~/services/transfer/transfer-service.server'
-import { getDevice } from '~/db/models/device.server'
-import { type Claim } from '~/schema'
 import { getUserId } from '~/utils/session.server'
 
 type LoaderData = {

@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.users.me'
 import { getUserFromJwt } from '~/lib/jwt'
-import { deleteUser, updateUserDetails } from '~/services/user/user-service.server'
 import { type User } from '~/schema/user'
+import { deleteUser, updateUserDetails } from '~/services/user/user-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**

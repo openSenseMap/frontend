@@ -1,10 +1,10 @@
 import { type Params } from 'react-router'
 import { type Route } from './+types/api.boxes.$deviceId.data.$sensorId'
+import { getMeasurements } from '~/db/models/sensor.server'
 import {
 	type TransformedMeasurement,
 	transformOutliers,
 } from '~/lib/outlier-transform'
-import { getMeasurements } from '~/db/models/sensor.server'
 import { type Measurement } from '~/schema'
 import { convertToCsv } from '~/utils/csv'
 import { parseDateParam, parseEnumParam } from '~/utils/param-utils'

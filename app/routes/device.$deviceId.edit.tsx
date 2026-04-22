@@ -23,8 +23,8 @@ import { type Route } from './+types/device.$deviceId.edit'
 import { EditDeviceSidebarNav } from '~/components/mydevices/edit-device/edit-device-sidebar-nav'
 import { NavBar } from '~/components/nav-bar'
 import { Separator } from '~/components/ui/separator'
-import { getLucideIcon } from '~/lib/lucide-icon-map'
 import { getIntegrations } from '~/db/models/integration.server'
+import { getLucideIcon } from '~/lib/lucide-icon-map'
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************

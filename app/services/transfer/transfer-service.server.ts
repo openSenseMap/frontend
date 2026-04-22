@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { drizzleClient } from '~/db.server'
 import { getDevice } from '~/db/models/device.server'
 import {
 	createTransfer,
@@ -8,6 +7,7 @@ import {
 	removeTransfer,
 	updateTransferExpiration,
 } from '~/db/models/transfer.server'
+import { drizzleClient } from '~/db.server'
 import { claim, type Claim, device } from '~/schema'
 
 export const createBoxTransfer = async (

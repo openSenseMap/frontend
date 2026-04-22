@@ -1,10 +1,8 @@
 import { or, sql } from 'drizzle-orm'
 import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.locations'
-import { drizzleClient } from '~/db.server'
-import { registerUser } from '~/services/user/user-service.server'
+import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import {
 	deleteMeasurementsForSensor,
@@ -13,8 +11,10 @@ import {
 } from '~/db/models/measurement.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { drizzleClient } from '~/db.server'
 import { loader } from '~/routes/api.boxes.$deviceId.locations'
 import { type Sensor, location } from '~/schema'
+import { registerUser } from '~/services/user/user-service.server'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 

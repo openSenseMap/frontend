@@ -32,7 +32,6 @@ import {
 	SelectValue,
 } from '~/components/ui/select'
 import { useToast } from '~/components/ui/use-toast'
-import { resendEmailConfirmation } from '~/services/user/user-service.server'
 import {
 	getUserById,
 	updateUserEmail,
@@ -41,6 +40,7 @@ import {
 	verifyLogin,
 	getUserByAnyEmail,
 } from '~/db/models/user.server'
+import { resendEmailConfirmation } from '~/services/user/user-service.server'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: Route.LoaderArgs) {

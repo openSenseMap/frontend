@@ -1,8 +1,8 @@
 import { type Route } from './+types/api.users.me.boxes'
-import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { getUserFromJwt } from '~/lib/jwt'
 import { getUserDevices } from '~/db/models/device.server'
 import { enrichDevicesWithIntegrations } from '~/db/models/integration.server'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const loader = async ({ request }: Route.LoaderArgs) => {

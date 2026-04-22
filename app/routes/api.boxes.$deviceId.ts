@@ -1,14 +1,14 @@
 import { type Route } from './+types/api.boxes.$deviceId'
-import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { deleteDevice } from '~/services/device/devices-service.server'
-import { getUserFromJwt } from '~/lib/jwt'
 import {
 	DeviceUpdateError,
 	getDevice,
 	updateDevice,
 	type UpdateDeviceArgs,
 } from '~/db/models/device.server'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { getUserFromJwt } from '~/lib/jwt'
 import { type Device, type User } from '~/schema'
+import { deleteDevice } from '~/services/device/devices-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**

@@ -1,6 +1,6 @@
 import { type Route } from "./+types/api.users.me.accept-tos";
-import { getUserFromJwt } from "~/lib/jwt";
 import { getCurrentEffectiveTos, markTosAccepted } from "~/db/models/tos.server";
+import { getUserFromJwt } from "~/lib/jwt";
 
 export async function action({ request }: Route.ActionArgs) {
   if (request.method !== "POST") {

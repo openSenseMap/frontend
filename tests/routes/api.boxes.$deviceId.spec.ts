@@ -1,16 +1,16 @@
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import invariant from 'tiny-invariant'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId'
-import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/services/user/user-service.server'
+import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { createToken } from '~/lib/jwt'
 import {
 	loader as deviceLoader,
 	action as deviceAction,
 } from '~/routes/api.boxes.$deviceId'
 import { type User, type Device } from '~/schema'
+import { registerUser } from '~/services/user/user-service.server'
 
 const DEVICE_TEST_USER = generateTestUserCredentials()
 

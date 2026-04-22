@@ -13,10 +13,10 @@ import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.general'
 import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
-import { updateDevice, deleteDevice } from '~/services/device/devices-service.server'
 import { getDevice, getDeviceWithoutSensors } from '~/db/models/device.server'
 import { verifyLogin } from '~/db/models/user.server'
 import { type Device } from '~/schema'
+import { updateDevice, deleteDevice } from '~/services/device/devices-service.server'
 import {
 	uploadDeviceImage,
 	deleteDeviceImage,

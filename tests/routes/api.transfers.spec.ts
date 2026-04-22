@@ -1,16 +1,16 @@
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.transfer'
 import { type Route as TransferDetailRoute } from '../../.react-router/types/app/routes/+types/api.transfer.$deviceId'
-import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/services/user/user-service.server'
+import { BASE_URL } from '../../vitest.setup'
 import { createDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { createToken } from '~/lib/jwt'
 import { action as transferAction } from '~/routes/api.transfer'
 import {
 	action as transferUpdateAction,
 	loader as transferLoader,
 } from '~/routes/api.transfer.$deviceId'
 import { type Device, type User } from '~/schema'
+import { registerUser } from '~/services/user/user-service.server'
 
 const TRANSFER_TEST_USER = {
 	name: 'asdfhwerskdfsdfnxmcv',

@@ -8,13 +8,13 @@ import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
-import { claimBox } from '~/services/transfer/transfer-service.server'
-import { userNameFromURl } from '~/services/user/user-service.server'
 import {
 	getProfileByUserId,
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/db/models/profile.server'
+import { claimBox } from '~/services/transfer/transfer-service.server'
+import { userNameFromURl } from '~/services/user/user-service.server'
 import { formatCount, getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
 

@@ -1,5 +1,5 @@
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.stats'
+import { BASE_URL } from '../../vitest.setup'
 import { loader } from '~/routes/api.stats'
 
 describe('openSenseMap API Routes: /stats', () => {
