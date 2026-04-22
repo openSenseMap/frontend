@@ -17,8 +17,8 @@ import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
 import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
-import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { updateUserlocale } from './db/models/user.server'
+import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
 import { getEnv } from './utils/env.server'
 import { getUser } from './utils/session.server'
@@ -143,7 +143,7 @@ export default function App({
 				{/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
 				<Links />
 			</head>
-			<body className="h-full dark:bg-dark-background dark:text-dark-text">
+			<body className="dark:bg-dark-background dark:text-dark-text h-full">
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -172,7 +172,7 @@ export function ErrorBoundary() {
 				<Meta />
 				<Links />
 			</head>
-			<body className="h-full dark:bg-dark-background dark:text-dark-text">
+			<body className="dark:bg-dark-background dark:text-dark-text h-full">
 				<div className="flex h-screen w-screen items-center justify-center">
 					<ErrorMessage />
 				</div>
