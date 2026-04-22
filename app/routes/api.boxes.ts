@@ -406,7 +406,7 @@ async function post(request: Request, user: User) {
 				{
 					code: 'Bad Request',
 					message: 'Invalid request data',
-					errors: validationResult.error.errors.map(
+					errors: validationResult.error.issues.map(
 						(err) => `${err.path.join('.')}: ${err.message}`,
 					),
 				},

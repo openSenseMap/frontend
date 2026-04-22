@@ -11,119 +11,117 @@ import { type Device, type User } from '~/schema'
 import { deleteDeviceImage } from '~/utils/s3.server'
 
 export const CreateBoxSchema = z.object({
-  // public API request shape
-  name: z.string().min(1).max(100),
-  description: z
-    .string()
-    .max(5000, 'Description should not exceed 5000 characters')
-    .optional()
-    .nullable(),
-  exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown']).optional().default('unknown'),
-  location: z
-    .union([
-      z.array(z.number()).min(2).max(3),
-      z.object({
-        lng: z.number(),
-        lat: z.number(),
-        height: z.number().optional(),
-      }),
-    ])
-    .transform((loc) => {
-      if (Array.isArray(loc)) return loc
-      return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
-    }),
-  grouptag: z.array(z.string()).optional().default([]),
-  model: z
-    .enum([
-      'homeV2Lora',
-      'homeV2Ethernet',
-      'homeV2Wifi',
-      'senseBox:Edu',
-      'luftdaten.info',
-      'custom',
-    ])
-    .optional()
-    .default('custom'),
-  sensors: z
-    .array(
-      z.object({
-        id: z.string(),
-        icon: z.string().optional(),
-        title: z.string().min(1),
-        unit: z.string().min(1),
-        sensorType: z.string().min(1),
-      }),
-    )
-    .optional()
-    .default([]),
+	// public API request shape
+	name: z.string().min(1).max(100),
+	description: z
+		.string()
+		.max(5000, 'Description should not exceed 5000 characters')
+		.optional()
+		.nullable(),
+	exposure: z
+		.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
+		.optional()
+		.default('unknown'),
+	location: z
+		.union([
+			z.array(z.number()).min(2).max(3),
+			z.object({
+				lng: z.number(),
+				lat: z.number(),
+				height: z.number().optional(),
+			}),
+		])
+		.transform((loc) => {
+			if (Array.isArray(loc)) return loc
+			return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
+		}),
+	grouptag: z.array(z.string()).optional().default([]),
+	model: z
+		.enum([
+			'homeV2Lora',
+			'homeV2Ethernet',
+			'homeV2Wifi',
+			'senseBox:Edu',
+			'luftdaten.info',
+			'custom',
+		])
+		.optional()
+		.default('custom'),
+	sensors: z
+		.array(
+			z.object({
+				id: z.string(),
+				icon: z.string().optional(),
+				title: z.string().min(1),
+				unit: z.string().min(1),
+				sensorType: z.string().min(1),
+			}),
+		)
+		.optional()
+		.default([]),
 })
 
 export const CreateDeviceServiceSchema = z
-  .object({
-    name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-    description: z
-      .string()
-      .max(5000, 'Description should not exceed 5000 characters')
-      .optional()
-      .nullable(),
-    exposure: z
-      .enum(['indoor', 'outdoor', 'mobile', 'unknown'])
-      .optional()
-      .default('unknown'),
-    expiresAt: z.string().optional().nullable(),
-    tags: z.array(z.string()).optional().default([]),
-    latitude: z.number(),
-    longitude: z.number(),
-    model: z
-      .enum([
-        'homeV2Lora',
-        'homeV2Ethernet',
-        'homeV2Wifi',
-        'senseBox:Edu',
-        'luftdaten.info',
-        'custom',
-      ])
-      .optional(),
-    sensorTemplates: z.array(z.string()).optional(),
-    sensors: z
-      .array(
-        z.object({
-          title: z.string().min(1, 'Sensor title is required'),
-          unit: z.string().min(1, 'Sensor unit is required'),
-          sensorType: z.string().min(1, 'Sensor type is required'),
-          icon: z.string().optional(),
-        }),
-      )
-      .optional(),
-  })
-  .refine(
-    (data) => !(data.model && data.sensors && data.model !== 'custom'),
-    {
-      message: 'Model and sensors cannot be specified at the same time.',
-      path: ['sensors'],
-    },
-  )
+	.object({
+		name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+		description: z
+			.string()
+			.max(5000, 'Description should not exceed 5000 characters')
+			.optional()
+			.nullable(),
+		exposure: z
+			.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
+			.optional()
+			.default('unknown'),
+		expiresAt: z.string().optional().nullable(),
+		tags: z.array(z.string()).optional().default([]),
+		latitude: z.number(),
+		longitude: z.number(),
+		model: z
+			.enum([
+				'homeV2Lora',
+				'homeV2Ethernet',
+				'homeV2Wifi',
+				'senseBox:Edu',
+				'luftdaten.info',
+				'custom',
+			])
+			.optional(),
+		sensorTemplates: z.array(z.string()).optional(),
+		sensors: z
+			.array(
+				z.object({
+					title: z.string().min(1, 'Sensor title is required'),
+					unit: z.string().min(1, 'Sensor unit is required'),
+					sensorType: z.string().min(1, 'Sensor type is required'),
+					icon: z.string().optional(),
+				}),
+			)
+			.optional(),
+	})
+	.refine((data) => !(data.model && data.sensors && data.model !== 'custom'), {
+		message: 'Model and sensors cannot be specified at the same time.',
+		path: ['sensors'],
+	})
 
 export type CreateDeviceServiceInput = z.infer<typeof CreateDeviceServiceSchema>
 
 export const createDevice = async (
-  userId: User['id'],
-  input: CreateDeviceServiceInput,
+	userId: User['id'],
+	input: CreateDeviceServiceInput,
 ): Promise<Device> => {
-  const validated = CreateDeviceServiceSchema.parse({
-    ...input,
-    description: input.description?.trim() || null,
-  })
+	const validated = CreateDeviceServiceSchema.parse({
+		...input,
+		description: input.description?.trim() || null,
+	})
 
-  return createDeviceInDb(validated, userId)
+	return createDeviceInDb(validated, userId)
 }
 
 export const BoxesQuerySchema = z.object({
 	format: z
 		.enum(['json', 'geojson'], {
-			errorMap: () => ({
-				message: "Format must be either 'json' or 'geojson'",
-			}),
+			error: () => "Format must be either 'json' or 'geojson'",
 		})
 		.default('json'),
 	minimal: z
@@ -252,7 +250,6 @@ export function assertDeviceIsWritable(
 		throw new ArchivedDeviceError(device.id)
 	}
 }
-
 
 /**
  * Updates a device after verifying the user is entitled (device owner).

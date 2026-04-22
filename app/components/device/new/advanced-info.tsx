@@ -1,6 +1,5 @@
 import Form from '@rjsf/core'
 import validator from '@rjsf/validator-ajv8'
-import { T } from 'node_modules/vitest/dist/chunks/traces.d.402V_yFI'
 import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -107,7 +106,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
 							{enabled && (
 								<>
 									{isLoading && (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-muted-foreground text-sm">
 											{t('loading')} {intg.name} {t('configuration')}...
 										</p>
 									)}

@@ -1,5 +1,5 @@
-import { BASE_URL } from 'vitest.setup'
-import { type Route } from '.react-router/types/app/routes/+types/api.users.password-reset'
+import { BASE_URL } from '../../vitest.setup'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.users.password-reset'
 import { action } from '~/routes/api.users.password-reset'
 
 describe('openSenseMap API Routes: /users', () => {

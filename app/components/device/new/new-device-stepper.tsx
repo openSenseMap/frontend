@@ -37,11 +37,11 @@ const generalInfoSchema = z.object({
 		.min(1, 'Name is required'),
 	description: z
 		.string()
-		.max(5000, 'Description should not exceed 5000 characters')	
+		.max(5000, 'Description should not exceed 5000 characters')
 		.optional()
 		.nullable(),
 	exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown'], {
-		errorMap: () => ({ message: 'Exposure is required' }),
+		error: () => 'Exposure is required',
 	}),
 	temporaryExpirationDate: z
 		.string()
@@ -66,15 +66,19 @@ const generalInfoSchema = z.object({
 const locationSchema = z.object({
 	latitude: z.coerce
 		.number({
-			invalid_type_error: 'Latitude must be a valid number',
-			required_error: 'Latitude is required',
+			error: (issue) =>
+				issue.input === undefined
+					? 'Latitude is required'
+					: 'Latitude must be a valid number',
 		})
 		.min(-90, 'Latitude must be greater than or equal to -90')
 		.max(90, 'Latitude must be less than or equal to 90'),
 	longitude: z.coerce
 		.number({
-			invalid_type_error: 'Longitude must be a valid number',
-			required_error: 'Longitude is required',
+			error: (issue) =>
+				issue.input === undefined
+					? 'Longitude is required'
+					: 'Longitude must be a valid number',
 		})
 		.min(-180, 'Longitude must be greater than or equal to -180')
 		.max(180, 'Longitude must be less than or equal to 180'),
@@ -82,7 +86,7 @@ const locationSchema = z.object({
 
 const deviceSchema = z.object({
 	model: z.enum(DeviceModelEnum.enumValues, {
-		errorMap: () => ({ message: 'Please select a device.' }),
+		error: () => 'Please select a device.',
 	}),
 })
 
@@ -93,7 +97,15 @@ const sensorsSchema = z.object({
 		.min(1, 'Please select at least one sensor'),
 })
 
-const advancedSchema = z.record(z.any())
+const advancedSchema = z.record(z.string(), z.any())
+
+const formSchema = z.union([
+	generalInfoSchema,
+	locationSchema,
+	deviceSchema,
+	sensorsSchema,
+	advancedSchema,
+])
 
 export const Stepper = defineStepper(
 	{
@@ -146,20 +158,25 @@ type DeviceData = z.infer<typeof deviceSchema>
 type SensorData = z.infer<typeof sensorsSchema>
 type AdvancedData = z.infer<typeof advancedSchema>
 
-type FormData = GeneralInfoData &
-	LocationData &
-	DeviceData &
-	SensorData &
-	AdvancedData
+type FormData =
+	| GeneralInfoData
+	| LocationData
+	| DeviceData
+	| SensorData
+	| AdvancedData
 
 export default function NewDeviceStepper() {
 	const { integrations } = useLoaderData<typeof loader>()
 	const submit = useSubmit()
 	const [formData, setFormData] = useState<Record<string, any>>({})
 	const stepper = Stepper.useStepper()
-	const form = useForm<FormData>({
+	const form = useForm({
 		mode: 'onTouched',
-		resolver: zodResolver(stepper.current.schema),
+		resolver: zodResolver<
+			z.input<typeof formSchema>,
+			any,
+			z.output<typeof formSchema>
+		>(stepper.state.current.data.schema),
 	})
 	const { toast } = useToast()
 	const { t } = useTranslation('newdevice')
@@ -168,18 +185,18 @@ export default function NewDeviceStepper() {
 	const isSubmitting = navigation.state === 'submitting'
 
 	useEffect(() => {
-		setIsFirst(stepper.isFirst)
-	}, [stepper.isFirst])
+		setIsFirst(stepper.state.isFirst)
+	}, [stepper.state.isFirst])
 
 	const onSubmit = (data: FormData) => {
 		const updatedData = {
 			...formData,
-			[stepper.current.id]: data,
+			[stepper.state.current.data.id]: data,
 		}
 
 		setFormData(updatedData)
 
-		if (stepper.isLast) {
+		if (stepper.state.isLast) {
 			void submit(
 				{
 					formData: JSON.stringify(updatedData),
@@ -187,7 +204,7 @@ export default function NewDeviceStepper() {
 				{ method: 'post' },
 			)
 		} else {
-			stepper.next()
+			void stepper.navigation.next()
 		}
 	}
 
@@ -226,9 +243,9 @@ export default function NewDeviceStepper() {
 										<div className="flex gap-2" key={index}>
 											<BreadcrumbItem key={step.id}>
 												<BreadcrumbLink
-													onClick={() => stepper.goTo(step.id)}
+													onClick={() => stepper.navigation.goTo(step.id)}
 													className={` ${
-														stepper.current.index === step.index
+														stepper.state.current.index === step.index
 															? 'font-bold text-black'
 															: 'cursor-pointer text-gray-500 hover:text-black'
 													} `}
@@ -251,10 +268,10 @@ export default function NewDeviceStepper() {
 						{/* Step Header with Info */}
 						<div className="flex items-center justify-start gap-2">
 							<h2 className="text-lg font-medium">
-								{t('step')} {stepper.current.index + 1} {t('of')}{' '}
-								{Stepper.steps.length}: {t(stepper.current.label)}
+								{t('step')} {stepper.state.current.index + 1} {t('of')}{' '}
+								{Stepper.steps.length}: {t(stepper.state.current.data.label)}
 							</h2>
-							{stepper.current.infoKey && (
+							{stepper.state.current.data.infoKey && (
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger
@@ -267,7 +284,7 @@ export default function NewDeviceStepper() {
 											<Info />
 										</TooltipTrigger>
 										<TooltipContent>
-											{t(stepper.current.infoKey)}
+											{t(stepper.state.current.data.infoKey)}
 										</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
@@ -277,7 +294,7 @@ export default function NewDeviceStepper() {
 
 					{/* Form Content */}
 					<div className="h-full overflow-auto">
-						{stepper.switch({
+						{stepper.flow.switch({
 							advanced: () => <AdvancedStep integrations={integrations} />,
 							'general-info': () => <GeneralInfoStep />,
 							location: () => <LocationStep />,
@@ -292,13 +309,17 @@ export default function NewDeviceStepper() {
 						<Button
 							type="button"
 							variant="secondary"
-							onClick={stepper.prev}
+							onClick={() => stepper.navigation.prev()}
 							disabled={isFirst || isSubmitting}
 						>
 							{t('back')}
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting ? t('submitting') : stepper.isLast ? t('complete') : t('next')}
+							{isSubmitting
+								? t('submitting')
+								: stepper.state.isLast
+									? t('complete')
+									: t('next')}
 						</Button>
 					</div>
 				</Form>

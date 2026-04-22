@@ -1,5 +1,5 @@
-import { BASE_URL } from 'vitest.setup'
-import { type Route } from '.react-router/types/app/routes/+types/api.users.confirm-email'
+import { BASE_URL } from '../../vitest.setup'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.users.confirm-email'
 import { action } from '~/routes/api.users.confirm-email'
 
 describe('openSenseMap API Routes: /users', () => {
