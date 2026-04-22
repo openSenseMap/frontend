@@ -87,6 +87,7 @@ Afterwards follow these steps:
 │   |   |   ├── meta/
 │   |   |   ├── 0000_xyz.sql
 │   └── index.js.map
+├── public							public assets (favicons, etc.)
 ├── scripts
 │   ├── db/                         database utility scripts (e.g. seed)
 │   |   ├── migrate.ts
