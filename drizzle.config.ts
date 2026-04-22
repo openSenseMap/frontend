@@ -3,7 +3,7 @@ import { type Config } from 'drizzle-kit'
 dotenv.config()
 
 export default {
-	schema: './app/db/schema/**/*.ts',
+	schema: './app/schema/index.ts',
 	out: './app/db/drizzle',
 	dialect: 'postgresql',
 	dbCredentials: {
