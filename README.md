@@ -69,22 +69,37 @@ Afterwards follow these steps:
 #### How the repository is organized
 
 ```shell
-├── app                 # main directory where most of the application code lives
-│   ├── components      # reusable/ general purpose components
+├frontend
+├── .github
+├── app/
+│   ├── components/                 reusable UI components like buttons, alerts, etc.
+│   |	├── routes/					follows the structure of app/routes for route-specific components (use sparingly!)
+│   ├── emails/                     email templates
+│   ├── routes/                     pages and layouts making up the application using the components
+│   |   ├── api/                    api routes
+│   |   ├── device/                 /device routes
+│   |   ├── ...
+│   ├── lib/                        shared utility / 3rd party code that "does stuff"™️
+│   ├── services/                   domain-specific stuff, business logic like a measurement service
+│   ├── models/                     mostly plain types, interfaces, classes, schemas (not database)
+│   ├── db/                         app-related database specifics
+│   |   ├── drizzle/
+│   |   |   ├── meta/
+│   |   |   ├── 0000_xyz.sql
+│   └── index.js.map
+├── scripts
+│   ├── db/                         database utility scripts (e.g. seed)
+│   |   ├── migrate.ts
+│   |   ├── seed.ts
+│   |   ├── ...
+├── tests/                          follows the structure of app/ for tests of corresponding file(s)
+│   ├── components
+│   ├── routes
+│   |   ├── api
+│   |   ├── ...
 │   ├── lib
-│   ├── models
-│   ├── routes          # app/ api routes
-│   ├── schema
-│   └── utils
-├── db                  # code for seeding/ migration of database
-├── drizzle             # database migrations
-├── other
-├── public              # static assets
-├── server
-├── tests               # automated tests, same structure as the app/ folder with tests placed according to the files they test
-│   ├── routes          # tests for (resource/ api) routes
-├── types
-├── ...
+│   ├── ...
+└── ...
 ```
 
 #### openSenseMap API
