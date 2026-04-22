@@ -1,4 +1,4 @@
-import { sensorDefinitions } from '../utils/sensor-definitions'
+import { sensorDefinitions } from './sensor-definitions'
 
 type SensorKey = keyof typeof sensorDefinitions
 
