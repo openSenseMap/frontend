@@ -76,8 +76,6 @@ Afterwards follow these steps:
 │   |	├── routes/					follows the structure of app/routes for route-specific components (use sparingly!)
 │   ├── emails/                     email templates
 │   ├── routes/                     pages and layouts making up the application using the components
-│   |   ├── api/                    api routes
-│   |   ├── device/                 /device routes
 │   |   ├── ...
 │   ├── lib/                        shared utility / 3rd party code that "does stuff"™️
 │   ├── services/                   domain-specific stuff, business logic like a measurement service
