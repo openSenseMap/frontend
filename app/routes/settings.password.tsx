@@ -1,11 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-	data,
-	redirect,
-	Form,
-	useActionData,
-} from 'react-router'
+import { data, redirect, Form, useActionData } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/settings.password'
 import { useToast } from '@/components/ui/use-toast'
@@ -20,9 +15,9 @@ import {
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { updateUserPassword, verifyLogin } from '~/models/user.server'
+import { updateUserPassword, verifyLogin } from '~/db/models/user.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 import { validatePassLength, validatePassType } from '~/utils'
-import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************
 export async function loader({ request }: Route.LoaderArgs) {
@@ -156,7 +151,7 @@ export default function ChangePaasswordPage() {
 
 	return (
 		<Form method="post" className="space-y-6" noValidate ref={$form}>
-			<Card className="w-full dark:border-white dark:bg-dark-boxes">
+			<Card className="dark:bg-dark-boxes w-full dark:border-white">
 				<CardHeader>
 					<CardTitle>{t('update_password')}</CardTitle>
 					<CardDescription>{t('update_password_description')}</CardDescription>

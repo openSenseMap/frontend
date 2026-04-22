@@ -1,14 +1,14 @@
 import { type Params } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId.measurements'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { insertMeasurements } from '~/db/models/measurement.server'
+import { getSensors } from '~/db/models/sensor.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { insertMeasurements } from '~/models/measurement.server'
-import { getSensors } from '~/models/sensor.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.boxes.$deviceId.$sensorId.measurements'
+import { registerUser } from '~/services/user-service.server'
 
 const USER = generateTestUserCredentials()
 const USER2 = generateTestUserCredentials()

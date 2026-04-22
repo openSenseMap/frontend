@@ -9,11 +9,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import {
-	redirect,
-	Form,
-	useLoaderData,
-} from 'react-router'
+import { redirect, Form, useLoaderData } from 'react-router'
 import { type Route } from './+types/device.$deviceId.edit.security'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Callout } from '~/components/ui/alert'
@@ -21,8 +17,8 @@ import {
 	addOrReplaceDeviceApiKey,
 	getDevice,
 	updateDevice,
-} from '~/models/device.server'
-import { getUserId } from '~/utils/session.server'
+} from '~/db/models/device.server'
+import { getUserId } from '~/services/session-service.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
@@ -136,7 +132,7 @@ export default function EditBoxSecurity() {
 					<div className="mt-1 flex">
 						<span>
 							<button
-								className="btn btn-default w-12 rounded-br-none rounded-tr-none disabled:opacity-40"
+								className="btn btn-default w-12 rounded-tr-none rounded-br-none disabled:opacity-40"
 								onClick={() => setTokenvisibility(!keyVisible)}
 								disabled={!deviceAuthEnabled}
 								type="button"
@@ -151,24 +147,24 @@ export default function EditBoxSecurity() {
 						<input
 							name="api-key"
 							value={key ?? ''}
-							className="form-control rounded-none border-[#ccc;]"
+							className="form-control border-[#ccc;] rounded-none"
 							type={keyVisible ? 'text' : 'password'}
 							disabled
 						/>
 						<span>
 							<button
-								className="btn btn-default relative h-full w-12 rounded-bl-none rounded-tl-none disabled:opacity-40"
+								className="btn btn-default relative h-full w-12 rounded-tl-none rounded-bl-none disabled:opacity-40"
 								onClick={() => copyKeyToClipboard()}
 								type="button"
 								disabled={!deviceAuthEnabled}
 							>
 								<LucideCopyCheck
 									size={20.5}
-									className={`bottom-0 left-0 right-0 top-0 mx-auto my-auto ${copiedToClipboard ? 'scale-100 opacity-100' : 'scale-50 opacity-0'} absolute text-green-700 transition-transform`}
+									className={`top-0 right-0 bottom-0 left-0 mx-auto my-auto ${copiedToClipboard ? 'scale-100 opacity-100' : 'scale-50 opacity-0'} absolute text-green-700 transition-transform`}
 								/>
 								<LucideCopy
 									size={20.5}
-									className={`bottom-0 left-0 right-0 top-0 mx-auto my-auto ${copiedToClipboard ? 'opacity-0' : 'opacity-100'} absolute`}
+									className={`top-0 right-0 bottom-0 left-0 mx-auto my-auto ${copiedToClipboard ? 'opacity-0' : 'opacity-100'} absolute`}
 								/>
 							</button>
 						</span>

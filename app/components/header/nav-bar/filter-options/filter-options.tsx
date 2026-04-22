@@ -6,7 +6,10 @@ import Spinner from '../../../spinner'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
-import { type DeviceExposureType, type DeviceStatusType } from '~/schema/enum'
+import {
+	type DeviceExposureType,
+	type DeviceStatusType,
+} from '~/db/schema/enum'
 
 export default function FilterOptions() {
 	const { setOpen } = useContext(NavbarContext)
@@ -61,7 +64,7 @@ export default function FilterOptions() {
 	return (
 		<div className="flex h-full flex-1 flex-col justify-around gap-2 dark:text-zinc-200">
 			{navigation.state === 'loading' && (
-				<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 					<Spinner />
 				</div>
 			)}

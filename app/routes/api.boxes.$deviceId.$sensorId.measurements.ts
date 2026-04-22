@@ -1,13 +1,13 @@
 import z from 'zod'
 import { type Route } from './+types/api.boxes.$deviceId.$sensorId.measurements'
-import { getUserFromJwt } from '~/lib/jwt'
-import { getUserDevices } from '~/models/device.server'
+import { getUserDevices } from '~/db/models/device.server'
 import {
 	deleteMeasurementsForSensor,
 	deleteSensorMeasurementsForTimeRange,
 	deleteSensorMeasurementsForTimes,
-} from '~/models/measurement.server'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/db/models/measurement.server'
+import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
 
 export async function action({ request, params }: Route.ActionArgs) {
 	try {

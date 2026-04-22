@@ -1,16 +1,20 @@
 import { eq, sql } from 'drizzle-orm'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route as postSingleRoute } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId'
 import { type Route as postMeasurementRoute } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.data'
+import { BASE_URL } from '../../vitest.setup'
+import {
+	createDevice,
+	deleteDevice,
+	getDevice,
+} from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { location, deviceToLocation, measurement, type User } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
-import { location, deviceToLocation, measurement, type User } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const TEST_USER = generateTestUserCredentials()
 

@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.boxes.$deviceId.sensors.$sensorId'
-import { getLatestMeasurementsForSensor } from '~/lib/measurement-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
+import { getLatestMeasurementsForSensor } from '~/services/measurement-service.server'
 
 export const loader = async ({
 	request,

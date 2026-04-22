@@ -13,8 +13,8 @@ import {
 import { Badge } from '~/components/ui/badge'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
+import { getSensorsForModel } from '~/lib/model-definitions'
 import { cn } from '~/lib/utils'
-import { getSensorsForModel } from '~/utils/model-definitions'
 
 export const sensorSchema = z.object({
 	title: z.string(),
@@ -149,13 +149,13 @@ export function SensorSelectionStep() {
 	return (
 		<div className="flex h-full flex-col">
 			<div className="mb-4 flex items-center justify-between">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					{t('selectedSensors', { count: selectedSensors.length })}
 				</p>
 				{selectedSensors.length > 0 && (
 					<button
 						type="button"
-						className="text-sm text-destructive hover:underline"
+						className="text-destructive text-sm hover:underline"
 						onClick={() => {
 							setSelectedSensors([])
 							setValue('selectedSensors', [])
@@ -192,13 +192,13 @@ export function SensorSelectionStep() {
 												className="h-10 w-10 rounded object-cover"
 											/>
 										) : (
-											<div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-												<Cpu className="h-5 w-5 text-muted-foreground" />
+											<div className="bg-muted flex h-10 w-10 items-center justify-center rounded">
+												<Cpu className="text-muted-foreground h-5 w-5" />
 											</div>
 										)}
 										<div className="text-left">
 											<p className="font-medium">{group.sensorType}</p>
-											<p className="text-xs text-muted-foreground">
+											<p className="text-muted-foreground text-xs">
 												{group.sensors.length}{' '}
 												{group.sensors.length !== 1
 													? t('phenomena')
@@ -216,7 +216,7 @@ export function SensorSelectionStep() {
 							<AccordionContent className="pb-4">
 								<div className="space-y-3 pt-2">
 									<div
-										className="flex items-center space-x-3 rounded-md bg-muted/50 p-3"
+										className="bg-muted/50 flex items-center space-x-3 rounded-md p-3"
 										onClick={(e) => e.stopPropagation()}
 									>
 										<Checkbox
@@ -236,7 +236,7 @@ export function SensorSelectionStep() {
 									</div>
 
 									{!isSenseBoxHomeV2 && (
-										<div className="ml-2 space-y-2 border-l-2 border-muted pl-4">
+										<div className="border-muted ml-2 space-y-2 border-l-2 pl-4">
 											{group.sensors.map((sensor) => {
 												const isSelected = isSensorSelected(sensor)
 												const sensorId = `sensor-${group.sensorType}-${sensor.title}`
@@ -262,7 +262,7 @@ export function SensorSelectionStep() {
 															className="flex cursor-pointer items-center gap-2"
 														>
 															<span>{sensor.title}</span>
-															<span className="text-xs text-muted-foreground">
+															<span className="text-muted-foreground text-xs">
 																({sensor.unit})
 															</span>
 														</Label>
@@ -273,8 +273,8 @@ export function SensorSelectionStep() {
 									)}
 
 									{isSenseBoxHomeV2 && (
-										<div className="ml-2 space-y-1 text-sm text-muted-foreground">
-											<p className="font-medium text-foreground">
+										<div className="text-muted-foreground ml-2 space-y-1 text-sm">
+											<p className="text-foreground font-medium">
 												{t('includes')}:
 											</p>
 											{group.sensors.map((sensor) => (

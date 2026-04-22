@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { type DeviceExposureType } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import { type DeviceExposureType } from '~/db/schema'
+import { StandardResponse } from '~/lib/responses'
 
 export type BoxesDataColumn =
 	| 'createdAt'

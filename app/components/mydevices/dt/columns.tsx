@@ -18,7 +18,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 
 export type SenseBox = {
 	id: string
@@ -69,7 +69,7 @@ export function getColumns(
 							{device.name}
 						</span>
 						{isArchived ? (
-							<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
+							<span className="text-muted-foreground rounded-md border px-2 py-0.5 text-xs">
 								{t('archived')}
 							</span>
 						) : null}
@@ -142,7 +142,7 @@ export function getColumns(
 						</code>
 						<ClipboardCopy
 							onClick={() => navigator.clipboard.writeText(device?.id)}
-							className="ml-[6px] mr-1 inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
+							className="mr-1 ml-[6px] inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
 						/>
 					</div>
 				)

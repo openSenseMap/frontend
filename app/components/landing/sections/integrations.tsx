@@ -12,7 +12,7 @@ export default function Integrations() {
 						{t('description')}
 					</div>
 				</div>
-				<img src="/integration.svg" alt="" className="h-1/2 w-1/2" />
+				<img src="/img/integration.svg" alt="" className="h-1/2 w-1/2" />
 			</div>
 			<div id="right" className="w-1/2">
 				<div className="grid grid-cols-2 gap-4">

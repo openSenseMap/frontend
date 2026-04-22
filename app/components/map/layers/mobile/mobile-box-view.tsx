@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { calculateColorRange } from './color-palette'
 import MobileBoxLayer from './mobile-box-layer'
 import { Button } from '~/components/ui/button'
-import { type Sensor } from '~/schema'
+import { type Sensor } from '~/db/schema'
 
 interface SensorWithColor extends Sensor {
 	color: string // Add the color property
@@ -28,7 +28,7 @@ export default function MobileBoxView({
 	}
 
 	return (
-		<div className="absolute right-0 top-10 flex flex-col gap-4 p-4">
+		<div className="absolute top-10 right-0 flex flex-col gap-4 p-4">
 			{sensors.map((sensor, index) => (
 				<div key={index} className="flex flex-col items-center gap-4">
 					{index === 1 && sensors.length === 2 && (

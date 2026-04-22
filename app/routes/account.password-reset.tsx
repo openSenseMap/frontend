@@ -26,8 +26,8 @@ import {
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 
-import { resetPassword } from '~/lib/user-service.server'
-import { getUserId } from '~/utils/session.server'
+import { getUserId } from '~/services/session-service.server'
+import { resetPassword } from '~/services/user-service.server'
 
 type LoaderData = {
 	token: string | null
@@ -164,7 +164,7 @@ export default function PasswordResetRoute() {
 					</CardHeader>
 					<CardFooter className="flex flex-col gap-2">
 						<Link to="/explore/login" className="w-full">
-							<Button className="w-full bg-light-blue">
+							<Button className="bg-light-blue w-full">
 								{t('back_to_login')}
 							</Button>
 						</Link>
@@ -192,7 +192,7 @@ export default function PasswordResetRoute() {
 
 			<Card className="z-50 w-full max-w-md">
 				{busy && (
-					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
 					</div>
 				)}
@@ -204,7 +204,7 @@ export default function PasswordResetRoute() {
 						</h2>
 						<p className="mb-6">{t('password_reset_success_description')}</p>
 						<Link to="/explore/login" className="block">
-							<Button className="w-full bg-light-blue">
+							<Button className="bg-light-blue w-full">
 								{t('back_to_login')}
 							</Button>
 						</Link>
@@ -224,13 +224,13 @@ export default function PasswordResetRoute() {
 							<input type="hidden" name="token" value={token} />
 
 							{actionData?.errors?.token && (
-								<div className="dark:border-red-900/40 dark:bg-red-950/40 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:text-red-200">
+								<div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
 									{t(actionData.errors.token)}
 								</div>
 							)}
 
 							{actionData?.errors?.form && (
-								<div className="dark:border-red-900/40 dark:bg-red-950/40 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:text-red-200">
+								<div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
 									{t(actionData.errors.form)}
 								</div>
 							)}
@@ -282,17 +282,17 @@ export default function PasswordResetRoute() {
 								)}
 							</div>
 
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{t('password_requirements_hint')}
 							</p>
 						</CardContent>
 
 						<CardFooter className="flex flex-col items-center gap-2">
-							<Button type="submit" className="w-full bg-light-blue">
+							<Button type="submit" className="bg-light-blue w-full">
 								{t('set_password_button')}
 							</Button>
 
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								{t('remember_password')}{' '}
 								<Link
 									className="font-medium underline"

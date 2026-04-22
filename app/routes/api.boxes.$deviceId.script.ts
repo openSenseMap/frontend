@@ -1,7 +1,6 @@
 import SketchTemplater from '@sensebox/sketch-templater'
-
 import { type Route } from './+types/api.boxes.$deviceId.script'
-import { getDevice } from '~/models/device.server'
+import { getDevice } from '~/db/models/device.server'
 
 const cfg = {
 	'sketch-templater': {

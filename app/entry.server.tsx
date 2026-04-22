@@ -11,8 +11,8 @@ import {
 	ServerRouter,
 	type EntryContext,
 } from 'react-router'
+import { getEnv, init } from './lib/env.server'
 import { getInstance } from './middleware/i18next'
-import { getEnv, init } from './utils/env.server'
 
 export const STREAM_TIMEOUT = 5_000
 

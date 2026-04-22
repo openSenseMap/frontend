@@ -4,9 +4,9 @@ import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/device.$deviceId.edit.script'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
-import { getDeviceWithoutSensors } from '~/models/device.server'
-import { getSensorsFromDevice } from '~/models/sensor.server'
-import { getUserId } from '~/utils/session.server'
+import { getDeviceWithoutSensors } from '~/db/models/device.server'
+import { getSensorsFromDevice } from '~/db/models/sensor.server'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {

@@ -1,13 +1,11 @@
-import {
-	redirect,
-} from 'react-router'
+import { redirect } from 'react-router'
 import { type Route } from './+types/device.new'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
-import { createDevice } from '~/lib/devices-service.server'
-import { createDeviceIntegrations } from '~/lib/integration-service.server'
-import { getIntegrations } from '~/models/integration.server'
-import { getUser, getUserId } from '~/utils/session.server'
+import { getIntegrations } from '~/db/models/integration.server'
+import { createDevice } from '~/services/devices-service.server'
+import { createDeviceIntegrations } from '~/services/integration-service.server'
+import { getUser, getUserId } from '~/services/session-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
@@ -79,7 +77,7 @@ export default function NewDevice() {
 			<NavBar />
 			<div className="grow overflow-auto bg-gray-100">
 				<div className="flex h-full w-full justify-center py-10">
-					<div className="flex h-full w-full items-center justify-center rounded-lg p-6 dark:bg-transparent dark:text-dark-text dark:shadow-none">
+					<div className="dark:text-dark-text flex h-full w-full items-center justify-center rounded-lg p-6 dark:bg-transparent dark:shadow-none">
 						<ValidationStepperForm />
 					</div>
 				</div>

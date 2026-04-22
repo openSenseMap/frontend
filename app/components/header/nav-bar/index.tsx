@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-map-gl/mapbox'
 import NavbarHandler from './nav-bar-handler'
 import FilterVisualization from '~/components/map/filter-visualization'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 
 interface NavBarProps {
 	devices: Device[]
@@ -62,16 +62,16 @@ export default function NavBar(props: NavBarProps) {
 
 	return (
 		<div className="pointer-events-auto relative w-full md:w-1/2">
-			<div className="absolute left-0 top-0 flex w-full flex-col gap-2">
-				<div className="w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 dark:ring-white dark:backdrop-blur-xs md:px-4">
-					<div className="flex w-full items-center gap-2 px-2 text-black dark:text-zinc-200 md:gap-4">
+			<div className="absolute top-0 left-0 flex w-full flex-col gap-2">
+				<div className="w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 dark:ring-white dark:backdrop-blur-xs">
+					<div className="flex w-full items-center gap-2 px-2 text-black md:gap-4 dark:text-zinc-200">
 						<SearchIcon className="aspect-square h-6 dark:text-zinc-200" />
 						<input
 							ref={inputRef}
 							placeholder={t('placeholder') || undefined}
 							onFocus={() => setOpen(true)}
 							onChange={(e) => setSearchString(e.target.value)}
-							className="h-fit w-full flex-1 border-none bg-white focus:border-none focus:outline-hidden focus:ring-0 dark:bg-zinc-800 dark:text-zinc-200"
+							className="h-fit w-full flex-1 border-none bg-white focus:border-none focus:ring-0 focus:outline-hidden dark:bg-zinc-800 dark:text-zinc-200"
 							value={searchString}
 						/>
 						{!open && (

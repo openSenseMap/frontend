@@ -1,10 +1,10 @@
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.tags'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.tags'
+import { registerUser } from '~/services/user-service.server'
 
 const TAGS_TEST_USER = generateTestUserCredentials()
 const TEST_TAG_BOX = {

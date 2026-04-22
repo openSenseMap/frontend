@@ -6,7 +6,7 @@ import { createCookie } from 'react-router'
 import { createI18nextMiddleware } from 'remix-i18next/middleware'
 import invariant from 'tiny-invariant'
 import { i18nextOptions } from '~/i18next-config'
-import { getUser } from '~/utils/session.server'
+import { getUser } from '~/services/session-service.server'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')
 invariant(process.env.NODE_ENV, 'NODE_ENV must be set')

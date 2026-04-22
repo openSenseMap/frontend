@@ -1,10 +1,10 @@
 import { type Route } from './+types/api.transfer.$deviceId'
 import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
 import {
 	getBoxTransfer,
 	updateBoxTransferExpiration,
-} from '~/lib/transfer-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/services/transfer-service.server'
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
 	const jwtResponse = await getUserFromJwt(request)

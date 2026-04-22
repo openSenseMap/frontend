@@ -1,12 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId'
+import { BASE_URL } from '../../vitest.setup'
+import {
+	createDevice,
+	deleteDevice,
+	getDevice,
+} from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { type User, type Device } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
-import { type User, type Device } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const TEST_USER = {
 	name: 'feinstaubAddonTestUser',

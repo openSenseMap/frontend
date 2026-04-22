@@ -62,10 +62,7 @@ export default function Partners({ data }: PartnersProps) {
 					className="flex flex-col items-center justify-center"
 				>
 					<p>{t('hosted')}</p>
-					<img
-						src="/landing/openSenseLab_logo.png"
-						alt="openSenseLab Logo"
-					></img>
+					<img src="/img/openSenseLab_logo.png" alt="openSenseLab Logo"></img>
 				</motion.div>
 			</div>
 		</div>
