@@ -40,20 +40,24 @@ export default function Header() {
 			id="header"
 			className="relative z-50 mx-auto flex h-16 max-w-7xl justify-between py-6 dark:border-gray-300 dark:bg-black"
 		>
-			<div className="container z-50 mx-auto flex flex-wrap items-center justify-between px-4 font-serif">
+			<div className="z-50 container mx-auto flex flex-wrap items-center justify-between px-4 font-serif">
 				{/* Osem Logo*/}
 				<div className="flex max-w-(--breakpoint-xl) flex-wrap items-center justify-between">
 					{/* Osem Logo*/}
 					<Link to="/" className="flex items-center md:pr-10">
-						<img src="/logo.png" className="mr-3 h-6 sm:h-9" alt="osem Logo" />
-						<span className="hidden self-center whitespace-nowrap text-xl text-light-green dark:text-dark-green md:block">
+						<img
+							src="/img/logo.png"
+							className="mr-3 h-6 sm:h-9"
+							alt="osem Logo"
+						/>
+						<span className="text-light-green dark:text-dark-green hidden self-center text-xl whitespace-nowrap md:block">
 							openSenseMap
 						</span>
 					</Link>
 					{/* Navbar Links*/}
 					<div
 						className={
-							'hidden w-full items-center justify-between text-gray-400 dark:text-gray-300 lg:order-1 lg:flex lg:w-auto'
+							'hidden w-full items-center justify-between text-gray-400 lg:order-1 lg:flex lg:w-auto dark:text-gray-300'
 						}
 						id="navbar-cta"
 					>
@@ -63,7 +67,7 @@ export default function Header() {
 									<li key={index}>
 										<Link
 											to={item.link}
-											className="block rounded py-2 pl-3 pr-4 md:p-0 md:font-thin md:hover:text-light-green dark:md:hover:text-green-200"
+											className="md:hover:text-light-green block rounded py-2 pr-4 pl-3 md:p-0 md:font-thin dark:md:hover:text-green-200"
 										>
 											{t(item.name)}
 										</Link>
@@ -84,7 +88,7 @@ export default function Header() {
 							onClick={() => setOpenMenu(!openMenu)}
 							data-collapse-toggle="navbar-cta"
 							type="button"
-							className="inline-flex items-center rounded-lg p-2 px-6 text-sm text-gray-500 hover:bg-gray-100 focus:outline-hidden focus:ring-2 focus:ring-gray-200 lg:hidden"
+							className="inline-flex items-center rounded-lg p-2 px-6 text-sm text-gray-500 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 focus:outline-hidden lg:hidden"
 							aria-controls="navbar-cta"
 							aria-expanded="false"
 						>
@@ -105,7 +109,7 @@ export default function Header() {
 						</button>
 						{openMenu && (
 							<div
-								className="absolute right-2 top-full mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black ring-opacity-5"
+								className="ring-opacity-5 absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="options-menu"
@@ -114,7 +118,7 @@ export default function Header() {
 									<Link
 										key={index}
 										to={item.link}
-										className="block px-4 py-2 text-sm text-gray-700 hover:text-light-green dark:hover:text-green-200"
+										className="hover:text-light-green block px-4 py-2 text-sm text-gray-700 dark:hover:text-green-200"
 										role="menuitem"
 									>
 										{t(item.name)}

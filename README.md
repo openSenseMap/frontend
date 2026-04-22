@@ -1,4 +1,4 @@
-![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/openSenseMap.png)
+![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/img/openSenseMap.png)
 
 This repository contains the code of the new _openSenseMap_ frontend running at
 [https://beta.opensensemap.org](https://beta.opensensemap.org).

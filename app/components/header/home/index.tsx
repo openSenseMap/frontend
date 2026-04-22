@@ -10,7 +10,7 @@ export default function Home() {
 						className="h-10 w-10 rounded-full border border-gray-100 bg-white text-black shadow-xl hover:bg-gray-100"
 					>
 						<img
-							src="/logo.png"
+							src="/img/logo.png"
 							alt="openSenseMapLogo"
 							className="mx-auto h-7 w-7"
 						/>
