@@ -3,8 +3,8 @@ import { type Route } from '.react-router/types/app/routes/+types/api.transfer'
 import { type Route as TransferDetailRoute } from '.react-router/types/app/routes/+types/api.transfer.$deviceId'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/services/user/user-service.server'
-import { createDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
+import { createDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { action as transferAction } from '~/routes/api.transfer'
 import {
 	action as transferUpdateAction,

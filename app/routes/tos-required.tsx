@@ -19,7 +19,7 @@ import {
 	DialogTitle,
 } from '~/components/ui/dialog'
 import { drizzleClient } from '~/db.server'
-import { getCurrentEffectiveTos, getTosRequirementForUser } from '~/models/tos.server'
+import { getCurrentEffectiveTos, getTosRequirementForUser } from '~/db/models/tos.server'
 import { tosUserState } from '~/schema/tos'
 import { requireUser } from '~/utils/session.server'
 

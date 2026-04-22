@@ -6,7 +6,7 @@ import {
 	RouterContextProvider,
 } from 'react-router'
 import invariant from 'tiny-invariant'
-import { getUserById } from '~/models/user.server'
+import { getUserById } from '~/db/models/user.server'
 import { type User } from '~/schema'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')

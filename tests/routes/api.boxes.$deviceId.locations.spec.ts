@@ -5,14 +5,14 @@ import { BASE_URL } from 'vitest.setup'
 import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.locations'
 import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/services/user/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
 import {
 	deleteMeasurementsForSensor,
 	deleteMeasurementsForTime,
 	saveMeasurements,
-} from '~/models/measurement.server'
-import { getSensors } from '~/models/sensor.server'
-import { deleteUserByEmail } from '~/models/user.server'
+} from '~/db/models/measurement.server'
+import { getSensors } from '~/db/models/sensor.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.locations'
 import { type Sensor, location } from '~/schema'
 

@@ -4,8 +4,8 @@ import { type Route } from '.react-router/types/app/routes/+types/api.users.me.b
 import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/services/user/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.users.me.boxes'
 import { integration, type User } from '~/schema'
 

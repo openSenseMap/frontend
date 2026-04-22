@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { getTosRequirementForUser } from "~/models/tos.server";
+import { getTosRequirementForUser } from "~/db/models/tos.server";
 import { getUserId } from "~/utils/session.server";
 
 function isAllowedUiPath(pathname: string) {

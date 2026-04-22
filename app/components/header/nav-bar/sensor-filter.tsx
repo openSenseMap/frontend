@@ -5,7 +5,7 @@ import { Form } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { cn } from '~/lib/utils'
-import { type Phenomenon } from '~/models/phenomena.server'
+import { type Phenomenon } from '~/db/models/phenomena.server'
 import { sensorWikiLabel } from '~/utils/sensor-wiki-helper'
 
 interface SensorFilterProps {

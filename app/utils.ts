@@ -2,7 +2,7 @@ import moment from 'moment'
 import { useMemo } from 'react'
 import { useMatches } from 'react-router'
 import { validLngLat } from './lib/location'
-import { type MyBadge } from './models/badge.server'
+import { type MyBadge } from './db/models/badge.server'
 import { type User } from './schema/user'
 import {
 	

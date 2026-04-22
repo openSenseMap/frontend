@@ -21,7 +21,7 @@ import {
 	addOrReplaceDeviceApiKey,
 	getDevice,
 	updateDevice,
-} from '~/models/device.server'
+} from '~/db/models/device.server'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {

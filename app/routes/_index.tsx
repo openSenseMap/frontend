@@ -22,7 +22,7 @@ import Stats from '~/components/landing/stats'
 import { type SupportedLanguage } from '~/i18next-config'
 import { type Partner, getDirectusClient } from '~/lib/directus'
 import { getLocale } from '~/middleware/i18next'
-import { getLatestDevices } from '~/models/device.server'
+import { getLatestDevices } from '~/db/models/device.server'
 import { getUserId, getUserName } from '~/utils/session.server'
 
 const sections = [

@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.getsensors'
-import { getSensors } from '~/models/sensor.server'
+import { getSensors } from '~/db/models/sensor.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**

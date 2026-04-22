@@ -22,8 +22,8 @@ import PasswordResetEmail, {
 } from '~/emails/password-reset'
 import {	subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
 
-import { generateRawActionToken, hashActionToken, issueEmailConfirmationToken } from '~/models/token.server'
-import { getCurrentEffectiveTos } from '~/models/tos.server'
+import { generateRawActionToken, hashActionToken, issueEmailConfirmationToken } from '~/db/models/token.server'
+import { getCurrentEffectiveTos } from '~/db/models/tos.server'
 import {
 	createUser,
 	deleteUserByEmail,
@@ -36,7 +36,7 @@ import {
 	updateUserName,
 	updateUserPassword,
 	verifyLogin,
-} from '~/models/user.server'
+} from '~/db/models/user.server'
 import { actionToken, user, type User } from '~/schema'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000

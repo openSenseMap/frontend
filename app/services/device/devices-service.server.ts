@@ -5,8 +5,8 @@ import {
 	deleteDevice as deleteDeviceById,
 	updateDevice as updateDeviceById,
 	type UpdateDeviceArgs,
-} from '~/models/device.server'
-import { verifyLogin } from '~/models/user.server'
+} from '~/db/models/device.server'
+import { verifyLogin } from '~/db/models/user.server'
 import { type Device, type User } from '~/schema'
 import { deleteDeviceImage } from '~/utils/s3.server'
 

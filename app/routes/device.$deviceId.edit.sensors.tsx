@@ -26,13 +26,13 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { reconcileDeviceIntegrations } from '~/models/integration.server'
+import { reconcileDeviceIntegrations } from '~/db/models/integration.server'
 import {
 	addNewSensor,
 	deleteSensor,
 	getSensorsFromDevice,
 	updateSensor,
-} from '~/models/sensor.server'
+} from '~/db/models/sensor.server'
 import { assignIcon, getIcon, iconsList } from '~/utils/sensoricons'
 import { getUserId } from '~/utils/session.server'
 

@@ -6,7 +6,7 @@ import { type Route } from '.react-router/types/app/routes/+types/api.users.refr
 import { type Route as SignInRoute } from '.react-router/types/app/routes/+types/api.users.sign-in'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/services/user/user-service.server'
-import { deleteUserByEmail } from '~/models/user.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { action as signOutAction } from '~/routes/api.sign-out'
 import { action as meAction, loader as meLoader } from '~/routes/api.users.me'
 import { action } from '~/routes/api.users.refresh-auth'

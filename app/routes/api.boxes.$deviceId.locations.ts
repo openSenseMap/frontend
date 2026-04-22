@@ -1,6 +1,6 @@
 import { type Params } from 'react-router'
 import { type Route } from './+types/api.boxes.$deviceId.locations'
-import { getLocations } from '~/models/device.server'
+import { getLocations } from '~/db/models/device.server'
 import { parseDateParam, parseEnumParam } from '~/utils/param-utils'
 import { StandardResponse } from '~/utils/response-utils'
 

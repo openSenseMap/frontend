@@ -1,13 +1,13 @@
 import { Form, Link, redirect, useActionData } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/admin.users.$userId'
-import { getUserDevices } from '~/models/device.server'
+import { getUserDevices } from '~/db/models/device.server'
 import {
 	deleteUserById,
 	// execUserAdminAction,
 	getUserById,
 	updateUserById,
-} from '~/models/user.server'
+} from '~/db/models/user.server'
 import { adminUserContext } from '~/utils/session.server'
 
 type ActionData = {

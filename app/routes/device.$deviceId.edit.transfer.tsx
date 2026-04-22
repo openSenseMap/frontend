@@ -14,7 +14,7 @@ import {
 	getBoxTransfer,
 	createBoxTransfer,
 } from '~/services/transfer/transfer-service.server'
-import { getDevice } from '~/models/device.server'
+import { getDevice } from '~/db/models/device.server'
 import { type Claim } from '~/schema'
 import { getUserId } from '~/utils/session.server'
 

@@ -1,4 +1,4 @@
-import { getIntegrations } from '~/models/integration.server';
+import { getIntegrations } from '~/db/models/integration.server';
 
 interface IntegrationResult {
   integration: string;

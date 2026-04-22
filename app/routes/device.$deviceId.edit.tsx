@@ -24,7 +24,7 @@ import { EditDeviceSidebarNav } from '~/components/mydevices/edit-device/edit-de
 import { NavBar } from '~/components/nav-bar'
 import { Separator } from '~/components/ui/separator'
 import { getLucideIcon } from '~/lib/lucide-icon-map'
-import { getIntegrations } from '~/models/integration.server'
+import { getIntegrations } from '~/db/models/integration.server'
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************

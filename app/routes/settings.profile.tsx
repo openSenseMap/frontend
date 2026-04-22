@@ -23,7 +23,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
-import { getProfileByUserId, updateProfile } from '~/models/profile.server'
+import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
 import { getInitials } from '~/utils/misc'
 import { requireUserId } from '~/utils/session.server'
 

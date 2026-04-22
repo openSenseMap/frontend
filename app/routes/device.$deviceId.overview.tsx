@@ -10,8 +10,8 @@ import { type Route } from './+types/device.$deviceId.overview'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { NavBar } from '~/components/nav-bar'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { getDeviceWithoutSensors } from '~/models/device.server'
-import { getSensorsFromDevice } from '~/models/sensor.server'
+import { getDeviceWithoutSensors } from '~/db/models/device.server'
+import { getSensorsFromDevice } from '~/db/models/sensor.server'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {

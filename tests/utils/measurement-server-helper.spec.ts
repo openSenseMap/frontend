@@ -2,13 +2,13 @@ import { asc, eq, inArray, or, sql } from 'drizzle-orm'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { drizzleClient } from '~/db.server'
 import { registerUser } from '~/services/user/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
 import {
 	deleteMeasurementsForSensor,
 	deleteMeasurementsForTime,
-} from '~/models/measurement.server'
-import { getSensors } from '~/models/sensor.server'
-import { deleteUserByEmail } from '~/models/user.server'
+} from '~/db/models/measurement.server'
+import { getSensors } from '~/db/models/sensor.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { deviceToLocation, location } from '~/schema'
 import { type LastMeasurement, sensor, type Sensor } from '~/schema/sensor'
 import { type User } from '~/schema/user'

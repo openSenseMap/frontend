@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useFetcher } from 'react-router'
 import { type Route } from './+types/resources.user-avatar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
-import { getProfileByUserId } from '~/models/profile.server'
+import { getProfileByUserId } from '~/db/models/profile.server'
 import { getInitials } from '~/utils/misc'
 import { requireUser } from '~/utils/session.server'
 

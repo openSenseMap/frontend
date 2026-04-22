@@ -1,8 +1,8 @@
 import { type Route } from './+types/api.boxes.data'
 import { parseBoxesDataQuery } from '~/lib/api-schemas/boxes-data-query-schema'
 import { transformMeasurement } from '~/services/measurement/measurement-service.server'
-import { streamMeasurements } from '~/models/measurement.stream.server'
-import { findMatchingSensors } from '~/models/sensor.server'
+import { streamMeasurements } from '~/db/models/measurement.stream.server'
+import { findMatchingSensors } from '~/db/models/sensor.server'
 import { escapeCSVValue } from '~/utils/csv'
 import { StandardResponse } from '~/utils/response-utils'
 

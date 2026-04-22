@@ -8,8 +8,8 @@ import {
 	updateDevice,
 	deleteDevice,
 	type UpdateDeviceArgs,
-} from '~/models/device.server'
-import { getUsers } from '~/models/user.server'
+} from '~/db/models/device.server'
+import { getUsers } from '~/db/models/user.server'
 
 type ActionData = {
 	formError?: string

@@ -5,12 +5,12 @@ import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
 	getDevice,
-} from '~/models/device.server'
-import { saveMeasurements } from '~/models/measurement.server'
+} from '~/db/models/device.server'
+import { saveMeasurements } from '~/db/models/measurement.server'
 import {
 	getSensorsWithLastMeasurement,
 	getSensorWithLastMeasurement,
-} from '~/models/sensor.server'
+} from '~/db/models/sensor.server'
 import { type SensorWithLatestMeasurement } from '~/schema'
 import { decodeMeasurements, hasDecoder } from '~/services/decode/decoding-service.server'
 

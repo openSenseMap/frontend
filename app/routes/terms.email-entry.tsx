@@ -3,7 +3,7 @@ import { type Route } from './+types/terms.email-entry'
 import {
   getTosRequirementForUser,
   getValidTosAcceptanceToken,
-} from '~/models/tos.server'
+} from '~/db/models/tos.server'
 import { getTosFlowSession, tosFlowSessionStorage } from '~/utils/tos-session.server'
 
 export async function loader({ request }: Route.LoaderArgs) {

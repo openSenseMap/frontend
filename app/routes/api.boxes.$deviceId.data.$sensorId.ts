@@ -4,7 +4,7 @@ import {
 	type TransformedMeasurement,
 	transformOutliers,
 } from '~/lib/outlier-transform'
-import { getMeasurements } from '~/models/sensor.server'
+import { getMeasurements } from '~/db/models/sensor.server'
 import { type Measurement } from '~/schema'
 import { convertToCsv } from '~/utils/csv'
 import { parseDateParam, parseEnumParam } from '~/utils/param-utils'

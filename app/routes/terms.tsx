@@ -16,7 +16,7 @@ import {
 	getCurrentEffectiveTos,
 	getTosLocale,
 	getTosRequirementForUser,
-} from '~/models/tos.server'
+} from '~/db/models/tos.server'
 import { getUser } from '~/utils/session.server'
 import {
 	getTosFlowSession,

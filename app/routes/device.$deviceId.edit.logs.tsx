@@ -28,7 +28,7 @@ import {
 	deleteLogEntry,
 	getLogEntriesByDeviceId,
 	updateLogEntryVisibility,
-} from '~/models/log-entry.server'
+} from '~/db/models/log-entry.server'
 import { type LogEntry } from '~/schema/log-entry'
 import { getUserId } from '~/utils/session.server'
 

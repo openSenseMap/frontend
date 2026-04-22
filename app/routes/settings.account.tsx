@@ -40,7 +40,7 @@ import {
 	updateUserlocale,
 	verifyLogin,
 	getUserByAnyEmail,
-} from '~/models/user.server'
+} from '~/db/models/user.server'
 import { getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: Route.LoaderArgs) {

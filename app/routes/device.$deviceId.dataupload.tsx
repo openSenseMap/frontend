@@ -22,7 +22,7 @@ import {
 } from '~/components/ui/select'
 import { Textarea } from '~/components/ui/textarea'
 import { postNewMeasurements } from '~/services/measurement/measurement-service.server'
-import { getDevice } from '~/models/device.server'
+import { getDevice } from '~/db/models/device.server'
 import { StandardResponse } from '~/utils/response-utils'
 import { getUserId } from '~/utils/session.server'
 

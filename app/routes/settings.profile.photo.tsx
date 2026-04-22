@@ -24,8 +24,8 @@ import {
 	DialogTitle,
 } from '~/components/ui/dialog'
 import { drizzleClient } from '~/db.server'
-import { getProfileByUserId } from '~/models/profile.server'
-import { getUserById } from '~/models/user.server'
+import { getProfileByUserId } from '~/db/models/profile.server'
+import { getUserById } from '~/db/models/user.server'
 import { profileImage } from '~/schema'
 import { uploadHandler } from '~/utils/file-upload.server'
 import { getInitials } from '~/utils/misc'

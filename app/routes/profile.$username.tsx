@@ -14,7 +14,7 @@ import {
 	getProfileByUserId,
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
-} from '~/models/profile.server'
+} from '~/db/models/profile.server'
 import { formatCount, getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
 

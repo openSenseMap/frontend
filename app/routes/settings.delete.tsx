@@ -23,7 +23,7 @@ import {
 	deleteUserByEmail,
 	getUserByEmail,
 	verifyLogin,
-} from '~/models/user.server'
+} from '~/db/models/user.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
 //*****************************************************

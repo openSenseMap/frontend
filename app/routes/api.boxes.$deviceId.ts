@@ -7,7 +7,7 @@ import {
 	getDevice,
 	updateDevice,
 	type UpdateDeviceArgs,
-} from '~/models/device.server'
+} from '~/db/models/device.server'
 import { type Device, type User } from '~/schema'
 import { StandardResponse } from '~/utils/response-utils'
 

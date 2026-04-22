@@ -22,7 +22,7 @@ import { type Route } from './+types/device.$deviceId.edit.location'
 import {
 	getDeviceWithoutSensors,
 	updateDeviceLocation,
-} from '~/models/device.server'
+} from '~/db/models/device.server'
 import { getUserId } from '~/utils/session.server'
 
 //*****************************************************

@@ -25,7 +25,7 @@ import {
 } from '~/components/ui/card'
 import { Checkbox } from '~/components/ui/checkbox'
 import { toast } from '~/components/ui/use-toast'
-import { verifyLogin } from '~/models/user.server'
+import { verifyLogin } from '~/db/models/user.server'
 import { safeRedirect } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 

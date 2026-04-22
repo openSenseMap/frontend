@@ -26,8 +26,8 @@ import {
 } from '~/components/ui/card'
 import { registerUser } from '~/services/user/user-service.server'
 import { getLocale } from '~/middleware/i18next'
-import { getCurrentEffectiveTos } from '~/models/tos.server'
-import { getUserByEmail, getUserByUsername } from '~/models/user.server'
+import { getCurrentEffectiveTos } from '~/db/models/tos.server'
+import { getUserByEmail, getUserByUsername } from '~/db/models/user.server'
 import { safeRedirect, validateEmail, validateName } from '~/utils'
 import { createUserSession, getUserId } from '~/utils/session.server'
 

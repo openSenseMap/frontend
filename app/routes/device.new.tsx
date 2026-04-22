@@ -6,7 +6,7 @@ import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
 import { createDevice } from '~/services/device/devices-service.server'
 import { createDeviceIntegrations } from '~/services/integration/integration-service.server'
-import { getIntegrations } from '~/models/integration.server'
+import { getIntegrations } from '~/db/models/integration.server'
 import { getUser, getUserId } from '~/utils/session.server'
 
 export async function loader({ request }: Route.LoaderArgs) {

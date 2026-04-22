@@ -9,8 +9,8 @@ import {
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
 import { getLocale } from '~/middleware/i18next'
-import { getDevice } from '~/models/device.server'
-import { getSensorsWithLastMeasurement } from '~/models/sensor.server'
+import { getDevice } from '~/db/models/device.server'
+import { getSensorsWithLastMeasurement } from '~/db/models/sensor.server'
 import { getDeviceImageUrl } from '~/utils/s3.server'
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {

@@ -3,7 +3,7 @@ import { BASE_URL } from 'vitest.setup'
 import { type Route } from '.react-router/types/app/routes/+types/api.users.me'
 import { createToken } from '~/lib/jwt'
 import { registerUser } from '~/services/user/user-service.server'
-import { deleteUserByEmail } from '~/models/user.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader as meLoader, action as meAction } from '~/routes/api.users.me'
 import { type User } from '~/schema'
 

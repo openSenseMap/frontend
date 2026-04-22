@@ -19,8 +19,8 @@ import {
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { deleteDevice, getDeviceWithoutSensors, getUserDevice } from '~/models/device.server'
-import { verifyLogin } from '~/models/user.server'
+import { deleteDevice, getDeviceWithoutSensors, getUserDevice } from '~/db/models/device.server'
+import { verifyLogin } from '~/db/models/user.server'
 import { deleteDeviceImage } from '~/utils/s3.server'
 import { getUserEmail, getUserId } from '~/utils/session.server'
 
