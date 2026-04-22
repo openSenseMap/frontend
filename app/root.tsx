@@ -60,7 +60,7 @@ export const links = () => {
 		},
 		{ rel: 'stylesheet', href: tailwindStylesheetUrl },
 		{ rel: 'stylesheet', href: appStylesheetUrl },
-		{ rel: 'icon', href: '/img/favicon.svg', type: 'image/svg+xml' },
+		{ rel: 'icon', href: '/img/logo.svg', type: 'image/svg+xml' },
 		{
 			rel: 'icon',
 			href: '/img/favicon-32x32.png',
@@ -76,8 +76,12 @@ export const meta: MetaFunction = () => [
 	{ charset: 'utf-8' },
 	{ title: 'openSenseMap' },
 	{ viewport: 'width=device-width,initial-scale=1' },
-	{ themeColor: '#3d843f', media: '(prefers-color-scheme: light)' },
-	{ themeColor: '#6fa161', media: '(prefers-color-scheme: dark)' },
+	{ 'theme-color': '#3d843f', media: '(prefers-color-scheme: light)' },
+	{ 'theme-color': '#6fa161', media: '(prefers-color-scheme: dark)' },
+	{
+		description:
+			'The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source.',
+	},
 ]
 
 export async function loader({ context, request }: Route.LoaderArgs) {
