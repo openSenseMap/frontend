@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.boxes.$deviceId.$sensorId'
-import { postSingleMeasurement } from '~/lib/measurement-service.server'
+import { postSingleMeasurement } from '~/services/measurement/measurement-service.server'
 import { isValidServiceKey } from '~/models/integration.server'
 import { StandardResponse } from '~/utils/response-utils'
 

@@ -1,7 +1,6 @@
-import { type BoxesDataColumn } from './api-schemas/boxes-data-query-schema'
-import { assertDeviceIsWritable } from './devices-service.server'
-import { validLngLat } from './location'
-import { decodeMeasurements, hasDecoder } from '~/lib/decoding-service.server'
+import { type BoxesDataColumn } from '../../lib/api-schemas/boxes-data-query-schema'
+import { validLngLat } from '../../lib/location'
+import { assertDeviceIsWritable } from '../device/devices-service.server'
 import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
@@ -13,6 +12,7 @@ import {
 	getSensorWithLastMeasurement,
 } from '~/models/sensor.server'
 import { type SensorWithLatestMeasurement } from '~/schema'
+import { decodeMeasurements, hasDecoder } from '~/services/decode/decoding-service.server'
 
 export type DeviceWithSensors = DeviceWithoutSensors & {
 	sensors: SensorWithLatestMeasurement[]

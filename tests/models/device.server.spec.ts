@@ -1,4 +1,4 @@
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { type User } from '~/schema'

@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.claim'
 import { getUserFromJwt } from '~/lib/jwt'
-import { claimBox } from '~/lib/transfer-service.server'
+import { claimBox } from '~/services/transfer/transfer-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const action = async ({ request }: Route.ActionArgs) => {

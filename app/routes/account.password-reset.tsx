@@ -26,7 +26,7 @@ import {
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 
-import { resetPassword } from '~/lib/user-service.server'
+import { resetPassword } from '~/services/user/user-service.server'
 import { getUserId } from '~/utils/session.server'
 
 type LoaderData = {

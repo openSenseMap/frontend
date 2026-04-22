@@ -10,7 +10,7 @@ import {
 import { type Route } from './+types/device.transfer'
 import Home from '~/components/header/home'
 import { Separator } from '~/components/ui/separator'
-import { claimBox } from '~/lib/transfer-service.server'
+import { claimBox } from '~/services/transfer/transfer-service.server'
 import { getUserId } from '~/utils/session.server'
 
 type ActionData = {

@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { and, eq, gt } from 'drizzle-orm'
 import invariant from 'tiny-invariant'
-import { createToken, revokeToken } from './jwt'
-import { sendMail } from './mail.server'
+import { createToken, revokeToken } from '../../lib/jwt'
+import { sendMail } from '../../lib/mail.server'
 import {
 	validateEmail,
 	validatePassword,

@@ -3,7 +3,7 @@ import { getUserFromJwt } from '~/lib/jwt'
 import {
 	getBoxTransfer,
 	updateBoxTransferExpiration,
-} from '~/lib/transfer-service.server'
+} from '~/services/transfer/transfer-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {

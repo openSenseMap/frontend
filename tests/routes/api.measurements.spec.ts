@@ -4,11 +4,11 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { BASE_URL } from 'vitest.setup'
 import { type Route as postSingleRoute } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId'
 import { type Route as postMeasurementRoute } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.data'
-import { registerUser } from '~/lib/user-service.server'
 import { createDevice, deleteDevice, getDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
+import { registerUser } from '~/services/user/user-service.server'
 
 const TEST_USER = generateTestUserCredentials()
 

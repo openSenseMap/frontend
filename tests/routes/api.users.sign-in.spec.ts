@@ -1,6 +1,6 @@
 import { BASE_URL } from 'vitest.setup'
 import { type Route } from '.react-router/types/app/routes/+types/api.users.sign-in'
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.users.sign-in'
 

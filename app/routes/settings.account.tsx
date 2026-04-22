@@ -32,7 +32,7 @@ import {
 	SelectValue,
 } from '~/components/ui/select'
 import { useToast } from '~/components/ui/use-toast'
-import { resendEmailConfirmation } from '~/lib/user-service.server'
+import { resendEmailConfirmation } from '~/services/user/user-service.server'
 import {
 	getUserById,
 	updateUserEmail,

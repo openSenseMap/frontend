@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.users.register'
 import { createToken } from '~/lib/jwt'
 import { parseUserRegistrationData } from '~/lib/request-parsing'
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 function mapRegistrationError(code: string): string {

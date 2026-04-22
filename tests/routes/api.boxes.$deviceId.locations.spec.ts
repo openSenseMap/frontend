@@ -4,7 +4,7 @@ import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { BASE_URL } from 'vitest.setup'
 import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId.locations'
 import { drizzleClient } from '~/db.server'
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import {
 	deleteMeasurementsForSensor,

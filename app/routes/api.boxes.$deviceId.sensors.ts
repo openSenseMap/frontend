@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.boxes.$deviceId.sensors'
-import { getLatestMeasurements } from '~/lib/measurement-service.server'
+import { getLatestMeasurements } from '~/services/measurement/measurement-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**

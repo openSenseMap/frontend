@@ -13,7 +13,7 @@ import { Callout } from '~/components/ui/alert'
 import {
 	getBoxTransfer,
 	createBoxTransfer,
-} from '~/lib/transfer-service.server'
+} from '~/services/transfer/transfer-service.server'
 import { getDevice } from '~/models/device.server'
 import { type Claim } from '~/schema'
 import { getUserId } from '~/utils/session.server'

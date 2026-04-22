@@ -1,7 +1,7 @@
 import { asc, eq, inArray, or, sql } from 'drizzle-orm'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { drizzleClient } from '~/db.server'
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import {
 	deleteMeasurementsForSensor,

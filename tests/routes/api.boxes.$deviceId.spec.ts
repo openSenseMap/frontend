@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant'
 import { BASE_URL } from 'vitest.setup'
 import { type Route } from '.react-router/types/app/routes/+types/api.boxes.$deviceId'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { createDevice, deleteDevice } from '~/models/device.server'
 import { deleteUserByEmail } from '~/models/user.server'
 import {

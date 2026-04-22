@@ -23,7 +23,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
-import { requestPasswordReset } from '~/lib/user-service.server'
+import { requestPasswordReset } from '~/services/user/user-service.server'
 import { validateEmail } from '~/utils'
 import { getUserId } from '~/utils/session.server'
 

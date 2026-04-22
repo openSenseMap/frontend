@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.stats'
-import { getStatistics } from '~/lib/statistics-service.server'
+import { getStatistics } from '~/services/statistics/statistics-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export async function loader({ request }: Route.LoaderArgs) {

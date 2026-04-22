@@ -24,7 +24,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
-import { registerUser } from '~/lib/user-service.server'
+import { registerUser } from '~/services/user/user-service.server'
 import { getLocale } from '~/middleware/i18next'
 import { getCurrentEffectiveTos } from '~/models/tos.server'
 import { getUserByEmail, getUserByUsername } from '~/models/user.server'

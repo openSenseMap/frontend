@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.boxes.$deviceId'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { deleteDevice } from '~/lib/devices-service.server'
+import { deleteDevice } from '~/services/device/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
 import {
 	DeviceUpdateError,

@@ -2,12 +2,12 @@ import moment from 'moment'
 import { useMemo } from 'react'
 import { useMatches } from 'react-router'
 import { validLngLat } from './lib/location'
-import {
-	validateUsername,
-	validateEmail as validateEmailNew,
-} from './lib/user-service'
 import { type MyBadge } from './models/badge.server'
 import { type User } from './schema/user'
+import {
+	
+	validateEmail as validateEmailNew,
+} from './services/user/user-service'
 
 const DEFAULT_REDIRECT = '/'
 

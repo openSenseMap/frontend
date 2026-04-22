@@ -1,6 +1,6 @@
 import { type Route } from './+types/api.boxes'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { BoxesQuerySchema, CreateBoxSchema } from '~/lib/devices-service.server'
+import { BoxesQuerySchema, CreateBoxSchema } from '~/services/device/devices-service.server'
 import { getUserFromJwt } from '~/lib/jwt'
 import {
 	createDevice,

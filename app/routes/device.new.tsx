@@ -4,8 +4,8 @@ import {
 import { type Route } from './+types/device.new'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
-import { createDevice } from '~/lib/devices-service.server'
-import { createDeviceIntegrations } from '~/lib/integration-service.server'
+import { createDevice } from '~/services/device/devices-service.server'
+import { createDeviceIntegrations } from '~/services/integration/integration-service.server'
 import { getIntegrations } from '~/models/integration.server'
 import { getUser, getUserId } from '~/utils/session.server'
 
