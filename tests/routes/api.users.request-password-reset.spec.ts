@@ -3,7 +3,7 @@ import { type Route } from '../../.react-router/types/app/routes/+types/api.user
 import { BASE_URL } from '../../vitest.setup'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { action } from '~/routes/api.users.request-password-reset'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const VALID_USER = generateTestUserCredentials()
 

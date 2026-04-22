@@ -6,7 +6,7 @@ import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
 import { loader, action } from '~/routes/api.boxes'
 import { type Device, type User } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const BOXES_TEST_USER = generateTestUserCredentials()
 const generateMinimalDevice = (

@@ -23,7 +23,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
-import { requestPasswordReset } from '~/services/user/user-service.server'
+import { requestPasswordReset } from '~/services/user-service.server'
 import { validateEmail } from '~/utils'
 import { getUserId } from '~/utils/session.server'
 
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
 			</Link>
 			<Card className="z-50 w-full max-w-md">
 				{navigation.state === 'loading' && (
-					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
 					</div>
 				)}
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
 						<h2 className="mb-4 text-2xl font-bold">{t('request_sent')}</h2>
 						<p className="mb-6">{t('request_sent_description')}</p>
 						<Link to="/explore/login">
-							<Button className="w-full bg-light-blue">
+							<Button className="bg-light-blue w-full">
 								{t('back_to_login')}
 							</Button>
 						</Link>
@@ -144,10 +144,10 @@ export default function ForgotPasswordPage() {
 								</div>
 							</CardContent>
 							<CardFooter className="flex flex-col items-center gap-2">
-								<Button type="submit" className="w-full bg-light-blue">
+								<Button type="submit" className="bg-light-blue w-full">
 									{t('reset_password_button')}
 								</Button>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									{t('remember_password')}{' '}
 									<Link
 										className="font-medium underline"

@@ -1,6 +1,6 @@
-import { redirect } from 'react-router' 
+import { redirect } from 'react-router'
 import { type Route } from './+types/profile.me'
-import { userNameToURl } from '~/services/user/user-service.server'
+import { userNameToURl } from '~/services/user-service.server'
 import { getUser } from '~/utils/session.server'
 
 export async function loader({ request }: Route.LoaderArgs) {

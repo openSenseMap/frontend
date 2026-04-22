@@ -1,13 +1,7 @@
 import { ArrowLeft, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import {
-	redirect,
-	Form,
-	Link,
-	useNavigation,
-	useParams,
-} from 'react-router'
+import { redirect, Form, Link, useNavigation, useParams } from 'react-router'
 import { type Route } from './+types/device.$deviceId.dataupload'
 import { NavBar } from '~/components/nav-bar'
 import { Button } from '~/components/ui/button'
@@ -22,7 +16,7 @@ import {
 } from '~/components/ui/select'
 import { Textarea } from '~/components/ui/textarea'
 import { getDevice } from '~/db/models/device.server'
-import { postNewMeasurements } from '~/services/measurement/measurement-service.server'
+import { postNewMeasurements } from '~/services/measurement-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 import { getUserId } from '~/utils/session.server'
 
@@ -103,11 +97,11 @@ export default function DataUpload({ actionData }: any) {
 	const [dataFormat, setDataFormat] = useState('text/csv')
 
 	return (
-		<div className="space-y-6 px-10 pb-16 font-helvetica">
+		<div className="font-helvetica space-y-6 px-10 pb-16">
 			<NavBar />
 
 			<div>
-				<div className="grid grid-cols-8 gap-10 font-helvetica text-[15px] tracking-wide max-md:grid-cols-2 lg:grid-rows-1">
+				<div className="font-helvetica grid grid-cols-8 gap-10 text-[15px] tracking-wide max-md:grid-cols-2 lg:grid-rows-1">
 					<nav className="col-span-2 md:col-span-2">
 						<ul>
 							<li className="rounded p-3 text-[#676767] hover:bg-[#eee]">
@@ -127,7 +121,7 @@ export default function DataUpload({ actionData }: any) {
 								</h1>
 
 								{actionData && Object.keys(actionData).length === 0 && (
-									<div className="mb-8 rounded-md bg-light-green p-4 text-white">
+									<div className="bg-light-green mb-8 rounded-md p-4 text-white">
 										{t('successMessage')}
 									</div>
 								)}
@@ -137,7 +131,7 @@ export default function DataUpload({ actionData }: any) {
 									</div>
 								)}
 
-								<div className="mb-8 rounded-md bg-muted p-4 text-muted-foreground">
+								<div className="bg-muted text-muted-foreground mb-8 rounded-md p-4">
 									<p>
 										<Trans t={t} i18nKey="dataUploadExplanation">
 											Here you can upload measurements for this device. This can
@@ -159,7 +153,7 @@ export default function DataUpload({ actionData }: any) {
 									<div>
 										<Button
 											variant="outline"
-											className="relative w-full dark:bg-dark-boxes"
+											className="dark:bg-dark-boxes relative w-full"
 											disabled={
 												nav.formAction ===
 												`/device/${params.deviceId}/dataupload`
@@ -175,7 +169,7 @@ export default function DataUpload({ actionData }: any) {
 												type="file"
 												id="fileInput"
 												accept="text/csv,application/json,application/vnd.ms-excel"
-												className="absolute inset-0 cursor-pointer opacity-0 dark:bg-dark-boxes"
+												className="dark:bg-dark-boxes absolute inset-0 cursor-pointer opacity-0"
 												onChange={(e) => {
 													const file = e.currentTarget.files?.[0]
 													if (file) {

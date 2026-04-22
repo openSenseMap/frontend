@@ -10,7 +10,7 @@ import {
 	loader as transferLoader,
 } from '~/routes/api.transfer.$deviceId'
 import { type Device, type User } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const TRANSFER_TEST_USER = {
 	name: 'asdfhwerskdfsdfnxmcv',

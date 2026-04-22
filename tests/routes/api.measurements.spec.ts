@@ -12,7 +12,7 @@ import {
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const TEST_USER = generateTestUserCredentials()
 

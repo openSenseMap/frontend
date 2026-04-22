@@ -11,7 +11,7 @@ import { drizzleClient } from '~/db.server'
 import { deviceToLocation, location } from '~/schema'
 import { type LastMeasurement, sensor, type Sensor } from '~/schema/sensor'
 import { type User } from '~/schema/user'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 import {
 	addLocationUpdates,
 	filterLocationUpdates,
@@ -126,7 +126,7 @@ describe('measurement server helper', () => {
 			DEVICE_SENSORS_ID_USER.email,
 			DEVICE_SENSORS_ID_USER.password,
 			'en_US',
-			true
+			true,
 		)
 
 		expect(registration.ok).toBe(true)

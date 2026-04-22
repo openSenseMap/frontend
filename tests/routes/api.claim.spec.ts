@@ -8,7 +8,7 @@ import { createToken } from '~/lib/jwt'
 import { action as claimAction } from '~/routes/api.claim'
 import { action as transferAction } from '~/routes/api.transfer'
 import { type Device, type User } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const CLAIM_TEST_USER = generateTestUserCredentials()
 

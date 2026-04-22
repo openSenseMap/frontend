@@ -8,7 +8,7 @@ import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { createToken } from '~/lib/jwt'
 import { action } from '~/routes/api.boxes.$deviceId.$sensorId.measurements'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const USER = generateTestUserCredentials()
 const USER2 = generateTestUserCredentials()

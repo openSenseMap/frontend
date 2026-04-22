@@ -4,7 +4,7 @@ import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.tags'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const TAGS_TEST_USER = generateTestUserCredentials()
 const TEST_TAG_BOX = {

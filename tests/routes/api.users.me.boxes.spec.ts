@@ -7,7 +7,7 @@ import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
 import { loader } from '~/routes/api.users.me.boxes'
 import { integration, type User } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const BOXES_TEST_USER = generateTestUserCredentials()
 const TEST_BOX = {

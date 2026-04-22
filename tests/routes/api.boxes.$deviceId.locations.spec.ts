@@ -14,7 +14,7 @@ import { deleteUserByEmail } from '~/db/models/user.server'
 import { drizzleClient } from '~/db.server'
 import { loader } from '~/routes/api.boxes.$deviceId.locations'
 import { type Sensor, location } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 

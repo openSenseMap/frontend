@@ -1,8 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import {
-	redirect,
-	useLoaderData,
-} from 'react-router'
+import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/profile.$username'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
@@ -13,8 +10,8 @@ import {
 	getProfileByUsername,
 	getProfileSensorsAndMeasurementsCount,
 } from '~/db/models/profile.server'
-import { claimBox } from '~/services/transfer/transfer-service.server'
-import { userNameFromURl } from '~/services/user/user-service.server'
+import { claimBox } from '~/services/transfer-service.server'
+import { userNameFromURl } from '~/services/user-service.server'
 import { formatCount, getInitials } from '~/utils/misc'
 import { getUserId } from '~/utils/session.server'
 
@@ -26,30 +23,35 @@ type ActionData = {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const requestingUserId = await getUserId(request)
+	const requestingUserId = await getUserId(request)
 
-  const username = userNameFromURl(params.username as string)
-  if (!username) {
-    return { profile: null, requestingUserId, sensorsCount: '0', measurementsCount: '0' }
-  }
+	const username = userNameFromURl(params.username as string)
+	if (!username) {
+		return {
+			profile: null,
+			requestingUserId,
+			sensorsCount: '0',
+			measurementsCount: '0',
+		}
+	}
 
-  const profile = await getProfileByUsername(username)
+	const profile = await getProfileByUsername(username)
 
-  if (!profile) return redirect('/explore')
+	if (!profile) return redirect('/explore')
 
-  // Block access only if private AND not the owner
-  if (!profile.public && requestingUserId !== profile.userId) {
-    return redirect('/explore')
-  }
+	// Block access only if private AND not the owner
+	if (!profile.public && requestingUserId !== profile.userId) {
+		return redirect('/explore')
+	}
 
-  const counts = await getProfileSensorsAndMeasurementsCount(profile)
+	const counts = await getProfileSensorsAndMeasurementsCount(profile)
 
-  return {
-    profile,
-    requestingUserId,
-    sensorsCount: counts.sensorsCount,
-    measurementsCount: counts.measurementsCount,
-  }
+	return {
+		profile,
+		requestingUserId,
+		sensorsCount: counts.sensorsCount,
+		measurementsCount: counts.measurementsCount,
+	}
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -122,8 +124,8 @@ export default function ProfilePage() {
 		<div className="h-full bg-slate-100">
 			<NavBar />
 			<div className="flex w-full flex-col gap-6 p-8 md:flex-row md:gap-8 md:pt-4">
-				<div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background md:w-1/3">
-					<div className="flex items-center gap-4 dark:text-dark-text">
+				<div className="dark:bg-dark-background flex w-full flex-col gap-6 rounded-xl bg-white p-6 shadow-lg md:w-1/3">
+					<div className="dark:text-dark-text flex items-center gap-4">
 						<Avatar className="h-16 w-16">
 							{profile?.profileImage?.id ? (
 								<AvatarImage
@@ -136,10 +138,10 @@ export default function ProfilePage() {
 							</AvatarFallback>
 						</Avatar>
 						<div>
-							<h3 className="text-2xl font-semibold dark:text-dark-text">
+							<h3 className="dark:text-dark-text text-2xl font-semibold">
 								{profile?.displayName || ''}
 							</h3>
-							<h4 className="text-lg dark:text-dark-text">
+							<h4 className="dark:text-dark-text text-lg">
 								{profile?.user?.name || ''}
 							</h4>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
@@ -152,24 +154,24 @@ export default function ProfilePage() {
 					</div>
 
 					<div className="grid grid-cols-2 gap-4 md:pt-6">
-						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
-							<span className="text-2xl font-bold dark:text-dark-green">
+						<div className="dark:bg-dark-boxes flex flex-col items-center rounded-lg bg-gray-100 p-4">
+							<span className="dark:text-dark-green text-2xl font-bold">
 								{formatCount(profile?.user?.devices.length || 0)}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
 								{t('devices')}
 							</span>
 						</div>
-						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
-							<span className="text-2xl font-bold dark:text-dark-green">
+						<div className="dark:bg-dark-boxes flex flex-col items-center rounded-lg bg-gray-100 p-4">
+							<span className="dark:text-dark-green text-2xl font-bold">
 								{sensorsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
 								{t('sensors')}
 							</span>
 						</div>
-						<div className="flex flex-col items-center rounded-lg bg-gray-100 p-4 dark:bg-dark-boxes">
-							<span className="text-2xl font-bold dark:text-dark-green">
+						<div className="dark:bg-dark-boxes flex flex-col items-center rounded-lg bg-gray-100 p-4">
+							<span className="dark:text-dark-green text-2xl font-bold">
 								{measurementsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
@@ -180,8 +182,8 @@ export default function ProfilePage() {
 				</div>
 
 				<div className="flex w-full flex-col gap-6 md:w-2/3">
-					<div className="rounded-xl bg-white p-6 shadow-lg dark:bg-dark-background">
-						<div className="mb-4 text-3xl font-semibold text-light-green dark:text-dark-green">
+					<div className="dark:bg-dark-background rounded-xl bg-white p-6 shadow-lg">
+						<div className="text-light-green dark:text-dark-green mb-4 text-3xl font-semibold">
 							{t('devices')}
 						</div>
 
@@ -189,11 +191,11 @@ export default function ProfilePage() {
 							<DataTable
 								columns={getColumns(columnsTranslation, { isOwner })}
 								data={profile.user.devices}
-									getRowClassName={(device) =>
-										device.archivedAt
-											? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
-											: ''
-									}
+								getRowClassName={(device) =>
+									device.archivedAt
+										? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
+										: ''
+								}
 							/>
 						)}
 					</div>

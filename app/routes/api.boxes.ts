@@ -7,7 +7,10 @@ import {
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
 import { type Device, type User } from '~/schema'
-import { BoxesQuerySchema, CreateBoxSchema } from '~/services/device/devices-service.server'
+import {
+	BoxesQuerySchema,
+	CreateBoxSchema,
+} from '~/services/devices-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**

@@ -4,13 +4,17 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { type Route as postSingleRoute } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.$sensorId'
 import { type Route as postMeasurementRoute } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId.data'
 import { BASE_URL } from '../../vitest.setup'
-import { createDevice, deleteDevice, getDevice } from '~/db/models/device.server'
+import {
+	createDevice,
+	deleteDevice,
+	getDevice,
+} from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { drizzleClient } from '~/db.server'
 import { action as postSingleMeasurementAction } from '~/routes/api.boxes.$deviceId.$sensorId'
 import { action as postMeasurementsAction } from '~/routes/api.boxes.$deviceId.data'
 import { location, deviceToLocation, measurement, type User } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const TEST_USER = generateTestUserCredentials()
 

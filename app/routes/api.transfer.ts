@@ -4,7 +4,7 @@ import {
 	createBoxTransfer,
 	removeBoxTransfer,
 	validateTransferParams,
-} from '~/services/transfer/transfer-service.server'
+} from '~/services/transfer-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export const action = async ({ request }: Route.ActionArgs) => {

@@ -7,7 +7,7 @@ import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { loader } from '~/routes/api.boxes.$deviceId.sensors.$sensorId'
 import { type Sensor, type Device } from '~/schema'
-import { registerUser } from '~/services/user/user-service.server'
+import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_SENSORS_ID_USER = generateTestUserCredentials()
 

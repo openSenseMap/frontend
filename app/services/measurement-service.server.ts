@@ -1,6 +1,6 @@
-import { type BoxesDataColumn } from '../../lib/api-schemas/boxes-data-query-schema'
-import { validLngLat } from '../../lib/location'
-import { assertDeviceIsWritable } from '../device/devices-service.server'
+import { type BoxesDataColumn } from '../lib/api-schemas/boxes-data-query-schema'
+import { validLngLat } from '../lib/location'
+import { assertDeviceIsWritable } from './devices-service.server'
 import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
@@ -12,7 +12,10 @@ import {
 	getSensorWithLastMeasurement,
 } from '~/db/models/sensor.server'
 import { type SensorWithLatestMeasurement } from '~/schema'
-import { decodeMeasurements, hasDecoder } from '~/services/decode/decoding-service.server'
+import {
+	decodeMeasurements,
+	hasDecoder,
+} from '~/services/decoding-service.server'
 
 export type DeviceWithSensors = DeviceWithoutSensors & {
 	sensors: SensorWithLatestMeasurement[]
@@ -139,7 +142,7 @@ export const postNewMeasurements = async (
 
 	assertDeviceIsWritable(device)
 
-	if (device.useAuth  && !isTrustedService) {
+	if (device.useAuth && !isTrustedService) {
 		if (device.apiKey !== authorization) {
 			const error = new Error('Device access token not valid!')
 			error.name = 'UnauthorizedError'
@@ -169,7 +172,7 @@ export const postSingleMeasurement = async (
 	sensorId: string,
 	body: SingleMeasurementBody,
 	authorization?: string | null,
-	isTrustedService?: boolean
+	isTrustedService?: boolean,
 ): Promise<void> => {
 	try {
 		if (typeof body.value !== 'number' || isNaN(body.value)) {

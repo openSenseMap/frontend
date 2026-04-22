@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.tags'
-import { getTags } from '~/services/device/device-service.server'
+import { getTags } from '~/services/device-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 export async function loader({}: Route.LoaderArgs) {

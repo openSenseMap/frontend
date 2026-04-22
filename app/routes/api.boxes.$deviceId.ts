@@ -8,7 +8,7 @@ import {
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
 import { type Device, type User } from '~/schema'
-import { deleteDevice } from '~/services/device/devices-service.server'
+import { deleteDevice } from '~/services/devices-service.server'
 import { StandardResponse } from '~/utils/response-utils'
 
 /**
