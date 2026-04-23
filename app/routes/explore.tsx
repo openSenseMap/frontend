@@ -409,12 +409,12 @@ export default function Explore() {
 					{/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-				</Map>
-				<div className="pointer-events-none absolute inset-0 z-10">
-					<div className="pointer-events-auto">
-						<Outlet />
+					<div className="pointer-events-none absolute inset-0 z-10">
+						<div className="pointer-events-auto">
+							<Outlet />
+						</div>
 					</div>
-				</div>
+				</Map>
 			</MapProvider>
 		</div>
 	)
