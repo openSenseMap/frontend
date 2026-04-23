@@ -16,12 +16,12 @@ import {
 	getCurrentEffectiveTos,
 	getTosLocale,
 	getTosRequirementForUser,
-} from '~/models/tos.server'
-import { getUser } from '~/utils/session.server'
+} from '~/db/models/tos.server'
+import { getUser } from '~/services/session-service.server'
 import {
 	getTosFlowSession,
 	tosFlowSessionStorage,
-} from '~/utils/tos-session.server'
+} from '~/services/tos-service.server'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
@@ -161,7 +161,7 @@ export default function TermsPage() {
 		<div className="mx-auto max-w-3xl space-y-6 p-6">
 			<h1 className="text-2xl font-bold">{tos.title}</h1>
 
-			<div className="text-sm text-muted-foreground">
+			<div className="text-muted-foreground text-sm">
 				{t('effectiveFrom', { date: effectiveFromDate })}
 			</div>
 

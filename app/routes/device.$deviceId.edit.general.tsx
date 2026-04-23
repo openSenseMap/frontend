@@ -13,16 +13,16 @@ import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.general'
 import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
-import { updateDevice, deleteDevice } from '~/lib/devices-service.server'
-import { getDevice, getDeviceWithoutSensors } from '~/models/device.server'
-import { verifyLogin } from '~/models/user.server'
-import { type Device } from '~/schema'
+import { getDevice, getDeviceWithoutSensors } from '~/db/models/device.server'
+import { verifyLogin } from '~/db/models/user.server'
+import { type Device } from '~/db/schema'
 import {
 	uploadDeviceImage,
 	deleteDeviceImage,
 	getDeviceImageUrl,
-} from '~/utils/s3.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+} from '~/lib/s3.server'
+import { updateDevice, deleteDevice } from '~/services/devices-service.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -340,7 +340,7 @@ export default function () {
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica">
+				<div className="font-helvetica mx-auto w-full">
 					<Form method="post" encType="multipart/form-data" noValidate>
 						<div>
 							<div className="mt-2 flex justify-between">
@@ -421,23 +421,23 @@ export default function () {
 							</div>
 
 							{/* Description */}
-								<div className="mt-3">
-									<label
-										htmlFor="description"
-										className="txt-base block font-bold tracking-normal"
-									>
-										{t('description')}
-									</label>
+							<div className="mt-3">
+								<label
+									htmlFor="description"
+									className="txt-base block font-bold tracking-normal"
+								>
+									{t('description')}
+								</label>
 
-									<div className="mt-1 grid gap-4 lg:grid-cols-2">
-										<div>
-											<textarea
-												id="description"
-												name="description"
-												maxLength={5000}
-												value={description}
-												onChange={(e) => setDescription(e.target.value)}
-												placeholder={`## My station
+								<div className="mt-1 grid gap-4 lg:grid-cols-2">
+									<div>
+										<textarea
+											id="description"
+											name="description"
+											maxLength={5000}
+											value={description}
+											onChange={(e) => setDescription(e.target.value)}
+											placeholder={`## My station
 
 Installed on the school roof.
 
@@ -446,22 +446,24 @@ Installed on the school roof.
 - Updated regularly
 
 [Project website](https://example.com)`}
-												className="min-h-[220px] w-full rounded border border-gray-200 px-2 py-1.5 font-mono text-base"
-											/>
-											<p className="text-sm text-gray-500">
-												{description.length} / 5000
-											</p>
-											<p className="mt-1 text-sm text-gray-500">
-												{t('markdown_supported')}
-											</p>
-										</div>
+											className="min-h-[220px] w-full rounded border border-gray-200 px-2 py-1.5 font-mono text-base"
+										/>
+										<p className="text-sm text-gray-500">
+											{description.length} / 5000
+										</p>
+										<p className="mt-1 text-sm text-gray-500">
+											{t('markdown_supported')}
+										</p>
+									</div>
 
-										<div>
-											<p className="mb-2 block font-bold tracking-normal">{t('preview')}</p>
-											<MarkdownPreview value={description} />
-										</div>
+									<div>
+										<p className="mb-2 block font-bold tracking-normal">
+											{t('preview')}
+										</p>
+										<MarkdownPreview value={description} />
 									</div>
 								</div>
+							</div>
 
 							{/* Website */}
 							<div className="mt-3">
@@ -504,7 +506,7 @@ Installed on the school roof.
 												<button
 													type="button"
 													onClick={handleRemoveImage}
-													className="hover:bg-red-600 absolute right-0 top-0 rounded-full bg-red-500 p-1 text-white"
+													className="absolute top-0 right-0 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
 												>
 													<X className="h-4 w-4" />
 												</button>
@@ -570,7 +572,7 @@ Installed on the school roof.
 											<button
 												type="button"
 												onClick={() => removeTag(tag)}
-												className="hover:text-red-600 text-gray-600"
+												className="text-gray-600 hover:text-red-600"
 											>
 												<X className="h-3 w-3" />
 											</button>
@@ -606,13 +608,13 @@ Installed on the school roof.
 
 							{/* Delete device */}
 							<div>
-								<h1 className="mt-7 text-3xl text-[#FF4136]">{t('delete_device')}</h1>
+								<h1 className="mt-7 text-3xl text-[#FF4136]">
+									{t('delete_device')}
+								</h1>
 							</div>
 
 							<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-								<p>
-									{t('delete_device_confirm_info')}
-								</p>
+								<p>{t('delete_device_confirm_info')}</p>
 							</div>
 							<div>
 								<input

@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { type Route } from './+types/admin.users._index'
-import { getUsers } from '~/models/user.server'
+import { getUsers } from '~/db/models/user.server'
 
 export async function loader({}: Route.LoaderArgs) {
 	const users = await getUsers()

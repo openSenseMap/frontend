@@ -20,7 +20,7 @@ export default function Features() {
 						{t('description')}
 					</div>
 				</div>
-				<img src="/features.svg" alt="" className="h-1/2 w-1/2" />
+				<img src="/img/features.svg" alt="" className="h-1/2 w-1/2" />
 			</div>
 			<div id="right" className="w-1/2">
 				<div className="grid grid-cols-2 gap-4">

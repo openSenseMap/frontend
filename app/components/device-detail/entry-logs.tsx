@@ -28,7 +28,7 @@ import {
 } from '../ui/tooltip'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { type LogEntry } from '~/schema/log-entry'
+import { type LogEntry } from '~/db/schema/log-entry'
 
 export default function EntryLogs({
 	entryLogs = [],
@@ -44,14 +44,14 @@ export default function EntryLogs({
 				<p className="pb-4 font-bold">Logs</p>
 				<div className="flex items-center">
 					<div className="flex w-full items-start space-x-4">
-						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-muted-foreground text-muted-foreground">
+						<div className="border-muted-foreground text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4">
 							<Activity className="h-5 w-5" />
 						</div>
 						<div className="grow">
 							<p className="mb-2 text-sm font-medium">
 								{entryLogs[entryLogs.length - 1].content}
 							</p>
-							<div className="flex items-center text-xs text-muted-foreground">
+							<div className="text-muted-foreground flex items-center text-xs">
 								<Clock className="mr-1 h-3 w-3" />
 								{new Date(entryLogs[0].createdAt).toLocaleString()}
 							</div>
@@ -96,12 +96,12 @@ export default function EntryLogs({
 			<p className="pb-4 font-bold">Logs</p>
 			<div className="flex items-center">
 				<div className="flex w-full items-start space-x-4">
-					<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary">
-						<Activity className="h-5 w-5 text-primary-foreground" />
+					<div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+						<Activity className="text-primary-foreground h-5 w-5" />
 					</div>
 					<div className="grow">
 						<p className="mb-2 text-sm font-medium">{entryLogs[0].content}</p>
-						<div className="flex items-center text-xs text-muted-foreground">
+						<div className="text-muted-foreground flex items-center text-xs">
 							<Clock className="mr-1 h-3 w-3" />
 							{new Date(entryLogs[0].createdAt).toLocaleString()}
 						</div>
@@ -141,13 +141,13 @@ function LogList({ entryLogs = [] }: { entryLogs: LogEntry[] }) {
 			<div className="space-y-4 pr-4">
 				{entryLogs.map((log, index) => (
 					<div key={log.id} className="relative flex items-start space-x-4">
-						<div className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary">
-							<Activity className="h-5 w-5 text-primary-foreground" />
+						<div className="bg-primary z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+							<Activity className="text-primary-foreground h-5 w-5" />
 						</div>
 						<div className="grow">
 							<Card className="p-4 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 								<p className="mb-2 text-sm font-medium">{log.content}</p>
-								<div className="flex items-center text-xs text-muted-foreground">
+								<div className="text-muted-foreground flex items-center text-xs">
 									<Clock className="mr-1 h-3 w-3" />
 									{new Date(log.createdAt).toLocaleString()}
 								</div>
@@ -155,7 +155,7 @@ function LogList({ entryLogs = [] }: { entryLogs: LogEntry[] }) {
 						</div>
 						{index < entryLogs.length - 1 && (
 							<div
-								className="absolute bottom-0 left-5 top-10 w-px bg-border"
+								className="bg-border absolute top-10 bottom-0 left-5 w-px"
 								aria-hidden="true"
 							/>
 						)}

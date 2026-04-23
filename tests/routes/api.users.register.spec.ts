@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.users.register'
-import { deleteUserByEmail } from '~/models/user.server'
+import { BASE_URL } from '../../vitest.setup'
+import { deleteUserByEmail } from '~/db/models/user.server'
 import { action as registerAction } from '~/routes/api.users.register'
 
 const VALID_USER = generateTestUserCredentials()

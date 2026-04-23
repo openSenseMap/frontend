@@ -27,8 +27,8 @@ import {
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
+import { DeviceModelEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/device.new'
-import { DeviceModelEnum } from '~/schema/enum'
 
 const generalInfoSchema = z.object({
 	name: z

@@ -1,11 +1,11 @@
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.users.me.resend-email-confirmation'
+import { BASE_URL } from '../../vitest.setup'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { type User } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { action } from '~/routes/api.users.me.resend-email-confirmation'
-import { type User } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const RESEND_EMAIL_USER = generateTestUserCredentials()
 

@@ -1,14 +1,14 @@
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.claim'
 import { type Route as TransferRoute } from '../../.react-router/types/app/routes/+types/api.transfer'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, getDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { type Device, type User } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, getDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { action as claimAction } from '~/routes/api.claim'
 import { action as transferAction } from '~/routes/api.transfer'
-import { type Device, type User } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const CLAIM_TEST_USER = generateTestUserCredentials()
 

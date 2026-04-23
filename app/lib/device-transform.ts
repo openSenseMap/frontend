@@ -1,4 +1,4 @@
-import { type Device, type Sensor } from '~/schema'
+import { type Device, type Sensor } from '~/db/schema'
 
 export type DeviceWithSensors = Device & {
 	sensors: Sensor[]

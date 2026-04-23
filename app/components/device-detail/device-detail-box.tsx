@@ -77,9 +77,9 @@ import { useToast } from '../ui/use-toast'
 import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
 import { useGlobalCompareMode } from './useGlobalCompareMode'
+import { type SensorWithLatestMeasurement } from '~/db/schema'
+import { getArchiveLink } from '~/lib/archive-link'
 import { type loader } from '~/routes/explore.$deviceId'
-import { type SensorWithLatestMeasurement } from '~/schema'
-import { getArchiveLink } from '~/utils/device'
 
 export interface MeasurementProps {
 	sensorId: string
@@ -94,7 +94,7 @@ export default function DeviceDetailBox() {
 	const navigate = useNavigate()
 	const matches = useMatches()
 	const { toast } = useToast()
-	const { t } = useTranslation("device-detail-box")
+	const { t } = useTranslation('device-detail-box')
 
 	const sensorIds = new Set()
 
@@ -162,7 +162,6 @@ export default function DeviceDetailBox() {
 		setOffsetPositionY(data.y)
 	}
 
-
 	useEffect(() => {
 		let interval: any = null
 		if (refreshOn) {
@@ -193,16 +192,16 @@ export default function DeviceDetailBox() {
 				>
 					<div
 						ref={nodeRef}
-						className="absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-row px-4 py-2 md:bottom-[30px] md:left-[10px] md:top-auto md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0"
+						className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-row px-4 py-2 md:top-auto md:bottom-[30px] md:left-[10px] md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0"
 					>
 						<div
 							id="deviceDetailBox"
 							className={
-								'shadow-zinc-800/5 ring-zinc-900/5 relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs md:max-h-[calc(100vh-8rem)]'
+								'relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 md:max-h-[calc(100vh-8rem)] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs'
 							}
 						>
 							{navigation.state === 'loading' && (
-								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+								<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 									<Spinner />
 								</div>
 							)}
@@ -213,7 +212,7 @@ export default function DeviceDetailBox() {
 								<div
 									className={
 										data.device.status === 'active'
-											? 'h-4 w-4 rounded-full bg-light-green'
+											? 'bg-light-green h-4 w-4 rounded-full'
 											: 'h-4 w-4 rounded-full bg-red-500'
 									}
 								></div>
@@ -300,19 +299,19 @@ export default function DeviceDetailBox() {
 								/>
 							</div>
 							<div className="no-scrollbar relative flex-1 overflow-y-scroll">
-								<div className="space-y-4 sm:flex sm:space-x-4 sm:space-y-0">
+								<div className="space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
 									<div className="md:w-1/2">
 										{data.deviceImageUrl ? (
-												<img
-													className="w-full rounded-lg object-cover"
-													alt="device_image"
-													src={data.deviceImageUrl}
-												/>
-											) : (
-												<div className="w-full rounded-lg object-cover text-muted-foreground">
-													<ImageIcon strokeWidth={1} className="h-full w-full" />
-												</div>
-											)}
+											<img
+												className="w-full rounded-lg object-cover"
+												alt="device_image"
+												src={data.deviceImageUrl}
+											/>
+										) : (
+											<div className="text-muted-foreground w-full rounded-lg object-cover">
+												<ImageIcon strokeWidth={1} className="h-full w-full" />
+											</div>
+										)}
 									</div>
 									<div className="space-y-2 sm:w-1/2">
 										<InfoItem
@@ -352,11 +351,11 @@ export default function DeviceDetailBox() {
 								{data.device.tags && data.device.tags.length > 0 && (
 									<div className="pt-4">
 										<div className="space-y-2">
-											<div className="text-sm font-medium text-muted-foreground">
+											<div className="text-muted-foreground text-sm font-medium">
 												Tags
 											</div>
 											<div className="flex items-center space-x-2">
-												<Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+												<Hash className="text-muted-foreground h-4 w-4 shrink-0" />
 												<div className="flex flex-wrap gap-2">
 													{data.device.tags.map((tag: string) => (
 														<Badge
@@ -368,7 +367,7 @@ export default function DeviceDetailBox() {
 																	.get('tags')
 																	?.split(',')
 																	.includes(tag)
-																	? 'bg-green-100 dark:bg-dark-green'
+																	? 'dark:bg-dark-green bg-green-100'
 																	: '',
 															)}
 															onClick={(event) => {
@@ -504,7 +503,7 @@ export default function DeviceDetailBox() {
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
-																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
+																						className="text-muted-foreground ml-2 h-4 w-4 shrink-0"
 																					/>
 																				</CardHeader>
 																				<CardContent className="grow">
@@ -513,7 +512,7 @@ export default function DeviceDetailBox() {
 																							{sensor.lastMeasurement?.value ??
 																								'–'}
 																						</div>
-																						<p className="text-xs text-muted-foreground">
+																						<p className="text-muted-foreground text-xs">
 																							{sensor.unit}
 																						</p>
 																					</div>
@@ -524,11 +523,11 @@ export default function DeviceDetailBox() {
 																						<div
 																							className={
 																								sensor.status === 'active'
-																									? 'h-2 w-2 rounded-full bg-light-green'
+																									? 'bg-light-green h-2 w-2 rounded-full'
 																									: 'h-2 w-2 rounded-full bg-red-500'
 																							}
 																						></div>
-																						<p className="text-xs text-muted-foreground">
+																						<p className="text-muted-foreground text-xs">
 																							{sensor.lastMeasurement
 																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
 																								: 'No recent data'}
@@ -581,7 +580,7 @@ export default function DeviceDetailBox() {
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
-																						className="ml-2 h-4 w-4 shrink-0 text-muted-foreground"
+																						className="text-muted-foreground ml-2 h-4 w-4 shrink-0"
 																					/>
 																				</CardHeader>
 																				<CardContent className="grow">
@@ -590,7 +589,7 @@ export default function DeviceDetailBox() {
 																							{sensor.lastMeasurement?.value ??
 																								'–'}
 																						</div>
-																						<p className="text-xs text-muted-foreground">
+																						<p className="text-muted-foreground text-xs">
 																							{sensor.unit}
 																						</p>
 																					</div>
@@ -601,11 +600,11 @@ export default function DeviceDetailBox() {
 																						<div
 																							className={
 																								sensor.status === 'active'
-																									? 'h-2 w-2 rounded-full bg-light-green'
+																									? 'bg-light-green h-2 w-2 rounded-full'
 																									: 'h-2 w-2 rounded-full bg-red-500'
 																							}
 																						></div>
-																						<p className="text-xs text-muted-foreground">
+																						<p className="text-muted-foreground text-xs">
 																							{sensor.lastMeasurement
 																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
 																								: 'No recent data'}
@@ -629,7 +628,7 @@ export default function DeviceDetailBox() {
 				</Draggable>
 			)}
 			{compareMode && (
-				<Alert className="absolute bottom-4 left-1/2 right-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
+				<Alert className="absolute right-1/2 bottom-4 left-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
 					<XSquare
 						className="h-4 w-4 cursor-pointer"
 						onClick={() => {
@@ -648,7 +647,7 @@ export default function DeviceDetailBox() {
 					onClick={() => {
 						setOpen(true)
 					}}
-					className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 sm:bottom-[30px] sm:left-[10px]"
+					className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 sm:bottom-[30px] sm:left-[10px] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
 				>
 					<TooltipProvider>
 						<Tooltip>
@@ -679,9 +678,9 @@ const InfoItem = ({
 }) =>
 	text && (
 		<div className="space-y-1">
-			<div className="text-sm font-medium text-muted-foreground">{title}</div>
+			<div className="text-muted-foreground text-sm font-medium">{title}</div>
 			<div className="flex items-center space-x-2 text-sm">
-				<Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+				<Icon className="text-muted-foreground h-4 w-4 shrink-0" />
 				<span>{text}</span>
 			</div>
 		</div>

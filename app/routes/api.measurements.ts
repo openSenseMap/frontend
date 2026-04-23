@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.measurements'
+import { measurement, type Measurement } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
-import { measurement, type Measurement } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi

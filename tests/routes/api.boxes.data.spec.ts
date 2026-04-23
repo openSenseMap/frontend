@@ -1,15 +1,15 @@
 import { eq } from 'drizzle-orm'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll } from 'vitest'
-import { BASE_URL } from '../../vitest.setup'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.data'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { device, measurement, sensor } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { loader as boxesDataLoader } from '~/routes/api.boxes.data'
-import { device, measurement, sensor } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const BOXES_DATA_TEST_USER = generateTestUserCredentials()
 

@@ -1,14 +1,17 @@
 import { type Route } from './+types/api.boxes'
-import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { BoxesQuerySchema, CreateBoxSchema } from '~/lib/devices-service.server'
-import { getUserFromJwt } from '~/lib/jwt'
 import {
 	createDevice,
 	findDevices,
 	type FindDevicesOptions,
-} from '~/models/device.server'
-import { type Device, type User } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/db/models/device.server'
+import { type Device, type User } from '~/db/schema'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
+import {
+	BoxesQuerySchema,
+	CreateBoxSchema,
+} from '~/services/devices-service.server'
 
 /**
  * @openapi

@@ -13,7 +13,7 @@ import  {
 import { createContext, useContext, useEffect, useMemo } from 'react'
 import { Layer, Popup, Source, useMap } from 'react-map-gl/maplibre'
 import { HIGH_COLOR, LOW_COLOR, createPalette } from './color-palette'
-import  { type Sensor } from '~/schema'
+import { type Sensor } from '~/db/schema'
 
 interface CustomGeoJsonProperties {
 	locationId: number

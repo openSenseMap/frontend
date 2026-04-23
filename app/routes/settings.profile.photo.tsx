@@ -23,13 +23,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui/dialog'
+import { getProfileByUserId } from '~/db/models/profile.server'
+import { getUserById } from '~/db/models/user.server'
+import { profileImage } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
-import { getProfileByUserId } from '~/models/profile.server'
-import { getUserById } from '~/models/user.server'
-import { profileImage } from '~/schema'
-import { uploadHandler } from '~/utils/file-upload.server'
-import { getInitials } from '~/utils/misc'
-import { requireUserId } from '~/utils/session.server'
+import { uploadHandler } from '~/lib/file-upload.server'
+import { getInitials } from '~/lib/strings'
+import { requireUserId } from '~/services/session-service.server'
 
 const MAX_SIZE = 1024 * 1024 * 3 // 3MB
 

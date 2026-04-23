@@ -4,4 +4,5 @@
  *
  * declare module 'react-router' {}
  **/
+
 export {} // necessary for TS to treat this as a module

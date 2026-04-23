@@ -26,15 +26,15 @@ import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import ClusterLayer from '~/components/map/layers/cluster/cluster-layer'
 import Legend, { type LegendValue } from '~/components/map/legend'
+import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
+import { getMeasurement } from '~/db/models/measurement.query.server'
+import { getProfileByUserId } from '~/db/models/profile.server'
+import { getSensors } from '~/db/models/sensor.server'
+import { type Device } from '~/db/schema'
+import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import { getLocale } from '~/middleware/i18next'
-import { getDevices, getDevicesWithSensors } from '~/models/device.server'
-import { getMeasurement } from '~/models/measurement.query.server'
-import { getProfileByUserId } from '~/models/profile.server'
-import { getSensors } from '~/models/sensor.server'
-import { type Device } from '~/schema'
+import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
-import { getCSV, getJSON, getTXT } from '~/utils/file-exports'
-import { getUser, getUserSession } from '~/utils/session.server'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -409,12 +409,12 @@ export default function Explore() {
 					{/* <ClusterLayer
               devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
             /> */}
-				</Map>
-				<div className="pointer-events-none absolute inset-0 z-10">
-					<div className="pointer-events-auto">
-						<Outlet />
+					<div className="pointer-events-none absolute inset-0 z-10">
+						<div className="pointer-events-auto">
+							<Outlet />
+						</div>
 					</div>
-				</div>
+				</Map>
 			</MapProvider>
 		</div>
 	)

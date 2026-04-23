@@ -3,14 +3,14 @@ import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/explore.$deviceId.$sensorId.$'
 import Graph from '~/components/device-detail/graph'
 import MobileBoxView from '~/components/map/layers/mobile/mobile-box-view'
+import { getDevice } from '~/db/models/device.server'
+import { getMeasurement } from '~/db/models/measurement.query.server'
+import { getSensor } from '~/db/models/sensor.server'
+import { type SensorWithMeasurementData } from '~/db/schema'
 import {
 	categorizeIntoTrips,
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
-import { getDevice } from '~/models/device.server'
-import { getMeasurement } from '~/models/measurement.query.server'
-import { getSensor } from '~/models/sensor.server'
-import { type SensorWithMeasurementData } from '~/schema'
 
 interface SensorWithColor extends SensorWithMeasurementData {
 	color: string

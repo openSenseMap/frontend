@@ -28,9 +28,9 @@ import {
 	deleteLogEntry,
 	getLogEntriesByDeviceId,
 	updateLogEntryVisibility,
-} from '~/models/log-entry.server'
-import { type LogEntry } from '~/schema/log-entry'
-import { getUserId } from '~/utils/session.server'
+} from '~/db/models/log-entry.server'
+import { type LogEntry } from '~/db/schema/log-entry'
+import { getUserId } from '~/services/session-service.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
@@ -120,7 +120,7 @@ export default function Logs() {
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica text-[14px]">
+				<div className="font-helvetica mx-auto w-full text-[14px]">
 					<Form method="post" noValidate className="mb-8">
 						{/* Heading */}
 						<div>

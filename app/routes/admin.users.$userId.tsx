@@ -1,14 +1,14 @@
 import { Form, Link, redirect, useActionData } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/admin.users.$userId'
-import { getUserDevices } from '~/models/device.server'
+import { getUserDevices } from '~/db/models/device.server'
 import {
 	deleteUserById,
 	// execUserAdminAction,
 	getUserById,
 	updateUserById,
-} from '~/models/user.server'
-import { adminUserContext } from '~/utils/session.server'
+} from '~/db/models/user.server'
+import { adminUserContext } from '~/services/session-service.server'
 
 type ActionData = {
 	error?: boolean
@@ -155,7 +155,7 @@ export default function AdminUserDetailRoute({
 				<div className="md:grid md:grid-cols-3 md:gap-6">
 					<div className="md:col-span-1">
 						<div className="px-4 sm:px-0">
-							<h3 className="text-lg font-medium leading-6 text-gray-900">
+							<h3 className="text-lg leading-6 font-medium text-gray-900">
 								Personal Information
 							</h3>
 						</div>
@@ -165,7 +165,7 @@ export default function AdminUserDetailRoute({
 						{actionData?.message ? (
 							<p
 								className={
-									actionData.error ? 'text-red-600 mb-4' : 'mb-4 text-green-700'
+									actionData.error ? 'mb-4 text-red-600' : 'mb-4 text-green-700'
 								}
 							>
 								{actionData.message}
@@ -192,7 +192,7 @@ export default function AdminUserDetailRoute({
 													className="mt-1 block w-full rounded-md border-gray-300 shadow-xs sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.name ? (
-													<p className="text-red-600 mt-1 text-sm">
+													<p className="mt-1 text-sm text-red-600">
 														{actionData.fieldErrors.name}
 													</p>
 												) : null}
@@ -213,7 +213,7 @@ export default function AdminUserDetailRoute({
 													className="mt-1 block w-full rounded-md border-gray-300 shadow-xs sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.email ? (
-													<p className="text-red-600 mt-1 text-sm">
+													<p className="mt-1 text-sm text-red-600">
 														{actionData.fieldErrors.email}
 													</p>
 												) : null}
@@ -228,7 +228,7 @@ export default function AdminUserDetailRoute({
 																name="email-confirmed"
 																type="checkbox"
 																defaultChecked={Boolean(user.emailIsConfirmed)}
-																className="text-indigo-600 h-4 w-4 rounded border-gray-300"
+																className="h-4 w-4 rounded border-gray-300 text-indigo-600"
 															/>
 														</div>
 														<div className="ml-3 text-sm">
@@ -258,7 +258,7 @@ export default function AdminUserDetailRoute({
 													className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-xs sm:text-sm"
 												/>
 												{actionData?.fieldErrors?.language ? (
-													<p className="text-red-600 mt-1 text-sm">
+													<p className="mt-1 text-sm text-red-600">
 														{actionData.fieldErrors.language}
 													</p>
 												) : null}
@@ -342,7 +342,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="passwordReset"
-											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs"
+											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700"
 										>
 											Reset password
 										</button>
@@ -351,7 +351,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendWelcomeMail"
-											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs"
+											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700"
 										>
 											Resend Welcome Mail
 										</button>
@@ -360,7 +360,7 @@ export default function AdminUserDetailRoute({
 											type="submit"
 											name="_action"
 											value="resendEmailConfirmation"
-											className="hover:bg-indigo-700 inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs"
+											className="inline-flex justify-center rounded-md border border-transparent bg-violet-700 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700"
 										>
 											Resend Email Confirmation
 										</button>
@@ -408,7 +408,7 @@ export default function AdminUserDetailRoute({
 				<div className="md:grid md:grid-cols-3 md:gap-6">
 					<div className="md:col-span-1">
 						<div className="px-4 sm:px-0">
-							<h3 className="text-lg font-medium leading-6 text-gray-900">
+							<h3 className="text-lg leading-6 font-medium text-gray-900">
 								Devices
 							</h3>
 						</div>
