@@ -20,10 +20,10 @@ import {
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { getUserDevice } from '~/models/device.server'
-import { deleteMeasurementsForDevice } from '~/models/measurement.server'
-import { verifyLogin } from '~/models/user.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+import { getUserDevice } from '~/db/models/device.server'
+import { deleteMeasurementsForDevice } from '~/db/models/measurement.server'
+import { verifyLogin } from '~/db/models/user.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await getUserId(request)
