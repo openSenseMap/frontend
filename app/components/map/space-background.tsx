@@ -7,26 +7,29 @@ export default function SpaceBackground() {
         id: i,
         top: Math.random() * 100,
         left: Math.random() * 100,
-        delay: Math.random() * 5,
         size: Math.random() * 2 + 1,
+        twinkleDelay: Math.random() * 5,
+        driftDuration: 10 + Math.random() * 12,
+        driftX: `${(Math.random() - 0.5) * 10}px`,
+        driftY: `${(Math.random() - 0.5) * 10}px`,
       })),
     [],
   )
 
-  const meteors = useMemo(
+  const shootingStars = useMemo(
     () =>
-      Array.from({ length: 12 }, (_, i) => ({
+      Array.from({ length: 4 }, (_, i) => ({
         id: i,
-        top: Math.random() * 40,
-        left: Math.random() * 140,
-        delay: Math.random() * 30,
-        duration: 2 + Math.random() * 2,
+        top: Math.random() * 45,
+        left: Math.random() * 110,
+        delay: Math.random() * 18,
+        duration: 1 + Math.random() * 1.2,
       })),
     [],
   )
 
   return (
-    <div className="space-bg">
+    <div className="space-bg" aria-hidden="true">
       {stars.map((star) => (
         <span
           key={star.id}
@@ -34,22 +37,25 @@ export default function SpaceBackground() {
           style={{
             top: `${star.top}%`,
             left: `${star.left}%`,
-            width: star.size,
-            height: star.size,
-            animationDelay: `${star.delay}s`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            animationDelay: `${star.twinkleDelay}s`,
+            ['--drift-x' as any]: star.driftX,
+            ['--drift-y' as any]: star.driftY,
+            ['--drift-duration' as any]: `${star.driftDuration}s`,
           }}
         />
       ))}
 
-      {meteors.map((meteor) => (
+      {shootingStars.map((star) => (
         <span
-          key={meteor.id}
-          className="space-meteor"
+          key={star.id}
+          className="space-shooting-star"
           style={{
-            top: `${meteor.top}%`,
-            left: `${meteor.left}%`,
-            animationDelay: `${meteor.delay}s`,
-            animationDuration: `${meteor.duration}s`,
+            top: `${star.top}%`,
+            left: `${star.left}%`,
+            animationDelay: `${star.delay}s`,
+            animationDuration: `${star.duration}s`,
           }}
         />
       ))}

@@ -257,11 +257,9 @@ kbd {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
 }
 
 /* stars */
-
 .space-star {
   position: absolute;
   border-radius: 50%;
@@ -270,22 +268,70 @@ kbd {
   box-shadow:
     0 0 4px rgba(255,255,255,.9),
     0 0 10px rgba(255,255,255,.4);
-  animation: twinkle 4s infinite ease-in-out;
+
+  animation:
+    twinkle 4s infinite ease-in-out,
+    starDrift var(--drift-duration) infinite ease-in-out alternate;
+}
+
+.space-star::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.8);
+  filter: blur(2px);
+  opacity: 0;
+  animation: glowPulse 3s infinite ease-in-out;
+  animation-delay: inherit;
 }
 
 @keyframes twinkle {
-  0%,100% { opacity: .25; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.4); }
+  0%, 100% {
+    opacity: .25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
 }
 
-/* meteors */
+@keyframes glowPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+}
 
-.space-meteor {
+@keyframes starDrift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(var(--drift-x), var(--drift-y), 0);
+  }
+}
+
+/* occasional shooting stars */
+.space-shooting-star {
   position: absolute;
   width: 2px;
-  height: 110px;
+  height: 90px;
   opacity: 0;
   transform: rotate(45deg);
+  transform-origin: center;
+  border-radius: 999px;
+  filter: blur(.4px);
+
   background: linear-gradient(
     to bottom,
     rgba(255,255,255,0),
@@ -293,23 +339,26 @@ kbd {
     rgba(255,255,255,0)
   );
 
-  filter: blur(.4px);
-
-  animation: meteor linear infinite;
+  animation: shootingStar 16s linear infinite;
 }
 
-@keyframes meteor {
+@keyframes shootingStar {
   0% {
     opacity: 0;
-    transform: translate3d(0,0,0) rotate(45deg);
+    transform: translate3d(0, 0, 0) rotate(45deg);
   }
 
-  8% {
-    opacity: 1;
+  3% {
+    opacity: 0.95;
+  }
+
+  9% {
+    opacity: 0;
+    transform: translate3d(-260px, 260px, 0) rotate(45deg);
   }
 
   100% {
     opacity: 0;
-    transform: translate3d(-700px,700px,0) rotate(45deg);
+    transform: translate3d(-260px, 260px, 0) rotate(45deg);
   }
 }
