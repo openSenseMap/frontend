@@ -1,4 +1,4 @@
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import  { type Map as MapLibreMap } from 'maplibre-gl'
 import { forwardRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
