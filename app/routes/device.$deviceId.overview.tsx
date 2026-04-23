@@ -1,20 +1,16 @@
 import { ArrowLeft, ClipboardCopy, CopyCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-	redirect,
-	Link,
-	useLoaderData,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { redirect, Link, useLoaderData } from 'react-router'
+import { type Route } from './+types/device.$deviceId.overview'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { NavBar } from '~/components/nav-bar'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { getDeviceWithoutSensors } from '~/models/device.server'
-import { getSensorsFromDevice } from '~/models/sensor.server'
-import { getUserId } from '~/utils/session.server'
+import { getDeviceWithoutSensors } from '~/db/models/device.server'
+import { getSensorsFromDevice } from '~/db/models/sensor.server'
+import { getUserId } from '~/services/session-service.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -56,7 +52,7 @@ export default function DeviceOverview() {
 	}, [copiedToClipboard])
 
 	return (
-		<div className="space-y-6 px-4 pb-16 font-helvetica sm:px-6 lg:px-8">
+		<div className="font-helvetica space-y-6 px-4 pb-16 sm:px-6 lg:px-8">
 			<NavBar />
 
 			<p className="inline-block rounded p-3 text-[#676767] hover:bg-[#eee]">
@@ -64,7 +60,7 @@ export default function DeviceOverview() {
 				<Link to="/profile/me">{t('back_to_dashboard')}</Link>
 			</p>
 
-			<main className="mx-auto max-w-screen-xl">
+			<main className="mx-auto max-w-(--breakpoint-xl)">
 				<div className="space-y-0.5 text-center">
 					<h2 className="text-3xl font-bold tracking-normal">
 						{t('device_overview')}
@@ -78,14 +74,12 @@ export default function DeviceOverview() {
 					</CardHeader>
 					<CardContent>
 						<Table>
-							<TableBody className="border-[1px]">
+							<TableBody className="border">
 								<TableRow>
-									<TableCell className="border-r-[1px]">
-										{t('name_label')}
-									</TableCell>
-									<TableCell className="border-r-[1px] font-semibold">
+									<TableCell className="border-r">{t('name_label')}</TableCell>
+									<TableCell className="border-r font-semibold">
 										<div className="flex items-center">
-											<div className="flex-grow">{deviceData?.name}</div>
+											<div className="grow">{deviceData?.name}</div>
 											<div>
 												{copiedToClipboard === 'name' ? (
 													<CopyCheck />
@@ -102,37 +96,31 @@ export default function DeviceOverview() {
 								</TableRow>
 
 								<TableRow>
-									<TableCell className="border-r-[1px]">
-										{t('model_label')}
-									</TableCell>
-									<TableCell className="border-r-[1px] font-semibold">
+									<TableCell className="border-r">{t('model_label')}</TableCell>
+									<TableCell className="border-r font-semibold">
 										{deviceData?.model}
 									</TableCell>
 								</TableRow>
 
 								<TableRow>
-									<TableCell className="border-r-[1px]">
-										{t('tags_label')}
-									</TableCell>
-									<TableCell className="border-r-[1px] font-semibold">
-										{deviceData?.tags}
+									<TableCell className="border-r">{t('tags_label')}</TableCell>
+									<TableCell className="border-r font-semibold">
+										{deviceData?.tags?.join(', ')}
 									</TableCell>
 								</TableRow>
 
 								<TableRow>
-									<TableCell className="border-r-[1px]">
-										{t('exposure')}
-									</TableCell>
-									<TableCell className="border-r-[1px] font-semibold">
+									<TableCell className="border-r">{t('exposure')}</TableCell>
+									<TableCell className="border-r font-semibold">
 										{deviceData?.exposure}
 									</TableCell>
 								</TableRow>
 
 								<TableRow>
-									<TableCell className="border-r-[1px]">ID</TableCell>
-									<TableCell className="border-r-[1px] font-semibold">
+									<TableCell className="border-r">ID</TableCell>
+									<TableCell className="border-r font-semibold">
 										<div className="flex items-center">
-											<div className="flex-grow">{deviceData?.id}</div>
+											<div className="grow">{deviceData?.id}</div>
 											<div>
 												{copiedToClipboard === 'id' ? (
 													<CopyCheck />
@@ -150,12 +138,12 @@ export default function DeviceOverview() {
 
 								{userId === deviceData?.userId && (
 									<TableRow>
-										<TableCell className="border-r-[1px]">
+										<TableCell className="border-r">
 											{t('api_key_label')}
 										</TableCell>
-										<TableCell className="border-r-[1px] font-semibold">
+										<TableCell className="border-r font-semibold">
 											<div className="flex items-center">
-												<div className="flex-grow">{deviceData?.apiKey}</div>
+												<div className="grow">{deviceData?.apiKey}</div>
 												<div>
 													{copiedToClipboard === 'apiKey' ? (
 														<CopyCheck />
@@ -182,15 +170,13 @@ export default function DeviceOverview() {
 					</CardHeader>
 					<CardContent className="pt-0">
 						<Table>
-							<TableBody className="border-[1px]">
+							<TableBody className="border">
 								{sensorsData.map((sensor) => (
 									<TableRow key={sensor.id}>
-										<TableCell className="border-r-[1px]">
-											{sensor?.title}
-										</TableCell>
-										<TableCell className="border-r-[1px] font-semibold">
+										<TableCell className="border-r">{sensor?.title}</TableCell>
+										<TableCell className="border-r font-semibold">
 											<div className="flex items-center">
-												<div className="flex-grow">{sensor?.id}</div>
+												<div className="grow">{sensor?.id}</div>
 												<div>
 													{copiedToClipboard ===
 													`${sensor?.title}_${sensor?.id}` ? (

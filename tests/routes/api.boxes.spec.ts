@@ -1,12 +1,12 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from 'vitest.setup'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { type Device, type User } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import { loader, action } from '~/routes/api.boxes'
-import { type Device, type User } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const BOXES_TEST_USER = generateTestUserCredentials()
 const generateMinimalDevice = (
@@ -33,11 +33,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			BOXES_TEST_USER.email,
 			BOXES_TEST_USER.password,
 			'en_US',
-			true
+			true,
 		)
 
 		expect(registration.ok).toBe(true)
-		
+
 		if (!registration.ok) {
 			throw new Error(
 				`Test setup failed: ${registration.field} -> ${registration.code}`,
@@ -87,7 +87,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const response: any = await loader({
 				request: request,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 
 			expect(response).toBeDefined()
 			expect(Array.isArray(response?.features)).toBe(true)
@@ -108,7 +108,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			await expect(async () => {
 				await loader({
 					request: request,
-				} as LoaderFunctionArgs)
+				} as Route.LoaderArgs)
 			}).rejects.toThrow()
 		})
 
@@ -126,7 +126,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			await expect(async () => {
 				await loader({
 					request: request,
-				} as LoaderFunctionArgs)
+				} as Route.LoaderArgs)
 			}).rejects.toThrow()
 		})
 
@@ -140,7 +140,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const response: any = await loader({
 				request: request,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 
 			// Assert
 			expect(response).toBeDefined()
@@ -185,7 +185,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const response: any = await loader({
 				request: request,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 
 			// Assert
 			expect(response).toBeDefined()
@@ -240,7 +240,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			await expect(async () => {
 				await loader({
 					request: request,
-				} as LoaderFunctionArgs)
+				} as Route.LoaderArgs)
 			}).rejects.toThrow()
 		})
 
@@ -254,7 +254,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			try {
 				await loader({
 					request: request,
-				} as LoaderFunctionArgs)
+				} as Route.LoaderArgs)
 				expect(true).toBe(false)
 			} catch (error) {
 				expect(error).toBeInstanceOf(Response)
@@ -275,7 +275,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const geojsonData: any = await loader({
 				request: request,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 
 			expect(geojsonData).toBeDefined()
 			if (geojsonData) {
@@ -303,7 +303,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			// Act
-			const response = await loader({ request } as LoaderFunctionArgs)
+			const response = await loader({ request } as Route.LoaderArgs)
 
 			// Handle case where loader returned a Response (e.g. validation error)
 			const data =
@@ -335,7 +335,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const response: any = await loader({
 				request: request,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 
 			expect(response).toBeDefined()
 
@@ -373,7 +373,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			await expect(async () => {
 				await loader({
 					request: request,
-				} as LoaderFunctionArgs)
+				} as Route.LoaderArgs)
 			}).rejects.toThrow()
 		})
 
@@ -387,7 +387,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			try {
 				await loader({
 					request: request,
-				} as LoaderFunctionArgs)
+				} as Route.LoaderArgs)
 				expect(true).toBe(false)
 			} catch (error) {
 				expect(error).toBeInstanceOf(Response)
@@ -408,7 +408,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const geojsonData: any = await loader({
 				request: request,
-			} as LoaderFunctionArgs)
+			} as Route.LoaderArgs)
 
 			expect(geojsonData).toBeDefined()
 			if (geojsonData) {
@@ -464,7 +464,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			if (body._id) {
@@ -499,7 +499,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			if (body._id) {
@@ -530,7 +530,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(403)
@@ -555,7 +555,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(403)
@@ -578,7 +578,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(400)
@@ -604,7 +604,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(400)
@@ -624,7 +624,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(400)
@@ -649,7 +649,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			if (body._id) {
@@ -680,7 +680,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const response = (await action({
 				request: request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const responseData = await response.json()
 			await deleteDevice({ id: responseData._id })
 
@@ -713,7 +713,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			// Act
 			const response = (await action({
 				request: request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const responseData = await response.json()
 			await deleteDevice({ id: responseData._id })
 
@@ -752,7 +752,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			try {
-				await action({ request } as ActionFunctionArgs)
+				await action({ request } as Route.ActionArgs)
 			} catch (error) {
 				if (error instanceof Response) {
 					expect(error.status).toBe(422)
@@ -795,7 +795,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			try {
 				await action({
 					request: request,
-				} as ActionFunctionArgs)
+				} as Route.ActionArgs)
 			} catch (error) {
 				if (error instanceof Response) {
 					expect(error.status).toBe(400)
@@ -819,7 +819,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(405)
@@ -838,7 +838,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(405)
@@ -855,7 +855,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(405)
@@ -874,7 +874,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			const response = (await action({
 				request,
-			} as ActionFunctionArgs)) as Response
+			} as Route.ActionArgs)) as Response
 			const body = await response.json()
 
 			expect(response.status).toBe(405)

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { calculateColorRange } from './color-palette'
 import MobileBoxLayer from './mobile-box-layer'
 import { Button } from '~/components/ui/button'
-import { type Sensor } from '~/schema'
+import { type Sensor } from '~/db/schema'
 
 interface SensorWithColor extends Sensor {
 	color: string // Add the color property
@@ -28,7 +28,7 @@ export default function MobileBoxView({
 	}
 
 	return (
-		<div className="absolute right-0 top-10 flex flex-col gap-4 p-4">
+		<div className="absolute top-10 right-0 flex flex-col gap-4 p-4">
 			{sensors.map((sensor, index) => (
 				<div key={index} className="flex flex-col items-center gap-4">
 					{index === 1 && sensors.length === 2 && (
@@ -100,17 +100,13 @@ function Legend({
 		onColorChange && onColorChange(minColor, maxColor)
 	}, [minColor, maxColor, onColorChange])
 
-	const sensorData = sensor.data! as unknown as {
-		value: String
-		location: { x: number; y: number; id: number }
-		createdAt: Date
-	}[]
+	const sensorData = Array.isArray(sensor.data) ? sensor.data : []
 
 	const minValue = Math.min(...sensorData.map((d) => Number(d.value)))
 	const maxValue = Math.max(...sensorData.map((d) => Number(d.value)))
 
 	return (
-		<div className="z-50 flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-sm">
+		<div className="z-50 flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-xs">
 			<span className="font-semibold">{sensor.title}</span>
 			<div
 				className="flex w-full items-center justify-between rounded-sm p-1"
@@ -119,7 +115,7 @@ function Legend({
 				}}
 			>
 				<div
-					className="cursor-pointer rounded bg-white px-0.5 shadow-sm"
+					className="cursor-pointer rounded bg-white px-0.5 shadow-xs"
 					onClick={() => minColorInputRef.current?.click()}
 				>
 					{minValue}
@@ -133,7 +129,7 @@ function Legend({
 					/>
 				</div>
 				<span
-					className="cursor-pointer rounded bg-white px-0.5 shadow-sm"
+					className="cursor-pointer rounded bg-white px-0.5 shadow-xs"
 					onClick={() => maxColorInputRef.current?.click()}
 				>
 					{maxValue}

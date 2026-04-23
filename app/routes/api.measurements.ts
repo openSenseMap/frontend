@@ -1,7 +1,7 @@
-import { type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.measurements'
+import { measurement, type Measurement } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
-import { measurement, type Measurement } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi
@@ -82,7 +82,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *           description: Measured value
  *           example: 25.4
  */
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	if (request.method !== 'POST')
 		return StandardResponse.methodNotAllowed('Method not allowed')
 

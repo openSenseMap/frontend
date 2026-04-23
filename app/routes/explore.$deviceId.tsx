@@ -4,14 +4,14 @@ import { type Route } from './+types/explore.$deviceId'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
+import { getDevice } from '~/db/models/device.server'
+import { getSensorsWithLastMeasurement } from '~/db/models/sensor.server'
 import {
 	categorizeIntoTrips,
 	type LocationPoint,
 } from '~/lib/mobile-box-helper'
+import { getDeviceImageUrl } from '~/lib/s3.server'
 import { getLocale } from '~/middleware/i18next'
-import { getDevice } from '~/models/device.server'
-import { getSensorsWithLastMeasurement } from '~/models/sensor.server'
-import { getDeviceImageUrl } from '~/utils/s3.server'
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
@@ -108,11 +108,17 @@ export default function DeviceId() {
 				value={{ hoveredPoint, setHoveredPoint: setHoveredPointDebug }}
 			>
 				{/* If the box is mobile, iterate over selected sensors and show trajectory */}
-				{data.device?.exposure === 'mobile' && !isSensorView && (
-					<MobileOverviewLayer
-						locations={data.device.locations as unknown as LocationPoint[]}
-					/>
-				)}
+				{data.device?.exposure === 'mobile' &&
+					!isSensorView &&
+					Array.isArray(data.device?.locations) &&
+					data.device.locations.length > 0 && (
+						<MobileOverviewLayer
+							locations={data.device.locations.map((location) => ({
+								time: String(location.time),
+								geometry: location.geometry,
+							}))}
+						/>
+					)}
 				<DeviceDetailBox />
 				<Outlet />
 			</HoveredPointContext.Provider>

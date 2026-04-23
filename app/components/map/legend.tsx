@@ -51,7 +51,7 @@ export default function Legend({ title, values }: LegendProps) {
 				ref={nodeRef}
 				defaultValue="item-1"
 				onValueChange={() => setIsOpen(!isOpen)}
-				className="absolute bottom-[15%] right-4 z-10 w-1/5 rounded-lg bg-white shadow"
+				className="absolute bottom-[15%] right-4 z-10 w-1/5 rounded-lg bg-white shadow-sm"
 			>
 				<AccordionItem value="item-1">
 					<AccordionTrigger
@@ -62,7 +62,7 @@ export default function Legend({ title, values }: LegendProps) {
 					</AccordionTrigger>
 					<AccordionContent>
 						<div className="mx-5 px-4">
-							<div className="relative h-[3.625rem]">
+							<div className="relative h-14.5">
 								{values?.map((v, i) => {
 									return (
 										<div
@@ -74,7 +74,7 @@ export default function Legend({ title, values }: LegendProps) {
 										>
 											<svg
 												viewBox="0 0 32 34"
-												className={`w-8 flex-none drop-shadow`}
+												className={`w-8 flex-none drop-shadow-sm`}
 												fill={v.color}
 											>
 												<path d="M1 4a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v19.6a4 4 0 0 1-2.118 3.53L16 34 3.118 27.13A4 4 0 0 1 1 23.6V4Z" />

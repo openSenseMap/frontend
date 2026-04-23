@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.css?url'
 import moment from 'moment'
-import { Map, MapProvider, Marker } from 'react-map-gl'
+import { Map, MapProvider, Marker } from 'react-map-gl/mapbox'
 import { type LinksFunction } from 'react-router'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
@@ -218,7 +218,7 @@ export default function DeviceDashboard() {
 											<span className="align-bottom text-[18px]">
 												{sensor.title}{' '}
 											</span>
-											<span className="rounded border px-[2px] py-[1px] text-xs">
+											<span className="rounded border px-[2px] py-px text-xs">
 												{sensor.sensorType}
 											</span>
 										</CardDescription>

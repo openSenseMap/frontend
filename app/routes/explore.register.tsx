@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type LoaderFunctionArgs,
 	type MetaFunction,
 	data,
 	redirect,
@@ -25,14 +24,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
-import { registerUser } from '~/lib/user-service.server'
+import { getCurrentEffectiveTos } from '~/db/models/tos.server'
+import { getUserByEmail, getUserByUsername } from '~/db/models/user.server'
 import { getLocale } from '~/middleware/i18next'
-import { getCurrentEffectiveTos } from '~/models/tos.server'
-import { getUserByEmail, getUserByUsername } from '~/models/user.server'
+import { createUserSession, getUserId } from '~/services/session-service.server'
+import { registerUser } from '~/services/user-service.server'
 import { safeRedirect, validateEmail, validateName } from '~/utils'
-import { createUserSession, getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (userId) return redirect('/')
 	return {}
@@ -204,6 +203,10 @@ export async function action({ context, request }: Route.ActionArgs) {
 		)
 	}
 
+	if (!result.emailSent) {
+		return data({ emailDeliveryFailed: true }, { status: 200 })
+	}
+
 	return createUserSession({
 		request,
 		userId: result.user.id,
@@ -226,14 +229,55 @@ export default function RegisterDialog() {
 	const passwordRef = React.useRef<HTMLInputElement>(null)
 
 	React.useEffect(() => {
-		if (actionData?.errors?.username) {
-			usernameRef.current?.focus()
-		} else if (actionData?.errors?.email) {
-			emailRef.current?.focus()
-		} else if (actionData?.errors?.password) {
-			passwordRef.current?.focus()
+		if (actionData && 'errors' in actionData) {
+			if (actionData.errors?.username) {
+				usernameRef.current?.focus()
+			} else if (actionData.errors?.email) {
+				emailRef.current?.focus()
+			} else if (actionData.errors?.password) {
+				passwordRef.current?.focus()
+			}
 		}
 	}, [actionData])
+
+	const actionErrors =
+		actionData && 'errors' in actionData ? actionData.errors : undefined
+
+	if (
+		actionData &&
+		'emailDeliveryFailed' in actionData &&
+		actionData.emailDeliveryFailed
+	) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<Link
+					to={{
+						pathname: '/explore',
+						search: searchParams.toString(),
+					}}
+				>
+					<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
+				</Link>
+				<Card className="z-50 w-full max-w-md">
+					<CardHeader>
+						<CardTitle className="text-2xl font-bold">
+							{t('account_created')}
+						</CardTitle>
+						<CardDescription>
+							{t('email_delivery_failed_description')}
+						</CardDescription>
+					</CardHeader>
+					<CardFooter className="flex flex-col items-center gap-2">
+						<Link to="/explore/login" className="w-full">
+							<Button className="bg-light-blue w-full">
+								{t('go_to_login')}
+							</Button>
+						</Link>
+					</CardFooter>
+				</Card>
+			</div>
+		)
+	}
 
 	return (
 		<div className="flex h-screen items-center justify-center">
@@ -247,7 +291,7 @@ export default function RegisterDialog() {
 			</Link>
 			<Card className="z-50 w-full max-w-md">
 				{navigation.state === 'loading' && (
-					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
 					</div>
 				)}
@@ -269,12 +313,12 @@ export default function RegisterDialog() {
 								type="text"
 								autoFocus={true}
 							/>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{t('username_hint')}
 							</p>
-							{actionData?.errors?.username && (
+							{actionErrors?.username && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
-									{t(actionData.errors.username)}
+									{t(actionErrors?.username)}
 								</div>
 							)}
 						</div>
@@ -289,12 +333,12 @@ export default function RegisterDialog() {
 								autoFocus={true}
 								name="email"
 								autoComplete="email"
-								aria-invalid={actionData?.errors?.email ? true : undefined}
+								aria-invalid={actionErrors?.email ? true : undefined}
 								aria-describedby="email-error"
 							/>
-							{actionData?.errors?.email && (
+							{actionErrors?.email && (
 								<div className="mt-1 text-sm text-red-500" id="email-error">
-									{t(actionData.errors.email)}
+									{t(actionErrors?.email)}
 								</div>
 							)}
 						</div>
@@ -307,27 +351,25 @@ export default function RegisterDialog() {
 								ref={passwordRef}
 								name="password"
 								autoComplete="new-password"
-								aria-invalid={actionData?.errors?.password ? true : undefined}
+								aria-invalid={actionErrors?.password ? true : undefined}
 								aria-describedby="password-error"
 							/>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{t('password_hint')}
 							</p>
-							{actionData?.errors?.password && (
+							{actionErrors?.password && (
 								<div className="mt-1 text-sm text-red-500" id="password-error">
-									{t(actionData.errors.password)}
+									{t(actionErrors?.password)}
 								</div>
 							)}
 						</div>
-						<div className="flex items-start gap-2">
+						<div className="flex items-center gap-2">
 							<input
 								id="tosAccepted"
 								name="tosAccepted"
 								type="checkbox"
-								className="mt-1 h-4 w-4"
-								aria-invalid={
-									actionData?.errors?.tosAccepted ? true : undefined
-								}
+								className="h-4 w-4"
+								aria-invalid={actionErrors?.tosAccepted ? true : undefined}
 								aria-describedby="tos-error"
 							/>
 							<Label htmlFor="tosAccepted" className="text-sm leading-5">
@@ -343,15 +385,30 @@ export default function RegisterDialog() {
 								{t('agree_tos_suffix')}
 							</Label>
 						</div>
-						{actionData?.errors?.tosAccepted && (
+						<div className="flex items-center gap-2">
+							<Label className="text-sm leading-5">
+								{t('privacy_policy_prefix')}{' '}
+								<Link
+									to="/privacy"
+									className="underline"
+									target="_blank"
+									rel="noreferrer"
+								>
+									{t('privacy_policy')}
+								</Link>
+								{'.'}
+							</Label>
+						</div>
+
+						{actionErrors?.tosAccepted && (
 							<div className="mt-1 text-sm text-red-500" id="tos-error">
-								{t(actionData.errors.tosAccepted)}
+								{t(actionErrors?.tosAccepted)}
 							</div>
 						)}
 					</CardContent>
 					<CardFooter className="flex flex-col items-center gap-2">
-						<Button className="w-full bg-light-blue">{t('register')}</Button>
-						<div className="text-sm text-muted-foreground">
+						<Button className="bg-light-blue w-full">{t('register')}</Button>
+						<div className="text-muted-foreground text-sm">
 							{t('already_account')}{' '}
 							<Link to="/explore/login" className="underline">
 								{t('login')}

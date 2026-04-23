@@ -1,28 +1,32 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.users.me.boxes'
+import { getUserDevices } from '~/db/models/device.server'
+import { enrichDevicesWithIntegrations } from '~/db/models/integration.server'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { getUserFromJwt } from '~/lib/jwt'
-import { getUserDevices } from '~/models/device.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
-export const loader: LoaderFunction = async ({
-	request,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 
-		if (typeof jwtResponse === 'string')
+		if (typeof jwtResponse === 'string') {
 			return StandardResponse.forbidden(
 				'Invalid JWT authorization. Please sign in to obtain new JWT.',
 			)
+		}
 
 		const userBoxes = await getUserDevices(jwtResponse.id)
-		const cleanedBoxes = userBoxes.map((box) => transformDeviceToApiFormat(box))
+		const transformedBoxes = userBoxes.map((box) =>
+			transformDeviceToApiFormat(box),
+		)
+		const boxesWithIntegrations =
+			await enrichDevicesWithIntegrations(transformedBoxes)
 
 		return StandardResponse.ok({
 			code: 'Ok',
 			data: {
-				boxes: cleanedBoxes,
-				boxes_count: cleanedBoxes.length,
+				boxes: boxesWithIntegrations,
+				boxes_count: boxesWithIntegrations.length,
 				sharedBoxes: [],
 			},
 		})

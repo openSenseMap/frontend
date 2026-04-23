@@ -39,6 +39,8 @@
   "sending": "Wird gesendet...",
   "verification_email_sent": "Bestätigungs-E-Mail gesendet",
   "verification_email_failed": "Bestätigungs-E-Mail konnte nicht gesendet werden.",
+  "email_change_delivery_failed": "E-Mail-Adresse aktualisiert, aber wir konnten keine Bestätigungs-E-Mail senden. Bitte nutze die Schaltfläche zum erneuten Senden.",
+  "verification_link_invalid": "Der Bestätigungslink ist ungültig oder abgelaufen.",
   "email_already_confirmed": "E-Mail ist bereits bestätigt.",
   "language": "Sprache",
   "select_language": "Wähle die Sprache aus",

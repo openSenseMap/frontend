@@ -7,11 +7,9 @@ import {
 	MapProvider,
 	Marker,
 	NavigationControl,
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 import {
-	type ActionFunctionArgs,
 	type LinksFunction,
-	type LoaderFunctionArgs,
 	redirect,
 	Form,
 	useActionData,
@@ -20,14 +18,15 @@ import {
 } from 'react-router'
 
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.location'
 import {
 	getDeviceWithoutSensors,
 	updateDeviceLocation,
-} from '~/models/device.server'
-import { getUserId } from '~/utils/session.server'
+} from '~/db/models/device.server'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -55,7 +54,7 @@ export const links: LinksFunction = () => {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const { latitude, longitude } = Object.fromEntries(formData)
 
@@ -102,7 +101,7 @@ export default function EditLocation() {
 		<div className="grid grid-rows-1">
 			{/* location form */}
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica text-[14px]">
+				<div className="font-helvetica mx-auto w-full text-[14px]">
 					{/* Form */}
 					<Form method="post" noValidate>
 						{/* Heading */}
@@ -192,7 +191,7 @@ export default function EditLocation() {
 											className={
 												'w-full rounded border border-gray-200 px-2 py-1 text-base' +
 												(!marker.latitude
-													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000]'
+													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 													: '')
 											}
 										/>
@@ -230,7 +229,7 @@ export default function EditLocation() {
 											className={
 												'w-full rounded border border-gray-200 px-2 py-1 text-base' +
 												(!marker.longitude
-													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow focus:shadow-[#FF0000]'
+													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 													: '')
 											}
 										/>
@@ -245,7 +244,7 @@ export default function EditLocation() {
 										longitude: device?.longitude,
 									})
 								}}
-								className="mb-10 mt-4 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline"
+								className="mt-4 mb-10 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline"
 							>
 								Reset location
 							</button>

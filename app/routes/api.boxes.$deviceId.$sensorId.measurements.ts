@@ -1,15 +1,15 @@
-import { type ActionFunctionArgs } from 'react-router'
 import z from 'zod'
-import { getUserFromJwt } from '~/lib/jwt'
-import { getUserDevices } from '~/models/device.server'
+import { type Route } from './+types/api.boxes.$deviceId.$sensorId.measurements'
+import { getUserDevices } from '~/db/models/device.server'
 import {
 	deleteMeasurementsForSensor,
 	deleteSensorMeasurementsForTimeRange,
 	deleteSensorMeasurementsForTimes,
-} from '~/models/measurement.server'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/db/models/measurement.server'
+import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	try {
 		const { deviceId, sensorId } = params
 		if (!deviceId || !sensorId)
@@ -143,7 +143,7 @@ const parseQueryParams = async (
 	const parseResult = DeleteQueryParams.safeParse(params)
 
 	if (!parseResult.success) {
-		const firstError = parseResult.error.errors[0]
+		const firstError = parseResult.error.issues[0]
 		const message = firstError.message || 'Invalid query parameters'
 		throw StandardResponse.badRequest(message)
 	}

@@ -13,23 +13,17 @@ import {
 	Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
-import {
-	redirect,
-	Link,
-	Outlet,
-	useParams,
-	type LoaderFunctionArgs,
-	useLoaderData,
-} from 'react-router'
+import { redirect, Link, Outlet, useParams, useLoaderData } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit'
 import { EditDeviceSidebarNav } from '~/components/mydevices/edit-device/edit-device-sidebar-nav'
 import { NavBar } from '~/components/nav-bar'
 import { Separator } from '~/components/ui/separator'
+import { getIntegrations } from '~/db/models/integration.server'
 import { getLucideIcon } from '~/lib/lucide-icon-map'
-import { getIntegrations } from '~/models/integration.server'
-import { getUserId } from '~/utils/session.server'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -99,7 +93,7 @@ export default function EditBox() {
 	]
 
 	return (
-		<div className="space-y-6 px-10 pb-16 font-helvetica">
+		<div className="font-helvetica space-y-6 px-10 pb-16">
 			<NavBar />
 
 			{/*Toast notification */}
@@ -110,7 +104,7 @@ export default function EditBox() {
 						duration={3000}
 						onOpenChange={setToastOpen}
 						className={clsx(
-							'inset-x-4 bottom-4 z-50 w-auto rounded-lg border-[1px] border-[#bce8f1] shadow-lg md:bottom-auto md:left-auto md:right-4 md:top-4 md:w-full',
+							'inset-x-4 bottom-4 z-50 w-auto rounded-lg border border-[#bce8f1] shadow-lg md:top-4 md:right-4 md:bottom-auto md:left-auto md:w-full',
 							'bg-[#d9edf7] dark:bg-gray-800',
 							'radix-state-open:animate-toast-slide-in-bottom md:radix-state-open:animate-toast-slide-in-right',
 							'radix-state-closed:animate-toast-hide',
@@ -119,7 +113,7 @@ export default function EditBox() {
 							'radix-swipe-direction-down:radix-swipe-end:animate-toast-swipe-out-y',
 							'radix-swipe-direction-down:translate-y-radix-toast-swipe-move-y',
 							'radix-swipe-cancel:translate-x-0 radix-swipe-cancel:duration-200 radix-swipe-cancel:ease-&lsqb;ease&rsqb;',
-							'focus-visible:ring-purple-500 focus:outline-none focus-visible:ring focus-visible:ring-opacity-75',
+							'focus-visible:ring-opacity-75 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-purple-500',
 						)}
 					>
 						<div className="flex">
@@ -159,7 +153,7 @@ export default function EditBox() {
 				<p className="text-muted-foreground">Manage your device data.</p>
 			</div>
 			<Separator />
-			<div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
+			<div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
 				{/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
 				<aside className="-mx-4 lg:w-1/5">
 					<EditDeviceSidebarNav items={sidebarNavItems} />

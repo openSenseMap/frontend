@@ -1,18 +1,15 @@
 import { eq } from 'drizzle-orm'
-import { type AppLoadContext } from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { describe, it, expect, beforeAll } from 'vitest'
-import { BASE_URL } from 'vitest.setup'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.data'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { device, measurement, sensor } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
-import {
-	loader as boxesDataLoader,
-	action as boxesDataAction,
-} from '~/routes/api.boxes.data'
-import { device, measurement, sensor, type User } from '~/schema'
+import { loader as boxesDataLoader } from '~/routes/api.boxes.data'
+import { registerUser } from '~/services/user-service.server'
 
 const BOXES_DATA_TEST_USER = generateTestUserCredentials()
 
@@ -30,7 +27,6 @@ const TEST_BOX = {
 
 describe('openSenseMap API: /boxes/data', () => {
 	let jwt = ''
-	let user: User
 	let deviceId = ''
 	let outdoorDeviceId = ''
 	let sensorId = ''
@@ -45,7 +41,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			BOXES_DATA_TEST_USER.email,
 			BOXES_DATA_TEST_USER.password,
 			'en_US',
-			true
+			true,
 		)
 		expect(registration.ok).toBe(true)
 
@@ -130,11 +126,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		const text = await res.text()
 
 		expect(res.status).toBe(200)
@@ -152,11 +144,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		const text = await res.text()
 
 		expect(res.status).toBe(200)
@@ -173,11 +161,8 @@ describe('openSenseMap API: /boxes/data', () => {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
+
 		expect(res.status).toBe(200)
 		expect(res.headers.get('content-type')).toBe('application/json')
 
@@ -202,11 +187,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		const text = await res.text()
 		const lines = text.trim().split('\n').slice(1) // Skip header
 
@@ -228,16 +209,12 @@ describe('openSenseMap API: /boxes/data', () => {
 			},
 		)
 
-		const response = await boxesDataAction({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
-		const text = (await response.text()).trim()
+		const text = (await res.text()).trim()
 		const lines = text.split('\n').slice(1)
 
-		expect(response.status).toBe(200)
+		expect(res.status).toBe(200)
 		expect(lines).toHaveLength(expectedMeasurementsCount)
 	})
 
@@ -253,11 +230,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		const text = (await res.text()).trim()
 		const [header, ...lines] = text.split('\n')
 
@@ -287,11 +260,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		expect(res.status).toBe(200)
 		expect(res.headers.get('content-type')).toBe('text/csv')
@@ -325,11 +294,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		const cd = res.headers.get('content-disposition')
 
 		expect(cd).toMatch(/opensensemap_org-download-Temperatur/)
@@ -341,11 +306,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			{ headers: { Authorization: `Bearer ${jwt}` } },
 		)
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		const cd = res.headers.get('content-disposition')
 
@@ -363,11 +324,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		let res: Response
 		try {
-			res = await boxesDataLoader({
-				request: req,
-				params: {},
-				context: {} as AppLoadContext,
-			})
+			res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		} catch (response) {
 			res = response as Response
 		}
@@ -383,11 +340,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			`${BASE_URL}/boxes/data/?phenomenon=Temperatur&bbox=-180,-90,180,90`,
 		)
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		expect(res.status).toBe(200)
 
@@ -407,11 +360,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		let res: Response
 		try {
-			res = await boxesDataLoader({
-				request: req,
-				params: {},
-				context: {} as AppLoadContext,
-			})
+			res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		} catch (response) {
 			res = response as Response
 		}
@@ -427,11 +376,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		let res: Response
 		try {
-			res = await boxesDataLoader({
-				request: req,
-				params: {},
-				context: {} as AppLoadContext,
-			})
+			res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 		} catch (response) {
 			res = response as Response
 		}
@@ -453,11 +398,7 @@ describe('openSenseMap API: /boxes/data', () => {
 			headers: { Authorization: `Bearer ${jwt}` },
 		})
 
-		const res = await boxesDataLoader({
-			request: req,
-			params: {},
-			context: {} as AppLoadContext,
-		})
+		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		expect(res.status).toBe(200)
 		expect(res.headers.get('content-type')).toBe('application/json')

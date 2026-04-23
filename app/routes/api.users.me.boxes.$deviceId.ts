@@ -1,13 +1,9 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.users.me.boxes.$deviceId'
+import { getDevice } from '~/db/models/device.server'
 import { getUserFromJwt } from '~/lib/jwt'
-import { getDevice } from '~/models/device.server'
-import { user } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
-export const loader: LoaderFunction = async ({
-	request,
-	params,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request, params }: Route.LoaderArgs) => {
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 

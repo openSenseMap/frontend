@@ -96,7 +96,7 @@ export default function Menu() {
 					{user && (
 						<DropdownMenuGroup>
 							{navigation.state === 'loading' && (
-								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
 									<Spinner />
 								</div>
 							)}
@@ -129,14 +129,6 @@ export default function Menu() {
 						</DropdownMenuGroup>
 					)}
 					<DropdownMenuGroup>
-						<Link to="https://docs.sensebox.de/" target="_blank">
-							<DropdownMenuItem className="cursor-pointer">
-								<Puzzle className="mr-2 h-5 w-5" />
-								<span>{t('tutorials_label')}</span>
-								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
-							</DropdownMenuItem>
-						</Link>
-
 						<Link to="https://docs.opensensemap.org/" target="_blank">
 							<DropdownMenuItem className="cursor-pointer">
 								<Globe className="mr-2 h-5 w-5" />
@@ -155,12 +147,7 @@ export default function Menu() {
 						</Link>
 					</DropdownMenuGroup>
 					<DropdownMenuGroup>
-						<Link
-							to={
-								'/terms'
-							}
-							target="_blank"
-						>
+						<Link to={'/terms'} target="_blank">
 							<DropdownMenuItem
 								onSelect={(e) => e.preventDefault()}
 								className="cursor-pointer"
@@ -209,7 +196,7 @@ export default function Menu() {
 									onClick={() => setOpen(false)}
 									className="w-full cursor-pointer"
 								>
-									<button className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
+									<button className="relative flex w-full select-none items-center rounded-sm text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
 										<LogIn className="mr-2 h-5 w-5" />
 										<span className="text-light-green">{t('login_label')}</span>
 									</button>
@@ -229,7 +216,7 @@ export default function Menu() {
 									<input type="hidden" name="redirectTo" value={redirectTo} />
 									<button
 										type="submit"
-										className="relative flex w-full select-none items-center rounded-sm text-sm outline-none transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+										className="relative flex w-full select-none items-center rounded-sm text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
 										disabled={isLoggingOut}
 									>
 										<LogOut className="mr-2 h-5 w-5" />

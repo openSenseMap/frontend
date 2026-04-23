@@ -8,11 +8,8 @@ import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 import { ScrollArea } from '~/components/ui/scroll-area'
+import { sensorWikiLabel, type SensorWikiLabel } from '~/lib/sensor-wiki'
 import { type loader } from '~/routes/explore'
-import {
-	sensorWikiLabel,
-	type SensorWikiLabel,
-} from '~/utils/sensor-wiki-helper'
 
 export function PhenomenonSelect() {
 	const data = useLoaderData<typeof loader>()
@@ -49,7 +46,7 @@ export function PhenomenonSelect() {
 	return (
 		<div className="flex h-full flex-1 flex-col justify-around gap-2 dark:text-zinc-200">
 			{navigation.state === 'loading' && (
-				<div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-100/30 backdrop-blur-[1.5px]">
 					<Spinner />
 				</div>
 			)}
@@ -75,12 +72,12 @@ export function PhenomenonSelect() {
         </div>
       </ScrollArea>
       <div className="flex justify-between py-1">
-        <Label className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base leading-[2.2]">
+        <Label className="rounded-[5px] border border-slate-200 px-2 py-px text-base leading-[2.2]">
           Results {data.filteredDevices.features.length}
         </Label>
         <Button
           variant="outline"
-          className=" px-2 py-[1px] text-base rounded-[5px] border-[1px] border-[#e2e8f0]"
+          className=" px-2 py-px text-base rounded-[5px] border border-slate-200"
           onClick={() => {
             searchParams.delete("exposure");
             searchParams.delete("status");

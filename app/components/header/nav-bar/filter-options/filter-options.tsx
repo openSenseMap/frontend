@@ -6,7 +6,10 @@ import Spinner from '../../../spinner'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
-import { type DeviceExposureType, type DeviceStatusType } from '~/schema/enum'
+import {
+	type DeviceExposureType,
+	type DeviceStatusType,
+} from '~/db/schema/enum'
 
 export default function FilterOptions() {
 	const { setOpen } = useContext(NavbarContext)
@@ -61,7 +64,7 @@ export default function FilterOptions() {
 	return (
 		<div className="flex h-full flex-1 flex-col justify-around gap-2 dark:text-zinc-200">
 			{navigation.state === 'loading' && (
-				<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 					<Spinner />
 				</div>
 			)}
@@ -151,7 +154,7 @@ export default function FilterOptions() {
 			<div className="flex justify-end gap-4 align-bottom">
 				<Button
 					variant="outline"
-					className="rounded-[5px] border-[1px] border-[#e2e8f0] px-2 py-[1px] text-base"
+					className="rounded-[5px] border border-slate-200 px-2 py-px text-base"
 					onClick={handleResetFilters}
 				>
 					<span className="flex items-center">
@@ -159,7 +162,7 @@ export default function FilterOptions() {
 					</span>
 				</Button>
 				<Button
-					className="rounded-[5px] px-2 py-[1px] text-base"
+					className="rounded-[5px] px-2 py-px text-base"
 					onClick={handleApplyChanges}
 					disabled={!isChanged}
 				>

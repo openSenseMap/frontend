@@ -1,8 +1,8 @@
-import { type ActionFunctionArgs } from "react-router";
+import { type Route } from "./+types/api.users.me.accept-tos";
+import { getCurrentEffectiveTos, markTosAccepted } from "~/db/models/tos.server";
 import { getUserFromJwt } from "~/lib/jwt";
-import { getCurrentEffectiveTos, markTosAccepted } from "~/models/tos.server";
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }

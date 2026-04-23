@@ -1,8 +1,8 @@
-import { type LoaderFunctionArgs } from 'react-router'
-import { getTags } from '~/lib/device-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { type Route } from './+types/api.tags'
+import { StandardResponse } from '~/lib/responses'
+import { getTags } from '~/services/device-service.server'
 
-export async function loader({}: LoaderFunctionArgs) {
+export async function loader({}: Route.LoaderArgs) {
 	try {
 		const tags = await getTags()
 		return StandardResponse.ok({

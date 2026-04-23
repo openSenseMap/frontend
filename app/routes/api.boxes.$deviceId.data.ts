@@ -1,7 +1,7 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
-import { postNewMeasurements } from '~/lib/measurement-service.server'
-import { isValidServiceKey } from '~/models/integration.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { type Route } from './+types/api.boxes.$deviceId.data'
+import { isValidServiceKey } from '~/db/models/integration.server'
+import { StandardResponse } from '~/lib/responses'
+import { postNewMeasurements } from '~/services/measurement-service.server'
 
 /**
  * @openapi
@@ -18,10 +18,10 @@ import { StandardResponse } from '~/utils/response-utils'
  *          type: string
  *        description: alternative HTTP header for authorizing your device if you cannot use the HTTP Authorization header
  */
-export const action: ActionFunction = async ({
+export const action = async ({
 	request,
 	params,
-}: ActionFunctionArgs): Promise<Response> => {
+}: Route.ActionArgs): Promise<Response> => {
 	try {
 		const deviceId = params.deviceId
 		if (deviceId === undefined)
@@ -74,6 +74,17 @@ export const action: ActionFunction = async ({
 
 		if (err.name === 'UnsupportedMediaTypeError')
 			return StandardResponse.unsupportedMediaType(err.message)
+
+		if (err.name === 'ArchivedDeviceError')
+			return new Response(
+				JSON.stringify({
+					message: err.message || 'Archived devices are read-only',
+				}),
+				{
+					status: 409,
+					headers: { 'Content-Type': 'application/json; charset=utf-8' },
+				},
+			)
 
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',

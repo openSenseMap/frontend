@@ -1,8 +1,8 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.users.register'
 import { createToken } from '~/lib/jwt'
 import { parseUserRegistrationData } from '~/lib/request-parsing'
-import { registerUser } from '~/lib/user-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
+import { registerUser } from '~/services/user-service.server'
 
 function mapRegistrationError(code: string): string {
 	switch (code) {
@@ -30,9 +30,7 @@ function mapRegistrationError(code: string): string {
 	}
 }
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	if (request.method !== 'POST') {
 		return StandardResponse.methodNotAllowed('')
 	}
@@ -45,7 +43,13 @@ export const action: ActionFunction = async ({
 		const password = data.password
 		const language = data.language as 'de_DE' | 'en_US'
 
-		const registration = await registerUser(username, email, password, language, true)
+		const registration = await registerUser(
+			username,
+			email,
+			password,
+			language,
+			true,
+		)
 
 		if (!registration.ok) {
 			return StandardResponse.badRequest(

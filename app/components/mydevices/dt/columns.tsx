@@ -18,7 +18,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 
 export type SenseBox = {
 	id: string
@@ -26,6 +26,7 @@ export type SenseBox = {
 	exposure: Device['exposure']
 	createdAt: Date
 	archivedAt: Date | null
+	model: Device['model']
 	// model: string;
 }
 
@@ -68,7 +69,7 @@ export function getColumns(
 							{device.name}
 						</span>
 						{isArchived ? (
-							<span className="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
+							<span className="text-muted-foreground rounded-md border px-2 py-0.5 text-xs">
 								{t('archived')}
 							</span>
 						) : null}
@@ -129,7 +130,7 @@ export function getColumns(
 		{
 			accessorKey: 'id',
 			header: () => (
-				<div className="pl-0 dark:text-white">{t('sensebox_id')}</div>
+				<div className="pl-0 dark:text-white">{t('device_id')}</div>
 			),
 			cell: ({ row }) => {
 				const device = row.original
@@ -141,7 +142,7 @@ export function getColumns(
 						</code>
 						<ClipboardCopy
 							onClick={() => navigator.clipboard.writeText(device?.id)}
-							className="ml-[6px] mr-1 inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
+							className="mr-1 ml-[6px] inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
 						/>
 					</div>
 				)
@@ -195,15 +196,19 @@ export function getColumns(
 										</a>
 									)}
 								</DropdownMenuItem>
-								<DropdownMenuItem disabled={isArchived} asChild>
-									<a
-										href="https://sensebox.de/de/go-home"
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{t('support')}
-									</a>
-								</DropdownMenuItem>
+								{((device.model?.toLowerCase() ?? '').indexOf('sensebox') >=
+									0 ||
+									(device.model?.toLowerCase() ?? '').indexOf('home') >= 0) && (
+									<DropdownMenuItem disabled={isArchived} asChild>
+										<a
+											href="https://sensebox.de/de/go-home"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{t('support')}
+										</a>
+									</DropdownMenuItem>
+								)}
 								<DropdownMenuItem
 									asChild
 									onClick={() => navigator.clipboard.writeText(device.id)}

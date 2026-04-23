@@ -1,7 +1,7 @@
 import {
+	type LayerSpecification,
 	type Map as MapboxMap,
-	type AnyLayer,
-	type MapboxEvent,
+	type MapEvent,
 } from 'mapbox-gl'
 import { forwardRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,7 +10,7 @@ import {
 	type MapRef,
 	NavigationControl,
 	Map as ReactMap,
-} from 'react-map-gl'
+} from 'react-map-gl/mapbox'
 
 const Map = forwardRef<MapRef, MapProps>(
 	({ children, mapStyle, ...props }, ref) => {
@@ -26,7 +26,7 @@ const Map = forwardRef<MapRef, MapProps>(
 
 				const mapboxLocale = locale.split('-')[0]
 
-				style.layers.forEach((layer: AnyLayer) => {
+				style.layers.forEach((layer: LayerSpecification) => {
 					if (!('layout' in layer) || !layer.layout) return
 
 					const layout = layer.layout as Record<string, unknown>
@@ -59,7 +59,7 @@ const Map = forwardRef<MapRef, MapProps>(
 		)
 
 		const handleMapLoad = useCallback(
-			(event: MapboxEvent<undefined>) => {
+			(event: {target: MapboxMap}) => {
 				updateMapLanguage(event.target as MapboxMap, i18n.language)
 			},
 			[updateMapLanguage, i18n.language],
