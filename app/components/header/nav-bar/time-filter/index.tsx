@@ -161,12 +161,12 @@ export function TimeFilter(props: TimeFilterProps) {
 									</div>
 								) : (
 									<div className="flex shrink grow basis-10 flex-row items-center justify-center">
-										<div className="mr-2 shrink grow-0 basis-0 text-4xl font-thin capitalize text-green-100">
+										<div className="mr-2 shrink grow-0 basis-0 text-4xl font-thin text-green-100 capitalize">
 											{props.singleDate?.getDate() < 10
 												? '0' + props.singleDate?.getDate()
 												: props.singleDate?.getDate()}
 										</div>
-										<div className="flex flex-col justify-center text-sm font-light leading-4">
+										<div className="flex flex-col justify-center text-sm leading-4 font-light">
 											<div className="capitalize">
 												{new Intl.DateTimeFormat(
 													userLocaleString === 'de' ? 'de' : 'en-GB',
@@ -174,7 +174,7 @@ export function TimeFilter(props: TimeFilterProps) {
 												).format(props.singleDate)}{' '}
 												{props.singleDate?.getFullYear()}
 											</div>
-											<div className="text-left text-xs capitalize text-gray-400">
+											<div className="text-left text-xs text-gray-400 capitalize">
 												{new Intl.DateTimeFormat(
 													userLocaleString === 'de' ? 'de' : 'en-GB',
 													{ weekday: 'long' },
@@ -273,12 +273,12 @@ export function TimeFilter(props: TimeFilterProps) {
 								) : (
 									<div className="flex justify-around">
 										<div className="flex shrink grow basis-10 flex-row items-center justify-center">
-											<div className="mr-2 shrink grow-0 basis-0 text-4xl font-thin capitalize text-green-100">
+											<div className="mr-2 shrink grow-0 basis-0 text-4xl font-thin text-green-100 capitalize">
 												{props.dateRange?.from?.getDate() < 10
 													? '0' + props.dateRange.from?.getDate()
 													: props.dateRange.from?.getDate()}
 											</div>
-											<div className="flex flex-col justify-center text-sm font-light leading-4">
+											<div className="flex flex-col justify-center text-sm leading-4 font-light">
 												<div className="capitalize">
 													{new Intl.DateTimeFormat(
 														userLocaleString === 'de' ? 'de' : 'en-GB',
@@ -286,7 +286,7 @@ export function TimeFilter(props: TimeFilterProps) {
 													).format(props.dateRange.from)}{' '}
 													{props.dateRange.from?.getFullYear()}
 												</div>
-												<div className="text-left text-xs capitalize text-gray-400">
+												<div className="text-left text-xs text-gray-400 capitalize">
 													{new Intl.DateTimeFormat(
 														userLocaleString === 'de' ? 'de' : 'en-GB',
 														{ weekday: 'long' },
@@ -296,19 +296,19 @@ export function TimeFilter(props: TimeFilterProps) {
 										</div>
 
 										<div className="flex items-center justify-center">
-											<div className="mr-2 text-4xl font-thin capitalize text-gray-200">
+											<div className="mr-2 text-4xl font-thin text-gray-200 capitalize">
 												-
 											</div>
 										</div>
 
 										{props.dateRange.to !== undefined ? (
 											<div className="flex shrink grow basis-10 flex-row items-center justify-center">
-												<div className="mr-2 shrink grow-0 basis-0 text-4xl font-thin capitalize text-green-100">
+												<div className="mr-2 shrink grow-0 basis-0 text-4xl font-thin text-green-100 capitalize">
 													{props.dateRange.to?.getDate() < 10
 														? '0' + props.dateRange.to?.getDate()
 														: props.dateRange.to?.getDate()}
 												</div>
-												<div className="flex flex-col justify-center text-sm font-light leading-4">
+												<div className="flex flex-col justify-center text-sm leading-4 font-light">
 													<div className="capitalize">
 														{new Intl.DateTimeFormat(
 															userLocaleString === 'de' ? 'de' : 'en-GB',
@@ -316,7 +316,7 @@ export function TimeFilter(props: TimeFilterProps) {
 														).format(props.dateRange.to)}{' '}
 														{props.dateRange.to?.getFullYear()}
 													</div>
-													<div className="text-left text-xs capitalize text-gray-400">
+													<div className="text-left text-xs text-gray-400 capitalize">
 														{new Intl.DateTimeFormat(
 															userLocaleString === 'de' ? 'de' : 'en-GB',
 															{ weekday: 'long' },

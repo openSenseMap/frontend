@@ -59,7 +59,7 @@ const Map = forwardRef<MapRef, MapProps>(
 		)
 
 		const handleMapLoad = useCallback(
-			(event: {target: MapboxMap}) => {
+			(event: { target: MapboxMap }) => {
 				updateMapLanguage(event.target as MapboxMap, i18n.language)
 			},
 			[updateMapLanguage, i18n.language],

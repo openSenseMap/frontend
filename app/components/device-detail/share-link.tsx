@@ -10,7 +10,7 @@ export default function ShareLink() {
 		<div className="my-4">
 			<div className="my-4 flex justify-around">
 				{/* <!--FACEBOOK ICON--> */}
-				<div className="hover:shadow-blue-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-blue-200 fill-[#1877f2] shadow-xl hover:bg-[#1877f2] hover:fill-white">
+				<div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-blue-200 fill-[#1877f2] shadow-xl hover:bg-[#1877f2] hover:fill-white hover:shadow-blue-500/50">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -21,7 +21,7 @@ export default function ShareLink() {
 					</svg>
 				</div>
 				{/* <!--TWITTER ICON--> */}
-				<div className="hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-blue-200 fill-[#1d9bf0] shadow-xl hover:bg-[#1d9bf0] hover:fill-white">
+				<div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-blue-200 fill-[#1d9bf0] shadow-xl hover:bg-[#1d9bf0] hover:fill-white hover:shadow-sky-500/50">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -32,7 +32,7 @@ export default function ShareLink() {
 					</svg>
 				</div>
 				{/* <!--INSTAGRAM ICON--> */}
-				<div className="border-pink-200 hover:shadow-pink-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#bc2a8d] shadow-xl hover:bg-[#bc2a8d] hover:fill-white">
+				<div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-pink-200 fill-[#bc2a8d] shadow-xl hover:bg-[#bc2a8d] hover:fill-white hover:shadow-pink-500/50">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -45,7 +45,7 @@ export default function ShareLink() {
 					</svg>
 				</div>
 				{/* <!--WHATSAPP ICON--> */}
-				<div className="hover:shadow-green-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-green-200 fill-[#25D366] shadow-xl hover:bg-[#25D366] hover:fill-white">
+				<div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-green-200 fill-[#25D366] shadow-xl hover:bg-[#25D366] hover:fill-white hover:shadow-green-500/50">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -60,7 +60,7 @@ export default function ShareLink() {
 					</svg>
 				</div>
 				{/* <!--TELEGRAM ICON--> */}
-				<div className="border-sky-200 hover:shadow-sky-500/50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border fill-[#229ED9] shadow-xl hover:bg-[#229ED9] hover:fill-white">
+				<div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-sky-200 fill-[#229ED9] shadow-xl hover:bg-[#229ED9] hover:fill-white hover:shadow-sky-500/50">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -88,7 +88,7 @@ export default function ShareLink() {
 							description: 'Go ahead and share your link! 🎉',
 						})
 					}}
-					className="inline-flex h-9 transform items-center justify-center rounded-md bg-primary px-2 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-transform active:scale-75"
+					className="bg-primary text-primary-foreground inline-flex h-9 transform items-center justify-center rounded-md px-2 py-2 text-sm font-medium shadow-sm transition-transform active:scale-75"
 				>
 					<Copy className="mr-2 h-5 w-5" />
 					Copy

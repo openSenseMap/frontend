@@ -135,7 +135,7 @@ export function DataTable<TData, TValue>({
 							<TableRow>
 								<TableCell
 									colSpan={columns.length}
-									className="h-24 text-center dark:text-dark-text"
+									className="dark:text-dark-text h-24 text-center"
 								>
 									{t('no_results')}
 								</TableCell>
@@ -145,7 +145,7 @@ export function DataTable<TData, TValue>({
 				</Table>
 			</div>
 
-			<div className="flex justify-center py-4 dark:text-dark-text">
+			<div className="dark:text-dark-text flex justify-center py-4">
 				<div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
 					<div className="flex flex-wrap items-center space-x-2">
 						<span className="text-sm font-medium">{t('rows_per_page')}</span>
@@ -155,7 +155,7 @@ export function DataTable<TData, TValue>({
 								table.setPageSize(Number(value))
 							}}
 						>
-							<SelectTrigger className="h-8 w-16 dark:border-dark-text">
+							<SelectTrigger className="dark:border-dark-text h-8 w-16">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>

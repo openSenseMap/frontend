@@ -52,7 +52,7 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 		email: data.email || '',
 		password: data.password || '',
 		language: data.language || 'en_US',
-		tosAccepted: data.tosAccepted || false
+		tosAccepted: data.tosAccepted || false,
 	}
 }
 

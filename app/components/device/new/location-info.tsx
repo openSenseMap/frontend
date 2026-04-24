@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
-
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
 	const { register, setValue, watch } = useFormContext()
