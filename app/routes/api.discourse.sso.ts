@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 import invariant from 'tiny-invariant'
-import { getUser } from '~/utils/session.server'
+import { getUser } from '~/services/session-service.server'
 
 invariant(
 	process.env.DISCOURSE_CONNECT_SECRET,
