@@ -3,6 +3,7 @@
 	"recommendations": [
 		"esbenp.prettier-vscode",
 		"bradlc.vscode-tailwindcss",
-		"lokalise.i18n-ally"
+		"lokalise.i18n-ally",
+		"oxc.oxc-vscode"
 	]
 }
