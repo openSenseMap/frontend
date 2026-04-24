@@ -1,5 +1,10 @@
-import { defineConfig } from "oxfmt";
+import epicOxfmt from '@epic-web/config/oxfmt'
+import { defineConfig } from 'oxfmt'
 
 export default defineConfig({
-  printWidth: 80,
-});
+	...epicOxfmt,
+	ignorePatterns: [
+		...(epicOxfmt.ignorePatterns ?? []),
+		'**/.react-router/**',
+	],
+})
