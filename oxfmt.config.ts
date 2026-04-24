@@ -5,6 +5,7 @@ export default defineConfig({
 	...epicOxfmt,
 	ignorePatterns: [
 		...(epicOxfmt.ignorePatterns ?? []),
-		'**/.react-router/**',
+		'db/seeds/**',
+		'app/db/drizzle/**',
 	],
 })
