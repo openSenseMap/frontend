@@ -15,7 +15,7 @@ const Command = React.forwardRef<
 	<CommandPrimitive
 		ref={ref}
 		className={cn(
-			'flex h-full w-full flex-col overflow-hidden rounded-md bg-white text-slate-950 dark:bg-dark-background dark:text-slate-50',
+			'dark:bg-dark-background flex h-full w-full flex-col overflow-hidden rounded-md bg-white text-slate-950 dark:text-slate-50',
 			className,
 		)}
 		{...props}
@@ -29,7 +29,7 @@ const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
 	return (
 		<Dialog {...props}>
 			<DialogContent className="overflow-hidden p-0 shadow-lg">
-				<Command className="**:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-slate-500 dark:**:[[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 **:[[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 **:[[cmdk-input]]:h-12 **:[[cmdk-item]]:px-2 **:[[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+				<Command className="[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-slate-500 dark:**:[[cmdk-group-heading]]:text-slate-400 **:[[cmdk-group]]:px-2 **:[[cmdk-input]]:h-12 **:[[cmdk-item]]:px-2 **:[[cmdk-item]]:py-3">
 					{children}
 				</Command>
 			</DialogContent>
@@ -62,7 +62,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<CommandPrimitive.List
 		ref={ref}
-		className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
+		className={cn('max-h-[300px] overflow-x-hidden overflow-y-auto', className)}
 		{...props}
 	/>
 ))
@@ -118,7 +118,7 @@ const CommandItem = React.forwardRef<
 	<CommandPrimitive.Item
 		ref={ref}
 		className={cn(
-			"relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden aria-selected:bg-slate-100 aria-selected:text-slate-900 data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50 dark:aria-selected:bg-slate-800 dark:aria-selected:text-slate-50",
+			"relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none aria-selected:bg-slate-100 aria-selected:text-slate-900 data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50 dark:aria-selected:bg-slate-800 dark:aria-selected:text-slate-50",
 			className,
 		)}
 		{...props}

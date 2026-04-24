@@ -20,11 +20,11 @@ export const profile = pgTable('profile', {
 	public: boolean('public').default(false),
 	userId: text('user_id')
 		.notNull()
-		.unique()	
+		.unique()
 		.references(() => user.id, {
 			onDelete: 'cascade',
 			onUpdate: 'cascade',
-	}),
+		}),
 })
 
 /**

@@ -439,28 +439,28 @@ export default function MobileOverviewLayer({
 					anchor="top"
 				>
 					<div className="mb-2 flex items-center justify-center">
-						<CalendarClock className="h-4 w-4 text-primary" />
+						<CalendarClock className="text-primary h-4 w-4" />
 					</div>
 					<div className="space-y-1 text-center">
 						{popupInfo.isCluster && (
 							<div className="mb-2">
-								<p className="text-xs font-medium text-muted-foreground">
+								<p className="text-muted-foreground text-xs font-medium">
 									Cluster of {popupInfo.pointCount} points
 								</p>
 							</div>
 						)}
 						<div>
-							<p className="text-sm font-bold text-primary">
+							<p className="text-primary text-sm font-bold">
 								{format(new Date(popupInfo.startTime), 'Pp')}
 							</p>
 						</div>
 						{popupInfo.isCluster &&
 							popupInfo.startTime !== popupInfo.endTime && (
 								<div>
-									<span className="text-xs font-medium text-muted-foreground">
+									<span className="text-muted-foreground text-xs font-medium">
 										To
 									</span>
-									<p className="text-sm font-bold text-primary">
+									<p className="text-primary text-sm font-bold">
 										{format(new Date(popupInfo.endTime), 'Pp')}
 									</p>
 								</div>

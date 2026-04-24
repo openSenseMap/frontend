@@ -211,7 +211,7 @@ export default function DeviceDashboard() {
 								>
 									<CardHeader>
 										<CardTitle className="mb-2">
-											<sensor.icon className="h-5.5 w-5.5 mr-2 inline align-bottom" />
+											<sensor.icon className="mr-2 inline h-5.5 w-5.5 align-bottom" />
 											{sensor.lastMeasurement.value} {sensor.unit}
 										</CardTitle>
 										<CardDescription>

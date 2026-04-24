@@ -64,7 +64,7 @@ describe('parseUserRegistrationData', () => {
 			email: 'john@example.com',
 			password: 'password123',
 			language: 'de_DE',
-			tosAccepted: true
+			tosAccepted: true,
 		}
 		const request = new Request('http://localhost', {
 			method: 'POST',
@@ -78,7 +78,7 @@ describe('parseUserRegistrationData', () => {
 			email: 'john@example.com',
 			password: 'password123',
 			language: 'de_DE',
-			tosAccepted: true
+			tosAccepted: true,
 		})
 	})
 
@@ -87,7 +87,7 @@ describe('parseUserRegistrationData', () => {
 			name: 'john_doe',
 			email: 'john@example.com',
 			password: 'password123',
-			tosAccepted: true
+			tosAccepted: true,
 		}
 		const request = new Request('http://localhost', {
 			method: 'POST',
@@ -101,7 +101,7 @@ describe('parseUserRegistrationData', () => {
 			email: 'john@example.com',
 			password: 'password123',
 			language: 'en_US',
-			tosAccepted: true
+			tosAccepted: true,
 		})
 	})
 })

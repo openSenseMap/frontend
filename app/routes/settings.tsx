@@ -11,10 +11,10 @@ export default function SettingsLayoutPage() {
 	const { t } = useTranslation('settings')
 
 	return (
-		<div className="h-screen bg-gray-100 dark:bg-dark-background dark:text-dark-text">
+		<div className="dark:bg-dark-background dark:text-dark-text h-screen bg-gray-100">
 			<NavBar />
-			<div className="flex w-full items-start justify-center bg-gray-100 py-10 dark:bg-dark-background">
-				<div className="w-full max-w-3xl rounded-lg bg-transparent p-6 dark:bg-transparent dark:text-dark-text dark:shadow-none">
+			<div className="dark:bg-dark-background flex w-full items-start justify-center bg-gray-100 py-10">
+				<div className="dark:text-dark-text w-full max-w-3xl rounded-lg bg-transparent p-6 dark:bg-transparent dark:shadow-none">
 					<Tabs
 						className="w-full"
 						defaultValue="account"

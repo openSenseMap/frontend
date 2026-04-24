@@ -60,7 +60,7 @@ export default function FilterTags() {
 	return (
 		<div className="flex h-full flex-1 flex-col justify-around gap-2 dark:text-zinc-200">
 			{navigation.state === 'loading' && (
-				<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 					<Spinner />
 				</div>
 			)}

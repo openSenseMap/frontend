@@ -19,7 +19,7 @@ export function EditDeviceSidebarNav({
 	return (
 		<nav
 			className={cn(
-				'grid space-x-2 sm:flex sm:flex-row lg:flex lg:flex-col lg:space-x-0 lg:space-y-1',
+				'grid space-x-2 sm:flex sm:flex-row lg:flex lg:flex-col lg:space-y-1 lg:space-x-0',
 				className,
 			)}
 			{...props}

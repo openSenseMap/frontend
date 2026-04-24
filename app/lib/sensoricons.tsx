@@ -22,31 +22,31 @@ function getIcon(iconName: string) {
 	switch (iconName) {
 		case 'ThermometerIcon':
 			return (
-				<ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<ThermometerIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 		case 'Wifi':
 			return (
-				<Wifi className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<Wifi className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 		case 'WindIcon':
 			return (
-				<WindIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<WindIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 		case 'Droplets':
 			return (
-				<Droplets className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<Droplets className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 		case 'Tornado':
 			return (
-				<Tornado className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<Tornado className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 		case 'SunMoonIcon':
 			return (
-				<SunMoonIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<SunMoonIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 		case 'MicIcon':
 			return (
-				<MicIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+				<MicIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 			)
 	}
 }
@@ -57,7 +57,7 @@ function assignIcon(sensorType: string, sensorTitle: string) {
 		sensorTitle === 'Temperatur'
 	) {
 		return (
-			<ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+			<ThermometerIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 		)
 	} else if (
 		sensorType === 'HDC1008' ||
@@ -65,23 +65,23 @@ function assignIcon(sensorType: string, sensorTitle: string) {
 		sensorTitle === 'Luftfeuchtigkeit'
 	) {
 		return (
-			<Droplets className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+			<Droplets className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 		)
 	} else if (sensorType === 'LM386') {
 		return (
-			<ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+			<ThermometerIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 		)
 	} else if (sensorType === 'BMP280' && sensorTitle === 'Luftdruck') {
 		return (
-			<ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+			<ThermometerIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 		)
 	} else if (sensorType === 'TSL45315' || sensorType === 'VEML6070') {
 		return (
-			<SunMoonIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+			<SunMoonIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 		)
 	} else
 		return (
-			<ThermometerIcon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+			<ThermometerIcon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 		)
 }
 

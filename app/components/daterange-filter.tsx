@@ -109,7 +109,7 @@ export function DateRangeFilter() {
 				align="start"
 				side="bottom"
 			>
-				<div className="flex flex-col rounded ring-1 dark:bg-dark-background dark:ring-white">
+				<div className="dark:bg-dark-background flex flex-col rounded ring-1 dark:ring-white">
 					<div className="flex">
 						<div className="flex flex-col">
 							<div className="flex h-11 items-center justify-around border-b">
@@ -156,7 +156,7 @@ export function DateRangeFilter() {
 					</div>
 					<div className="flex w-full items-center justify-evenly py-2 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
 						<PopoverClose
-							className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+							className="bg-primary text-primary-foreground ring-offset-background hover:bg-primary/90 focus-visible:ring-ring inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
 							onClick={() => {
 								void submit(searchParams)
 							}}
