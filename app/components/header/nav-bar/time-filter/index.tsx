@@ -154,9 +154,9 @@ export function TimeFilter(props: TimeFilterProps) {
 							<div className="flex h-16 justify-center p-1">
 								<span className="w-10/12">{t('pointintime_description')}</span>
 							</div>
-							<div className="mx-auto min-h-[2.5rem] w-2/3 items-center justify-center rounded-t-lg border border-b-0 border-gray-100 p-2">
+							<div className="mx-auto min-h-10 w-2/3 items-center justify-center rounded-t-lg border border-b-0 border-gray-100 p-2">
 								{props.singleDate === undefined ? (
-									<div className="flex min-h-[2.5rem] items-center justify-center p-1">
+									<div className="flex min-h-10 items-center justify-center p-1">
 										{t('date_picker_label')}
 									</div>
 								) : (
@@ -264,10 +264,10 @@ export function TimeFilter(props: TimeFilterProps) {
 							<div className="flex h-16 justify-center p-1">
 								<span className="w-10/12">{t('timeperiod_description')}</span>
 							</div>
-							<div className="mx-auto min-h-[2.5rem] w-2/3 items-center justify-center rounded-t-lg border border-b-0 border-gray-100 p-2">
+							<div className="mx-auto min-h-10 w-2/3 items-center justify-center rounded-t-lg border border-b-0 border-gray-100 p-2">
 								{props.dateRange === undefined ||
 								props.dateRange.from === undefined ? (
-									<div className="flex min-h-[2.5rem] items-center justify-center p-1">
+									<div className="flex min-h-10 items-center justify-center p-1">
 										{t('date_range_picker_label')}
 									</div>
 								) : (

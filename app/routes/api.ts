@@ -1,4 +1,3 @@
-import { type LoaderFunctionArgs } from 'react-router'
 import { type Route } from '../+types/root'
 import { apiRoutes as routes } from '~/lib/api-routes'
 import { tosApiMiddleware } from '~/middleware/tos-api.server'
@@ -6,7 +5,7 @@ import { tosApiMiddleware } from '~/middleware/tos-api.server'
 export { routes } 
 export const middleware: Route.MiddlewareFunction[] = [tosApiMiddleware]
 
-export async function loader({}: LoaderFunctionArgs) {
+export async function loader({}: Route.LoaderArgs) {
     const lines = [
         `This is the openSenseMap API`,
         'You can find a detailed reference at https://docs.opensensemap.org\n',

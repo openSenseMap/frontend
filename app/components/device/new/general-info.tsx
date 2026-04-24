@@ -185,7 +185,7 @@ export function GeneralInfoStep() {
 						</TooltipProvider>
 					</div>
 					{temporaryExpirationDate && (
-						<div className="flex flex-grow items-center space-x-2">
+						<div className="flex grow items-center space-x-2">
 							<Label
 								htmlFor="temporaryExpirationDate"
 								className="whitespace-nowrap text-sm font-medium"
@@ -199,7 +199,7 @@ export function GeneralInfoStep() {
 								onChange={(e) => handleExpirationDateChange(e.target.value)}
 								min={new Date().toISOString().split('T')[0]}
 								max={maxExpirationDate.toISOString().split('T')[0]}
-								className="flex-grow rounded-md border p-2"
+								className="grow rounded-md border p-2"
 							/>
 						</div>
 					)}

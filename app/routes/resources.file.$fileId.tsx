@@ -1,8 +1,8 @@
-import { type LoaderFunctionArgs } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/resources.file.$fileId'
 import { drizzleClient } from '~/db.server'
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
 	invariant(params.fileId, 'File ID is required')
 
 	// Keep it as a string - your ID column is PgText, not an integer

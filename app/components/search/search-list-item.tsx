@@ -48,7 +48,7 @@ export default function SearchListItem({
 			<div className="h-8 w-8 p-1">
 				<Icon className="h-full" />
 			</div>
-			<span className="inline-block overflow-hidden overflow-ellipsis whitespace-nowrap align-middle">
+			<span className="inline-block overflow-hidden text-ellipsis whitespace-nowrap align-middle">
 				{name}
 			</span>
 		</div>

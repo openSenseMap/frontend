@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { type Route } from './+types/admin.devices._index'
-import { getDevices } from '~/models/device.server'
+import { getDevices } from '~/db/models/device.server'
 
 export async function loader({}: Route.LoaderArgs) {
 	const devices = await getDevices('json')

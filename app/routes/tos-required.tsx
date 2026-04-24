@@ -7,9 +7,8 @@ import {
 	redirect,
 	useActionData,
 	useLoaderData,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 } from 'react-router'
+import { type Route } from './+types/tos-required'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
@@ -19,10 +18,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui/dialog'
+import {
+	getCurrentEffectiveTos,
+	getTosRequirementForUser,
+} from '~/db/models/tos.server'
+import { tosUserState } from '~/db/schema/tos'
 import { drizzleClient } from '~/db.server'
-import { getCurrentEffectiveTos, getTosRequirementForUser } from '~/models/tos.server'
-import { tosUserState } from '~/schema/tos'
-import { requireUser } from '~/utils/session.server'
+import { requireUser } from '~/services/session-service.server'
 
 function safeRedirectTo(value: string | null, fallback = '/') {
 	if (!value) return fallback
@@ -31,7 +33,7 @@ function safeRedirectTo(value: string | null, fallback = '/') {
 	return value
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const url = new URL(request.url)
 	const redirectTo = safeRedirectTo(url.searchParams.get('redirectTo'), '/')
@@ -48,13 +50,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data({ tos, redirectTo })
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const formData = await request.formData()
 
 	const accepted = formData.get('accepted')
 	const tosVersionId = formData.get('tosVersionId')
-	const redirectTo = safeRedirectTo(formData.get('redirectTo') as string | null, '/')
+	const redirectTo = safeRedirectTo(
+		formData.get('redirectTo') as string | null,
+		'/',
+	)
 
 	if (accepted !== 'on') {
 		return data({ error: 'tos_must_accept' }, { status: 400 })
@@ -108,9 +113,7 @@ export default function TosRequiredModal() {
 				</DialogHeader>
 
 				{!tos ? (
-					<div className="text-sm text-red-500">
-						{t('not_configured')}
-					</div>
+					<div className="text-sm text-red-500">{t('not_configured')}</div>
 				) : (
 					<Form method="post" className="space-y-4">
 						<input type="hidden" name="tosVersionId" value={tos.id} />
@@ -144,13 +147,11 @@ export default function TosRequiredModal() {
 						</div>
 
 						{actionData?.error === 'tos_must_accept' && (
-							<div className="text-sm text-red-500">
-								{t('must_accept')}
-							</div>
+							<div className="text-sm text-red-500">{t('must_accept')}</div>
 						)}
 
 						<DialogFooter className="sm:justify-between">
-							<div className="text-sm text-muted-foreground">
+							<div className="text-muted-foreground text-sm">
 								<Trans
 									i18nKey="delete_account"
 									ns="tos"

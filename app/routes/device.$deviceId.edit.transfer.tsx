@@ -2,22 +2,21 @@ import { Check, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	Form,
 	redirect,
 	useActionData,
 	useLoaderData,
 	useNavigation,
 } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit.transfer'
 import { Callout } from '~/components/ui/alert'
+import { getDevice } from '~/db/models/device.server'
+import { type Claim } from '~/db/schema'
+import { getUserId } from '~/services/session-service.server'
 import {
 	getBoxTransfer,
 	createBoxTransfer,
-} from '~/lib/transfer-service.server'
-import { getDevice } from '~/models/device.server'
-import { type Claim } from '~/schema'
-import { getUserId } from '~/utils/session.server'
+} from '~/services/transfer-service.server'
 
 type LoaderData = {
 	deviceId: string
@@ -35,7 +34,7 @@ type ActionData = {
 export async function loader({
 	request,
 	params,
-}: LoaderFunctionArgs): Promise<LoaderData | Response> {
+}: Route.LoaderArgs): Promise<LoaderData | Response> {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -77,7 +76,7 @@ export async function loader({
 export async function action({
 	request,
 	params,
-}: ActionFunctionArgs): Promise<ActionData | Response> {
+}: Route.ActionArgs): Promise<ActionData | Response> {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -174,7 +173,7 @@ export default function EditDeviceTransfer() {
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica text-[14px]">
+				<div className="font-helvetica mx-auto w-full text-[14px]">
 					<Form method="post" noValidate>
 						<div>
 							<div className="mt-2 flex justify-between">
@@ -256,7 +255,7 @@ export default function EditDeviceTransfer() {
 					) : null}
 
 					{transferToken ? (
-						<div className="text-green-800 mt-4 rounded border border-green-200 bg-green-50 p-4">
+						<div className="mt-4 rounded border border-green-200 bg-green-50 p-4 text-green-800">
 							<p className="font-bold">
 								{actionData?.transfer
 									? t('transfer_created')
@@ -272,7 +271,7 @@ export default function EditDeviceTransfer() {
 								<button
 									type="button"
 									onClick={handleCopyToken}
-									className="text-green-800 inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm hover:bg-green-100"
+									className="inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
 									aria-label={copied ? t('copied') : t('copy')}
 									title={copied ? t('copied') : t('copy')}
 								>

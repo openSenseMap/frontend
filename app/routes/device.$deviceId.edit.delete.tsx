@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	Form,
 	data,
 	redirect,
@@ -10,6 +8,7 @@ import {
 	useLoaderData,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.delete'
 import { Button } from '~/components/ui/button'
 import {
 	Card,
@@ -20,12 +19,16 @@ import {
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { deleteDevice, getDeviceWithoutSensors, getUserDevice } from '~/models/device.server'
-import { verifyLogin } from '~/models/user.server'
-import { deleteDeviceImage } from '~/utils/s3.server'
-import { getUserEmail, getUserId } from '~/utils/session.server'
+import {
+	deleteDevice,
+	getDeviceWithoutSensors,
+	getUserDevice,
+} from '~/db/models/device.server'
+import { verifyLogin } from '~/db/models/user.server'
+import { deleteDeviceImage } from '~/lib/s3.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -38,7 +41,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return data({ device })
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -82,50 +85,49 @@ export default function DeviceDeletePage() {
 
 	const { t } = useTranslation('delete-device')
 
-
 	React.useEffect(() => {
 		if (actionData?.errors?.passwordDelete) passwordRef.current?.focus()
 	}, [actionData])
 
 	return (
-			<Form method="post" className="space-y-6" noValidate>
-				<Card className="dark:border-white dark:bg-dark-boxes">
-					<CardHeader>
-						<CardTitle className="text-red-600">{t('delete_device')}</CardTitle>
-						<CardDescription>
-							  <Trans
-									t={t}
-									i18nKey="confirm_permanent_deletion"
-									values={{ device: device.name }}
-									components={{ b: <b /> }}
-								/>
-						</CardDescription>
-					</CardHeader>
+		<Form method="post" className="space-y-6" noValidate>
+			<Card className="dark:bg-dark-boxes dark:border-white">
+				<CardHeader>
+					<CardTitle className="text-red-600">{t('delete_device')}</CardTitle>
+					<CardDescription>
+						<Trans
+							t={t}
+							i18nKey="confirm_permanent_deletion"
+							values={{ device: device.name }}
+							components={{ b: <b /> }}
+						/>
+					</CardDescription>
+				</CardHeader>
 
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="passwordDelete">{t('password')}</Label>
-							<Input
-								id="passwordDelete"
-								name="passwordDelete"
-								type="password"
-								ref={passwordRef}
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
-							/>
-							{actionData?.errors?.passwordDelete && (
-								<div className="text-sm text-red-500">
-									{actionData.errors.passwordDelete}
-								</div>
-							)}
-						</div>
+				<CardContent className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="passwordDelete">{t('password')}</Label>
+						<Input
+							id="passwordDelete"
+							name="passwordDelete"
+							type="password"
+							ref={passwordRef}
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+							required
+						/>
+						{actionData?.errors?.passwordDelete && (
+							<div className="text-sm text-red-500">
+								{actionData.errors.passwordDelete}
+							</div>
+						)}
+					</div>
 
-						<Button type="submit" variant="destructive" disabled={!password}>
-							{t('delete_device')}
-						</Button>
-					</CardContent>
-				</Card>
-			</Form>
+					<Button type="submit" variant="destructive" disabled={!password}>
+						{t('delete_device')}
+					</Button>
+				</CardContent>
+			</Card>
+		</Form>
 	)
 }

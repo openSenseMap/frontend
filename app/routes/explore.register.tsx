@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type LoaderFunctionArgs,
 	type MetaFunction,
 	data,
 	redirect,
@@ -25,14 +24,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
-import { registerUser } from '~/lib/user-service.server'
+import { getCurrentEffectiveTos } from '~/db/models/tos.server'
+import { getUserByEmail, getUserByUsername } from '~/db/models/user.server'
 import { getLocale } from '~/middleware/i18next'
-import { getCurrentEffectiveTos } from '~/models/tos.server'
-import { getUserByEmail, getUserByUsername } from '~/models/user.server'
+import { createUserSession, getUserId } from '~/services/session-service.server'
+import { registerUser } from '~/services/user-service.server'
 import { safeRedirect, validateEmail, validateName } from '~/utils'
-import { createUserSession, getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (userId) return redirect('/')
 	return {}
@@ -270,7 +269,7 @@ export default function RegisterDialog() {
 					</CardHeader>
 					<CardFooter className="flex flex-col items-center gap-2">
 						<Link to="/explore/login" className="w-full">
-							<Button className="w-full bg-light-blue">
+							<Button className="bg-light-blue w-full">
 								{t('go_to_login')}
 							</Button>
 						</Link>
@@ -292,7 +291,7 @@ export default function RegisterDialog() {
 			</Link>
 			<Card className="z-50 w-full max-w-md">
 				{navigation.state === 'loading' && (
-					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
 					</div>
 				)}
@@ -314,7 +313,7 @@ export default function RegisterDialog() {
 								type="text"
 								autoFocus={true}
 							/>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{t('username_hint')}
 							</p>
 							{actionErrors?.username && (
@@ -355,7 +354,7 @@ export default function RegisterDialog() {
 								aria-invalid={actionErrors?.password ? true : undefined}
 								aria-describedby="password-error"
 							/>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{t('password_hint')}
 							</p>
 							{actionErrors?.password && (
@@ -408,8 +407,8 @@ export default function RegisterDialog() {
 						)}
 					</CardContent>
 					<CardFooter className="flex flex-col items-center gap-2">
-						<Button className="w-full bg-light-blue">{t('register')}</Button>
-						<div className="text-sm text-muted-foreground">
+						<Button className="bg-light-blue w-full">{t('register')}</Button>
+						<div className="text-muted-foreground text-sm">
 							{t('already_account')}{' '}
 							<Link to="/explore/login" className="underline">
 								{t('login')}

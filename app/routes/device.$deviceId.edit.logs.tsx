@@ -1,8 +1,6 @@
 import { Save, Trash } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	data,
 	redirect,
 	Form,
@@ -12,6 +10,7 @@ import {
 } from 'react-router'
 
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.logs'
 import { Switch } from '@/components/ui/switch'
 import {
 	Table,
@@ -29,11 +28,11 @@ import {
 	deleteLogEntry,
 	getLogEntriesByDeviceId,
 	updateLogEntryVisibility,
-} from '~/models/log-entry.server'
-import { type LogEntry } from '~/schema/log-entry'
-import { getUserId } from '~/utils/session.server'
+} from '~/db/models/log-entry.server'
+import { type LogEntry } from '~/db/schema/log-entry'
+import { getUserId } from '~/services/session-service.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -46,7 +45,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return { logEntries: logEntries }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	try {
 		const formData = await request.formData()
 		const { intent, content, logEntryId, isPublic } =
@@ -121,7 +120,7 @@ export default function Logs() {
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica text-[14px]">
+				<div className="font-helvetica mx-auto w-full text-[14px]">
 					<Form method="post" noValidate className="mb-8">
 						{/* Heading */}
 						<div>

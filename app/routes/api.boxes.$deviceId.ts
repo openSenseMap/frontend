@@ -1,15 +1,15 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
-import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { deleteDevice } from '~/lib/devices-service.server'
-import { getUserFromJwt } from '~/lib/jwt'
+import { type Route } from './+types/api.boxes.$deviceId'
 import {
 	DeviceUpdateError,
 	getDevice,
 	updateDevice,
 	type UpdateDeviceArgs,
-} from '~/models/device.server'
-import { type Device, type User } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/db/models/device.server'
+import { type Device, type User } from '~/db/schema'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
+import { deleteDevice } from '~/services/devices-service.server'
 
 /**
  * @openapi
@@ -71,7 +71,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *       500:
  *         description: Internal server error
  */
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
 	const { deviceId } = params
 
 	if (!deviceId) return StandardResponse.badRequest('Device ID is required.')
@@ -101,7 +101,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	}
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
 	const { deviceId } = params
 
 	if (!deviceId) {

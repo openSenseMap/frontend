@@ -1,17 +1,14 @@
-import {
-	type Params,
-	type LoaderFunction,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { type Params } from 'react-router'
+import { type Route } from './+types/api.boxes.$deviceId.data.$sensorId'
+import { getMeasurements } from '~/db/models/sensor.server'
+import { type Measurement } from '~/db/schema'
+import { convertToCsv } from '~/lib/csv'
 import {
 	type TransformedMeasurement,
 	transformOutliers,
 } from '~/lib/outlier-transform'
-import { getMeasurements } from '~/models/sensor.server'
-import { type Measurement } from '~/schema'
-import { convertToCsv } from '~/utils/csv'
-import { parseDateParam, parseEnumParam } from '~/utils/param-utils'
-import { StandardResponse } from '~/utils/response-utils'
+import { parseDateParam, parseEnumParam } from '~/lib/params'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi
@@ -145,10 +142,10 @@ import { StandardResponse } from '~/utils/response-utils'
  *                   type: string
  */
 
-export const loader: LoaderFunction = async ({
+export const loader = async ({
 	request,
 	params,
-}: LoaderFunctionArgs): Promise<Response> => {
+}: Route.LoaderArgs): Promise<Response> => {
 	try {
 		const collected = collectParameters(request, params)
 		if (collected instanceof Response) return collected

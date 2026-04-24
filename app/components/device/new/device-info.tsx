@@ -12,12 +12,12 @@ import { cn } from '~/lib/utils'
 const devices = [
 	{
 		name: 'senseBox:Home',
-		image: '/device_images/senseBox_Home.jpg',
+		image: '/img/device_images/senseBox_Home.jpg',
 		imageHasPadding: true,
 	},
 	{
 		name: 'senseBox:Edu',
-		image: '/device_images/senseBox_edu.jpg',
+		image: '/img/device_images/senseBox_edu.jpg',
 		imageHasPadding: true,
 	},
 	{
@@ -124,7 +124,7 @@ export function DeviceSelectionStep() {
 							className={cn(
 								'relative transform cursor-pointer overflow-hidden transition-all duration-300 ease-in-out hover:scale-105',
 								selectedDevice === device.name
-									? 'bg-primary/10 ring-2 ring-primary'
+									? 'bg-primary/10 ring-primary ring-2'
 									: 'hover:bg-gray-50',
 							)}
 							onClick={() => {
@@ -150,7 +150,7 @@ export function DeviceSelectionStep() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="absolute right-2 top-2"
+											className="absolute top-2 right-2"
 											onClick={(e) => {
 												e.stopPropagation()
 												handleClose()
@@ -159,7 +159,7 @@ export function DeviceSelectionStep() {
 											<X className="h-4 w-4" />
 										</Button>
 									)}
-									<h3 className="break-words text-lg font-semibold">
+									<h3 className="text-lg font-semibold wrap-break-word">
 										{device.name}
 									</h3>
 									{device.name === 'senseBox:Home' &&

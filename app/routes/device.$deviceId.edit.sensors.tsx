@@ -16,10 +16,9 @@ import {
 	useActionData,
 	useLoaderData,
 	useOutletContext,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/device.$deviceId.edit.sensors'
 import {
 	DropdownMenu,
 	DropdownMenuGroup,
@@ -27,18 +26,18 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { reconcileDeviceIntegrations } from '~/models/integration.server'
+import { reconcileDeviceIntegrations } from '~/db/models/integration.server'
 import {
 	addNewSensor,
 	deleteSensor,
 	getSensorsFromDevice,
 	updateSensor,
-} from '~/models/sensor.server'
-import { assignIcon, getIcon, iconsList } from '~/utils/sensoricons'
-import { getUserId } from '~/utils/session.server'
+} from '~/db/models/sensor.server'
+import { assignIcon, getIcon, iconsList } from '~/lib/sensoricons'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -53,55 +52,55 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 //*****************************************************
-export async function action({ request, params }: ActionFunctionArgs) {
-  const userId = await getUserId(request)
-  if (!userId) return redirect('/')
+export async function action({ request, params }: Route.ActionArgs) {
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
 
-  const formData = await request.formData()
-  const { updatedSensorsData } = Object.fromEntries(formData)
+	const formData = await request.formData()
+	const { updatedSensorsData } = Object.fromEntries(formData)
 
-  if (typeof updatedSensorsData !== 'string') {
-    return { isUpdated: false }
-  }
+	if (typeof updatedSensorsData !== 'string') {
+		return { isUpdated: false }
+	}
 
-  const deviceId = params.deviceId
-  invariant(deviceId, 'deviceID not found!')
+	const deviceId = params.deviceId
+	invariant(deviceId, 'deviceID not found!')
 
-  const updatedSensorsDataJson = JSON.parse(updatedSensorsData)
+	const updatedSensorsDataJson = JSON.parse(updatedSensorsData)
 
-  for (const [index, sensor] of updatedSensorsDataJson.entries()) {
-    if (sensor?.new === true && sensor?.edited === true) {
-      await addNewSensor({
-        title: sensor.title,
-        unit: sensor.unit,
-        sensorType: sensor.sensorType,
-        deviceId,
-        order: index,
-      })
-    } else if (sensor?.deleted === true) {
-      await deleteSensor(sensor.id)
-    } else if (!sensor?.new) {
-      await updateSensor({
-        id: sensor.id,
-        title: sensor.title,
-        unit: sensor.unit,
-        sensorType: sensor.sensorType,
-        order: index,
-      })
-    }
-  }
+	for (const [index, sensor] of updatedSensorsDataJson.entries()) {
+		if (sensor?.new === true && sensor?.edited === true) {
+			await addNewSensor({
+				title: sensor.title,
+				unit: sensor.unit,
+				sensorType: sensor.sensorType,
+				deviceId,
+				order: index,
+			})
+		} else if (sensor?.deleted === true) {
+			await deleteSensor(sensor.id)
+		} else if (!sensor?.new) {
+			await updateSensor({
+				id: sensor.id,
+				title: sensor.title,
+				unit: sensor.unit,
+				sensorType: sensor.sensorType,
+				order: index,
+			})
+		}
+	}
 
-  const currentSensors = await getSensorsFromDevice(deviceId)
-  const validSensorIds = currentSensors
-    .map((sensor: any) => sensor._id || sensor.id)
-    .filter(Boolean)
+	const currentSensors = await getSensorsFromDevice(deviceId)
+	const validSensorIds = currentSensors
+		.map((sensor: any) => sensor._id || sensor.id)
+		.filter(Boolean)
 
-  await reconcileDeviceIntegrations({
-    deviceId,
-    validSensorIds,
-  })
+	await reconcileDeviceIntegrations({
+		deviceId,
+		validSensorIds,
+	})
 
-  return { isUpdated: true }
+	return { isUpdated: true }
 }
 
 //**********************************
@@ -127,7 +126,10 @@ export default function EditBoxSensors() {
 			//* reset sensor data elements
 			for (let index = sensorsData.length - 1; index >= 0; index--) {
 				const sensor = sensorsData[index]
-				if (sensor.deleted || (sensor.new == true && sensor.notValidInput == true)) {
+				if (
+					sensor.deleted ||
+					(sensor.new == true && sensor.notValidInput == true)
+				) {
 					sensorsData.splice(index, 1)
 				} else if (sensor.editing == true) {
 					delete sensor.editing
@@ -140,7 +142,7 @@ export default function EditBoxSensors() {
 		<div className="grid grid-rows-1">
 			{/* sensor form */}
 			<div className="flex min-h-full items-center justify-center">
-				<div className="mx-auto w-full font-helvetica text-[14px]">
+				<div className="font-helvetica mx-auto w-full text-[14px]">
 					{/* Form */}
 					<Form method="post" noValidate>
 						{/* Heading */}
@@ -196,7 +198,7 @@ export default function EditBoxSensors() {
 							</p>
 						</div>
 
-						<ul className="mt-0 rounded-[3px] border-[1px] border-solid border-[#d1d5da] pt-0">
+						<ul className="mt-0 rounded-[3px] border border-solid border-[#d1d5da] pt-0">
 							{sensorsData?.map((sensor: any, index: number) => {
 								return (
 									<li
@@ -217,7 +219,7 @@ export default function EditBoxSensors() {
 											setSensorsData(reordered)
 											dragIndexRef.current = null
 										}}
-										className="border-t-[1px] border-solid border-[#e1e4e8] p-4"
+										className="border-t border-solid border-[#e1e4e8] p-4"
 									>
 										<div className="grid grid-cols-12">
 											{/* drag handle */}
@@ -226,9 +228,7 @@ export default function EditBoxSensors() {
 													<GripVertical className="h-5 w-5" />
 												</div>
 											)}
-											{sensor?.editing && (
-												<div className="col-span-1" />
-											)}
+											{sensor?.editing && <div className="col-span-1" />}
 
 											{/* left side -> sensor icons list */}
 											<div className="col-span-1 m-auto sm:col-span-1">
@@ -239,7 +239,7 @@ export default function EditBoxSensors() {
 															<button
 																id="split-button"
 																type="button"
-																className="btn btn-default rounded-br-none rounded-tr-none px-[4px] py-[6px]"
+																className="btn btn-default rounded-tr-none rounded-br-none px-[4px] py-[6px]"
 																onClick={() => {
 																	setTepmState(!tepmState)
 																}}
@@ -256,7 +256,7 @@ export default function EditBoxSensors() {
 																		id="dropdownDefaultButton"
 																		type="button"
 																		// className="btn btn-default"
-																		className="btn btn-default rounded-bl-none rounded-tl-none border-l-[0px] px-[1px] pb-[4px] pt-[5px]"
+																		className="btn btn-default rounded-tl-none rounded-bl-none border-l-0 px-px pt-[5px] pb-[4px]"
 																		data-dropdown-toggle="dropdown"
 																	>
 																		<ChevronDownIcon className="m-0 inline h-6 w-6 p-0" />
@@ -264,7 +264,7 @@ export default function EditBoxSensors() {
 																</DropdownMenuTrigger>
 																<DropdownMenuContent
 																	align="end"
-																	className="min-w-fit max-w-[150px]"
+																	className="max-w-[150px] min-w-fit"
 																>
 																	<DropdownMenuGroup className="flex h-fit flex-wrap">
 																		{iconsList?.map((icon: any) => {
@@ -278,7 +278,7 @@ export default function EditBoxSensors() {
 																						sensor.icon = icon.id
 																					}}
 																				>
-																					<Icon className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+																					<Icon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 																				</DropdownMenuItem>
 																			)
 																		})}
@@ -296,7 +296,7 @@ export default function EditBoxSensors() {
 												)}
 											</div>
 											{/* middle -> sensor attributes */}
-											<div className="col-span-8 border-r-[1px] border-solid border-[#e1e4e8] sm:col-span-8">
+											<div className="col-span-8 border-r border-solid border-[#e1e4e8] sm:col-span-8">
 												{/* shown by default */}
 												{!sensor?.editing && (
 													<span className="table-cell align-middle leading-[1.75]">
@@ -315,7 +315,7 @@ export default function EditBoxSensors() {
 																	void navigator.clipboard.writeText(sensor?.id)
 																}}
 															>
-																<ClipboardCopy className="ml-[6px] mr-1 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+																<ClipboardCopy className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 															</button>
 														</code>
 														<strong className="block">
@@ -339,7 +339,7 @@ export default function EditBoxSensors() {
 														<div className="mb-4">
 															<label
 																htmlFor="phenomenom"
-																className="mb-1 inline-block font-[700]"
+																className="mb-1 inline-block font-bold"
 															>
 																Phenomenon:
 															</label>
@@ -362,7 +362,7 @@ export default function EditBoxSensors() {
 														<div className="mb-4">
 															<label
 																htmlFor="unit"
-																className="mb-1 inline-block font-[700]"
+																className="mb-1 inline-block font-bold"
 															>
 																Unit:
 															</label>
@@ -385,7 +385,7 @@ export default function EditBoxSensors() {
 														<div className="mb-4">
 															<label
 																htmlFor="type"
-																className="mb-1 inline-block font-[700]"
+																className="mb-1 inline-block font-bold"
 															>
 																Type
 															</label>
@@ -428,7 +428,7 @@ export default function EditBoxSensors() {
 																setTepmState(!tepmState)
 																sensor.deleting = false
 															}}
-															className="mb-1 mt-2 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
 														>
 															<Undo2 className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
 															Undo
@@ -445,7 +445,7 @@ export default function EditBoxSensors() {
 																	setTepmState(!tepmState)
 																	sensor.editing = true
 																}}
-																className="mb-1 mt-2 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+																className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
 															>
 																<Edit className="mr-1 inline-block h-[17px] w-[15px] align-sub" />
 																Edit
@@ -460,7 +460,7 @@ export default function EditBoxSensors() {
 																	sensor.deleted = true
 																	return false
 																}}
-																className="mb-1 mt-2 block rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
+																className="mt-2 mb-1 block rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
 															>
 																<Trash2 className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
 																Delete
@@ -482,7 +482,7 @@ export default function EditBoxSensors() {
 														<button
 															type="button"
 															disabled={sensor?.notValidInput}
-															className="mb-1 mt-2 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
+															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
 															onClick={() => {
 																setTepmState(!tepmState)
 																if (
@@ -517,7 +517,7 @@ export default function EditBoxSensors() {
 																	sensor.sensorType = data[index].sensorType
 																}
 															}}
-															className="mb-1 mt-2 block rounded-[3px] border-[#ac2925] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
+															className="mt-2 mb-1 block rounded-[3px] border-[#ac2925] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
 														>
 															<X className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />
 															Cancel

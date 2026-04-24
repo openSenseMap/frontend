@@ -1,13 +1,13 @@
-import { type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.transfer'
 import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
 import {
 	createBoxTransfer,
 	removeBoxTransfer,
 	validateTransferParams,
-} from '~/lib/transfer-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/services/transfer-service.server'
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	const jwtResponse = await getUserFromJwt(request)
 
 	if (typeof jwtResponse === 'string')

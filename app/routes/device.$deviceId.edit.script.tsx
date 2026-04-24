@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router'
+import { redirect, useLoaderData } from 'react-router'
+import { type Route } from './+types/device.$deviceId.edit.script'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
-import { getDeviceWithoutSensors } from '~/models/device.server'
-import { getSensorsFromDevice } from '~/models/sensor.server'
-import { getUserId } from '~/utils/session.server'
-
-const OSEM_GITHUB_URL =
-	process.env.OSEM_GITHUB_URL || 'https://github.com/OpenSenseMap/'
+import { getDeviceWithoutSensors } from '~/db/models/device.server'
+import { getSensorsFromDevice } from '~/db/models/sensor.server'
+import { getUserId } from '~/services/session-service.server'
 
 //*****************************************************
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
+	const OSEM_GITHUB_URL =
+		process.env.OSEM_GITHUB_URL || 'https://github.com/OpenSenseMap/'
+
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
@@ -24,7 +25,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	//* get sensors data
 	const sensorsData = await getSensorsFromDevice(params.deviceId)
 
-	return { deviceData, sensorsData }
+	return { deviceData, sensorsData, ghUrl: OSEM_GITHUB_URL }
 }
 
 //*****************************************************
@@ -34,7 +35,7 @@ export async function action() {
 
 //**********************************
 export default function EditBoxSensors() {
-	const { deviceData } = useLoaderData<typeof loader>()
+	const { deviceData, ghUrl } = useLoaderData<typeof loader>()
 	const [sketch, setSketch] = useState<string>('')
 	const [isCompiling, setIsCompiling] = useState(false)
 	const { t } = useTranslation('script')
@@ -109,17 +110,17 @@ export default function EditBoxSensors() {
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
-				<div className="flex-grow bg-white p-4 dark:bg-dark-boxes dark:text-dark-text">
+				<div className="dark:bg-dark-boxes dark:text-dark-text grow bg-white p-4">
 					{deviceData?.model !== 'homeV2Wifi' ? (
 						<div className="flex flex-col items-center justify-center gap-4 py-16 text-center text-gray-500">
 							<p className="text-base">{t('no_script_for_model')}</p>
 							<a
-								href={OSEM_GITHUB_URL}
+								href={ghUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-light-green underline dark:text-dark-green"
+								className="text-light-green dark:text-dark-green underline"
 							>
-								{OSEM_GITHUB_URL}
+								{ghUrl}
 							</a>
 						</div>
 					) : (
@@ -128,7 +129,7 @@ export default function EditBoxSensors() {
 								<div>
 									<div className="mt-2 flex justify-between">
 										<div>
-											<span className="text-2xl font-bold text-light-green dark:text-dark-green">
+											<span className="text-light-green dark:text-dark-green text-2xl font-bold">
 												{t('configuration')}
 											</span>
 										</div>
@@ -310,7 +311,7 @@ export default function EditBoxSensors() {
 								<Textarea
 									id="mqtt-connection-options"
 									placeholder={t('enter_connection_options')}
-									className="!min-h-[320px] resize-none"
+									className="min-h-[320px]! resize-none"
 									value={sketch}
 									readOnly
 								/>

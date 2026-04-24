@@ -2,7 +2,7 @@ import { type BBox } from 'geojson'
 import { Download as DownloadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMap } from 'react-map-gl'
+import { useMap } from 'react-map-gl/mapbox'
 import { Form, useNavigation, useActionData } from 'react-router'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
@@ -160,8 +160,7 @@ export default function Download(props: any) {
 	}
 
 	// Filter devices inside the current bounds
-	const bounds =
-		(mapRef?.getMap().getBounds().toArray().flat() as BBox) ?? undefined
+	const bounds = mapRef?.getMap().getBounds()?.toArray().flat() as BBox | undefined
 	const devicesInBounds =
 		bounds && bounds.length === 4
 			? devices.filter((device: any) => {

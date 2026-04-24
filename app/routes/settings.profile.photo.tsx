@@ -1,12 +1,10 @@
-import { conform, useForm } from '@conform-to/react'
-import { getFieldsetConstraint, parse } from '@conform-to/zod'
+import { useForm, getInputProps, getFormProps } from '@conform-to/react'
+import { getZodConstraint, parseWithZod } from '@conform-to/zod/v4'
 import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
 import { eq } from 'drizzle-orm'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type LoaderFunctionArgs,
-	type ActionFunctionArgs,
 	data,
 	redirect,
 	Form,
@@ -15,6 +13,7 @@ import {
 	useNavigate,
 } from 'react-router'
 import { z } from 'zod'
+import { type Route } from './+types/settings.profile.photo'
 import { LabelButton } from '~/components/label-button'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
@@ -24,13 +23,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui/dialog'
+import { getProfileByUserId } from '~/db/models/profile.server'
+import { getUserById } from '~/db/models/user.server'
+import { profileImage } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
-import { getProfileByUserId } from '~/models/profile.server'
-import { getUserById } from '~/models/user.server'
-import { profileImage } from '~/schema'
-import { uploadHandler } from '~/utils/file-upload.server'
-import { getInitials } from '~/utils/misc'
-import { requireUserId } from '~/utils/session.server'
+import { uploadHandler } from '~/lib/file-upload.server'
+import { getInitials } from '~/lib/strings'
+import { requireUserId } from '~/services/session-service.server'
 
 const MAX_SIZE = 1024 * 1024 * 3 // 3MB
 
@@ -54,7 +53,7 @@ const PhotoFormSchema = z.object({
 	),
 })
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
 	const user = await getUserById(userId)
 	const profile = await getProfileByUserId(userId)
@@ -65,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { user, profile }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await parseFormData(
 		request,
@@ -73,12 +72,9 @@ export async function action({ request }: ActionFunctionArgs) {
 		async (file: FileUpload) => uploadHandler(file),
 	)
 
-	const submission = parse(formData, { schema: PhotoFormSchema })
+	const submission = parseWithZod(formData, { schema: PhotoFormSchema })
 
-	if (submission.intent !== 'submit') {
-		return { status: 'idle', submission } as const
-	}
-	if (!submission.value) {
+	if (submission.status !== 'success') {
 		return data(
 			{
 				status: 'error',
@@ -88,7 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		)
 	}
 
-	const { photoFile } = submission.value
+	const { photoFile } = submission.payload as { photoFile: File }
 
 	// Query user profile
 	const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
@@ -126,10 +122,10 @@ export default function PhotoChooserModal() {
 	const actionData = useActionData<typeof action>()
 	const [form, { photoFile }] = useForm({
 		id: 'profile-photo',
-		constraint: getFieldsetConstraint(PhotoFormSchema),
-		lastSubmission: actionData?.submission,
+		constraint: getZodConstraint(PhotoFormSchema),
+		lastResult: actionData?.submission.payload,
 		onValidate({ formData }) {
-			return parse(formData, { schema: PhotoFormSchema })
+			return parseWithZod(formData, { schema: PhotoFormSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
@@ -152,7 +148,7 @@ export default function PhotoChooserModal() {
 					encType="multipart/form-data"
 					className="mt-8 flex flex-col items-center justify-center gap-10"
 					onReset={() => setNewImageSrc(null)}
-					{...form.props}
+					{...getFormProps(form)}
 				>
 					<Avatar className="h-64 w-64">
 						<AvatarImage
@@ -169,7 +165,7 @@ export default function PhotoChooserModal() {
 					</Avatar>
 					{/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
 					<input
-						{...conform.input(photoFile, { type: 'file' })}
+						{...getInputProps(photoFile, { type: 'file' })}
 						type="file"
 						accept="image/*"
 						className="sr-only"

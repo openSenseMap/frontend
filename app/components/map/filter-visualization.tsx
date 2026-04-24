@@ -1,8 +1,8 @@
 import { X } from 'lucide-react'
 import { Fragment, useEffect } from 'react'
 import { useLoaderData, useNavigate } from 'react-router'
+import { DeviceExposureZodEnum, DeviceStatusZodEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/explore'
-import { DeviceExposureZodEnum, DeviceStatusZodEnum } from '~/schema/enum'
 
 const FILTER_KEYS = new Set(['exposure', 'status', 'tags'])
 
@@ -104,15 +104,15 @@ export default function FilterVisualization() {
 					</div>
 					<button
 						onClick={() => onRemoveFilter(key)}
-						className="ml-2 text-blue-500 hover:text-blue-700 focus:outline-none"
+						className="ml-2 text-blue-500 hover:text-blue-700 focus:outline-hidden"
 						aria-label={`Remove ${key} filter`}
 					>
 						<X className="text-white" size={14} />
 					</button>
 				</div>
 			))}
-			<div className="flex items-center rounded-full bg-light-green pr-2 text-sm">
-				<span className="rounded-l-full bg-light-green px-2 py-1 font-medium text-white">
+			<div className="bg-light-green flex items-center rounded-full pr-2 text-sm">
+				<span className="bg-light-green rounded-l-full px-2 py-1 font-medium text-white">
 					{'Total Devices: ' + data.filteredDevices.features.length}
 				</span>
 			</div>

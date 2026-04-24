@@ -17,11 +17,11 @@ import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
 import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
+import { updateUserlocale } from './db/models/user.server'
+import { getEnv } from './lib/env.server'
 import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
-import { updateUserlocale } from './models/user.server'
-import { getEnv } from './utils/env.server'
-import { getUser } from './utils/session.server'
+import { getUser } from './services/session-service.server'
 
 export const middleware: Route.MiddlewareFunction[] = [
 	i18nextMiddleware,
@@ -58,9 +58,17 @@ export const links = () => {
 			type: 'font/woff2',
 			crossOrigin: 'anonymous',
 		},
-		{ rel: 'icon', href: '/favicon.ico' },
 		{ rel: 'stylesheet', href: tailwindStylesheetUrl },
 		{ rel: 'stylesheet', href: appStylesheetUrl },
+		{ rel: 'icon', href: '/img/logo.svg', type: 'image/svg+xml' },
+		{
+			rel: 'icon',
+			href: '/img/favicon-32x32.png',
+			sizes: '32x32',
+			type: 'image/png',
+		},
+		{ rel: 'apple-touch-icon', href: '/img/favicon-180x180.png' },
+		{ rel: 'manifest', href: '/manifest.json' },
 	]
 }
 
@@ -68,6 +76,12 @@ export const meta: MetaFunction = () => [
 	{ charset: 'utf-8' },
 	{ title: 'openSenseMap' },
 	{ viewport: 'width=device-width,initial-scale=1' },
+	{ 'theme-color': '#3d843f', media: '(prefers-color-scheme: light)' },
+	{ 'theme-color': '#6fa161', media: '(prefers-color-scheme: dark)' },
+	{
+		description:
+			'The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source.',
+	},
 ]
 
 export async function loader({ context, request }: Route.LoaderArgs) {
@@ -143,7 +157,7 @@ export default function App({
 				{/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
 				<Links />
 			</head>
-			<body className="h-full dark:bg-dark-background dark:text-dark-text">
+			<body className="dark:bg-dark-background dark:text-dark-text h-full">
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -172,7 +186,7 @@ export function ErrorBoundary() {
 				<Meta />
 				<Links />
 			</head>
-			<body className="h-full dark:bg-dark-background dark:text-dark-text">
+			<body className="dark:bg-dark-background dark:text-dark-text h-full">
 				<div className="flex h-screen w-screen items-center justify-center">
 					<ErrorMessage />
 				</div>

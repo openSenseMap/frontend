@@ -1,8 +1,8 @@
-import { type ActionFunction, type ActionFunctionArgs } from 'react-router'
+import { type Route } from './+types/api.users.refresh-auth'
+import { type User } from '~/db/schema'
 import { getUserFromJwt, hashJwt, refreshJwt } from '~/lib/jwt'
 import { parseRefreshTokenData } from '~/lib/request-parsing'
-import { type User } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
 
 /**
  * @openapi
@@ -111,9 +111,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *           description: Last account update timestamp
  */
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		// Parse request data - handles both JSON and form data automatically
 		const data = await parseRefreshTokenData(request)

@@ -1,18 +1,17 @@
-import {
-	type LoaderFunctionArgs,
-	type ActionFunction,
-	type ActionFunctionArgs,
-} from 'react-router'
-import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { BoxesQuerySchema, CreateBoxSchema } from '~/lib/devices-service.server'
-import { getUserFromJwt } from '~/lib/jwt'
+import { type Route } from './+types/api.boxes'
 import {
 	createDevice,
 	findDevices,
 	type FindDevicesOptions,
-} from '~/models/device.server'
-import { type Device, type User } from '~/schema'
-import { StandardResponse } from '~/utils/response-utils'
+} from '~/db/models/device.server'
+import { type Device, type User } from '~/db/schema'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { getUserFromJwt } from '~/lib/jwt'
+import { StandardResponse } from '~/lib/responses'
+import {
+	BoxesQuerySchema,
+	CreateBoxSchema,
+} from '~/services/devices-service.server'
 
 /**
  * @openapi
@@ -331,7 +330,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *                     type: string
  *                     example: "25.13"
  */
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const queryObj = Object.fromEntries(url.searchParams)
 	const parseResult = BoxesQuerySchema.safeParse(queryObj)
@@ -371,9 +370,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	}
 }
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		// Check authentication
 		const jwtResponse = await getUserFromJwt(request)
@@ -412,7 +409,7 @@ async function post(request: Request, user: User) {
 				{
 					code: 'Bad Request',
 					message: 'Invalid request data',
-					errors: validationResult.error.errors.map(
+					errors: validationResult.error.issues.map(
 						(err) => `${err.path.join('.')}: ${err.message}`,
 					),
 				},

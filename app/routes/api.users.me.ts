@@ -1,13 +1,8 @@
-import {
-	type ActionFunctionArgs,
-	type ActionFunction,
-	type LoaderFunction,
-	type LoaderFunctionArgs,
-} from 'react-router'
+import { type Route } from './+types/api.users.me'
+import { type User } from '~/db/schema/user'
 import { getUserFromJwt } from '~/lib/jwt'
-import { deleteUser, updateUserDetails } from '~/lib/user-service.server'
-import { type User } from '~/schema/user'
-import { StandardResponse } from '~/utils/response-utils'
+import { StandardResponse } from '~/lib/responses'
+import { deleteUser, updateUserDetails } from '~/services/user-service.server'
 
 /**
  * @openapi
@@ -273,9 +268,7 @@ import { StandardResponse } from '~/utils/response-utils'
  *           type: string
  *           example: The server was unable to complete your request. Please try again later.
  */
-export const loader: LoaderFunction = async ({
-	request,
-}: LoaderFunctionArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
 	try {
 		const jwtResponse = await getUserFromJwt(request)
 
@@ -291,12 +284,10 @@ export const loader: LoaderFunction = async ({
 	}
 }
 
-export const action: ActionFunction = async ({
-	request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
 	const loaderValue = (await loader({
 		request,
-	} as LoaderFunctionArgs)) as Response
+	} as Route.LoaderArgs)) as Response
 	if (loaderValue.status !== 200) return loaderValue
 
 	const user = (await loaderValue.json()).data.me as User

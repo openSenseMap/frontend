@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	type MetaFunction,
 	data,
 	redirect,
@@ -13,6 +11,7 @@ import {
 	useSearchParams,
 	useLoaderData,
 } from 'react-router'
+import { type Route } from './+types/explore.login'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Spinner from '~/components/spinner'
@@ -27,11 +26,11 @@ import {
 } from '~/components/ui/card'
 import { Checkbox } from '~/components/ui/checkbox'
 import { toast } from '~/components/ui/use-toast'
-import { verifyLogin } from '~/models/user.server'
+import { verifyLogin } from '~/db/models/user.server'
+import { createUserSession, getUserId } from '~/services/session-service.server'
 import { safeRedirect } from '~/utils'
-import { createUserSession, getUserId } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const userId = await getUserId(request)
 	if (userId) {
@@ -44,7 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	})
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const identifier = formData.get('identifier')
 	const password = formData.get('password')
@@ -152,7 +151,7 @@ export default function LoginPage() {
 			</Link>
 			<Card className="z-50 w-full max-w-md">
 				{navigation.state === 'loading' && (
-					<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
 					</div>
 				)}
@@ -223,10 +222,10 @@ export default function LoginPage() {
 						</div>
 					</CardContent>
 					<CardFooter className="flex flex-col items-center gap-2">
-						<Button type="submit" className="w-full bg-light-blue">
+						<Button type="submit" className="bg-light-blue w-full">
 							{t('sign_in_button')}
 						</Button>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{t('no_account_label')}{' '}
 							<Link
 								className="font-medium underline"

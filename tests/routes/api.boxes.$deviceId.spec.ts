@@ -1,19 +1,16 @@
-import {
-	type AppLoadContext,
-	type LoaderFunctionArgs,
-	type ActionFunctionArgs,
-} from 'react-router'
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
-import { BASE_URL } from 'vitest.setup'
+import invariant from 'tiny-invariant'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId'
+import { BASE_URL } from '../../vitest.setup'
+import { createDevice, deleteDevice } from '~/db/models/device.server'
+import { deleteUserByEmail } from '~/db/models/user.server'
+import { type User, type Device } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
-import { registerUser } from '~/lib/user-service.server'
-import { createDevice, deleteDevice } from '~/models/device.server'
-import { deleteUserByEmail } from '~/models/user.server'
 import {
 	loader as deviceLoader,
 	action as deviceAction,
 } from '~/routes/api.boxes.$deviceId'
-import { type User, type Device } from '~/schema'
+import { registerUser } from '~/services/user-service.server'
 
 const DEVICE_TEST_USER = generateTestUserCredentials()
 
@@ -31,7 +28,7 @@ const generateMinimalDevice = (
 describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 	let user: User | null = null
 	let jwt: string = ''
-	let queryableDevice: Device | null = null
+	let queryableDevice: Device
 
 	beforeAll(async () => {
 		const registration = await registerUser(
@@ -39,7 +36,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			DEVICE_TEST_USER.email,
 			DEVICE_TEST_USER.password,
 			'en_US',
-			true
+			true,
 		)
 		expect(registration.ok).toBe(true)
 
@@ -63,6 +60,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			},
 			(user as User).id,
 		)
+
+		invariant(queryableDevice, 'Failed to create test device')
 	})
 
 	describe('GET', () => {
@@ -77,11 +76,10 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 
 			// Act
 			const dataFunctionValue = await deviceLoader({
-				request: request,
-				params: { deviceId: queryableDevice!.id },
-				context: {} as AppLoadContext,
-			} as LoaderFunctionArgs)
-
+				params: {
+					deviceId: queryableDevice.id,
+				},
+			} as Route.LoaderArgs)
 			const response = dataFunctionValue as Response
 
 			// Assert initial response
@@ -148,8 +146,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs as Route.ActionArgs)
 			const data = await response.json()
 
 			expect(response.status).toBe(200)
@@ -201,11 +198,10 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				body: JSON.stringify(update_payload),
 			})
 
-			const response: any = await deviceAction({
+			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs as Route.ActionArgs)
 
 			expect(response.status).toBe(200)
 
@@ -249,8 +245,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -274,8 +269,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -299,8 +293,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -325,8 +318,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -353,8 +345,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const response = await deviceAction({
 				request,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(response.status).toBe(200)
 			const data = await response.json()
@@ -390,8 +381,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const badDeleteResponse = await deviceAction({
 				request: badDeleteRequest,
 				params: { deviceId: queryableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(badDeleteResponse).toBeInstanceOf(Response)
 			expect(badDeleteResponse.status).toBe(401)
@@ -419,8 +409,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const validDeleteResponse = await deviceAction({
 				request: validDeleteRequest,
 				params: { deviceId: deletableDevice?.id },
-				context: {} as AppLoadContext,
-			} as ActionFunctionArgs)
+			} as Route.ActionArgs)
 
 			expect(validDeleteResponse).toBeInstanceOf(Response)
 			expect(validDeleteResponse.status).toBe(200)
@@ -439,11 +428,10 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			)
 
 			const getDeletedResponse = await deviceLoader({
-				request: getDeletedRequest,
-				params: { deviceId: deletableDevice?.id },
-				context: {} as AppLoadContext,
-			} as LoaderFunctionArgs)
-
+				params: {
+					deviceId: deletableDevice?.id,
+				},
+			} as Route.LoaderArgs)
 			expect(getDeletedResponse).toBeInstanceOf(Response)
 			expect(getDeletedResponse.status).toBe(404)
 			expect(getDeletedResponse.headers.get('content-type')).toBe(

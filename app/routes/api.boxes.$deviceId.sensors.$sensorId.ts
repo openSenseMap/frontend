@@ -1,11 +1,11 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
-import { getLatestMeasurementsForSensor } from '~/lib/measurement-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { type Route } from './+types/api.boxes.$deviceId.sensors.$sensorId'
+import { StandardResponse } from '~/lib/responses'
+import { getLatestMeasurementsForSensor } from '~/services/measurement-service.server'
 
-export const loader: LoaderFunction = async ({
+export const loader = async ({
 	request,
 	params,
-}: LoaderFunctionArgs): Promise<Response> => {
+}: Route.LoaderArgs): Promise<Response> => {
 	try {
 		const deviceId = params.deviceId
 		if (deviceId === undefined)

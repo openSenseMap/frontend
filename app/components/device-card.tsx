@@ -6,7 +6,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from './ui/card'
-import { type Device } from '~/schema'
+import { type Device } from '~/db/schema'
 
 interface DeviceCardProps {
 	device: Device
@@ -22,7 +22,7 @@ export default function DeviceCard({ device }: DeviceCardProps) {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div className="flex space-x-4 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex space-x-4 text-sm">
 					<div className="flex items-center">
 						<Circle className="mr-1 h-3 w-3" fill="green" />
 						{device.model}

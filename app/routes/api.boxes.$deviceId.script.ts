@@ -1,12 +1,6 @@
 import SketchTemplater from '@sensebox/sketch-templater'
-
-import {
-	type ActionFunction,
-	type ActionFunctionArgs,
-	type LoaderFunction,
-	type LoaderFunctionArgs,
-} from 'react-router'
-import { getDevice } from '~/models/device.server'
+import { type Route } from './+types/api.boxes.$deviceId.script'
+import { getDevice } from '~/db/models/device.server'
 
 const cfg = {
 	'sketch-templater': {
@@ -68,10 +62,10 @@ const handleSketch = async (
 	})
 }
 
-export const loader: LoaderFunction = async ({
+export const loader = async ({
 	request,
 	params,
-}: LoaderFunctionArgs): Promise<Response> => {
+}: Route.LoaderArgs): Promise<Response> => {
 	try {
 		const url = new URL(request.url)
 		const formEntries = Object.fromEntries(
@@ -93,10 +87,10 @@ export const loader: LoaderFunction = async ({
 	}
 }
 
-export const action: ActionFunction = async ({
+export const action = async ({
 	request,
 	params,
-}: ActionFunctionArgs): Promise<Response> => {
+}: Route.ActionArgs): Promise<Response> => {
 	try {
 		const formData = await request.formData()
 		const formEntries = Object.fromEntries(formData.entries())

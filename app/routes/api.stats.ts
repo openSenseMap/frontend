@@ -1,8 +1,8 @@
-import { type LoaderFunctionArgs } from 'react-router'
-import { getStatistics } from '~/lib/statistics-service.server'
-import { StandardResponse } from '~/utils/response-utils'
+import { type Route } from './+types/api.stats'
+import { StandardResponse } from '~/lib/responses'
+import { getStatistics } from '~/services/statistics-service.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	try {
 		const url = new URL(request.url)
 		const humanParam = url.searchParams.get('human')

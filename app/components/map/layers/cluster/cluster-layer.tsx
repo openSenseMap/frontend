@@ -6,13 +6,13 @@ import {
 } from 'geojson'
 import debounce from 'lodash.debounce'
 import { useMemo, useCallback, useState, useEffect } from 'react'
-import { Marker, useMap } from 'react-map-gl'
+import { Marker, useMap } from 'react-map-gl/mapbox'
 import { type PointFeature } from 'supercluster'
 import useSupercluster from 'use-supercluster'
 import BoxMarker from './box-marker'
 import DonutChartCluster from './donut-chart-cluster'
+import { type Device } from '~/db/schema'
 import { type DeviceClusterProperties } from '~/routes/explore'
-import { type Device } from '~/schema'
 
 const DEBOUNCE_VALUE = 50
 
@@ -48,8 +48,8 @@ export default function ClusterLayer({
 	const { osem: mapRef } = useMap()
 
 	// the viewport bounds and zoom level
-	const [bounds, setBounds] = useState(
-		mapRef?.getMap().getBounds().toArray().flat() as BBox,
+	const [bounds, setBounds] = useState<BBox>(
+		(mapRef?.getMap().getBounds()?.toArray().flat() as BBox) ?? [0, 0, 0, 0],
 	)
 	const [zoom, setZoom] = useState(mapRef?.getZoom() || 0)
 
@@ -69,7 +69,10 @@ export default function ClusterLayer({
 	// debounce the change handler to prevent too many updates
 	const debouncedChangeHandler = debounce(() => {
 		if (!mapRef) return
-		setBounds(mapRef.getMap().getBounds().toArray().flat() as BBox)
+		const newBounds = mapRef.getMap().getBounds()?.toArray().flat() as
+			| BBox
+			| undefined
+		if (newBounds) setBounds(newBounds)
 		setZoom(mapRef.getZoom())
 	}, DEBOUNCE_VALUE)
 

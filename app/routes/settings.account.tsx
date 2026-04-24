@@ -8,11 +8,10 @@ import {
 	useLoaderData,
 	data,
 	redirect,
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
 	useSearchParams,
 } from 'react-router'
 import invariant from 'tiny-invariant'
+import { type Route } from './+types/settings.account'
 import { Callout } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import {
@@ -33,7 +32,6 @@ import {
 	SelectValue,
 } from '~/components/ui/select'
 import { useToast } from '~/components/ui/use-toast'
-import { resendEmailConfirmation } from '~/lib/user-service.server'
 import {
 	getUserById,
 	updateUserEmail,
@@ -41,10 +39,11 @@ import {
 	updateUserlocale,
 	verifyLogin,
 	getUserByAnyEmail,
-} from '~/models/user.server'
-import { getUserId } from '~/utils/session.server'
+} from '~/db/models/user.server'
+import { getUserId } from '~/services/session-service.server'
+import { resendEmailConfirmation } from '~/services/user-service.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
@@ -54,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return user
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const intent = String(formData.get('intent') ?? '')
 
@@ -98,7 +97,8 @@ export async function action({ request }: ActionFunctionArgs) {
 	const wantsNameChange = name.length > 0 && name !== user.name
 	const wantsLanguageChange = language.length > 0 && language !== user.language
 
-	const wantsAnyChange = wantsNameChange || wantsLanguageChange || wantsEmailChange
+	const wantsAnyChange =
+		wantsNameChange || wantsLanguageChange || wantsEmailChange
 
 	if (!wantsAnyChange) {
 		return data(
@@ -145,12 +145,15 @@ export async function action({ request }: ActionFunctionArgs) {
 			return data(
 				{
 					intent: 'update-profile',
-					errors: { name: null, email: 'Email already in use', passwordUpdate: null },
+					errors: {
+						name: null,
+						email: 'Email already in use',
+						passwordUpdate: null,
+					},
 				},
 				{ status: 409 },
 			)
 		}
-
 	}
 
 	if (wantsNameChange) {
@@ -167,7 +170,10 @@ export async function action({ request }: ActionFunctionArgs) {
 		try {
 			await resendEmailConfirmation(updatedUser)
 		} catch (err) {
-			console.error('Failed to send email confirmation after email change:', err)
+			console.error(
+				'Failed to send email confirmation after email change:',
+				err,
+			)
 			return data(
 				{
 					intent: 'update-profile',
@@ -199,25 +205,29 @@ export default function EditUserProfilePage() {
 	const [params] = useSearchParams()
 	useEffect(() => {
 		const status = params.get('emailConfirm')
-		if (status === 'ok') toast({ title: t('email_confirmed'), variant: 'success' })
-		if (status === 'invalid_or_expired') toast({ title: t('verification_link_invalid'), variant: 'destructive' })
-		if (status === 'missing_params') toast({ title: t('verification_link_invalid'), variant: 'destructive' })
+		if (status === 'ok')
+			toast({ title: t('email_confirmed'), variant: 'success' })
+		if (status === 'invalid_or_expired')
+			toast({ title: t('verification_link_invalid'), variant: 'destructive' })
+		if (status === 'missing_params')
+			toast({ title: t('verification_link_invalid'), variant: 'destructive' })
 	}, [params, toast, t])
 
 	const passwordUpdRef = useRef<HTMLInputElement>(null)
 
-	const { pendingEmail, hasPendingEmail, emailShown, showConfirmed } = useMemo(() => {
-		const pending = (userData?.unconfirmedEmail ?? '').trim()
-		const hasPending = pending.length > 0
-		const shown = hasPending ? pending : (userData?.email ?? '')
-		const confirmed = Boolean(userData?.emailIsConfirmed) && !hasPending
-		return {
-			pendingEmail: pending,
-			hasPendingEmail: hasPending,
-			emailShown: shown,
-			showConfirmed: confirmed,
-		}
-	}, [userData])
+	const { pendingEmail, hasPendingEmail, emailShown, showConfirmed } =
+		useMemo(() => {
+			const pending = (userData?.unconfirmedEmail ?? '').trim()
+			const hasPending = pending.length > 0
+			const shown = hasPending ? pending : (userData?.email ?? '')
+			const confirmed = Boolean(userData?.emailIsConfirmed) && !hasPending
+			return {
+				pendingEmail: pending,
+				hasPendingEmail: hasPending,
+				emailShown: shown,
+				showConfirmed: confirmed,
+			}
+		}, [userData])
 
 	const [name, setName] = useState(userData?.name ?? '')
 	const [email, setEmail] = useState(emailShown)
@@ -245,7 +255,10 @@ export default function EditUserProfilePage() {
 		}
 
 		if ('emailDeliveryFailed' in actionData && actionData.emailDeliveryFailed) {
-			toast({ title: t('email_change_delivery_failed'), variant: 'destructive' })
+			toast({
+				title: t('email_change_delivery_failed'),
+				variant: 'destructive',
+			})
 			return
 		}
 
@@ -274,7 +287,7 @@ export default function EditUserProfilePage() {
 
 	return (
 		<Form method="post" className="space-y-6" noValidate>
-			<Card className="dark:border-white dark:bg-dark-boxes">
+			<Card className="dark:bg-dark-boxes dark:border-white">
 				<CardHeader>
 					<CardTitle>{t('account_information')}</CardTitle>
 					<CardDescription>{t('update_basic_details')}</CardDescription>
@@ -292,7 +305,7 @@ export default function EditUserProfilePage() {
 							onChange={(e) => setName(e.target.value)}
 						/>
 						{name !== (userData?.name ?? '') && (
-							 <Callout variant="warning">
+							<Callout variant="warning">
 								<Trans
 									i18nKey="username_change_warning"
 									ns="settings"
@@ -351,7 +364,7 @@ export default function EditUserProfilePage() {
 						)}
 
 						{hasPendingEmail ? (
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								{t('email_change_pending_hint', {
 									pendingEmail,
 									currentEmail: userData?.email ?? '',

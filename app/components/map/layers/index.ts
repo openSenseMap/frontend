@@ -1,4 +1,4 @@
-import { type LayerProps } from 'react-map-gl'
+import { type LayerProps } from 'react-map-gl/mapbox'
 
 // colors to use for the categories
 const colors = ['#4EAF47', '#666', '#666', '#666']
