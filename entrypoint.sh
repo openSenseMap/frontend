@@ -1,4 +1,4 @@
 #!/bin/sh -ex
 
-npx --yes tsx ./db/migrate.ts
+npx --yes tsx ./scripts/db/migrate.ts
 npm run start

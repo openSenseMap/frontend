@@ -75,18 +75,18 @@ export default function Menu() {
 					<DropdownMenuLabel className="font-normal">
 						{!user ? (
 							<div className="flex flex-col space-y-1">
-								<p className="text-sm font-medium leading-none">{t('title')}</p>
-								<p className="text-xs leading-none text-muted-foreground">
+								<p className="text-sm leading-none font-medium">{t('title')}</p>
+								<p className="text-muted-foreground text-xs leading-none">
 									{t('subtitle')}
 								</p>
 							</div>
 						) : (
 							<div className="flex flex-col space-y-1 p-2">
-								<p className="text-sm font-medium leading-none">
+								<p className="text-sm leading-none font-medium">
 									{/* Max Mustermann */}
 									{user?.name}
 								</p>
-								<p className="text-xs leading-none text-muted-foreground">
+								<p className="text-muted-foreground text-xs leading-none">
 									{user?.email}
 								</p>
 							</div>
@@ -96,7 +96,7 @@ export default function Menu() {
 					{user && (
 						<DropdownMenuGroup>
 							{navigation.state === 'loading' && (
-								<div className="bg-white/30 dark:bg-zinc-800/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-xs">
+								<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 									<Spinner />
 								</div>
 							)}
@@ -196,7 +196,7 @@ export default function Menu() {
 									onClick={() => setOpen(false)}
 									className="w-full cursor-pointer"
 								>
-									<button className="relative flex w-full select-none items-center rounded-sm text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground">
+									<button className="hover:bg-accent focus:bg-accent focus:text-accent-foreground relative flex w-full items-center rounded-sm text-sm outline-hidden transition-colors select-none">
 										<LogIn className="mr-2 h-5 w-5" />
 										<span className="text-light-green">{t('login_label')}</span>
 									</button>
@@ -216,7 +216,7 @@ export default function Menu() {
 									<input type="hidden" name="redirectTo" value={redirectTo} />
 									<button
 										type="submit"
-										className="relative flex w-full select-none items-center rounded-sm text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+										className="hover:bg-accent focus:bg-accent focus:text-accent-foreground relative flex w-full items-center rounded-sm text-sm outline-hidden transition-colors select-none"
 										disabled={isLoggingOut}
 									>
 										<LogOut className="mr-2 h-5 w-5" />

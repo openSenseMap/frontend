@@ -21,7 +21,7 @@ export function CustomDeviceConfig() {
 		unit: '',
 		sensorType: '',
 	})
-	const { t } = useTranslation('newdevice');
+	const { t } = useTranslation('newdevice')
 
 	// Sync state with form context on mount
 	useEffect(() => {

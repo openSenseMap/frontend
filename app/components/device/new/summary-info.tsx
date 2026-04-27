@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
-
 export function SummaryInfo() {
 	const { getValues } = useFormContext()
 	const formData = getValues()
@@ -63,24 +62,30 @@ export function SummaryInfo() {
 		<div className="space-y-6">
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				{sections.map((section, index) => (
-					<Card key={index} className="overflow-hidden border border-border bg-card shadow-xs">
+					<Card
+						key={index}
+						className="border-border bg-card overflow-hidden border shadow-xs"
+					>
 						<CardContent className="p-0">
-							<div className="flex items-center gap-3 border-b bg-muted/40 px-4 py-3">
-								<div className="flex h-9 w-9 items-center justify-center rounded-md bg-background text-muted-foreground shadow-xs">
+							<div className="bg-muted/40 flex items-center gap-3 border-b px-4 py-3">
+								<div className="bg-background text-muted-foreground flex h-9 w-9 items-center justify-center rounded-md shadow-xs">
 									{section.icon}
 								</div>
-								<h4 className="text-sm font-semibold tracking-tight text-foreground">
+								<h4 className="text-foreground text-sm font-semibold tracking-tight">
 									{t(section.title)}
 								</h4>
 							</div>
 
 							<div className="space-y-2 p-4">
 								{section.data.map((item: any, idx: any) => (
-									<div key={idx} className="flex items-start justify-between gap-4">
-										<span className="text-sm text-muted-foreground">
+									<div
+										key={idx}
+										className="flex items-start justify-between gap-4"
+									>
+										<span className="text-muted-foreground text-sm">
 											{t(item.label)}:
 										</span>
-										<span className="max-w-[60%] text-right text-sm font-medium text-foreground">
+										<span className="text-foreground max-w-[60%] text-right text-sm font-medium">
 											{item.value}
 										</span>
 									</div>

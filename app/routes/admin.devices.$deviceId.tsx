@@ -157,7 +157,7 @@ export default function AdminDeviceDetailRoute({
 				<div className="md:grid md:grid-cols-3 md:gap-6">
 					<div className="md:col-span-1">
 						<div className="px-4 sm:px-0">
-							<h3 className="text-lg font-medium leading-6 text-gray-900">
+							<h3 className="text-lg leading-6 font-medium text-gray-900">
 								Device details
 							</h3>
 							<p className="mt-1 text-sm text-gray-600">
@@ -186,7 +186,7 @@ export default function AdminDeviceDetailRoute({
 												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											{actionData?.fieldErrors?.name ? (
-												<p className="text-red-600 mt-1 text-sm">
+												<p className="mt-1 text-sm text-red-600">
 													{actionData.fieldErrors.name}
 												</p>
 											) : null}
@@ -434,7 +434,7 @@ export default function AdminDeviceDetailRoute({
 												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											{actionData?.fieldErrors?.longitude ? (
-												<p className="text-red-600 mt-1 text-sm">
+												<p className="mt-1 text-sm text-red-600">
 													{actionData.fieldErrors.longitude}
 												</p>
 											) : null}
@@ -460,7 +460,7 @@ export default function AdminDeviceDetailRoute({
 												className="mt-1 block w-full rounded-md border-gray-300 shadow-xs"
 											/>
 											{actionData?.fieldErrors?.latitude ? (
-												<p className="text-red-600 mt-1 text-sm">
+												<p className="mt-1 text-sm text-red-600">
 													{actionData.fieldErrors.latitude}
 												</p>
 											) : null}

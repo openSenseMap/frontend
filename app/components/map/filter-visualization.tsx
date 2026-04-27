@@ -4,6 +4,8 @@ import { useLoaderData, useNavigate } from 'react-router'
 import { DeviceExposureZodEnum, DeviceStatusZodEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/explore'
 
+const FILTER_KEYS = new Set(['exposure', 'status', 'tags'])
+
 export default function FilterVisualization() {
 	const data = useLoaderData<typeof loader>()
 	const navigate = useNavigate()
@@ -29,6 +31,7 @@ export default function FilterVisualization() {
 		const newParams = new URLSearchParams(params)
 
 		params.forEach((value, key) => {
+			if (!FILTER_KEYS.has(key)) return
 			const values = value.split(',') // Handle comma-separated values
 			const validValues = values.filter((v) => isValidFilter(key, v))
 
@@ -59,6 +62,7 @@ export default function FilterVisualization() {
 	const groupedFilters: { [key: string]: string[] } = {}
 
 	params.forEach((value, key) => {
+		if (!FILTER_KEYS.has(key)) return
 		const values = value.split(',').filter((v) => isValidFilter(key, v))
 		if (values.length > 0) {
 			groupedFilters[key] = values // Group valid values under the same key

@@ -534,10 +534,10 @@ export default function Graph({
 			>
 				<div
 					ref={nodeRef}
-					className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs md:bottom-[30px] md:left-auto md:right-4 md:top-auto md:h-[35%] md:max-h-[35%] md:w-[60vw]"
+					className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 md:top-auto md:right-4 md:bottom-[30px] md:left-auto md:h-[35%] md:max-h-[35%] md:w-[60vw] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs"
 				>
 					{navigation.state === 'loading' && (
-						<div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+						<div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-100/30 backdrop-blur-[1.5px]">
 							<Spinner />
 						</div>
 					)}

@@ -44,7 +44,7 @@ export default function MapLegend({
 
 	return (
 		<Card
-			className={`absolute w-40 ${positionClasses[position]} rounded-lg bg-white bg-opacity-90 p-2 shadow-md`}
+			className={`absolute w-40 ${positionClasses[position]} bg-opacity-90 rounded-lg bg-white p-2 shadow-md`}
 		>
 			<div className="flex items-center justify-between">
 				<h3 className="text-sm font-semibold">Trips</h3>

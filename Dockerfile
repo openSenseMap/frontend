@@ -47,9 +47,9 @@ COPY --from=build /myapp/build /myapp/build
 # Not sure if we really need this or if we should move all our /public folder to /app/assets
 COPY --from=build /myapp/public /myapp/public
 
-COPY ./entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+COPY ./entrypoint.sh /myapp/entrypoint.sh
 
 ADD . .
+RUN chmod +x ./entrypoint.sh
 
-ENTRYPOINT [ "./entrypoint.sh" ]
+ENTRYPOINT ["./entrypoint.sh"]
