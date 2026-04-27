@@ -9,6 +9,7 @@ import {
 	useActionData,
 	useNavigation,
 	useSearchParams,
+	useLoaderData,
 } from 'react-router'
 import { type Route } from './+types/explore.login'
 import { Input } from '@/components/ui/input'
@@ -30,9 +31,16 @@ import { createUserSession, getUserId } from '~/services/session-service.server'
 import { safeRedirect } from '~/utils'
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const url = new URL(request.url)
 	const userId = await getUserId(request)
-	if (userId) return redirect('/explore')
-	return {}
+	if (userId) {
+		const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
+		return redirect(redirectTo)
+	}
+
+	return data({
+		redirectTo: safeRedirect(url.searchParams.get('redirectTo'), '/explore'),
+	})
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -105,6 +113,7 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
 	const [searchParams] = useSearchParams()
+	const loaderData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const identifierRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
@@ -147,6 +156,11 @@ export default function LoginPage() {
 					</div>
 				)}
 				<Form method="post" className="space-y-6" noValidate>
+					<input
+						type="hidden"
+						name="redirectTo"
+						value={loaderData.redirectTo}
+					/>
 					<CardHeader className="space-y-1 text-center">
 						<CardTitle className="text-2xl font-bold">
 							{t('welcome_back')}

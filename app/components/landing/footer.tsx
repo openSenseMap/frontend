@@ -5,24 +5,24 @@ export default function Footer() {
 	return (
 		<footer
 			id="footer"
-			className="w-full bg-white px-4 text-gray-300 dark:bg-black dark:text-gray-100 sm:p-6 lg:text-lg"
+			className="w-full bg-white px-4 text-gray-300 sm:p-6 lg:text-lg dark:bg-black dark:text-gray-100"
 		>
-			<hr className="my-6 border-gray-300 dark:border-gray-100 sm:mx-auto lg:my-8" />
+			<hr className="my-6 border-gray-300 sm:mx-auto lg:my-8 dark:border-gray-100" />
 			<div className="mx-auto w-full max-w-(--breakpoint-xl) p-4 md:flex md:items-center md:justify-between">
-				<span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
+				<span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
 					© 2025{' '}
 					<a href="https://opensenselab.org/" className="hover:underline">
 						openSenseLab
 					</a>
 					. {t('rightsReserved')}
 				</span>
-				<ul className="mt-3 flex flex-wrap items-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
+				<ul className="mt-3 flex flex-wrap items-center text-sm font-medium text-gray-500 sm:mt-0 dark:text-gray-400">
 					<li>
 						<a
 							href="/imprint"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="px-2 hover:text-light-green dark:hover:text-green-200 md:px-8"
+							className="hover:text-light-green px-2 md:px-8 dark:hover:text-green-200"
 						>
 							{t('imprint')}
 						</a>
@@ -32,7 +32,7 @@ export default function Footer() {
 							href="/privacy"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="px-2 hover:text-light-green dark:hover:text-green-200 md:px-8"
+							className="hover:text-light-green px-2 md:px-8 dark:hover:text-green-200"
 						>
 							{t('dataProtection')}
 						</a>
@@ -42,7 +42,7 @@ export default function Footer() {
 							href="https://www.instagram.com/opensenselab/"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="px-2 hover:text-light-green dark:hover:text-green-200 md:px-8"
+							className="hover:text-light-green px-2 md:px-8 dark:hover:text-green-200"
 						>
 							<svg
 								className="h-10 w-10"
@@ -64,7 +64,7 @@ export default function Footer() {
 							href="https://twitter.com/openSenseLab"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="px-2 hover:text-light-green dark:hover:text-green-200 md:px-8"
+							className="hover:text-light-green px-2 md:px-8 dark:hover:text-green-200"
 						>
 							<svg
 								className="h-10 w-10"
@@ -82,7 +82,7 @@ export default function Footer() {
 							href="https://github.com/opensensemap"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="px-2 hover:text-light-green dark:hover:text-green-200 md:px-8"
+							className="hover:text-light-green px-2 md:px-8 dark:hover:text-green-200"
 						>
 							<svg
 								className="h-10 w-10"

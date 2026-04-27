@@ -33,7 +33,7 @@ const PulsingDownloadAnimation = () => {
 		<div className="flex items-center justify-center">
 			<div className="relative">
 				{/* Main download icon */}
-				<div className="text-blue-600 animate-bounce">
+				<div className="animate-bounce text-blue-600">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -52,15 +52,15 @@ const PulsingDownloadAnimation = () => {
 				</div>
 
 				{/* Animated ripples */}
-				<div className="absolute left-0 top-0 h-full w-full animate-ping rounded-full border-2 border-blue-400 opacity-75"></div>
+				<div className="absolute top-0 left-0 h-full w-full animate-ping rounded-full border-2 border-blue-400 opacity-75"></div>
 				<div
-					className="absolute left-0 top-0 h-full w-full animate-pulse rounded-full border border-blue-300 opacity-75"
+					className="absolute top-0 left-0 h-full w-full animate-pulse rounded-full border border-blue-300 opacity-75"
 					style={{ animationDelay: '0.3s' }}
 				></div>
 
 				{/* Small data points moving toward the download icon */}
 				<div
-					className="absolute -left-4 -top-4 h-2 w-2 animate-ping rounded-full bg-blue-500"
+					className="absolute -top-4 -left-4 h-2 w-2 animate-ping rounded-full bg-blue-500"
 					style={{ animationDelay: '0.1s' }}
 				></div>
 				<div
@@ -72,7 +72,7 @@ const PulsingDownloadAnimation = () => {
 					style={{ animationDelay: '0.7s' }}
 				></div>
 			</div>
-			<span className="text-blue-600 ml-3 font-medium">
+			<span className="ml-3 font-medium text-blue-600">
 				{t('processingData')}
 			</span>
 		</div>
@@ -83,7 +83,7 @@ const PulsingDownloadAnimation = () => {
 const DataReadyAnimation = () => {
 	const { t } = useTranslation('download')
 	return (
-		<div className="flex items-center justify-center text-light-blue">
+		<div className="text-light-blue flex items-center justify-center">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="24"
@@ -160,7 +160,9 @@ export default function Download(props: any) {
 	}
 
 	// Filter devices inside the current bounds
-	const bounds = mapRef?.getMap().getBounds()?.toArray().flat() as BBox | undefined
+	const bounds = mapRef?.getMap().getBounds()?.toArray().flat() as
+		| BBox
+		| undefined
 	const devicesInBounds =
 		bounds && bounds.length === 4
 			? devices.filter((device: any) => {
@@ -241,7 +243,7 @@ export default function Download(props: any) {
 						<div className="grid gap-2">
 							<div className="flex items-center justify-between">
 								<Label htmlFor="devices">{t('devices')}</Label>
-								<span className="text-blue-600 text-sm font-medium">
+								<span className="text-sm font-medium text-blue-600">
 									{deviceIDs.length} 📡 {t('selected')}
 								</span>
 							</div>

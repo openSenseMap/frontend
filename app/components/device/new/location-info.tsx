@@ -14,7 +14,6 @@ import { Label } from '~/components/ui/label'
 import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 
 
-
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
 	const { register, setValue, watch } = useFormContext()

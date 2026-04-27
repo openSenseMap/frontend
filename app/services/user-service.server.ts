@@ -42,7 +42,6 @@ import PasswordResetEmail, {
 } from '~/emails/password-reset'
 import { subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
 
-
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
 type RegisterUserResult =
