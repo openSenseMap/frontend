@@ -185,12 +185,6 @@ export default function Explore() {
 
 	const mapRef = useRef<MapRef | null>(null)
 
-	// get map bounds
-	const [, setViewState] = useState({
-		longitude: 7.628202,
-		latitude: 51.961563,
-		zoom: 2,
-	})
 	const navigate = useNavigate()
 	// const [showSearch, setShowSearch] = useState<boolean>(false);
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
@@ -361,7 +355,6 @@ export default function Explore() {
 					/>
 				)}
 				<Map
-					onMove={(evt) => setViewState(evt.viewState)}
 					interactiveLayerIds={selectedPheno ? ['phenomenon-layer'] : []}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
