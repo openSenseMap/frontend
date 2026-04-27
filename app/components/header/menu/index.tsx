@@ -11,6 +11,7 @@ import {
 	Settings,
 	Compass,
 	ScrollText,
+	MessagesSquare,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -33,8 +34,10 @@ import {
 import Spinner from '~/components/spinner'
 import { toast } from '~/components/ui/use-toast'
 import { useOptionalUser } from '~/utils'
+import { useRootRouteLoaderData } from '~/root'
 
 export default function Menu() {
+	const { ENV } = useRootRouteLoaderData()
 	const [searchParams] = useSearchParams()
 	const redirectTo =
 		searchParams.size > 0 ? '/explore?' + searchParams.toString() : '/explore'
@@ -129,6 +132,13 @@ export default function Menu() {
 						</DropdownMenuGroup>
 					)}
 					<DropdownMenuGroup>
+						<Link to={ENV.COMMUNITY_URL} target="_blank">
+							<DropdownMenuItem className="cursor-pointer">
+								<MessagesSquare className="mr-2 h-5 w-5" />
+								<span>{t('community_label')}</span>
+								<ExternalLink className="ml-auto h-4 w-4 text-gray-300" />
+							</DropdownMenuItem>
+						</Link>
 						<Link to="https://docs.opensensemap.org/" target="_blank">
 							<DropdownMenuItem className="cursor-pointer">
 								<Globe className="mr-2 h-5 w-5" />
