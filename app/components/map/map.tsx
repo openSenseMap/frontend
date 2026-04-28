@@ -17,51 +17,6 @@ const DEFAULT_LIGHT_STYLE =
 const DEFAULT_DARK_STYLE =
 	'https://api.maptiler.com/maps/outdoor-v2/style.json?key=x4PkWnbJomR3gQAHHEce'
 
-function applyGlobeAppearance(map: MapLibreMap) {
-	map.setProjection({ type: 'globe' })
-
-	// Atmosphere / halo around the globe.
-	// MapLibre recommends interpolating atmosphere-blend for globe projection.
-	map.setSky({
-		'sky-color': '#0b1220',
-		'horizon-color': '#7aa2ff',
-		'fog-color': '#dfefff',
-		'sky-horizon-blend': 0.12,
-		'horizon-fog-blend': 0.08,
-		'fog-ground-blend': 0.06,
-		'atmosphere-blend': [
-			'interpolate',
-			['linear'],
-			['zoom'],
-			0,
-			1,
-			3,
-			1,
-			5,
-			0.85,
-			7,
-			0.45,
-			9,
-			0.12,
-		],
-	})
-
-	// Optional terrain adds depth and helps the globe feel less flat.
-	// Safe to skip if you don't want DEM tiles.
-	if (!map.getSource('terrainSource')) {
-		map.addSource('terrainSource', {
-			type: 'raster-dem',
-			url: 'https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=x4PkWnbJomR3gQAHHEce',
-			tileSize: 256,
-		})
-	}
-
-	map.setTerrain({
-		source: 'terrainSource',
-		exaggeration: 1,
-	})
-}
-
 const Map = forwardRef<MapRef, MapProps>(
 	({ children, initialViewState, onLoad, ...props }, ref) => {
 		const theme = 'dark'
@@ -108,10 +63,7 @@ const Map = forwardRef<MapRef, MapProps>(
 		const handleMapLoad = useCallback(
 			(event: { target: MapLibreMap }) => {
 				const map = event.target
-
-				applyGlobeAppearance(map)
 				updateMapLanguage(map, i18n.language)
-
 				onLoad?.(event as any)
 			},
 			[i18n.language, onLoad, updateMapLanguage],
@@ -122,8 +74,6 @@ const Map = forwardRef<MapRef, MapProps>(
 
 			const map = ref.current.getMap()
 			if (!map.isStyleLoaded()) return
-
-			applyGlobeAppearance(map)
 			updateMapLanguage(map, i18n.language)
 		}, [i18n.language, ref, updateMapLanguage])
 
@@ -147,6 +97,29 @@ const Map = forwardRef<MapRef, MapProps>(
 					pitchWithRotate={false}
 					touchZoomRotate={{ around: 'center' }}
 					hash={true}
+					sky={{
+						'sky-color': '#0b1220',
+						'horizon-color': '#7aa2ff',
+						'fog-color': '#dfefff',
+						'sky-horizon-blend': 0.12,
+						'horizon-fog-blend': 0.08,
+						'fog-ground-blend': 0.06,
+						'atmosphere-blend': [
+							'interpolate',
+							['linear'],
+							['zoom'],
+							0,
+							1,
+							3,
+							1,
+							5,
+							0.85,
+							7,
+							0.45,
+							9,
+							0.12,
+						],
+					}}
 					style={{
 						width: '100%',
 						height: '100%',
