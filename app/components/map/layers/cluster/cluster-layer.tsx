@@ -14,7 +14,7 @@ import DonutChartCluster from './donut-chart-cluster'
 import { type Device } from '~/db/schema'
 import { type DeviceClusterProperties } from '~/routes/explore'
 
-const DEBOUNCE_VALUE = 50
+const DEBOUNCE_DELAY_MS = 200
 
 // supercluster options
 const options = {
@@ -74,7 +74,7 @@ export default function ClusterLayer({
 			| undefined
 		if (newBounds) setBounds(newBounds)
 		setZoom(mapRef.getZoom())
-	}, DEBOUNCE_VALUE)
+	}, DEBOUNCE_DELAY_MS)
 
 	// register the debounced change handler to map events
 	useEffect(() => {
