@@ -155,7 +155,6 @@ const Map = forwardRef<MapRef, MapProps>(
 						left: 0,
 						background: 'transparent',
 					}}
-					workerCount={4}
 					onLoad={handleMapLoad}
 					{...props}
 				>
