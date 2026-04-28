@@ -9,6 +9,7 @@ import {
 	type MapRef,
 	type MarkerDragEvent,
 } from 'react-map-gl/maplibre'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 
@@ -101,9 +102,6 @@ export function LocationStep() {
 						latitude: marker.latitude ? Number(marker.latitude) : 51,
 						longitude: marker.longitude ? Number(marker.longitude) : 7,
 						zoom: 3.5,
-					}}
-					style={{
-						width: '100%',
 					}}
 					onClick={onMapClick}
 				>

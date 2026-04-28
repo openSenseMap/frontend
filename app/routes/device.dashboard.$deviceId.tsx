@@ -1,6 +1,6 @@
 import moment from 'moment'
 import { Map, MapProvider, Marker } from 'react-map-gl/maplibre'
-import { type LinksFunction } from 'react-router'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
 import {
