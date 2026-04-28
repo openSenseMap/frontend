@@ -8,7 +8,7 @@ import {
 	type MapProps,
 	type MapRef,
 } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css?url'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import SpaceBackground from './space-background'
 
 const DEFAULT_LIGHT_STYLE =

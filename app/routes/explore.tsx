@@ -15,7 +15,6 @@ import {
 	useSearchParams,
 	useLoaderData,
 	useParams,
-	type LinksFunction,
 } from 'react-router'
 import type Supercluster from 'supercluster'
 import { type Route } from './+types/explore'
