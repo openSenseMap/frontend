@@ -11,6 +11,7 @@ import {
 	CardTitle,
 } from '~/components/ui/card'
 import { diffFromCreateDate, getMinuteFormattedString } from '~/utils'
+import { BaseMap } from '~/components/base-map'
 
 let deviceData = {
 	_id: '5b411d0e5dc1ec001b4f11c8',
@@ -164,7 +165,7 @@ export default function DeviceDashboard() {
 						{/* Map view */}
 						<div className="block">
 							<MapProvider>
-								<Map
+								<BaseMap
 									initialViewState={{
 										latitude: marker.latitude,
 										longitude: marker.longitude,
@@ -180,7 +181,7 @@ export default function DeviceDashboard() {
 										longitude={marker.longitude}
 										latitude={marker.latitude}
 									></Marker>
-								</Map>
+								</BaseMap>
 							</MapProvider>
 						</div>
 					</CardContent>

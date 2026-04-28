@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
-	Map,
 	Marker,
 	NavigationControl,
 	GeolocateControl,
@@ -12,6 +11,7 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
+import { BaseMap } from '~/components/base-map'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -96,7 +96,7 @@ export function LocationStep() {
 	return (
 		<div className="flex h-full w-full flex-col">
 			<div className="grow">
-				<Map
+				<BaseMap
 					ref={mapRef}
 					initialViewState={{
 						latitude: marker.latitude ? Number(marker.latitude) : 51,
@@ -120,7 +120,7 @@ export function LocationStep() {
 						showAccuracyCircle={true}
 						trackUserLocation={true}
 					/>
-				</Map>
+				</BaseMap>
 			</div>
 
 			<div className="flex w-full items-center justify-around bg-gray-50 p-4 dark:bg-gray-800">

@@ -23,6 +23,7 @@ import {
 	updateDeviceLocation,
 } from '~/db/models/device.server'
 import { getUserId } from '~/services/session-service.server'
+import { BaseMap } from '~/components/base-map'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -119,7 +120,7 @@ export default function EditLocation() {
 						{/* Map view */}
 						<div className="mt-5">
 							<MapProvider>
-								<Map
+								<BaseMap
 									initialViewState={{
 										latitude: marker.latitude,
 										longitude: marker.longitude,
@@ -139,7 +140,7 @@ export default function EditLocation() {
 										onDrag={onMarkerDrag}
 									></Marker>
 									<NavigationControl position="top-left" showCompass={false} />
-								</Map>
+								</BaseMap>
 							</MapProvider>
 						</div>
 
