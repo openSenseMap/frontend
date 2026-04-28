@@ -17,6 +17,7 @@ const schema = z.object({
 	MYBADGES_ISSUERID_OSEM: z.string(),
 	MYBADGES_CLIENT_ID: z.string(),
 	MYBADGES_CLIENT_SECRET: z.string(),
+	DISCOURSE_URL: z.string().url(),
 })
 
 declare global {
@@ -45,6 +46,7 @@ export function getEnv() {
 		MYBADGES_API_URL: process.env.MYBADGES_API_URL,
 		MYBADGES_URL: process.env.MYBADGES_URL,
 		SENSORWIKI_API_URL: process.env.SENSORWIKI_API_URL,
+		COMMUNITY_URL: process.env.DISCOURSE_URL,
 	}
 }
 

@@ -3,11 +3,8 @@ import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/db/models/device.server'
 
 const cfg = {
-	'sketch-templater': {
-		// Ingress domain. Used in the generation of Arduino sketches
-		// No default
-		ingress_domain: process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',
-	},
+	// The domain used in the generation of Arduino sketches
+	ingress_domain: process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',
 }
 const templateSketcher = new SketchTemplater(cfg)
 type Box = NonNullable<Awaited<ReturnType<typeof getDevice>>>
