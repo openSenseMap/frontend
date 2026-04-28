@@ -170,7 +170,6 @@ export default function DeviceDashboard() {
 										longitude: marker.longitude,
 										zoom: 14,
 									}}
-									mapStyle="https://tiles.openfreemap.org/styles/liberty"
 									style={{
 										width: '100%',
 										height: '200px',
