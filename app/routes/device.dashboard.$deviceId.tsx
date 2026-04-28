@@ -1,4 +1,3 @@
-import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 import moment from 'moment'
 import { Map, MapProvider, Marker } from 'react-map-gl/maplibre'
 import { type LinksFunction } from 'react-router'
@@ -88,17 +87,6 @@ let deviceData = {
 	],
 }
 
-//*****************************************
-//* required to view mapbox proberly (Y.Q.)
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: maplibreCss,
-		},
-	]
-}
-
 //**********************************
 export default function DeviceDashboard() {
 	//* map marker
@@ -182,7 +170,7 @@ export default function DeviceDashboard() {
 										longitude: marker.longitude,
 										zoom: 14,
 									}}
-									mapStyle="https://tiles.openfreemap.org/styles/liberty"								
+									mapStyle="https://tiles.openfreemap.org/styles/liberty"
 									style={{
 										width: '100%',
 										height: '200px',

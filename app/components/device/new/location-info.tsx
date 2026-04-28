@@ -11,8 +11,6 @@ import {
 } from 'react-map-gl/maplibre'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
-import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
-
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -104,8 +102,6 @@ export function LocationStep() {
 						longitude: marker.longitude ? Number(marker.longitude) : 7,
 						zoom: 3.5,
 					}}
-					mapStyle="mapbox://styles/maplibre/streets-v12"
-					// mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 					style={{
 						width: '100%',
 					}}

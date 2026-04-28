@@ -8,6 +8,7 @@ import {
 	type MapProps,
 	type MapRef,
 } from 'react-map-gl/maplibre'
+import 'maplibre-gl/dist/maplibre-gl.css?url'
 import SpaceBackground from './space-background'
 
 const DEFAULT_LIGHT_STYLE =
@@ -62,7 +63,7 @@ function applyGlobeAppearance(map: MapLibreMap) {
 }
 
 const Map = forwardRef<MapRef, MapProps>(
-	({ children, mapStyle, initialViewState, onLoad, ...props }, ref) => {
+	({ children, initialViewState, onLoad, ...props }, ref) => {
 		const theme = 'dark'
 		const { i18n } = useTranslation()
 
@@ -139,15 +140,13 @@ const Map = forwardRef<MapRef, MapProps>(
 							zoom: 2,
 						}
 					}
-					mapStyle={
-						mapStyle ||
-						(theme === 'dark' ? DEFAULT_DARK_STYLE : DEFAULT_LIGHT_STYLE)
-					}
+					mapStyle={theme === 'dark' ? DEFAULT_DARK_STYLE : DEFAULT_LIGHT_STYLE}
+					minZoom={1.5}
 					projection={{ type: 'globe' }}
 					dragRotate={false}
 					pitchWithRotate={false}
 					touchZoomRotate={{ around: 'center' }}
-					hash={false}
+					hash={true}
 					style={{
 						width: '100%',
 						height: '100%',
@@ -156,6 +155,7 @@ const Map = forwardRef<MapRef, MapProps>(
 						left: 0,
 						background: 'transparent',
 					}}
+					workerCount={4}
 					onLoad={handleMapLoad}
 					{...props}
 				>

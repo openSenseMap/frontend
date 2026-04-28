@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type FeatureCollection, type Point } from 'geojson'
-import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 import { useState, useRef } from 'react'
 import {
 	type MapRef,
@@ -154,15 +153,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		locale,
 		//phenomena,
 	}
-}
-
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: maplibreCss,
-		},
-	]
 }
 
 // This is for the live data display. The 21-06-2023 works with the seed Data, for Production take now minus 10 minutes

@@ -1,5 +1,4 @@
 import { Save } from 'lucide-react'
-import maplibreCss from 'maplibre-gl/dist/maplibre-gl.css?url'
 import React, { useCallback, useState } from 'react'
 import {
 	type MarkerDragEvent,
@@ -9,7 +8,6 @@ import {
 	NavigationControl,
 } from 'react-map-gl/maplibre'
 import {
-	type LinksFunction,
 	redirect,
 	Form,
 	useActionData,
@@ -40,17 +38,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const deviceData = await getDeviceWithoutSensors({ id: deviceID })
 
 	return { device: deviceData }
-}
-
-//*****************************************
-//* required to view mapbox proberly (Y.Q.)
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: maplibreCss,
-		},
-	]
 }
 
 //*****************************************************
@@ -137,8 +124,6 @@ export default function EditLocation() {
 										longitude: marker.longitude,
 										zoom: 10,
 									}}
-									mapStyle="https://tiles.openfreemap.org/styles/liberty"
-									// mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 									style={{
 										width: '100%',
 										height: '500px',
