@@ -65,7 +65,7 @@ export const BaseMap = forwardRef<MapRef, MapProps>(
 
 		return (
 			<>
-				{/* <SpaceBackground /> */}
+				<SpaceBackground />
 				<Map
 					ref={ref}
 					mapStyle={theme === 'dark' ? DEFAULT_DARK_STYLE : DEFAULT_LIGHT_STYLE}
@@ -83,11 +83,9 @@ export const BaseMap = forwardRef<MapRef, MapProps>(
 	},
 )
 
-const DEFAULT_LIGHT_STYLE =
-	'https://tiles.openfreemap.org/styles/liberty'
+const DEFAULT_LIGHT_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
-const DEFAULT_DARK_STYLE =
-	'https://tiles.openfreemap.org/styles/liberty'
+const DEFAULT_DARK_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
 const SKY_DEFINITION: SkySpecification = {
 	'sky-color': '#0b1220',

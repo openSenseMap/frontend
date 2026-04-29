@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type FeatureCollection, type Point } from 'geojson'
+import { Feature, type FeatureCollection, type Point } from 'geojson'
 import { useState, useRef, createElement } from 'react'
 import {
 	type MapRef,
@@ -9,6 +9,7 @@ import {
 	Marker,
 	type MapMouseEvent,
 	MapInstance,
+	ViewStateChangeEvent,
 } from 'react-map-gl/maplibre'
 import {
 	Outlet,
@@ -43,6 +44,7 @@ import maplibregl, {
 import { BaseMap } from '~/components/base-map'
 import DonutChartCluster from '~/components/map/layers/cluster/donut-chart-cluster'
 import { Box } from 'lucide-react'
+import { ClusterMarker } from '~/components/cluster-marker'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -360,46 +362,18 @@ export default function Explore() {
 			const id = props.cluster_id
 			let marker = clusterMarkers[id]
 			if (!marker) {
-				const e = document.createElement('div')
-				const el = createElement(
-					'div',
-					{},
-					DonutChartCluster({
-						cluster: {
-							...features[i],
-							properties: {
-								...features[i].properties,
-								categories: [20, 10, 1],
-							},
-						},
-						clusterOnClick: () => {},
-					}),
-				) as unknown as HTMLElement
-				e.innerHTML = `<svg
-				width="32"
-				height="32"
-				viewBox="0 0 72 72"
-				textAnchor="middle"
-				style={{
-					font: '14px sans-serif',
-					display: 'block',
-					fontWeight: 'bold',
-				}}
-			>
-				
-				<circle cx="32" cy="32" r="22" fill="black" />
-				
-			</svg>`
-				marker = clusterMarkers[id] = new maplibregl.Marker({
-					element: e,
-				}).setLngLat(coords)
+				marker = clusterMarkers[id] = ClusterMarker({
+					clusterFeature: features[i] as Feature<Point, any>,
+				})
 			}
 			newMarkers[id] = marker
 			if (!onScreenClusterMarkers[id]) marker.addTo(map)
 		}
 		// for every marker we've added previously, remove those that are no longer visible
 		for (const id in onScreenClusterMarkers) {
-			if (!newMarkers[id]) onScreenClusterMarkers[id].remove()
+			if (!newMarkers[id]) {
+				onScreenClusterMarkers[id].remove()
+			}
 		}
 		onScreenClusterMarkers = newMarkers
 	}
@@ -452,10 +426,14 @@ export default function Explore() {
 	}
 
 	const handleOnData = (e: MapStyleDataEvent | MapSourceDataEvent) => {
-		// if (e.dataType === 'style') return
-		// const ev = e as MapSourceDataEvent
-		// if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
-		// updateMarkers(e.target)
+		if (e.dataType === 'style') return
+		const ev = e as MapSourceDataEvent
+		if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
+		updateMarkers(e.target)
+	}
+
+	function handleMove(e: ViewStateChangeEvent): void {
+		updateMarkers(e.target)
 	}
 
 	return (
@@ -468,12 +446,14 @@ export default function Explore() {
 						values={legendLabels()}
 					/>
 				)}
-				<BaseMap
+				<Map
 					interactiveLayerIds={
 						selectedPheno ? ['phenomenon-layer'] : ['devices-symbol-layer']
 					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
+					onMove={handleMove}
+					onMoveEnd={handleMove}
 					onLoad={handleMapLoad}
 					onData={handleOnData}
 					ref={mapRef}
@@ -490,6 +470,17 @@ export default function Explore() {
 							data={filteredDevices as FeatureCollection<Point, Device>}
 							cluster={true}
 							clusterRadius={64} // 1/8 of a tile
+							clusterProperties={{
+								active: [
+									'+',
+									['case', ['==', ['get', 'status'], 'active'], 1, 0],
+								],
+								inactive: [
+									'+',
+									['case', ['==', ['get', 'status'], 'inactive'], 1, 0],
+								],
+								old: ['+', ['case', ['==', ['get', 'status'], 'old'], 1, 0]],
+							}}
 						>
 							<Layer
 								type="symbol"
@@ -530,7 +521,7 @@ export default function Explore() {
 									// 'text-offset': [1.5, 0],
 								}}
 							/>
-							<Layer
+							{/* <Layer
 								type="circle"
 								source="osem-clusters"
 								filter={['has', 'point_count']}
@@ -552,7 +543,7 @@ export default function Explore() {
 									'circle-stroke-width': 2,
 									'circle-stroke-color': '#fff',
 								}}
-							/>
+							/> */}
 							{/* <ClusterLayer
 							devices={filteredDevices as FeatureCollection<Point, Device>}
 						/> */}
@@ -595,7 +586,7 @@ export default function Explore() {
 							<Outlet />
 						</div>
 					</div>
-				</BaseMap>
+				</Map>
 			</MapProvider>
 		</div>
 	)

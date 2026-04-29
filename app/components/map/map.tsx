@@ -5,14 +5,12 @@ import {
 	type MapRef,
 } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import SpaceBackground from './space-background'
 import { BaseMap } from '@/components/base-map'
 
 const Map = forwardRef<MapRef, MapProps>(
 	({ children, initialViewState, ...props }, ref) => {
 		return (
 			<div className="map-space-shell">
-				<SpaceBackground />
 				<BaseMap
 					id="osem"
 					ref={ref}
