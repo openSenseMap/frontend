@@ -522,6 +522,12 @@ export default function Explore() {
 									],
 									'icon-size': 1,
 									'icon-allow-overlap': true,
+									// 'text-field': ['get', 'name'],
+									// 'text-font': ['Urbanist', 'sans-serif'],
+									// 'text-size': 14,
+									// 'text-justify': 'left',
+									// 'text-anchor': 'left',
+									// 'text-offset': [1.5, 0],
 								}}
 							/>
 							<Layer
