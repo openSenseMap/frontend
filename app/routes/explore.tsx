@@ -303,7 +303,7 @@ export default function Explore() {
 		if (e.features && e.features.length > 0) {
 			const feature = e.features[0]
 
-			if (feature.layer?.id === 'phenomenon-layer') {
+			if (feature.layer?.id === 'phenomenon-layer' || feature.layer?.id === 'devices-symbol-layer') {
 				void navigate(
 					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
 				)
@@ -392,7 +392,7 @@ export default function Explore() {
 					/>
 				)}
 				<Map
-					interactiveLayerIds={selectedPheno ? ['phenomenon-layer'] : []}
+					interactiveLayerIds={selectedPheno ? ['phenomenon-layer'] : ['devices-symbol-layer']}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
 					onLoad={handleMapLoad}
@@ -414,6 +414,7 @@ export default function Explore() {
 						>
 							<Layer
 								type="symbol"
+								id='devices-symbol-layer'
 								source="osem-devices"
 								filter={['!=', 'cluster', 'true']}
 								layout={{
