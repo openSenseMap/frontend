@@ -84,10 +84,10 @@ export const BaseMap = forwardRef<MapRef, MapProps>(
 )
 
 const DEFAULT_LIGHT_STYLE =
-	'https://api.maptiler.com/maps/streets-v2/style.json?key=x4PkWnbJomR3gQAHHEce'
+	'https://tiles.openfreemap.org/styles/liberty'
 
 const DEFAULT_DARK_STYLE =
-	'https://api.maptiler.com/maps/outdoor-v2/style.json?key=x4PkWnbJomR3gQAHHEce'
+	'https://tiles.openfreemap.org/styles/liberty'
 
 const SKY_DEFINITION: SkySpecification = {
 	'sky-color': '#0b1220',
