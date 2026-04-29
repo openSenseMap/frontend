@@ -33,6 +33,11 @@ import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
+import {
+	MapLibreEvent,
+	MapSourceDataEvent,
+	MapStyleDataEvent,
+} from 'maplibre-gl'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -333,6 +338,49 @@ export default function Explore() {
 		return defaultLayer
 	}
 
+	const updateMarkers = (map: maplibregl.Map) => {
+		// const newMarkers = {}
+		// const features = map.querySourceFeatures('osem-devices')
+		// for (let i = 0; i < features.length; i++) {
+		// 	const coords = features[i].geometry.coordinates
+		// 	const props = features[i].properties
+		// 	if (!props.cluster) continue
+		// 	const id = props.cluster_id
+		// 	let marker = markers[id]
+		// 	if (!marker) {
+		// 		const el = createDonutChart(props)
+		// 		marker = markers[id] = new maplibregl.Marker({
+		// 			element: el,
+		// 		}).setLngLat(coords)
+		// 	}
+		// 	newMarkers[id] = marker
+		// 	if (!markersOnScreen[id]) marker.addTo(map)
+		// }
+		// // for every marker we've added previously, remove those that are no longer visible
+		// for (id in markersOnScreen) {
+		// 	if (!newMarkers[id]) markersOnScreen[id].remove()
+		// }
+		// markersOnScreen = newMarkers
+	}
+
+	const handleMapLoad = async (e: MapLibreEvent) => {
+		const map = e.target
+		if (!map.getImage('marker')) {
+			const imgResponse = await map.loadImage('/img/favicon-32x32.png')
+			map.addImage('marker', imgResponse.data)
+		}
+	}
+
+	const handleOnData = (e: MapStyleDataEvent | MapSourceDataEvent) => {
+		if (e.dataType === 'style') return
+		const ev = e as MapSourceDataEvent
+		if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
+		updateMarkers(e.target)
+
+		// map.on('move', updateMarkers);
+		// map.on('moveend', updateMarkers);
+	}
+
 	return (
 		<div className="h-full w-full">
 			<MapProvider>
@@ -347,6 +395,8 @@ export default function Explore() {
 					interactiveLayerIds={selectedPheno ? ['phenomenon-layer'] : []}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
+					onLoad={handleMapLoad}
+					onData={handleOnData}
 					ref={mapRef}
 					initialViewState={
 						deviceId
@@ -355,9 +405,52 @@ export default function Explore() {
 					}
 				>
 					{!selectedPheno && (
-						<ClusterLayer
+						<Source
+							id="osem-devices"
+							type="geojson"
+							data={filteredDevices as FeatureCollection<Point, Device>}
+							cluster={true}
+							clusterRadius={64} // 1/8 of a tile
+						>
+							<Layer
+								type="symbol"
+								source="osem-devices"
+								filter={['!=', 'cluster', 'true']}
+								layout={{
+									'icon-image': 'marker',
+									'icon-size': 1,
+									'text-field': ['get', 'title'],
+									'text-offset': [0, 1.5],
+									'text-anchor': 'top',
+								}}
+							/>
+							<Layer
+								type="circle"
+								source="osem-clusters"
+								filter={['==', 'cluster', 'true']}
+								paint={{
+									'circle-radius': [
+										'case',
+										['>=', ['get', `point_count`], 1000],
+										36,
+										['>=', ['get', `point_count`], 100],
+										20,
+										18,
+									],
+									'circle-color': [
+										'case',
+										['boolean', ['feature-state', 'hover'], false],
+										'#3bb3ff',
+										'#0ea3ff',
+									],
+									'circle-stroke-width': 2,
+									'circle-stroke-color': '#fff',
+								}}
+							/>
+							{/* <ClusterLayer
 							devices={filteredDevices as FeatureCollection<Point, Device>}
-						/>
+						/> */}
+						</Source>
 					)}
 					{selectedPheno && (
 						<Source

@@ -65,7 +65,7 @@ export const BaseMap = forwardRef<MapRef, MapProps>(
 
 		return (
 			<>
-				<SpaceBackground />
+				{/* <SpaceBackground /> */}
 				<Map
 					ref={ref}
 					mapStyle={theme === 'dark' ? DEFAULT_DARK_STYLE : DEFAULT_LIGHT_STYLE}
