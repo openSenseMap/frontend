@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type FeatureCollection, type Point } from 'geojson'
-import { useState, useRef } from 'react'
+import { useState, useRef, createElement } from 'react'
 import {
 	type MapRef,
 	MapProvider,
@@ -8,6 +8,7 @@ import {
 	Source,
 	Marker,
 	type MapMouseEvent,
+	MapInstance,
 } from 'react-map-gl/maplibre'
 import {
 	Outlet,
@@ -33,11 +34,15 @@ import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
-import {
+import maplibregl, {
+	LngLatLike,
 	MapLibreEvent,
 	MapSourceDataEvent,
 	MapStyleDataEvent,
 } from 'maplibre-gl'
+import { BaseMap } from '~/components/base-map'
+import DonutChartCluster from '~/components/map/layers/cluster/donut-chart-cluster'
+import { Box } from 'lucide-react'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -164,6 +169,9 @@ let currentDate = new Date('2023-06-21T14:13:11.024Z')
 if (process.env.NODE_ENV === 'production') {
 	currentDate = new Date(Date.now() - 1000 * 600)
 }
+
+const clusterMarkers: Record<string, maplibregl.Marker> = {}
+let onScreenClusterMarkers: Record<string, maplibregl.Marker> = {}
 
 export default function Explore() {
 	// data from our loader
@@ -303,7 +311,10 @@ export default function Explore() {
 		if (e.features && e.features.length > 0) {
 			const feature = e.features[0]
 
-			if (feature.layer?.id === 'phenomenon-layer' || feature.layer?.id === 'devices-symbol-layer') {
+			if (
+				feature.layer?.id === 'phenomenon-layer' ||
+				feature.layer?.id === 'devices-symbol-layer'
+			) {
 				void navigate(
 					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
 				)
@@ -338,47 +349,113 @@ export default function Explore() {
 		return defaultLayer
 	}
 
-	const updateMarkers = (map: maplibregl.Map) => {
-		// const newMarkers = {}
-		// const features = map.querySourceFeatures('osem-devices')
-		// for (let i = 0; i < features.length; i++) {
-		// 	const coords = features[i].geometry.coordinates
-		// 	const props = features[i].properties
-		// 	if (!props.cluster) continue
-		// 	const id = props.cluster_id
-		// 	let marker = markers[id]
-		// 	if (!marker) {
-		// 		const el = createDonutChart(props)
-		// 		marker = markers[id] = new maplibregl.Marker({
-		// 			element: el,
-		// 		}).setLngLat(coords)
-		// 	}
-		// 	newMarkers[id] = marker
-		// 	if (!markersOnScreen[id]) marker.addTo(map)
-		// }
-		// // for every marker we've added previously, remove those that are no longer visible
-		// for (id in markersOnScreen) {
-		// 	if (!newMarkers[id]) markersOnScreen[id].remove()
-		// }
-		// markersOnScreen = newMarkers
+	const updateMarkers = (map: MapInstance) => {
+		const newMarkers: Record<string, maplibregl.Marker> = {}
+		const features = map.querySourceFeatures('osem-devices')
+		for (let i = 0; i < features.length; i++) {
+			const coords = (features[i].geometry as Point)?.coordinates as LngLatLike
+			if (!coords) continue
+			const props = features[i].properties
+			if (!props.cluster) continue
+			const id = props.cluster_id
+			let marker = clusterMarkers[id]
+			if (!marker) {
+				const e = document.createElement('div')
+				const el = createElement(
+					'div',
+					{},
+					DonutChartCluster({
+						cluster: {
+							...features[i],
+							properties: {
+								...features[i].properties,
+								categories: [20, 10, 1],
+							},
+						},
+						clusterOnClick: () => {},
+					}),
+				) as unknown as HTMLElement
+				e.innerHTML = `<svg
+				width="32"
+				height="32"
+				viewBox="0 0 72 72"
+				textAnchor="middle"
+				style={{
+					font: '14px sans-serif',
+					display: 'block',
+					fontWeight: 'bold',
+				}}
+			>
+				
+				<circle cx="32" cy="32" r="22" fill="black" />
+				
+			</svg>`
+				marker = clusterMarkers[id] = new maplibregl.Marker({
+					element: e,
+				}).setLngLat(coords)
+			}
+			newMarkers[id] = marker
+			if (!onScreenClusterMarkers[id]) marker.addTo(map)
+		}
+		// for every marker we've added previously, remove those that are no longer visible
+		for (const id in onScreenClusterMarkers) {
+			if (!newMarkers[id]) onScreenClusterMarkers[id].remove()
+		}
+		onScreenClusterMarkers = newMarkers
+	}
+
+	const loadImageIfNotExists = async (
+		map: MapInstance,
+		id: string,
+		url: string,
+	) => {
+		if (!map.getImage(id)) {
+			const imgResponse = await map.loadImage(url)
+			map.addImage(id, imgResponse.data)
+		}
 	}
 
 	const handleMapLoad = async (e: MapLibreEvent) => {
 		const map = e.target
-		if (!map.getImage('marker')) {
-			const imgResponse = await map.loadImage('/img/favicon-32x32.png')
-			map.addImage('marker', imgResponse.data)
-		}
+		await Promise.allSettled([
+			loadImageIfNotExists(
+				map,
+				'osem-device-active',
+				'/img/device_marker_active.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-device-inactive',
+				'/img/device_marker_inactive.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-device-old',
+				'/img/device_marker_old.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-mobile-active',
+				'/img/mobile_marker_active.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-mobile-inactive',
+				'/img/mobile_marker_inactive.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-mobile-old',
+				'/img/mobile_marker_old.png',
+			),
+		])
 	}
 
 	const handleOnData = (e: MapStyleDataEvent | MapSourceDataEvent) => {
-		if (e.dataType === 'style') return
-		const ev = e as MapSourceDataEvent
-		if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
-		updateMarkers(e.target)
-
-		// map.on('move', updateMarkers);
-		// map.on('moveend', updateMarkers);
+		// if (e.dataType === 'style') return
+		// const ev = e as MapSourceDataEvent
+		// if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
+		// updateMarkers(e.target)
 	}
 
 	return (
@@ -391,8 +468,10 @@ export default function Explore() {
 						values={legendLabels()}
 					/>
 				)}
-				<Map
-					interactiveLayerIds={selectedPheno ? ['phenomenon-layer'] : ['devices-symbol-layer']}
+				<BaseMap
+					interactiveLayerIds={
+						selectedPheno ? ['phenomenon-layer'] : ['devices-symbol-layer']
+					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
 					onLoad={handleMapLoad}
@@ -414,27 +493,47 @@ export default function Explore() {
 						>
 							<Layer
 								type="symbol"
-								id='devices-symbol-layer'
+								id="devices-symbol-layer"
 								source="osem-devices"
-								filter={['!=', 'cluster', 'true']}
+								filter={['!', ['has', 'point_count']]}
 								layout={{
-									'icon-image': 'marker',
+									'icon-image': [
+										'case',
+										['==', ['get', 'status'], 'active'],
+										[
+											'case',
+											['==', ['get', 'exposure'], 'mobile'],
+											'osem-mobile-active',
+											'osem-device-active',
+										],
+										['==', ['get', 'status'], 'inactive'],
+										[
+											'case',
+											['==', ['get', 'exposure'], 'mobile'],
+											'osem-mobile-inactive',
+											'osem-device-inactive',
+										],
+										[
+											'case',
+											['==', ['get', 'exposure'], 'mobile'],
+											'osem-mobile-old',
+											'osem-device-old',
+										],
+									],
 									'icon-size': 1,
-									'text-field': ['get', 'title'],
-									'text-offset': [0, 1.5],
-									'text-anchor': 'top',
+									'icon-allow-overlap': true,
 								}}
 							/>
 							<Layer
 								type="circle"
 								source="osem-clusters"
-								filter={['==', 'cluster', 'true']}
+								filter={['has', 'point_count']}
 								paint={{
 									'circle-radius': [
 										'case',
-										['>=', ['get', `point_count`], 1000],
+										['>=', ['get', 'point_count'], 1000],
 										36,
-										['>=', ['get', `point_count`], 100],
+										['>=', ['get', 'point_count'], 100],
 										20,
 										18,
 									],
@@ -490,7 +589,7 @@ export default function Explore() {
 							<Outlet />
 						</div>
 					</div>
-				</Map>
+				</BaseMap>
 			</MapProvider>
 		</div>
 	)
