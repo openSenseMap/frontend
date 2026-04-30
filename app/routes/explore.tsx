@@ -39,6 +39,7 @@ import maplibregl, {
 	type FilterSpecification,
 } from 'maplibre-gl'
 import { ClusterMarker } from '~/components/cluster-marker'
+import BoxMarker from '~/components/map/layers/cluster/box-marker'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -365,7 +366,7 @@ export default function Explore() {
 			]
 		: ['!', ['has', 'point_count']]
 
-	const buildLayerFromPheno = (selectedPheno: any) => {
+	const buildLayerFromPheno = () => {
 		//TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
 		return defaultLayer
 	}
