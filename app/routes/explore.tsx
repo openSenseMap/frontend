@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Feature, type FeatureCollection, type Point } from 'geojson'
-import { useState, useRef, createElement } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import {
 	type MapRef,
 	MapProvider,
 	Layer,
 	Source,
-	Marker,
 	type MapMouseEvent,
 	MapInstance,
 	ViewStateChangeEvent,
@@ -22,7 +21,6 @@ import { type Route } from './+types/explore'
 import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
-import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import Legend, { type LegendValue } from '~/components/map/legend'
 import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
@@ -163,18 +161,8 @@ let onScreenClusterMarkers: Record<string, maplibregl.Marker> = {}
 
 export default function Explore() {
 	// data from our loader
-	const {
-		devices,
-		user,
-		profile,
-		filterParams,
-		filteredDevices,
-		message,
-		locale,
-	} = useLoaderData<typeof loader>()
-
+	const { devices, filteredDevices } = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
-
 	const navigate = useNavigate()
 	// const [showSearch, setShowSearch] = useState<boolean>(false);
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
@@ -185,6 +173,9 @@ export default function Explore() {
 		type: 'FeatureCollection',
 		features: [],
 	})
+	const [hoveredFeatureId, setHoveredFeatureId] = useState<
+		string | number | null
+	>(null)
 
 	//listen to search params change
 	// useEffect(() => {
@@ -310,13 +301,45 @@ export default function Explore() {
 		}
 	}
 
-	const handleMouseMove = (e: MapMouseEvent) => {
-		if (e.features && e.features.length > 0) {
-			mapRef!.current!.getCanvas().style.cursor = 'pointer'
-		} else {
-			mapRef!.current!.getCanvas().style.cursor = ''
-		}
-	}
+	const handleMouseMove = useCallback(
+		(e: MapMouseEvent) => {
+			if (e.features && e.features.length > 0) {
+				e.target.getCanvas().style.cursor = 'pointer'
+				const feature = e.features[0]
+				if (
+					feature.layer.id !== 'devices-symbol-layer' ||
+					feature.id === undefined
+				)
+					return
+				if (hoveredFeatureId)
+					e.target.setFeatureState(
+						{ source: 'osem-devices', id: hoveredFeatureId },
+						{ hover: false },
+					)
+				setHoveredFeatureId(feature.id)
+				e.target.setFeatureState(
+					{ source: 'osem-devices', id: feature.id },
+					{ hover: true },
+				)
+			} else {
+				e.target.getCanvas().style.cursor = ''
+			}
+		},
+		[hoveredFeatureId],
+	)
+
+	const handleMouseLeave = useCallback(
+		(e: MapMouseEvent) => {
+			if (hoveredFeatureId) {
+				e.target.setFeatureState(
+					{ source: 'osem-devices', id: hoveredFeatureId },
+					{ hover: false },
+				)
+			}
+			setHoveredFeatureId(null)
+		},
+		[hoveredFeatureId],
+	)
 
 	//* fly to device location when url inludes deviceId
 	const { deviceId } = useParams()
@@ -453,6 +476,7 @@ export default function Explore() {
 					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
+					onMouseLeave={handleMouseLeave}
 					onMove={handleMove}
 					onMoveEnd={handleMove}
 					onLoad={handleMapLoad}
@@ -469,6 +493,7 @@ export default function Explore() {
 							id="osem-devices"
 							type="geojson"
 							data={filteredDevices as FeatureCollection<Point, Device>}
+							promoteId="id"
 							cluster={true}
 							clusterRadius={64} // 1/8 of a tile
 							clusterProperties={{
@@ -514,12 +539,14 @@ export default function Explore() {
 									],
 									'icon-size': 1,
 									'icon-allow-overlap': true,
-									// 'text-field': ['get', 'name'],
-									// 'text-font': ['Urbanist', 'sans-serif'],
-									// 'text-size': 14,
-									// 'text-justify': 'left',
-									// 'text-anchor': 'left',
-									// 'text-offset': [1.5, 0],
+								}}
+								paint={{
+									'icon-opacity': [
+										'case',
+										['boolean', ['feature-state', 'hover'], false],
+										1,
+										0.9,
+									],
 								}}
 							/>
 							{/* <Layer
@@ -560,7 +587,7 @@ export default function Explore() {
 						>
 							<Layer
 								{...(phenomenonLayers[selectedPheno.slug] ??
-									buildLayerFromPheno(selectedPheno))}
+									buildLayerFromPheno())}
 							/>
 						</Source>
 					)}
