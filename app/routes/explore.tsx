@@ -295,6 +295,19 @@ export default function Explore() {
 				feature.layer?.id === 'phenomenon-layer' ||
 				feature.layer?.id === 'devices-symbol-layer'
 			) {
+				const coordinates = (feature.geometry as Point).coordinates as [
+					number,
+					number,
+				]
+				const map = e.target
+
+				map.flyTo({
+					center: coordinates,
+					zoom: Math.max(map.getZoom(), 14),
+					animate: true,
+					speed: 1.6,
+					essential: true,
+				})
 				void navigate(
 					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
 				)
