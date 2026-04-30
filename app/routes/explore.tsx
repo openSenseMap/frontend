@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Feature, type FeatureCollection, type Point } from 'geojson'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import {
 	type MapRef,
 	MapProvider,
@@ -178,6 +178,17 @@ export default function Explore() {
 		string | number | null
 	>(null)
 
+	const deviceNamePopup = useMemo(
+		() =>
+			new maplibregl.Popup({
+				closeButton: false,
+				closeOnClick: false,
+				anchor: 'left',
+				offset: [15, 0],
+			}),
+		[],
+	)
+
 	//listen to search params change
 	// useEffect(() => {
 	//   //filters devices for pheno
@@ -335,6 +346,17 @@ export default function Explore() {
 					{ source: 'osem-devices', id: feature.id },
 					{ hover: true },
 				)
+				const coordinates = (feature.geometry as Point).coordinates.slice()
+				// Ensure that if the map is zoomed out such that multiple
+				// copies of the feature are visible, the popup appears
+				// over the copy being pointed to.
+				while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+					coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360
+				}
+				deviceNamePopup
+					.setLngLat(coordinates as LngLatLike)
+					.setHTML(feature.properties.name)
+					.addTo(e.target)
 			} else {
 				e.target.getCanvas().style.cursor = ''
 			}
@@ -344,6 +366,7 @@ export default function Explore() {
 
 	const handleMouseLeave = useCallback(
 		(e: MapMouseEvent) => {
+			deviceNamePopup.remove()
 			if (hoveredFeatureId) {
 				e.target.setFeatureState(
 					{ source: 'osem-devices', id: hoveredFeatureId },
