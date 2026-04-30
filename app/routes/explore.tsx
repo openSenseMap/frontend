@@ -38,6 +38,7 @@ import maplibregl, {
 	MapLibreEvent,
 	MapSourceDataEvent,
 	MapStyleDataEvent,
+	type FilterSpecification,
 } from 'maplibre-gl'
 import { ClusterMarker } from '~/components/cluster-marker'
 
@@ -331,6 +332,16 @@ export default function Explore() {
 		]
 	}
 
+	const selectedDeviceId = selectedDevice?.properties.id
+
+	const deviceLayerFilter: FilterSpecification = selectedDeviceId
+		? [
+				'all',
+				['!', ['has', 'point_count']],
+				['!=', ['get', 'id'], selectedDeviceId],
+			]
+		: ['!', ['has', 'point_count']]
+
 	const buildLayerFromPheno = (selectedPheno: any) => {
 		//TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
 		return defaultLayer
@@ -476,7 +487,7 @@ export default function Explore() {
 								type="symbol"
 								id="devices-symbol-layer"
 								source="osem-devices"
-								filter={['!', ['has', 'point_count']]}
+								filter={deviceLayerFilter}
 								layout={{
 									'icon-image': [
 										'case',
@@ -554,19 +565,14 @@ export default function Explore() {
 						</Source>
 					)}
 
-					{/* {selectedDevice && deviceId && (
-						<Marker
-							latitude={selectedDevice.properties.latitude}
-							longitude={selectedDevice.properties.longitude}
-						>
-							<BoxMarker
-								key={`device-${selectedDevice.properties.id}`}
-								latitude={selectedDevice.properties.latitude}
-								longitude={selectedDevice.properties.longitude}
-								device={selectedDevice.properties as Device}
-							/>
-						</Marker>
-					)} */}
+					{selectedDevice && deviceId && (
+						<BoxMarker
+							key={`device-${selectedDevice.properties.id}`}
+							longitude={selectedDevice.geometry.coordinates[0]}
+							latitude={selectedDevice.geometry.coordinates[1]}
+							device={selectedDevice.properties as Device}
+						/>
+					)}
 
 					<div className="pointer-events-none absolute inset-0 z-10">
 						<div className="pointer-events-auto">
