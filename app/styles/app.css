@@ -298,109 +298,90 @@ kbd {
 	inset: 0;
 	overflow: hidden;
 	pointer-events: none;
+	z-index: 0;
 }
 
 /* stars */
 .space-star {
 	position: absolute;
 	border-radius: 50%;
-	background: white;
-	opacity: var(--star-opacity, 0.3);
+	background: rgba(255, 255, 255, 0.9);
+	opacity: var(--star-opacity, 0.12);
+
 	box-shadow:
-		0 0 4px rgba(255, 255, 255, 0.9),
-		0 0 10px rgba(255, 255, 255, 0.4);
+		0 0 2px rgba(255, 255, 255, 0.55),
+		0 0 5px rgba(255, 255, 255, 0.18);
 
 	animation:
-		twinkle 4s infinite ease-in-out,
+		twinkle 6s infinite ease-in-out,
 		starDrift var(--drift-duration) infinite ease-in-out alternate;
-}
-
-.space-star::before {
-	content: '';
-	position: absolute;
-	inset: -4px;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.8);
-	filter: blur(2px);
-	opacity: 0;
-	animation: glowPulse 3s infinite ease-in-out;
-	animation-delay: inherit;
 }
 
 @keyframes twinkle {
 	0%,
 	100% {
-		opacity: 0.05;
-		transform: scale(1);
+		opacity: 0.04;
 	}
-	50% {
-		opacity: var(--star-opacity, 0.3);
-		transform: scale(1.35);
-	}
-}
 
-@keyframes glowPulse {
-	0% {
-		opacity: 0;
-		transform: scale(0.3);
-	}
 	50% {
-		opacity: 0.8;
-		transform: scale(0.8);
-	}
-	100% {
-		opacity: 0;
-		transform: scale(0.45);
+		opacity: var(--star-opacity, 0.12);
 	}
 }
 
 @keyframes starDrift {
 	0% {
-		transform: translate3d(0, 0, 0);
+		translate: 0 0;
 	}
+
 	100% {
-		transform: translate3d(var(--drift-x), var(--drift-y), 0);
+		translate: var(--drift-x) var(--drift-y);
 	}
 }
 
-/* occasional shooting stars */
 .space-shooting-star {
 	position: absolute;
 	width: 2px;
-	height: 90px;
+	height: 72px;
 	opacity: 0;
-	transform: rotate(45deg);
-	transform-origin: center;
 	border-radius: 999px;
 	filter: blur(0.4px);
+	transform: rotate(45deg);
 
 	background: linear-gradient(
 		to bottom,
 		rgba(255, 255, 255, 0),
-		rgba(255, 255, 255, 0.95),
+		rgba(255, 255, 255, 0.65),
 		rgba(255, 255, 255, 0)
 	);
 
-	animation: shootingStar 16s linear infinite;
+	animation: shootingStar 36s linear infinite;
 }
 
 @keyframes shootingStar {
-	0% {
+	0%,
+	72% {
 		opacity: 0;
 		transform: translate3d(0, 0, 0) rotate(45deg);
 	}
 
-	3% {
-		opacity: 0.95;
+	74% {
+		opacity: 0.55;
 	}
 
-	9% {
+	80% {
 		opacity: 0;
-		transform: translate3d(-260px, 260px, 0) rotate(45deg);
+		transform: translate3d(-220px, 220px, 0) rotate(45deg);
 	}
 
 	100% {
 		opacity: 0;
-		transform: translate3d(-260px, 260px, 0) rotate(45deg);
+		transform: translate3d(-220px, 220px, 0) rotate(45deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.space-star,
+	.space-shooting-star {
+		animation: none;
 	}
 }
