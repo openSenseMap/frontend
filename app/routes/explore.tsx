@@ -39,12 +39,7 @@ import maplibregl, {
 	MapSourceDataEvent,
 	MapStyleDataEvent,
 } from 'maplibre-gl'
-import { BaseMap } from '~/components/base-map'
-import DonutChartCluster from '~/components/map/layers/cluster/donut-chart-cluster'
-import { Box } from 'lucide-react'
 import { ClusterMarker } from '~/components/cluster-marker'
-import { renderToStaticMarkup } from 'react-dom/server'
-import DonutClusterOverlay from '~/components/map/layers/cluster/donut-cluster-overlay'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
