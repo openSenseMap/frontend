@@ -183,6 +183,7 @@ export default function Explore() {
 			new maplibregl.Popup({
 				closeButton: false,
 				closeOnClick: false,
+				closeOnMove: true,
 				anchor: 'left',
 				offset: [15, 0],
 			}),
