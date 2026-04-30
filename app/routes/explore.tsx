@@ -18,13 +18,11 @@ import {
 	useLoaderData,
 	useParams,
 } from 'react-router'
-import type Supercluster from 'supercluster'
 import { type Route } from './+types/explore'
 import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
-import ClusterLayer from '~/components/map/layers/cluster/cluster-layer'
 import Legend, { type LegendValue } from '~/components/map/legend'
 import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
@@ -45,6 +43,8 @@ import { BaseMap } from '~/components/base-map'
 import DonutChartCluster from '~/components/map/layers/cluster/donut-chart-cluster'
 import { Box } from 'lucide-react'
 import { ClusterMarker } from '~/components/cluster-marker'
+import { renderToStaticMarkup } from 'react-dom/server'
+import DonutClusterOverlay from '~/components/map/layers/cluster/donut-cluster-overlay'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -108,16 +108,6 @@ export async function action({ request }: { request: Request }) {
 		download: fileName,
 	})
 }
-
-export type DeviceClusterProperties =
-	| Supercluster.PointFeature<any>
-	| Supercluster.PointFeature<
-			Supercluster.ClusterProperties & {
-				categories: {
-					[x: number]: number
-				}
-			}
-	  >
 
 export async function loader({ context, request }: Route.LoaderArgs) {
 	//* Get filter params
@@ -440,15 +430,19 @@ export default function Explore() {
 		<div className="h-full w-full">
 			<MapProvider>
 				<Header devices={devices} />
+
 				{selectedPheno && (
 					<Legend
 						title={selectedPheno.label.item[0].text}
 						values={legendLabels()}
 					/>
 				)}
+
 				<Map
 					interactiveLayerIds={
-						selectedPheno ? ['phenomenon-layer'] : ['devices-symbol-layer']
+						selectedPheno
+							? ['phenomenon-layer']
+							: ['devices-symbol-layer', 'devices-cluster-hit-layer']
 					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
@@ -549,6 +543,7 @@ export default function Explore() {
 						/> */}
 						</Source>
 					)}
+
 					{selectedPheno && (
 						<Source
 							id="osem-data"
@@ -563,7 +558,6 @@ export default function Explore() {
 						</Source>
 					)}
 
-					{/* Render BoxMarker for the selected device */}
 					{selectedDevice && deviceId && (
 						<Marker
 							latitude={selectedDevice.properties.latitude}
@@ -578,9 +572,6 @@ export default function Explore() {
 						</Marker>
 					)}
 
-					{/* <ClusterLayer
-              devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
-            /> */}
 					<div className="pointer-events-none absolute inset-0 z-10">
 						<div className="pointer-events-auto">
 							<Outlet />
