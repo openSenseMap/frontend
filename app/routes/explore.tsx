@@ -554,7 +554,7 @@ export default function Explore() {
 						</Source>
 					)}
 
-					{selectedDevice && deviceId && (
+					{/* {selectedDevice && deviceId && (
 						<Marker
 							latitude={selectedDevice.properties.latitude}
 							longitude={selectedDevice.properties.longitude}
@@ -566,7 +566,7 @@ export default function Explore() {
 								device={selectedDevice.properties as Device}
 							/>
 						</Marker>
-					)}
+					)} */}
 
 					<div className="pointer-events-none absolute inset-0 z-10">
 						<div className="pointer-events-auto">
