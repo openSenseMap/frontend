@@ -163,7 +163,7 @@ export default function GeocoderControl({
 					typeof config.query[0] !== 'number' ||
 					typeof config.query[1] !== 'number'
 				) {
-					return { type: "FeatureCollection", features: [] }
+					return { type: 'FeatureCollection', features: [] }
 				}
 
 				const [lon, lat] = config.query
@@ -205,12 +205,10 @@ export default function GeocoderControl({
 				const location =
 					result &&
 					(result.center ||
-						(result.geometry?.type === 'Point' &&
-							result.geometry.coordinates))
+						(result.geometry?.type === 'Point' && result.geometry.coordinates))
 
 				if (location && marker) {
-					const extraMarkerProps =
-						typeof marker === 'object' ? marker : {}
+					const extraMarkerProps = typeof marker === 'object' ? marker : {}
 
 					setMarkerNode(
 						<Marker

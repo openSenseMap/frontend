@@ -5,8 +5,8 @@ import {
 	multiLineString,
 	point,
 } from '@turf/helpers'
-import  { type MultiLineString, type Point } from 'geojson'
-import  {
+import { type MultiLineString, type Point } from 'geojson'
+import {
 	type CircleLayerSpecification,
 	type LineLayerSpecification,
 } from 'maplibre-gl'
@@ -86,8 +86,8 @@ export default function MobileBoxLayer({
 			sourceData.features.find(
 				(feat) =>
 					feat.geometry.type === 'Point' &&
-					(feat.properties as CustomGeoJsonProperties | undefined)?.locationId ===
-						hoveredPoint,
+					(feat.properties as CustomGeoJsonProperties | undefined)
+						?.locationId === hoveredPoint,
 			) ?? null
 		)
 	}, [hoveredPoint, sourceData])
@@ -145,8 +145,9 @@ export default function MobileBoxLayer({
 			? (hoveredFeature.geometry.coordinates as [number, number])
 			: null
 
-	const popupProps =
-		hoveredFeature?.properties as CustomGeoJsonProperties | undefined
+	const popupProps = hoveredFeature?.properties as
+		| CustomGeoJsonProperties
+		| undefined
 
 	return (
 		<>
