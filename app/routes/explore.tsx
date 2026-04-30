@@ -349,6 +349,7 @@ export default function Explore() {
 			if (!marker) {
 				marker = clusterMarkers[id] = ClusterMarker({
 					clusterFeature: features[i] as Feature<Point, any>,
+					map,
 				})
 			}
 			newMarkers[id] = marker

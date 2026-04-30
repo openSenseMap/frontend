@@ -13,8 +13,10 @@ const colors = [
  */
 export const ClusterMarker = (props: {
 	clusterFeature: Feature<Point, any>
+	map: maplibregl.Map
+	sourceId?: string
 }) => {
-	const { clusterFeature } = props
+	const { clusterFeature, map, sourceId = 'osem-devices' } = props
 	const coords = clusterFeature.geometry.coordinates
 	const longitude = coords[0]
 	const latitude = coords[1]
@@ -42,10 +44,11 @@ export const ClusterMarker = (props: {
 	const w = r * 2
 
 	const arcOffsets: number[] = []
+	let total = 0
+
 	for (const c of [active, inactive, old]) {
-		if (arcOffsets.length === 0) arcOffsets.push(c)
-		// cumulative sum
-		else arcOffsets.push(arcOffsets[arcOffsets.length - 1] + c)
+		arcOffsets.push(total)
+		total += c
 	}
 
 	const e = document.createElement('div')
@@ -58,8 +61,8 @@ export const ClusterMarker = (props: {
 			>
 				${[active, inactive, old]
 					.map((count, i) => {
-						const start = arcOffsets[i] / pointCount
-						let end = (arcOffsets[i] + count) / pointCount
+						const start = arcOffsets[i] / total
+						let end = (arcOffsets[i] + count) / total
 
 						if (end - start === 1) end -= 0.00001
 						const a0 = 2 * Math.PI * (start - 0.25)
@@ -94,6 +97,28 @@ export const ClusterMarker = (props: {
 					${pointCount}
 				</text>
 			</svg>`
+
+
+    e.style.cursor = 'pointer'
+	e.addEventListener('click', async (event) => {
+		event.stopPropagation()
+
+		const clusterId = clusterFeature.properties?.cluster_id
+		if (clusterId == null) return
+
+		const source: any = map.getSource(sourceId)
+		if (!source || !('getClusterExpansionZoom' in source)) return
+
+		const expansionZoom = await source.getClusterExpansionZoom(clusterId)
+
+		map.flyTo({
+			center: [longitude, latitude],
+			zoom: Math.min(expansionZoom + 2, 20),
+			animate: true,
+			speed: 1.6,
+			essential: true,
+		})
+	})
 
 	return new maplibregl.Marker({ element: e }).setLngLat([longitude, latitude])
 }
