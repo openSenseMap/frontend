@@ -11,7 +11,9 @@ invariant(
 const DISCOURSE_CONNECT_SECRET = process.env.DISCOURSE_CONNECT_SECRET
 
 function signPayload(payload: string) {
-	return createHmac('sha256', DISCOURSE_CONNECT_SECRET).update(payload).digest('hex')
+	return createHmac('sha256', DISCOURSE_CONNECT_SECRET)
+		.update(payload)
+		.digest('hex')
 }
 
 function safeEqualHex(a: string, b: string) {
@@ -39,7 +41,6 @@ function buildAbsoluteLoginRedirect(request: Request) {
 
 	return `/explore/login?${new URLSearchParams({ redirectTo }).toString()}`
 }
-
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const url = new URL(request.url)
@@ -74,13 +75,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		throw new Response('User has no email', { status: 400 })
 	}
 
-	const username =
-		user.name ??
-		`user_${user.id}`
+	const username = user.name ?? `user_${user.id}`
 
 	const outgoing = new URLSearchParams()
 	outgoing.set('nonce', nonce)
-	outgoing.set('external_id', String(user.id)) 
+	outgoing.set('external_id', String(user.id))
 	outgoing.set('email', user.email)
 	outgoing.set('username', username)
 
@@ -92,14 +91,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		outgoing.set('require_activation', 'true')
 	}
 
-
 	const responsePayload = encodeDiscoursePayload(outgoing)
 	const responseSig = signPayload(responsePayload)
 
 	const redirectUrl = new URL(returnSsoUrl)
 	redirectUrl.searchParams.set('sso', responsePayload)
 	redirectUrl.searchParams.set('sig', responseSig)
-
 
 	throw redirect(redirectUrl.toString())
 }
