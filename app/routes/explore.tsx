@@ -20,7 +20,6 @@ import {
 } from 'react-router'
 import type Supercluster from 'supercluster'
 import { type Route } from './+types/explore'
-import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
@@ -35,6 +34,8 @@ import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
+import MapHeader from '~/components/map/topbar'
+import { getMeasurementsCount } from '~/db/models/measurement.server'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -121,6 +122,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		? await getDevices('geojson')
 		: await getDevicesWithSensors()
 
+	const measurementCount = await getMeasurementsCount()
+
 	const session = await getUserSession(request)
 	const message = session.get('global_message') || null
 
@@ -136,6 +139,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			: 'en'
 		return {
 			devices,
+			measurementCount,
 			user,
 			profile,
 			filteredDevices,
@@ -146,6 +150,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	}
 	return {
 		devices,
+		measurementCount,
 		user,
 		profile: null,
 		filterParams,
@@ -175,6 +180,7 @@ export default function Explore() {
 	// data from our loader
 	const {
 		devices,
+		measurementCount,
 		user,
 		profile,
 		filterParams,
@@ -353,7 +359,15 @@ export default function Explore() {
 	return (
 		<div className="h-full w-full">
 			<MapProvider>
-				<Header devices={devices} />
+				<MapHeader
+					user={user}
+					devices={devices}
+					measurementCount={measurementCount}
+					selectedPheno={selectedPheno}
+					selectedDevice={selectedDevice}
+					filteredDeviceCount={filteredDevices?.features?.length}
+				/>
+				{/* <Header devices={devices} /> */}
 				{selectedPheno && (
 					<Legend
 						title={selectedPheno.label.item[0].text}
