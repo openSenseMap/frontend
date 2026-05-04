@@ -160,7 +160,7 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, filteredDevices, measurementCount } = useLoaderData<typeof loader>()
+	const { devices, filteredDevices, measurementCount, user } = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
 	const navigate = useNavigate()
 	// const [showSearch, setShowSearch] = useState<boolean>(false);
