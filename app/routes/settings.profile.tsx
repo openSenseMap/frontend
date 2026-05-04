@@ -1,4 +1,4 @@
-import { InfoIcon } from 'lucide-react'
+import { CopyIcon, CopyCheckIcon, InfoIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Link, Outlet, useActionData, useLoaderData } from 'react-router'
@@ -26,15 +26,34 @@ import { useToast } from '~/components/ui/use-toast'
 import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
 import { getInitials } from '~/lib/strings'
 import { requireUserId } from '~/services/session-service.server'
+import { getUserById } from '~/db/models/user.server'
+import { useCopyToClipboard } from '~/hooks/use-copy-to-clipboard'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
-	const profile = await getProfileByUserId(userId)
-	if (!profile) {
-		// throw await authenticator.logout(request, { redirectTo: "/" });
-		throw new Error()
+
+	const [user, profile] = await Promise.all([
+		getUserById(userId),
+		getProfileByUserId(userId),
+	])
+
+	if (!user || !profile) {
+		throw new Error('User profile not found')
 	}
-	return { profile }
+
+	if (!user.name) {
+		throw new Error('Username not found')
+	}
+
+	const publicProfileUrl = new URL(
+		`/profile/${encodeURIComponent(user.name)}`,
+		request.url,
+	).toString()
+
+	return {
+		profile,
+		publicProfileUrl,
+	}
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -52,7 +71,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	const updatedProfile = await updateProfile(
-		profile?.id as string,
+		profile.id,
 		displayName as string,
 		isPublic === 'on',
 	)
@@ -71,6 +90,21 @@ export default function EditUserProfilePage() {
 	const [isPublic, setIsPublic] = useState(data.profile.public || false)
 
 	const { t } = useTranslation('settings')
+
+	const publicProfileUrl = data.publicProfileUrl
+
+	const { copiedToClipboard, copyToClipboard } = useCopyToClipboard()
+
+	const handleCopyPublicProfileUrl = async () => {
+		const copied = await copyToClipboard(publicProfileUrl)
+
+		if (!copied) return
+
+		toast({
+			title: t('copied'),
+			variant: 'success',
+		})
+	}
 
 	//* toast
 	const { toast } = useToast()
@@ -152,9 +186,38 @@ export default function EditUserProfilePage() {
 							<Switch
 								id="isPublic"
 								name="isPublic"
-								defaultChecked={isPublic}
-								onCheckedChange={(e) => setIsPublic(e)}
+								checked={isPublic}
+								onCheckedChange={setIsPublic}
 							/>
+
+							{isPublic && (
+								<div className="mt-3 space-y-2">
+									<Label htmlFor="publicProfileUrl">
+										{t('public_profile_link')}
+									</Label>
+
+									<div className="flex gap-2">
+										<Input
+											id="publicProfileUrl"
+											value={publicProfileUrl}
+											readOnly
+											onFocus={(event) => event.target.select()}
+										/>
+
+										<Button
+											type="button"
+											variant="outline"
+											onClick={handleCopyPublicProfileUrl}
+										>
+											{copiedToClipboard ? (
+												<CopyCheckIcon className="h-4 w-4" />
+											) : (
+												<CopyIcon className="h-4 w-4" />
+											)}
+										</Button>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 					<div className="flex w-1/2 justify-center">

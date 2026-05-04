@@ -211,7 +211,7 @@ export default function DataUpload({ actionData }: any) {
 										id="measurement-data"
 										name="measurement-data"
 										placeholder={t('inputTextAreaPlaceholder')}
-										className="h-[300px]"
+										className="h-75"
 										onChange={(e) => setMeasurementData(e.target.value)}
 										value={measurementData.slice(0, DATA_CUTOFF_CHARS)}
 									/>

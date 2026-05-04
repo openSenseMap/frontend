@@ -98,8 +98,7 @@ export const ClusterMarker = (props: {
 				</text>
 			</svg>`
 
-
-    e.style.cursor = 'pointer'
+	e.style.cursor = 'pointer'
 	e.addEventListener('click', async (event) => {
 		event.stopPropagation()
 
