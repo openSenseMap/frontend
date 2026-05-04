@@ -35,7 +35,8 @@ export default function MapHeader({
 					<LanguageSelector />
 
 					<Info />
-					{user && <Settings />}
+					{/* TODO: add settings menu once we have theme, more languages etc. */}
+					{/* {user && <Settings />} */}
 					<Menu devices={devices} />
 				</div>
 			</div>
