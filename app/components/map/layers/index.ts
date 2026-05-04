@@ -1,15 +1,7 @@
 import { type LayerProps } from 'react-map-gl/maplibre'
 import type { ExpressionSpecification } from 'maplibre-gl'
 
-const colors = ['#4EAF47', '#666', '#666', '#666']
-
 const expression = <T extends ExpressionSpecification>(value: T) => value
-
-export const deviceStatusFilter = {
-	active: expression(['==', ['get', 'status'], 'ACTIVE']),
-	inactive: expression(['==', ['get', 'status'], 'INACTIVE']),
-	old: expression(['==', ['get', 'status'], 'OLD']),
-}
 
 const valueExpression = expression([
 	'get',
@@ -41,120 +33,6 @@ const phenomenonLayer = (
 			'circle-stroke-color': 'black',
 		},
 	}) satisfies LayerProps
-
-export const activeClusterLayer = {
-	id: 'cluster',
-	type: 'circle',
-	source: 'devices',
-	filter: ['==', ['get', 'cluster'], true],
-	paint: {
-		'circle-color': 'transparent',
-		'circle-radius': 20,
-		'circle-opacity': 0.5,
-		'circle-stroke-color': colors[0],
-		'circle-translate': [5, 5],
-		'circle-stroke-width': 4,
-		'circle-stroke-opacity': 0.5,
-	},
-} satisfies LayerProps
-
-export const inactiveClusterLayer = {
-	id: 'inactive-cluster',
-	type: 'circle',
-	source: 'inactive-devices',
-	filter: ['has', 'point_count'],
-	paint: {
-		'circle-color': 'transparent',
-		'circle-radius': 20,
-		'circle-opacity': 0.5,
-		'circle-stroke-color': colors[1],
-		'circle-stroke-width': 4,
-	},
-} satisfies LayerProps
-
-export const oldClusterLayer = {
-	id: 'clusters',
-	type: 'circle',
-	source: 'devices',
-	filter: ['has', 'point_count'],
-	paint: {
-		'circle-color': '#666',
-		'circle-radius': 20,
-	},
-} satisfies LayerProps
-
-export const activeClusterCountLayer = {
-	id: 'active-cluster-count',
-	type: 'symbol',
-	source: 'active-devices',
-	filter: ['has', 'point_count'],
-	layout: {
-		'text-field': '{point_count_abbreviated}',
-		'text-size': 12,
-	},
-} satisfies LayerProps
-
-export const inactiveClusterCountLayer = {
-	id: 'inactive-cluster-count',
-	type: 'symbol',
-	source: 'inactive-devices',
-	filter: ['has', 'point_count'],
-	layout: {
-		'text-field': '{point_count_abbreviated}',
-		'text-size': 12,
-	},
-} satisfies LayerProps
-
-export const unclusteredPointLayer = {
-	id: 'unclustered-point',
-	type: 'symbol',
-	source: 'devices',
-	filter: ['!=', ['get', 'cluster'], true],
-	paint: {
-		'icon-opacity': expression([
-			'case',
-			deviceStatusFilter.active,
-			1,
-			deviceStatusFilter.inactive,
-			0.7,
-			deviceStatusFilter.old,
-			0.5,
-			0.5,
-		]),
-	},
-	layout: {
-		'icon-image': expression([
-			'match',
-			['get', 'exposure'],
-			'INDOOR',
-			'box',
-			'OUTDOOR',
-			'box',
-			'MOBILE',
-			'rocket',
-			'UNKNOWN',
-			'box',
-			'box',
-		]),
-	},
-} satisfies LayerProps
-
-export const unclusteredPointLabelsLayer = {
-	id: 'device-labels',
-	type: 'symbol',
-	source: 'devices',
-	layout: {
-		'text-field': expression(['get', 'name']),
-		'text-size': 14,
-		'text-anchor': 'center',
-		'text-offset': [0, -1.5],
-	},
-	paint: {
-		'text-color': '#ffff00',
-		'text-halo-color': '#333333',
-		'text-halo-width': 10,
-	},
-} satisfies LayerProps
 
 export const phenomenonLayers: Record<string, LayerProps> = {
 	temperature: phenomenonLayer(radius(2.75, 5, 200), [
