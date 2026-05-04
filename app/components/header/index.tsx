@@ -18,12 +18,12 @@ export default function Header(props: HeaderProps) {
 			<Home />
 			<NavBar devices={props.devices} />
 			<div className="flex gap-2">
-				<div className="pointer-events-auto flex h-10 w-16 items-center justify-center rounded-full bg-white shadow-md">
+				{/* <div className="pointer-events-auto flex h-10 w-16 items-center justify-center rounded-full bg-white shadow-md">
 					<LanguageSelector />
-				</div>
-				<Download devices={props.devices} />
+				</div> */}
+				{/* <Download devices={props.devices} /> */}
 				{/* {data?.user?.email ? <Notification /> : null} */}
-				<Menu />
+				<Menu devices={props.devices}/>
 			</div>
 		</div>
 	)

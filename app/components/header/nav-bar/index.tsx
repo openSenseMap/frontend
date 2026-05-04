@@ -61,59 +61,59 @@ export default function NavBar(props: NavBarProps) {
 	const isDesktop = useMediaQuery('(min-width: 768px)')
 
 	return (
-		<div className="pointer-events-auto relative w-full md:w-1/2">
-			<div className="absolute top-0 left-0 flex w-full flex-col gap-2">
-				<div className="w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 dark:ring-white dark:backdrop-blur-xs">
-					<div className="flex w-full items-center gap-2 px-2 text-black md:gap-4 dark:text-zinc-200">
-						<SearchIcon className="aspect-square h-6 dark:text-zinc-200" />
-						<input
-							ref={inputRef}
-							placeholder={t('placeholder') || undefined}
-							onFocus={() => setOpen(true)}
-							onChange={(e) => setSearchString(e.target.value)}
-							className="h-fit w-full flex-1 border-none bg-white focus:border-none focus:ring-0 focus:outline-hidden dark:bg-zinc-800 dark:text-zinc-200"
-							value={searchString}
+		<div className="pointer-events-auto relative w-full">
+			{/* <div className="absolute top-0 left-0 flex w-full flex-col gap-2"> */}
+			<div className="w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 dark:ring-white dark:backdrop-blur-xs">
+				<div className="flex w-full items-center gap-2 px-2 text-black md:gap-4 dark:text-zinc-200">
+					<SearchIcon className="aspect-square h-6 dark:text-zinc-200" />
+					<input
+						ref={inputRef}
+						placeholder={t('placeholder') || undefined}
+						onFocus={() => setOpen(true)}
+						onChange={(e) => setSearchString(e.target.value)}
+						className="h-fit w-full flex-1 border-none bg-white focus:border-none focus:ring-0 focus:outline-hidden dark:bg-zinc-800 dark:text-zinc-200"
+						value={searchString}
+					/>
+					{!open && (
+						<span className="hidden flex-none text-xs font-semibold text-gray-400 md:block">
+							<kbd>ctrl</kbd> + <kbd>K</kbd>
+						</span>
+					)}
+					{open && (
+						<XIcon
+							onClick={() => {
+								setSearchString('')
+								setOpen(false)
+								inputRef.current?.blur()
+							}}
+							className="h-6"
 						/>
-						{!open && (
-							<span className="hidden flex-none text-xs font-semibold text-gray-400 md:block">
-								<kbd>ctrl</kbd> + <kbd>K</kbd>
-							</span>
-						)}
-						{open && (
-							<XIcon
-								onClick={() => {
-									setSearchString('')
-									setOpen(false)
-									inputRef.current?.blur()
-								}}
-								className="h-6"
-							/>
-						)}
-					</div>
-					<NavbarContext.Provider value={{ open, setOpen }}>
-						<AnimatePresence>
-							{open && (
-								<motion.div
-									className="overflow-hidden"
-									initial={{ opacity: 0, height: 0 }}
-									animate={{ opacity: 1, height: 'auto' }}
-									exit={{ opacity: 0, height: 0 }}
-								>
-									<NavbarHandler
-										devices={props.devices}
-										searchString={searchString}
-									/>
-								</motion.div>
-							)}
-						</AnimatePresence>
-					</NavbarContext.Provider>
+					)}
 				</div>
-				{!open && isDesktop && (
-					<div className="flex w-full items-center justify-center">
-						<FilterVisualization />
-					</div>
-				)}
+				<NavbarContext.Provider value={{ open, setOpen }}>
+					<AnimatePresence>
+						{open && (
+							<motion.div
+								className="overflow-hidden"
+								initial={{ opacity: 0, height: 0 }}
+								animate={{ opacity: 1, height: 'auto' }}
+								exit={{ opacity: 0, height: 0 }}
+							>
+								<NavbarHandler
+									devices={props.devices}
+									searchString={searchString}
+								/>
+							</motion.div>
+						)}
+					</AnimatePresence>
+				</NavbarContext.Provider>
 			</div>
+			{!open && isDesktop && (
+				<div className="flex w-full items-center justify-center">
+					<FilterVisualization />
+				</div>
+			)}
+			{/* </div> */}
 		</div>
 	)
 }
