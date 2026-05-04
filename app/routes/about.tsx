@@ -112,26 +112,9 @@ export default function Index() {
 
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
-  /**
-   * Stupid workaround for chromium and webkit that both render double
-   * scroll bars when using scrollSnapType.
-   * Simply setting overflow hidden on the html element fixes it and
-   * the rest of the pages stay untouched from this.
-   */
-  useEffect(() => {
-    document.documentElement.style.setProperty('overflow', 'hidden')
-    return () => {
-      document.documentElement.style.removeProperty('overflow')
-    }
-  }, [])
-
   return (
     <div
       className="max-h-screen bg-white dark:bg-black"
-      style={{
-        scrollSnapType: 'y mandatory',
-        overflowY: 'auto',
-      }}
     >
       <header className="z-10">
         <Header />
@@ -140,11 +123,6 @@ export default function Index() {
         <div
           id="firstSection"
           className="mx-auto flex max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8"
-          style={{
-            /** for some reasons not really worth debugging tailwind does not apply min-h-[calc(100vh-8rem)], so we have to use element styles here */
-            minHeight: 'calc(100vh - 8rem)',
-            scrollSnapAlign: 'end',
-          }}
         >
           <div className="flex items-center justify-between px-8">
             <div className="md:w-1/2">
@@ -233,22 +211,16 @@ export default function Index() {
         {sections.map((section, _index) => {
           const Component = section.component
           return (
-            <div
+            <section
               key={section.title}
-              className="mx-32 flex h-screen items-center justify-center"
-              style={{
-                scrollSnapAlign: 'center',
-              }}
+              className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-16 sm:px-6 md:py-24 lg:px-8"
             >
               <Component />
-            </div>
+            </section>
           )
         })}
         <div
-          className="mx-32 flex h-screen flex-col items-center justify-center"
-          style={{
-            scrollSnapAlign: 'center',
-          }}
+          className="mx-32 flex py-16 md:py-24 flex-col items-center justify-center"
         >
           <Partners data={partners} />
           <Footer />
