@@ -81,7 +81,7 @@ async function seed() {
 	console.log(`ℹ️  Create profile sensei 🥷🏼  for account with ${email}`)
 
 	// Import devices and connect it to user
-	const devices = await csvtojson().fromFile('./seeds/devices.csv')
+	const devices = await csvtojson().fromFile('./scripts/db/seeds/devices.csv')
 	let i = 0
 	for await (const csvDevice of devices) {
 		i++
@@ -99,7 +99,7 @@ async function seed() {
 	}
 	process.stdout.write('\n')
 
-	const sensors = await csvtojson().fromFile('./seeds/sensors.csv')
+	const sensors = await csvtojson().fromFile('./scripts/db/seeds/sensors.csv')
 
 	let j = 0
 	for await (const csvSensor of sensors) {
@@ -117,7 +117,7 @@ async function seed() {
 
 	try {
 		const measurements = await csvtojson().fromFile(
-			'./db/seeds/measurements.csv',
+			'./scripts/db/seeds/measurements.csv',
 		)
 		let k = 0
 		for await (const csvMeasurement of measurements) {
