@@ -112,7 +112,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "19.2.5",
     "react-draggable": "^4.5.0",
-    "react-email": "^6.0.0",
+    "react-email": "^6.0.5",
     "react-globe.gl": "^2.37.1",
     "react-hook-form": "^7.73.1",
     "react-i18next": "^17.0.6",
