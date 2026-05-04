@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useRootRouteLoaderData } from '~/root'
+import { Button } from '~/components/ui/button'
 
 export default function Info() {
   const { ENV } = useRootRouteLoaderData()
@@ -34,12 +35,9 @@ export default function Info() {
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <div className="pointer-events-auto box-border h-10 w-10">
-          <button
-            type="button"
-            className="h-10 w-10 rounded-full border border-gray-100 bg-white text-center text-black hover:bg-gray-100"
-          >
-              <InfoIcon className="mx-auto h-6 w-6" />
-          </button>
+           <Button variant="topbar">
+              <InfoIcon />
+          </Button>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
