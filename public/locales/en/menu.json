@@ -20,5 +20,8 @@
   "toast_login_success": "Successfully logged in",
   "toast_logout_success": "Successfully logged out",
   "toast_user_creation_success": "Successfully created account",
-  "community_label": "Community Forum"
+  "community_label": "Community Forum",
+   "devices": "Devices",
+  "measurements": "Measurements",
+  "explore_sensors": "Explore sensors"
 }
