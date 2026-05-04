@@ -17,7 +17,13 @@ export const BaseMap = forwardRef<MapRef, MapProps>(
 
 		const updateMapLanguage = useCallback(
 			(map: MapInstance, locale: string) => {
-				const skipLayerIds = ['shield', 'road-number', 'exit', 'ref']
+				const skipLayerIds = [
+					'shield',
+					'road-number',
+					'exit',
+					'ref',
+					'cluster-count-layer',
+				]
 				const style = map.getStyle()
 				if (!style?.layers) return
 

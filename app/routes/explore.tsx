@@ -33,6 +33,7 @@ import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
 import maplibregl, {
 	LngLatLike,
+	MapLayerMouseEvent,
 	MapLibreEvent,
 	MapSourceDataEvent,
 	MapStyleDataEvent,
@@ -299,20 +300,19 @@ export default function Explore() {
 	//   ],
 	// ]);
 
-	const onMapClick = (e: MapMouseEvent) => {
+	const onMapClick = async (e: MapLayerMouseEvent) => {
 		if (e.features && e.features.length > 0) {
 			const feature = e.features[0]
+			const map = e.target
+			const coordinates = (feature.geometry as Point).coordinates as [
+				number,
+				number,
+			]
 
 			if (
 				feature.layer?.id === 'phenomenon-layer' ||
 				feature.layer?.id === 'devices-symbol-layer'
 			) {
-				const coordinates = (feature.geometry as Point).coordinates as [
-					number,
-					number,
-				]
-				const map = e.target
-
 				map.flyTo({
 					center: coordinates,
 					zoom: Math.max(map.getZoom(), 14),
@@ -324,11 +324,23 @@ export default function Explore() {
 					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
 				)
 			}
+
+			if (feature.layer?.id === 'devices-clusters-layer') {
+				const zoom = await (
+					map.getSource(feature.source) as maplibregl.GeoJSONSource
+				).getClusterExpansionZoom(feature.properties?.cluster_id)
+				map.easeTo({
+					center: coordinates,
+					zoom: zoom,
+					duration: 200,
+					essential: true,
+				})
+			}
 		}
 	}
 
 	const handleMouseMove = useCallback(
-		(e: MapMouseEvent) => {
+		(e: MapLayerMouseEvent) => {
 			if (e.features && e.features.length > 0) {
 				e.target.getCanvas().style.cursor = 'pointer'
 				const feature = e.features[0]
@@ -365,8 +377,10 @@ export default function Explore() {
 		[hoveredFeatureId],
 	)
 
+	const handleMouseEnter = useCallback((e: MapLayerMouseEvent) => {}, [])
+
 	const handleMouseLeave = useCallback(
-		(e: MapMouseEvent) => {
+		(e: MapLayerMouseEvent) => {
 			deviceNamePopup.remove()
 			if (hoveredFeatureId) {
 				e.target.setFeatureState(
@@ -408,33 +422,33 @@ export default function Explore() {
 		return defaultLayer
 	}
 
-	const updateMarkers = (map: MapInstance) => {
-		const newMarkers: Record<string, maplibregl.Marker> = {}
-		const features = map.querySourceFeatures('osem-devices')
-		for (let i = 0; i < features.length; i++) {
-			const coords = (features[i].geometry as Point)?.coordinates as LngLatLike
-			if (!coords) continue
-			const props = features[i].properties
-			if (!props.cluster) continue
-			const id = props.cluster_id
-			let marker = clusterMarkers[id]
-			if (!marker) {
-				marker = clusterMarkers[id] = ClusterMarker({
-					clusterFeature: features[i] as Feature<Point, any>,
-					map,
-				})
-			}
-			newMarkers[id] = marker
-			if (!onScreenClusterMarkers[id]) marker.addTo(map)
-		}
-		// for every marker we've added previously, remove those that are no longer visible
-		for (const id in onScreenClusterMarkers) {
-			if (!newMarkers[id]) {
-				onScreenClusterMarkers[id].remove()
-			}
-		}
-		onScreenClusterMarkers = newMarkers
-	}
+	// const updateMarkers = (map: MapInstance) => {
+	// 	const newMarkers: Record<string, maplibregl.Marker> = {}
+	// 	const features = map.querySourceFeatures('osem-devices')
+	// 	for (let i = 0; i < features.length; i++) {
+	// 		const coords = (features[i].geometry as Point)?.coordinates as LngLatLike
+	// 		if (!coords) continue
+	// 		const props = features[i].properties
+	// 		if (!props.cluster) continue
+	// 		const id = props.cluster_id
+	// 		let marker = clusterMarkers[id]
+	// 		if (!marker) {
+	// 			marker = clusterMarkers[id] = ClusterMarker({
+	// 				clusterFeature: features[i] as Feature<Point, any>,
+	// 				map,
+	// 			})
+	// 		}
+	// 		newMarkers[id] = marker
+	// 		if (!onScreenClusterMarkers[id]) marker.addTo(map)
+	// 	}
+	// 	// for every marker we've added previously, remove those that are no longer visible
+	// 	for (const id in onScreenClusterMarkers) {
+	// 		if (!newMarkers[id]) {
+	// 			onScreenClusterMarkers[id].remove()
+	// 		}
+	// 	}
+	// 	onScreenClusterMarkers = newMarkers
+	// }
 
 	const loadImageIfNotExists = async (
 		map: MapInstance,
@@ -484,14 +498,14 @@ export default function Explore() {
 	}
 
 	const handleOnData = (e: MapStyleDataEvent | MapSourceDataEvent) => {
-		if (e.dataType === 'style') return
-		const ev = e as MapSourceDataEvent
-		if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
-		updateMarkers(e.target)
+		// if (e.dataType === 'style') return
+		// const ev = e as MapSourceDataEvent
+		//if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
+		//updateMarkers(e.target)
 	}
 
 	function handleMove(e: ViewStateChangeEvent): void {
-		updateMarkers(e.target)
+		//updateMarkers(e.target)
 	}
 
 	return (
@@ -510,10 +524,11 @@ export default function Explore() {
 					interactiveLayerIds={
 						selectedPheno
 							? ['phenomenon-layer']
-							: ['devices-symbol-layer', 'devices-cluster-hit-layer']
+							: ['devices-symbol-layer', 'devices-clusters-layer']
 					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
+					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}
 					onMove={handleMove}
 					onMoveEnd={handleMove}
@@ -545,7 +560,54 @@ export default function Explore() {
 								],
 								old: ['+', ['case', ['==', ['get', 'status'], 'old'], 1, 0]],
 							}}
+							clusterMinPoints={5}
 						>
+							<Layer
+								type="circle"
+								id="devices-clusters-layer"
+								source="osem-clusters"
+								filter={['has', 'point_count']}
+								paint={{
+									'circle-radius': [
+										'case',
+										['>=', ['get', 'point_count'], 1000],
+										25,
+										['>=', ['get', 'point_count'], 100],
+										14,
+										10,
+									],
+									'circle-color': 'transparent',
+									'circle-stroke-width': [
+										'case',
+										['>=', ['get', 'point_count'], 1000],
+										12,
+										['>=', ['get', 'point_count'], 100],
+										6,
+										4,
+									],
+									'circle-stroke-color': '#4EAF47',
+								}}
+							/>
+							<Layer
+								type="symbol"
+								id="cluster-count-layer"
+								source="osem-devices"
+								filter={['has', 'point_count']}
+								layout={{
+									'text-field': ['get', 'point_count'],
+									'text-size': [
+										'case',
+										['>=', ['get', 'point_count'], 1000],
+										14,
+										['>=', ['get', 'point_count'], 100],
+										12,
+										10,
+									],
+								}}
+								paint={{
+									'text-color': '#000',
+								}}
+							/>
 							<Layer
 								type="symbol"
 								id="devices-symbol-layer"
@@ -587,32 +649,6 @@ export default function Explore() {
 									],
 								}}
 							/>
-							{/* <Layer
-								type="circle"
-								source="osem-clusters"
-								filter={['has', 'point_count']}
-								paint={{
-									'circle-radius': [
-										'case',
-										['>=', ['get', 'point_count'], 1000],
-										36,
-										['>=', ['get', 'point_count'], 100],
-										20,
-										18,
-									],
-									'circle-color': [
-										'case',
-										['boolean', ['feature-state', 'hover'], false],
-										'#3bb3ff',
-										'#0ea3ff',
-									],
-									'circle-stroke-width': 2,
-									'circle-stroke-color': '#fff',
-								}}
-							/> */}
-							{/* <ClusterLayer
-							devices={filteredDevices as FeatureCollection<Point, Device>}
-						/> */}
 						</Source>
 					)}
 
