@@ -32,7 +32,7 @@ import { Button } from '~/components/ui/button'
 import Download from '../download'
 
 interface MenuProps {
-	devices: any
+	devices?: any
 }
 
 export default function Menu({ devices }: MenuProps) {
@@ -109,6 +109,15 @@ export default function Menu({ devices }: MenuProps) {
 										<DropdownMenuItem className="cursor-pointer">
 											<Compass className="mr-2 h-5 w-5" />
 											<span>{t('explore_label')}</span>
+										</DropdownMenuItem>
+									</Link>
+								)}
+
+								{matches[1]?.pathname !== '/settings' && (
+									<Link to="/settings/profile">
+										<DropdownMenuItem className="cursor-pointer">
+											<Settings className="mr-2 h-5 w-5" />
+											{t('settings_label')}
 										</DropdownMenuItem>
 									</Link>
 								)}
@@ -202,12 +211,13 @@ export default function Menu({ devices }: MenuProps) {
 					</div>
 				</DropdownMenuContent>
 			</DropdownMenu>
-
-			<Download
-				devices={devices}
-				open={downloadOpen}
-				onOpenChange={setDownloadOpen}
-			/>
+			{devices && (
+				<Download
+					devices={devices}
+					open={downloadOpen}
+					onOpenChange={setDownloadOpen}
+				/>
+			)}
 		</>
 	)
 }

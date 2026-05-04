@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
-const HOME_HASH = '#2.08/42.99/31.31'
+const HOME_HASH = '#2/7/52'
 
 interface HomeProps {
 	deviceCount?: number
