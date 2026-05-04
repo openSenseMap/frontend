@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMap } from 'react-map-gl/mapbox'
+import { useMap } from 'react-map-gl/maplibre'
 import { useFetcher } from 'react-router'
 
 import { Button } from '../ui/button'

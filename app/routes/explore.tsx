@@ -1,29 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type FeatureCollection, type Point } from 'geojson'
-import mapboxglcss from 'mapbox-gl/dist/mapbox-gl.css?url'
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import {
 	type MapRef,
 	MapProvider,
 	Layer,
 	Source,
-	Marker,
-	type MapMouseEvent,
-} from 'react-map-gl/mapbox'
+	MapInstance,
+} from 'react-map-gl/maplibre'
 import {
 	Outlet,
 	useNavigate,
 	useSearchParams,
 	useLoaderData,
 	useParams,
-	type LinksFunction,
 } from 'react-router'
-import type Supercluster from 'supercluster'
 import { type Route } from './+types/explore'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
-import BoxMarker from '~/components/map/layers/cluster/box-marker'
-import ClusterLayer from '~/components/map/layers/cluster/cluster-layer'
 import Legend, { type LegendValue } from '~/components/map/legend'
 import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
@@ -34,6 +28,13 @@ import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
+import maplibregl, {
+	LngLatLike,
+	MapLayerMouseEvent,
+	MapLibreEvent,
+	type FilterSpecification,
+} from 'maplibre-gl'
+import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
 
@@ -100,16 +101,6 @@ export async function action({ request }: { request: Request }) {
 	})
 }
 
-export type DeviceClusterProperties =
-	| Supercluster.PointFeature<any>
-	| Supercluster.PointFeature<
-			Supercluster.ClusterProperties & {
-				categories: {
-					[x: number]: number
-				}
-			}
-	  >
-
 export async function loader({ context, request }: Route.LoaderArgs) {
 	//* Get filter params
 	let locale = getLocale(context)
@@ -161,15 +152,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	}
 }
 
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: mapboxglcss,
-		},
-	]
-}
-
 // This is for the live data display. The 21-06-2023 works with the seed Data, for Production take now minus 10 minutes
 let currentDate = new Date('2023-06-21T14:13:11.024Z')
 if (process.env.NODE_ENV === 'production') {
@@ -178,25 +160,8 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const {
-		devices,
-		measurementCount,
-		user,
-		profile,
-		filterParams,
-		filteredDevices,
-		message,
-		locale,
-	} = useLoaderData<typeof loader>()
-
+	const { devices, filteredDevices } = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
-
-	// get map bounds
-	const [, setViewState] = useState({
-		longitude: 7.628202,
-		latitude: 51.961563,
-		zoom: 2,
-	})
 	const navigate = useNavigate()
 	// const [showSearch, setShowSearch] = useState<boolean>(false);
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
@@ -207,6 +172,21 @@ export default function Explore() {
 		type: 'FeatureCollection',
 		features: [],
 	})
+	const [hoveredFeatureId, setHoveredFeatureId] = useState<
+		string | number | null
+	>(null)
+
+	const deviceNamePopup = useMemo(
+		() =>
+			new maplibregl.Popup({
+				closeButton: false,
+				closeOnClick: false,
+				closeOnMove: true,
+				anchor: 'left',
+				offset: [15, 0],
+			}),
+		[],
+	)
 
 	//listen to search params change
 	// useEffect(() => {
@@ -317,25 +297,96 @@ export default function Explore() {
 	//   ],
 	// ]);
 
-	const onMapClick = (e: MapMouseEvent) => {
+	const onMapClick = async (e: MapLayerMouseEvent) => {
 		if (e.features && e.features.length > 0) {
 			const feature = e.features[0]
+			const map = e.target
+			const coordinates = (feature.geometry as Point).coordinates as [
+				number,
+				number,
+			]
 
-			if (feature.layer?.id === 'phenomenon-layer') {
+			if (
+				feature.layer?.id === 'phenomenon-layer' ||
+				feature.layer?.id === 'devices-symbol-layer'
+			) {
+				map.flyTo({
+					center: coordinates,
+					zoom: Math.max(map.getZoom(), 14),
+					animate: true,
+					speed: 1.6,
+					essential: true,
+				})
 				void navigate(
 					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
 				)
 			}
+
+			if (feature.layer?.id === 'devices-clusters-layer') {
+				const zoom = await (
+					map.getSource(feature.source) as maplibregl.GeoJSONSource
+				).getClusterExpansionZoom(feature.properties?.cluster_id)
+				map.easeTo({
+					center: coordinates,
+					zoom: zoom,
+					duration: 200,
+					essential: true,
+				})
+			}
 		}
 	}
 
-	const handleMouseMove = (e: MapMouseEvent) => {
-		if (e.features && e.features.length > 0) {
-			mapRef!.current!.getCanvas().style.cursor = 'pointer'
-		} else {
-			mapRef!.current!.getCanvas().style.cursor = ''
-		}
-	}
+	const handleMouseMove = useCallback(
+		(e: MapLayerMouseEvent) => {
+			if (e.features && e.features.length > 0) {
+				e.target.getCanvas().style.cursor = 'pointer'
+				const feature = e.features[0]
+				if (
+					feature.layer.id !== 'devices-symbol-layer' ||
+					feature.id === undefined
+				)
+					return
+				if (hoveredFeatureId)
+					e.target.setFeatureState(
+						{ source: 'osem-devices', id: hoveredFeatureId },
+						{ hover: false },
+					)
+				setHoveredFeatureId(feature.id)
+				e.target.setFeatureState(
+					{ source: 'osem-devices', id: feature.id },
+					{ hover: true },
+				)
+				const coordinates = (feature.geometry as Point).coordinates.slice()
+				// Ensure that if the map is zoomed out such that multiple
+				// copies of the feature are visible, the popup appears
+				// over the copy being pointed to.
+				while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+					coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360
+				}
+				deviceNamePopup
+					.setLngLat(coordinates as LngLatLike)
+					.setHTML(feature.properties.name)
+					.addTo(e.target)
+			} else {
+				e.target.getCanvas().style.cursor = ''
+			}
+		},
+		[hoveredFeatureId],
+	)
+
+	const handleMouseLeave = useCallback(
+		(e: MapLayerMouseEvent) => {
+			deviceNamePopup.remove()
+			if (hoveredFeatureId) {
+				e.target.setFeatureState(
+					{ source: 'osem-devices', id: hoveredFeatureId },
+					{ hover: false },
+				)
+			}
+			setHoveredFeatureId(null)
+		},
+		[hoveredFeatureId],
+	)
 
 	//* fly to device location when url inludes deviceId
 	const { deviceId } = useParams()
@@ -351,9 +402,66 @@ export default function Explore() {
 		]
 	}
 
-	const buildLayerFromPheno = (selectedPheno: any) => {
+	const selectedDeviceId = selectedDevice?.properties.id
+
+	const deviceLayerFilter: FilterSpecification = selectedDeviceId
+		? [
+				'all',
+				['!', ['has', 'point_count']],
+				['!=', ['get', 'id'], selectedDeviceId],
+			]
+		: ['!', ['has', 'point_count']]
+
+	const buildLayerFromPheno = () => {
 		//TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
 		return defaultLayer
+	}
+
+	const loadImageIfNotExists = async (
+		map: MapInstance,
+		id: string,
+		url: string,
+	) => {
+		if (!map.getImage(id)) {
+			const imgResponse = await map.loadImage(url)
+			map.addImage(id, imgResponse.data)
+		}
+	}
+
+	const handleMapLoad = async (e: MapLibreEvent) => {
+		const map = e.target
+		await Promise.allSettled([
+			loadImageIfNotExists(
+				map,
+				'osem-device-active',
+				'/img/device_marker_active.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-device-inactive',
+				'/img/device_marker_inactive.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-device-old',
+				'/img/device_marker_old.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-mobile-active',
+				'/img/mobile_marker_active.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-mobile-inactive',
+				'/img/mobile_marker_inactive.png',
+			),
+			loadImageIfNotExists(
+				map,
+				'osem-mobile-old',
+				'/img/mobile_marker_old.png',
+			),
+		])
 	}
 
 	return (
@@ -374,11 +482,17 @@ export default function Explore() {
 						values={legendLabels()}
 					/>
 				)}
+
 				<Map
-					onMove={(evt) => setViewState(evt.viewState)}
-					interactiveLayerIds={selectedPheno ? ['phenomenon-layer'] : []}
+					interactiveLayerIds={
+						selectedPheno
+							? ['phenomenon-layer']
+							: ['devices-symbol-layer', 'devices-clusters-layer']
+					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
+					onMouseLeave={handleMouseLeave}
+					onLoad={handleMapLoad}
 					ref={mapRef}
 					initialViewState={
 						deviceId
@@ -387,10 +501,116 @@ export default function Explore() {
 					}
 				>
 					{!selectedPheno && (
-						<ClusterLayer
-							devices={filteredDevices as FeatureCollection<Point, Device>}
-						/>
+						<Source
+							id="osem-devices"
+							type="geojson"
+							data={filteredDevices as FeatureCollection<Point, Device>}
+							promoteId="id"
+							cluster={true}
+							clusterRadius={64} // 1/8 of a tile
+							clusterProperties={{
+								active: [
+									'+',
+									['case', ['==', ['get', 'status'], 'active'], 1, 0],
+								],
+								inactive: [
+									'+',
+									['case', ['==', ['get', 'status'], 'inactive'], 1, 0],
+								],
+								old: ['+', ['case', ['==', ['get', 'status'], 'old'], 1, 0]],
+							}}
+							clusterMinPoints={5}
+						>
+							<Layer
+								type="circle"
+								id="devices-clusters-layer"
+								source="osem-clusters"
+								filter={['has', 'point_count']}
+								paint={{
+									'circle-radius': [
+										'case',
+										['>=', ['get', 'point_count'], 1000],
+										25,
+										['>=', ['get', 'point_count'], 100],
+										14,
+										10,
+									],
+									'circle-color': 'transparent',
+									'circle-stroke-width': [
+										'case',
+										['>=', ['get', 'point_count'], 1000],
+										12,
+										['>=', ['get', 'point_count'], 100],
+										6,
+										4,
+									],
+									'circle-stroke-color': '#4EAF47',
+								}}
+							/>
+							<Layer
+								type="symbol"
+								id="cluster-count-layer"
+								source="osem-devices"
+								filter={['has', 'point_count']}
+								layout={{
+									'text-field': ['get', 'point_count'],
+									'text-size': [
+										'case',
+										['>=', ['get', 'point_count'], 1000],
+										14,
+										['>=', ['get', 'point_count'], 100],
+										12,
+										10,
+									],
+								}}
+								paint={{
+									'text-color': '#000',
+								}}
+							/>
+							<Layer
+								type="symbol"
+								id="devices-symbol-layer"
+								source="osem-devices"
+								filter={deviceLayerFilter}
+								layout={{
+									'icon-image': [
+										'case',
+										['==', ['get', 'status'], 'active'],
+										[
+											'case',
+											['==', ['get', 'exposure'], 'mobile'],
+											'osem-mobile-active',
+											'osem-device-active',
+										],
+										['==', ['get', 'status'], 'inactive'],
+										[
+											'case',
+											['==', ['get', 'exposure'], 'mobile'],
+											'osem-mobile-inactive',
+											'osem-device-inactive',
+										],
+										[
+											'case',
+											['==', ['get', 'exposure'], 'mobile'],
+											'osem-mobile-old',
+											'osem-device-old',
+										],
+									],
+									'icon-size': 1,
+									'icon-allow-overlap': true,
+								}}
+								paint={{
+									'icon-opacity': [
+										'case',
+										['boolean', ['feature-state', 'hover'], false],
+										1,
+										0.9,
+									],
+								}}
+							/>
+						</Source>
 					)}
+
 					{selectedPheno && (
 						<Source
 							id="osem-data"
@@ -400,29 +620,20 @@ export default function Explore() {
 						>
 							<Layer
 								{...(phenomenonLayers[selectedPheno.slug] ??
-									buildLayerFromPheno(selectedPheno))}
+									buildLayerFromPheno())}
 							/>
 						</Source>
 					)}
 
-					{/* Render BoxMarker for the selected device */}
 					{selectedDevice && deviceId && (
-						<Marker
-							latitude={selectedDevice.properties.latitude}
-							longitude={selectedDevice.properties.longitude}
-						>
-							<BoxMarker
-								key={`device-${selectedDevice.properties.id}`}
-								latitude={selectedDevice.properties.latitude}
-								longitude={selectedDevice.properties.longitude}
-								device={selectedDevice.properties as Device}
-							/>
-						</Marker>
+						<BoxMarker
+							key={`device-${selectedDevice.properties.id}`}
+							longitude={selectedDevice.geometry.coordinates[0]}
+							latitude={selectedDevice.geometry.coordinates[1]}
+							device={selectedDevice.properties as Device}
+						/>
 					)}
 
-					{/* <ClusterLayer
-              devices={filterOptionsOn ? GlobalFilteredDevices : data.devices}
-            /> */}
 					<div className="pointer-events-none absolute inset-0 z-10">
 						<div className="pointer-events-auto">
 							<Outlet />

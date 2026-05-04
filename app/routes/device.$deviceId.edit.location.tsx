@@ -1,15 +1,12 @@
 import { Save } from 'lucide-react'
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.css?url'
 import React, { useCallback, useState } from 'react'
 import {
 	type MarkerDragEvent,
-	Map,
 	MapProvider,
 	Marker,
 	NavigationControl,
-} from 'react-map-gl/mapbox'
+} from 'react-map-gl/maplibre'
 import {
-	type LinksFunction,
 	redirect,
 	Form,
 	useActionData,
@@ -24,6 +21,7 @@ import {
 	updateDeviceLocation,
 } from '~/db/models/device.server'
 import { getUserId } from '~/services/session-service.server'
+import { BaseMap } from '~/components/base-map'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -40,17 +38,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const deviceData = await getDeviceWithoutSensors({ id: deviceID })
 
 	return { device: deviceData }
-}
-
-//*****************************************
-//* required to view mapbox proberly (Y.Q.)
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: mapboxgl,
-		},
-	]
 }
 
 //*****************************************************
@@ -131,14 +118,12 @@ export default function EditLocation() {
 						{/* Map view */}
 						<div className="mt-5">
 							<MapProvider>
-								<Map
+								<BaseMap
 									initialViewState={{
 										latitude: marker.latitude,
 										longitude: marker.longitude,
 										zoom: 10,
 									}}
-									mapStyle="mapbox://styles/mapbox/streets-v12"
-									mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 									style={{
 										width: '100%',
 										height: '500px',
@@ -153,7 +138,7 @@ export default function EditLocation() {
 										onDrag={onMarkerDrag}
 									></Marker>
 									<NavigationControl position="top-left" showCompass={false} />
-								</Map>
+								</BaseMap>
 							</MapProvider>
 						</div>
 
