@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 
 const SPACE_AREA_PERCENT = 100
 
@@ -54,48 +54,56 @@ function randomSigned(distance: number) {
 }
 
 export default function SpaceBackground() {
+	const [randomValues, setRandomValues] = useState(Array(12).fill(0))
+
 	const stars = useMemo(
 		() =>
 			Array.from({ length: STAR_COUNT }, (_, i) => ({
 				id: i,
-				top: randomBetween(0, SPACE_AREA_PERCENT),
-				left: randomBetween(0, SPACE_AREA_PERCENT),
-				size: randomBetween(STAR.size.min, STAR.size.max),
-				twinkleDelay: randomBetween(0, STAR.twinkle.delayMax),
-				twinkleDuration: randomBetween(
-					STAR.twinkle.durationMin,
-					STAR.twinkle.durationMax,
-				),
-				driftDuration: randomBetween(
-					STAR.drift.durationMin,
-					STAR.drift.durationMax,
-				),
-				driftX: `${randomSigned(STAR.drift.distancePx)}px`,
-				driftY: `${randomSigned(STAR.drift.distancePx)}px`,
+				top: randomValues[0],
+				left: randomValues[1],
+				size: randomValues[2],
+				twinkleDelay: randomValues[3],
+				twinkleDuration: randomValues[4],
+				driftDuration: randomValues[5],
+				driftX: `${randomValues[6]}px`,
+				driftY: `${randomValues[7]}px`,
 			})),
-		[],
+		[randomValues],
 	)
 
 	const shootingStars = useMemo(
 		() =>
 			Array.from({ length: SHOOTING_STAR.count }, (_, i) => ({
 				id: i,
-				top: randomBetween(0, SHOOTING_STAR.position.topMaxPercent),
-				left: randomBetween(
-					SHOOTING_STAR.position.leftMinPercent,
-					SHOOTING_STAR.position.leftMaxPercent,
-				),
-				delay: randomBetween(
-					SHOOTING_STAR.delay.min,
-					SHOOTING_STAR.delay.max,
-				),
-				duration: randomBetween(
-					SHOOTING_STAR.duration.min,
-					SHOOTING_STAR.duration.max,
-				),
+				top: randomValues[8],
+				left: randomValues[9],
+				delay: randomValues[10],
+				duration: randomValues[11],
 			})),
-		[],
+		[randomValues],
 	)
+
+	/** Using a layout effect to generate the random values prevents hydration issues */
+	useLayoutEffect(() => {
+		setRandomValues([
+			randomBetween(0, SPACE_AREA_PERCENT),
+			randomBetween(0, SPACE_AREA_PERCENT),
+			randomBetween(STAR.size.min, STAR.size.max),
+			randomBetween(0, STAR.twinkle.delayMax),
+			randomBetween(STAR.twinkle.durationMin, STAR.twinkle.durationMax),
+			randomBetween(STAR.drift.durationMin, STAR.drift.durationMax),
+			randomSigned(STAR.drift.distancePx),
+			randomSigned(STAR.drift.distancePx),
+			randomBetween(0, SHOOTING_STAR.position.topMaxPercent),
+			randomBetween(
+				SHOOTING_STAR.position.leftMinPercent,
+				SHOOTING_STAR.position.leftMaxPercent,
+			),
+			randomBetween(SHOOTING_STAR.delay.min, SHOOTING_STAR.delay.max),
+			randomBetween(SHOOTING_STAR.duration.min, SHOOTING_STAR.duration.max),
+		])
+	}, [])
 
 	return (
 		<div className="space-bg" aria-hidden="true">
