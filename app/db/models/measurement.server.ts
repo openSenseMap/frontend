@@ -303,3 +303,7 @@ export async function deleteMeasurementsForTime(date: Date) {
 		.delete(measurement)
 		.where(eq(measurement.time, date))
 }
+
+export async function getMeasurementsCount() {
+	return await drizzleClient.$count(measurement)
+}
