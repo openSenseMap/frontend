@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type FeatureCollection, type Point } from 'geojson'
+import { Feature, type FeatureCollection, type Point } from 'geojson'
 import { useState, useRef, useCallback, useMemo } from 'react'
 import {
 	type MapRef,
@@ -7,6 +7,7 @@ import {
 	Layer,
 	Source,
 	MapInstance,
+	ViewStateChangeEvent,
 } from 'react-map-gl/maplibre'
 import {
 	Outlet,
@@ -33,9 +34,12 @@ import maplibregl, {
 	LngLatLike,
 	MapLayerMouseEvent,
 	MapLibreEvent,
+	MapSourceDataEvent,
+	MapStyleDataEvent,
 	type FilterSpecification,
 } from 'maplibre-gl'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
+import { ClusterMarker } from '~/components/cluster-marker'
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -152,6 +156,9 @@ let currentDate = new Date('2023-06-21T14:13:11.024Z')
 if (process.env.NODE_ENV === 'production') {
 	currentDate = new Date(Date.now() - 1000 * 600)
 }
+
+const clusterMarkers: Record<string, maplibregl.Marker> = {}
+let onScreenClusterMarkers: Record<string, maplibregl.Marker> = {}
 
 export default function Explore() {
 	// data from our loader
@@ -459,6 +466,45 @@ export default function Explore() {
 		])
 	}
 
+	const updateMarkers = (map: MapInstance) => {
+		const newMarkers: Record<string, maplibregl.Marker> = {}
+		const features = map.querySourceFeatures('osem-devices')
+		for (let i = 0; i < features.length; i++) {
+			const coords = (features[i].geometry as Point)?.coordinates as LngLatLike
+			if (!coords) continue
+			const props = features[i].properties
+			if (!props.cluster) continue
+			const id = props.cluster_id
+			let marker = clusterMarkers[id]
+			if (!marker) {
+				marker = clusterMarkers[id] = ClusterMarker({
+					clusterFeature: features[i] as Feature<Point, any>,
+					map,
+				})
+			}
+			newMarkers[id] = marker
+			if (!onScreenClusterMarkers[id]) marker.addTo(map)
+		}
+		// for every marker we've added previously, remove those that are no longer visible
+		for (const id in onScreenClusterMarkers) {
+			if (!newMarkers[id]) {
+				onScreenClusterMarkers[id].remove()
+			}
+		}
+		onScreenClusterMarkers = newMarkers
+	}
+
+	const handleOnData = (e: MapStyleDataEvent | MapSourceDataEvent) => {
+		if (e.dataType === 'style') return
+		const ev = e as MapSourceDataEvent
+		if (ev.sourceId !== 'osem-devices' || !ev.isSourceLoaded) return
+		updateMarkers(e.target)
+	}
+
+	const handleMove = (e: ViewStateChangeEvent) => {
+		updateMarkers(e.target)
+	}
+
 	return (
 		<div className="h-full w-full">
 			<MapProvider>
@@ -481,6 +527,8 @@ export default function Explore() {
 					onMouseMove={handleMouseMove}
 					onMouseLeave={handleMouseLeave}
 					onLoad={handleMapLoad}
+					onData={handleOnData}
+					onMove={handleMove}
 					ref={mapRef}
 					initialViewState={
 						deviceId
