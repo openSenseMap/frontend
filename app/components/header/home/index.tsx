@@ -1,18 +1,22 @@
 import { Link } from 'react-router'
+const HOME_HASH = '#2.08/42.99/31.31'
 
 export default function Home() {
 	return (
 		<div>
-			<div className="pointer-events-auto h-10 w-10">
-				<Link to="/">
+			<div className="pointer-events-auto h-10 w-40">
+				<Link to={{
+						pathname: '/explore',
+						hash: HOME_HASH,
+					}}>
 					<button
 						type="button"
-						className="h-10 w-10 rounded-full border border-gray-100 bg-white text-black shadow-xl hover:bg-gray-100"
+						className="rounded-full border border-gray-100 bg-white/90 text-black shadow-xl hover:bg-gray-100"
 					>
 						<img
-							src="/img/logo.png"
+							src="/img/openSenseMap.png"
 							alt="openSenseMapLogo"
-							className="mx-auto h-7 w-7"
+							className="mx-auto"
 						/>
 					</button>
 				</Link>
