@@ -4,7 +4,6 @@ import {
 	type MapProps,
 	type MapRef,
 } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css'
 import { BaseMap } from '@/components/base-map'
 
 const Map = forwardRef<MapRef, MapProps>(

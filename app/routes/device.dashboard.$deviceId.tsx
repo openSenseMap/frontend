@@ -1,6 +1,5 @@
 import moment from 'moment'
-import { Map, MapProvider, Marker } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css'
+import { MapProvider, Marker } from 'react-map-gl/maplibre'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
 import {

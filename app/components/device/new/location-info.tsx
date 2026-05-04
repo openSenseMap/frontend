@@ -8,7 +8,6 @@ import {
 	type MapRef,
 	type MarkerDragEvent,
 } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { BaseMap } from '~/components/base-map'

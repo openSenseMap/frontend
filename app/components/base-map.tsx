@@ -8,6 +8,7 @@ import {
 	SkySpecification,
 } from 'react-map-gl/maplibre'
 import SpaceBackground from './map/space-background'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { useTranslation } from 'react-i18next'
 
 export const BaseMap = forwardRef<MapRef, MapProps>(

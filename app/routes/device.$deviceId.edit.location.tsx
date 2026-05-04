@@ -2,12 +2,10 @@ import { Save } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
 import {
 	type MarkerDragEvent,
-	Map,
 	MapProvider,
 	Marker,
 	NavigationControl,
 } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css'
 import {
 	redirect,
 	Form,
