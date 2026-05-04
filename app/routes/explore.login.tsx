@@ -34,7 +34,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const userId = await getUserId(request)
 	if (userId) {
-		const redirectTo = safeRedirect(url.searchParams.get('redirectTo'), '/explore')
+		const redirectTo = safeRedirect(
+			url.searchParams.get('redirectTo'),
+			'/explore',
+		)
 		return redirect(redirectTo)
 	}
 

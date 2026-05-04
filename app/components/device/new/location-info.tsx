@@ -2,16 +2,15 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
-	Map,
 	Marker,
 	NavigationControl,
 	GeolocateControl,
 	type MapRef,
 	type MarkerDragEvent,
-} from 'react-map-gl/mapbox'
+} from 'react-map-gl/maplibre'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import { BaseMap } from '~/components/base-map'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -96,17 +95,12 @@ export function LocationStep() {
 	return (
 		<div className="flex h-full w-full flex-col">
 			<div className="grow">
-				<Map
+				<BaseMap
 					ref={mapRef}
 					initialViewState={{
 						latitude: marker.latitude ? Number(marker.latitude) : 51,
 						longitude: marker.longitude ? Number(marker.longitude) : 7,
 						zoom: 3.5,
-					}}
-					mapStyle="mapbox://styles/mapbox/streets-v12"
-					mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
-					style={{
-						width: '100%',
 					}}
 					onClick={onMapClick}
 				>
@@ -125,7 +119,7 @@ export function LocationStep() {
 						showAccuracyCircle={true}
 						trackUserLocation={true}
 					/>
-				</Map>
+				</BaseMap>
 			</div>
 
 			<div className="flex w-full items-center justify-around bg-gray-50 p-4 dark:bg-gray-800">

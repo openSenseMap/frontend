@@ -1,7 +1,5 @@
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.css?url'
 import moment from 'moment'
-import { Map, MapProvider, Marker } from 'react-map-gl/mapbox'
-import { type LinksFunction } from 'react-router'
+import { MapProvider, Marker } from 'react-map-gl/maplibre'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
 import {
@@ -12,6 +10,7 @@ import {
 	CardTitle,
 } from '~/components/ui/card'
 import { diffFromCreateDate, getMinuteFormattedString } from '~/utils'
+import { BaseMap } from '~/components/base-map'
 
 let deviceData = {
 	_id: '5b411d0e5dc1ec001b4f11c8',
@@ -86,17 +85,6 @@ let deviceData = {
 			type: 'Feature',
 		},
 	],
-}
-
-//*****************************************
-//* required to view mapbox proberly (Y.Q.)
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: mapboxgl,
-		},
-	]
 }
 
 //**********************************
@@ -176,14 +164,12 @@ export default function DeviceDashboard() {
 						{/* Map view */}
 						<div className="block">
 							<MapProvider>
-								<Map
+								<BaseMap
 									initialViewState={{
 										latitude: marker.latitude,
 										longitude: marker.longitude,
 										zoom: 14,
 									}}
-									mapStyle="mapbox://styles/mapbox/streets-v12"
-									mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 									style={{
 										width: '100%',
 										height: '200px',
@@ -194,7 +180,7 @@ export default function DeviceDashboard() {
 										longitude={marker.longitude}
 										latitude={marker.latitude}
 									></Marker>
-								</Map>
+								</BaseMap>
 							</MapProvider>
 						</div>
 					</CardContent>
