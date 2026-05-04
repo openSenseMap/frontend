@@ -5,10 +5,12 @@ export default function Home() {
 	return (
 		<div>
 			<div className="pointer-events-auto h-10 w-40">
-				<Link to={{
+				<Link
+					to={{
 						pathname: '/explore',
 						hash: HOME_HASH,
-					}}>
+					}}
+				>
 					<button
 						type="button"
 						className="rounded-full border border-gray-100 bg-white/90 text-black shadow-xl hover:bg-gray-100"
