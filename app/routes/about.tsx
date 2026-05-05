@@ -123,7 +123,7 @@ export default function Index() {
           id="firstSection"
           className="mx-auto flex max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8"
         >
-          <div className="flex items-center justify-between px-8">
+          <div className="flex items-center justify-between">
             <div className="md:w-1/2">
              <motion.div
                 initial={{ opacity: 0, scale: 0 }}
@@ -167,8 +167,8 @@ export default function Index() {
                         damping: 10,
                       }}
                     >
-                      <button className="border-light-green text-light-green hover:bg-light-green dark:border-dark-green dark:bg-dark-green mt-8 rounded-lg border-t-4 border-r-8 border-b-8 border-l-4 border-solid p-2 transition-all hover:text-white dark:text-white">
-                        {t('explore')}
+                      <button className="border-light-green text-light-green hover:bg-light-green dark:border-dark-green dark:bg-dark-green mt-8 rounded-lg border-t-4 border-r-8 border-b-8 border-l-4 border-solid p-2 transition-all hover:text-white dark:text-white cursor-pointer">
+                        {t('map')}
                       </button>
                     </motion.div>
                   </Link>
@@ -197,7 +197,7 @@ export default function Index() {
                         damping: 10,
                       }}
                     >
-                      <button className="border-light-blue text-light-blue hover:bg-light-blue dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-t-4 border-r-8 border-b-8 border-l-4 border-solid p-2 transition-all hover:scale-105 hover:text-white dark:text-white">
+                      <button className="border-light-blue text-light-blue hover:bg-light-blue dark:border-dark-blue dark:bg-dark-blue mt-8 rounded-lg border-t-4 border-r-8 border-b-8 border-l-4 border-solid p-2 transition-all hover:scale-105 hover:text-white dark:text-white cursor-pointer">
                         {t('donate')}
                       </button>
                     </motion.div>
