@@ -48,7 +48,6 @@ export default function NavBar(props: NavBarProps) {
 		return () => document.removeEventListener('keydown', down)
 	}, [])
 
-	// focus input when opening
 	useEffect(() => {
 		if (open) {
 			inputRef.current?.focus()
@@ -62,7 +61,6 @@ export default function NavBar(props: NavBarProps) {
 
 	return (
 		<div className="pointer-events-auto relative w-full">
-			{/* <div className="absolute top-0 left-0 flex w-full flex-col gap-2"> */}
 			<div className="w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 dark:ring-white dark:backdrop-blur-xs">
 				<div className="flex w-full items-center gap-2 px-2 text-black md:gap-4 dark:text-zinc-200">
 					<SearchIcon className="aspect-square h-6 dark:text-zinc-200" />
@@ -113,7 +111,6 @@ export default function NavBar(props: NavBarProps) {
 					<FilterVisualization />
 				</div>
 			)}
-			{/* </div> */}
 		</div>
 	)
 }
