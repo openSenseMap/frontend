@@ -618,9 +618,9 @@ export const signIn = async (
 	const { token, refreshToken } = await createToken(user)
 
 	const mappedUser: any = { ...user }
-	// flatten the device array for backwards compatibilty
+	// flatten the device array into the "boxes" property for backwards compatibilty
 	delete mappedUser.password
-	mappedUser.devices = user.devices.map((d) => d.id)
+	mappedUser.boxes = user.devices.map((d) => d.id)
 
 	return { user: mappedUser as User, jwt: token, refreshToken }
 }
