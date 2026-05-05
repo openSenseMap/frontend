@@ -9,6 +9,7 @@
 	"clear": "Clear",
 	"apply": "Apply",
 	"no_data_in_range": "There is no data for the selected time period.",
+	"reset_zoom": "Reset zoom",
 	"dateRanges": {
 		"last-30-minutes": "Last 30 minutes",
 		"last-1-hour": "Last 1 hour",

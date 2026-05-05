@@ -45,6 +45,7 @@ import {
 } from '../ui/tooltip'
 import { datesHave48HourRange } from '~/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
 
 ChartJS.register(
 	LineElement,
@@ -362,12 +363,24 @@ export default function Graph({
 					mode: 'index',
 					intersect: false,
 					callbacks: {
+						title: (tooltipItems: any[]) => {
+							const firstItem = tooltipItems[0]
+
+							if (!firstItem) return ''
+
+							const timestamp = firstItem.raw.x
+
+							return format(new Date(timestamp), 'dd.MM.yyyy HH:mm:ss')
+						},
+
 						label: (context: any) => {
 							const dataIndex = context.dataIndex
 							const datasetIndex = context.datasetIndex
 							const point = chartData.datasets[datasetIndex].data[dataIndex]
 							const locationId = point.locationId
+
 							setHoveredPoint(locationId)
+
 							return `${context.dataset.label}: ${context.raw.y}`
 						},
 					},
@@ -536,7 +549,7 @@ export default function Graph({
 			>
 				<div
 					ref={nodeRef}
-					className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 md:top-auto md:right-4 md:bottom-[30px] md:left-auto md:h-[35%] md:max-h-[35%] md:w-[60vw] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs"
+					className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 md:top-auto md:right-4 md:bottom-7.5 md:left-auto md:h-[35%] md:max-h-[35%] md:w-[60vw] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs"
 				>
 					{navigation.state === 'loading' && (
 						<div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-100/30 backdrop-blur-[1.5px]">
@@ -564,7 +577,7 @@ export default function Graph({
 												/>
 											</TooltipTrigger>
 											<TooltipContent>
-												<p>Reset zoom</p>
+												<p>{t('reset_zoom')}</p>
 											</TooltipContent>
 										</Tooltip>
 									</TooltipProvider>
