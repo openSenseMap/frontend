@@ -44,6 +44,7 @@ import {
 	TooltipTrigger,
 } from '../ui/tooltip'
 import { datesHave48HourRange } from '~/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 ChartJS.register(
 	LineElement,
@@ -89,6 +90,7 @@ export default function Graph({
 }: GraphProps) {
 	const { setHoveredPoint } = useContext(HoveredPointContext)
 	const navigation = useNavigation()
+	const { t } = useTranslation('graph')
 	const navigate = useNavigate()
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
 	const [offsetPositionY, setOffsetPositionY] = useState(0)
@@ -600,7 +602,7 @@ export default function Graph({
 					<div className="flex min-h-0 w-full flex-1 items-center justify-center">
 						{(sensors[0].data.length === 0 && sensors[1] === undefined) ||
 						(sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
-							<div>There is no data for the selected time period.</div>
+							<div>{t('no_data_in_range')}</div>
 						) : (
 							<ClientOnly fallback={<Spinner />}>
 								{() => (
