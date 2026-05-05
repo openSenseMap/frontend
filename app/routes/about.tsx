@@ -1,7 +1,6 @@
 import { readItems } from '@directus/sdk'
 import { useMediaQuery } from '@mantine/hooks'
 import { motion } from 'framer-motion'
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   data,
@@ -126,9 +125,19 @@ export default function Index() {
         >
           <div className="flex items-center justify-between px-8">
             <div className="md:w-1/2">
+             <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                    duration: 0.4,
+                    scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+                }}
+              >
               <h1 className="text-light-green dark:text-dark-green text-5xl font-bold tracking-tight">
                 openSenseMap
               </h1>
+
+              </motion.div>
               <motion.div
                 initial={{ opacity: 0, x: -100 }}
                 animate={{ opacity: 1, x: 0 }}
