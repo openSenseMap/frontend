@@ -1,4 +1,4 @@
-import { getUserDevices } from '~/db/models/device.server'
+import { getUserDeviceIds } from '~/db/models/device.server'
 import { type Route } from './+types/api.users.me'
 import { type User } from '~/db/schema/user'
 import { getUserFromJwt } from '~/lib/jwt'
@@ -278,11 +278,11 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 				'Invalid JWT authorization. Please sign in to obtain new JWT.',
 			)
 
-		const devices = await getUserDevices(jwtResponse.id)
+		const deviceIds = await getUserDeviceIds(jwtResponse.id)
 
 		return StandardResponse.ok({
 			code: 'Ok',
-			data: { me: { ...jwtResponse, boxes: devices.map((d) => d.id) } },
+			data: { me: { ...jwtResponse, boxes: deviceIds } },
 		})
 	} catch (err) {
 		console.warn(err)
