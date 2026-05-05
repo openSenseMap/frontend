@@ -70,5 +70,8 @@
 		"generate_new_key_warning": "Das Generieren eines neuen Schlüssel zieht zwangsläufig ein Update des Gerätes nach sich (z.B. Ändern des Codes/ Sketches). <1>Dieser Schritt kann nicht rückgängig gemacht werden</1>.",
 		"generate_new_key_button": "Neuen Schlüssel erzeugen",
 		"auth_enable_checkbox_label": "Gerätesicherheit aktivieren"
-	}
+	},
+	"public_profile_link": "Dein öffentliches Profil findest du hier:",
+	"view_public_profile": "Öffentliches Profil anschauen",
+	"copied": "Erfolgreich kopiert"
 }
