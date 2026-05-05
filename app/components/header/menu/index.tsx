@@ -139,9 +139,12 @@ export default function Menu({ devices }: MenuProps) {
 										</DropdownMenuItem>
 									</Link>
 								)}
+								</DropdownMenuGroup>
+							)}
+							
 
 								{isExplore && (
-									<>
+									<DropdownMenuGroup>
 										<DropdownMenuItem
 											className="cursor-pointer"
 											onSelect={(event) => {
@@ -155,11 +158,9 @@ export default function Menu({ devices }: MenuProps) {
 										</DropdownMenuItem>
 
 										<DropdownMenuSeparator />
-									</>
+									</DropdownMenuGroup>
 								)}
 
-							</DropdownMenuGroup>
-						)}
 
 						<DropdownMenuGroup>
 							<DropdownMenuItem
@@ -168,6 +169,7 @@ export default function Menu({ devices }: MenuProps) {
 								}}
 							>
 								{!user ? (
+									
 									<Link
 										to={{
 											pathname: 'login',
