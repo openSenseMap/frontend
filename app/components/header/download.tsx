@@ -367,7 +367,7 @@ export default function Download({
 							<Checkbox
 								id="title"
 								name="title"
-								value="true"
+								value="on"
 								checked={fields.title}
 								onCheckedChange={(checked) =>
 									handleFieldChange('title', checked)
@@ -383,7 +383,7 @@ export default function Download({
 							<Checkbox
 								id="unit"
 								name="unit"
-								value="true"
+								value="on"
 								checked={fields.unit}
 								onCheckedChange={(checked) =>
 									handleFieldChange('unit', checked)
@@ -399,7 +399,7 @@ export default function Download({
 							<Checkbox
 								id="value"
 								name="value"
-								value="true"
+								value="on"
 								checked={fields.value}
 								onCheckedChange={(checked) =>
 									handleFieldChange('value', checked)
@@ -415,7 +415,7 @@ export default function Download({
 							<Checkbox
 								id="timestamp"
 								name="timestamp"
-								value="true"
+								value="on"
 								checked={fields.timestamp}
 								onCheckedChange={(checked) =>
 									handleFieldChange('timestamp', checked)
