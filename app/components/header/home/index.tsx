@@ -1,22 +1,18 @@
-import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
-const HOME_HASH = '#2/7/52'
 
 interface HomeProps {
 	deviceCount?: number
 	measurementCount?: number
+	onHomeClick?: () => void
 }
 
-export default function Home({ deviceCount = 0, measurementCount = 0 }: HomeProps) {
+export default function Home({ deviceCount = 0, measurementCount = 0, onHomeClick }: HomeProps) {
 	const { t } = useTranslation('menu')
 
 	return (
-		<Link
-			to={{
-				pathname: '/explore',
-				hash: HOME_HASH,
-			}}
+		<div
+			onClick={onHomeClick}
 			aria-label="Go to explore map"
 			className="
 				pointer-events-auto
@@ -50,6 +46,6 @@ export default function Home({ deviceCount = 0, measurementCount = 0 }: HomeProp
 					</p>
 				</section>
 			)}
-		</Link>
+		</div>
 	)
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type FeatureCollection, type Point } from 'geojson'
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import {
 	type MapRef,
 	MapProvider,
@@ -14,6 +14,7 @@ import {
 	useSearchParams,
 	useLoaderData,
 	useParams,
+	useLocation,
 } from 'react-router'
 import { type Route } from './+types/explore'
 import Map from '~/components/map'
@@ -37,6 +38,26 @@ import maplibregl, {
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
+
+const INITIAL_VIEW_STATE = {
+	zoom: 2,
+	latitude: 7,
+	longitude: 52,
+} as const
+
+function parseMapHash(hash: string) {
+	const match = hash.match(/^#?(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/)
+
+	if (!match) return null
+
+	const [, zoom, latitude, longitude] = match
+
+	return {
+		zoom: Number(zoom),
+		latitude: Number(latitude),
+		longitude: Number(longitude),
+	}
+}
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
@@ -163,6 +184,7 @@ export default function Explore() {
 	const { devices, filteredDevices, measurementCount, user } = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
 	const navigate = useNavigate()
+	const location = useLocation()
 	// const [showSearch, setShowSearch] = useState<boolean>(false);
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
 	const [searchParams] = useSearchParams()
@@ -336,6 +358,37 @@ export default function Explore() {
 		}
 	}
 
+	const flyToView = useCallback(
+		(view: { zoom: number; latitude: number; longitude: number }) => {
+			mapRef.current?.flyTo({
+				center: [view.longitude, view.latitude],
+				zoom: view.zoom,
+				duration: 900,
+				essential: true,
+			})
+		},
+		[],
+	)
+
+	const flyToHash = useCallback(
+		(hash: string) => {
+			const view = parseMapHash(hash)
+
+			if (!view) return
+
+			flyToView(view)
+		},
+		[flyToView],
+	)
+
+	useEffect(() => {
+		flyToHash(location.hash)
+	}, [location.hash, flyToHash])
+
+	const handleHomeClick = useCallback(() => {
+		flyToView(INITIAL_VIEW_STATE)
+	}, [flyToView])
+
 	const handleMouseMove = useCallback(
 		(e: MapLayerMouseEvent) => {
 			if (e.features && e.features.length > 0) {
@@ -471,9 +524,7 @@ export default function Explore() {
 					user={user}
 					devices={devices}
 					measurementCount={measurementCount}
-					selectedPheno={selectedPheno}
-					selectedDevice={selectedDevice}
-					filteredDeviceCount={filteredDevices?.features?.length}
+					onHomeClick={handleHomeClick}
 				/>
 				{/* <Header devices={devices} /> */}
 				{selectedPheno && (
@@ -497,7 +548,7 @@ export default function Explore() {
 					initialViewState={
 						deviceId
 							? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
-							: { latitude: 7, longitude: 52, zoom: 2 }
+							: INITIAL_VIEW_STATE
 					}
 				>
 					{!selectedPheno && (

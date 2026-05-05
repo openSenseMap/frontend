@@ -2,19 +2,19 @@ import Home from '../header/home'
 import Menu from '../header/menu'
 import NavBar from '../header/nav-bar'
 import Info from '../header/info'
-import Settings from '../header/settings'
 import LanguageSelector from '../landing/header/language-selector'
 
 interface MapHeaderProps {
 	user: any
 	devices: any
 	measurementCount: number | undefined
+	onHomeClick?: () => void 
 }
 
 export default function MapHeader({
-	user,
 	devices,
 	measurementCount,
+	onHomeClick
 }: MapHeaderProps) {
 	return (
 		<header className="pointer-events-none absolute top-0 left-0 z-20 w-full">
@@ -23,6 +23,7 @@ export default function MapHeader({
 					<Home
 						deviceCount={devices.features.length}
 						measurementCount={measurementCount ?? 0}
+						onHomeClick={onHomeClick}
 					/>
 
 				</div>
