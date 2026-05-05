@@ -615,6 +615,7 @@ export const signIn = async (
 	if (!correctPassword) return null
 
 	const { token, refreshToken } = await createToken(user)
+	delete (user as any).password
 	return { user, jwt: token, refreshToken }
 }
 
