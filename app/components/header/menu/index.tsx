@@ -12,6 +12,7 @@ import {
 	Compass,
 	ScrollText,
 	MessagesSquare,
+	Info,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -103,6 +104,12 @@ export default function Menu() {
 									<Spinner />
 								</div>
 							)}
+							<Link to="/about">
+									<DropdownMenuItem className="cursor-pointer">
+										<Info className="mr-2 h-5 w-5" />
+										<span>{t('about_label')}</span>
+									</DropdownMenuItem>
+							</Link>
 							{!(matches[1].pathname === '/explore') && (
 								<Link to="/explore">
 									<DropdownMenuItem className="cursor-pointer">
