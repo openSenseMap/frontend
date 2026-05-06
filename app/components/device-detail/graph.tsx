@@ -45,7 +45,6 @@ import {
 } from '../ui/tooltip'
 import { datesHave48HourRange } from '~/lib/utils'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
 
 ChartJS.register(
 	LineElement,
@@ -91,7 +90,7 @@ export default function Graph({
 }: GraphProps) {
 	const { setHoveredPoint } = useContext(HoveredPointContext)
 	const navigation = useNavigation()
-	const { t } = useTranslation('graph')
+	const { t, i18n } = useTranslation('graph')
 	const navigate = useNavigate()
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
 	const [offsetPositionY, setOffsetPositionY] = useState(0)
@@ -109,6 +108,13 @@ export default function Graph({
 
 	const nodeRef = useRef<HTMLDivElement>(null)
 	const chartRef = useRef<ChartJS<'scatter'>>(null)
+
+	const dateTimeFormatter = useMemo(() => {
+		return new Intl.DateTimeFormat(i18n.language, {
+			dateStyle: 'medium',
+			timeStyle: 'medium',
+		})
+	}, [i18n.language])
 
 	useEffect(() => {
 		if (chartRef.current) {
@@ -370,7 +376,7 @@ export default function Graph({
 
 							const timestamp = firstItem.raw.x
 
-							return format(new Date(timestamp), 'dd.MM.yyyy HH:mm:ss')
+							return dateTimeFormatter.format(new Date(timestamp))
 						},
 
 						label: (context: any) => {
@@ -446,6 +452,7 @@ export default function Graph({
 		chartData.datasets,
 		setHoveredPoint,
 		colorPickerState.open,
+		dateTimeFormatter,
 	])
 
 	function handleColorChange(newColor: string) {
