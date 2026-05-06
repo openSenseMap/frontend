@@ -35,7 +35,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1034.0",
     "@conform-to/react": "^1.19.0",
     "@conform-to/zod": "^1.19.0",
-    "@directus/sdk": "^21.2.2",
+    "@directus/sdk": "^21.3.0",
     "@formatjs/intl": "^4.1.6",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
