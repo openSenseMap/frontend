@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-map-gl/maplibre'
 import NavbarHandler from './nav-bar-handler'
 import FilterVisualization from '~/components/map/filter-visualization'
-import { type Device } from '~/db/schema'
+import { DeviceFeatureCollection } from '~/components/search/search-types'
 
 interface NavBarProps {
-	devices: Device[]
+	devices: DeviceFeatureCollection
 }
 
 export const NavbarContext = createContext({
