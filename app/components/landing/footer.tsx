@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 export default function Footer() {
 	const { t } = useTranslation('footer')
+	const currentYear = new Date().getFullYear();
 	return (
 		<footer
 			id="footer"
@@ -10,7 +11,7 @@ export default function Footer() {
 			<hr className="my-6 border-gray-300 sm:mx-auto lg:my-8 dark:border-gray-100" />
 			<div className="mx-auto w-full max-w-(--breakpoint-xl) p-4 md:flex md:items-center md:justify-between">
 				<span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
-					© 2026{' '}
+					© {currentYear}{' '}
 					<a href="https://opensenselab.org/" className="hover:underline">
 						openSenseLab
 					</a>
