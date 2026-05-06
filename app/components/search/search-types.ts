@@ -19,3 +19,18 @@ export type LocationSearchResult = {
 }
 
 export type SearchResult = DeviceSearchResult | LocationSearchResult
+
+export type DeviceFeature = {
+	type: 'Feature'
+	properties: {
+		id: string
+		name: string
+		longitude: number
+		latitude: number
+	}
+}
+
+export type DeviceFeatureCollection = {
+	type: 'FeatureCollection'
+	features: DeviceFeature[]
+}

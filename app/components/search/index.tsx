@@ -3,20 +3,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import SearchList from './search-list'
 import { searchNominatimLocations } from './nominatim'
-import { DeviceSearchResult, LocationSearchResult } from './search-types'
-
-interface DeviceFeature {
-	properties: {
-		name: string
-		id: string
-		longitude: number
-		latitude: number
-	}
-}
-
-interface DeviceFeatureCollection {
-	features: DeviceFeature[]
-}
+import {
+	DeviceFeatureCollection,
+	DeviceSearchResult,
+	LocationSearchResult,
+} from './search-types'
 
 interface SearchProps {
 	searchString: string
