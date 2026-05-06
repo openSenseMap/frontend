@@ -30,10 +30,10 @@ instructions:
 You can configure the API endpoint and/or map tiles using the following
 environmental variables:
 
-| ENV                 | Default value                        |
-| ------------------- | ------------------------------------ |
-| OSEM_API_URL        | https://api.testing.opensensemap.org |
-| DATABASE_URL        | <YOUR_POSTGRES_URL>                  |
+| ENV          | Default value                        |
+| ------------ | ------------------------------------ |
+| OSEM_API_URL | https://api.testing.opensensemap.org |
+| DATABASE_URL | <YOUR_POSTGRES_URL>                  |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 

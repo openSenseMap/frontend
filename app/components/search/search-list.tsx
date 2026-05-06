@@ -7,8 +7,11 @@ import { NavbarContext } from '../header/nav-bar'
 import useKeyboardNav from '../header/nav-bar/use-keyboard-nav'
 import SearchListItem from './search-list-item'
 import { goTo } from '~/lib/search-map-helper'
-import { type DeviceSearchResult, type LocationSearchResult, type SearchResult } from './search-types'
-
+import {
+	type DeviceSearchResult,
+	type LocationSearchResult,
+	type SearchResult,
+} from './search-types'
 
 interface SearchListProps {
 	searchResultsLocation: LocationSearchResult[]
@@ -24,10 +27,7 @@ export default function SearchList(props: SearchListProps) {
 	const [compareMode] = useGlobalCompareMode()
 
 	const searchResultsAll = useMemo<SearchResult[]>(
-		() => [
-			...props.searchResultsDevice,
-			...props.searchResultsLocation,
-		],
+		() => [...props.searchResultsDevice, ...props.searchResultsLocation],
 		[props.searchResultsDevice, props.searchResultsLocation],
 	)
 

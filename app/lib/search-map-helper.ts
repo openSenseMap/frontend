@@ -21,10 +21,7 @@ export const zoomOut = (map: MapRef | undefined) => {
 	})
 }
 
-export const goToLocationBBox = (
-	map: MapRef | undefined,
-	bbox: SearchBBox,
-) => {
+export const goToLocationBBox = (map: MapRef | undefined, bbox: SearchBBox) => {
 	map?.fitBounds(bbox, {
 		animate: true,
 		speed: 1.6,

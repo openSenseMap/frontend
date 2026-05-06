@@ -1,4 +1,4 @@
-import { type LocationSearchResult } from "./search-types"
+import { type LocationSearchResult } from './search-types'
 
 type NominatimPlace = {
 	place_id: number | string
