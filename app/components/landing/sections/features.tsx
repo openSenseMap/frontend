@@ -32,12 +32,6 @@ export default function Features() {
 					</div>
 					<div className="flex flex-col rounded-sm border-2 px-4 py-2 text-lg">
 						<div className="flex items-center gap-3">
-							<Trash className="mr-2 h-4 w-4" />
-							{t('noDataRetention')}
-						</div>
-					</div>
-					<div className="flex flex-col rounded-sm border-2 px-4 py-2 text-lg">
-						<div className="flex items-center gap-3">
 							<Copyleft className="mr-2 h-4 w-4" />
 							{t('dataPublished')}
 						</div>
@@ -46,12 +40,6 @@ export default function Features() {
 						<div className="flex items-center gap-3">
 							<Telescope className="mr-2 h-4 w-4" />
 							{t('discoverDevices')}
-						</div>
-					</div>
-					<div className="flex rounded-sm border-2 px-4 py-2 text-lg">
-						<div className="flex items-center gap-3">
-							<Scale className="mr-2 h-4 w-4" />
-							{t('compareDevices')}
 						</div>
 					</div>
 					<div className="flex rounded-sm border-2 px-4 py-2 text-lg">
