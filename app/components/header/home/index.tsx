@@ -1,5 +1,11 @@
 import { useTranslation } from 'react-i18next'
-
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui/tooltip'
+import { topbarSurface } from '~/components/map/topbar-styles'
+import { cn } from '~/lib/utils'
 
 interface HomeProps {
 	deviceCount?: number
@@ -7,45 +13,63 @@ interface HomeProps {
 	onHomeClick?: () => void
 }
 
-export default function Home({ deviceCount = 0, measurementCount = 0, onHomeClick }: HomeProps) {
+export default function Home({
+	deviceCount = 0,
+	measurementCount = 0,
+	onHomeClick,
+}: HomeProps) {
 	const { t } = useTranslation('menu')
 
 	return (
-		<div
-			onClick={onHomeClick}
-			aria-label="Go to explore map"
-			className="
-				pointer-events-auto
-				flex h-11 items-center gap-3
-				rounded-full border border-gray-100
-				bg-white/90 px-3 pr-4
-				text-black shadow-xl backdrop-blur-md
-				transition hover:bg-gray-100
-			"
-		>
-			<img
-				src="/img/openSenseMap.png"
-				alt="openSenseMapLogo"
-				className="h-7 w-auto shrink-0"
-			/>
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<button
+					type="button"
+					onClick={onHomeClick}
+					aria-label={t('returnToGlobeView')}
+					className={cn(
+						topbarSurface({ shape: 'pill' }),
+						`
+						pointer-events-auto
+						flex items-center gap-3
+						px-3 pr-4
+						cursor-pointer
+						focus-visible:ring-2
+						focus-visible:ring-slate-950
+						focus-visible:ring-offset-2
+						focus-visible:outline-hidden
+						`,
+					)}
+				>
+					<img
+						src="/img/openSenseMap.png"
+						alt="openSenseMapLogo"
+						className="h-7 w-auto shrink-0"
+					/>
 
-			{deviceCount > 0 && (
-				<section className="flex flex-col leading-tight text-sm">
-					<p>
-						<span className="font-semibold text-green-700">
-							{deviceCount}{' '}
-						</span>
-						<span>{t('devices')}</span>
-					</p>
+					{deviceCount > 0 && (
+						<section className="flex flex-col text-left text-sm leading-tight">
+							<p>
+								<span className="font-semibold text-green-700">
+									{deviceCount}{' '}
+								</span>
+								<span>{t('devices')}</span>
+							</p>
 
-					<p>
-						<span className="font-semibold text-green-700">
-							{measurementCount}{' '}
-						</span>
-						<span>{t('measurements')}</span>
-					</p>
-				</section>
-			)}
-		</div>
+							<p>
+								<span className="font-semibold text-green-700">
+									{measurementCount}{' '}
+								</span>
+								<span>{t('measurements')}</span>
+							</p>
+						</section>
+					)}
+				</button>
+			</TooltipTrigger>
+
+			<TooltipContent side="bottom">
+				<p>{t('returnToGlobeView')}</p>
+			</TooltipContent>
+		</Tooltip>
 	)
 }

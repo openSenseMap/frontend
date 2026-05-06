@@ -7,6 +7,8 @@ import { useMap } from 'react-map-gl/maplibre'
 import NavbarHandler from './nav-bar-handler'
 import FilterVisualization from '~/components/map/filter-visualization'
 import { type Device } from '~/db/schema'
+import { cn } from '~/lib/utils'
+import { topbarSurface } from '~/components/map/topbar-styles'
 
 interface NavBarProps {
 	devices: Device[]
@@ -60,52 +62,98 @@ export default function NavBar(props: NavBarProps) {
 	const isDesktop = useMediaQuery('(min-width: 768px)')
 
 	return (
-		<div className="pointer-events-auto relative w-full">
-			<div className="w-full rounded-2xl border border-gray-100 bg-white px-2 py-2 shadow-xl md:px-4 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90 dark:ring-white dark:backdrop-blur-xs">
-				<div className="flex w-full items-center gap-2 px-2 text-black md:gap-4 dark:text-zinc-200">
-					<SearchIcon className="aspect-square h-6 dark:text-zinc-200" />
+		<div className="pointer-events-auto relative w-full max-w-176">
+			<motion.div
+				layout
+				className={cn(
+					topbarSurface({ shape: 'panel' }),
+					'w-full overflow-hidden px-3 md:px-4',
+				)}
+				animate={{
+					borderRadius: open ? 16 : 999,
+				}}
+				transition={{
+					layout: {
+						duration: 0.24,
+						ease: [0.22, 1, 0.36, 1],
+					},
+					borderRadius: {
+						duration: 0.2,
+						ease: [0.22, 1, 0.36, 1],
+					},
+				}}
+			>
+				<div className="flex h-11 w-full items-center gap-2 text-black md:gap-4 dark:text-zinc-200">
+					<SearchIcon className="h-6 w-6 shrink-0 dark:text-zinc-200" />
+
 					<input
 						ref={inputRef}
 						placeholder={t('placeholder') || undefined}
 						onFocus={() => setOpen(true)}
 						onChange={(e) => setSearchString(e.target.value)}
-						className="h-fit w-full flex-1 border-none bg-white focus:border-none focus:ring-0 focus:outline-hidden dark:bg-zinc-800 dark:text-zinc-200"
+						className="h-full w-full flex-1 border-none bg-transparent focus:border-none focus:ring-0 focus:outline-hidden dark:text-zinc-200"
 						value={searchString}
 					/>
+
 					{!open && (
 						<span className="hidden flex-none text-xs font-semibold text-gray-400 md:block">
 							<kbd>ctrl</kbd> + <kbd>K</kbd>
 						</span>
 					)}
+
 					{open && (
-						<XIcon
+						<button
+							type="button"
 							onClick={() => {
 								setSearchString('')
 								setOpen(false)
 								inputRef.current?.blur()
 							}}
-							className="h-6"
-						/>
+							aria-label="Close search"
+							className="rounded-full p-1 hover:bg-black/5 dark:hover:bg-white/10"
+						>
+							<XIcon className="h-5 w-5" />
+						</button>
 					)}
 				</div>
+
 				<NavbarContext.Provider value={{ open, setOpen }}>
-					<AnimatePresence>
+					<AnimatePresence initial={false}>
 						{open && (
 							<motion.div
+								key="search-results"
 								className="overflow-hidden"
-								initial={{ opacity: 0, height: 0 }}
-								animate={{ opacity: 1, height: 'auto' }}
-								exit={{ opacity: 0, height: 0 }}
+								initial={{
+									opacity: 0,
+									height: 0,
+									y: -4,
+								}}
+								animate={{
+									opacity: 1,
+									height: 'auto',
+									y: 0,
+								}}
+								exit={{
+									opacity: 0,
+									height: 0,
+									y: -4,
+								}}
+								transition={{
+									duration: 0.22,
+									ease: [0.22, 1, 0.36, 1],
+								}}
 							>
-								<NavbarHandler
-									devices={props.devices}
-									searchString={searchString}
-								/>
+								<div className="pt-2">
+									<NavbarHandler
+										devices={props.devices}
+										searchString={searchString}
+									/>
+								</div>
 							</motion.div>
 						)}
 					</AnimatePresence>
 				</NavbarContext.Provider>
-			</div>
+			</motion.div>
 			{!open && isDesktop && (
 				<div className="flex w-full items-center justify-center">
 					<FilterVisualization />
