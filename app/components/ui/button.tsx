@@ -28,10 +28,8 @@ const buttonVariants = cva(
 				sm: 'h-9 rounded-md px-3',
 				lg: 'h-11 rounded-md px-8',
 				icon: 'h-10 w-10',
-				topbarIcon:
-					'h-10 w-10 rounded-full p-0 [&_svg]:size-6',
-				topbarPill:
-					'h-10 rounded-full px-3 py-0 [&_svg]:size-5',
+				topbarIcon: 'h-10 w-10 rounded-full p-0 [&_svg]:size-6',
+				topbarPill: 'h-10 rounded-full px-3 py-0 [&_svg]:size-5',
 			},
 		},
 		defaultVariants: {
