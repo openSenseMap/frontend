@@ -34,7 +34,6 @@ environmental variables:
 | ------------------- | ------------------------------------ |
 | OSEM_API_URL        | https://api.testing.opensensemap.org |
 | DATABASE_URL        | <YOUR_POSTGRES_URL>                  |
-| MAPBOX_ACCESS_TOKEN | <YOUR_MAPBOX_ACCESS_TOKEN>           |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 

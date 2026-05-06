@@ -6,8 +6,6 @@ const schema = z.object({
 	PG_CLIENT_SSL: z.string(),
 	SESSION_SECRET: z.string(),
 	NOMINATIM_SEARCH_API: z.string(),
-	MAPBOX_GEOCODING_API: z.string().url(),
-	MAPBOX_ACCESS_TOKEN: z.string(),
 	OSEM_API_URL: z.string().url(),
 	DIRECTUS_URL: z.string().url(),
 	SENSORWIKI_API_URL: z.string().url(),
@@ -42,8 +40,6 @@ export function getEnv() {
 	return {
 		NOMINATIM_SEARCH_API: process.env.NOMINATIM_SEARCH_API,
 		MODE: process.env.NODE_ENV,
-		MAPBOX_GEOCODING_API: process.env.MAPBOX_GEOCODING_API,
-		MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
 		DIRECTUS_URL: process.env.DIRECTUS_URL,
 		MYBADGES_API_URL: process.env.MYBADGES_API_URL,
 		MYBADGES_URL: process.env.MYBADGES_URL,
