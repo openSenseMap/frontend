@@ -32,8 +32,8 @@ export default function MapHeader({
 					<NavBar devices={devices} />
 				</div>
 
+				<LanguageSelector />
 				<div className="flex shrink-0 items-center gap-2 md:ml-14">
-					<LanguageSelector />
 
 					<Info />
 					{/* TODO: add settings menu once we have theme, more languages etc. */}

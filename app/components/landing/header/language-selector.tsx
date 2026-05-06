@@ -1,4 +1,4 @@
-import { Globe } from 'lucide-react'
+import { Languages } from 'lucide-react'
 import { useFetcher } from 'react-router'
 import { Button } from '~/components/ui/button'
 import { useRootRouteLoaderData } from '~/root'
@@ -20,11 +20,12 @@ export default function LanguageSelector() {
     <div className="relative group">
       <Button
         variant="topbar"
+        size="topbarPill"
         onClick={toggleLanguage}
         disabled={fetcher.state !== 'idle'}
         aria-label={`Current language: ${locale.toUpperCase()}`}
       >
-        <Globe />
+        <Languages />
       </Button>
 
       <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-md bg-popover px-2 py-1 text-xs text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">

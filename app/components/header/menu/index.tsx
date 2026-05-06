@@ -57,7 +57,7 @@ export default function Menu({ devices }: MenuProps) {
 			<DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
 				<DropdownMenuTrigger asChild>
 					<div className="pointer-events-auto box-border h-10 w-10">
-						<Button variant="topbar">
+						<Button variant="topbar" size="topbarIcon">
 							<User2 />
 						</Button>
 					</div>
