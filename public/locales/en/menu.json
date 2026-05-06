@@ -24,5 +24,6 @@
   "toast_user_creation_success": "Successfully created account",
   "community_label": "Community Forum",
 	"devices": "Devices",
-	"measurements": "Measurements"
+	"measurements": "Measurements",
+  "returnToGlobeView": "Return to globe view"
 }
