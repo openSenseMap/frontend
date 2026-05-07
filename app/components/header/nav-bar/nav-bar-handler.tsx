@@ -4,11 +4,11 @@ import FilterOptions from './filter-options/filter-options'
 import FilterTags from './filter-options/filter-tags'
 import useKeyboardNav from './use-keyboard-nav'
 import Search from '~/components/search'
-import { type Device } from '~/db/schema'
 import { cn } from '~/lib/utils'
+import { DeviceFeatureCollection } from '~/components/search/search-types'
 
 interface NavBarHandlerProps {
-	devices: Device[]
+	devices: DeviceFeatureCollection
 	searchString: string
 }
 
