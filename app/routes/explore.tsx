@@ -203,8 +203,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
 	const measurementCount = await getMeasurementsCount()
 
-	const measurementCount = await getMeasurementsCount()
-
 	const session = await getUserSession(request)
 	const message = session.get('global_message') || null
 

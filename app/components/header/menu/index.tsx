@@ -6,8 +6,6 @@ import {
 	Compass,
 	PlusIcon,
 	DownloadIcon,
-	PlusIcon,
-	DownloadIcon,
 	Info,
 } from 'lucide-react'
 import { useState } from 'react'
