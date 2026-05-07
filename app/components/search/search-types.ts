@@ -1,3 +1,6 @@
+import { FeatureCollection, Point } from "geojson"
+import { Device } from "~/db/schema"
+
 export type SearchBBox = [[number, number], [number, number]]
 
 export type DeviceSearchResult = {
@@ -20,17 +23,4 @@ export type LocationSearchResult = {
 
 export type SearchResult = DeviceSearchResult | LocationSearchResult
 
-export type DeviceFeature = {
-	type: 'Feature'
-	properties: {
-		id: string
-		name: string
-		longitude: number
-		latitude: number
-	}
-}
-
-export type DeviceFeatureCollection = {
-	type: 'FeatureCollection'
-	features: DeviceFeature[]
-}
+export type DeviceFeatureCollection = FeatureCollection<Point, Device>
