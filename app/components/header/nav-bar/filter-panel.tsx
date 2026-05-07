@@ -1,6 +1,10 @@
 import { X } from 'lucide-react'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigation, useSearchParams } from 'react-router'
+import {
+	useNavigation,
+	useRouteLoaderData,
+	useSearchParams,
+} from 'react-router'
 import { NavbarContext } from '.'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
@@ -8,120 +12,224 @@ import {
 	type DeviceExposureType,
 	type DeviceStatusType,
 } from '~/db/schema/enum'
+import type { loader as exploreLoader } from '~/routes/explore'
 import FilterOptions from './filter-options/filter-options'
 import FilterTags from './filter-options/filter-tags'
-import { useRouteLoaderData } from 'react-router'
-import type { loader as exploreLoader } from '~/routes/explore'
+import FilterPhenomena from './filter-options/filter-phenomena'
+import FilterTime from './filter-options/filter-time'
 
-type ExposureFilterValue = DeviceExposureType[]
-type StatusFilterValue = DeviceStatusType[]
+export type TimeFilterState =
+	| {
+			mode: 'live'
+	  }
+	| {
+			mode: 'pointintime'
+			date?: string
+	  }
+	| {
+			mode: 'timeperiod'
+			from?: string
+			to?: string
+	  }
+
+export interface FilterState {
+	exposure: DeviceExposureType[]
+	status: DeviceStatusType[]
+	tags: string[]
+	phenomena: string[]
+	time: TimeFilterState
+}
+
+const emptyFilters: FilterState = {
+	exposure: [],
+	status: [],
+	tags: [],
+	phenomena: [],
+	time: {
+		mode: 'live'
+	}
+}
+
+function getTimeFilterFromSearchParams(
+	searchParams: URLSearchParams,
+): TimeFilterState {
+	const timeMode = searchParams.get('timeMode')
+
+	if (timeMode === 'pointintime') {
+		return {
+			mode: 'pointintime',
+			date: searchParams.get('date') ?? undefined,
+		}
+	}
+
+	if (timeMode === 'timeperiod') {
+		return {
+			mode: 'timeperiod',
+			from: searchParams.get('from') ?? undefined,
+			to: searchParams.get('to') ?? undefined,
+		}
+	}
+
+	return {
+		mode: 'live',
+	}
+}
+
+function serializeTimeFilter(
+	nextParams: URLSearchParams,
+	time: TimeFilterState,
+) {
+	nextParams.delete('timeMode')
+	nextParams.delete('date')
+	nextParams.delete('from')
+	nextParams.delete('to')
+
+	if (time.mode === 'live') {
+		return
+	}
+
+	nextParams.set('timeMode', time.mode)
+
+	if (time.mode === 'pointintime' && time.date) {
+		nextParams.set('date', time.date)
+	}
+
+	if (time.mode === 'timeperiod') {
+		if (time.from) {
+			nextParams.set('from', time.from)
+		}
+
+		if (time.to) {
+			nextParams.set('to', time.to)
+		}
+	}
+}
+
+function isTimeFilterComplete(time: TimeFilterState) {
+	if (time.mode === 'live') return true
+	if (time.mode === 'pointintime') return Boolean(time.date)
+	return Boolean(time.from && time.to)
+}
+
+function areTimeFiltersEqual(a: TimeFilterState, b: TimeFilterState) {
+	return JSON.stringify(a) === JSON.stringify(b)
+}
 
 function parseCsvParam<T extends string>(
 	searchParams: URLSearchParams,
 	key: string,
 ): T[] {
-	const values = searchParams
+	return searchParams
 		.getAll(key)
 		.flatMap((value) => value.split(','))
 		.map((value) => value.trim())
 		.filter(Boolean)
-		.filter((value) => value !== 'all')
-
-	return values as T[]
+		.filter((value) => value !== 'all') as T[]
 }
 
-function serializeFilters({
-	searchParams,
-	exposure,
-	status,
-	tags,
-}: {
-	searchParams: URLSearchParams
-	exposure: ExposureFilterValue
-	status: StatusFilterValue
-	tags: string[]
-}) {
+function getFiltersFromSearchParams(searchParams: URLSearchParams): FilterState {
+	return {
+		exposure: parseCsvParam<DeviceExposureType>(searchParams, 'exposure'),
+		status: parseCsvParam<DeviceStatusType>(searchParams, 'status'),
+		tags: parseCsvParam<string>(searchParams, 'tags'),
+		phenomena: parseCsvParam<string>(searchParams, 'phenomenon'),
+		time: getTimeFilterFromSearchParams(searchParams),
+	}
+}
+
+function serializeFilters(
+	searchParams: URLSearchParams,
+	filters: FilterState,
+): URLSearchParams {
 	const nextParams = new URLSearchParams(searchParams)
 
 	nextParams.delete('exposure')
 	nextParams.delete('status')
 	nextParams.delete('tags')
+	nextParams.delete('phenomenon')
 
-	if (exposure.length > 0) {
-		nextParams.set('exposure', exposure.join(','))
+	if (filters.exposure.length > 0) {
+		nextParams.set('exposure', filters.exposure.join(','))
 	}
 
-	if (status.length > 0) {
-		nextParams.set('status', status.join(','))
+	if (filters.status.length > 0) {
+		nextParams.set('status', filters.status.join(','))
 	}
 
-	if (tags.length > 0) {
-		nextParams.set('tags', tags.join(','))
+	if (filters.tags.length > 0) {
+		nextParams.set('tags', filters.tags.join(','))
 	}
+
+	if (filters.phenomena.length > 0) {
+		nextParams.set('phenomenon', filters.phenomena.join(','))
+	}
+
+	serializeTimeFilter(nextParams, filters.time)
 
 	return nextParams
+}
+
+function areArraysEqual(a: string[], b: string[]) {
+	if (a.length !== b.length) return false
+
+	return a.every((value, index) => value === b[index])
+}
+
+function areFiltersEqual(a: FilterState, b: FilterState) {
+	return (
+		areArraysEqual(a.exposure, b.exposure) &&
+		areArraysEqual(a.status, b.status) &&
+		areArraysEqual(a.tags, b.tags) &&
+		areArraysEqual(a.phenomena, b.phenomena) &&
+		areTimeFiltersEqual(a.time, b.time)
+	)
 }
 
 export default function FilterPanel() {
 	const { setOpen } = useContext(NavbarContext)
 	const [searchParams, setSearchParams] = useSearchParams()
 	const navigation = useNavigation()
+
 	const data = useRouteLoaderData<typeof exploreLoader>('routes/explore')
 
-	const currentExposure = useMemo(
-		() => parseCsvParam<DeviceExposureType>(searchParams, 'exposure'),
+	const availableTags = data?.availableTags ?? []
+	const availablePhenomena = data?.phenomena ?? []
+
+	const currentFilters = useMemo(
+		() => getFiltersFromSearchParams(searchParams),
 		[searchParams],
 	)
 
-	const currentStatus = useMemo(
-		() => parseCsvParam<DeviceStatusType>(searchParams, 'status'),
-		[searchParams],
-	)
-
-	const currentTags = useMemo(
-		() => parseCsvParam<string>(searchParams, 'tags'),
-		[searchParams],
-	)
-
-	const [draftExposure, setDraftExposure] =
-		useState<ExposureFilterValue>(currentExposure)
-	const [draftStatus, setDraftStatus] =
-		useState<StatusFilterValue>(currentStatus)
-	const [draftTags, setDraftTags] = useState<string[]>(currentTags)
-	
+	const [draftFilters, setDraftFilters] = useState<FilterState>(currentFilters)
 
 	useEffect(() => {
-		setDraftExposure(currentExposure)
-		setDraftStatus(currentStatus)
-		setDraftTags(currentTags)
-	}, [currentExposure, currentStatus, currentTags])
+		setDraftFilters(currentFilters)
+	}, [currentFilters])
 
-	const isChanged =
-		JSON.stringify(draftExposure) !== JSON.stringify(currentExposure) ||
-		JSON.stringify(draftStatus) !== JSON.stringify(currentStatus) ||
-		JSON.stringify(draftTags) !== JSON.stringify(currentTags)
+	const isChanged = !areFiltersEqual(draftFilters, currentFilters)
+	const canApply = isChanged && isTimeFilterComplete(draftFilters.time)
+
+	const updateDraftFilters = <Key extends keyof FilterState>(
+		key: Key,
+		value: FilterState[Key],
+	) => {
+		setDraftFilters((current) => ({
+			...current,
+			[key]: value,
+		}))
+	}
 
 	const handleApplyChanges = () => {
-		const nextParams = serializeFilters({
-			searchParams,
-			exposure: draftExposure,
-			status: draftStatus,
-			tags: draftTags,
-		})
+		const nextParams = serializeFilters(searchParams, draftFilters)
 
 		setSearchParams(nextParams)
 		setOpen(false)
 	}
 
 	const handleResetFilters = () => {
-		setDraftExposure([])
-		setDraftStatus([])
-		setDraftTags([])
+		setDraftFilters(emptyFilters)
 
-		const nextParams = new URLSearchParams(searchParams)
-		nextParams.delete('exposure')
-		nextParams.delete('status')
-		nextParams.delete('tags')
+		const nextParams = serializeFilters(searchParams, emptyFilters)
 
 		setSearchParams(nextParams)
 	}
@@ -136,14 +244,37 @@ export default function FilterPanel() {
 
 			<div className="flex max-h-[min(56vh,24rem)] flex-col gap-3 overflow-y-auto">
 				<FilterOptions
-					exposure={draftExposure}
-					status={draftStatus}
-					onExposureChange={setDraftExposure}
-					onStatusChange={setDraftStatus}
+					exposure={draftFilters.exposure}
+					status={draftFilters.status}
+					onExposureChange={(exposure) => {
+						updateDraftFilters('exposure', exposure)
+					}}
+					onStatusChange={(status) => {
+						updateDraftFilters('status', status)
+					}}
 				/>
 
-				<FilterTags tags={draftTags} availableTags={data?.availableTags}
-						onTagsChange={setDraftTags} />
+				<FilterTags
+					tags={draftFilters.tags}
+					availableTags={availableTags}
+					onTagsChange={(tags) => {
+						updateDraftFilters('tags', tags)
+					}}
+				/>
+
+				<FilterPhenomena
+					phenomena={draftFilters.phenomena}
+					availablePhenomena={availablePhenomena}
+					onPhenomenaChange={(phenomena) => {
+						updateDraftFilters('phenomena', phenomena)
+					}}
+				/>
+				<FilterTime
+					time={draftFilters.time}
+					onTimeChange={(time) => {
+						updateDraftFilters('time', time)
+					}}
+				/>
 			</div>
 
 			<div className="mt-3 flex justify-end gap-2 border-t border-black/5 pt-3 dark:border-white/10">
