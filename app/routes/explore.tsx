@@ -38,6 +38,7 @@ import maplibregl, {
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
+import { getTags } from '~/services/device-service.server'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
@@ -134,6 +135,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		? await getDevices('geojson')
 		: await getDevicesWithSensors()
 
+	const availableTags = await getTags()		
+
 	const measurementCount = await getMeasurementsCount()
 
 	const session = await getUserSession(request)
@@ -151,6 +154,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			: 'en'
 		return {
 			devices,
+			availableTags,
 			measurementCount,
 			user,
 			profile,
@@ -162,6 +166,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	}
 	return {
 		devices,
+		availableTags,
 		measurementCount,
 		user,
 		profile: null,
@@ -181,7 +186,7 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, filteredDevices, measurementCount, user } = useLoaderData<typeof loader>()
+	const { devices, availableTags, filteredDevices, measurementCount, user } = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -521,7 +526,6 @@ export default function Explore() {
 		<div className="h-full w-full">
 			<MapProvider>
 				<MapHeader
-					user={user}
 					devices={devices}
 					measurementCount={measurementCount}
 					onHomeClick={handleHomeClick}
