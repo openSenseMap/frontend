@@ -1,3 +1,4 @@
+/// <reference types="zod-openapi" />
 import { type Route } from '../+types/root'
 import { apiRoutes as routes } from '~/lib/api-routes'
 import { tosApiMiddleware } from '~/middleware/tos-api.server'

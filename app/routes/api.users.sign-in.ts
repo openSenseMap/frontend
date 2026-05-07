@@ -1,151 +1,142 @@
+import { z } from 'zod'
 import { type Route } from './+types/api.users.sign-in'
-import { parseUserSignInData } from '~/lib/request-parsing'
 import { StandardResponse } from '~/lib/responses'
 import { signIn } from '~/services/user-service.server'
-/**
- * @openapi
- * /api/users/sign-in:
- *   post:
- *     tags:
- *       - Authentication
- *     summary: User sign-in
- *     description: Authenticates a user with email and password credentials
- *     operationId: signInUser
- *     requestBody:
- *       required: true
- *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 description: User's email address
- *                 example: user@example.com
- *               password:
- *                 type: string
- *                 format: password
- *                 description: User's password
- *                 minLength: 8
- *                 example: mySecurePassword123
- *     responses:
- *       200:
- *         description: Successfully authenticated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 code:
- *                   type: string
- *                   example: Authorized
- *                 message:
- *                   type: string
- *                   example: Successfully signed in
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
- *                 token:
- *                   type: string
- *                   description: JWT access token
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                 refreshToken:
- *                   type: string
- *                   description: JWT refresh token
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       403:
- *         description: Authentication failed - invalid credentials or missing fields
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 code:
- *                   type: string
- *                   example: Forbidden
- *                 message:
- *                   type: string
- *                   enum:
- *                     - You must specify either your email or your username
- *                     - You must specify your password to sign in
- *                     - User and or password not valid!
- *       500:
- *         description: Internal server error
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: Internal Server Error
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       description: User information object
- *       properties:
- *         id:
- *           type: string
- *           description: Unique user identifier
- *         email:
- *           type: string
- *           format: email
- *           description: User's email address
- *         name:
- *           type: string
- *           description: User's display name
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Account creation timestamp
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: Last account update timestamp
- */
+import { ZodOpenApiPathItemObject } from 'zod-openapi'
+import {
+	requestContentTypeJson,
+	responseContentTypeJson,
+} from '~/middleware/content-type-header.server'
+
+const errorMessages = {
+	email: 'You must specify either your email or your username',
+	password: 'You must specify your password to sign in',
+	userAndOrPassword: 'User and or password not valid!',
+}
+
+const PostRequestSchema = z.object({
+	email: z.string(errorMessages.email).trim().nonempty().meta({
+		description: "User's email address or username",
+		example: 'user@example.com',
+	}),
+	password: z.string(errorMessages.password).nonempty().min(8).meta({
+		description: "User's password",
+		example: 'mySecurePassword123',
+	}),
+})
+
+const PostResponseSchema = z.object({
+	data: z.object(
+		{
+			user: z.object({
+				name: z.string(),
+				...PostRequestSchema.pick({ email: true }).shape,
+				role: z.string(),
+				language: z.string(),
+				emailIsConfirmed: z.boolean(),
+				boxes: z.array(z.string()).meta({
+					description: 'A list of ids of the users devices',
+					example: ['60a13611a877b3001b8ffd59', '5bdbe70f55d0ad001a04edc9'],
+				}),
+			}),
+		},
+		errorMessages.userAndOrPassword,
+	),
+	token: z.jwt({ alg: 'HS256', error: errorMessages.userAndOrPassword }).meta({
+		description: 'valid json web token',
+	}),
+	refreshToken: z.string(errorMessages.userAndOrPassword).meta({
+		description: 'valid json web token',
+	}),
+	code: z.literal('Authorized').default('Authorized'),
+	message: z
+		.literal('Successfully signed in')
+		.default('Successfully signed in'),
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	post: {
+		tags: ['Auth'],
+		summary: 'Sign in using email or name and password',
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': { schema: PostRequestSchema },
+			},
+		},
+		responses: {
+			200: {
+				description: 'Signed in',
+				content: {
+					'application/json': { schema: PostResponseSchema },
+				},
+			},
+			403: {
+				description: 'Unauthorized',
+				content: {
+					'application/json': {
+						schema: z.object({
+							code: z.literal('Forbidden'),
+							message: z.xor([
+								z.literal(errorMessages.email),
+								z.literal(errorMessages.password),
+								z.literal(errorMessages.userAndOrPassword),
+							]),
+							error: z.xor([
+								z.literal(errorMessages.email),
+								z.literal(errorMessages.password),
+								z.literal(errorMessages.userAndOrPassword),
+							]),
+						}),
+					},
+				},
+			},
+			500: {
+				description: 'Internal Server Error',
+				content: {
+					'application/json': {
+						schema: z.object({
+							code: z.literal('Internal Server Error'),
+							message: z.literal(
+								'The server was unable to complete your request. Please try again later.',
+							),
+							error: z.literal(
+								'The server was unable to complete your request. Please try again later.',
+							),
+						}),
+					},
+				},
+			},
+		},
+	},
+}
+
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJson,
+	responseContentTypeJson,
+]
+
 export const action = async ({ request }: Route.ActionArgs) => {
 	try {
-		// Parse request data - handles both JSON and form data automatically
-		const data = await parseUserSignInData(request)
+		const requestParsed = await PostRequestSchema.safeParseAsync(
+			await request.json(),
+		)
+		if (!requestParsed.success)
+			return StandardResponse.forbidden(requestParsed.error.issues[0].message)
 
-		const email = data.email.trim()
-		const password = data.password.trim()
-
-		if (!email || email.length === 0)
-			return StandardResponse.forbidden(
-				'You must specify either your email or your username',
-			)
-
-		if (!password || password.length === 0) {
-			return StandardResponse.forbidden(
-				'You must specify your password to sign in',
-			)
-		}
-
+		const { email, password } = requestParsed.data
 		const { user, jwt, refreshToken } = (await signIn(email, password)) || {}
 
-		if (user && jwt && refreshToken)
-			return StandardResponse.ok({
-				code: 'Authorized',
-				message: 'Successfully signed in',
-				data: { user },
-				token: jwt,
-				refreshToken,
-			})
-		else return StandardResponse.forbidden('User and or password not valid!')
-	} catch (error) {
-		// Handle parsing errors
-		if (error instanceof Error && error.message.includes('Failed to parse')) {
-			return StandardResponse.forbidden(
-				`Invalid request format: ${error.message}`,
-			)
-		}
+		const responseParsed = await PostResponseSchema.safeParseAsync({
+			data: { user },
+			token: jwt,
+			refreshToken,
+		})
+		if (!responseParsed.success)
+			return StandardResponse.forbidden(responseParsed.error.issues[0].message)
 
-		// Handle other errors
+		return StandardResponse.ok(responseParsed.data)
+	} catch (error) {
 		console.warn(error)
 		return StandardResponse.internalServerError()
 	}
