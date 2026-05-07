@@ -1,5 +1,4 @@
-import getUserLocale from 'get-user-locale'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import SearchList from './search-list'
 import { searchNominatimLocations } from './nominatim'
@@ -13,6 +12,9 @@ interface SearchProps {
 	searchString: string
 	devices: DeviceFeatureCollection
 }
+
+const MIN_QUERY_LENGTH = 2
+const QUERY_DEBOUNCE_MS = 500
 
 function getDeviceResults(
 	searchString: string,
@@ -41,12 +43,9 @@ function getDeviceResults(
 }
 
 export default function Search(props: SearchProps) {
-	const { t } = useTranslation('search')
+	const { t, i18n } = useTranslation('search')
 
-	const userLocaleString = useMemo(
-		() => getUserLocale()?.toString() || 'en',
-		[],
-	)
+	const userLocaleString = i18n.language || 'en'
 
 	const [searchResultsLocation, setSearchResultsLocation] = useState<
 		LocationSearchResult[]
@@ -58,7 +57,7 @@ export default function Search(props: SearchProps) {
 	useEffect(() => {
 		const query = props.searchString.trim()
 
-		if (query.length < 2) {
+		if (query.length < MIN_QUERY_LENGTH) {
 			setSearchResultsLocation([])
 			setSearchResultsDevice([])
 			return
@@ -81,7 +80,7 @@ export default function Search(props: SearchProps) {
 						setSearchResultsLocation([])
 					}
 				})
-		}, 500)
+		}, QUERY_DEBOUNCE_MS)
 
 		return () => {
 			window.clearTimeout(timeoutId)
