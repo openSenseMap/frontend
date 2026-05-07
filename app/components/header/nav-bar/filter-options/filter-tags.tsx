@@ -16,6 +16,7 @@ import {
 } from '~/components/ui/popover'
 import { Label } from '~/components/ui/label'
 import { cn } from '~/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface FilterTagsProps {
 	tags: string[]
@@ -28,6 +29,7 @@ export default function FilterTags({
 	availableTags,
 	onTagsChange,
 }: FilterTagsProps) {
+	const { t } = useTranslation('filter')
 	const toggleTag = (tag: string) => {
 		if (tags.includes(tag)) {
 			onTagsChange(tags.filter((currentTag) => currentTag !== tag))
@@ -58,8 +60,8 @@ export default function FilterTags({
 						>
 							<span className="truncate">
 								{tags.length > 0
-									? `${tags.length} tag${tags.length === 1 ? '' : 's'} selected`
-									: 'Select tags'}
+									? `${tags.length} tag${tags.length === 1 ? '' : 's'} ${t('selected')}`
+									: `${t('select_tags')}`}
 							</span>
 
 							<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -71,10 +73,10 @@ export default function FilterTags({
 						className="w-[--radix-popover-trigger-width] p-0"
 					>
 						<Command>
-							<CommandInput placeholder="Search tags..." />
+							<CommandInput placeholder={t('search_tags')} />
 
 							<CommandList>
-								<CommandEmpty>No tags found.</CommandEmpty>
+								<CommandEmpty>{t('no_tag_found')}</CommandEmpty>
 
 								<CommandGroup>
 									{availableTags?.map((tag) => {

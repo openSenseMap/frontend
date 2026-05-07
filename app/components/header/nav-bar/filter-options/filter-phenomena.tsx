@@ -1,4 +1,5 @@
 import MultiSelectComboboxFilter from '~/components/ui/combobox-filter'
+import { useTranslation } from 'react-i18next'
 
 interface FilterPhenomenaProps {
 	phenomena: string[]
@@ -11,14 +12,15 @@ export default function FilterPhenomena({
 	availablePhenomena,
 	onPhenomenaChange,
 }: FilterPhenomenaProps) {
+	const { t } = useTranslation('filter')
 	return (
 		<MultiSelectComboboxFilter
-			label="Phenomenon"
+			label={t('phenomenon')}
 			values={phenomena}
 			options={availablePhenomena}
-			placeholder="Select phenomena"
-			searchPlaceholder="Search phenomena..."
-			emptyText="No phenomena found."
+			placeholder={t('select_phenomena')}
+			searchPlaceholder={t('search_phenomena')}
+			emptyText={t('phenomena_not_found')}
 			onChange={onPhenomenaChange}
 		/>
 	)

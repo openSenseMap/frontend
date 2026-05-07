@@ -4,6 +4,7 @@ import {
 	type DeviceExposureType,
 	type DeviceStatusType,
 } from '~/db/schema/enum'
+import { useTranslation } from 'react-i18next'
 
 interface FilterOptionsProps {
 	exposure: DeviceExposureType[]
@@ -37,11 +38,12 @@ export default function FilterOptions({
 	onExposureChange,
 	onStatusChange,
 }: FilterOptionsProps) {
+	const { t } = useTranslation('filter')
 	return (
 		<div className="flex flex-col gap-3">
 			<div className="grid gap-1.5 md:grid-cols-[5.5rem_1fr] md:items-center">
 				<Label className="text-sm text-gray-600 dark:text-zinc-400">
-					Exposure
+					{t('exposure')}
 				</Label>
 
 				<ToggleGroup
@@ -57,27 +59,27 @@ export default function FilterOptions({
 					}}
 				>
 					<ToggleGroupItem value="all" aria-label="Toggle all" size="sm">
-						all
+						{t('all')}
 					</ToggleGroupItem>
 					<ToggleGroupItem value="indoor" aria-label="Toggle indoor" size="sm">
-						indoor
+						{t('indoor')}
 					</ToggleGroupItem>
 					<ToggleGroupItem
 						value="outdoor"
 						aria-label="Toggle outdoor"
 						size="sm"
 					>
-						outdoor
+						{t('outdoor')}
 					</ToggleGroupItem>
 					<ToggleGroupItem value="mobile" aria-label="Toggle mobile" size="sm">
-						mobile
+						{t('mobile')}
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</div>
 
 			<div className="grid gap-1.5 md:grid-cols-[5.5rem_1fr] md:items-center">
 				<Label className="text-sm text-gray-600 dark:text-zinc-400">
-					Status
+					{t('status')}
 				</Label>
 
 				<ToggleGroup
@@ -93,20 +95,20 @@ export default function FilterOptions({
 					}}
 				>
 					<ToggleGroupItem value="all" aria-label="Toggle all" size="sm">
-						all
+						{t('all')}
 					</ToggleGroupItem>
 					<ToggleGroupItem value="active" aria-label="Toggle active" size="sm">
-						active
+						{t('active')}
 					</ToggleGroupItem>
 					<ToggleGroupItem
 						value="inactive"
 						aria-label="Toggle inactive"
 						size="sm"
 					>
-						inactive
+						{t('inactive')}
 					</ToggleGroupItem>
 					<ToggleGroupItem value="old" aria-label="Toggle old" size="sm">
-						old
+						{t('old')}
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</div>

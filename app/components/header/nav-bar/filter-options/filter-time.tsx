@@ -2,6 +2,7 @@ import { Label } from '~/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
 import { Input } from '~/components/ui/input'
 import { type TimeFilterState } from '../filter-panel'
+import { useTranslation } from 'react-i18next'
 
 interface FilterTimeProps {
 	time: TimeFilterState
@@ -9,10 +10,11 @@ interface FilterTimeProps {
 }
 
 export default function FilterTime({ time, onTimeChange }: FilterTimeProps) {
+	const { t } = useTranslation('filter')
 	return (
 		<div className="grid gap-1.5 md:grid-cols-[5.5rem_1fr] md:items-start">
 			<Label className="pt-2 text-sm text-gray-600 dark:text-zinc-400">
-				Date & Time
+				{t('date_and_time')}
 			</Label>
 
 			<div className="space-y-2">
@@ -49,11 +51,11 @@ export default function FilterTime({ time, onTimeChange }: FilterTimeProps) {
 					</ToggleGroupItem>
 
 					<ToggleGroupItem value="pointintime" size="sm">
-						Date
+						{t('date')}
 					</ToggleGroupItem>
 
 					<ToggleGroupItem value="timeperiod" size="sm">
-						Range
+						{t('timespan')}
 					</ToggleGroupItem>
 				</ToggleGroup>
 

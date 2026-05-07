@@ -12,7 +12,7 @@ export default function Header(props: HeaderProps) {
 			<Home />
 			<NavBar devices={props.devices} />
 			<div className="flex gap-2">
-				<Menu devices={props.devices}/>
+				<Menu devices={props.devices} />
 			</div>
 		</div>
 	)

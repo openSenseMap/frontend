@@ -17,6 +17,7 @@ import FilterOptions from './filter-options/filter-options'
 import FilterTags from './filter-options/filter-tags'
 import FilterPhenomena from './filter-options/filter-phenomena'
 import FilterTime from './filter-options/filter-time'
+import { useTranslation } from 'react-i18next'
 
 export type TimeFilterState =
 	| {
@@ -191,6 +192,7 @@ export default function FilterPanel() {
 	const { setOpen } = useContext(NavbarContext)
 	const [searchParams, setSearchParams] = useSearchParams()
 	const navigation = useNavigation()
+	const { t } = useTranslation('filter')
 
 	const data = useRouteLoaderData<typeof exploreLoader>('routes/explore')
 
@@ -286,7 +288,7 @@ export default function FilterPanel() {
 					onClick={handleResetFilters}
 				>
 					<X className="mr-1 h-3.5 w-3.5" />
-					Reset
+					{t('reset')}
 				</Button>
 
 				<Button
@@ -294,7 +296,7 @@ export default function FilterPanel() {
 					onClick={handleApplyChanges}
 					disabled={!isChanged}
 				>
-					Apply
+					{t('apply')}
 				</Button>
 			</div>
 		</div>
