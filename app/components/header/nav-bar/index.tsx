@@ -110,7 +110,7 @@ export default function NavBar(props: NavBarProps) {
 								inputRef.current?.blur()
 							}}
 							aria-label="Close search"
-							className="rounded-full p-1 hover:bg-black/5 dark:hover:bg-white/10"
+							className="rounded-full p-1 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
 						>
 							<XIcon className="h-5 w-5" />
 						</button>
