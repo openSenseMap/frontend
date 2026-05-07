@@ -1,124 +1,521 @@
-import swaggerJsdoc from 'swagger-jsdoc'
+import {
+	ZodOpenApiObject,
+	ZodOpenApiPathItemObject,
+	ZodOpenApiPathsObject,
+} from 'zod-openapi'
 
 const DEV_SERVER = {
 	url: 'http://localhost:3000',
 	description: 'Development server',
 }
 
-const options: swaggerJsdoc.Options = {
-	definition: {
-		openapi: '3.0.0',
+const convertFilePathToApiPath = (filePath: string) => {
+	// Extract filename and remove extension
+	// /app/routes/api.users.$id.tsx -> api.users.$id
+	const fileName =
+		filePath
+			.split('/')
+			.pop()
+			?.replace(/\.(tsx|ts|jsx|js)$/, '') || ''
+
+	// Handle root routes
+	if (fileName === 'root' || fileName === 'home' || fileName === 'index') {
+		return '/'
+	}
+
+	// Convert dots to slashes (path separator convention)
+	// api.users.$id -> api/users/$id
+	let path = fileName.replace(/\./g, '/')
+
+	// Convert $param to {param} for OpenAPI
+	// api/users/$id -> api/users/{id}
+	path = path.replace(/\$(\w+)/g, '{$1}')
+
+	// Add leading slash
+	return `/${path}`
+}
+
+export const generateOpenApiPathsSpec = (): ZodOpenApiPathsObject => {
+	const routes = import.meta.glob<{
+		openapi?: ZodOpenApiPathItemObject
+		[key: string]: any
+	}>('/app/routes/api.*.ts', { eager: true })
+
+	const paths: ZodOpenApiPathsObject = {}
+
+	for (const [filePath, module] of Object.entries(routes)) {
+		if (!module.openapi) continue
+
+		const apiPath = convertFilePathToApiPath(filePath)
+
+		// Merge methods into path
+		paths[apiPath] = {
+			...paths[apiPath],
+			...module.openapi,
+		}
+	}
+
+	return paths
+}
+
+export const generateOpenApiServerSpec = (): {
+	url: string
+	description: string
+}[] => {
+	return [
+		...(process.env.NODE_ENV !== 'production' ? [DEV_SERVER] : []),
+		{
+			url: process.env.OSEM_API_URL,
+			description: 'Production server',
+		},
+	]
+}
+
+export const generateIntegrationApiSpec = (): ZodOpenApiObject => {
+	return {
+		openapi: '3.1.0',
 		info: {
-			title: 'openSenseMap API',
+			title: 'API Schema for Integrations',
 			version: '1.0.0',
-			description: `## Documentation of the routes and methods to manage users, stations (also called boxes or senseBoxes), and measurements in the openSenseMap API. You can find the API running at [https://opensensemap.org/api/](https://opensensemap.org/api/).
-# Timestamps
+			description: `
+# Building OpenSenseMap Integrations
 
-## Please note that the API handles every timestamp in Coordinated universal time (UTC) time zone. Timestamps in parameters should be in RFC 3339 notation.
+OpenSenseMap uses a plugin architecture for integrations. Any service implementing this specification can connect devices from any platform or protocol to OpenSenseMap.
 
-**Timestamp without Milliseconds:**
-
-\`\`\`
-2018-02-01T23:18:02Z
-\`\`\`
-
-**Timestamp with Milliseconds:**
+## Architecture
 
 \`\`\`
-2018-02-01T23:18:02.412Z
+OpenSenseMap (Main App)
+    ↓ Registers & calls via HTTP
+Your Integration Service
+    ↓ Receives data from
+Your Protocol (MQTT/LoRa/etc.)
 \`\`\`
 
-# IDs
+## Required Endpoints
 
-## All stations and sensors of stations receive a unique public identifier. These identifiers are exactly 24 character long and only contain digits and characters a to f.
+Your integration service MUST implement these endpoints:
 
-**Example:**
+1. **GET /integrations/:deviceId** - Get integration config
+2. **PUT /integrations/:deviceId** - Create/update integration config
+3. **DELETE /integrations/:deviceId** - Delete integration config
+4. **GET /integrations/schema/{name}** - Return JSON Schema for config form
+5. **GET /health** - Health check
 
+## Authentication
+
+All endpoints (except /health) require \`x-service-key\` header.
+
+## Forwarding Measurements
+
+After processing data, POST measurements to OpenSenseMap:
+
+**Endpoint:** \`POST /api/boxes/:deviceId/:sensorId\`
+
+**Headers:**
+- \`Content-Type: application/json\`
+- \`x-service-key\`: Your service key (provided by OpenSenseMap)
+
+**Body:**
+\`\`\`json
+{
+  "value": 23.5,
+  "createdAt": "2026-02-06T10:00:00Z",
+  "location": {
+    "lng": 7.628,
+    "lat": 51.963,
+    "height": 100
+  }
+}
 \`\`\`
-5a8d1c25bc2d41001927a265
-\`\`\`
 
-# Parameters
+## Reference Implementations
 
-## Only if noted otherwise, all requests assume the payload encoded as JSON with \`Content-type: application/json\` header. Parameters prepended with a colon (\`:\`) are parameters which should be specified through the URL.
+- [MQTT Integration](https://github.com/opensensemap/mqtt-integration)
+- [TTN Integration](https://github.com/opensensemap/ttn-integration)
 
-# Source code and Licenses
+## Registration
 
-## You can find the whole source code of the API at GitHub in the [sensebox/openSenseMap-API](https://github.com/sensebox/openSenseMap-API) repository. You can obtain the code under the MIT License.
-
-## The data obtainable through the openSenseMap API at [https://opensensemap.org/api/](https://opensensemap.org/api/) is licensed under the [Public Domain Dedication and License 1.0](https://opendatacommons.org/licenses/pddl/summary/).
-
-## If there is something unclear or there is a mistake in this documentation please open an [issue](https://github.com/openSenseMap/frontend/issues/new) in the GitHub repository.`,
+To register your integration, contact OpenSenseMap admins with:
+- Service name and description
+- Service URL and authentication key
+- Icon (Lucide icon name)
+- JSON Schema endpoint path
+      `,
 		},
 		servers: [
-			...(process.env.NODE_ENV !== 'production' ? [DEV_SERVER] : []),
 			{
-				url: process.env.OSEM_API_URL || 'https://opensensemap.org/api', // Uses environment variable or defaults to production URL
-				description: 'Production server',
+				url: 'https://your-integration-service.com',
+				description: 'Your integration microservice',
 			},
 		],
 		components: {
-			schemas: {
-				SenseBoxId: {
-					type: 'string',
-					pattern: '^[a-f0-9]{24}$',
-					description:
-						'Unique identifier for stations and sensors (24 characters, digits and a-f only)',
-					example: '5a8d1c25bc2d41001927a265',
-				},
-				Timestamp: {
-					type: 'string',
-					format: 'date-time',
-					description: 'RFC 3339 timestamp in UTC timezone',
-					examples: ['2018-02-01T23:18:02Z', '2018-02-01T23:18:02.412Z'],
+			securitySchemes: {
+				ServiceKey: {
+					type: 'apiKey',
+					in: 'header',
+					name: 'x-service-key',
+					description: 'Service authentication key configured in OpenSenseMap',
 				},
 			},
 			parameters: {
-				SenseBoxIdParam: {
-					name: 'id',
+				DeviceId: {
+					name: 'deviceId',
 					in: 'path',
 					required: true,
 					schema: {
-						$ref: '#/components/schemas/SenseBoxId',
+						type: 'string',
 					},
-					description: 'SenseBox ID parameter',
-				},
-				TimestampParam: {
-					name: 'timestamp',
-					in: 'query',
-					schema: {
-						$ref: '#/components/schemas/Timestamp',
-					},
-					description: 'Timestamp parameter in RFC 3339 format (UTC)',
+					description: 'OpenSenseMap device ID',
+					example: 'cm65qexample123',
 				},
 			},
-			responses: {
-				BadRequest: {
-					description: 'Bad Request - Invalid parameters or payload',
-					content: {
-						'application/json': {
-							schema: {
-								type: 'object',
-								properties: {
-									error: {
-										type: 'string',
-										example: 'Invalid request parameters',
-									},
-								},
+			schemas: {
+				IntegrationConfig: {
+					type: 'object',
+					description:
+						'Integration configuration (schema varies by integration type)',
+					additionalProperties: true,
+					example: {
+						id: 'intg_123',
+						deviceId: 'cm65qexample123',
+						enabled: true,
+						url: 'mqtt://broker.example.com',
+						topic: 'sensors/data',
+						messageFormat: 'json',
+					},
+				},
+				JsonSchema: {
+					type: 'object',
+					description: 'JSON Schema (draft-07) for dynamic form generation',
+					properties: {
+						schema: {
+							type: 'object',
+							description: 'JSON Schema definition',
+						},
+						uiSchema: {
+							type: 'object',
+							description: 'React JSON Schema Form UI Schema',
+						},
+					},
+					required: ['schema'],
+				},
+				Error: {
+					type: 'object',
+					properties: {
+						error: {
+							type: 'string',
+						},
+						details: {
+							type: 'array',
+							items: {
+								type: 'string',
 							},
 						},
 					},
 				},
+			},
+			responses: {
 				NotFound: {
 					description: 'Resource not found',
 					content: {
 						'application/json': {
 							schema: {
-								type: 'object',
-								properties: {
-									error: {
-										type: 'string',
-										example: 'Resource not found',
+								$ref: '#/components/schemas/Error',
+							},
+							example: {
+								error: 'Integration not found',
+							},
+						},
+					},
+				},
+				ValidationError: {
+					description: 'Validation failed',
+					content: {
+						'application/json': {
+							schema: {
+								$ref: '#/components/schemas/Error',
+							},
+							example: {
+								error: 'Validation failed',
+								details: [
+									'url is required and must be a string',
+									'topic is required and must be a string',
+								],
+							},
+						},
+					},
+				},
+				Unauthorized: {
+					description: 'Unauthorized - invalid or missing service key',
+					content: {
+						'application/json': {
+							schema: {
+								$ref: '#/components/schemas/Error',
+							},
+							example: {
+								error: 'Unauthorized',
+							},
+						},
+					},
+				},
+				InternalError: {
+					description: 'Internal server error',
+					content: {
+						'application/json': {
+							schema: {
+								$ref: '#/components/schemas/Error',
+							},
+							example: {
+								error: 'Internal server error',
+							},
+						},
+					},
+				},
+			},
+		},
+		security: [
+			{
+				ServiceKey: [],
+			},
+		],
+		tags: [
+			{
+				name: 'Integration Management',
+				description: 'CRUD operations for integration configurations',
+			},
+			{
+				name: 'Schema',
+				description: 'JSON Schema for dynamic form generation',
+			},
+			{
+				name: 'Health',
+				description: 'Service health check',
+			},
+		],
+		paths: {
+			'/integrations/{deviceId}': {
+				get: {
+					summary: 'Get integration configuration for a device',
+					operationId: 'getIntegration',
+					tags: ['Integration Management'],
+					parameters: [
+						{
+							$ref: '#/components/parameters/DeviceId',
+						},
+					],
+					responses: {
+						'200': {
+							description: 'Integration configuration',
+							content: {
+								'application/json': {
+									schema: {
+										$ref: '#/components/schemas/IntegrationConfig',
+									},
+								},
+							},
+						},
+						'404': {
+							$ref: '#/components/responses/NotFound',
+						},
+						'401': {
+							$ref: '#/components/responses/Unauthorized',
+						},
+						'500': {
+							$ref: '#/components/responses/InternalError',
+						},
+					},
+				},
+				put: {
+					summary: 'Create or update integration configuration',
+					operationId: 'createOrUpdateIntegration',
+					tags: ['Integration Management'],
+					parameters: [
+						{
+							$ref: '#/components/parameters/DeviceId',
+						},
+					],
+					requestBody: {
+						required: true,
+						content: {
+							'application/json': {
+								schema: {
+									type: 'object',
+									description:
+										'Configuration specific to your integration type',
+									additionalProperties: true,
+								},
+								examples: {
+									mqtt: {
+										summary: 'MQTT Integration',
+										value: {
+											url: 'mqtt://broker.example.com:1883',
+											topic: 'sensors/temperature',
+											messageFormat: 'json',
+											connectionOptions: {
+												username: 'user',
+												password: 'pass',
+											},
+										},
+									},
+									ttn: {
+										summary: 'TTN Integration',
+										value: {
+											devId: 'my-device',
+											appId: 'my-app',
+											profile: 'cayenne-lpp',
+										},
+									},
+								},
+							},
+						},
+					},
+					responses: {
+						'200': {
+							description: 'Integration updated',
+							content: {
+								'application/json': {
+									schema: {
+										$ref: '#/components/schemas/IntegrationConfig',
+									},
+								},
+							},
+						},
+						'201': {
+							description: 'Integration created',
+							content: {
+								'application/json': {
+									schema: {
+										$ref: '#/components/schemas/IntegrationConfig',
+									},
+								},
+							},
+						},
+						'400': {
+							$ref: '#/components/responses/ValidationError',
+						},
+						'401': {
+							$ref: '#/components/responses/Unauthorized',
+						},
+						'500': {
+							$ref: '#/components/responses/InternalError',
+						},
+					},
+				},
+				delete: {
+					summary: 'Delete integration configuration',
+					operationId: 'deleteIntegration',
+					tags: ['Integration Management'],
+					parameters: [
+						{
+							$ref: '#/components/parameters/DeviceId',
+						},
+					],
+					responses: {
+						'204': {
+							description: 'Integration deleted successfully',
+						},
+						'404': {
+							$ref: '#/components/responses/NotFound',
+						},
+						'401': {
+							$ref: '#/components/responses/Unauthorized',
+						},
+						'500': {
+							$ref: '#/components/responses/InternalError',
+						},
+					},
+				},
+			},
+			'/integrations/schema/{integrationName}': {
+				get: {
+					summary: 'Get JSON Schema for integration configuration form',
+					operationId: 'getIntegrationSchema',
+					tags: ['Schema'],
+					parameters: [
+						{
+							name: 'integrationName',
+							in: 'path',
+							required: true,
+							schema: {
+								type: 'string',
+							},
+							example: 'mqtt',
+						},
+					],
+					responses: {
+						'200': {
+							description: 'JSON Schema for dynamic form generation',
+							content: {
+								'application/json': {
+									schema: {
+										$ref: '#/components/schemas/JsonSchema',
+									},
+									examples: {
+										mqtt: {
+											summary: 'MQTT Schema Example',
+											value: {
+												schema: {
+													type: 'object',
+													required: ['url', 'topic', 'messageFormat'],
+													properties: {
+														url: {
+															type: 'string',
+															title: 'Broker URL',
+															pattern: '^(mqtt|mqtts|ws|wss)://.+',
+														},
+														topic: {
+															type: 'string',
+															title: 'Topic',
+														},
+														messageFormat: {
+															type: 'string',
+															title: 'Message Format',
+															enum: ['json', 'csv'],
+														},
+													},
+												},
+												uiSchema: {
+													'ui:order': ['url', 'topic', 'messageFormat'],
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						'401': {
+							$ref: '#/components/responses/Unauthorized',
+						},
+						'500': {
+							$ref: '#/components/responses/InternalError',
+						},
+					},
+				},
+			},
+			'/health': {
+				get: {
+					summary: 'Health check endpoint',
+					operationId: 'healthCheck',
+					tags: ['Health'],
+					security: [],
+					responses: {
+						'200': {
+							description: 'Service is healthy',
+							content: {
+								'application/json': {
+									schema: {
+										type: 'object',
+										properties: {
+											status: {
+												type: 'string',
+												example: 'healthy',
+											},
+											timestamp: {
+												type: 'string',
+												format: 'date-time',
+											},
+										},
 									},
 								},
 							},
@@ -127,9 +524,5 @@ const options: swaggerJsdoc.Options = {
 				},
 			},
 		},
-	},
-	// Path to the API routes containing JSDoc annotations
-	apis: ['./app/routes/api.*.ts'], // Adjust path as needed
+	}
 }
-
-export const openapiSpecification = () => swaggerJsdoc(options)
