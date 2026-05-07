@@ -39,6 +39,7 @@ import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
 import { getTags } from '~/services/device-service.server'
+import { getPhenomena } from '~/db/models/phenomena.server'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
@@ -145,7 +146,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	var filteredDevices = getFilteredDevices(devices, urlFilterParams)
 
 	const user = await getUser(request)
-	//const phenomena = await getPhenomena();
+	const phenomena = await getPhenomena();
 
 	if (user) {
 		const profile = await getProfileByUserId(user.id)
@@ -155,18 +156,19 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		return {
 			devices,
 			availableTags,
+			phenomena,
 			measurementCount,
 			user,
 			profile,
 			filteredDevices,
 			filterParams,
 			locale: userLocale,
-			//phenomena
 		}
 	}
 	return {
 		devices,
 		availableTags,
+		phenomena,
 		measurementCount,
 		user,
 		profile: null,
@@ -174,7 +176,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		filteredDevices,
 		message,
 		locale,
-		//phenomena,
 	}
 }
 
