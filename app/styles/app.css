@@ -177,10 +177,6 @@ kbd {
 	white-space: nowrap;
 }
 
-.mapboxgl-ctrl-geocoder {
-	width: 500px !important;
-}
-
 .map-space-shell {
 	position: fixed;
 	inset: 0;

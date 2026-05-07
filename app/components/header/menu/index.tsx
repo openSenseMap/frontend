@@ -6,6 +6,8 @@ import {
 	Compass,
 	PlusIcon,
 	DownloadIcon,
+	PlusIcon,
+	DownloadIcon,
 	Info,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -110,8 +112,8 @@ export default function Menu({ devices }: MenuProps) {
 										<Info className="mr-2 h-5 w-5" />
 										<span>{t('about_label')}</span>
 									</DropdownMenuItem>
-								</Link>
-								{!isExplore && (
+							</Link>
+							{!isExplore && (
 									<Link to="/explore">
 										<DropdownMenuItem className="cursor-pointer">
 											<Compass className="mr-2 h-5 w-5" />
@@ -146,26 +148,28 @@ export default function Menu({ devices }: MenuProps) {
 										</DropdownMenuItem>
 									</Link>
 								)}
-							</DropdownMenuGroup>
-						)}
+								</DropdownMenuGroup>
+							)}
+							
 
-						{isExplore && (
-							<DropdownMenuGroup>
-								<DropdownMenuItem
-									className="cursor-pointer"
-									onSelect={(event) => {
-										event.preventDefault()
-										setOpen(false)
-										setDownloadOpen(true)
-									}}
-								>
-									<DownloadIcon className="mr-2 h-5 w-5" />
-									<span>{t('download_label', 'Download data')}</span>
-								</DropdownMenuItem>
+								{isExplore && (
+									<DropdownMenuGroup>
+										<DropdownMenuItem
+											className="cursor-pointer"
+											onSelect={(event) => {
+												event.preventDefault()
+												setOpen(false)
+												setDownloadOpen(true)
+											}}
+										>
+											<DownloadIcon className="mr-2 h-5 w-5" />
+											<span>{t('download_label', 'Download data')}</span>
+										</DropdownMenuItem>
 
-								<DropdownMenuSeparator />
-							</DropdownMenuGroup>
-						)}
+										<DropdownMenuSeparator />
+									</DropdownMenuGroup>
+								)}
+
 
 						<DropdownMenuGroup>
 							<DropdownMenuItem
@@ -174,6 +178,7 @@ export default function Menu({ devices }: MenuProps) {
 								}}
 							>
 								{!user ? (
+									
 									<Link
 										to={{
 											pathname: 'login',

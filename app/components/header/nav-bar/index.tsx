@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-map-gl/maplibre'
 import NavbarHandler from './nav-bar-handler'
 import FilterVisualization from '~/components/map/filter-visualization'
-import { type Device } from '~/db/schema'
+import { DeviceFeatureCollection } from '~/components/search/search-types'
 import { cn } from '~/lib/utils'
 import { topbarSurface } from '~/components/map/topbar-styles'
 
 interface NavBarProps {
-	devices: Device[]
+	devices: DeviceFeatureCollection
 }
 
 export const NavbarContext = createContext({
@@ -110,7 +110,7 @@ export default function NavBar(props: NavBarProps) {
 								inputRef.current?.blur()
 							}}
 							aria-label="Close search"
-							className="cursor-pointer rounded-full p-1 hover:bg-black/5 dark:hover:bg-white/10"
+							className="rounded-full p-1 hover:bg-black/5 dark:hover:bg-white/10"
 						>
 							<XIcon className="h-5 w-5" />
 						</button>

@@ -77,6 +77,7 @@ export function NavBar() {
 								</DropdownMenuContent>
 							</DropdownMenu>
 
+
 							<div className="px-8">
 								<Menu />
 							</div>

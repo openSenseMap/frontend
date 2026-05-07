@@ -1,9 +1,9 @@
 import Search from '~/components/search'
-import { type Device } from '~/db/schema'
 import FilterPanel from './filter-panel'
+import { DeviceFeatureCollection } from '~/components/search/search-types'
 
 interface NavBarHandlerProps {
-	devices: Device[]
+	devices: DeviceFeatureCollection
 	searchString: string
 }
 
