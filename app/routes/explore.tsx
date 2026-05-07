@@ -48,7 +48,9 @@ const INITIAL_VIEW_STATE = {
 } as const
 
 function parseMapHash(hash: string) {
-	const match = hash.match(/^#?(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/)
+	const match = hash.match(
+		/^#?(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/,
+	)
 
 	if (!match) return null
 
@@ -124,6 +126,61 @@ export async function action({ request }: { request: Request }) {
 	})
 }
 
+export type MeasurementTimeRange = {
+	from: Date
+	to: Date
+}
+
+function startOfUtcDate(date: string) {
+	const [year, month, day] = date.split('-').map(Number)
+	return new Date(Date.UTC(year, month - 1, day))
+}
+
+function addUtcDays(date: Date, days: number) {
+	const next = new Date(date)
+	next.setUTCDate(next.getUTCDate() + days)
+	return next
+}
+
+export function getMeasurementTimeRangeFromSearchParams(
+	searchParams: URLSearchParams,
+): MeasurementTimeRange | undefined {
+	const timeMode = searchParams.get('timeMode')
+
+	if (timeMode === 'pointintime') {
+		const date = searchParams.get('date')
+
+		if (!date) return undefined
+
+		const from = startOfUtcDate(date)
+		const to = addUtcDays(from, 1)
+
+		return {
+			from,
+			to,
+		}
+	}
+
+	if (timeMode === 'timeperiod') {
+		const fromParam = searchParams.get('from')
+		const toParam = searchParams.get('to')
+
+		if (!fromParam || !toParam) return undefined
+
+		const from = startOfUtcDate(fromParam)
+		const to = addUtcDays(startOfUtcDate(toParam), 1)
+
+		if (from > to) return undefined
+
+		return {
+			from,
+			to,
+		}
+	}
+
+	return undefined
+}
+
 export async function loader({ context, request }: Route.LoaderArgs) {
 	//* Get filter params
 	let locale = getLocale(context)
@@ -131,12 +188,18 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	const filterParams = url.search
 	const urlFilterParams = new URLSearchParams(url.search)
 
-	// check if sensors are queried - if not get devices only to reduce load
-	const devices = !urlFilterParams.get('phenomenon')
-		? await getDevices('geojson')
-		: await getDevicesWithSensors()
+	const measurementTimeRange =
+		getMeasurementTimeRangeFromSearchParams(urlFilterParams)
 
-	const availableTags = await getTags()		
+	// check if sensors are queried - if not get devices only to reduce load
+	const needsSensors =
+		Boolean(urlFilterParams.get('phenomenon')) || Boolean(measurementTimeRange)
+
+	const devices = needsSensors
+		? await getDevicesWithSensors({ measurementTimeRange })
+		: await getDevices('geojson')
+
+	const availableTags = await getTags()
 
 	const measurementCount = await getMeasurementsCount()
 
@@ -146,7 +209,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	var filteredDevices = getFilteredDevices(devices, urlFilterParams)
 
 	const user = await getUser(request)
-	const phenomena = await getPhenomena();
+	const phenomena = await getPhenomena()
 
 	if (user) {
 		const profile = await getProfileByUserId(user.id)
@@ -187,7 +250,8 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, availableTags, filteredDevices, measurementCount, user } = useLoaderData<typeof loader>()
+	const { devices, availableTags, filteredDevices, measurementCount, user } =
+		useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
 	const navigate = useNavigate()
 	const location = useLocation()

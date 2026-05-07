@@ -10,6 +10,7 @@ import {
 	isNull,
 	type ExtractTablesWithRelations,
 	isNotNull,
+	SQL,
 } from 'drizzle-orm'
 import { type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
@@ -544,7 +545,34 @@ export async function getArchivedDevices() {
 	return devices
 }
 
-export async function getDevicesWithSensors() {
+export type MeasurementTimeRange = {
+	from: Date
+	to: Date
+}
+
+export async function getDevicesWithSensors(options?: {
+	measurementTimeRange?: MeasurementTimeRange
+}) {
+	// exclude archived devices always
+	const conditions: SQL[] = [isNull(device.archivedAt)]
+
+	if (options?.measurementTimeRange) {
+		const fromIso = options.measurementTimeRange.from.toISOString()
+		const toIso = options.measurementTimeRange.to.toISOString()
+
+		conditions.push(sql`
+		exists (
+			select 1
+			from "sensor" s_filter
+			inner join "measurement" m_filter
+				on m_filter."sensor_id" = s_filter."id"
+			where s_filter."device_id" = ${device.id}
+				and m_filter."time" >= ${fromIso}::timestamptz  
+				and m_filter."time" < ${toIso}::timestamptz
+		)
+	`)
+	}
+
 	const rows = await drizzleClient
 		.select({
 			device: device,
@@ -557,7 +585,7 @@ export async function getDevicesWithSensors() {
 		})
 		.from(device)
 		.leftJoin(sensor, eq(sensor.deviceId, device.id))
-		.where(isNull(device.archivedAt))
+		.where(and(...conditions))
 
 	const geojson: GeoJSON.FeatureCollection<Point, any> = {
 		type: 'FeatureCollection',
@@ -568,6 +596,7 @@ export async function getDevicesWithSensors() {
 		Sensor,
 		'id' | 'title' | 'sensorWikiPhenomenon' | 'lastMeasurement'
 	>
+
 	const deviceMap = new Map<
 		string,
 		{ device: Device & { sensors: PartialSensor[] } }
@@ -576,17 +605,21 @@ export async function getDevicesWithSensors() {
 	const resultArray: Array<{ device: Device & { sensors: PartialSensor[] } }> =
 		rows.reduce(
 			(acc, row) => {
-				const device = row.device
-				const sensor = row.sensor
+				const currentDevice = row.device
+				const currentSensor = row.sensor
 
-				if (!deviceMap.has(device.id)) {
+				if (!deviceMap.has(currentDevice.id)) {
 					const newDevice = {
-						device: { ...device, sensors: sensor ? [sensor] : [] },
+						device: {
+							...currentDevice,
+							sensors: currentSensor ? [currentSensor] : [],
+						},
 					}
-					deviceMap.set(device.id, newDevice)
+
+					deviceMap.set(currentDevice.id, newDevice)
 					acc.push(newDevice)
-				} else if (sensor) {
-					deviceMap.get(device.id)!.device.sensors.push(sensor)
+				} else if (currentSensor) {
+					deviceMap.get(currentDevice.id)!.device.sensors.push(currentSensor)
 				}
 
 				return acc
@@ -594,9 +627,9 @@ export async function getDevicesWithSensors() {
 			[] as Array<{ device: Device & { sensors: PartialSensor[] } }>,
 		)
 
-	for (const device of resultArray) {
-		const coordinates = [device.device.longitude, device.device.latitude]
-		const feature = point(coordinates, device.device)
+	for (const result of resultArray) {
+		const coordinates = [result.device.longitude, result.device.latitude]
+		const feature = point(coordinates, result.device)
 		geojson.features.push(feature)
 	}
 
