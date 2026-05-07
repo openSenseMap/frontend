@@ -1,4 +1,4 @@
-import { LogIn, Mailbox, Plus } from 'lucide-react'
+import { LogIn, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import Menu from './header/menu'
@@ -77,9 +77,6 @@ export function NavBar() {
 								</DropdownMenuContent>
 							</DropdownMenu>
 
-							<Button variant="outline" size="icon" disabled>
-								<Mailbox className="h-4 w-4" />
-							</Button>
 
 							<div className="px-8">
 								<Menu />
