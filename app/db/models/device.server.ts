@@ -474,6 +474,15 @@ export function getUserDevices(userId: Device['userId']) {
 	})
 }
 
+export function getUserDeviceIds(userId: Device['userId']) {
+	return drizzleClient.query.device
+		.findMany({
+			where: (device, { eq }) => eq(device.userId, userId),
+			columns: { id: true },
+		})
+		.then((d) => d.map((d) => d.id))
+}
+
 type DevicesFormat = 'json' | 'geojson'
 
 export async function getDevices(format: 'json'): Promise<Device[]>

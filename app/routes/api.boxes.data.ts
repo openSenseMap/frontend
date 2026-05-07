@@ -130,6 +130,6 @@ export async function action(args: Route.ActionArgs) {
 		request: args.request,
 		params: args.params as any,
 		context: args.context as any,
-		unstable_url: new URL(args.request.url),
+		url: new URL(args.request.url),
 	} as Route.LoaderArgs)
 }

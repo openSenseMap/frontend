@@ -5,7 +5,7 @@ import LanguageSelector from './language-selector'
 
 const links = [
 	{
-		name: 'Explore',
+		name: 'Map',
 		link: '/explore',
 	},
 	{

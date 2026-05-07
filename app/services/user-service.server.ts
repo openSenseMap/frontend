@@ -604,6 +604,7 @@ export const signIn = async (
 			or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
 		with: {
 			password: true,
+			devices: { columns: { id: true } },
 		},
 	})
 	if (!user) return null
@@ -615,7 +616,13 @@ export const signIn = async (
 	if (!correctPassword) return null
 
 	const { token, refreshToken } = await createToken(user)
-	return { user, jwt: token, refreshToken }
+
+	const mappedUser: any = { ...user }
+	// flatten the device array into the "boxes" property for backwards compatibilty
+	delete mappedUser.password
+	mappedUser.boxes = user.devices.map((d) => d.id)
+
+	return { user: mappedUser as User, jwt: token, refreshToken }
 }
 
 export const userNameToURl = (username: string): string =>
