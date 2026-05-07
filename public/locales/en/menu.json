@@ -5,6 +5,7 @@
   "profile_label": "Profile",
   "about_label": "About",
   "settings_label": "Settings",
+	"download_label": "Download data",
   "my_devices_label": "My Devices",
   "add_device_label": "Add Device",
   "tutorials_label": "Tutorials",
@@ -21,5 +22,8 @@
   "toast_login_success": "Successfully logged in",
   "toast_logout_success": "Successfully logged out",
   "toast_user_creation_success": "Successfully created account",
-  "community_label": "Community Forum"
+  "community_label": "Community Forum",
+	"devices": "Devices",
+	"measurements": "Measurements",
+  "returnToGlobeView": "Return to globe view"
 }

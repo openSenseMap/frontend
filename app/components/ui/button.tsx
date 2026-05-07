@@ -20,12 +20,16 @@ const buttonVariants = cva(
 				ghost:
 					'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50',
 				link: 'text-slate-900 underline-offset-4 hover:underline dark:text-slate-50',
+				topbar:
+					'border border-gray-100 bg-white text-black shadow-sm hover:bg-gray-100',
 			},
 			size: {
 				default: 'h-10 px-4 py-2',
 				sm: 'h-9 rounded-md px-3',
 				lg: 'h-11 rounded-md px-8',
 				icon: 'h-10 w-10',
+				topbarIcon: 'h-10 w-10 rounded-full p-0 [&_svg]:size-6',
+				topbarPill: 'h-10 rounded-full px-3 py-0 [&_svg]:size-5',
 			},
 		},
 		defaultVariants: {
