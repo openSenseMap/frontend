@@ -30,24 +30,15 @@ export default function FilterTime({ time, onTimeChange }: FilterTimeProps) {
 						if (mode === 'pointintime') {
 							onTimeChange({
 								mode: 'pointintime',
-								date:
-									time.mode === 'pointintime'
-										? time.date
-										: undefined,
+								date: time.mode === 'pointintime' ? time.date : undefined,
 							})
 						}
 
 						if (mode === 'timeperiod') {
 							onTimeChange({
 								mode: 'timeperiod',
-								from:
-									time.mode === 'timeperiod'
-										? time.from
-										: undefined,
-								to:
-									time.mode === 'timeperiod'
-										? time.to
-										: undefined,
+								from: time.mode === 'timeperiod' ? time.from : undefined,
+								to: time.mode === 'timeperiod' ? time.to : undefined,
 							})
 						}
 					}}

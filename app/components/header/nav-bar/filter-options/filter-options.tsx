@@ -62,7 +62,11 @@ export default function FilterOptions({
 					<ToggleGroupItem value="indoor" aria-label="Toggle indoor" size="sm">
 						indoor
 					</ToggleGroupItem>
-					<ToggleGroupItem value="outdoor" aria-label="Toggle outdoor" size="sm">
+					<ToggleGroupItem
+						value="outdoor"
+						aria-label="Toggle outdoor"
+						size="sm"
+					>
 						outdoor
 					</ToggleGroupItem>
 					<ToggleGroupItem value="mobile" aria-label="Toggle mobile" size="sm">

@@ -46,8 +46,8 @@ const emptyFilters: FilterState = {
 	tags: [],
 	phenomena: [],
 	time: {
-		mode: 'live'
-	}
+		mode: 'live',
+	},
 }
 
 function getTimeFilterFromSearchParams(
@@ -127,7 +127,9 @@ function parseCsvParam<T extends string>(
 		.filter((value) => value !== 'all') as T[]
 }
 
-function getFiltersFromSearchParams(searchParams: URLSearchParams): FilterState {
+function getFiltersFromSearchParams(
+	searchParams: URLSearchParams,
+): FilterState {
 	return {
 		exposure: parseCsvParam<DeviceExposureType>(searchParams, 'exposure'),
 		status: parseCsvParam<DeviceStatusType>(searchParams, 'status'),

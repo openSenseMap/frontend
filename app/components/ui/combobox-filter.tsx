@@ -65,9 +65,7 @@ export default function MultiSelectComboboxFilter({
 							className="h-8 w-full justify-between px-2 text-sm font-normal"
 						>
 							<span className="truncate">
-								{values.length > 0
-									? `${values.length} selected`
-									: placeholder}
+								{values.length > 0 ? `${values.length} selected` : placeholder}
 							</span>
 
 							<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -120,7 +118,7 @@ export default function MultiSelectComboboxFilter({
 								<button
 									type="button"
 									onClick={() => removeValue(value)}
-									className="ml-1 rounded-full hover:text-destructive"
+									className="hover:text-destructive ml-1 rounded-full"
 									aria-label={`Remove ${value}`}
 								>
 									<X className="h-3 w-3" />

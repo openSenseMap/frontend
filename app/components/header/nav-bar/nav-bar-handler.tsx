@@ -17,5 +17,5 @@ export default function NavbarHandler({
 		return <Search devices={devices} searchString={searchString} />
 	}
 
-	return <FilterPanel/>
+	return <FilterPanel />
 }

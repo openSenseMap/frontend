@@ -112,7 +112,7 @@ export default function FilterTags({
 								<button
 									type="button"
 									onClick={() => removeTag(tag)}
-									className="ml-1 rounded-full hover:text-destructive"
+									className="hover:text-destructive ml-1 rounded-full"
 									aria-label={`Remove ${tag} tag`}
 								>
 									<X className="h-3 w-3" />

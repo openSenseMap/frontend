@@ -1,4 +1,4 @@
-import MultiSelectComboboxFilter from "~/components/ui/combobox-filter"
+import MultiSelectComboboxFilter from '~/components/ui/combobox-filter'
 
 interface FilterPhenomenaProps {
 	phenomena: string[]
