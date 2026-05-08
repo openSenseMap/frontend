@@ -38,6 +38,7 @@ import { assignIcon, getIcon, iconsList } from '~/lib/sensoricons'
 import { getUserId } from '~/services/session-service.server'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { useToast } from '@/components/ui/use-toast'
+import { useTranslation } from 'react-i18next'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -113,6 +114,7 @@ export default function EditBoxSensors() {
 
 	const { copyToClipboard } = useCopyToClipboard()
 	const { toast } = useToast()
+	const { t } = useTranslation("edit-device-sensors")
 
 	const copiedTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
 		null,
@@ -168,13 +170,13 @@ export default function EditBoxSensors() {
 				}, 2000)
 
 				toast({
-					title: 'Copied',
-					description: 'Sensor ID copied to clipboard.',
+					title: t('copied'),
+					description: t('sensor_id_copied'),
 				})
 			} catch {
 				toast({
-					title: 'Copy failed',
-					description: 'The sensor ID could not be copied.',
+					title: t('copy_failed'),
+					description: t('copy_failed_desc'),
 					variant: 'destructive',
 				})
 			}
@@ -236,9 +238,7 @@ export default function EditBoxSensors() {
 
 						<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
 							<p>
-								Data measured by sensors that you are going to delete will be
-								deleted as well. If you add new sensors, don't forget to
-								retrieve your new script (see tab 'Script').
+								{t('sensor_delete_warning')}
 							</p>
 						</div>
 
@@ -345,7 +345,7 @@ export default function EditBoxSensors() {
 												{!sensor?.editing && (
 													<span className="table-cell align-middle leading-[1.75]">
 														<strong className="block">
-															Phenomenon:
+															{t('phenomenon')}:
 															<span className="px-1 text-[#626161]">
 																{sensor?.title}
 															</span>
@@ -376,13 +376,13 @@ export default function EditBoxSensors() {
 															</button>
 														</code>
 														<strong className="block">
-															Unit:
+															{t('unit')}:
 															<span className="px-1 text-[#626161]">
 																{sensor?.unit}
 															</span>
 														</strong>
 														<strong className="block">
-															Type:
+															{t('type')}:
 															<span className="px-1 text-[#626161]">
 																{sensor?.sensorType}
 															</span>
@@ -398,7 +398,7 @@ export default function EditBoxSensors() {
 																htmlFor="phenomenom"
 																className="mb-1 inline-block font-bold"
 															>
-																Phenomenon:
+																{t('phenomenon')}:
 															</label>
 															<input
 																type="text"
@@ -421,7 +421,7 @@ export default function EditBoxSensors() {
 																htmlFor="unit"
 																className="mb-1 inline-block font-bold"
 															>
-																Unit:
+																{t('unit')}:
 															</label>
 															<input
 																type="text"
@@ -444,7 +444,7 @@ export default function EditBoxSensors() {
 																htmlFor="type"
 																className="mb-1 inline-block font-bold"
 															>
-																Type
+																{t('type')}
 															</label>
 															<input
 																type="text"
@@ -473,7 +473,7 @@ export default function EditBoxSensors() {
 													{/* warning text - delete */}
 													{sensor?.deleting && (
 														<span className="bg-[#d9534f] p-0.75 leading-[1.6] text-[#fff]">
-															This sensor will be deleted.
+															{t('sensor_will_be_deleted')}
 														</span>
 													)}
 
@@ -488,7 +488,7 @@ export default function EditBoxSensors() {
 															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
 														>
 															<Undo2 className="mr-1 inline-block h-4.25 w-4 align-sub" />
-															Undo
+															{t('undo')}
 														</button>
 													)}
 
@@ -505,7 +505,7 @@ export default function EditBoxSensors() {
 																className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
 															>
 																<Edit className="mr-1 inline-block h-4.25 w-3.75 align-sub" />
-																Edit
+																{t('edit')}
 															</button>
 
 															{/* delete button */}
@@ -520,7 +520,7 @@ export default function EditBoxSensors() {
 																className="mt-2 mb-1 block rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
 															>
 																<Trash2 className="mr-1 inline-block h-4.25 w-4 align-sub" />
-																Delete
+																{t('delete')}
 															</button>
 														</span>
 													)}
@@ -531,7 +531,7 @@ export default function EditBoxSensors() {
 														{/* invalid input text */}
 														{sensor?.notValidInput && (
 															<span className="bg-[#d9534f] p-0.75 leading-[1.6] text-[#fff]">
-																Please fill out all required fields.
+																{t('fill_required_fields')}
 															</span>
 														)}
 
@@ -556,7 +556,7 @@ export default function EditBoxSensors() {
 															}}
 														>
 															<Save className="mr-1 inline-block h-4.25 w-3.75 align-sub" />
-															Save
+															{t('save')}
 														</button>
 
 														{/* cancel button */}
@@ -577,7 +577,7 @@ export default function EditBoxSensors() {
 															className="mt-2 mb-1 block rounded-[3px] border-[#ac2925] bg-[#d9534f] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
 														>
 															<X className="mr-1 inline-block h-4.25 w-3.75 scale-[1.2] align-sub" />
-															Cancel
+															{t('cancel')}
 														</button>
 													</span>
 												)}
