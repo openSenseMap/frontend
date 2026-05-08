@@ -146,15 +146,17 @@ export default function EditBox() {
 				<h2 className="text-2xl font-bold tracking-tight">Device settings</h2>
 				<p className="text-muted-foreground">Manage your device data.</p>
 			</div>
+
 			<Separator />
-			<div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
-				{/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
-				<aside className="-mx-4 lg:w-1/5">
+
+			<div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+				<aside className="w-full shrink-0 lg:w-1/5">
 					<EditDeviceSidebarNav items={sidebarNavItems} />
 				</aside>
-				<div className="flex-1">
+
+				<main className="min-w-0 flex-1">
 					<Outlet context={[setToastOpen]} />
-				</div>
+				</main>
 			</div>
 		</div>
 	)

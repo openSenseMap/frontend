@@ -114,7 +114,7 @@ export default function EditBoxSensors() {
 
 	const { copyToClipboard } = useCopyToClipboard()
 	const { toast } = useToast()
-	const { t } = useTranslation("edit-device-sensors")
+	const { t } = useTranslation('edit-device-sensors')
 
 	const copiedTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
 		null,
@@ -185,10 +185,9 @@ export default function EditBoxSensors() {
 	)
 
 	return (
-		<div className="grid grid-rows-1">
-			{/* sensor form */}
-			<div className="flex min-h-full items-center justify-center">
-				<div className="font-helvetica mx-auto w-full text-[14px]">
+		<div className="w-full min-w-0">
+			<div className="w-full">
+				<div className="font-helvetica w-full text-[14px]">
 					{/* Form */}
 					<Form method="post" noValidate>
 						{/* Heading */}
@@ -237,9 +236,7 @@ export default function EditBoxSensors() {
 						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
 						<div className="my-5 rounded border border-[#faebcc] bg-[#fcf8e3] p-4 text-[#8a6d3b]">
-							<p>
-								{t('sensor_delete_warning')}
-							</p>
+							<p>{t('sensor_delete_warning')}</p>
 						</div>
 
 						<ul className="mt-0 rounded-[3px] border border-solid border-[#d1d5da] pt-0">
