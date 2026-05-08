@@ -40,6 +40,7 @@ import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
 import { getTags } from '~/services/device-service.server'
 import { getPhenomena } from '~/db/models/phenomena.server'
+import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
@@ -63,19 +64,60 @@ function parseMapHash(hash: string) {
 	}
 }
 
+function parseCsv(value: FormDataEntryValue | null): string[] {
+	if (typeof value !== 'string') return []
+
+	return value
+		.split(',')
+		.map((item) => item.trim())
+		.filter(Boolean)
+}
+
+function getDownloadFilterParams(formData: FormData) {
+	const filterParams = new URLSearchParams()
+
+	for (const key of DOWNLOAD_FILTER_KEYS) {
+		const value = formData.get(key)
+
+		if (typeof value === 'string' && value.length > 0) {
+			filterParams.set(key, value)
+		}
+	}
+
+	return filterParams
+}
+
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
 	const sensorIds: Array<string> = []
 	const measurements: Array<object> = []
+
 	const formdata = await request.formData()
-	const deviceIds = (formdata.get('devices') as string).split(',')
-	const format = formdata.get('format') as string
-	const aggregate = formdata.get('aggregate') as string
+
+	const deviceIds = parseCsv(formdata.get('devices'))
+	const format = String(formdata.get('format') ?? 'csv')
+	const aggregate = String(formdata.get('aggregate') ?? 'raw')
+
 	const includeFields = {
 		title: formdata.get('title') === 'on',
 		unit: formdata.get('unit') === 'on',
 		value: formdata.get('value') === 'on',
 		timestamp: formdata.get('timestamp') === 'on',
+	}
+
+	const filterParams = getDownloadFilterParams(formdata)
+
+	const selectedPhenomena = parseCsv(formdata.get('phenomenon')).map(
+		(phenomenon) => phenomenon.toLowerCase(),
+	)
+
+	const measurementTimeRange =
+		getMeasurementTimeRangeFromSearchParams(filterParams)
+
+	if (deviceIds.length === 0) {
+		return Response.json({
+			error: 'No devices selected.',
+		})
 	}
 
 	if (deviceIds.length >= deviceLimit) {
@@ -84,14 +126,30 @@ export async function action({ request }: { request: Request }) {
 			link: 'https://archive.opensensemap.org/',
 		})
 	}
-	for (const device of deviceIds) {
-		const sensors = await getSensors(device)
-		for (const sensor of sensors) {
+
+	for (const deviceId of deviceIds) {
+		const sensors = await getSensors(deviceId)
+
+		const filteredSensors =
+			selectedPhenomena.length > 0
+				? sensors.filter((sensor) =>
+						selectedPhenomena.includes(sensor.title?.toLowerCase() ?? ''),
+					)
+				: sensors
+
+		for (const sensor of filteredSensors) {
 			sensorIds.push(sensor.id)
-			const measurement = await getMeasurement(sensor.id, aggregate)
+
+			const measurement = await getMeasurement(
+				sensor.id,
+				aggregate,
+				measurementTimeRange?.from,
+				measurementTimeRange?.to,
+			)
+
 			measurement.map((m: any) => {
-				m['title'] = sensor.title
-				m['unit'] = sensor.unit
+				m.title = sensor.title
+				m.unit = sensor.unit
 			})
 
 			measurements.push(measurement)
@@ -113,7 +171,6 @@ export async function action({ request }: { request: Request }) {
 		fileName = result.fileName
 		contentType = result.contentType
 	} else {
-		// txt format
 		const result = getTXT(measurements, includeFields)
 		content = result.content
 		fileName = result.fileName
@@ -125,6 +182,7 @@ export async function action({ request }: { request: Request }) {
 		download: fileName,
 	})
 }
+
 
 export type MeasurementTimeRange = {
 	from: Date
@@ -591,7 +649,7 @@ export default function Explore() {
 		<div className="h-full w-full">
 			<MapProvider>
 				<MapHeader
-					devices={devices}
+					devices={filteredDevices}
 					measurementCount={measurementCount}
 					onHomeClick={handleHomeClick}
 				/>

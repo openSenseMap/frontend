@@ -7,7 +7,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-map-gl/maplibre'
-import { useFetcher } from 'react-router'
+import { useFetcher, useSearchParams } from 'react-router'
 
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
@@ -78,6 +78,49 @@ const DEFAULT_FIELDS: DownloadFields = {
 	timestamp: true,
 }
 
+export const DOWNLOAD_FILTER_KEYS = new Set([
+	'phenomenon',
+	'timeMode',
+	'date',
+	'from',
+	'to',
+])
+
+function getDeviceIdsInBounds(
+	devices: DevicesGeoJson,
+	bounds: BBox | undefined,
+): string[] {
+	if (!bounds || bounds.length !== 4) {
+		return []
+	}
+
+	const [minLon, minLat, maxLon, maxLat] = bounds
+
+	const ids =
+		devices.features
+			?.filter((device) => {
+				const coordinates = device.geometry?.coordinates
+
+				if (!coordinates) {
+					return false
+				}
+
+				const [longitude, latitude] = coordinates
+
+				return (
+					longitude >= minLon &&
+					longitude <= maxLon &&
+					latitude >= minLat &&
+					latitude <= maxLat
+				)
+			})
+			.map((device) => device.properties?.id)
+			.filter((id): id is string | number => id !== undefined && id !== null)
+			.map(String) ?? []
+
+	return Array.from(new Set(ids))
+}
+
 function PulsingDownloadAnimation() {
 	const { t } = useTranslation('download')
 
@@ -138,6 +181,7 @@ export default function Download({
 	const fetcher = useFetcher<DownloadActionData>()
 	const actionData = fetcher.data
 
+	const [searchParams] = useSearchParams()
 	const { osem: mapRef } = useMap()
 
 	const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -154,48 +198,25 @@ export default function Download({
 	const isBusy = fetcher.state !== 'idle'
 	const hasSelectedFields = Object.values(fields).some(Boolean)
 
-	const deviceIds = useMemo(() => {
-		const features = devices?.features ?? []
+	const activeFilterEntries = useMemo(() => {
+		return Array.from(searchParams.entries()).filter(([key]) =>
+			DOWNLOAD_FILTER_KEYS.has(key),
+		)
+	}, [searchParams])
 
+	const deviceIds = useMemo(() => {
 		const bounds = mapRef?.getMap().getBounds()?.toArray().flat() as
 			| BBox
 			| undefined
 
-		if (!bounds || bounds.length !== 4) {
-			return []
-		}
-
-		const [minLon, minLat, maxLon, maxLat] = bounds
-
-		const ids = features
-			.filter((device) => {
-				const coordinates = device.geometry?.coordinates
-
-				if (!coordinates) {
-					return false
-				}
-
-				const [longitude, latitude] = coordinates
-
-				return (
-					longitude >= minLon &&
-					longitude <= maxLon &&
-					latitude >= minLat &&
-					latitude <= maxLat
-				)
-			})
-			.map((device) => device.properties?.id)
-			.filter((id): id is string | number => id !== undefined && id !== null)
-			.map(String)
-
-		return Array.from(new Set(ids))
+		return getDeviceIdsInBounds(devices, bounds)
 	}, [devices, mapRef, open])
 
 	const resetResultState = () => {
 		setIsDownloadReady(false)
 		setShowReadyAnimation(false)
-		setErrorMessage(null)
 		setDownloadStarted(false)
+		setErrorMessage(null)
 	}
 
 	const handleDialogOpenChange = (nextOpen: boolean) => {
@@ -220,11 +241,15 @@ export default function Download({
 		field: keyof DownloadFields,
 		checked: boolean | 'indeterminate',
 	) => {
-		setFields((previousFields) => ({
-			...previousFields,
+		setFields((currentFields) => ({
+			...currentFields,
 			[field]: checked === true,
 		}))
 
+		resetResultState()
+	}
+
+	const handleSubmit = () => {
 		resetResultState()
 	}
 
@@ -289,10 +314,17 @@ export default function Download({
 					action="/explore"
 					method="post"
 					className="grid gap-4"
-					onSubmit={() => {
-						resetResultState()
-					}}
+					onSubmit={handleSubmit}
 				>
+					{activeFilterEntries.map(([key, value], index) => (
+						<input
+							key={`${key}-${value}-${index}`}
+							type="hidden"
+							name={key}
+							value={value}
+						/>
+					))}
+
 					<div className="grid gap-3">
 						<div className="flex items-center justify-between">
 							<Label htmlFor="devices">{t('devices')}</Label>
@@ -318,12 +350,21 @@ export default function Download({
 							</p>
 						)}
 
+						{activeFilterEntries.length > 0 && (
+							<p className="text-muted-foreground text-sm">
+								{t(
+									'activeFiltersApplied',
+									'The currently active filters will be applied to this download.',
+								)}
+							</p>
+						)}
+
 						<Label htmlFor="format">{t('format')}</Label>
 
 						<Select
+							name="format"
 							value={format}
 							onValueChange={handleFormatChange}
-							name="format"
 						>
 							<SelectTrigger id="format">
 								<SelectValue placeholder={t('selectFormat')} />
@@ -339,9 +380,9 @@ export default function Download({
 						<Label htmlFor="aggregate">{t('aggregateTo')}</Label>
 
 						<Select
+							name="aggregate"
 							value={aggregate}
 							onValueChange={handleAggregateChange}
-							name="aggregate"
 						>
 							<SelectTrigger id="aggregate">
 								<SelectValue placeholder={t('aggregateTo')} />
@@ -363,69 +404,26 @@ export default function Download({
 							{t('fieldsToInclude')}
 						</legend>
 
-						<div className="flex items-center space-x-2">
-							<Checkbox
-								id="title"
-								name="title"
-								value="on"
-								checked={fields.title}
-								onCheckedChange={(checked) =>
-									handleFieldChange('title', checked)
-								}
-							/>
+						{Object.entries(fields).map(([field, checked]) => (
+							<div key={field} className="flex items-center space-x-2">
+								<Checkbox
+									id={field}
+									name={field}
+									value="on"
+									checked={checked}
+									onCheckedChange={(nextChecked) =>
+										handleFieldChange(
+											field as keyof DownloadFields,
+											nextChecked,
+										)
+									}
+								/>
 
-							<Label htmlFor="title" className="cursor-pointer">
-								{t('title')}
-							</Label>
-						</div>
-
-						<div className="flex items-center space-x-2">
-							<Checkbox
-								id="unit"
-								name="unit"
-								value="on"
-								checked={fields.unit}
-								onCheckedChange={(checked) =>
-									handleFieldChange('unit', checked)
-								}
-							/>
-
-							<Label htmlFor="unit" className="cursor-pointer">
-								{t('unit')}
-							</Label>
-						</div>
-
-						<div className="flex items-center space-x-2">
-							<Checkbox
-								id="value"
-								name="value"
-								value="on"
-								checked={fields.value}
-								onCheckedChange={(checked) =>
-									handleFieldChange('value', checked)
-								}
-							/>
-
-							<Label htmlFor="value" className="cursor-pointer">
-								{t('value')}
-							</Label>
-						</div>
-
-						<div className="flex items-center space-x-2">
-							<Checkbox
-								id="timestamp"
-								name="timestamp"
-								value="on"
-								checked={fields.timestamp}
-								onCheckedChange={(checked) =>
-									handleFieldChange('timestamp', checked)
-								}
-							/>
-
-							<Label htmlFor="timestamp" className="cursor-pointer">
-								{t('timestamp')}
-							</Label>
-						</div>
+								<Label htmlFor={field} className="cursor-pointer">
+									{t(field)}
+								</Label>
+							</div>
+						))}
 					</fieldset>
 
 					<div className="flex h-16 items-center justify-center">
