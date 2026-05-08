@@ -1,13 +1,14 @@
 import {
 	ChevronDownIcon,
 	Trash2,
-	ClipboardCopy,
 	Edit,
 	GripVertical,
 	Plus,
 	Save,
 	Undo2,
 	X,
+	LucideCopy,
+	LucideCopyCheck,
 } from 'lucide-react'
 import React, { useState } from 'react'
 import {
@@ -35,6 +36,8 @@ import {
 } from '~/db/models/sensor.server'
 import { assignIcon, getIcon, iconsList } from '~/lib/sensoricons'
 import { getUserId } from '~/services/session-service.server'
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { useToast } from '@/components/ui/use-toast'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -108,6 +111,15 @@ export default function EditBoxSensors() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 
+	const { copyToClipboard } = useCopyToClipboard()
+	const { toast } = useToast()
+
+	const copiedTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	)
+	const [copiedSensorId, setCopiedSensorId] = React.useState<string | null>(
+		null,
+	)
 	const [sensorsData, setSensorsData] = useState(data)
 
 	/* temp impl. until figuring out how to updating state of nested objects  */
@@ -137,6 +149,38 @@ export default function EditBoxSensors() {
 			}
 		}
 	}, [actionData, setToastOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+	const handleCopySensorId = React.useCallback(
+		async (sensorId: string | null) => {
+			try {
+				const copied = await copyToClipboard(sensorId)
+
+				if (!copied) return
+
+				setCopiedSensorId(sensorId)
+
+				if (copiedTimeoutRef.current) {
+					clearTimeout(copiedTimeoutRef.current)
+				}
+
+				copiedTimeoutRef.current = setTimeout(() => {
+					setCopiedSensorId(null)
+				}, 2000)
+
+				toast({
+					title: 'Copied',
+					description: 'Sensor ID copied to clipboard.',
+				})
+			} catch {
+				toast({
+					title: 'Copy failed',
+					description: 'The sensor ID could not be copied.',
+					variant: 'destructive',
+				})
+			}
+		},
+		[copyToClipboard, toast],
+	)
 
 	return (
 		<div className="grid grid-rows-1">
@@ -233,13 +277,13 @@ export default function EditBoxSensors() {
 											{/* left side -> sensor icons list */}
 											<div className="col-span-1 m-auto sm:col-span-1">
 												{sensor?.editing ? (
-													<span className="table-cell h-[222px] w-[30%] text-center align-middle">
+													<span className="table-cell h-55.5 w-[30%] text-center align-middle">
 														<div className="relative inline-block align-middle">
 															{/* view icon */}
 															<button
 																id="split-button"
 																type="button"
-																className="btn btn-default rounded-tr-none rounded-br-none px-[4px] py-[6px]"
+																className="btn btn-default rounded-tr-none rounded-br-none px-1 py-1.5"
 																onClick={() => {
 																	setTepmState(!tepmState)
 																}}
@@ -256,7 +300,7 @@ export default function EditBoxSensors() {
 																		id="dropdownDefaultButton"
 																		type="button"
 																		// className="btn btn-default"
-																		className="btn btn-default rounded-tl-none rounded-bl-none border-l-0 px-px pt-[5px] pb-[4px]"
+																		className="btn btn-default rounded-tl-none rounded-bl-none border-l-0 px-px pt-1.25 pb-1"
 																		data-dropdown-toggle="dropdown"
 																	>
 																		<ChevronDownIcon className="m-0 inline h-6 w-6 p-0" />
@@ -264,7 +308,7 @@ export default function EditBoxSensors() {
 																</DropdownMenuTrigger>
 																<DropdownMenuContent
 																	align="end"
-																	className="max-w-[150px] min-w-fit"
+																	className="max-w-37.5 min-w-fit"
 																>
 																	<DropdownMenuGroup className="flex h-fit flex-wrap">
 																		{iconsList?.map((icon: any) => {
@@ -278,7 +322,7 @@ export default function EditBoxSensors() {
 																						sensor.icon = icon.id
 																					}}
 																				>
-																					<Icon className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+																					<Icon className="mr-1 ml-1.5 inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
 																				</DropdownMenuItem>
 																			)
 																		})}
@@ -288,7 +332,7 @@ export default function EditBoxSensors() {
 														</div>
 													</span>
 												) : (
-													<span className="table-cell h-[90px] w-[30%] text-center align-middle">
+													<span className="table-cell h-22.5 w-[30%] text-center align-middle">
 														{sensor.icon
 															? getIcon(sensor.icon)
 															: assignIcon(sensor.sensorType, sensor.title)}
@@ -307,15 +351,28 @@ export default function EditBoxSensors() {
 															</span>
 														</strong>
 														<strong>ID: </strong>
-														<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
+														<code className="rounded-sm bg-[#f9f2f4] px-1 py-0.5 text-[#c7254e]">
 															{sensor?.id}
 															<button
 																type="button"
-																onClick={() => {
-																	void navigator.clipboard.writeText(sensor?.id)
+																aria-label={`Copy sensor ID ${sensor?.id}`}
+																title="Copy sensor ID"
+																onClick={(e) => {
+																	e.stopPropagation()
+																	void handleCopySensorId(sensor?.id)
 																}}
 															>
-																<ClipboardCopy className="mr-1 ml-[6px] inline-block h-4 w-4 align-text-bottom text-[#818a91]" />
+																{copiedSensorId === sensor?.id ? (
+																	<LucideCopyCheck
+																		size={20.5}
+																		className={`mr-1 ml-1.5 inline-block h-4 w-4 align-text-bottom text-green-700`}
+																	/>
+																) : (
+																	<LucideCopy
+																		size={20.5}
+																		className={`mr-1 ml-1.5 inline-block h-4 w-4 align-text-bottom text-[#818a91]`}
+																	/>
+																)}
 															</button>
 														</code>
 														<strong className="block">
@@ -415,7 +472,7 @@ export default function EditBoxSensors() {
 												<span className="table-cell align-middle leading-[1.6]">
 													{/* warning text - delete */}
 													{sensor?.deleting && (
-														<span className="bg-[#d9534f] p-[3px] leading-[1.6] text-[#fff]">
+														<span className="bg-[#d9534f] p-0.75 leading-[1.6] text-[#fff]">
 															This sensor will be deleted.
 														</span>
 													)}
@@ -428,9 +485,9 @@ export default function EditBoxSensors() {
 																setTepmState(!tepmState)
 																sensor.deleting = false
 															}}
-															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
 														>
-															<Undo2 className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
+															<Undo2 className="mr-1 inline-block h-4.25 w-4 align-sub" />
 															Undo
 														</button>
 													)}
@@ -445,9 +502,9 @@ export default function EditBoxSensors() {
 																	setTepmState(!tepmState)
 																	sensor.editing = true
 																}}
-																className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
+																className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090]"
 															>
-																<Edit className="mr-1 inline-block h-[17px] w-[15px] align-sub" />
+																<Edit className="mr-1 inline-block h-4.25 w-3.75 align-sub" />
 																Edit
 															</button>
 
@@ -460,9 +517,9 @@ export default function EditBoxSensors() {
 																	sensor.deleted = true
 																	return false
 																}}
-																className="mt-2 mb-1 block rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
+																className="mt-2 mb-1 block rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
 															>
-																<Trash2 className="mr-1 inline-block h-[17px] w-[16px] align-sub" />
+																<Trash2 className="mr-1 inline-block h-4.25 w-4 align-sub" />
 																Delete
 															</button>
 														</span>
@@ -470,10 +527,10 @@ export default function EditBoxSensors() {
 												</span>
 
 												{sensor?.editing && (
-													<span className="table-cell h-[222px] align-middle leading-[1.6]">
+													<span className="table-cell h-55.5 align-middle leading-[1.6]">
 														{/* invalid input text */}
 														{sensor?.notValidInput && (
-															<span className="bg-[#d9534f] p-[3px] leading-[1.6] text-[#fff]">
+															<span className="bg-[#d9534f] p-0.75 leading-[1.6] text-[#fff]">
 																Please fill out all required fields.
 															</span>
 														)}
@@ -482,7 +539,7 @@ export default function EditBoxSensors() {
 														<button
 															type="button"
 															disabled={sensor?.notValidInput}
-															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
+															className="mt-2 mb-1 block rounded-[3px] border-[#2e6da4] bg-[#337ab7] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#204d74] hover:bg-[#286090] disabled:cursor-not-allowed"
 															onClick={() => {
 																setTepmState(!tepmState)
 																if (
@@ -498,7 +555,7 @@ export default function EditBoxSensors() {
 																}
 															}}
 														>
-															<Save className="mr-1 inline-block h-[17px] w-[15px] align-sub" />
+															<Save className="mr-1 inline-block h-4.25 w-3.75 align-sub" />
 															Save
 														</button>
 
@@ -517,9 +574,9 @@ export default function EditBoxSensors() {
 																	sensor.sensorType = data[index].sensorType
 																}
 															}}
-															className="mt-2 mb-1 block rounded-[3px] border-[#ac2925] bg-[#d9534f] px-[5px] py-[3px] pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
+															className="mt-2 mb-1 block rounded-[3px] border-[#ac2925] bg-[#d9534f] px-1.25 py-0.75 pt-1 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c]"
 														>
-															<X className="mr-1 inline-block h-[17px] w-[15px] scale-[1.2] align-sub" />
+															<X className="mr-1 inline-block h-4.25 w-3.75 scale-[1.2] align-sub" />
 															Cancel
 														</button>
 													</span>
