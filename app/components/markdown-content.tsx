@@ -10,7 +10,8 @@ export function MarkdownContent({
 	className = '',
 }: MarkdownContentProps) {
 	return (
-		<div className={`prose dark:prose-invert max-w-none ${className}`}>
+		<div className={`prose dark:prose-invert max-w-none min-w-0 overflow-x-hidden
+				wrap-anywhere ${className}`}>
 			<Markdown
 				options={{
 					overrides: {
