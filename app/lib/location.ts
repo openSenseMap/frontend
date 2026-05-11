@@ -75,11 +75,31 @@ export function isValidLocation(value: {
 	return locationSchema.safeParse(value).success
 }
 
-export function parseLocationFormData(formData: FormData) {
-	return locationSchema.safeParse({
+export function parseLocationFormData(formData: FormData):
+	| {
+			success: true
+			data: LocationData
+	  }
+	| {
+			success: false
+			errors: LocationFieldErrors
+	  } {
+	const parsed = locationSchema.safeParse({
 		latitude: formData.get('latitude'),
 		longitude: formData.get('longitude'),
 	})
+
+	if (parsed.success) {
+		return {
+			success: true,
+			data: parsed.data,
+		}
+	}
+
+	return {
+		success: false,
+		errors: getLocationFieldErrors(parsed.error),
+	}
 }
 
 export function getLocationFieldErrors(error: z.ZodError<LocationData>) {
@@ -89,4 +109,19 @@ export function getLocationFieldErrors(error: z.ZodError<LocationData>) {
 		latitude: flattened.fieldErrors.latitude?.[0],
 		longitude: flattened.fieldErrors.longitude?.[0],
 	}
+}
+
+export type LocationFieldErrors = {
+	latitude?: string
+	longitude?: string
+}
+
+export function validateLocationFieldErrors(value: unknown): LocationFieldErrors {
+	const parsed = locationSchema.safeParse(value)
+
+	if (parsed.success) {
+		return {}
+	}
+
+	return getLocationFieldErrors(parsed.error)
 }

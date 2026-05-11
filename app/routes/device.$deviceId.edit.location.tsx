@@ -1,4 +1,3 @@
-import { Save } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
 import {
 	type MarkerDragEvent,
@@ -16,46 +15,19 @@ import {
 } from '~/db/models/device.server'
 import { getUserId } from '~/services/session-service.server'
 import { BaseMap } from '~/components/base-map'
+import {
+	LOCATION_LIMITS,
+	LocationFieldErrors,
+	isValidLocation,
+	parseLocationFormData,
+	validateLocationFieldErrors,
+	type LocationData,
+} from '~/lib/location'
+import { useTranslation } from 'react-i18next'
+import { AUTOSAVE_DELAY_MS } from './device.$deviceId.edit'
 
-const LATITUDE_MIN = -85.06
-const LATITUDE_MAX = 85.06
-const LONGITUDE_MIN = -180
-const LONGITUDE_MAX = 180
-const AUTOSAVE_DELAY_MS = 700
 
-type LocationValue = {
-	latitude: number
-	longitude: number
-}
-
-type MarkerValue = {
-	latitude: number | null
-	longitude: number | null
-}
-
-function isValidLatitude(value: number | null): value is number {
-	return (
-		typeof value === 'number' &&
-		Number.isFinite(value) &&
-		value >= LATITUDE_MIN &&
-		value <= LATITUDE_MAX
-	)
-}
-
-function isValidLongitude(value: number | null): value is number {
-	return (
-		typeof value === 'number' &&
-		Number.isFinite(value) &&
-		value >= LONGITUDE_MIN &&
-		value <= LONGITUDE_MAX
-	)
-}
-
-function isValidLocation(value: MarkerValue): value is LocationValue {
-	return isValidLatitude(value.latitude) && isValidLongitude(value.longitude)
-}
-
-function isSameLocation(a: LocationValue, b: LocationValue) {
+function isSameLocation(a: LocationData, b: LocationData) {
 	return a.latitude === b.latitude && a.longitude === b.longitude
 }
 
@@ -67,6 +39,11 @@ function parseNumberInput(value: string): number | null {
 	if (!Number.isFinite(parsed)) return null
 
 	return parsed
+}
+
+type MarkerValue = {
+	latitude: number | null
+	longitude: number | null
 }
 
 //*****************************************************
@@ -109,58 +86,14 @@ export async function action({ request, params }: Route.ActionArgs) {
 	}
 
 	const formData = await request.formData()
-	const intent = formData.get('intent')
 
-	if (intent !== 'autosaveLocation' && intent !== 'saveLocation') {
+	const parsed = parseLocationFormData(formData)
+
+	if (!parsed.success) {
 		return data(
 			{
 				ok: false as const,
-				intent,
-				errors: {
-					form: 'Invalid action.',
-				},
-			},
-			{ status: 400 },
-		)
-	}
-
-	const latitudeRaw = formData.get('latitude')
-	const longitudeRaw = formData.get('longitude')
-
-	const latitude =
-		typeof latitudeRaw === 'string' ? Number(latitudeRaw) : Number.NaN
-
-	const longitude =
-		typeof longitudeRaw === 'string' ? Number(longitudeRaw) : Number.NaN
-
-	const errors: {
-		latitude?: string
-		longitude?: string
-		form?: string
-	} = {}
-
-	if (
-		!Number.isFinite(latitude) ||
-		latitude < LATITUDE_MIN ||
-		latitude > LATITUDE_MAX
-	) {
-		errors.latitude = `Latitude must be between ${LATITUDE_MIN} and ${LATITUDE_MAX}.`
-	}
-
-	if (
-		!Number.isFinite(longitude) ||
-		longitude < LONGITUDE_MIN ||
-		longitude > LONGITUDE_MAX
-	) {
-		errors.longitude = `Longitude must be between ${LONGITUDE_MIN} and ${LONGITUDE_MAX}.`
-	}
-
-	if (Object.keys(errors).length > 0) {
-		return data(
-			{
-				ok: false as const,
-				intent,
-				errors,
+				errors: parsed.errors,
 			},
 			{ status: 400 },
 		)
@@ -168,17 +101,13 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 	await updateDeviceLocation({
 		id,
-		latitude,
-		longitude,
+		latitude: parsed.data.latitude,
+		longitude: parsed.data.longitude,
 	})
 
 	return data({
 		ok: true as const,
-		intent,
-		location: {
-			latitude,
-			longitude,
-		},
+		location: parsed.data,
 		errors: null,
 		savedAt: new Date().toISOString(),
 	})
@@ -188,8 +117,9 @@ export async function action({ request, params }: Route.ActionArgs) {
 export default function EditLocation() {
 	const { device } = useLoaderData<typeof loader>()
 	const fetcher = useFetcher<typeof action>()
+	const { t } = useTranslation("edit-device-general")
 
-	const initialLocation = React.useMemo<LocationValue>(
+	const initialLocation = React.useMemo<LocationData>(
 		() => ({
 			latitude: device.latitude,
 			longitude: device.longitude,
@@ -198,17 +128,25 @@ export default function EditLocation() {
 	)
 
 	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
+	const [hasSavedOnce, setHasSavedOnce] = React.useState(false)
 	const [lastSavedLocation, setLastSavedLocation] =
-		useState<LocationValue>(initialLocation)
+		useState<LocationData>(initialLocation)
 
-	const currentLocation = React.useMemo<LocationValue | null>(() => {
-		if (!isValidLocation(marker)) return null
-
-		return {
+	const currentLocation = React.useMemo<LocationData | null>(() => {
+		const candidate = {
 			latitude: marker.latitude,
 			longitude: marker.longitude,
 		}
-	}, [marker])
+
+		return isValidLocation(candidate) ? candidate : null
+	}, [marker.latitude, marker.longitude])
+
+	const originalLocationRef = React.useRef<LocationData>({
+		latitude: device.latitude,
+		longitude: device.longitude,
+	})
+
+	const originalLocation = originalLocationRef.current
 
 	const hasUnsavedChanges =
 		currentLocation !== null &&
@@ -216,31 +154,21 @@ export default function EditLocation() {
 
 	const isSaving = fetcher.state !== 'idle'
 
-	const latitudeError =
-		marker.latitude === null
-			? 'Latitude is required.'
-			: !isValidLatitude(marker.latitude)
-				? `Latitude must be between ${LATITUDE_MIN} and ${LATITUDE_MAX}.`
-				: fetcher.data?.ok === false
-					? // @ts-ignore
-						fetcher.data.errors.latitude
-					: null
+	const clientErrors = validateLocationFieldErrors(marker)
 
-	const longitudeError =
-		marker.longitude === null
-			? 'Longitude is required.'
-			: !isValidLongitude(marker.longitude)
-				? `Longitude must be between ${LONGITUDE_MIN} and ${LONGITUDE_MAX}.`
-				: fetcher.data?.ok === false
-					? // @ts-ignore
-						fetcher.data.errors.longitude
-					: null
+	const serverErrors: LocationFieldErrors =
+		fetcher.data?.ok === false ? fetcher.data.errors : {}
+
+	const locationErrors = {
+		latitude: clientErrors.latitude ?? serverErrors.latitude,
+		longitude: clientErrors.longitude ?? serverErrors.longitude,
+	}
+
 
 	const saveLocation = React.useCallback(
-		(location: LocationValue, intent: 'autosaveLocation' | 'saveLocation') => {
+		(location: LocationData) => {
 			fetcher.submit(
 				{
-					intent,
 					latitude: String(location.latitude),
 					longitude: String(location.longitude),
 				},
@@ -255,7 +183,7 @@ export default function EditLocation() {
 		if (!hasUnsavedChanges) return
 
 		const timeout = window.setTimeout(() => {
-			saveLocation(currentLocation, 'autosaveLocation')
+			saveLocation(currentLocation)
 		}, AUTOSAVE_DELAY_MS)
 
 		return () => window.clearTimeout(timeout)
@@ -267,6 +195,7 @@ export default function EditLocation() {
 
 		if (fetcher.data.ok) {
 			setLastSavedLocation(fetcher.data.location)
+			setHasSavedOnce(true)
 		}
 	}, [fetcher.state, fetcher.data])
 
@@ -295,8 +224,8 @@ export default function EditLocation() {
 		}))
 	}
 
-	const resetToSavedLocation = () => {
-		setMarker(lastSavedLocation)
+	const resetToOriginalLocation = () => {
+		setMarker({ ...originalLocation })
 	}
 
 	const mapLocation = currentLocation ?? lastSavedLocation
@@ -308,36 +237,21 @@ export default function EditLocation() {
 					<div>
 						<div className="mt-2 flex justify-between">
 							<div>
-								<h1 className="text-4xl">Location</h1>
+								<h1 className="text-4xl">{t('exposure')}</h1>
 
 								<div className="mt-2 min-h-5 text-sm">
-									{isSaving ? (
-										<p className="text-gray-500">Saving...</p>
-									) : fetcher.data?.ok === false ? (
-										<p className="text-red-600">
-											Autosave failed. Your changes are still local.
-										</p>
-									) : hasUnsavedChanges ? (
-										<p className="text-gray-500">Unsaved changes</p>
-									) : (
-										<p className="text-gray-500">Saved</p>
-									)}
+									<div className="mt-2 min-h-5 text-sm">
+										{isSaving ? (
+											<p className="text-gray-500">{t('saving')}</p>
+										) : fetcher.data?.ok === false ? (
+											<p className="text-red-600">{t('autosave_failed')}</p>
+										) : hasUnsavedChanges ? (
+											<p className="text-gray-500">{t('unsaved_changes')}</p>
+										) : hasSavedOnce ? (
+											<p className="text-green-500">{t('saved')}</p>
+										) : null}
+									</div>
 								</div>
-							</div>
-
-							<div>
-								<button
-									type="button"
-									aria-label="Save location"
-									disabled={!currentLocation || !hasUnsavedChanges || isSaving}
-									onClick={() => {
-										if (!currentLocation) return
-										saveLocation(currentLocation, 'saveLocation')
-									}}
-									className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6] disabled:cursor-not-allowed disabled:bg-[#e9e9ed]"
-								>
-									<Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
-								</button>
 							</div>
 						</div>
 					</div>
@@ -380,7 +294,7 @@ export default function EditLocation() {
 									htmlFor="latitude"
 									className="txt-base block font-bold tracking-normal"
 								>
-									Latitude
+									{t('latitude')}
 								</label>
 
 								<div className="mt-1">
@@ -390,25 +304,23 @@ export default function EditLocation() {
 										autoFocus={true}
 										name="latitude"
 										type="number"
-										min={LATITUDE_MIN}
-										max={LATITUDE_MAX}
+										step="any"
+										min={LOCATION_LIMITS.latitude.min}
+										max={LOCATION_LIMITS.latitude.max}
 										value={marker.latitude ?? ''}
 										onChange={onLatitudeChange}
 										aria-describedby="latitude-error"
 										className={
 											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
-											(latitudeError
+											(locationErrors.latitude
 												? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 												: '')
 										}
 									/>
 
-									{latitudeError ? (
-										<p
-											id="latitude-error"
-											className="mt-1 text-sm text-red-600"
-										>
-											{latitudeError}
+									{locationErrors.latitude ? (
+										<p id="latitude-error" className="mt-1 text-sm text-red-600">
+											{locationErrors.latitude}
 										</p>
 									) : null}
 								</div>
@@ -419,7 +331,7 @@ export default function EditLocation() {
 									htmlFor="longitude"
 									className="txt-base block font-bold tracking-normal"
 								>
-									Longitude
+									{t('longitude')}
 								</label>
 
 								<div className="mt-1">
@@ -428,25 +340,23 @@ export default function EditLocation() {
 										required
 										name="longitude"
 										type="number"
-										min={LONGITUDE_MIN}
-										max={LONGITUDE_MAX}
+										step="any"
+										min={LOCATION_LIMITS.longitude.min}
+										max={LOCATION_LIMITS.longitude.max}
 										value={marker.longitude ?? ''}
 										onChange={onLongitudeChange}
 										aria-describedby="longitude-error"
 										className={
 											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
-											(longitudeError
+											(locationErrors.longitude
 												? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 												: '')
 										}
 									/>
 
-									{longitudeError ? (
-										<p
-											id="longitude-error"
-											className="mt-1 text-sm text-red-600"
-										>
-											{longitudeError}
+									{locationErrors.longitude ? (
+										<p id="longitude-error" className="mt-1 text-sm text-red-600">
+											{locationErrors.longitude}
 										</p>
 									) : null}
 								</div>
@@ -455,11 +365,10 @@ export default function EditLocation() {
 
 						<button
 							type="button"
-							onClick={resetToSavedLocation}
-							disabled={!hasUnsavedChanges}
+							onClick={resetToOriginalLocation}
 							className="mt-4 mb-10 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
 						>
-							Reset to saved location
+							{t('reset_to_original_location')}
 						</button>
 					</div>
 				</div>
