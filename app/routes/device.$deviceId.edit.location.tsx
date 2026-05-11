@@ -222,8 +222,8 @@ export default function EditLocation() {
 			: !isValidLatitude(marker.latitude)
 				? `Latitude must be between ${LATITUDE_MIN} and ${LATITUDE_MAX}.`
 				: fetcher.data?.ok === false
-					// @ts-ignore
-					? fetcher.data.errors.latitude
+					? // @ts-ignore
+						fetcher.data.errors.latitude
 					: null
 
 	const longitudeError =
@@ -232,8 +232,8 @@ export default function EditLocation() {
 			: !isValidLongitude(marker.longitude)
 				? `Longitude must be between ${LONGITUDE_MIN} and ${LONGITUDE_MAX}.`
 				: fetcher.data?.ok === false
-					// @ts-ignore
-					? fetcher.data.errors.longitude
+					? // @ts-ignore
+						fetcher.data.errors.longitude
 					: null
 
 	const saveLocation = React.useCallback(
@@ -404,7 +404,10 @@ export default function EditLocation() {
 									/>
 
 									{latitudeError ? (
-										<p id="latitude-error" className="mt-1 text-sm text-red-600">
+										<p
+											id="latitude-error"
+											className="mt-1 text-sm text-red-600"
+										>
 											{latitudeError}
 										</p>
 									) : null}
@@ -439,7 +442,10 @@ export default function EditLocation() {
 									/>
 
 									{longitudeError ? (
-										<p id="longitude-error" className="mt-1 text-sm text-red-600">
+										<p
+											id="longitude-error"
+											className="mt-1 text-sm text-red-600"
+										>
 											{longitudeError}
 										</p>
 									) : null}

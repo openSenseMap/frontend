@@ -29,6 +29,7 @@ import {
 import { useToast } from '~/components/ui/use-toast'
 import { DeviceModelEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/device.new'
+import { locationSchema, type LocationData } from '~/lib/location'
 
 const generalInfoSchema = z.object({
 	name: z
@@ -61,27 +62,6 @@ const generalInfoSchema = z.object({
 			}),
 		)
 		.optional(),
-})
-
-const locationSchema = z.object({
-	latitude: z.coerce
-		.number({
-			error: (issue) =>
-				issue.input === undefined
-					? 'Latitude is required'
-					: 'Latitude must be a valid number',
-		})
-		.min(-90, 'Latitude must be greater than or equal to -90')
-		.max(90, 'Latitude must be less than or equal to 90'),
-	longitude: z.coerce
-		.number({
-			error: (issue) =>
-				issue.input === undefined
-					? 'Longitude is required'
-					: 'Longitude must be a valid number',
-		})
-		.min(-180, 'Longitude must be greater than or equal to -180')
-		.max(180, 'Longitude must be less than or equal to 180'),
 })
 
 const deviceSchema = z.object({
@@ -153,7 +133,6 @@ export const Stepper = defineStepper(
 )
 
 type GeneralInfoData = z.infer<typeof generalInfoSchema>
-type LocationData = z.infer<typeof locationSchema>
 type DeviceData = z.infer<typeof deviceSchema>
 type SensorData = z.infer<typeof sensorsSchema>
 type AdvancedData = z.infer<typeof advancedSchema>
