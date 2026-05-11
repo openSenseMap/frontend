@@ -36,17 +36,18 @@ export async function getProfileByUsername(username: string) {
 export async function updateProfile(
 	id: Profile['id'],
 	displayName: Profile['displayName'],
-	visibility: Profile['public'],
+	visibility: boolean,
 ) {
-	try {
-		const result = await drizzleClient
-			.update(profile)
-			.set({ displayName, public: visibility })
-			.where(eq(profile.id, id))
-		return result
-	} catch (error) {
-		throw error
-	}
+	const [updatedProfile] = await drizzleClient
+		.update(profile)
+		.set({
+			displayName,
+			public: visibility,
+		})
+		.where(eq(profile.id, id))
+		.returning()
+
+	return updatedProfile
 }
 
 export async function createProfile(
