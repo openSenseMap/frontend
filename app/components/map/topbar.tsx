@@ -6,7 +6,6 @@ import LanguageSelector from '../landing/header/language-selector'
 import { TooltipProvider } from '../ui/tooltip'
 
 interface MapHeaderProps {
-	user: any
 	devices: any
 	measurementCount: number | undefined
 	onHomeClick?: () => void 
