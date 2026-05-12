@@ -106,12 +106,6 @@ function serializeTimeFilter(
 	}
 }
 
-function isTimeFilterComplete(time: TimeFilterState) {
-	if (time.mode === 'live') return true
-	if (time.mode === 'pointintime') return Boolean(time.date)
-	return Boolean(time.from && time.to)
-}
-
 function areTimeFiltersEqual(a: TimeFilterState, b: TimeFilterState) {
 	return JSON.stringify(a) === JSON.stringify(b)
 }
@@ -211,7 +205,6 @@ export default function FilterPanel() {
 	}, [currentFilters])
 
 	const isChanged = !areFiltersEqual(draftFilters, currentFilters)
-	const canApply = isChanged && isTimeFilterComplete(draftFilters.time)
 
 	const updateDraftFilters = <Key extends keyof FilterState>(
 		key: Key,
