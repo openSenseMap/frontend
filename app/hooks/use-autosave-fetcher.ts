@@ -1,0 +1,119 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useFetcher } from 'react-router'
+
+export type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
+
+type UseAutosaveFetcherOptions<TValues, TData> = {
+	values: TValues
+	lastSavedValues: TValues
+	debounceMs?: number
+	enabled?: boolean
+	validate?: (values: TValues) => boolean
+	getPayload: (values: TValues) => Record<string, string>
+	isSuccess: (data: TData) => boolean
+	getSavedValues?: (data: TData, submittedValues: TValues) => TValues
+	onSuccess?: (data: TData) => void
+	onError?: (data: TData) => void
+}
+
+export function useAutosaveFetcher<TValues, TData>({
+	values,
+	lastSavedValues,
+	debounceMs = 700,
+	enabled = true,
+	validate,
+	getPayload,
+	isSuccess,
+	getSavedValues,
+	onSuccess,
+	onError,
+}: UseAutosaveFetcherOptions<TValues, TData>) {
+	const fetcher = useFetcher()
+
+	const lastSavedRef = useRef(lastSavedValues)
+	const lastSubmittedRef = useRef<TValues | null>(null)
+
+	const [saveCount, setSaveCount] = useState(0)
+	const [hasError, setHasError] = useState(false)
+
+	const valuesJson = useMemo(() => JSON.stringify(values), [values])
+	const lastSavedJson = useMemo(
+		() => JSON.stringify(lastSavedRef.current),
+		[saveCount, valuesJson],
+	)
+
+	const hasChanges = valuesJson !== lastSavedJson
+
+	const isSaving = fetcher.state === 'submitting' || fetcher.state === 'loading'
+
+	const status: AutosaveStatus = isSaving
+		? 'saving'
+		: hasError
+			? 'error'
+			: hasChanges
+				? 'dirty'
+				: saveCount > 0
+					? 'saved'
+					: 'idle'
+
+	const submit = useCallback(
+		(nextValues: TValues) => {
+			lastSubmittedRef.current = nextValues
+			setHasError(false)
+
+			fetcher.submit(getPayload(nextValues), {
+				method: 'post',
+			})
+		},
+		[fetcher, getPayload],
+	)
+
+	useEffect(() => {
+		if (!enabled) return
+		if (!hasChanges) return
+		if (validate && !validate(values)) return
+
+		const timeout = window.setTimeout(() => {
+			submit(values)
+		}, debounceMs)
+
+		return () => window.clearTimeout(timeout)
+	}, [enabled, hasChanges, valuesJson, values, debounceMs, validate, submit])
+
+	useEffect(() => {
+		if (!fetcher.data) return
+
+		const data = fetcher.data
+
+		if (isSuccess(data)) {
+			const submittedValues = lastSubmittedRef.current ?? values
+
+			lastSavedRef.current = getSavedValues
+				? getSavedValues(data, submittedValues)
+				: submittedValues
+
+			setHasError(false)
+			setSaveCount((count) => count + 1)
+			onSuccess?.(data)
+		} else {
+			setHasError(true)
+			onError?.(data)
+		}
+	}, [fetcher.data, getSavedValues, isSuccess, onSuccess, onError, values])
+
+	const resetLastSaved = useCallback((nextValues: TValues) => {
+		lastSavedRef.current = nextValues
+		setHasError(false)
+		setSaveCount((count) => count + 1)
+	}, [])
+
+	return {
+		fetcher,
+		submit,
+		status,
+		isSaving,
+		hasChanges,
+		resetLastSaved,
+		lastSavedRef,
+	}
+}
