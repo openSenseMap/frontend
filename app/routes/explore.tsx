@@ -27,6 +27,8 @@ import maplibregl, {
   type LngLatLike,
   type MapLayerMouseEvent,
   type MapLibreEvent,
+  type MapLibreMap,
+  type StyleImageMetadata,
   type FilterSpecification,
 } from "maplibre-gl";
 import BoxMarker from "~/components/map/layers/cluster/box-marker";
@@ -498,22 +500,59 @@ export default function Explore() {
     return defaultLayer;
   };
 
-  const loadImageIfNotExists = async (map: MapInstance, id: string, url: string) => {
-    if (!map.getImage(id)) {
-      const imgResponse = await map.loadImage(url);
-      map.addImage(id, imgResponse.data);
-    }
+  const loadImageIfNotExists = async (
+    map: MapLibreMap,
+    id: string,
+    url: string,
+    options?: Partial<StyleImageMetadata>,
+  ) => {
+    if (map.hasImage(id)) return;
+
+    const image = await map.loadImage(url);
+
+    map.addImage(id, image.data, options);
   };
 
   const handleMapLoad = async (e: MapLibreEvent) => {
     const map = e.target;
+    const retinaImageOptions = { pixelRatio: 2 };
     await Promise.allSettled([
-      loadImageIfNotExists(map, "osem-device-active", "/img/device_marker_active.png"),
-      loadImageIfNotExists(map, "osem-device-inactive", "/img/device_marker_inactive.png"),
-      loadImageIfNotExists(map, "osem-device-old", "/img/device_marker_old.png"),
-      loadImageIfNotExists(map, "osem-mobile-active", "/img/mobile_marker_active.png"),
-      loadImageIfNotExists(map, "osem-mobile-inactive", "/img/mobile_marker_inactive.png"),
-      loadImageIfNotExists(map, "osem-mobile-old", "/img/mobile_marker_old.png"),
+      loadImageIfNotExists(
+        map,
+        "osem-device-active",
+        "/img/device_marker_active.png",
+        retinaImageOptions,
+      ),
+      loadImageIfNotExists(
+        map,
+        "osem-device-inactive",
+        "/img/device_marker_inactive.png",
+        retinaImageOptions,
+      ),
+      loadImageIfNotExists(
+        map,
+        "osem-device-old",
+        "/img/device_marker_old.png",
+        retinaImageOptions,
+      ),
+      loadImageIfNotExists(
+        map,
+        "osem-mobile-active",
+        "/img/mobile_marker_active.png",
+        retinaImageOptions,
+      ),
+      loadImageIfNotExists(
+        map,
+        "osem-mobile-inactive",
+        "/img/mobile_marker_inactive.png",
+        retinaImageOptions,
+      ),
+      loadImageIfNotExists(
+        map,
+        "osem-mobile-old",
+        "/img/mobile_marker_old.png",
+        retinaImageOptions,
+      ),
     ]);
   };
 
@@ -638,6 +677,7 @@ export default function Explore() {
                     ],
                   ],
                   "icon-size": 1,
+                  "icon-anchor": "bottom",
                   "icon-allow-overlap": true,
                 }}
                 paint={{
