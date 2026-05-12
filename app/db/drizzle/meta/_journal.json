@@ -295,6 +295,13 @@
       "when": 1774433429827,
       "tag": "0041_cleanup_expired_tos_users",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1778596447793,
+      "tag": "0042_medical_blackheart",
+      "breakpoints": true
     }
   ]
 }
