@@ -16,6 +16,7 @@ import {
 	PopoverTrigger,
 } from '~/components/ui/popover'
 import { cn } from '~/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface MultiSelectComboboxFilterProps {
 	label: string
@@ -36,6 +37,7 @@ export default function MultiSelectComboboxFilter({
 	emptyText,
 	onChange,
 }: MultiSelectComboboxFilterProps) {
+	const { t } = useTranslation('filter')
 	const toggleValue = (value: string) => {
 		if (values.includes(value)) {
 			onChange(values.filter((current) => current !== value))
@@ -65,7 +67,9 @@ export default function MultiSelectComboboxFilter({
 							className="h-8 w-full justify-between px-2 text-sm font-normal"
 						>
 							<span className="truncate">
-								{values.length > 0 ? `${values.length} selected` : placeholder}
+								{values.length > 0
+									? `${values.length} ${t('selected')}`
+									: placeholder}
 							</span>
 
 							<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
