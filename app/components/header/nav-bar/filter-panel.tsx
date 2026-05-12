@@ -12,7 +12,7 @@ import {
 	type DeviceExposureType,
 	type DeviceStatusType,
 } from '~/db/schema/enum'
-import type { loader as exploreLoader } from '~/routes/explore'
+import  { type loader as exploreLoader } from '~/routes/explore'
 import FilterOptions from './filter-options/filter-options'
 import FilterTags from './filter-options/filter-tags'
 import FilterPhenomena from './filter-options/filter-phenomena'
@@ -239,7 +239,7 @@ export default function FilterPanel() {
 				</div>
 			)}
 
-			<div className="flex max-h-[min(56vh,24rem)] flex-col gap-3 overflow-y-auto">
+			<div className="flex max-h-[min(56vh,24rem)] flex-col gap-3 overflow-y-auto px-1 pb-2">
 				<FilterOptions
 					exposure={draftFilters.exposure}
 					status={draftFilters.status}
