@@ -20,7 +20,7 @@ export default function FilterTime({ time, onTimeChange }: FilterTimeProps) {
 			<div className="space-y-2">
 				<ToggleGroup
 					type="single"
-					variant="outline"
+					variant="gray"
 					value={time.mode}
 					onValueChange={(mode) => {
 						if (!mode) return
