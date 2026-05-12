@@ -60,7 +60,7 @@ export default function FilterTags({
 						>
 							<span className="truncate">
 								{tags.length > 0
-									? `${tags.length} tag${tags.length === 1 ? '' : 's'} ${t('selected')}`
+									? `${tags.length} ${t('tag')}${tags.length === 1 ? '' : 's'} ${t('selected')}`
 									: `${t('select_tags')}`}
 							</span>
 

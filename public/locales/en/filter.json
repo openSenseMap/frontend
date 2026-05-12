@@ -10,6 +10,7 @@
 	"phenomenon": "Phenomenon",
 	"search_tags": "Search tags...",
 	"no_tag_found": "No tag found.",
+	"tag": "tag",
 	"selected": "selected",
 	"select_tags": "Select tags",
 	"exposure": "Exposure",
