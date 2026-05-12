@@ -50,6 +50,20 @@ You can create a copy of `.env.example`, rename it to `.env` and set the values.
      run this on a production database. It will delete all existing data.
 5. Run `npm run dev` to start the local server
 
+### Linting and formatting 
+
+This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for linting and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for formatting.The configurations in `oxfmt.config.ts` and `.oxlintrc.json` extend [@epic-web/config/](https://github.com/epicweb-dev/config).
+
+Run formatting:
+
+```bash
+npm run format
+```
+
+For more options inspect the `package.json` file.
+Editor integration is provided by the recommended Oxc extension listed in 
+`.vscode/extensions.json`.
+
 ### Contributing
 
 We welcome all kind of constructive contributions to this project. If you are
