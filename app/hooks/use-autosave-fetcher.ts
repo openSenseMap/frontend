@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useFetcher } from 'react-router'
 
 export type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
@@ -32,15 +32,13 @@ export function useAutosaveFetcher<TValues, TData>({
 
 	const lastSavedRef = useRef(lastSavedValues)
 	const lastSubmittedRef = useRef<TValues | null>(null)
+	const processedDataRef = useRef<TData | null>(null)
 
 	const [saveCount, setSaveCount] = useState(0)
 	const [hasError, setHasError] = useState(false)
 
-	const valuesJson = useMemo(() => JSON.stringify(values), [values])
-	const lastSavedJson = useMemo(
-		() => JSON.stringify(lastSavedRef.current),
-		[saveCount, valuesJson],
-	)
+	const valuesJson = JSON.stringify(values)
+	const lastSavedJson = JSON.stringify(lastSavedRef.current)
 
 	const hasChanges = valuesJson !== lastSavedJson
 
@@ -71,6 +69,7 @@ export function useAutosaveFetcher<TValues, TData>({
 	useEffect(() => {
 		if (!enabled) return
 		if (!hasChanges) return
+		if (isSaving) return
 		if (validate && !validate(values)) return
 
 		const timeout = window.setTimeout(() => {
@@ -78,16 +77,30 @@ export function useAutosaveFetcher<TValues, TData>({
 		}, debounceMs)
 
 		return () => window.clearTimeout(timeout)
-	}, [enabled, hasChanges, valuesJson, values, debounceMs, validate, submit])
+	}, [
+		enabled,
+		hasChanges,
+		isSaving,
+		valuesJson,
+		values,
+		debounceMs,
+		validate,
+		submit,
+	])
 
 	useEffect(() => {
-		if (!fetcher.data) return
+		if (fetcher.state !== 'idle') return
+		if (fetcher.data == null) return
+		if (processedDataRef.current === fetcher.data) return
+
+		processedDataRef.current = fetcher.data
 
 		const data = fetcher.data
+		const submittedValues = lastSubmittedRef.current
+
+		if (!submittedValues) return
 
 		if (isSuccess(data)) {
-			const submittedValues = lastSubmittedRef.current ?? values
-
 			lastSavedRef.current = getSavedValues
 				? getSavedValues(data, submittedValues)
 				: submittedValues
@@ -99,7 +112,14 @@ export function useAutosaveFetcher<TValues, TData>({
 			setHasError(true)
 			onError?.(data)
 		}
-	}, [fetcher.data, getSavedValues, isSuccess, onSuccess, onError, values])
+	}, [
+		fetcher.state,
+		fetcher.data,
+		getSavedValues,
+		isSuccess,
+		onSuccess,
+		onError,
+	])
 
 	const resetLastSaved = useCallback((nextValues: TValues) => {
 		lastSavedRef.current = nextValues
