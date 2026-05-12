@@ -10,15 +10,19 @@ import {
 	isNull,
 	type ExtractTablesWithRelations,
 	isNotNull,
-	SQL,
+	type SQL,
+	gte,
+	lt,
+	exists,
 } from 'drizzle-orm'
-import { type PgTransaction } from 'drizzle-orm/pg-core'
+import { alias, type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
 import { type Point } from 'geojson'
 import {
 	device,
 	deviceToLocation,
 	location,
+	measurement,
 	sensor,
 	user,
 	type Device,
@@ -557,20 +561,22 @@ export async function getDevicesWithSensors(options?: {
 	const conditions: SQL[] = [isNull(device.archivedAt)]
 
 	if (options?.measurementTimeRange) {
-		const fromIso = options.measurementTimeRange.from.toISOString()
-		const toIso = options.measurementTimeRange.to.toISOString()
+		const sFilter = alias(sensor, 's_filter')
+		const mFilter = alias(measurement, 'm_filter')
 
-		conditions.push(sql`
-		exists (
-			select 1
-			from "sensor" s_filter
-			inner join "measurement" m_filter
-				on m_filter."sensor_id" = s_filter."id"
-			where s_filter."device_id" = ${device.id}
-				and m_filter."time" >= ${fromIso}::timestamptz  
-				and m_filter."time" < ${toIso}::timestamptz
-		)
-	`)
+		const measurementsExistForDevice = drizzleClient
+			.select({ one: sql`1` })
+			.from(sFilter)
+			.innerJoin(mFilter, eq(mFilter.sensorId, sFilter.id))
+			.where(
+				and(
+					eq(sFilter.deviceId, device.id),
+					gte(mFilter.time, options.measurementTimeRange.from),
+					lt(mFilter.time, options.measurementTimeRange.to),
+				),
+			)
+
+		conditions.push(exists(measurementsExistForDevice))
 	}
 
 	const rows = await drizzleClient
