@@ -482,9 +482,7 @@ export default function Explore() {
 
 		const image = await map.loadImage(url);
 
-		if (!map.hasImage(id)) {
-			map.addImage(id, image.data, options);
-		}
+		map.addImage(id, image.data, options);
 	};
 
 	const handleMapLoad = async (e: MapLibreEvent) => {
