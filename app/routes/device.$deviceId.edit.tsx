@@ -41,7 +41,7 @@ export async function action() {
 //**********************************
 export default function EditBox() {
 	const [toastOpen, setToastOpen] = useState(false)
-	const { t } = useTranslation("device_overview")
+	const { t } = useTranslation('device-overview')
 
 	const { integrations } = useLoaderData<typeof loader>()
 
@@ -145,7 +145,9 @@ export default function EditBox() {
 			</div>
 
 			<div className="space-y-0.5">
-				<h2 className="text-2xl font-bold tracking-tight">{t('device_settings')}</h2>
+				<h2 className="text-2xl font-bold tracking-tight">
+					{t('device_settings')}
+				</h2>
 				<p className="text-muted-foreground">{t('manage_device_data')}</p>
 			</div>
 
