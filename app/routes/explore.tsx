@@ -660,6 +660,7 @@ export default function Explore() {
 										],
 									],
 									'icon-size': 1,
+									'icon-anchor': 'bottom',
 									'icon-allow-overlap': true,
 								}}
 								paint={{
