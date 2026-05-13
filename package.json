@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",
-    "@aws-sdk/s3-request-presigner": "^3.1034.0",
+    "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@conform-to/react": "^1.19.0",
     "@conform-to/zod": "^1.19.0",
     "@directus/sdk": "^21.3.0",
