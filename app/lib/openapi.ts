@@ -151,6 +151,12 @@ To register your integration, contact OpenSenseMap admins with:
 		],
 		components: {
 			securitySchemes: {
+				bearerAuth: {
+					type: 'http',
+					scheme: 'bearer',
+					bearerFormat: 'JWT',
+					description: 'JWT access token obtained from the sign-in endpoint',
+				},
 				ServiceKey: {
 					type: 'apiKey',
 					in: 'header',
