@@ -124,91 +124,151 @@ flexibility to adjust the outputs to the needs of the respective use case.
 
 ##### Documenting an API Route
 
-The [swaggerJsdoc Library](https://www.npmjs.com/package/swagger-jsdoc) reads
-the JSDoc-annotated source code in the api-routes and generates an
-openAPI(Swagger) specification and is rendered using
-[Swaggger UI](https://swagger.io/tools/swagger-ui/). The
-[JSDoc annotations](https://github.com/Surnet/swagger-jsdoc) is usually added
-before the loader or action function in the API Routes. The documentation will
-then be automatically generated from the JSDoc annotations in all the api
-routes. When testing the api during development do not forget to change the
-server to [Development Server](http://localhost:3000). To authorize a user you
-must provide the token obtained after sign-in. You can just copy and paste the
-token in the value field and then hit the authorize button.
+API route documentation is generated from route-local `zod-openapi`
+definitions. Each API route can export an `openapi` object that describes the
+route's OpenAPI path item. Request bodies, response bodies, path parameters,
+query parameters, and headers should be described with Zod schemas wherever
+possible.
 
-##### JSDoc Example
+The main benefit of this approach is that schemas can be shared between
+validation and documentation. This keeps the OpenAPI documentation closer to the
+actual implementation and reduces the risk of outdated docs.
 
-Here's an example of how to document an API route using JSDoc annotations:
+The generated OpenAPI specification is rendered using
+[Swagger UI](https://swagger.io/tools/swagger-ui/). When testing the API during
+development, do not forget to change the server to the
+[Development Server](http://localhost:3000). To authorize a user, provide the
+token obtained after sign-in. You can copy and paste the token into the value
+field and then hit the authorize button.
 
-```javascript
-/**
- * @openapi
- * /api/users/{id}:
- *   get:
- *     summary: Get user by ID
- *     description: Retrieve a single user by their unique identifier
- *     tags:
- *       - Users
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Unique identifier of the user
- *         schema:
- *           type: string
- *           example: "12345"
- *     responses:
- *       200:
- *         description: User retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   example: "12345"
- *                 name:
- *                   type: string
- *                   example: "John Doe"
- *                 email:
- *                   type: string
- *                   example: "john.doe@example.com"
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2023-01-15T10:30:00Z"
- *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "User not found"
- *       500:
- *         description: Internal server error
- */
-export async function loader({ params }) {
+##### zod-openapi Example
+
+Here's an example of how to document an API route using `zod-openapi`:
+
+```typescript
+import { z } from 'zod'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+import { type Route } from './+types/api.users.$id'
+
+const UserPathParamsSchema = z.object({
+	id: z.string().min(1).meta({
+		description: 'Unique identifier of the user',
+		example: '12345',
+	}),
+})
+
+const UserSchema = z
+	.object({
+		id: z.string().meta({
+			description: 'Unique identifier of the user',
+			example: '12345',
+		}),
+		name: z.string().meta({
+			description: "User's display name",
+			example: 'John Doe',
+		}),
+		email: z.string().email().meta({
+			description: "User's email address",
+			example: 'john.doe@example.com',
+		}),
+		createdAt: z.string().datetime().meta({
+			description: 'Account creation timestamp',
+			example: '2023-01-15T10:30:00.000Z',
+		}),
+	})
+	.meta({
+		id: 'User',
+		description: 'User information object',
+	})
+
+const NotFoundErrorSchema = z
+	.object({
+		code: z.literal('Not Found'),
+		message: z.literal('User not found'),
+		error: z.literal('User not found'),
+	})
+	.meta({ id: 'NotFoundError' })
+
+const InternalServerErrorSchema = z
+	.object({
+		code: z.literal('Internal Server Error'),
+		message: z.literal('Internal server error'),
+		error: z.literal('Internal server error'),
+	})
+	.meta({ id: 'InternalServerError' })
+
+export const openapi: ZodOpenApiPathItemObject = {
+	get: {
+		tags: ['Users'],
+		summary: 'Get user by ID',
+		description: 'Retrieve a single user by their unique identifier',
+		operationId: 'getUserById',
+
+		requestParams: {
+			path: UserPathParamsSchema,
+		},
+
+		responses: {
+			200: {
+				description: 'User retrieved successfully',
+				content: {
+					'application/json': {
+						schema: UserSchema,
+					},
+				},
+			},
+			404: {
+				description: 'User not found',
+				content: {
+					'application/json': {
+						schema: NotFoundErrorSchema,
+					},
+				},
+			},
+			500: {
+				description: 'Internal server error',
+				content: {
+					'application/json': {
+						schema: InternalServerErrorSchema,
+					},
+				},
+			},
+		},
+	},
+}
+
+export async function loader({ params }: Route.LoaderArgs) {
 	const { id } = params
 
 	try {
 		const user = await getUserById(id)
+
 		if (!user) {
-			throw new Response('User not found', { status: 404 })
+			return StandardResponse.notFound('User not found')
 		}
-		return Response.json({ user })
+
+		const parsed = await UserSchema.safeParseAsync(user)
+
+		if (!parsed.success) {
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.ok(parsed.data)
 	} catch (error) {
-		throw new Response('Internal server error', { status: 500 })
+		console.warn(error)
+		return StandardResponse.internalServerError('Internal server error')
 	}
 }
 ```
 
-This JSDoc annotation will automatically generate comprehensive API
-documentation including endpoint details, parameters, response schemas, and
-example values.
+The exported `openapi` object is picked up automatically when generating the
+OpenAPI specification. Prefer defining reusable Zod schemas for request bodies,
+response bodies, path parameters, query parameters, and shared error responses.
+
+Use `.meta(...)` to add OpenAPI-specific metadata such as descriptions,
+examples, component ids, and formatting hints. For route parameters, prefer
+`requestParams` over manually writing OpenAPI `parameters`, because it allows
+the parameters to be described directly with Zod schemas.
 
 #### Testing
 
