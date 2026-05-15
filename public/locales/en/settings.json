@@ -78,5 +78,8 @@
 	},
 	"public_profile_link": "Your public profile is available here:",
 	"view_public_profile": "View public profile",
-	"copied": "Copied successfully"
+	"copied": "Copied successfully",
+	"saved": "Saved",
+	"unsaved_changes": "Unsaved changes",
+	"saving": "Saving..."
 }

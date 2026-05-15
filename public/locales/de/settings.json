@@ -73,5 +73,8 @@
 	},
 	"public_profile_link": "Dein öffentliches Profil findest du hier:",
 	"view_public_profile": "Öffentliches Profil anschauen",
-	"copied": "Erfolgreich kopiert"
+	"copied": "Erfolgreich kopiert",
+	"saved": "Gespeichert",
+	"unsaved_changes": "Ungespeicherte Änderungen",
+	"saving": "Speichern..."
 }
