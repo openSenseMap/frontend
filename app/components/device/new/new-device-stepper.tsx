@@ -29,147 +29,27 @@ import {
 import { useToast } from '~/components/ui/use-toast'
 import { DeviceModelEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/device.new'
-
-const generalInfoSchema = z.object({
-	name: z
-		.string()
-		.min(2, 'Name must be at least 2 characters')
-		.min(1, 'Name is required'),
-	description: z
-		.string()
-		.max(5000, 'Description should not exceed 5000 characters')
-		.optional()
-		.nullable(),
-	exposure: z.enum(['indoor', 'outdoor', 'mobile', 'unknown'], {
-		error: () => 'Exposure is required',
-	}),
-	temporaryExpirationDate: z
-		.string()
-		.optional()
-		.transform((date) => (date ? new Date(date) : undefined)) // Transform string to Date
-		.refine(
-			(date) =>
-				!date || date <= new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
-			{
-				message: 'Temporary expiration date must be within 1 month from now',
-			},
-		),
-	tags: z
-		.array(
-			z.object({
-				value: z.string(),
-			}),
-		)
-		.optional(),
-})
-
-const locationSchema = z.object({
-	latitude: z.coerce
-		.number({
-			error: (issue) =>
-				issue.input === undefined
-					? 'Latitude is required'
-					: 'Latitude must be a valid number',
-		})
-		.min(-90, 'Latitude must be greater than or equal to -90')
-		.max(90, 'Latitude must be less than or equal to 90'),
-	longitude: z.coerce
-		.number({
-			error: (issue) =>
-				issue.input === undefined
-					? 'Longitude is required'
-					: 'Longitude must be a valid number',
-		})
-		.min(-180, 'Longitude must be greater than or equal to -180')
-		.max(180, 'Longitude must be less than or equal to 180'),
-})
-
-const deviceSchema = z.object({
-	model: z.enum(DeviceModelEnum.enumValues, {
-		error: () => 'Please select a device.',
-	}),
-})
-
-// selectedSensors can be an array of sensors
-const sensorsSchema = z.object({
-	selectedSensors: z
-		.array(sensorSchema)
-		.min(1, 'Please select at least one sensor'),
-})
-
-const advancedSchema = z.record(z.string(), z.any())
-
-const formSchema = z.union([
-	generalInfoSchema,
-	locationSchema,
-	deviceSchema,
-	sensorsSchema,
-	advancedSchema,
-])
-
-export const Stepper = defineStepper(
-	{
-		id: 'general-info',
-		label: 'general_info',
-		infoKey: 'general_information_text',
-		schema: generalInfoSchema,
-		index: 0,
-	},
-	{
-		id: 'location',
-		label: 'location',
-		infoKey: 'location_info_text',
-		schema: locationSchema,
-		index: 1,
-	},
-	{
-		id: 'device-selection',
-		label: 'device_selection',
-		infoKey: 'device_selection_info_text',
-		schema: deviceSchema,
-		index: 2,
-	},
-	{
-		id: 'sensor-selection',
-		label: 'sensor_selection',
-		infoKey: 'sensor_selection_info_text',
-		schema: sensorsSchema,
-		index: 3,
-	},
-	{
-		id: 'advanced',
-		label: 'advanced',
-		infoKey: null,
-		schema: advancedSchema,
-		index: 4,
-	},
-	{
-		id: 'summary',
-		label: 'summary',
-		infoKey: null,
-		schema: z.object({}),
-		index: 5,
-	},
-)
-
-type GeneralInfoData = z.infer<typeof generalInfoSchema>
-type LocationData = z.infer<typeof locationSchema>
-type DeviceData = z.infer<typeof deviceSchema>
-type SensorData = z.infer<typeof sensorsSchema>
-type AdvancedData = z.infer<typeof advancedSchema>
-
-type FormData =
-	| GeneralInfoData
-	| LocationData
-	| DeviceData
-	| SensorData
-	| AdvancedData
+import { Stepper } from './stepper.config'
+import { formSchema } from './schemas'
 
 export default function NewDeviceStepper() {
 	const { integrations } = useLoaderData<typeof loader>()
 	const submit = useSubmit()
 	const [formData, setFormData] = useState<Record<string, any>>({})
 	const stepper = Stepper.useStepper()
+
+	type StepVisualStatus =
+		| 'current'
+		| 'locked'
+		| 'available'
+		| 'valid'
+		| 'invalid'
+
+	const [highestUnlockedIndex, setHighestUnlockedIndex] = useState(0)
+	const [completedSteps, setCompletedSteps] = useState<Set<StepId>>(new Set())
+	const [stepErrors, setStepErrors] = useState<Partial<Record<StepId, string>>>(
+		{},
+	)
 	const form = useForm({
 		mode: 'onTouched',
 		resolver: zodResolver<
@@ -227,6 +107,168 @@ export default function NewDeviceStepper() {
 		}
 	}
 
+	const getStepStatus = (
+		step: (typeof Stepper.steps)[number],
+	): StepVisualStatus => {
+		if (stepper.state.current.data.id === step.id) return 'current'
+		if (stepErrors[step.id]) return 'invalid'
+		if (completedSteps.has(step.id)) return 'valid'
+		if (step.index > highestUnlockedIndex) return 'locked'
+
+		return 'available'
+	}
+
+	const validateStep = async (stepId: StepId): Promise<boolean> => {
+		const schema = stepSchemas[stepId]
+
+		// Summary itself has no fields; final validation happens separately.
+		if (stepId === 'summary') return true
+
+		const result = schema.safeParse(form.getValues())
+
+		if (!result.success) {
+			const firstIssue = result.error.issues[0]
+			const message = firstIssue?.message ?? t('please_fix_this_step')
+
+			for (const issue of result.error.issues) {
+				const fieldName = issue.path.join('.')
+
+				if (fieldName) {
+					form.setError(fieldName as any, {
+						type: 'manual',
+						message: issue.message,
+					})
+				}
+			}
+
+			setStepErrors((prev) => ({
+				...prev,
+				[stepId]: message,
+			}))
+
+			toast({
+				title: t('form_error'),
+				description: message,
+				variant: 'destructive',
+				duration: 3000,
+			})
+
+			return false
+		}
+
+		setStepErrors((prev) => {
+			const next = { ...prev }
+			delete next[stepId]
+			return next
+		})
+
+		setCompletedSteps((prev) => {
+			const next = new Set(prev)
+			next.add(stepId)
+			return next
+		})
+
+		return true
+	}
+
+	const handleStepClick = async (
+		targetStep: (typeof Stepper.steps)[number],
+	) => {
+		const currentIndex = stepper.state.current.index
+		const targetIndex = targetStep.index
+		const targetStepId = targetStep.id as StepId
+
+		// Always allow going backwards.
+		if (targetIndex <= currentIndex) {
+			stepper.navigation.goTo(targetStepId)
+			return
+		}
+
+		// Future locked step.
+		if (targetIndex > highestUnlockedIndex) {
+			toast({
+				title: t('step_locked'),
+				description: t('complete_previous_steps_first'),
+				variant: 'destructive',
+				duration: 3000,
+			})
+
+			// Optional: validate current step immediately so the user sees why.
+			await validateStep(stepper.state.current.data.id as StepId)
+
+			return
+		}
+
+		// If previously unlocked, allow navigation.
+		stepper.navigation.goTo(targetStepId)
+	}
+
+	function extractAdvancedValues(values: Record<string, any>) {
+		const advanced: Record<string, any> = {}
+
+		for (const [key, value] of Object.entries(values)) {
+			if (key.endsWith('Enabled') || key.endsWith('Config')) {
+				advanced[key] = value
+			}
+		}
+
+		return advanced
+	}
+
+	function buildSubmitPayload(values: any) {
+		return {
+			'general-info': {
+				name: values.name,
+				description: values.description,
+				exposure: values.exposure,
+				temporaryExpirationDate: values.temporaryExpirationDate,
+				tags: values.tags ?? [],
+			},
+			location: {
+				latitude: values.latitude,
+				longitude: values.longitude,
+			},
+			'device-selection': {
+				model: values.model,
+			},
+			'sensor-selection': {
+				selectedSensors: values.selectedSensors ?? [],
+			},
+			advanced: extractAdvancedValues(values),
+		}
+	}
+
+	// const handleNextOrComplete = async () => {
+	// 	const currentStep = stepper.state.current.data
+	// 	const currentStepId = currentStep.id as StepId
+
+	// 	if (currentStepId !== 'summary') {
+	// 		const isValid = await validateStep(currentStepId)
+
+	// 		if (!isValid) return
+
+	// 		const nextIndex = stepper.state.current.index + 1
+
+	// 		setHighestUnlockedIndex((prev) => Math.max(prev, nextIndex))
+	// 		stepper.navigation.next()
+
+	// 		return
+	// 	}
+
+	// 	const allValid = await validateAllSteps()
+
+	// 	if (!allValid) return
+
+	// 	const payload = buildSubmitPayload(form.getValues())
+
+	// 	void submit(
+	// 		{
+	// 			formData: JSON.stringify(payload),
+	// 		},
+	// 		{ method: 'post' },
+	// 	)
+	// }
+
 	return (
 		<Stepper.Scoped>
 			<FormProvider {...form}>
@@ -243,7 +285,7 @@ export default function NewDeviceStepper() {
 										<div className="flex gap-2" key={index}>
 											<BreadcrumbItem key={step.id}>
 												<BreadcrumbLink
-													onClick={() => stepper.navigation.goTo(step.id)}
+													onClick={() => void handleStepClick(step)}
 													className={` ${
 														stepper.state.current.index === step.index
 															? 'font-bold text-black'
