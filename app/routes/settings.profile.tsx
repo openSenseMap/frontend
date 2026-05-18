@@ -10,7 +10,6 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
@@ -258,6 +257,19 @@ export default function EditUserProfilePage() {
 			<CardHeader>
 				<CardTitle>{t('profile_settings')}</CardTitle>
 				<CardDescription>{t('profile_settings_description')}</CardDescription>
+				<p className="text-muted-foreground text-sm" aria-live="polite">
+					<span>
+						{autosave.status === 'saving'
+							? t('saving')
+							: autosave.status === 'dirty'
+								? t('unsaved_changes')
+								: autosave.status === 'error'
+									? t('something_went_wrong')
+									: autosave.status === 'saved'
+										? t('saved')
+										: null}
+					</span>
+				</p>
 			</CardHeader>
 
 			<CardContent className="flex">
@@ -376,20 +388,6 @@ export default function EditUserProfilePage() {
 					</div>
 				</div>
 			</CardContent>
-
-			<CardFooter>
-				<p className="text-muted-foreground text-sm" aria-live="polite">
-					{autosave.status === 'saving'
-						? t('saving')
-						: autosave.status === 'dirty'
-							? t('unsaved_changes')
-							: autosave.status === 'error'
-								? t('something_went_wrong')
-								: autosave.status === 'saved'
-									? t('saved')
-									: null}
-				</p>
-			</CardFooter>
 
 			<Outlet />
 		</Card>
