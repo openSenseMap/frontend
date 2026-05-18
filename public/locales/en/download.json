@@ -28,5 +28,6 @@
 	"processing": "Processing...",
 	"generateFile": "Generate File",
 	"downloading": "Downloading...",
-	"data": "Data"
+	"data": "Data",
+	"activeFiltersApplied": "The currently active filters will be applied to this download."
 }

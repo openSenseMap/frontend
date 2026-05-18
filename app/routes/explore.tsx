@@ -6,7 +6,7 @@ import {
 	MapProvider,
 	Layer,
 	Source,
-	MapInstance,
+	type MapInstance,
 } from 'react-map-gl/maplibre'
 import {
 	Outlet,
@@ -30,16 +30,19 @@ import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
 import maplibregl, {
-	LngLatLike,
-	MapLayerMouseEvent,
-	MapLibreEvent,
-	MapLibreMap,
-	StyleImageMetadata,
+	type LngLatLike,
+	type MapLayerMouseEvent,
+	type MapLibreEvent,
+	type MapLibreMap,
+	type StyleImageMetadata,
 	type FilterSpecification,
 } from 'maplibre-gl'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
+import { getTags } from '~/services/device-service.server'
+import { getPhenomena } from '~/db/models/phenomena.server'
+import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
@@ -48,7 +51,9 @@ const INITIAL_VIEW_STATE = {
 } as const
 
 function parseMapHash(hash: string) {
-	const match = hash.match(/^#?(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/)
+	const match = hash.match(
+		/^#?(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/,
+	)
 
 	if (!match) return null
 
@@ -61,19 +66,60 @@ function parseMapHash(hash: string) {
 	}
 }
 
+function parseCsv(value: FormDataEntryValue | null): string[] {
+	if (typeof value !== 'string') return []
+
+	return value
+		.split(',')
+		.map((item) => item.trim())
+		.filter(Boolean)
+}
+
+function getDownloadFilterParams(formData: FormData) {
+	const filterParams = new URLSearchParams()
+
+	for (const key of DOWNLOAD_FILTER_KEYS) {
+		const value = formData.get(key)
+
+		if (typeof value === 'string' && value.length > 0) {
+			filterParams.set(key, value)
+		}
+	}
+
+	return filterParams
+}
+
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
 	const sensorIds: Array<string> = []
 	const measurements: Array<object> = []
+
 	const formdata = await request.formData()
-	const deviceIds = (formdata.get('devices') as string).split(',')
-	const format = formdata.get('format') as string
-	const aggregate = formdata.get('aggregate') as string
+
+	const deviceIds = parseCsv(formdata.get('devices'))
+	const format = String(formdata.get('format') ?? 'csv')
+	const aggregate = String(formdata.get('aggregate') ?? 'raw')
+
 	const includeFields = {
 		title: formdata.get('title') === 'on',
 		unit: formdata.get('unit') === 'on',
 		value: formdata.get('value') === 'on',
 		timestamp: formdata.get('timestamp') === 'on',
+	}
+
+	const filterParams = getDownloadFilterParams(formdata)
+
+	const selectedPhenomena = parseCsv(formdata.get('phenomenon')).map(
+		(phenomenon) => phenomenon.toLowerCase(),
+	)
+
+	const measurementTimeRange =
+		getMeasurementTimeRangeFromSearchParams(filterParams)
+
+	if (deviceIds.length === 0) {
+		return Response.json({
+			error: 'No devices selected.',
+		})
 	}
 
 	if (deviceIds.length >= deviceLimit) {
@@ -82,14 +128,30 @@ export async function action({ request }: { request: Request }) {
 			link: 'https://archive.opensensemap.org/',
 		})
 	}
-	for (const device of deviceIds) {
-		const sensors = await getSensors(device)
-		for (const sensor of sensors) {
+
+	for (const deviceId of deviceIds) {
+		const sensors = await getSensors(deviceId)
+
+		const filteredSensors =
+			selectedPhenomena.length > 0
+				? sensors.filter((sensor) =>
+						selectedPhenomena.includes(sensor.title?.toLowerCase() ?? ''),
+					)
+				: sensors
+
+		for (const sensor of filteredSensors) {
 			sensorIds.push(sensor.id)
-			const measurement = await getMeasurement(sensor.id, aggregate)
+
+			const measurement = await getMeasurement(
+				sensor.id,
+				aggregate,
+				measurementTimeRange?.from,
+				measurementTimeRange?.to,
+			)
+
 			measurement.map((m: any) => {
-				m['title'] = sensor.title
-				m['unit'] = sensor.unit
+				m.title = sensor.title
+				m.unit = sensor.unit
 			})
 
 			measurements.push(measurement)
@@ -111,7 +173,6 @@ export async function action({ request }: { request: Request }) {
 		fileName = result.fileName
 		contentType = result.contentType
 	} else {
-		// txt format
 		const result = getTXT(measurements, includeFields)
 		content = result.content
 		fileName = result.fileName
@@ -124,6 +185,61 @@ export async function action({ request }: { request: Request }) {
 	})
 }
 
+export type MeasurementTimeRange = {
+	from: Date
+	to: Date
+}
+
+function startOfUtcDate(date: string) {
+	const [year, month, day] = date.split('-').map(Number)
+	return new Date(Date.UTC(year, month - 1, day))
+}
+
+function addUtcDays(date: Date, days: number) {
+	const next = new Date(date)
+	next.setUTCDate(next.getUTCDate() + days)
+	return next
+}
+
+export function getMeasurementTimeRangeFromSearchParams(
+	searchParams: URLSearchParams,
+): MeasurementTimeRange | undefined {
+	const timeMode = searchParams.get('timeMode')
+
+	if (timeMode === 'pointintime') {
+		const date = searchParams.get('date')
+
+		if (!date) return undefined
+
+		const from = startOfUtcDate(date)
+		const to = addUtcDays(from, 1)
+
+		return {
+			from,
+			to,
+		}
+	}
+
+	if (timeMode === 'timeperiod') {
+		const fromParam = searchParams.get('from')
+		const toParam = searchParams.get('to')
+
+		if (!fromParam || !toParam) return undefined
+
+		const from = startOfUtcDate(fromParam)
+		const to = addUtcDays(startOfUtcDate(toParam), 1)
+
+		if (from > to) return undefined
+
+		return {
+			from,
+			to,
+		}
+	}
+
+	return undefined
+}
+
 export async function loader({ context, request }: Route.LoaderArgs) {
 	//* Get filter params
 	let locale = getLocale(context)
@@ -131,10 +247,18 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	const filterParams = url.search
 	const urlFilterParams = new URLSearchParams(url.search)
 
+	const measurementTimeRange =
+		getMeasurementTimeRangeFromSearchParams(urlFilterParams)
+
 	// check if sensors are queried - if not get devices only to reduce load
-	const devices = !urlFilterParams.get('phenomenon')
-		? await getDevices('geojson')
-		: await getDevicesWithSensors()
+	const needsSensors =
+		Boolean(urlFilterParams.get('phenomenon')) || Boolean(measurementTimeRange)
+
+	const devices = needsSensors
+		? await getDevicesWithSensors({ measurementTimeRange })
+		: await getDevices('geojson')
+
+	const availableTags = await getTags()
 
 	const measurementCount = await getMeasurementsCount()
 
@@ -144,7 +268,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	var filteredDevices = getFilteredDevices(devices, urlFilterParams)
 
 	const user = await getUser(request)
-	//const phenomena = await getPhenomena();
+	const phenomena = await getPhenomena()
 
 	if (user) {
 		const profile = await getProfileByUserId(user.id)
@@ -153,17 +277,20 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			: 'en'
 		return {
 			devices,
+			availableTags,
+			phenomena,
 			measurementCount,
 			user,
 			profile,
 			filteredDevices,
 			filterParams,
 			locale: userLocale,
-			//phenomena
 		}
 	}
 	return {
 		devices,
+		availableTags,
+		phenomena,
 		measurementCount,
 		user,
 		profile: null,
@@ -171,7 +298,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		filteredDevices,
 		message,
 		locale,
-		//phenomena,
 	}
 }
 
@@ -183,11 +309,11 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, filteredDevices, measurementCount, user } = useLoaderData<typeof loader>()
+	const { devices, availableTags, filteredDevices, measurementCount, user } =
+		useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
 	const navigate = useNavigate()
 	const location = useLocation()
-	// const [showSearch, setShowSearch] = useState<boolean>(false);
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
 	const [searchParams] = useSearchParams()
 	const [filteredData, setFilteredData] = useState<
@@ -211,62 +337,6 @@ export default function Explore() {
 			}),
 		[],
 	)
-
-	//listen to search params change
-	// useEffect(() => {
-	//   //filters devices for pheno
-	//   if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
-	//     let sensorsFiltered: any = [];
-	//     let currentParam = searchParams.get("mapPheno");
-	//     //check if pheno exists in sensor-wiki data
-	//     let pheno = data.phenomena.filter(
-	//       (pheno: any) => pheno.slug == currentParam?.toString(),
-	//     );
-	//     if (pheno[0]) {
-	//       setSelectedPheno(pheno[0]);
-	//       data.devices.features.forEach((device: any) => {
-	//         device.properties.sensors.forEach((sensor: Sensor) => {
-	//           if (
-	//             sensor.sensorWikiPhenomenon == currentParam &&
-	//             sensor.lastMeasurement
-	//           ) {
-	//             const lastMeasurementDate = new Date(
-	//               //@ts-ignore
-	//               sensor.lastMeasurement.createdAt,
-	//             );
-	//             //take only measurements in the last 10mins
-	//             //@ts-ignore
-	//             if (currentDate < lastMeasurementDate) {
-	//               sensorsFiltered.push({
-	//                 ...device,
-	//                 properties: {
-	//                   ...device.properties,
-	//                   sensor: {
-	//                     ...sensor,
-	//                     lastMeasurement: {
-	//                       //@ts-ignore
-	//                       value: parseFloat(sensor.lastMeasurement.value),
-	//                       //@ts-ignore
-	//                       createdAt: sensor.lastMeasurement.createdAt,
-	//                     },
-	//                   },
-	//                 },
-	//               });
-	//             }
-	//           }
-	//         });
-	//         return false;
-	//       });
-	//       setFilteredData({
-	//         type: "FeatureCollection",
-	//         features: sensorsFiltered,
-	//       });
-	//     }
-	//   } else {
-	//     setSelectedPheno(undefined);
-	//   }
-	//   // eslint-disable-next-line react-hooks/exhaustive-deps
-	// }, [searchParams]);
 
 	function calculateLabelPositions(length: number): string[] {
 		const positions: string[] = []
@@ -478,52 +548,52 @@ export default function Explore() {
 		url: string,
 		options?: Partial<StyleImageMetadata>,
 	) => {
-		if (map.hasImage(id)) return;
+		if (map.hasImage(id)) return
 
-		const image = await map.loadImage(url);
+		const image = await map.loadImage(url)
 
-		map.addImage(id, image.data, options);
-	};
+		map.addImage(id, image.data, options)
+	}
 
 	const handleMapLoad = async (e: MapLibreEvent) => {
 		const map = e.target
-		const retinaImageOptions = { pixelRatio: 2 };
+		const retinaImageOptions = { pixelRatio: 2 }
 		await Promise.allSettled([
 			loadImageIfNotExists(
 				map,
 				'osem-device-active',
 				'/img/device_marker_active.png',
-				retinaImageOptions
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-device-inactive',
 				'/img/device_marker_inactive.png',
-				retinaImageOptions
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-device-old',
 				'/img/device_marker_old.png',
-				retinaImageOptions
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-mobile-active',
 				'/img/mobile_marker_active.png',
-				retinaImageOptions
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-mobile-inactive',
 				'/img/mobile_marker_inactive.png',
-				retinaImageOptions
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-mobile-old',
 				'/img/mobile_marker_old.png',
-				retinaImageOptions
+				retinaImageOptions,
 			),
 		])
 	}
@@ -532,7 +602,7 @@ export default function Explore() {
 		<div className="h-full w-full">
 			<MapProvider>
 				<MapHeader
-					devices={devices}
+					devices={filteredDevices}
 					measurementCount={measurementCount}
 					onHomeClick={handleHomeClick}
 				/>
