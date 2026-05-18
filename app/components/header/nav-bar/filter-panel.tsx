@@ -12,7 +12,7 @@ import {
 	type DeviceExposureType,
 	type DeviceStatusType,
 } from '~/db/schema/enum'
-import  { type loader as exploreLoader } from '~/routes/explore'
+import { type loader as exploreLoader } from '~/routes/explore'
 import FilterOptions from './filter-options/filter-options'
 import FilterTags from './filter-options/filter-tags'
 import FilterPhenomena from './filter-options/filter-phenomena'
