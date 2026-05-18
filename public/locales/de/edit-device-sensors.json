@@ -1,5 +1,5 @@
 {
-	"sensor_delete_warning": "Die von den Sensoren gemessenen Daten, die Sie löschen möchten, werden ebenfalls gelöscht. Wenn Sie neue Sensoren hinzufügen, vergessen Sie nicht, Ihr neues Skript abzurufen (siehe Registerkarte „Skript“).",
+	"sensor_delete_warning": "Die von den Sensoren gemessenen Daten, die du löschen möchtest, werden ebenfalls gelöscht. Wenn du neue Sensoren hinzufügst, vergiss nicht, dein neues Skript abzurufen (siehe Registerkarte „Skript“).",
 	"copied": "kopiert",
 	"sensor_id_copied": "Sensor ID in Zwischenablage kopiert",
 	"copy_failed": "Kopieren fehlgeschlagen",
@@ -7,7 +7,7 @@
 	"phenomenon": "Phänomen",
 	"unit": "Einheit",
 	"type": "Typ",
-	"sensor_will_be_deleted": "Dieser Sensor wird gelöscht werden.",
+	"sensor_will_be_deleted": "Dieser Sensor wird gelöscht.",
 	"undo": "Rückgängig",
 	"edit": "Editieren",
 	"delete": "Löschen",
