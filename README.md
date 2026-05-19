@@ -4,7 +4,8 @@ This repository contains the code of the redeveloped _openSenseMap_ currently
 running as a public beta at
 [https://staging.opensensemap.org](https://staging.opensensemap.org).
 
-<img width="1438" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/a7bf16fb-44a2-4a21-9c0f-d4bf431ab9b5">
+<img width="1510" height="858" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/70da4cff-1751-4a13-89e8-607a5198df37">
+
 
 ## Project setup
 
