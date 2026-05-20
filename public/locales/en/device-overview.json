@@ -8,5 +8,9 @@
 	"name_label": "Name",
 	"model_label": "Model",
 	"tags_label": "Tags",
-	"api_key_label": "API Key"
+	"api_key_label": "API Key",
+	"device_settings": "Device settings",
+	"manage_device_data": "Manage your device data.",
+	"device_updated": "Device successfully updated",
+	"view": "View"
 }

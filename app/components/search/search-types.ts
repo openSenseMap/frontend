@@ -1,5 +1,5 @@
-import { FeatureCollection, Point } from "geojson"
-import { Device } from "~/db/schema"
+import { FeatureCollection, Point } from 'geojson'
+import { Device } from '~/db/schema'
 
 export type SearchBBox = [[number, number], [number, number]]
 

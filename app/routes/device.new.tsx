@@ -3,7 +3,7 @@ import { type Route } from './+types/device.new'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
 import { getIntegrations } from '~/db/models/integration.server'
-import { createDevice } from '~/services/devices-service.server'
+import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
 

@@ -28,6 +28,11 @@ const buttonVariants = cva(
 				sm: 'h-9 rounded-md px-3',
 				lg: 'h-11 rounded-md px-8',
 				icon: 'h-10 w-10',
+				'icon-xs':
+					"size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
+				'icon-sm':
+					'size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg',
+				'icon-lg': 'size-9',
 				topbarIcon: 'h-10 w-10 rounded-full p-0 [&_svg]:size-6',
 				topbarPill: 'h-10 rounded-full px-3 py-0 [&_svg]:size-5',
 			},

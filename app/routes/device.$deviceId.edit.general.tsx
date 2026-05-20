@@ -21,7 +21,7 @@ import {
 	deleteDeviceImage,
 	getDeviceImageUrl,
 } from '~/lib/s3.server'
-import { updateDevice, deleteDevice } from '~/services/devices-service.server'
+import { updateDevice, deleteDevice } from '~/services/device-service.server'
 import { getUserEmail, getUserId } from '~/services/session-service.server'
 
 //*****************************************************

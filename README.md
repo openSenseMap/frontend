@@ -1,17 +1,11 @@
 ![openSenseMap](https://github.com/openSenseMap/frontend/blob/dev/public/img/openSenseMap.png)
 
-This repository contains the code of the new _openSenseMap_ frontend running at
-[https://beta.opensensemap.org](https://beta.opensensemap.org).
+This repository contains the code of the redeveloped _openSenseMap_ currently
+running as a public beta at
+[https://staging.opensensemap.org](https://staging.opensensemap.org).
 
-Originally, the _openSenseMap_ was built as part of the bachelor thesis of
-[@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics,
-University of Münster). Between 2016 and 2022 development was partly funded by
-the German Ministry of Education and Research (BMBF) in the projets senseBox and
-senseBox Pro. This version has been developed by
-[@mpfeil](https://github.com/mpfeil) and
-[@freds-dev](https://github.com/freds-dev).
+<img width="1510" height="858" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/70da4cff-1751-4a13-89e8-607a5198df37">
 
-<img width="1438" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/a7bf16fb-44a2-4a21-9c0f-d4bf431ab9b5">
 
 ## Project setup
 
@@ -22,46 +16,91 @@ instructions:
 
 - [Node.js](https://nodejs.org/) >= 24.0.0 (see [.nvmrc](./.nvmrc))
 - [npm](https://npmjs.com/) >= 11.0.0
+- [nvm](https://github.com/nvm-sh/nvm) >= 4.0.0
 - [git](https://git-scm.com/) >= 2.38.0
 - [Docker](https://www.docker.com) >= 27.0.0
 
 ### Variables
 
-You can configure the API endpoint and/or map tiles using the following
-environmental variables:
+You can configure the API endpoint using the following environmental variables:
 
-| ENV          | Default value                        |
-| ------------ | ------------------------------------ |
-| OSEM_API_URL | https://api.testing.opensensemap.org |
-| DATABASE_URL | <YOUR_POSTGRES_URL>                  |
+| ENV          | Default value                                            |
+| ------------ | -------------------------------------------------------- |
+| OSEM_API_URL | https://api.testing.opensensemap.org                     |
+| DATABASE_URL | `postgresql://postgres:postgres@localhost:5432/postgres` |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
+To run a local development version, you only need to adjust the `OSEM_API_URL`
+to the one given above.
 
 ### Setup Steps
 
 1. Clone the repo: `git clone https://github.com/openSenseMap/frontend`
 2. Copy `.env.example` into `.env`
-3. Run `npm install` to install dependencies
-4. Optionally run `docker compose up` to start a docker container running your
-   local postgres DB
+3. Run `nvm use` to use the npm version referred to in [.nvmrc](./.nvmrc)
+4. Run `npm install` to install dependencies
+5. Optionally run `docker compose up` to start a docker container running your
+   local postgres DB (`docker compose up -d` for running container in
+   background)
    - If it is the first time doing this, you may need to bootstrap the database
      by running `npm run db:setup`
    - If you want some example data run `npm run db:seed`. **WARNING**: Do not
      run this on a production database. It will delete all existing data.
-5. Run `npm run dev` to start the local server
+6. Run `npm run dev` to start the local server
+
+### Linting and formatting
+
+This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for
+linting and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for
+formatting.The configurations in `oxfmt.config.ts` and `.oxlintrc.json` extend
+[@epic-web/config/](https://github.com/epicweb-dev/config).
+
+Run formatting:
+
+```bash
+npm run format
+```
+
+For more options inspect the `package.json` file. Editor integration is provided
+by the recommended Oxc extension listed in `.vscode/extensions.json`.
+
+Exemplary VSCode config:
+
+```JSON
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  },
+  "oxc.enable": true,
+  "oxc.fmt.configPath": "./oxfmt.config.ts",
+  "oxc.configPath": "./oxlintrc.json",
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.tabSize": 2
+  },
+}
+```
 
 ### Contributing
 
-We welcome all kind of constructive contributions to this project. If you are
-planning to implement a new feature or change something, please create an issue
-first.
+We welcome all kind of constructive contributions to this project. If you have
+ideas, suggestions or plan to implement a new feature, please open a new
+[GitHub discussion](https://github.com/openSenseMap/frontend/discussions) to
+connect to us and other contributers.
+
+If you implement a new feature or change something, please create an issue.
 
 Afterwards follow these steps:
 
 1. Fork this repository
-2. Create your feature branch (`git checkout -b my-new-feature`)
+2. Create your feature branch (`git checkout -b feat/my-new-feature`)
 3. Make and commit your changes
-4. Push to the branch (`git push origin my-new-feature`)
+4. Push to the branch (`git push origin feat/my-new-feature`)
 5. Create a new pull request against this repository's `dev` branch, linking
    your issue.
 
@@ -284,4 +323,4 @@ your local database). Then simply run `npm test`.
 
 ## License
 
-[MIT](LICENSE) - Matthias Pfeil 2015 - now
+[MIT](LICENSE) - openSenseLab 2026

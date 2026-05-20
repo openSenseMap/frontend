@@ -11,7 +11,7 @@ import { StandardResponse } from '~/lib/responses'
 import {
 	BoxesQuerySchema,
 	CreateBoxSchema,
-} from '~/services/devices-service.server'
+} from '~/services/device-service.server'
 
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
