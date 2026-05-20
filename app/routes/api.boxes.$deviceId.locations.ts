@@ -5,6 +5,16 @@ import { type Route } from './+types/api.boxes.$deviceId.locations'
 import { getLocations } from '~/db/models/device.server'
 import { parseDateParam, parseEnumParam } from '~/lib/params'
 import { StandardResponse } from '~/lib/responses'
+import {
+	badRequestResponse,
+	internalServerErrorResponse,
+	notFoundResponse,
+} from '~/lib/openapi/responses/errors'
+import {
+	createBadRequestErrorSchema,
+	createInternalServerErrorSchema,
+	createNotFoundErrorSchema,
+} from '~/lib/openapi/schemas/errors'
 
 const messages = {
 	invalidDeviceId: 'Invalid device id specified',
@@ -12,16 +22,6 @@ const messages = {
 	internal:
 		'The server was unable to complete your request. Please try again later.',
 }
-
-const standardErrorResponseSchema = <Code extends string>(
-	code: Code,
-	messageSchema: z.ZodType<string> = z.string(),
-) =>
-	z.object({
-		code: z.literal(code),
-		message: messageSchema,
-		error: messageSchema,
-	})
 
 const DeviceLocationsPathParamsSchema = z.object({
 	deviceId: z.string().min(1).meta({
@@ -132,24 +132,24 @@ const GeoJsonLineStringResponseSchema = z
 		},
 	})
 
-const BadRequestErrorSchema = standardErrorResponseSchema(
-	'Bad Request',
-	z.string().meta({
-		example: messages.invalidDeviceId,
-	}),
-).meta({ id: 'BadRequestError' })
+const BadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'DeviceLocationsBadRequestError',
+	description:
+		'Bad request. This can happen for an invalid device id, invalid date parameter, or invalid format parameter.',
+	examples: [messages.invalidDeviceId],
+})
 
-const NotFoundErrorSchema = standardErrorResponseSchema(
-	'Not Found',
-	z.literal(messages.deviceNotFound),
-).meta({ id: 'NotFoundError' })
+const NotFoundErrorSchema = createNotFoundErrorSchema({
+	id: 'DeviceLocationsNotFoundError',
+	description: 'Returned when the requested device does not exist.',
+	messageSchema: z.literal(messages.deviceNotFound),
+})
 
-const InternalServerErrorSchema = standardErrorResponseSchema(
-	'Internal Server Error',
-	z.string().meta({
-		example: messages.internal,
-	}),
-).meta({ id: 'InternalServerError' })
+const InternalServerErrorSchema = createInternalServerErrorSchema({
+	id: 'DeviceLocationsInternalServerError',
+	description: 'Returned when the server cannot complete the request.',
+	examples: [messages.internal],
+})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
@@ -166,7 +166,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			200: {
-				description: 'Success',
+				description: 'Device locations returned successfully.',
 				content: {
 					'application/json': {
 						schema: JsonLocationsResponseSchema,
@@ -176,31 +176,18 @@ export const openapi: ZodOpenApiPathItemObject = {
 					},
 				},
 			},
-			400: {
-				description:
-					'Bad request. This can happen for an invalid device id, invalid date parameter, or invalid format parameter.',
-				content: {
-					'application/json': {
-						schema: BadRequestErrorSchema,
-					},
-				},
-			},
-			404: {
-				description: 'Device not found',
-				content: {
-					'application/json': {
-						schema: NotFoundErrorSchema,
-					},
-				},
-			},
-			500: {
-				description: 'Internal server error',
-				content: {
-					'application/json': {
-						schema: InternalServerErrorSchema,
-					},
-				},
-			},
+
+			400: badRequestResponse(
+				BadRequestErrorSchema,
+				'Bad request. This can happen for an invalid device id, invalid date parameter, or invalid format parameter.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 }
