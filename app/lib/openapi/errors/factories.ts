@@ -1,15 +1,7 @@
 import * as z from 'zod/v4'
 import 'zod-openapi'
 
-export const standardErrorResponseSchema = <Code extends string>(
-	code: Code,
-	messageSchema: z.ZodType<string> = z.string(),
-) =>
-	z.object({
-		code: z.literal(code),
-		message: messageSchema,
-		error: messageSchema,
-	})
+import { standardErrorResponseSchema } from './schemas'
 
 type StandardErrorSchemaOptions<Code extends string> = {
 	code: Code
@@ -65,7 +57,3 @@ export const createUnprocessableContentErrorSchema =
 
 export const createUnsupportedMediaTypeErrorSchema =
 	createStandardErrorSchemaFactory('Unsupported Media Type')
-
-export const createInternalServerErrorSchema = createStandardErrorSchemaFactory(
-	'Internal Server Error',
-)

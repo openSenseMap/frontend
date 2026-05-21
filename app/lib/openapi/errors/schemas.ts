@@ -1,0 +1,64 @@
+import * as z from 'zod/v4'
+import 'zod-openapi'
+
+export const standardErrorResponseSchema = <Code extends string>(
+	code: Code,
+	messageSchema: z.ZodType<string> = z.string(),
+) =>
+	z.object({
+		code: z.literal(code),
+		message: messageSchema,
+		error: messageSchema,
+	})
+
+export const BadRequestErrorSchema = standardErrorResponseSchema(
+	'Bad Request',
+	z.string().meta({ example: 'Bad request.' }),
+).meta({
+	id: 'BadRequestError',
+})
+
+export const UnauthorizedErrorSchema = standardErrorResponseSchema(
+	'Unauthorized',
+	z.string().meta({ example: 'Unauthorized.' }),
+).meta({
+	id: 'UnauthorizedError',
+})
+
+export const UnprocessableContentErrorSchema = standardErrorResponseSchema(
+	'Unprocessable Content',
+	z.string().meta({ example: 'Unprocessable content.' }),
+).meta({
+	id: 'UnprocessableContentError',
+})
+
+export const ForbiddenErrorSchema = standardErrorResponseSchema(
+	'Forbidden',
+	z.string().meta({ example: 'Forbidden.' }),
+).meta({
+	id: 'ForbiddenError',
+})
+
+export const NotFoundErrorSchema = standardErrorResponseSchema(
+	'Not Found',
+	z.string().meta({ example: 'Resource not found.' }),
+).meta({
+	id: 'NotFoundError',
+})
+
+export const InternalServerErrorSchema = standardErrorResponseSchema(
+	'Internal Server Error',
+	z.string().meta({
+		example:
+			'The server was unable to complete your request. Please try again later.',
+	}),
+).meta({
+	id: 'InternalServerError',
+})
+
+export const MethodNotAllowedErrorSchema = standardErrorResponseSchema(
+	'Method not allowed',
+	z.string().meta({ example: 'Method not allowed.' }),
+).meta({
+	id: 'MethodNotAllowedError',
+})
