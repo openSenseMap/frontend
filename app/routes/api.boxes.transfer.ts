@@ -1,4 +1,4 @@
-import { type Route } from './+types/api.transfer'
+import { type Route } from './+types/api.boxes.transfer'
 import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import {
