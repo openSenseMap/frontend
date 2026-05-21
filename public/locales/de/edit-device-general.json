@@ -15,5 +15,12 @@
 	"accepted_formats": "Akzeptierte Formate",
 	"add": "Hinzufügen",
 	"delete_device": "Gerät löschen",
-	"delete_device_confirm_info": "Wenn Sie Ihre Station wirklich löschen möchten, geben Sie bitte Ihr aktuelles Passwort ein – dabei werden auch alle Messwerte gelöscht."
+	"delete_device_confirm_info": "Wenn Sie Ihre Station wirklich löschen möchten, geben Sie bitte Ihr aktuelles Passwort ein – dabei werden auch alle Messwerte gelöscht.",
+	"saving": "Speichern...",
+	"saved": "Gespeichert",
+	"autosave_failed": "Automatisches Speichern fehlgeschlagen. Bitte versuche es erneut.",
+	"unsaved_changes": "Ungesicherte Änderungen",
+	"longitude": "Längengrad",
+	"latitude": "Breitengrad",
+	"reset_to_original_location": "Zurücksetzen auf ursprünglichen Standort"
 }

@@ -446,7 +446,7 @@ Installed on the school roof.
 - Updated regularly
 
 [Project website](https://example.com)`}
-											className="min-h-[220px] w-full rounded border border-gray-200 px-2 py-1.5 font-mono text-base"
+											className="min-h-55 w-full rounded border border-gray-200 px-2 py-1.5 font-mono text-base"
 										/>
 										<p className="text-sm text-gray-500">
 											{description.length} / 5000

@@ -111,7 +111,7 @@ export function GeneralInfoStep() {
 		- Temperature
 
 		[${t('project_website')}](https://example.com)`}
-						className="min-h-[220px] w-full rounded-md border p-3 font-mono text-sm"
+						className="min-h-55 w-full rounded-md border p-3 font-mono text-sm"
 					/>
 					<div className="text-muted-foreground text-sm">
 						{description.length} / 5000
@@ -123,7 +123,7 @@ export function GeneralInfoStep() {
 
 				<div className="space-y-2">
 					<Label>{t('preview')}</Label>
-					<div className="min-h-[220px] rounded-md border p-3">
+					<div className="min-h-55 rounded-md border p-3">
 						{description.trim() ? (
 							<MarkdownContent>{description}</MarkdownContent>
 						) : (
