@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
 	type MarkerDragEvent,
 	MapProvider,
 	Marker,
 	NavigationControl,
 } from 'react-map-gl/maplibre'
-import { data, redirect, useFetcher, useLoaderData } from 'react-router'
+import { data, redirect, useLoaderData } from 'react-router'
 
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.location'
@@ -17,19 +17,15 @@ import { getUserId } from '~/services/session-service.server'
 import { BaseMap } from '~/components/base-map'
 import {
 	LOCATION_LIMITS,
-	LocationFieldErrors,
 	isValidLocation,
 	parseLocationFormData,
 	validateLocationFieldErrors,
 	type LocationData,
+	type LocationFieldErrors,
 } from '~/lib/location'
 import { useTranslation } from 'react-i18next'
 import { AUTOSAVE_DELAY_MS } from './device.$deviceId.edit'
-
-
-function isSameLocation(a: LocationData, b: LocationData) {
-	return a.latitude === b.latitude && a.longitude === b.longitude
-}
+import { useAutosaveFetcher } from '~/hooks/use-autosave-fetcher'
 
 function parseNumberInput(value: string): number | null {
 	if (value.trim() === '') return null
@@ -41,7 +37,37 @@ function parseNumberInput(value: string): number | null {
 	return parsed
 }
 
+function normalizeCoordinate(value: number | null) {
+	if (value === null) return null
+
+	return Number(value.toFixed(6))
+}
+
+function normalizeLocationValues(values: LocationAutosaveValues) {
+	return {
+		latitude: normalizeCoordinate(values.latitude),
+		longitude: normalizeCoordinate(values.longitude),
+	}
+}
+
 type MarkerValue = {
+	latitude: number | null
+	longitude: number | null
+}
+
+export type LocationActionData =
+	| {
+			ok: true
+			location: LocationData
+			errors: null
+			savedAt: string
+	  }
+	| {
+			ok: false
+			errors: LocationFieldErrors
+	  }
+
+type LocationAutosaveValues = {
 	latitude: number | null
 	longitude: number | null
 }
@@ -116,10 +142,9 @@ export async function action({ request, params }: Route.ActionArgs) {
 //**********************************
 export default function EditLocation() {
 	const { device } = useLoaderData<typeof loader>()
-	const fetcher = useFetcher<typeof action>()
-	const { t } = useTranslation("edit-device-general")
+	const { t } = useTranslation('edit-device-general')
 
-	const initialLocation = React.useMemo<LocationData>(
+	const initialLocation = useMemo<LocationData>(
 		() => ({
 			latitude: device.latitude,
 			longitude: device.longitude,
@@ -128,11 +153,8 @@ export default function EditLocation() {
 	)
 
 	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
-	const [hasSavedOnce, setHasSavedOnce] = React.useState(false)
-	const [lastSavedLocation, setLastSavedLocation] =
-		useState<LocationData>(initialLocation)
 
-	const currentLocation = React.useMemo<LocationData | null>(() => {
+	const currentLocation = useMemo<LocationData | null>(() => {
 		const candidate = {
 			latitude: marker.latitude,
 			longitude: marker.longitude,
@@ -141,63 +163,89 @@ export default function EditLocation() {
 		return isValidLocation(candidate) ? candidate : null
 	}, [marker.latitude, marker.longitude])
 
-	const originalLocationRef = React.useRef<LocationData>({
+	const originalLocationRef = useRef<LocationData>({
 		latitude: device.latitude,
 		longitude: device.longitude,
 	})
 
 	const originalLocation = originalLocationRef.current
 
-	const hasUnsavedChanges =
-		currentLocation !== null &&
-		!isSameLocation(currentLocation, lastSavedLocation)
+	const validateAutosave = useCallback((values: LocationAutosaveValues) => {
+		return isValidLocation(values)
+	}, [])
 
-	const isSaving = fetcher.state !== 'idle'
+	const getAutosavePayload = useCallback((values: LocationAutosaveValues) => {
+		return {
+			latitude: String(values.latitude),
+			longitude: String(values.longitude),
+		}
+	}, [])
+
+	const isAutosaveSuccess = useCallback((actionData: LocationActionData) => {
+		return actionData.ok
+	}, [])
+
+	const getSavedValues = useCallback(
+		(
+			actionData: LocationActionData,
+			submittedValues: LocationAutosaveValues,
+		): LocationAutosaveValues => {
+			if (!actionData.ok) return submittedValues
+
+			return normalizeLocationValues(submittedValues)
+		},
+		[],
+	)
+
+	const autosaveValues = useMemo<LocationAutosaveValues>(
+		() =>
+			normalizeLocationValues({
+				latitude: marker.latitude,
+				longitude: marker.longitude,
+			}),
+		[marker.latitude, marker.longitude],
+	)
+
+	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
+		() => normalizeLocationValues(initialLocation),
+		[initialLocation],
+	)
+
+	const autosave = useAutosaveFetcher<
+		LocationAutosaveValues,
+		LocationActionData
+	>({
+		values: autosaveValues,
+		lastSavedValues: initialAutosaveValues,
+		debounceMs: AUTOSAVE_DELAY_MS,
+		validate: validateAutosave,
+		getPayload: getAutosavePayload,
+		isSuccess: isAutosaveSuccess,
+		getSavedValues,
+	})
 
 	const clientErrors = validateLocationFieldErrors(marker)
 
 	const serverErrors: LocationFieldErrors =
-		fetcher.data?.ok === false ? fetcher.data.errors : {}
+		autosave.status === 'error' && autosave.fetcher.data?.ok === false
+			? autosave.fetcher.data.errors
+			: {}
 
 	const locationErrors = {
 		latitude: clientErrors.latitude ?? serverErrors.latitude,
 		longitude: clientErrors.longitude ?? serverErrors.longitude,
 	}
 
-
-	const saveLocation = React.useCallback(
-		(location: LocationData) => {
-			fetcher.submit(
-				{
-					latitude: String(location.latitude),
-					longitude: String(location.longitude),
-				},
-				{ method: 'post' },
-			)
-		},
-		[fetcher],
+	const hasClientErrors = Boolean(
+		clientErrors.latitude || clientErrors.longitude,
 	)
 
-	React.useEffect(() => {
-		if (!currentLocation) return
-		if (!hasUnsavedChanges) return
+	const lastSavedLocation = autosave.lastSavedRef.current
 
-		const timeout = window.setTimeout(() => {
-			saveLocation(currentLocation)
-		}, AUTOSAVE_DELAY_MS)
-
-		return () => window.clearTimeout(timeout)
-	}, [currentLocation, hasUnsavedChanges, saveLocation])
-
-	React.useEffect(() => {
-		if (fetcher.state !== 'idle') return
-		if (!fetcher.data) return
-
-		if (fetcher.data.ok) {
-			setLastSavedLocation(fetcher.data.location)
-			setHasSavedOnce(true)
-		}
-	}, [fetcher.state, fetcher.data])
+	const mapLocation = currentLocation ?? {
+		latitude: lastSavedLocation.latitude ?? initialLocation.latitude,
+		longitude: lastSavedLocation.longitude ?? initialLocation.longitude,
+	}
 
 	const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
 		setMarker({
@@ -228,8 +276,6 @@ export default function EditLocation() {
 		setMarker({ ...originalLocation })
 	}
 
-	const mapLocation = currentLocation ?? lastSavedLocation
-
 	return (
 		<div className="grid grid-rows-1">
 			<div className="flex min-h-full items-center justify-center">
@@ -239,18 +285,16 @@ export default function EditLocation() {
 							<div>
 								<h1 className="text-4xl">{t('exposure')}</h1>
 
-								<div className="mt-2 min-h-5 text-sm">
-									<div className="mt-2 min-h-5 text-sm">
-										{isSaving ? (
-											<p className="text-gray-500">{t('saving')}</p>
-										) : fetcher.data?.ok === false ? (
-											<p className="text-red-600">{t('autosave_failed')}</p>
-										) : hasUnsavedChanges ? (
-											<p className="text-gray-500">{t('unsaved_changes')}</p>
-										) : hasSavedOnce ? (
-											<p className="text-green-500">{t('saved')}</p>
-										) : null}
-									</div>
+								<div className="mt-2 min-h-5 text-sm" aria-live="polite">
+									{autosave.status === 'saving' ? (
+										<p className="text-gray-500">{t('saving')}</p>
+									) : autosave.status === 'error' ? (
+										<p className="text-red-600">{t('autosave_failed')}</p>
+									) : !hasClientErrors && autosave.status === 'dirty' ? (
+										<p className="text-gray-500">{t('unsaved_changes')}</p>
+									) : !hasClientErrors && autosave.status === 'saved' ? (
+										<p className="text-green-500">{t('saved')}</p>
+									) : null}
 								</div>
 							</div>
 						</div>
@@ -319,7 +363,10 @@ export default function EditLocation() {
 									/>
 
 									{locationErrors.latitude ? (
-										<p id="latitude-error" className="mt-1 text-sm text-red-600">
+										<p
+											id="latitude-error"
+											className="mt-1 text-sm text-red-600"
+										>
 											{locationErrors.latitude}
 										</p>
 									) : null}
@@ -355,7 +402,10 @@ export default function EditLocation() {
 									/>
 
 									{locationErrors.longitude ? (
-										<p id="longitude-error" className="mt-1 text-sm text-red-600">
+										<p
+											id="longitude-error"
+											className="mt-1 text-sm text-red-600"
+										>
 											{locationErrors.longitude}
 										</p>
 									) : null}
