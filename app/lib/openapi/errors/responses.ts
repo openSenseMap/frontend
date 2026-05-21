@@ -49,3 +49,6 @@ export const methodNotAllowedResponse = (
 	schema: ZodType,
 	description = 'Method not allowed.',
 ) => jsonErrorResponse(description, schema)
+
+export const goneResponse = (schema: ZodType, description = 'Gone.') =>
+	jsonErrorResponse(description, schema)

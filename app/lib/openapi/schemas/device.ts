@@ -38,7 +38,7 @@ export const ApiSensorSchema = z
 		}),
 		lastMeasurement: z
 			.object({
-				createdAt: z.string().datetime().optional().meta({
+				createdAt: z.iso.datetime().optional().meta({
 					example: '2023-01-01T00:00:00.000Z',
 				}),
 				value: z.union([z.string(), z.number()]).nullable().optional().meta({
@@ -51,6 +51,64 @@ export const ApiSensorSchema = z
 	.meta({
 		id: 'ApiSensor',
 		description: 'Sensor belonging to a box/device.',
+	})
+
+export const DeviceLocationInputSchema = z
+	.object({
+		lat: z.number().meta({
+			description: 'Latitude',
+			example: 51.9607,
+		}),
+		lng: z.number().meta({
+			description: 'Longitude',
+			example: 7.6261,
+		}),
+		height: z.number().optional().meta({
+			description: 'Optional height in meters',
+			example: 55,
+		}),
+	})
+	.meta({
+		id: 'DeviceLocationInput',
+		description: 'Device location update payload.',
+	})
+
+export const DeviceSensorUpdateSchema = z
+	.object({
+		id: z.string().optional().meta({
+			description: 'Existing sensor id. Omit when creating a new sensor.',
+			example: '60a13611a877b3001b8ffd59',
+		}),
+		new: z.boolean().optional().meta({
+			description: 'Whether this sensor should be created as new.',
+			example: true,
+		}),
+		title: z.string().optional().meta({
+			example: 'PM10',
+		}),
+		unit: z.string().optional().meta({
+			example: 'µg/m³',
+		}),
+		sensorType: z.string().optional().meta({
+			example: 'SDS 011',
+		}),
+	})
+	.meta({
+		id: 'DeviceSensorUpdate',
+		description: 'Sensor update or creation payload.',
+	})
+
+export const DeviceAddonsUpdateSchema = z
+	.object({
+		add: z.string().optional().meta({
+			description:
+				'Addon to add to the device. The special value `feinstaub` may update the model and add PM sensors for compatible home models.',
+			example: 'feinstaub',
+		}),
+	})
+	.meta({
+		id: 'DeviceAddonsUpdate',
+		description: 'Legacy addon update payload.',
 	})
 
 export const ApiDeviceSchema = z
@@ -114,15 +172,15 @@ export const ApiDeviceSchema = z
 			description: 'Device status',
 			example: 'inactive',
 		}),
-		createdAt: z.string().datetime().optional().meta({
+		createdAt: z.iso.datetime().optional().meta({
 			description: 'Device creation timestamp',
 			example: '2024-01-15T10:30:00.000Z',
 		}),
-		updatedAt: z.string().datetime().optional().meta({
+		updatedAt: z.iso.datetime().optional().meta({
 			description: 'Device last update timestamp',
 			example: '2024-01-15T10:30:00.000Z',
 		}),
-		expiresAt: z.string().datetime().nullable().optional().meta({
+		expiresAt: z.iso.datetime().nullable().optional().meta({
 			description: 'Device expiration date',
 			example: '2024-12-31T23:59:59.000Z',
 		}),
@@ -138,13 +196,13 @@ export const ApiDeviceSchema = z
 			.object({
 				type: z.literal('Point'),
 				coordinates: z.tuple([z.number(), z.number()]),
-				timestamp: z.string().datetime().optional(),
+				timestamp: z.iso.datetime().optional(),
 			})
 			.optional()
 			.meta({
 				description: 'Current location as GeoJSON Point-like object',
 			}),
-		lastMeasurementAt: z.string().datetime().nullable().optional().meta({
+		lastMeasurementAt: z.iso.datetime().nullable().optional().meta({
 			description: 'Last measurement timestamp',
 			example: '2023-01-01T00:00:00.000Z',
 		}),

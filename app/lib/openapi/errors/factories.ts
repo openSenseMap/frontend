@@ -57,3 +57,5 @@ export const createUnprocessableContentErrorSchema =
 
 export const createUnsupportedMediaTypeErrorSchema =
 	createStandardErrorSchemaFactory('Unsupported Media Type')
+
+export const createGoneErrorSchema = createStandardErrorSchemaFactory('Gone')

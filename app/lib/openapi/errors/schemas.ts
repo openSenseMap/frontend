@@ -32,6 +32,16 @@ export const UnprocessableContentErrorSchema = standardErrorResponseSchema(
 	id: 'UnprocessableContentError',
 })
 
+export const UnsupportedMediaTypeErrorSchema = standardErrorResponseSchema(
+	'Unsupported Media Type',
+	z.string().meta({
+		example: 'Unsupported content-type. Try application/json',
+	}),
+).meta({
+	id: 'UnsupportedMediaTypeError',
+	description: 'Generic unsupported media type response.',
+})
+
 export const ForbiddenErrorSchema = standardErrorResponseSchema(
 	'Forbidden',
 	z.string().meta({ example: 'Forbidden.' }),
@@ -61,4 +71,14 @@ export const MethodNotAllowedErrorSchema = standardErrorResponseSchema(
 	z.string().meta({ example: 'Method not allowed.' }),
 ).meta({
 	id: 'MethodNotAllowedError',
+})
+
+export const GoneErrorSchema = standardErrorResponseSchema(
+	'Gone',
+	z.string().meta({
+		example: 'The requested resource is no longer available.',
+	}),
+).meta({
+	id: 'GoneError',
+	description: 'Generic gone response.',
 })
