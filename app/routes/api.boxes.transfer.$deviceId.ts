@@ -6,6 +6,184 @@ import {
 	updateBoxTransferExpiration,
 } from '~/services/transfer-service.server'
 
+import * as z from 'zod/v4'
+import 'zod-openapi'
+
+import {
+	BoxTransferClaimSchema,
+	BoxTransferTokenSchema,
+} from '~/lib/openapi/schemas/claim'
+
+import {
+	ForbiddenErrorSchema,
+	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
+	NotFoundErrorSchema,
+	badRequestResponse,
+	createBadRequestErrorSchema,
+	forbiddenResponse,
+	internalServerErrorResponse,
+	methodNotAllowedResponse,
+	notFoundResponse,
+} from '~/lib/openapi/errors'
+import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
+import { ZodOpenApiPathItemObject } from 'zod-openapi'
+
+const UpdateBoxTransferRequestSchema = z
+	.object({
+		token: BoxTransferTokenSchema,
+
+		expiresAt: z.iso.datetime().meta({
+			description:
+				'New expiration date for the transfer token. Must be in the future.',
+			example: '2026-05-22T12:00:00.000Z',
+		}),
+	})
+	.meta({
+		id: 'UpdateBoxTransferRequest',
+		description:
+			'Payload for updating the expiration date of a transfer token.',
+	})
+
+const GetBoxTransferResponseSchema = z
+	.object({
+		code: z.literal('Ok').default('Ok'),
+		data: BoxTransferClaimSchema,
+	})
+	.meta({
+		id: 'GetBoxTransferResponse',
+		description: 'Transfer information for a senseBox.',
+	})
+
+const UpdateBoxTransferResponseSchema = z
+	.object({
+		code: z.literal('Ok').default('Ok'),
+		message: z
+			.literal('Transfer successfully updated')
+			.default('Transfer successfully updated'),
+		data: BoxTransferClaimSchema,
+	})
+	.meta({
+		id: 'UpdateBoxTransferResponse',
+		description: 'Updated transfer information for a senseBox.',
+	})
+
+const BoxTransferByDeviceBadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'BoxTransferByDeviceBadRequestError',
+	description:
+		'Bad request. This can happen when the device id, token, or expiration date is missing or invalid.',
+	examples: [
+		'Device ID is required',
+		'token is required',
+		'expiresAt is required',
+		'Invalid transfer token',
+		'Transfer token has expired',
+		'Invalid expiration date format',
+		'Expiration date must be in the future',
+	],
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	get: {
+		tags: ['Boxes'],
+		summary: 'Get transfer information for a senseBox',
+		description:
+			'Returns transfer information for a senseBox. Requires JWT authorization. Only the owner of the box can view its transfer information.',
+		operationId: 'getBoxTransfer',
+		security: [{ bearerAuth: [] }],
+
+		requestParams: {
+			path: DevicePathParamsSchema,
+		},
+
+		responses: {
+			200: {
+				description: 'Transfer information returned successfully.',
+				content: {
+					'application/json': {
+						schema: GetBoxTransferResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				BoxTransferByDeviceBadRequestErrorSchema,
+				'Bad request. The device ID path parameter is missing or invalid.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid JWT authorization or the authenticated user is not allowed to view this transfer.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Box or transfer not found.'),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+
+	put: {
+		tags: ['Boxes'],
+		summary: 'Update transfer expiration date',
+		description:
+			'Updates the expiration date of a transfer token. Requires JWT authorization. Only the owner of the box can update its transfer information. The request body can be sent as JSON or form data.',
+		operationId: 'updateBoxTransfer',
+		security: [{ bearerAuth: [] }],
+
+		requestParams: {
+			path: DevicePathParamsSchema,
+		},
+
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': {
+					schema: UpdateBoxTransferRequestSchema,
+				},
+				'application/x-www-form-urlencoded': {
+					schema: UpdateBoxTransferRequestSchema,
+				},
+			},
+		},
+
+		responses: {
+			200: {
+				description: 'Transfer expiration date updated successfully.',
+				content: {
+					'application/json': {
+						schema: UpdateBoxTransferResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				BoxTransferByDeviceBadRequestErrorSchema,
+				'Bad request. This can happen when the token or expiration date is missing or invalid.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid JWT authorization or the authenticated user is not allowed to update this transfer.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Box or transfer not found.'),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed. Only PUT is supported for updating transfer information.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
+
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
 	const jwtResponse = await getUserFromJwt(request)
 

@@ -3,15 +3,165 @@ import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import { claimBox } from '~/services/transfer-service.server'
 
+import * as z from 'zod/v4'
+import 'zod-openapi'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+
+import {
+	ForbiddenErrorSchema,
+	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
+	UnsupportedMediaTypeErrorSchema,
+	createBadRequestErrorSchema,
+	createGoneErrorSchema,
+	createNotFoundErrorSchema,
+} from '~/lib/openapi/errors'
+
+import {
+	badRequestResponse,
+	forbiddenResponse,
+	goneResponse,
+	internalServerErrorResponse,
+	methodNotAllowedResponse,
+	notFoundResponse,
+	unsupportedMediaTypeResponse,
+} from '~/lib/openapi/errors'
+
+const ClaimBoxRequestSchema = z
+	.object({
+		token: z
+			.string()
+			.trim()
+			.min(1, {
+				error: 'token is required',
+			})
+			.meta({
+				description: 'Transfer token used to claim the device.',
+				example: 'clm_01jv7c9x8n0example',
+			}),
+	})
+	.meta({
+		id: 'ClaimBoxRequest',
+		description: 'Payload for claiming a device marked for transfer.',
+	})
+
+const ClaimBoxResultSchema = z
+	.object({
+		boxId: z.string().meta({
+			description: 'ID of the claimed device.',
+			example: '5bdbe70f55d0ad001a04edc9',
+		}),
+	})
+	.meta({
+		id: 'ClaimBoxResult',
+		description: 'Result of a successful device claim.',
+	})
+
+const ClaimBoxResponseSchema = z
+	.object({
+		code: z.literal('Ok').default('Ok'),
+		message: z
+			.literal('Device successfully claimed!')
+			.default('Device successfully claimed!'),
+		data: ClaimBoxResultSchema,
+	})
+	.meta({
+		id: 'ClaimBoxResponse',
+		description: 'Device claim success response.',
+	})
+
+const ClaimBoxBadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'ClaimBoxBadRequestError',
+	description:
+		'Bad request. This can happen when the transfer token is missing, invalid, or belongs to a device the user already owns.',
+	examples: ['token is required', 'You already own this device'],
+})
+
+const ClaimBoxGoneErrorSchema = createGoneErrorSchema({
+	id: 'ClaimBoxGoneError',
+	description: 'Returned when the transfer token is invalid or expired.',
+	examples: ['Invalid or expired transfer token', 'Transfer token has expired'],
+})
+
+const ClaimBoxNotFoundErrorSchema = createNotFoundErrorSchema({
+	id: 'ClaimBoxNotFoundError',
+	description:
+		'Returned when the device referenced by the transfer claim no longer exists.',
+	messageSchema: z.literal('Device not found'),
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	post: {
+		tags: ['Boxes'],
+		summary: 'Claim a transferred device',
+		description:
+			'Claims a senseBox that has been marked for transfer. Requires a valid JWT bearer token and a valid transfer token in the JSON request body.',
+		operationId: 'claimBox',
+		security: [{ bearerAuth: [] }],
+
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': {
+					schema: ClaimBoxRequestSchema,
+				},
+			},
+		},
+
+		responses: {
+			200: {
+				description: 'Device successfully claimed.',
+				content: {
+					'application/json': {
+						schema: ClaimBoxResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				ClaimBoxBadRequestErrorSchema,
+				'Bad request. The transfer token is missing, invalid, or the user already owns the device.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid or missing JWT authorization.',
+			),
+
+			404: notFoundResponse(ClaimBoxNotFoundErrorSchema, 'Device not found.'),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed. Only POST is supported.',
+			),
+
+			410: goneResponse(
+				ClaimBoxGoneErrorSchema,
+				'The transfer token is invalid or expired.',
+			),
+
+			415: unsupportedMediaTypeResponse(
+				UnsupportedMediaTypeErrorSchema,
+				'Unsupported media type. Use application/json.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
+
 export const action = async ({ request }: Route.ActionArgs) => {
+	if (request.method !== 'POST')
+		return StandardResponse.methodNotAllowed('Only POST allowed')
+
 	const contentType = request.headers.get('content-type')
 	if (!contentType || !contentType.includes('application/json'))
 		return StandardResponse.unsupportedMediaType(
 			'Unsupported content-type. Try application/json',
 		)
-
-	if (request.method !== 'POST')
-		return StandardResponse.methodNotAllowed('Only POST allowed')
 
 	const jwtResponse = await getUserFromJwt(request)
 
@@ -28,7 +178,9 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
 		return StandardResponse.ok({
 			message: 'Device successfully claimed!',
-			data: result,
+			data: {
+				boxId: result.boxId,
+			},
 		})
 	} catch (err) {
 		console.error('Error claiming box:', err)

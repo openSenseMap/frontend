@@ -5,30 +5,20 @@ import { type Route } from './+types/api.boxes.$deviceId.locations'
 import { getLocations } from '~/db/models/device.server'
 import { parseDateParam, parseEnumParam } from '~/lib/params'
 import { StandardResponse } from '~/lib/responses'
+
+import {
+	createBadRequestErrorSchema,
+	InternalServerErrorSchema,
+	NotFoundErrorSchema,
+} from '~/lib/openapi/errors'
+
 import {
 	badRequestResponse,
 	internalServerErrorResponse,
 	notFoundResponse,
-} from '~/lib/openapi/responses/errors'
-import {
-	createBadRequestErrorSchema,
-	createInternalServerErrorSchema,
-	createNotFoundErrorSchema,
-} from '~/lib/openapi/schemas/errors'
-
-const messages = {
-	invalidDeviceId: 'Invalid device id specified',
-	deviceNotFound: 'Device not found',
-	internal:
-		'The server was unable to complete your request. Please try again later.',
-}
-
-const DeviceLocationsPathParamsSchema = z.object({
-	deviceId: z.string().min(1).meta({
-		description: 'The ID of the device you are referring to',
-		example: '60a13611a877b3001b8ffd59',
-	}),
-})
+} from '~/lib/openapi/errors'
+import { apiMessages } from '~/lib/openapi/messages'
+import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 
 const DeviceLocationsQueryParamsSchema = z.object({
 	'from-date': z.string().datetime().optional().meta({
@@ -132,23 +122,15 @@ const GeoJsonLineStringResponseSchema = z
 		},
 	})
 
-const BadRequestErrorSchema = createBadRequestErrorSchema({
+const DeviceLocationsBadRequestErrorSchema = createBadRequestErrorSchema({
 	id: 'DeviceLocationsBadRequestError',
 	description:
-		'Bad request. This can happen for an invalid device id, invalid date parameter, or invalid format parameter.',
-	examples: [messages.invalidDeviceId],
-})
-
-const NotFoundErrorSchema = createNotFoundErrorSchema({
-	id: 'DeviceLocationsNotFoundError',
-	description: 'Returned when the requested device does not exist.',
-	messageSchema: z.literal(messages.deviceNotFound),
-})
-
-const InternalServerErrorSchema = createInternalServerErrorSchema({
-	id: 'DeviceLocationsInternalServerError',
-	description: 'Returned when the server cannot complete the request.',
-	examples: [messages.internal],
+		'Bad request. This can happen for an invalid date parameter or invalid format parameter.',
+	examples: [
+		'Invalid from-date parameter.',
+		'Invalid to-date parameter.',
+		'Invalid format parameter.',
+	],
 })
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -160,7 +142,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		operationId: 'getDeviceLocations',
 
 		requestParams: {
-			path: DeviceLocationsPathParamsSchema,
+			path: DevicePathParamsSchema,
 			query: DeviceLocationsQueryParamsSchema,
 		},
 
@@ -178,7 +160,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				BadRequestErrorSchema,
+				DeviceLocationsBadRequestErrorSchema,
 				'Bad request. This can happen for an invalid device id, invalid date parameter, or invalid format parameter.',
 			),
 
@@ -205,7 +187,7 @@ export const loader = async ({
 		const locations = await getLocations({ id: deviceId }, fromDate, toDate)
 
 		if (!locations) {
-			return StandardResponse.notFound(messages.deviceNotFound)
+			return StandardResponse.notFound(apiMessages.deviceNotFound)
 		}
 
 		const jsonLocations = locations.map((location) => {
@@ -262,7 +244,7 @@ function collectParameters(
 	const deviceId = params.deviceId
 
 	if (deviceId === undefined) {
-		return StandardResponse.badRequest(messages.invalidDeviceId)
+		return StandardResponse.badRequest(apiMessages.deviceIdRequired)
 	}
 
 	const url = new URL(request.url)

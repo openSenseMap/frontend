@@ -7,6 +7,208 @@ import {
 	validateTransferParams,
 } from '~/services/transfer-service.server'
 
+import * as z from 'zod/v4'
+import 'zod-openapi'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+
+import {
+	ForbiddenErrorSchema,
+	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
+	NotFoundErrorSchema,
+	createBadRequestErrorSchema,
+} from '~/lib/openapi/errors'
+
+import {
+	badRequestResponse,
+	forbiddenResponse,
+	internalServerErrorResponse,
+	methodNotAllowedResponse,
+	notFoundResponse,
+} from '~/lib/openapi/errors'
+
+const TransferTokenSchema = z.string().min(1).meta({
+	description: 'Transfer token used to claim or revoke the device transfer.',
+	example: 'clm_01jv7c9x8n0example',
+})
+
+const CreateBoxTransferRequestSchema = z
+	.object({
+		boxId: z.string().min(1).meta({
+			description: 'ID of the senseBox to mark for transfer.',
+			example: '5bdbe70f55d0ad001a04edc9',
+		}),
+
+		expiresAt: z.iso.datetime().optional().meta({
+			description:
+				'Expiration date for the transfer token. If omitted, the default is 24 hours from now.',
+			example: '2026-05-22T12:00:00.000Z',
+		}),
+
+		date: z.iso.datetime().optional().meta({
+			description:
+				'Legacy alias for `expiresAt`. Kept for backwards compatibility.',
+			example: '2026-05-22T12:00:00.000Z',
+		}),
+	})
+	.meta({
+		id: 'CreateBoxTransferRequest',
+		description: 'Payload for marking a senseBox for transfer.',
+	})
+
+const RemoveBoxTransferRequestSchema = z
+	.object({
+		boxId: z.string().min(1).meta({
+			description: 'ID of the senseBox to remove from transfer.',
+			example: '5bdbe70f55d0ad001a04edc9',
+		}),
+
+		token: TransferTokenSchema,
+	})
+	.meta({
+		id: 'RemoveBoxTransferRequest',
+		description: 'Payload for revoking a senseBox transfer token.',
+	})
+
+const CreateBoxTransferResponseSchema = z
+	.object({
+		code: z.literal('Created').default('Created'),
+		message: z
+			.literal('Box successfully prepared for transfer')
+			.default('Box successfully prepared for transfer'),
+		data: TransferTokenSchema.meta({
+			description: 'Generated transfer token.',
+		}),
+	})
+	.meta({
+		id: 'CreateBoxTransferResponse',
+		description: 'Response returned after creating a transfer token.',
+	})
+
+const BoxTransferBadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'BoxTransferBadRequestError',
+	description:
+		'Bad request. This can happen when required parameters are missing, the expiration date has an invalid format, the expiration date is not in the future, or the transfer token is invalid or expired.',
+	examples: [
+		'boxId is required',
+		'token is required',
+		'Invalid date format',
+		'Expiration date must be in the future',
+		'Invalid or expired transfer token',
+	],
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	post: {
+		tags: ['Boxes'],
+		summary: 'Mark a senseBox for transfer',
+		description:
+			'Marks a senseBox for transfer to another user account and returns a transfer token. Requires JWT authorization. The request body can be sent as JSON or form data. `date` is supported as a legacy alias for `expiresAt`.',
+		operationId: 'createBoxTransfer',
+		security: [{ bearerAuth: [] }],
+
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': {
+					schema: CreateBoxTransferRequestSchema,
+				},
+				'application/x-www-form-urlencoded': {
+					schema: CreateBoxTransferRequestSchema,
+				},
+			},
+		},
+
+		responses: {
+			201: {
+				description: 'Box successfully prepared for transfer.',
+				content: {
+					'application/json': {
+						schema: CreateBoxTransferResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				BoxTransferBadRequestErrorSchema,
+				'Bad request. This can happen when required parameters are missing or invalid.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid JWT authorization or the authenticated user is not allowed to transfer this box.',
+			),
+
+			404: notFoundResponse(
+				NotFoundErrorSchema,
+				'Box or transfer record not found.',
+			),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed. Only POST and DELETE are supported.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+
+	delete: {
+		tags: ['Boxes'],
+		summary: 'Revoke a senseBox transfer token',
+		description:
+			'Revokes a transfer token and removes the senseBox from transfer. Requires JWT authorization. The request body can be sent as JSON or form data.',
+		operationId: 'removeBoxTransfer',
+		security: [{ bearerAuth: [] }],
+
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': {
+					schema: RemoveBoxTransferRequestSchema,
+				},
+				'application/x-www-form-urlencoded': {
+					schema: RemoveBoxTransferRequestSchema,
+				},
+			},
+		},
+
+		responses: {
+			204: {
+				description: 'Transfer token revoked successfully.',
+			},
+
+			400: badRequestResponse(
+				BoxTransferBadRequestErrorSchema,
+				'Bad request. This can happen when `boxId` or `token` is missing or invalid.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid JWT authorization or the authenticated user is not allowed to revoke this transfer.',
+			),
+
+			404: notFoundResponse(
+				NotFoundErrorSchema,
+				'Box or transfer record not found.',
+			),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed. Only POST and DELETE are supported.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
+
 export const action = async ({ request }: Route.ActionArgs) => {
 	const jwtResponse = await getUserFromJwt(request)
 

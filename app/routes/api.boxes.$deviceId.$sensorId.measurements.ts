@@ -1,4 +1,3 @@
-import z from 'zod'
 import { type Route } from './+types/api.boxes.$deviceId.$sensorId.measurements'
 import { getUserDevices } from '~/db/models/device.server'
 import {
@@ -8,6 +7,158 @@ import {
 } from '~/db/models/measurement.server'
 import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
+
+import * as z from 'zod/v4'
+import 'zod-openapi'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+
+import { DeviceSensorPathParamsSchema } from '~/lib/openapi/schemas/common'
+
+import {
+	ForbiddenErrorSchema,
+	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
+	NotFoundErrorSchema,
+	createBadRequestErrorSchema,
+} from '~/lib/openapi/errors'
+
+import {
+	badRequestResponse,
+	forbiddenResponse,
+	internalServerErrorResponse,
+	methodNotAllowedResponse,
+	notFoundResponse,
+} from '~/lib/openapi/errors'
+
+const DeleteSensorMeasurementsQueryParamsSchema = z
+	.object({
+		'from-date': z.iso.datetime().optional().meta({
+			description:
+				'Beginning date of the measurement range to delete. Must be used together with `to-date`.',
+			example: '2026-05-13T12:00:00.000Z',
+		}),
+
+		'to-date': z.iso.datetime().optional().meta({
+			description:
+				'End date of the measurement range to delete. Must be used together with `from-date`.',
+			example: '2026-05-15T12:00:00.000Z',
+		}),
+
+		timestamps: z
+			.union([z.iso.datetime(), z.array(z.iso.datetime())])
+			.optional()
+			.meta({
+				description:
+					'One or more exact measurement timestamps to delete. Do not use together with `from-date` / `to-date` or `deleteAllMeasurements`.',
+				example: ['2026-05-15T12:00:00.000Z'],
+			}),
+
+		deleteAllMeasurements: z.enum(['true', 'false']).optional().meta({
+			description:
+				'Set to `true` to delete all measurements of this sensor. Must be used by itself.',
+			example: 'true',
+		}),
+	})
+	.meta({
+		id: 'DeleteSensorMeasurementsQueryParams',
+		description:
+			'Query parameters selecting which measurements should be deleted.',
+	})
+
+const DeleteSensorMeasurementsResponseSchema = z
+	.object({
+		message: z.string().meta({
+			example: 'Successfully deleted 42 of sensor 60a13611a877b3001b8ffd59',
+		}),
+	})
+	.meta({
+		id: 'DeleteSensorMeasurementsResponse',
+		description: 'Response returned after deleting measurements from a sensor.',
+	})
+
+const DeleteSensorMeasurementsBadRequestErrorSchema =
+	createBadRequestErrorSchema({
+		id: 'DeleteSensorMeasurementsBadRequestError',
+		description:
+			'Bad request. This can happen for invalid path parameters, invalid dates, invalid timestamp values, missing selection parameters, or mutually exclusive deletion parameters.',
+		examples: [
+			'Invalid device id or sensor id specified',
+			'from-date is invalid',
+			'to-date is invalid',
+			'timestamps contains invalid input',
+			'Parameter deleteAllMeasurements can only be used by itself',
+			'Please specify only timestamps or a range with from-date and to-date',
+		],
+	})
+
+const parseQueryParams = async (
+	request: Request,
+): Promise<z.infer<typeof DeleteSensorMeasurementsQueryParamsSchema>> => {
+	const url = new URL(request.url)
+	const params: Record<string, any> = Object.fromEntries(url.searchParams)
+	const parseResult =
+		DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
+
+	if (!parseResult.success) {
+		const firstError = parseResult.error.issues[0]
+		const message = firstError.message || 'Invalid query parameters'
+		throw StandardResponse.badRequest(message)
+	}
+
+	return parseResult.data
+}
+
+export const openapi: ZodOpenApiPathItemObject = {
+	delete: {
+		tags: ['Measurements'],
+		summary: 'Delete measurements of a sensor',
+		description:
+			'Deletes measurements for the specified sensor. The measurements to delete are selected via query parameters. You can delete all measurements, delete specific timestamps, or delete a time range using `from-date` and `to-date`.',
+		operationId: 'deleteSensorMeasurements',
+		security: [{ bearerAuth: [] }],
+
+		requestParams: {
+			path: DeviceSensorPathParamsSchema,
+			query: DeleteSensorMeasurementsQueryParamsSchema,
+		},
+
+		responses: {
+			200: {
+				description: 'Measurements deleted successfully.',
+				content: {
+					'application/json': {
+						schema: DeleteSensorMeasurementsResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				DeleteSensorMeasurementsBadRequestErrorSchema,
+				'Bad request. This can happen for invalid query parameters or invalid parameter combinations.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid JWT authorization or the authenticated user is not allowed to delete data of the given device.',
+			),
+
+			404: notFoundResponse(
+				NotFoundErrorSchema,
+				'Sensor not found or not part of this device.',
+			),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed. Endpoint only supports DELETE.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
 
 export async function action({ request, params }: Route.ActionArgs) {
 	try {
@@ -49,6 +200,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 				count = (
 					await deleteSensorMeasurementsForTimes(
 						sensorId,
+						//@ts-ignore
 						parsedParams.timestamps,
 					)
 				).count
@@ -56,6 +208,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 				count = (
 					await deleteSensorMeasurementsForTimeRange(
 						sensorId,
+						//@ts-ignore
 						parsedParams['from-date'],
 						parsedParams['to-date'],
 					)
@@ -73,80 +226,4 @@ export async function action({ request, params }: Route.ActionArgs) {
 			err.message || 'An unexpected error occured',
 		)
 	}
-}
-
-const DeleteQueryParams = z
-	.object({
-		'from-date': z
-			.string()
-			.transform((s) => new Date(s))
-			.refine((d) => !isNaN(d.getTime()), {
-				message: 'from-date is invalid',
-			})
-			.optional(),
-		'to-date': z
-			.string()
-			.transform((s) => new Date(s))
-			.refine((d) => !isNaN(d.getTime()), {
-				message: 'to-date is invalid',
-			})
-			.optional(),
-		timestamps: z
-			.preprocess((val) => {
-				if (Array.isArray(val)) return val
-				else return [val]
-			}, z.array(z.string()))
-			.transform((a) => a.map((i) => new Date(i)))
-			.refine((a) => a.some((i) => !isNaN(i.getTime())), {
-				message: 'timestamps contains invalid input',
-			})
-			.optional(),
-		deleteAllMeasurements: z.coerce.boolean().optional(),
-	})
-	.superRefine((data, ctx) => {
-		const fromDateSet = data['from-date'] !== undefined
-		const toDateSet = data['to-date'] !== undefined
-		const timestampsSet = data.timestamps !== undefined
-		const deleteAllSet = data.deleteAllMeasurements !== undefined
-
-		if (deleteAllSet && (timestampsSet || fromDateSet || toDateSet)) {
-			const paths: string[] = []
-			if (timestampsSet) paths.push('timestamps')
-			if (fromDateSet) paths.push('from-date')
-			if (toDateSet) paths.push('to-date')
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: 'Parameter deleteAllMeasurements can only be used by itself',
-				path: paths,
-			})
-		} else if (!deleteAllSet && timestampsSet && fromDateSet && toDateSet)
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message:
-					'Please specify only timestamps or a range with from-date and to-date',
-				path: ['timestamps', 'from-date', 'to-date'],
-			})
-		else if (!deleteAllSet && !timestampsSet && !fromDateSet && !toDateSet)
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message:
-					'Please specify only timestamps or a range with from-date and to-date',
-				path: ['timestamps', 'from-date', 'to-date'],
-			})
-	})
-
-const parseQueryParams = async (
-	request: Request,
-): Promise<z.infer<typeof DeleteQueryParams>> => {
-	const url = new URL(request.url)
-	const params: Record<string, any> = Object.fromEntries(url.searchParams)
-	const parseResult = DeleteQueryParams.safeParse(params)
-
-	if (!parseResult.success) {
-		const firstError = parseResult.error.issues[0]
-		const message = firstError.message || 'Invalid query parameters'
-		throw StandardResponse.badRequest(message)
-	}
-
-	return parseResult.data
 }

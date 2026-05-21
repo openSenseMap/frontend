@@ -2,6 +2,208 @@ import SketchTemplater from '@sensebox/sketch-templater'
 import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/db/models/device.server'
 
+import * as z from 'zod/v4'
+import 'zod-openapi'
+import { ZodOpenApiPathItemObject } from 'zod-openapi'
+import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
+
+const SketchPortSchema = z.enum(['A', 'B', 'C'])
+
+const SketchOptionsSchema = z
+	.object({
+		serialPort: z.enum(['Serial1', 'Serial2']).optional().meta({
+			description: 'Serial port the SDS011 sensor is connected to.',
+			example: 'Serial1',
+		}),
+
+		soilDigitalPort: SketchPortSchema.optional().meta({
+			description: 'Digital port the SMT50 sensor is connected to.',
+			example: 'A',
+		}),
+
+		soundMeterPort: SketchPortSchema.optional().meta({
+			description: 'Digital port the sound level meter sensor is connected to.',
+			example: 'B',
+		}),
+
+		windSpeedPort: SketchPortSchema.optional().meta({
+			description: 'Digital port the wind speed sensor is connected to.',
+			example: 'C',
+		}),
+
+		ssid: z.string().optional().meta({
+			description: 'SSID of the Wi-Fi network.',
+			example: 'MyWiFi',
+		}),
+
+		password: z.string().optional().meta({
+			description: 'Password of the Wi-Fi network.',
+			example: 'super-secret-password',
+			format: 'password',
+		}),
+
+		devEUI: z.string().optional().meta({
+			description: 'devEUI of the TTN device.',
+			example: '70B3D57ED0000000',
+		}),
+
+		appEUI: z.string().optional().meta({
+			description: 'appEUI of the TTN application.',
+			example: '70B3D57ED0000000',
+		}),
+
+		appKey: z.string().optional().meta({
+			description: 'appKey of the TTN application.',
+			example: '00000000000000000000000000000000',
+		}),
+
+		display_enabled: z.enum(['true', 'false']).optional().meta({
+			description: 'Whether to include code for an attached OLED display.',
+			example: 'true',
+		}),
+	})
+	.meta({
+		id: 'SketchOptions',
+		description:
+			'Optional sketch generation parameters. For GET requests these are passed as query parameters; for POST requests they are passed as form fields.',
+	})
+
+const ArduinoSketchResponseSchema = z.string().meta({
+	id: 'ArduinoSketchResponse',
+	description: 'Generated Arduino sketch as plain text.',
+	example:
+		'// Generated Arduino sketch\n#include <Arduino.h>\n\nvoid setup() {}\nvoid loop() {}',
+})
+
+const ScriptRouteErrorSchema = z
+	.object({
+		code: z.string().meta({
+			example: 'Bad Request',
+		}),
+		message: z.string().meta({
+			example: 'Invalid device id specified',
+		}),
+	})
+	.meta({
+		id: 'ScriptRouteError',
+		description: 'Error response returned by the sketch generation endpoint.',
+	})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	get: {
+		tags: ['Boxes'],
+		summary: 'Download the Arduino script for a senseBox',
+		description:
+			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as query parameters.',
+		operationId: 'getDeviceArduinoScript',
+
+		requestParams: {
+			path: DevicePathParamsSchema,
+			query: SketchOptionsSchema,
+		},
+
+		responses: {
+			200: {
+				description: 'Arduino sketch generated successfully.',
+				content: {
+					'text/plain': {
+						schema: ArduinoSketchResponseSchema,
+					},
+				},
+			},
+
+			400: {
+				description: 'Bad request. The device ID is missing or invalid.',
+				content: {
+					'application/json': {
+						schema: ScriptRouteErrorSchema,
+					},
+				},
+			},
+
+			404: {
+				description: 'Device not found.',
+				content: {
+					'application/json': {
+						schema: ScriptRouteErrorSchema,
+					},
+				},
+			},
+
+			500: {
+				description: 'Internal server error.',
+				content: {
+					'application/json': {
+						schema: ScriptRouteErrorSchema,
+					},
+				},
+			},
+		},
+	},
+
+	post: {
+		tags: ['Boxes'],
+		summary: 'Generate the Arduino script for a senseBox from form data',
+		description:
+			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as form fields.',
+		operationId: 'postDeviceArduinoScript',
+
+		requestParams: {
+			path: DevicePathParamsSchema,
+		},
+
+		requestBody: {
+			required: false,
+			content: {
+				'application/x-www-form-urlencoded': {
+					schema: SketchOptionsSchema,
+				},
+				'multipart/form-data': {
+					schema: SketchOptionsSchema,
+				},
+			},
+		},
+
+		responses: {
+			200: {
+				description: 'Arduino sketch generated successfully.',
+				content: {
+					'text/plain': {
+						schema: ArduinoSketchResponseSchema,
+					},
+				},
+			},
+
+			400: {
+				description: 'Bad request. The device ID is missing or invalid.',
+				content: {
+					'application/json': {
+						schema: ScriptRouteErrorSchema,
+					},
+				},
+			},
+
+			404: {
+				description: 'Device not found.',
+				content: {
+					'application/json': {
+						schema: ScriptRouteErrorSchema,
+					},
+				},
+			},
+
+			500: {
+				description: 'Internal server error.',
+				content: {
+					'application/json': {
+						schema: ScriptRouteErrorSchema,
+					},
+				},
+			},
+		},
+	},
+}
+
 const cfg = {
 	// The domain used in the generation of Arduino sketches
 	ingress_domain: process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',

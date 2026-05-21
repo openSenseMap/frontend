@@ -11,36 +11,15 @@ import { parseDateParam, parseEnumParam } from '~/lib/params'
 import { StandardResponse } from '~/lib/responses'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
-
-const messages = {
-	invalidDeviceId: 'Invalid device id specified',
-	invalidSensorId: 'Invalid sensor id specified',
-	deviceNotFound: 'Device not found.',
-	internal:
-		'The server was unable to complete your request. Please try again later.',
-}
-
-const standardErrorResponseSchema = <Code extends string>(
-	code: Code,
-	messageSchema: z.ZodType<string> = z.string(),
-) =>
-	z.object({
-		code: z.literal(code),
-		message: messageSchema,
-		error: messageSchema,
-	})
-
-const SensorDataPathParamsSchema = z.object({
-	deviceId: z.string().min(1).meta({
-		description:
-			'The ID of the device you are referring to. This parameter is kept for legacy route compatibility.',
-		example: '5bdbe70f55d0ad001a04edc9',
-	}),
-	sensorId: z.string().min(1).meta({
-		description: 'The ID of the sensor you are referring to',
-		example: '6649b23072c4c40007105953',
-	}),
-})
+import {
+	badRequestResponse,
+	createBadRequestErrorSchema,
+	internalServerErrorResponse,
+	InternalServerErrorSchema,
+	NotFoundErrorSchema,
+	notFoundResponse,
+} from '~/lib/openapi/errors'
+import { DeviceSensorPathParamsSchema } from '~/lib/openapi/schemas/common'
 
 const SensorDataQueryParamsSchema = z.object({
 	outliers: z.enum(['replace', 'mark']).optional().meta({
@@ -48,34 +27,41 @@ const SensorDataQueryParamsSchema = z.object({
 			'Enables outlier calculation. `mark` adds `isOutlier` to each measurement. `replace` replaces outlier values according to the outlier transformation.',
 		example: 'mark',
 	}),
+
 	'outlier-window': z.coerce.number().int().min(1).max(50).default(15).meta({
 		description:
-			'Size of moving window used as base to calculate the outliers.',
+			'Size of the moving window used as base to calculate outliers. Allowed values are numbers between 1 and 50.',
 		example: 15,
 	}),
-	'from-date': z.string().datetime().optional().meta({
+
+	'from-date': z.iso.datetime().optional().meta({
 		description:
 			'Beginning date of measurement data. Defaults to 48 hours ago from now.',
 		example: '2026-05-13T12:00:00.000Z',
 	}),
-	'to-date': z.string().datetime().optional().meta({
+
+	'to-date': z.iso.datetime().optional().meta({
 		description: 'End date of measurement data. Defaults to now.',
 		example: '2026-05-15T12:00:00.000Z',
 	}),
+
 	format: z.enum(['json', 'csv']).default('json').meta({
 		description: "Response format. Can be 'json' or 'csv'. Defaults to 'json'.",
 		example: 'json',
 	}),
+
 	download: z.enum(['true', 'false']).optional().meta({
 		description:
 			'If set to `true`, the API sets a `Content-Disposition` header so browsers download the response instead of displaying it.',
 		example: 'true',
 	}),
+
 	delimiter: z.enum(['comma', 'semicolon']).default('comma').meta({
 		description:
 			'Only for CSV responses. Controls the CSV delimiter. Possible values are `comma` and `semicolon`. Defaults to `comma`. Do not use together with `separator`.',
 		example: 'comma',
 	}),
+
 	separator: z.enum(['comma', 'semicolon']).optional().meta({
 		description:
 			'Alias for `delimiter`. Only for CSV responses. Do not use together with `delimiter`.',
@@ -89,19 +75,23 @@ const SensorMeasurementSchema = z
 			description: 'ID of the sensor this measurement belongs to',
 			example: '6649b23072c4c40007105953',
 		}),
-		time: z.string().datetime().meta({
+
+		time: z.iso.datetime().meta({
 			description: 'Measurement timestamp',
 			example: '2025-11-06T23:59:57.189Z',
 		}),
+
 		value: z.number().nullable().meta({
 			description: 'Measured value',
 			example: 4.78,
 		}),
+
 		locationId: z.union([z.string(), z.number()]).nullable().meta({
 			description:
 				'ID of the location associated with this measurement. Depending on serialization this may be returned as a string or number.',
 			example: '5752066',
 		}),
+
 		isOutlier: z.boolean().optional().meta({
 			description:
 				'Only present when outlier calculation is enabled via the `outliers` query parameter.',
@@ -138,31 +128,22 @@ const SensorMeasurementsJsonResponseSchema = z
 const SensorMeasurementsCsvResponseSchema = z.string().meta({
 	id: 'SensorMeasurementsCsvResponse',
 	description:
-		'CSV response with one measurement per row. The delimiter is controlled by the `delimiter` query parameter.',
+		'CSV response with one measurement per row. The delimiter is controlled by the `delimiter` or `separator` query parameter.',
 	example:
-		'createdAt,value\n2023-09-29T08:06:13.254Z,6.38\n2023-09-29T08:06:12.312Z,6.38\n2023-09-29T08:06:11.513Z,6.38',
+		'createdAt,value\n2023-09-29T08:06:13.254Z,6.38\n2023-09-29T08:06:12.312Z,6.38',
 })
 
-const BadRequestErrorSchema = standardErrorResponseSchema(
-	'Bad Request',
-	z.string().meta({
-		examples: [
-			messages.invalidDeviceId,
-			messages.invalidSensorId,
-			'Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50',
-		],
-	}),
-).meta({ id: 'BadRequestError' })
-
-const NotFoundErrorSchema = standardErrorResponseSchema(
-	'Not Found',
-	z.literal(messages.deviceNotFound),
-).meta({ id: 'NotFoundError' })
-
-const InternalServerErrorSchema = standardErrorResponseSchema(
-	'Internal Server Error',
-	z.literal(messages.internal),
-).meta({ id: 'InternalServerError' })
+const SensorMeasurementsBadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'SensorMeasurementsBadRequestError',
+	description:
+		'Bad request. This can happen for invalid dates, invalid enum parameters, or an invalid outlier window.',
+	examples: [
+		'Invalid from-date parameter.',
+		'Invalid to-date parameter.',
+		'Invalid format parameter.',
+		'Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50',
+	],
+})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
@@ -173,13 +154,13 @@ export const openapi: ZodOpenApiPathItemObject = {
 		operationId: 'getSensorMeasurements',
 
 		requestParams: {
-			path: SensorDataPathParamsSchema,
+			path: DeviceSensorPathParamsSchema,
 			query: SensorDataQueryParamsSchema,
 		},
 
 		responses: {
 			200: {
-				description: 'Success',
+				description: 'Measurements returned successfully.',
 				headers: {
 					'Content-Disposition': {
 						description:
@@ -199,31 +180,18 @@ export const openapi: ZodOpenApiPathItemObject = {
 					},
 				},
 			},
-			400: {
-				description:
-					'Bad request. This can happen for invalid path parameters, invalid dates, invalid enum parameters, or an invalid outlier window.',
-				content: {
-					'application/json': {
-						schema: BadRequestErrorSchema,
-					},
-				},
-			},
-			404: {
-				description: 'Device or sensor not found',
-				content: {
-					'application/json': {
-						schema: NotFoundErrorSchema,
-					},
-				},
-			},
-			500: {
-				description: 'Internal server error',
-				content: {
-					'application/json': {
-						schema: InternalServerErrorSchema,
-					},
-				},
-			},
+
+			400: badRequestResponse(
+				SensorMeasurementsBadRequestErrorSchema,
+				'Bad request. This can happen for invalid dates, invalid enum parameters, or an invalid outlier window.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Device or sensor not found.'),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 }

@@ -12,94 +12,32 @@ import { StandardResponse } from '~/lib/responses'
 import { deleteDevice } from '~/services/device-service.server'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+import {
+	BadRequestErrorSchema,
+	badRequestResponse,
+	createBadRequestErrorSchema,
+	ForbiddenErrorSchema,
+	forbiddenResponse,
+	internalServerErrorResponse,
+	InternalServerErrorSchema,
+	NotFoundErrorSchema,
+	notFoundResponse,
+	UnauthorizedErrorSchema,
+	unauthorizedResponse,
+} from '~/lib/openapi/errors'
+import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
+import { apiMessages } from '~/lib/openapi/messages'
+import {
+	DeviceLocationInputSchema,
+	DeviceSensorUpdateSchema,
+	DeviceAddonsUpdateSchema,
+	ApiDeviceSchema,
+} from '~/lib/openapi/schemas/device'
 
 const messages = {
-	deviceIdRequired: 'Device ID is required.',
-	deviceNotFound: 'Device not found.',
-	invalidJwt: 'Invalid JWT authorization. Please sign in to obtain a new JWT.',
-	passwordRequired: 'Password is required for device deletion',
-	passwordIncorrect: 'Password incorrect',
 	conflictingSensorsAndAddons:
 		'sensors and addons can not appear in the same request.',
-	internalFetching: 'Internal server error while fetching box',
-	internalDefault:
-		'The server was unable to complete your request. Please try again later.',
 }
-
-const standardErrorResponseSchema = <Code extends string>(
-	code: Code,
-	messageSchema: z.ZodType<string> = z.string(),
-) =>
-	z.object({
-		code: z.literal(code),
-		message: messageSchema,
-		error: messageSchema,
-	})
-
-const DevicePathParamsSchema = z.object({
-	deviceId: z.string().min(1).meta({
-		description: 'Unique identifier of the device',
-		example: '5bdbe70f55d0ad001a04edc9',
-	}),
-})
-
-const LocationInputSchema = z
-	.object({
-		lat: z.number().meta({
-			description: 'Latitude',
-			example: 51.9607,
-		}),
-		lng: z.number().meta({
-			description: 'Longitude',
-			example: 7.6261,
-		}),
-		height: z.number().optional().meta({
-			description: 'Optional height in meters',
-			example: 55,
-		}),
-	})
-	.meta({
-		id: 'DeviceLocationInput',
-		description: 'Device location update payload.',
-	})
-
-const SensorUpdateSchema = z
-	.looseObject({
-		id: z.string().optional().meta({
-			description: 'Existing sensor id. Omit when creating a new sensor.',
-			example: '60a13611a877b3001b8ffd59',
-		}),
-		new: z.boolean().optional().meta({
-			description: 'Whether this sensor should be created as new.',
-			example: true,
-		}),
-		title: z.string().optional().meta({
-			example: 'PM10',
-		}),
-		unit: z.string().optional().meta({
-			example: 'µg/m³',
-		}),
-		sensorType: z.string().optional().meta({
-			example: 'SDS 011',
-		}),
-	})
-	.meta({
-		id: 'SensorUpdate',
-		description: 'Sensor update or creation payload.',
-	})
-
-const DeviceAddonsSchema = z
-	.object({
-		add: z.string().optional().meta({
-			description:
-				'Addon to add to the device. The special value `feinstaub` may update the model and add PM sensors for compatible home models.',
-			example: 'feinstaub',
-		}),
-	})
-	.meta({
-		id: 'DeviceAddonsUpdate',
-		description: 'Legacy addon update payload.',
-	})
 
 const UpdateDeviceRequestSchema = z
 	.object({
@@ -107,37 +45,46 @@ const UpdateDeviceRequestSchema = z
 			description: 'Device name',
 			example: 'My senseBox',
 		}),
+
 		exposure: z.string().optional().meta({
 			description: 'Device exposure',
 			example: 'outdoor',
 		}),
+
 		description: z.string().optional().meta({
 			description: 'Device description',
 			example: 'Sensor box on my balcony',
 		}),
+
 		image: z.string().optional().meta({
 			description: 'Device image URL or image value',
 			example: 'https://example.com/image.jpg',
 		}),
+
 		deleteImage: z.boolean().optional().meta({
 			description:
 				'If true, the device image is removed by setting `image` to an empty string.',
 			example: true,
 		}),
+
 		model: z.string().optional().meta({
 			description: 'Device model',
 			example: 'homeWifi',
 		}),
+
 		useAuth: z.boolean().optional().meta({
 			description: 'Whether device API-key authentication is enabled',
 			example: true,
 		}),
+
 		weblink: z.string().optional().meta({
 			description:
 				'Web link for the device. This is mapped to `link` internally.',
 			example: 'https://example.com',
 		}),
-		location: LocationInputSchema.optional(),
+
+		location: DeviceLocationInputSchema.optional(),
+
 		grouptag: z
 			.array(z.string())
 			.optional()
@@ -145,11 +92,13 @@ const UpdateDeviceRequestSchema = z
 				description: 'Group tags assigned to the device',
 				example: ['school', 'feinstaub'],
 			}),
-		sensors: z.array(SensorUpdateSchema).optional().meta({
+
+		sensors: z.array(DeviceSensorUpdateSchema).optional().meta({
 			description:
 				'Sensors to update or create. Must not be used together with `addons.add`.',
 		}),
-		addons: DeviceAddonsSchema.optional(),
+
+		addons: DeviceAddonsUpdateSchema.optional(),
 	})
 	.superRefine((body, ctx) => {
 		if (body.sensors && body.addons?.add) {
@@ -167,158 +116,32 @@ const UpdateDeviceRequestSchema = z
 
 const DeleteDeviceRequestSchema = z
 	.object({
-		password: z.string().min(1, messages.passwordRequired).meta({
-			description: 'Current user password required to delete the device',
-			example: 'myCurrentPassword123',
-			format: 'password',
-		}),
+		password: z
+			.string()
+			.min(1, {
+				error: apiMessages.passwordRequired,
+			})
+			.meta({
+				description: 'Current user password required to delete the device',
+				example: 'myCurrentPassword123',
+				format: 'password',
+			}),
 	})
 	.meta({
 		id: 'DeleteDeviceRequest',
 		description: 'Device deletion confirmation payload.',
 	})
 
-const DeviceSchema = z
-	.looseObject({
-		id: z.string().meta({
-			description: 'Device id',
-			example: '5bdbe70f55d0ad001a04edc9',
-		}),
-		name: z.string().optional().meta({
-			description: 'Device name',
-			example: 'My senseBox',
-		}),
-		exposure: z.string().optional().meta({
-			description: 'Device exposure',
-			example: 'outdoor',
-		}),
-		description: z.string().nullable().optional().meta({
-			description: 'Device description',
-			example: 'Sensor box on my balcony',
-		}),
-		model: z.string().nullable().optional().meta({
-			description: 'Device model',
-			example: 'homeWifi',
-		}),
-		useAuth: z.boolean().optional().meta({
-			description: 'Whether device API-key authentication is enabled',
-			example: true,
-		}),
-		sensors: z.array(z.looseObject({})).optional().meta({
-			description: 'Sensors belonging to this device',
-		}),
-		createdAt: z.string().datetime().optional().meta({
-			description: 'Device creation timestamp',
-			example: '2026-05-15T12:00:00.000Z',
-		}),
-		updatedAt: z.string().datetime().optional().meta({
-			description: 'Device update timestamp',
-			example: '2026-05-15T12:00:00.000Z',
-		}),
-	})
-	.meta({
-		id: 'Device',
-		description:
-			'Device object. Additional fields may be included depending on the database model.',
-	})
-
-const ApiDeviceSchema = DeviceSchema.meta({
-	id: 'ApiDevice',
+const DeviceBadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'DeviceBadRequestError',
 	description:
-		'Device object transformed to API format. Additional fields may be included depending on `transformDeviceToApiFormat`.',
+		'Bad request. This can happen when the device id is missing, the deletion password is missing, or the update payload contains conflicting fields.',
+	examples: [
+		apiMessages.deviceIdRequired,
+		apiMessages.passwordRequired,
+		messages.conflictingSensorsAndAddons,
+	],
 })
-
-const BadRequestErrorSchema = z
-	.union([
-		standardErrorResponseSchema(
-			'Bad Request',
-			z.union([
-				z.literal(messages.deviceIdRequired),
-				z.literal(messages.passwordRequired),
-			]),
-		),
-		z.object({
-			error: z.literal(messages.deviceIdRequired),
-		}),
-		z.object({
-			code: z.literal('BadRequest'),
-			message: z.string().meta({
-				example: messages.conflictingSensorsAndAddons,
-			}),
-		}),
-	])
-	.meta({
-		id: 'DeviceBadRequestError',
-		description:
-			'Bad request response. This route currently returns a few different bad-request shapes.',
-	})
-
-const ForbiddenErrorSchema = z
-	.object({
-		code: z.literal('Forbidden'),
-		message: z.literal(messages.invalidJwt),
-	})
-	.meta({
-		id: 'DeviceForbiddenError',
-		description:
-			'Returned when the JWT authorization is invalid or missing for authenticated methods.',
-	})
-
-const UnauthorizedErrorSchema = standardErrorResponseSchema(
-	'Unauthorized',
-	z.literal(messages.passwordIncorrect),
-).meta({
-	id: 'DeviceUnauthorizedError',
-})
-
-const NotFoundErrorSchema = z
-	.union([
-		standardErrorResponseSchema(
-			'Not Found',
-			z.literal(messages.deviceNotFound),
-		),
-		z.object({
-			code: z.literal('NotFound'),
-			message: z.literal('Device not found'),
-		}),
-	])
-	.meta({
-		id: 'DeviceNotFoundError',
-		description:
-			'Device not found response. GET/DELETE and PUT currently use slightly different shapes.',
-	})
-
-const MethodNotAllowedErrorSchema = z
-	.object({
-		message: z.literal('Method Not Allowed'),
-	})
-	.meta({
-		id: 'MethodNotAllowedError',
-	})
-
-const InternalServerErrorSchema = z
-	.union([
-		standardErrorResponseSchema(
-			'Internal Server Error',
-			z.string().meta({
-				example: messages.internalDefault,
-			}),
-		),
-		z.object({
-			error: z.literal(messages.internalFetching),
-		}),
-		z.object({
-			code: z.literal('InternalServerError'),
-			message: z.string().meta({
-				example: 'Failed to update device',
-			}),
-		}),
-	])
-	.meta({
-		id: 'DeviceInternalServerError',
-		description:
-			'Internal server error response. This route currently returns different error shapes depending on the failing method.',
-	})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
@@ -333,37 +156,25 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			200: {
-				description: 'Device retrieved successfully',
+				description: 'Device retrieved successfully.',
 				content: {
 					'application/json': {
-						schema: DeviceSchema,
+						schema: ApiDeviceSchema,
 					},
 				},
 			},
-			400: {
-				description: 'Device ID is required',
-				content: {
-					'application/json': {
-						schema: BadRequestErrorSchema,
-					},
-				},
-			},
-			404: {
-				description: 'Device not found',
-				content: {
-					'application/json': {
-						schema: NotFoundErrorSchema,
-					},
-				},
-			},
-			500: {
-				description: 'Internal server error',
-				content: {
-					'application/json': {
-						schema: InternalServerErrorSchema,
-					},
-				},
-			},
+
+			400: badRequestResponse(
+				BadRequestErrorSchema,
+				'Bad request. The device ID path parameter is missing or malformed.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 
@@ -390,46 +201,30 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			200: {
-				description: 'Device updated successfully',
+				description: 'Device updated successfully.',
 				content: {
 					'application/json': {
 						schema: ApiDeviceSchema,
 					},
 				},
 			},
-			400: {
-				description:
-					'Bad request. This can happen for conflicting parameters or validation errors.',
-				content: {
-					'application/json': {
-						schema: BadRequestErrorSchema,
-					},
-				},
-			},
-			403: {
-				description: 'Invalid or missing JWT authorization',
-				content: {
-					'application/json': {
-						schema: ForbiddenErrorSchema,
-					},
-				},
-			},
-			404: {
-				description: 'Device not found',
-				content: {
-					'application/json': {
-						schema: NotFoundErrorSchema,
-					},
-				},
-			},
-			500: {
-				description: 'Internal server error',
-				content: {
-					'application/json': {
-						schema: InternalServerErrorSchema,
-					},
-				},
-			},
+
+			400: badRequestResponse(
+				DeviceBadRequestErrorSchema,
+				'Bad request. This can happen for conflicting parameters or validation errors.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid or missing JWT authorization.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 
@@ -456,7 +251,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			200: {
-				description: 'Device deleted successfully',
+				description: 'Device deleted successfully.',
 				content: {
 					'application/json': {
 						schema: z.null().meta({
@@ -465,46 +260,28 @@ export const openapi: ZodOpenApiPathItemObject = {
 					},
 				},
 			},
-			400: {
-				description: 'Bad request - missing device id or password',
-				content: {
-					'application/json': {
-						schema: BadRequestErrorSchema,
-					},
-				},
-			},
-			401: {
-				description: 'Unauthorized - incorrect password',
-				content: {
-					'application/json': {
-						schema: UnauthorizedErrorSchema,
-					},
-				},
-			},
-			403: {
-				description: 'Invalid or missing JWT authorization',
-				content: {
-					'application/json': {
-						schema: ForbiddenErrorSchema,
-					},
-				},
-			},
-			404: {
-				description: 'Device not found',
-				content: {
-					'application/json': {
-						schema: NotFoundErrorSchema,
-					},
-				},
-			},
-			500: {
-				description: 'Internal server error',
-				content: {
-					'application/json': {
-						schema: InternalServerErrorSchema,
-					},
-				},
-			},
+
+			400: badRequestResponse(
+				DeviceBadRequestErrorSchema,
+				'Bad request. This can happen when the password is missing.',
+			),
+
+			401: unauthorizedResponse(
+				UnauthorizedErrorSchema,
+				'Unauthorized. The provided password is incorrect.',
+			),
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid or missing JWT authorization.',
+			),
+
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 }

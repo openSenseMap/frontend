@@ -4,6 +4,201 @@ import { parseUserRegistrationData } from '~/lib/request-parsing'
 import { StandardResponse } from '~/lib/responses'
 import { registerUser } from '~/services/user-service.server'
 
+import * as z from 'zod/v4'
+import 'zod-openapi'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+
+import { UserSchema, UserLanguageSchema } from '~/lib/openapi/schemas/user'
+
+import {
+	BadRequestErrorSchema,
+	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
+} from '~/lib/openapi/errors'
+
+import {
+	badRequestResponse,
+	internalServerErrorResponse,
+	methodNotAllowedResponse,
+} from '~/lib/openapi/errors'
+
+const RegistrationNameSchema = z
+	.string()
+	.trim()
+	.min(3)
+	.max(40)
+	.regex(/^[a-zA-Z0-9](?:[a-zA-Z0-9._ -]*[a-zA-Z0-9])?$/)
+	.meta({
+		description:
+			'Full name or nickname of the user. Must be 3 to 40 characters long. Allows letters, numbers, dots, dashes, underscores, and spaces. The first and last character must be a letter or number.',
+		example: 'Jane Doe',
+	})
+
+const RegisterUserRequestSchema = z
+	.object({
+		name: RegistrationNameSchema,
+
+		email: z.string().trim().pipe(z.email()).meta({
+			description: 'Email address used for signing in and user-related emails.',
+			example: 'jane@example.com',
+		}),
+
+		password: z.string().min(8).meta({
+			description: 'Desired password. Must be at least 8 characters long.',
+			example: 'correct-horse-battery-staple',
+			format: 'password',
+		}),
+
+		language: UserLanguageSchema.default('en_US').optional().meta({
+			description:
+				'Preferred user language. Used for the website and emails. Defaults to `en_US`.',
+			example: 'en_US',
+		}),
+	})
+	.meta({
+		id: 'RegisterUserRequest',
+		description: 'Payload for registering a new user.',
+	})
+
+const RegisterUserResponseSchema = z
+	.object({
+		code: z.literal('Created').default('Created'),
+
+		message: z
+			.literal('Successfully registered new user')
+			.default('Successfully registered new user'),
+
+		token: z.jwt({ alg: 'HS256' }).meta({
+			description: 'JWT access token',
+			example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+		}),
+
+		refreshToken: z.string().meta({
+			description: 'Refresh token',
+			example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+		}),
+
+		data: z.object({
+			user: UserSchema,
+		}),
+	})
+	.meta({
+		id: 'RegisterUserResponse',
+		description: 'Successfully registered user response.',
+	})
+
+const RegisterUserBadRequestErrorSchema = BadRequestErrorSchema.meta({
+	id: 'RegisterUserBadRequestError',
+	description:
+		'Bad request. This can happen when the request body cannot be parsed or the submitted registration data is invalid.',
+	examples: [
+		{
+			code: 'Bad Request',
+			message: 'Username is required.',
+			error: 'Username is required.',
+		},
+		{
+			code: 'Bad Request',
+			message:
+				'Username must be at least 3 characters long and not more than 40.',
+			error:
+				'Username must be at least 3 characters long and not more than 40.',
+		},
+		{
+			code: 'Bad Request',
+			message:
+				'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.',
+			error:
+				'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.',
+		},
+		{
+			code: 'Bad Request',
+			message: 'Username is already taken.',
+			error: 'Username is already taken.',
+		},
+		{
+			code: 'Bad Request',
+			message: 'Email is required.',
+			error: 'Email is required.',
+		},
+		{
+			code: 'Bad Request',
+			message: 'Invalid email format.',
+			error: 'Invalid email format.',
+		},
+		{
+			code: 'Bad Request',
+			message: 'User already exists.',
+			error: 'User already exists.',
+		},
+		{
+			code: 'Bad Request',
+			message: 'Password is required.',
+			error: 'Password is required.',
+		},
+		{
+			code: 'Bad Request',
+			message: 'Password must be at least 8 characters long.',
+			error: 'Password must be at least 8 characters long.',
+		},
+		{
+			code: 'Bad Request',
+			message:
+				'Invalid request format: Failed to parse request body as JSON or form data',
+			error:
+				'Invalid request format: Failed to parse request body as JSON or form data',
+		},
+	],
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	post: {
+		tags: ['Authentication'],
+		summary: 'Register a new user',
+		description:
+			'Registers a new openSenseMap user and returns an access token and refresh token. The user can sign in with the registered email address.',
+		operationId: 'registerUser',
+
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': {
+					schema: RegisterUserRequestSchema,
+				},
+				'application/x-www-form-urlencoded': {
+					schema: RegisterUserRequestSchema,
+				},
+			},
+		},
+
+		responses: {
+			201: {
+				description: 'User registered successfully.',
+				content: {
+					'application/json': {
+						schema: RegisterUserResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				RegisterUserBadRequestErrorSchema,
+				'Bad request. This can happen when the request body cannot be parsed or the submitted registration data is invalid.',
+			),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
+
 function mapRegistrationError(code: string): string {
 	switch (code) {
 		case 'username_required':
