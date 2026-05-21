@@ -1,6 +1,6 @@
 import { type BoxesDataColumn } from '../lib/api-schemas/boxes-data-query-schema'
 import { validLngLat } from '../lib/location'
-import { assertDeviceIsWritable } from './devices-service.server'
+import { assertDeviceIsWritable } from './device-service.server'
 import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,

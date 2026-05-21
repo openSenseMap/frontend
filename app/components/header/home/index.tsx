@@ -29,16 +29,7 @@ export default function Home({
 					aria-label={t('returnToGlobeView')}
 					className={cn(
 						topbarSurface({ shape: 'pill' }),
-						`
-						pointer-events-auto
-						flex items-center gap-3
-						px-3 pr-4
-						cursor-pointer
-						focus-visible:ring-2
-						focus-visible:ring-slate-950
-						focus-visible:ring-offset-2
-						focus-visible:outline-hidden
-						`,
+						`pointer-events-auto flex cursor-pointer items-center gap-3 px-3 pr-4 focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 focus-visible:outline-hidden`,
 					)}
 				>
 					<img

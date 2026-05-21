@@ -31,7 +31,7 @@ export const sensor = pgTable('sensor', {
 		.primaryKey()
 		.notNull()
 		.$defaultFn(() => generateHexId()), // store as hex strings to maintain compatibility with the byte protocol
-	title: text('title'),
+	title: text('title').notNull(),
 	unit: text('unit'),
 	sensorType: text('sensor_type'),
 	icon: text('icon'),

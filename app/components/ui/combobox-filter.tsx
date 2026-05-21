@@ -9,44 +9,52 @@ import {
 	CommandItem,
 	CommandList,
 } from '~/components/ui/command'
+import { Label } from '~/components/ui/label'
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from '~/components/ui/popover'
-import { Label } from '~/components/ui/label'
 import { cn } from '~/lib/utils'
 import { useTranslation } from 'react-i18next'
 
-interface FilterTagsProps {
-	tags: string[]
-	availableTags: string[] | undefined
-	onTagsChange: (tags: string[]) => void
+interface MultiSelectComboboxFilterProps {
+	label: string
+	values: string[]
+	options: string[]
+	placeholder: string
+	searchPlaceholder: string
+	emptyText: string
+	onChange: (values: string[]) => void
 }
 
-export default function FilterTags({
-	tags,
-	availableTags,
-	onTagsChange,
-}: FilterTagsProps) {
+export default function MultiSelectComboboxFilter({
+	label,
+	values,
+	options,
+	placeholder,
+	searchPlaceholder,
+	emptyText,
+	onChange,
+}: MultiSelectComboboxFilterProps) {
 	const { t } = useTranslation('filter')
-	const toggleTag = (tag: string) => {
-		if (tags.includes(tag)) {
-			onTagsChange(tags.filter((currentTag) => currentTag !== tag))
+	const toggleValue = (value: string) => {
+		if (values.includes(value)) {
+			onChange(values.filter((current) => current !== value))
 			return
 		}
 
-		onTagsChange([...tags, tag])
+		onChange([...values, value])
 	}
 
-	const removeTag = (tag: string) => {
-		onTagsChange(tags.filter((currentTag) => currentTag !== tag))
+	const removeValue = (value: string) => {
+		onChange(values.filter((current) => current !== value))
 	}
 
 	return (
 		<div className="grid gap-1.5 md:grid-cols-[5.5rem_1fr] md:items-start">
 			<Label className="pt-2 text-sm text-gray-600 dark:text-zinc-400">
-				Tags
+				{label}
 			</Label>
 
 			<div className="min-w-0 space-y-2">
@@ -59,9 +67,9 @@ export default function FilterTags({
 							className="h-8 w-full justify-between px-2 text-sm font-normal"
 						>
 							<span className="truncate">
-								{tags.length > 0
-									? `${tags.length} ${t('tag')}${tags.length === 1 ? '' : 's'} ${t('selected')}`
-									: `${t('select_tags')}`}
+								{values.length > 0
+									? `${values.length} ${t('selected')}`
+									: placeholder}
 							</span>
 
 							<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -73,20 +81,20 @@ export default function FilterTags({
 						className="w-[--radix-popover-trigger-width] p-0"
 					>
 						<Command>
-							<CommandInput placeholder={t('search_tags')} />
+							<CommandInput placeholder={searchPlaceholder} />
 
 							<CommandList>
-								<CommandEmpty>{t('no_tag_found')}</CommandEmpty>
+								<CommandEmpty>{emptyText}</CommandEmpty>
 
 								<CommandGroup>
-									{availableTags?.map((tag) => {
-										const selected = tags.includes(tag)
+									{options.map((option) => {
+										const selected = values.includes(option)
 
 										return (
 											<CommandItem
-												key={tag}
-												value={tag}
-												onSelect={() => toggleTag(tag)}
+												key={option}
+												value={option}
+												onSelect={() => toggleValue(option)}
 											>
 												<Check
 													className={cn(
@@ -95,7 +103,7 @@ export default function FilterTags({
 													)}
 												/>
 
-												<span className="truncate">{tag}</span>
+												<span className="truncate">{option}</span>
 											</CommandItem>
 										)
 									})}
@@ -105,17 +113,17 @@ export default function FilterTags({
 					</PopoverContent>
 				</Popover>
 
-				{tags.length > 0 && (
+				{values.length > 0 && (
 					<div className="flex flex-wrap gap-1.5">
-						{tags.map((tag) => (
-							<Badge key={tag} variant="secondary" className="text-xs">
-								<span className="max-w-40 truncate">{tag}</span>
+						{values.map((value) => (
+							<Badge key={value} variant="secondary" className="text-xs">
+								<span className="max-w-40 truncate">{value}</span>
 
 								<button
 									type="button"
-									onClick={() => removeTag(tag)}
+									onClick={() => removeValue(value)}
 									className="hover:text-destructive ml-1 rounded-full"
-									aria-label={`Remove ${tag} tag`}
+									aria-label={`Remove ${value}`}
 								>
 									<X className="h-3 w-3" />
 								</button>

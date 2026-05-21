@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 export default function Footer() {
 	const { t } = useTranslation('footer')
-	const currentYear = new Date().getFullYear();
+	const currentYear = new Date().getFullYear()
 	return (
 		<footer
 			id="footer"

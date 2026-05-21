@@ -28,5 +28,6 @@
 	"processing": "Verarbeitung...",
 	"generateFile": "Datei generieren",
 	"downloading": "Wird heruntergeladen...",
-	"data": "Daten"
+	"data": "Daten",
+	"activeFiltersApplied": "Der Download berücksichtigt die aktiven Filter der Karte."
 }

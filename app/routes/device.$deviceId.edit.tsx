@@ -20,6 +20,7 @@ import { Separator } from '~/components/ui/separator'
 import { getIntegrations } from '~/db/models/integration.server'
 import { getLucideIcon } from '~/lib/lucide-icon-map'
 import { getUserId } from '~/services/session-service.server'
+import { useTranslation } from 'react-i18next'
 
 //*****************************************************
 export async function loader({ request }: Route.LoaderArgs) {
@@ -40,6 +41,7 @@ export async function action() {
 //**********************************
 export default function EditBox() {
 	const [toastOpen, setToastOpen] = useState(false)
+	const { t } = useTranslation('device-overview')
 
 	const { integrations } = useLoaderData<typeof loader>()
 
@@ -116,11 +118,11 @@ export default function EditBox() {
 									<ToastPrimitive.Title className="flex justify-between text-base font-medium text-[#31708f] dark:text-gray-100">
 										{/* Account successfully deleted. */}
 										<div>
-											device succesfully updated -
+											{t('device_updated')} -
 											<Link to={`/explore/${deviceId}`}>
 												{' '}
 												<span className="text-[#4eaf47] hover:underline">
-													view
+													{t('view')}
 												</span>{' '}
 											</Link>
 										</div>
@@ -139,22 +141,26 @@ export default function EditBox() {
 
 			<div className="rounded text-[#676767]">
 				<ArrowLeft className="mr-2 inline h-5 w-5" />
-				<Link to="/profile/me">Back to Dashboard</Link>
+				<Link to="/profile/me">{t('back_to_dashboard')}</Link>
 			</div>
 
 			<div className="space-y-0.5">
-				<h2 className="text-2xl font-bold tracking-tight">Device settings</h2>
-				<p className="text-muted-foreground">Manage your device data.</p>
+				<h2 className="text-2xl font-bold tracking-tight">
+					{t('device_settings')}
+				</h2>
+				<p className="text-muted-foreground">{t('manage_device_data')}</p>
 			</div>
+
 			<Separator />
-			<div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
-				{/* <div className="grid sm:flex sm:flex-col sm:space-x-12 lg:flex  lg:flex-row lg:space-x-12 lg:space-y-0"> */}
-				<aside className="-mx-4 lg:w-1/5">
+
+			<div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+				<aside className="w-full shrink-0 lg:w-1/5">
 					<EditDeviceSidebarNav items={sidebarNavItems} />
 				</aside>
-				<div className="flex-1">
+
+				<main className="min-w-0 flex-1">
 					<Outlet context={[setToastOpen]} />
-				</div>
+				</main>
 			</div>
 		</div>
 	)
