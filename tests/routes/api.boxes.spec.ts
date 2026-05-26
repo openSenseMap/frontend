@@ -75,23 +75,32 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 	describe('GET', () => {
 		it('should search for boxes with a specific name and limit the results', async () => {
-			// Arrange
-			const request = new Request(
-				`${BASE_URL}?format=geojson&name=${queryableDevice?.name}&limit=2`,
-				{
-					method: 'GET',
-					headers: { 'Content-Type': 'application/json' },
-				},
+			const searchParams = new URLSearchParams({
+				format: 'geojson',
+				name: queryableDevice?.name ?? '',
+				limit: '2',
+			})
+
+			const request = new Request(`${BASE_URL}?${searchParams}`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			const response = (await loader({
+				request,
+			} as Route.LoaderArgs)) as Response
+
+			const body = await response.json()
+
+			expect(response.status).toBe(200)
+			expect(response.headers.get('Content-Type')).toContain(
+				'application/geo+json',
 			)
 
-			// Act
-			const response: any = await loader({
-				request: request,
-			} as Route.LoaderArgs)
-
-			expect(response).toBeDefined()
-			expect(Array.isArray(response?.features)).toBe(true)
-			expect(response?.features.length).lessThanOrEqual(2)
+			expect(body).toBeDefined()
+			expect(body.type).toBe('FeatureCollection')
+			expect(Array.isArray(body.features)).toBe(true)
+			expect(body.features.length).lessThanOrEqual(2)
 		})
 
 		it('should deny searching for a name if limit is greater than max value', async () => {
@@ -138,22 +147,31 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			// Act
-			const response: any = await loader({
-				request: request,
-			} as Route.LoaderArgs)
+			const response = (await loader({
+				request,
+			} as Route.LoaderArgs)) as Response
+
+			const body = await response.json()
 
 			// Assert
 			expect(response).toBeDefined()
-			expect(response.type).toBe('FeatureCollection')
-			expect(Array.isArray(response?.features)).toBe(true)
+			expect(response.status).toBe(200)
+			expect(response.headers.get('Content-Type')).toContain(
+				'application/geo+json',
+			)
 
-			if (response.features.length > 0) {
-				const feature = response.features[0]
+			expect(body.type).toBe('FeatureCollection')
+			expect(Array.isArray(body.features)).toBe(true)
+
+			if (body.features.length > 0) {
+				const feature = body.features[0]
+
 				expect(feature.type).toBe('Feature')
 				expect(feature.properties).toBeDefined()
 
-				// Should have minimal fields
 				const props = feature.properties
+
+				// Should have minimal fields
 				expect(props?._id || props?.id).toBeDefined()
 				expect(props?.name).toBeDefined()
 
@@ -168,64 +186,61 @@ describe('openSenseMap API Routes: /boxes', () => {
 			}
 		})
 
-		it('should return the correct count and correct schema of boxes for /boxes GET with date parameter', async () => {
+		it('should return the correct schema of boxes for /boxes GET with date parameter', async () => {
 			const tenDaysAgoIso = new Date(
 				Date.now() - 10 * 24 * 60 * 60 * 1000,
 			).toISOString()
 
+			const searchParams = new URLSearchParams({
+				format: 'geojson',
+				date: tenDaysAgoIso,
+			})
+
 			// Arrange
-			const request = new Request(
-				`${BASE_URL}?format=geojson&date=${tenDaysAgoIso}`,
-				{
-					method: 'GET',
-					headers: { 'Content-Type': 'application/json' },
-				},
-			)
+			const request = new Request(`${BASE_URL}?${searchParams}`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			})
 
 			// Act
-			const response: any = await loader({
-				request: request,
-			} as Route.LoaderArgs)
+			const response = (await loader({
+				request,
+			} as Route.LoaderArgs)) as Response
+
+			const geojsonData = await response.json()
 
 			// Assert
 			expect(response).toBeDefined()
-			expect(response.type).toBe('FeatureCollection')
-			expect(Array.isArray(response?.features)).toBe(true)
+			expect(response.status).toBe(200)
+			expect(response.headers.get('Content-Type')).toContain(
+				'application/geo+json',
+			)
 
-			// Verify that returned boxes have sensor measurements after the specified date
-			if (response.features.length > 0) {
-				response.features.forEach((feature: any) => {
-					expect(feature.type).toBe('Feature')
-					expect(feature.properties).toBeDefined()
+			expect(geojsonData.type).toBe('FeatureCollection')
+			expect(Array.isArray(geojsonData.features)).toBe(true)
 
-					// If the box has sensors with measurements, they should be after the date
-					if (
-						feature.properties?.sensors &&
-						Array.isArray(feature.properties.sensors)
-					) {
-						const hasRecentMeasurement = feature.properties.sensors.some(
-							(sensor: any) => {
-								if (sensor.lastMeasurement?.createdAt) {
-									const measurementDate = new Date(
-										sensor.lastMeasurement.createdAt,
-									)
-									const filterDate = new Date(tenDaysAgoIso)
-									return measurementDate >= filterDate
-								}
-								return false
-							},
+			for (const feature of geojsonData.features) {
+				expect(feature.type).toBe('Feature')
+				expect(feature.geometry).toBeDefined()
+				expect(feature.properties).toBeDefined()
+
+				if (
+					feature.properties?.sensors &&
+					Array.isArray(feature.properties.sensors)
+				) {
+					const sensorsWithMeasurements = feature.properties.sensors.filter(
+						(sensor: any) => sensor.lastMeasurement?.createdAt,
+					)
+
+					for (const sensor of sensorsWithMeasurements) {
+						const measurementDate = new Date(sensor.lastMeasurement.createdAt)
+						const filterDate = new Date(tenDaysAgoIso)
+
+						expect(measurementDate.getTime()).toBeGreaterThanOrEqual(
+							filterDate.getTime(),
 						)
-
-						// If there are sensors with lastMeasurement, at least one should be recent
-						if (
-							feature.properties.sensors.some(
-								(s: any) => s.lastMeasurement?.createdAt,
-							)
-						) {
-							expect(hasRecentMeasurement).toBe(true)
-						}
 					}
-				})
+				}
 			}
 		})
 
@@ -273,25 +288,33 @@ describe('openSenseMap API Routes: /boxes', () => {
 			})
 
 			// Act
-			const geojsonData: any = await loader({
-				request: request,
-			} as Route.LoaderArgs)
+			const response = (await loader({
+				request,
+			} as Route.LoaderArgs)) as Response
 
-			expect(geojsonData).toBeDefined()
-			if (geojsonData) {
-				// Assert - this should always be GeoJSON since that's what the loader returns
-				expect(geojsonData.type).toBe('FeatureCollection')
-				expect(Array.isArray(geojsonData.features)).toBe(true)
+			const geojsonData = await response.json()
 
-				if (geojsonData.features.length > 0) {
-					expect(geojsonData.features[0].type).toBe('Feature')
-					expect(geojsonData.features[0].geometry).toBeDefined()
-					// @ts-ignore
-					expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
-					// @ts-ignore
-					expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
-					expect(geojsonData.features[0].properties).toBeDefined()
-				}
+			// Assert
+			expect(response).toBeDefined()
+			expect(response.status).toBe(200)
+			expect(response.headers.get('Content-Type')).toContain(
+				'application/geo+json',
+			)
+
+			expect(geojsonData.type).toBe('FeatureCollection')
+			expect(Array.isArray(geojsonData.features)).toBe(true)
+
+			if (geojsonData.features.length > 0) {
+				const feature = geojsonData.features[0]
+
+				expect(feature.type).toBe('Feature')
+				expect(feature.geometry).toBeDefined()
+				expect(feature.geometry.type).toBe('Point')
+				expect(Array.isArray(feature.geometry.coordinates)).toBe(true)
+				expect(feature.geometry.coordinates).toHaveLength(2)
+				expect(feature.geometry.coordinates[0]).toBeDefined()
+				expect(feature.geometry.coordinates[1]).toBeDefined()
+				expect(feature.properties).toBeDefined()
 			}
 		})
 
@@ -333,19 +356,19 @@ describe('openSenseMap API Routes: /boxes', () => {
 			)
 
 			// Act
-			const response: any = await loader({
-				request: request,
-			} as Route.LoaderArgs)
+			const response = (await loader({
+				request,
+			} as Route.LoaderArgs)) as Response
 
-			expect(response).toBeDefined()
+			const body = await response.json()
 
-			if (response) {
+			if (body) {
 				// Assert
-				expect(response.type).toBe('FeatureCollection')
-				expect(Array.isArray(response.features)).toBe(true)
+				expect(body.type).toBe('FeatureCollection')
+				expect(Array.isArray(body.features)).toBe(true)
 
-				if (response.features.length > 0) {
-					response.features.forEach((feature: any) => {
+				if (body.features.length > 0) {
+					body.features.forEach((feature: any) => {
 						expect(feature.type).toBe('Feature')
 						expect(feature.geometry).toBeDefined()
 						expect(feature.geometry.coordinates).toBeDefined()
@@ -395,36 +418,6 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 				const errorData = await (error as Response).json()
 				expect(errorData.error).toBe('Invalid format parameter')
-			}
-		})
-
-		it('should return geojson format when requested', async () => {
-			// Arrange
-			const request = new Request(`${BASE_URL}?format=geojson`, {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-			})
-
-			// Act
-			const geojsonData: any = await loader({
-				request: request,
-			} as Route.LoaderArgs)
-
-			expect(geojsonData).toBeDefined()
-			if (geojsonData) {
-				// Assert - this should always be GeoJSON since that's what the loader returns
-				expect(geojsonData.type).toBe('FeatureCollection')
-				expect(Array.isArray(geojsonData.features)).toBe(true)
-
-				if (geojsonData.features.length > 0) {
-					expect(geojsonData.features[0].type).toBe('Feature')
-					expect(geojsonData.features[0].geometry).toBeDefined()
-					// @ts-ignore
-					expect(geojsonData.features[0].geometry.coordinates[0]).toBeDefined()
-					// @ts-ignore
-					expect(geojsonData.features[0].geometry.coordinates[1]).toBeDefined()
-					expect(geojsonData.features[0].properties).toBeDefined()
-				}
 			}
 		})
 	})
