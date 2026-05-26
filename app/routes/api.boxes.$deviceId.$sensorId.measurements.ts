@@ -12,7 +12,10 @@ import * as z from 'zod/v4'
 import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
-import { DeviceSensorPathParamsSchema } from '~/lib/openapi/schemas/common'
+import {
+	DeviceSensorPathParamsSchema,
+	IsoDateTimeSchema,
+} from '~/lib/openapi/schemas/common'
 
 import {
 	ForbiddenErrorSchema,
@@ -20,6 +23,7 @@ import {
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
 	createBadRequestErrorSchema,
+	messageResponse,
 } from '~/lib/openapi/errors'
 
 import {
@@ -30,32 +34,36 @@ import {
 	notFoundResponse,
 } from '~/lib/openapi/errors'
 
+const IsoDateTimeToDateSchema = IsoDateTimeSchema.transform(
+	(value) => new Date(value),
+)
+
 const DeleteSensorMeasurementsQueryParamsSchema = z
 	.object({
-		'from-date': z.iso.datetime().optional().meta({
-			description:
-				'Beginning date of the measurement range to delete. Must be used together with `to-date`.',
+		'from-date': IsoDateTimeToDateSchema.optional().meta({
+			description: 'Beginning date of the measurement range to delete.',
 			example: '2026-05-13T12:00:00.000Z',
 		}),
 
-		'to-date': z.iso.datetime().optional().meta({
-			description:
-				'End date of the measurement range to delete. Must be used together with `from-date`.',
+		'to-date': IsoDateTimeToDateSchema.optional().meta({
+			description: 'End date of the measurement range to delete.',
 			example: '2026-05-15T12:00:00.000Z',
 		}),
 
 		timestamps: z
-			.union([z.iso.datetime(), z.array(z.iso.datetime())])
+			.union([IsoDateTimeToDateSchema, z.array(IsoDateTimeToDateSchema)])
 			.optional()
+			.transform((value) => {
+				if (value === undefined) return undefined
+				return Array.isArray(value) ? value : [value]
+			})
 			.meta({
-				description:
-					'One or more exact measurement timestamps to delete. Do not use together with `from-date` / `to-date` or `deleteAllMeasurements`.',
+				description: 'One or more exact measurement timestamps to delete.',
 				example: ['2026-05-15T12:00:00.000Z'],
 			}),
 
 		deleteAllMeasurements: z.enum(['true', 'false']).optional().meta({
-			description:
-				'Set to `true` to delete all measurements of this sensor. Must be used by itself.',
+			description: 'Set to `true` to delete all measurements of this sensor.',
 			example: 'true',
 		}),
 	})
@@ -64,30 +72,16 @@ const DeleteSensorMeasurementsQueryParamsSchema = z
 		description:
 			'Query parameters selecting which measurements should be deleted.',
 	})
-
-const DeleteSensorMeasurementsResponseSchema = z
-	.object({
-		message: z.string().meta({
-			example: 'Successfully deleted 42 of sensor 60a13611a877b3001b8ffd59',
-		}),
-	})
-	.meta({
-		id: 'DeleteSensorMeasurementsResponse',
-		description: 'Response returned after deleting measurements from a sensor.',
-	})
-
 const DeleteSensorMeasurementsBadRequestErrorSchema =
 	createBadRequestErrorSchema({
 		id: 'DeleteSensorMeasurementsBadRequestError',
 		description:
-			'Bad request. This can happen for invalid path parameters, invalid dates, invalid timestamp values, missing selection parameters, or mutually exclusive deletion parameters.',
+			'Bad request. This can happen for invalid path parameters, invalid dates, or invalid timestamp values.',
 		examples: [
 			'Invalid device id or sensor id specified',
 			'from-date is invalid',
 			'to-date is invalid',
 			'timestamps contains invalid input',
-			'Parameter deleteAllMeasurements can only be used by itself',
-			'Please specify only timestamps or a range with from-date and to-date',
 		],
 	})
 
@@ -95,7 +89,21 @@ const parseQueryParams = async (
 	request: Request,
 ): Promise<z.infer<typeof DeleteSensorMeasurementsQueryParamsSchema>> => {
 	const url = new URL(request.url)
-	const params: Record<string, any> = Object.fromEntries(url.searchParams)
+	const timestamps = url.searchParams.getAll('timestamps')
+
+	const params = {
+		'from-date': url.searchParams.get('from-date') ?? undefined,
+		'to-date': url.searchParams.get('to-date') ?? undefined,
+		deleteAllMeasurements:
+			url.searchParams.get('deleteAllMeasurements') ?? undefined,
+		timestamps:
+			timestamps.length === 0
+				? undefined
+				: timestamps.length === 1
+					? timestamps[0]
+					: timestamps,
+	}
+
 	const parseResult =
 		DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
 
@@ -123,14 +131,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		},
 
 		responses: {
-			200: {
-				description: 'Measurements deleted successfully.',
-				content: {
-					'application/json': {
-						schema: DeleteSensorMeasurementsResponseSchema,
-					},
-				},
-			},
+			200: messageResponse('Measurements deleted successfully.'),
 
 			400: badRequestResponse(
 				DeleteSensorMeasurementsBadRequestErrorSchema,
@@ -194,13 +195,12 @@ export async function action({ request, params }: Route.ActionArgs) {
 			const parsedParams = await parseQueryParams(request)
 			let count = 0
 
-			if (parsedParams.deleteAllMeasurements)
+			if (parsedParams.deleteAllMeasurements === 'true')
 				count = (await deleteMeasurementsForSensor(sensorId)).count
 			else if (parsedParams.timestamps)
 				count = (
 					await deleteSensorMeasurementsForTimes(
 						sensorId,
-						//@ts-ignore
 						parsedParams.timestamps,
 					)
 				).count
@@ -208,7 +208,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 				count = (
 					await deleteSensorMeasurementsForTimeRange(
 						sensorId,
-						//@ts-ignore
 						parsedParams['from-date'],
 						parsedParams['to-date'],
 					)
