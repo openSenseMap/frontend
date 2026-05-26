@@ -13,7 +13,6 @@ import {
 	CreateBoxSchema,
 } from '~/services/device-service.server'
 
-import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
 	ApiDeviceSchema,
@@ -23,7 +22,6 @@ import {
 import {
 	BadRequestErrorSchema,
 	badRequestResponse,
-	createBadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	forbiddenResponse,
 	internalServerErrorResponse,
@@ -33,7 +31,6 @@ import {
 	UnprocessableContentErrorSchema,
 	unprocessableContentResponse,
 } from '~/lib/openapi/errors'
-import { apiMessages } from '~/lib/openapi/messages'
 
 const BoxesQueryParamsSchema = BoxesQuerySchema.meta({
 	id: 'BoxesQueryParams',
@@ -51,39 +48,6 @@ const CreatedBoxResponseSchema = ApiDeviceSchema.meta({
 	description:
 		'Created box/device response transformed through `transformDeviceToApiFormat`.',
 })
-
-const CreateBoxValidationErrorSchema = z
-	.object({
-		code: z.literal('Bad Request'),
-		message: z.literal(apiMessages.invalidRequestData),
-		errors: z.array(z.string()).meta({
-			description: 'Validation errors returned by CreateBoxSchema',
-			example: [
-				'name: Required',
-				'location: Expected array, received undefined',
-			],
-		}),
-	})
-	.meta({
-		id: 'CreateBoxValidationError',
-		description:
-			'Validation error response for invalid create-box request payloads.',
-	})
-
-const BoxesBadRequestErrorSchema = z
-	.union([
-		createBadRequestErrorSchema({
-			id: 'BoxesInvalidJsonBadRequestError',
-			description: 'Returned when the request body is not valid JSON.',
-			messageSchema: z.literal(apiMessages.invalidJson),
-		}),
-		CreateBoxValidationErrorSchema,
-	])
-	.meta({
-		id: 'BoxesBadRequestError',
-		description:
-			'Bad request response. Invalid JSON uses the standard error shape; validation errors include an `errors` array.',
-	})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
@@ -210,9 +174,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 				'Content-Type': 'application/geo+json; charset=utf-8',
 			},
 		})
-	} else {
-		return devices
 	}
+	return Response.json(devices, {
+		headers: {
+			'Content-Type': 'application/json; charset=utf-8',
+		},
+	})
 }
 
 export const action = async ({ request }: Route.ActionArgs) => {
