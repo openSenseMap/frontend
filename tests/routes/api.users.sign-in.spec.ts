@@ -10,7 +10,7 @@ const VALID_SIGN_IN_TEST_USER = {
 	password: 'some secure password',
 }
 
-const createSignInRequest = (email: string, password: string) =>
+export const createSignInRequest = (email: string, password: string) =>
 	new Request(`${BASE_URL}/users/sign-in`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },

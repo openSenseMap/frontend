@@ -24,6 +24,7 @@ import {
 	unauthorizedResponse,
 } from '~/lib/openapi/errors'
 import { apiMessages } from '~/lib/openapi/messages'
+import { transformUserToApiFormat } from '~/lib/user-transform'
 
 const messages = {
 	noChanges: 'No changed properties supplied. User remains unchanged.',
@@ -52,22 +53,38 @@ const UpdateCurrentUserRequestSchema = z
 			example: 'newemail@example.com',
 		}),
 		language: UserLanguageSchema.optional(),
-		name: z.string().trim().min(1).optional().meta({
-			description: "User's display name",
-			example: 'John Doe',
-		}),
+		name: z
+			.string()
+			.min(1)
+			.refine((value) => value === value.trim(), {
+				message: 'Name must not start or end with whitespace',
+			})
+			.optional(),
 		currentPassword: z.string().min(1).optional().meta({
 			description: 'Current password, required when setting a new password',
 			example: 'currentPassword123',
 			format: 'password',
 		}),
-		newPassword: z.string().min(8).optional().meta({
-			description: 'New password',
-			example: 'newPassword456',
-			format: 'password',
-		}),
+		newPassword: z
+			.string()
+			.min(8, 'New password should have at least 8 characters')
+			.optional()
+			.meta({
+				description: 'New password',
+				example: 'newPassword456',
+				format: 'password',
+			}),
 	})
 	.superRefine((data, ctx) => {
+		if (data.email && data.newPassword) {
+			ctx.addIssue({
+				code: 'custom',
+				message:
+					'You cannot change your email address and password in the same request.',
+			})
+			return
+		}
+
 		if (data.newPassword && !data.currentPassword) {
 			ctx.addIssue({
 				code: 'custom',
@@ -291,11 +308,16 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 
 		const responseParsed = await GetMeResponseSchema.safeParseAsync({
 			code: 'Ok',
-			data: { me: { ...jwtResponse, boxes: deviceIds } },
+			data: {
+				me: {
+					...transformUserToApiFormat(jwtResponse),
+					boxes: deviceIds,
+				},
+			},
 		})
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error)
+			console.error(responseParsed.error.issues)
 			return StandardResponse.internalServerError()
 		}
 
@@ -358,8 +380,8 @@ const put = async (user: User, request: Request): Promise<Response> => {
 
 		const messageText = updateMessages.join('.')
 
-		if (updated === false) {
-			if (updateMessages.length > 0) {
+		if (updated === false || updateMessages.length === 0) {
+			if (updated === false && updateMessages.length > 0) {
 				return StandardResponse.badRequest(messageText)
 			}
 
@@ -381,7 +403,7 @@ const put = async (user: User, request: Request): Promise<Response> => {
 			await UpdateCurrentUserSuccessResponseSchema.safeParseAsync({
 				code: 'Ok',
 				message: `User successfully saved. ${messageText}`,
-				data: { me: updatedUser },
+				data: { me: transformUserToApiFormat(updatedUser) },
 			})
 
 		if (!responseParsed.success) {
