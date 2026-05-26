@@ -19,7 +19,10 @@ import {
 	NotFoundErrorSchema,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
-import { DeviceSensorPathParamsSchema } from '~/lib/openapi/schemas/common'
+import {
+	DeviceSensorPathParamsSchema,
+	IsoDateTimeSchema,
+} from '~/lib/openapi/schemas/common'
 
 const SensorDataQueryParamsSchema = z.object({
 	outliers: z.enum(['replace', 'mark']).optional().meta({
@@ -34,13 +37,13 @@ const SensorDataQueryParamsSchema = z.object({
 		example: 15,
 	}),
 
-	'from-date': z.iso.datetime().optional().meta({
+	'from-date': IsoDateTimeSchema.optional().meta({
 		description:
 			'Beginning date of measurement data. Defaults to 48 hours ago from now.',
 		example: '2026-05-13T12:00:00.000Z',
 	}),
 
-	'to-date': z.iso.datetime().optional().meta({
+	'to-date': IsoDateTimeSchema.optional().meta({
 		description: 'End date of measurement data. Defaults to now.',
 		example: '2026-05-15T12:00:00.000Z',
 	}),
