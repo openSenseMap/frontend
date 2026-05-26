@@ -106,10 +106,8 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		return StandardResponse.badRequest('Invalid email address.')
 	}
 
-	await requestPasswordReset(parsedEmail.data)
-
 	try {
-		await requestPasswordReset(formData.get('email')!.toString())
+		await requestPasswordReset(parsedEmail.data)
 
 		// We don't want to leak valid/ invalid emails, so we confirm
 		// the initiation no matter what the return value above is
