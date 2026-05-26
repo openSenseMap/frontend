@@ -16,14 +16,11 @@ export const SensorIdSchema = z.string().min(1).meta({
 })
 
 export const DeviceSensorPathParamsSchema = z.object({
-	deviceId: DeviceIdSchema.meta({
-		description:
-			'Unique identifier of the device. This parameter is kept for legacy route compatibility.',
-	}),
+	deviceId: DeviceIdSchema,
 	sensorId: SensorIdSchema,
 })
 
-export const IsoDateTimeSchema = z.string().datetime().meta({
+export const IsoDateTimeSchema = z.iso.datetime().meta({
 	description: 'ISO 8601 timestamp',
 	example: '2026-05-18T12:34:56.000Z',
 })
