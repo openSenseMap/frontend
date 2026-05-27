@@ -35,7 +35,7 @@ const TransferTokenSchema = z.string().min(1).meta({
 const CreateBoxTransferRequestSchema = z
 	.object({
 		boxId: z.string().min(1).meta({
-			description: 'ID of the senseBox to mark for transfer.',
+			description: 'ID of the device to mark for transfer.',
 			example: '5bdbe70f55d0ad001a04edc9',
 		}),
 
@@ -44,22 +44,16 @@ const CreateBoxTransferRequestSchema = z
 				'Expiration date for the transfer token. If omitted, the default is 24 hours from now.',
 			example: '2026-05-22T12:00:00.000Z',
 		}),
-
-		date: z.iso.datetime().optional().meta({
-			description:
-				'Legacy alias for `expiresAt`. Kept for backwards compatibility.',
-			example: '2026-05-22T12:00:00.000Z',
-		}),
 	})
 	.meta({
 		id: 'CreateBoxTransferRequest',
-		description: 'Payload for marking a senseBox for transfer.',
+		description: 'Payload for marking a device for transfer.',
 	})
 
 const RemoveBoxTransferRequestSchema = z
 	.object({
 		boxId: z.string().min(1).meta({
-			description: 'ID of the senseBox to remove from transfer.',
+			description: 'ID of the device to remove from transfer.',
 			example: '5bdbe70f55d0ad001a04edc9',
 		}),
 
@@ -67,15 +61,15 @@ const RemoveBoxTransferRequestSchema = z
 	})
 	.meta({
 		id: 'RemoveBoxTransferRequest',
-		description: 'Payload for revoking a senseBox transfer token.',
+		description: 'Payload for revoking a device transfer token.',
 	})
 
 const CreateBoxTransferResponseSchema = z
 	.object({
 		code: z.literal('Created').default('Created'),
 		message: z
-			.literal('Box successfully prepared for transfer')
-			.default('Box successfully prepared for transfer'),
+			.literal('Device successfully prepared for transfer')
+			.default('Device successfully prepared for transfer'),
 		data: TransferTokenSchema.meta({
 			description: 'Generated transfer token.',
 		}),
@@ -101,9 +95,9 @@ const BoxTransferBadRequestErrorSchema = createBadRequestErrorSchema({
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
 		tags: ['Boxes'],
-		summary: 'Mark a senseBox for transfer',
+		summary: 'Mark a device for transfer',
 		description:
-			'Marks a senseBox for transfer to another user account and returns a transfer token. Requires JWT authorization. The request body can be sent as JSON or form data. `date` is supported as a legacy alias for `expiresAt`.',
+			'Marks a device for transfer to another user account and returns a transfer token. Requires JWT authorization. The request body can be sent as JSON or form data. `date` is supported as a legacy alias for `expiresAt`.',
 		operationId: 'createBoxTransfer',
 		security: [{ bearerAuth: [] }],
 
@@ -158,9 +152,9 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 	delete: {
 		tags: ['Boxes'],
-		summary: 'Revoke a senseBox transfer token',
+		summary: 'Revoke a device transfer token',
 		description:
-			'Revokes a transfer token and removes the senseBox from transfer. Requires JWT authorization. The request body can be sent as JSON or form data.',
+			'Revokes a transfer token and removes the device from transfer. Requires JWT authorization. The request body can be sent as JSON or form data.',
 		operationId: 'removeBoxTransfer',
 		security: [{ bearerAuth: [] }],
 
