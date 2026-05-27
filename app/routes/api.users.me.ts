@@ -48,7 +48,7 @@ const GetMeResponseSchema = z
 
 const UpdateCurrentUserRequestSchema = z
 	.object({
-		email: z.string().trim().email().optional().meta({
+		email: z.email().optional().meta({
 			description: 'New email address',
 			example: 'newemail@example.com',
 		}),

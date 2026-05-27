@@ -43,7 +43,7 @@ const UpdateDeviceRequestSchema = z
 	.object({
 		name: z.string().optional().meta({
 			description: 'Device name',
-			example: 'My senseBox',
+			example: 'My device',
 		}),
 
 		exposure: z.string().optional().meta({
@@ -53,17 +53,15 @@ const UpdateDeviceRequestSchema = z
 
 		description: z.string().optional().meta({
 			description: 'Device description',
-			example: 'Sensor box on my balcony',
+			example: 'Sensor device on my balcony',
 		}),
 
 		image: z.string().optional().meta({
 			description: 'Device image URL or image value',
-			example: 'https://example.com/image.jpg',
 		}),
 
 		deleteImage: z.boolean().optional().meta({
-			description:
-				'If true, the device image is removed by setting `image` to an empty string.',
+			description: 'If true, the device image is removed.',
 			example: true,
 		}),
 
@@ -78,8 +76,7 @@ const UpdateDeviceRequestSchema = z
 		}),
 
 		weblink: z.string().optional().meta({
-			description:
-				'Web link for the device. This is mapped to `link` internally.',
+			description: 'Web link for the device.',
 			example: 'https://example.com',
 		}),
 
@@ -181,8 +178,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 	put: {
 		tags: ['Boxes'],
 		summary: 'Update device',
-		description:
-			'Updates a device. Requires JWT authorization. Supports legacy addon behavior, image deletion, location updates, group tag updates, and sensor updates.',
+		description: 'Updates a device. Requires JWT authorization.',
 		operationId: 'updateDevice',
 		security: [{ bearerAuth: [] }],
 

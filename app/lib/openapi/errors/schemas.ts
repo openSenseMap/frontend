@@ -18,6 +18,13 @@ export const BadRequestErrorSchema = standardErrorResponseSchema(
 	id: 'BadRequestError',
 })
 
+export const ConflictErrorSchema = standardErrorResponseSchema(
+	'Conflict',
+	z.string().meta({ example: 'Conflict.' }),
+).meta({
+	id: 'ConflictError',
+})
+
 export const UnauthorizedErrorSchema = standardErrorResponseSchema(
 	'Unauthorized',
 	z.string().meta({ example: 'Unauthorized.' }),

@@ -22,31 +22,32 @@ import {
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
 
-const CurrentUserPrivateBoxSchema = ApiDeviceSchema.meta({
-	id: 'CurrentUserPrivateBox',
+const CurrentUserPrivateDeviceSchema = ApiDeviceSchema.meta({
+	id: 'CurrentUserPrivateDevice',
 	description:
-		'Box owned by the authenticated user. This response may include private or secret fields.',
+		'Device owned by the authenticated user. This response may include private or secret fields.',
 })
 
-const GetCurrentUserBoxResponseSchema = z
+const GetCurrentUserDeviceResponseSchema = z
 	.object({
 		code: z.literal('Ok').default('Ok'),
 		data: z.object({
-			box: CurrentUserPrivateBoxSchema,
+			box: CurrentUserPrivateDeviceSchema,
 		}),
 	})
 	.meta({
 		id: 'GetCurrentUserBoxResponse',
-		description: 'Response containing one box owned by the authenticated user.',
+		description:
+			'Response containing one device owned by the authenticated user.',
 	})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['User Management'],
-		summary: 'Get one box of the current user',
+		summary: 'Get one device of the current user',
 		description:
-			'Returns a specific box owned by the authenticated user. This endpoint may include private or secret fields that are not returned by public box endpoints.',
-		operationId: 'getCurrentUserBox',
+			'Returns a specific device owned by the authenticated user. This endpoint may include private or secret fields that are not returned by public device endpoints.',
+		operationId: 'getCurrentUserDevice',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -55,10 +56,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			200: {
-				description: 'Box returned successfully.',
+				description: 'Device returned successfully.',
 				content: {
 					'application/json': {
-						schema: GetCurrentUserBoxResponseSchema,
+						schema: GetCurrentUserDeviceResponseSchema,
 					},
 				},
 			},
@@ -70,7 +71,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			403: forbiddenResponse(
 				ForbiddenErrorSchema,
-				'Invalid JWT authorization or the authenticated user does not own this senseBox.',
+				'Invalid JWT authorization or the authenticated user does not own this device.',
 			),
 
 			500: internalServerErrorResponse(
@@ -102,7 +103,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 			)
 
 		if (box.user.id !== user.id)
-			return StandardResponse.forbidden('User does not own this senseBox')
+			return StandardResponse.forbidden('User does not own this device')
 
 		return StandardResponse.ok({ code: 'Ok', data: { box: box } })
 	} catch (err) {

@@ -18,15 +18,19 @@ import {
 	notFoundResponse,
 } from '~/lib/openapi/errors'
 import { apiMessages } from '~/lib/openapi/messages'
-import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
+import {
+	DevicePathParamsSchema,
+	IsoDateTimeSchema,
+} from '~/lib/openapi/schemas/common'
+import { CoordinatesSchema } from '~/lib/openapi/schemas/location'
 
 const DeviceLocationsQueryParamsSchema = z.object({
-	'from-date': z.string().datetime().optional().meta({
+	'from-date': IsoDateTimeSchema.optional().meta({
 		description:
 			'Beginning date of location data. Defaults to 48 hours ago from now.',
 		example: '2026-05-13T12:00:00.000Z',
 	}),
-	'to-date': z.string().datetime().optional().meta({
+	'to-date': IsoDateTimeSchema.optional().meta({
 		description: 'End date of location data. Defaults to now.',
 		example: '2026-05-15T12:00:00.000Z',
 	}),
@@ -36,16 +40,11 @@ const DeviceLocationsQueryParamsSchema = z.object({
 	}),
 })
 
-const CoordinatesSchema = z.tuple([z.number(), z.number()]).meta({
-	description: '[longitude, latitude]',
-	example: [7.68123, 51.9123],
-})
-
 const PointLocationSchema = z
 	.object({
 		coordinates: CoordinatesSchema,
 		type: z.literal('Point'),
-		timestamp: z.string().datetime().meta({
+		timestamp: IsoDateTimeSchema.meta({
 			description: 'Timestamp of the device location',
 			example: '2017-07-27T12:00:00.000Z',
 		}),
@@ -92,7 +91,7 @@ const GeoJsonLineStringResponseSchema = z
 		}),
 		properties: z.object({
 			timestamps: z.array(
-				z.string().datetime().meta({
+				IsoDateTimeSchema.meta({
 					example: '2017-07-27T12:00:00.000Z',
 				}),
 			),

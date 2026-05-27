@@ -97,7 +97,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Boxes'],
 		summary: 'Mark a device for transfer',
 		description:
-			'Marks a device for transfer to another user account and returns a transfer token. Requires JWT authorization. The request body can be sent as JSON or form data. `date` is supported as a legacy alias for `expiresAt`.',
+			'Marks a device for transfer to another user account and returns a transfer token. Requires JWT authorization. The request body can be sent as JSON or form data.',
 		operationId: 'createBoxTransfer',
 		security: [{ bearerAuth: [] }],
 

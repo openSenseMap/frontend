@@ -95,7 +95,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Boxes'],
 		summary: 'Claim a transferred device',
 		description:
-			'Claims a senseBox that has been marked for transfer. Requires a valid JWT bearer token and a valid transfer token in the JSON request body.',
+			'Claims a device that has been marked for transfer. Requires a valid JWT bearer token and a valid transfer token in the JSON request body.',
 		operationId: 'claimBox',
 		security: [{ bearerAuth: [] }],
 

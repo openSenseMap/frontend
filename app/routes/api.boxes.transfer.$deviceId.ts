@@ -52,7 +52,7 @@ const GetBoxTransferResponseSchema = z
 	})
 	.meta({
 		id: 'GetBoxTransferResponse',
-		description: 'Transfer information for a senseBox.',
+		description: 'Transfer information for a device.',
 	})
 
 const UpdateBoxTransferResponseSchema = z
@@ -65,7 +65,7 @@ const UpdateBoxTransferResponseSchema = z
 	})
 	.meta({
 		id: 'UpdateBoxTransferResponse',
-		description: 'Updated transfer information for a senseBox.',
+		description: 'Updated transfer information for a device.',
 	})
 
 const BoxTransferByDeviceBadRequestErrorSchema = createBadRequestErrorSchema({
@@ -86,9 +86,9 @@ const BoxTransferByDeviceBadRequestErrorSchema = createBadRequestErrorSchema({
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['Boxes'],
-		summary: 'Get transfer information for a senseBox',
+		summary: 'Get transfer information for a device',
 		description:
-			'Returns transfer information for a senseBox. Requires JWT authorization. Only the owner of the box can view its transfer information.',
+			'Returns transfer information for a device. Requires JWT authorization. Only the owner of the box can view its transfer information.',
 		operationId: 'getBoxTransfer',
 		security: [{ bearerAuth: [] }],
 
