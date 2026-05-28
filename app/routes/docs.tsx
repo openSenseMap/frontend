@@ -66,9 +66,11 @@ export default function ApiDocumentation() {
 					</SelectTrigger>
 
 					<SelectContent>
-						<SelectItem value={spec.info.title}>{spec.info.title}</SelectItem>
+						<SelectItem value={spec.info.title}>
+							openSenseMap REST API
+						</SelectItem>
 						<SelectItem value={integrationSpec.info.title}>
-							{integrationSpec.info.title}
+							Integration Service Contract
 						</SelectItem>
 					</SelectContent>
 				</Select>
