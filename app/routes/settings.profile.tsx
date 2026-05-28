@@ -33,6 +33,7 @@ import {
 } from '~/hooks/use-autosave-fetcher'
 import { getInitials } from '~/lib/strings'
 import { requireUserId } from '~/services/session-service.server'
+import { AutosaveStatusText } from '~/components/autosave-status.text'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
@@ -260,19 +261,7 @@ export default function EditUserProfilePage() {
 			<CardHeader>
 				<CardTitle>{t('profile_settings')}</CardTitle>
 				<CardDescription>{t('profile_settings_description')}</CardDescription>
-				<p className="text-muted-foreground text-sm" aria-live="polite">
-					<span>
-						{autosave.status === 'saving'
-							? t('saving')
-							: autosave.status === 'dirty'
-								? t('unsaved_changes')
-								: autosave.status === 'error'
-									? t('something_went_wrong')
-									: autosave.status === 'saved'
-										? t('saved')
-										: null}
-					</span>
-				</p>
+				<AutosaveStatusText status={autosave.status} namespace="settings" />
 			</CardHeader>
 
 			<CardContent className="flex">

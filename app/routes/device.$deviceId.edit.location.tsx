@@ -28,6 +28,7 @@ import {
 	useAutosaveFetcher,
 	AUTOSAVE_DELAY_MS,
 } from '~/hooks/use-autosave-fetcher'
+import { AutosaveStatusText } from '~/components/autosave-status.text'
 
 function parseNumberInput(value: string): number | null {
 	if (value.trim() === '') return null
@@ -287,17 +288,11 @@ export default function EditLocation() {
 							<div>
 								<h1 className="text-4xl">{t('exposure')}</h1>
 
-								<div className="mt-2 min-h-5 text-sm" aria-live="polite">
-									{autosave.status === 'saving' ? (
-										<p className="text-gray-500">{t('saving')}</p>
-									) : autosave.status === 'error' ? (
-										<p className="text-red-600">{t('autosave_failed')}</p>
-									) : !hasClientErrors && autosave.status === 'dirty' ? (
-										<p className="text-gray-500">{t('unsaved_changes')}</p>
-									) : !hasClientErrors && autosave.status === 'saved' ? (
-										<p className="text-green-500">{t('saved')}</p>
-									) : null}
-								</div>
+								<AutosaveStatusText
+									status={autosave.status}
+									hasValidationErrors={hasClientErrors}
+									namespace="edit-device-general"
+								/>
 							</div>
 						</div>
 					</div>

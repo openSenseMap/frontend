@@ -34,6 +34,7 @@ import {
 	getDeviceExposure,
 	parseDeviceExposure,
 } from '~/lib/device-enums'
+import { AutosaveStatusText } from '~/components/autosave-status.text'
 
 type GeneralAutosaveValues = {
 	name: string
@@ -700,6 +701,7 @@ export default function EditDeviceGeneral() {
 
 	const hasNameError = name.trim().length === 0
 	const hasDescriptionError = description.length > 5000
+	const hasClientErrors = hasNameError || hasDescriptionError
 
 	return (
 		<div className="grid grid-rows-1">
@@ -710,19 +712,11 @@ export default function EditDeviceGeneral() {
 							<div>
 								<h1 className="text-4xl">{t('general')}</h1>
 
-								<div className="mt-2 min-h-5 text-sm" aria-live="polite">
-									{autosave.status === 'saving' ? (
-										<p className="text-gray-500">{t('saving')}</p>
-									) : autosave.status === 'error' ? (
-										<p className="text-red-600">{t('autosave_failed')}</p>
-									) : autosave.status === 'dirty' &&
-									  !hasNameError &&
-									  !hasDescriptionError ? (
-										<p className="text-gray-500">{t('unsaved_changes')}</p>
-									) : autosave.status === 'saved' ? (
-										<p className="text-green-500">{t('saved')}</p>
-									) : null}
-								</div>
+								<AutosaveStatusText
+									status={autosave.status}
+									hasValidationErrors={hasClientErrors}
+									namespace="edit-device-general"
+								/>
 							</div>
 						</div>
 					</div>
@@ -758,7 +752,7 @@ export default function EditDeviceGeneral() {
 
 								{hasNameError ? (
 									<p id="name-error" className="mt-1 text-sm text-red-600">
-										Device name is required.
+										{t('name_is_required')}
 									</p>
 								) : null}
 							</div>
