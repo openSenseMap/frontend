@@ -24,8 +24,10 @@ import {
 	type LocationFieldErrors,
 } from '~/lib/location'
 import { useTranslation } from 'react-i18next'
-import { AUTOSAVE_DELAY_MS } from './device.$deviceId.edit'
-import { useAutosaveFetcher } from '~/hooks/use-autosave-fetcher'
+import {
+	useAutosaveFetcher,
+	AUTOSAVE_DELAY_MS,
+} from '~/hooks/use-autosave-fetcher'
 
 function parseNumberInput(value: string): number | null {
 	if (value.trim() === '') return null

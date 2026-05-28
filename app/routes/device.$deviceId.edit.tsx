@@ -22,9 +22,6 @@ import { getLucideIcon } from '~/lib/lucide-icon-map'
 import { getUserId } from '~/services/session-service.server'
 import { useTranslation } from 'react-i18next'
 
-export const AUTOSAVE_DELAY_MS = 700
-
-
 //*****************************************************
 export async function loader({ request }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home

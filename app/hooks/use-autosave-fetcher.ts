@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useFetcher } from 'react-router'
 
 export type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
+export const AUTOSAVE_DELAY_MS = 700
 
 type UseAutosaveFetcherOptions<TValues, TData> = {
 	values: TValues

@@ -27,7 +27,10 @@ import { useToast } from '~/components/ui/use-toast'
 import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
 import { getUserById } from '~/db/models/user.server'
 import { useCopyToClipboard } from '~/hooks/use-copy-to-clipboard'
-import { useAutosaveFetcher } from '~/hooks/use-autosave-fetcher'
+import {
+	AUTOSAVE_DELAY_MS,
+	useAutosaveFetcher,
+} from '~/hooks/use-autosave-fetcher'
 import { getInitials } from '~/lib/strings'
 import { requireUserId } from '~/services/session-service.server'
 
@@ -206,7 +209,7 @@ export default function EditUserProfilePage() {
 				displayName: data.profile.displayName,
 				isPublic: data.profile.public ?? false,
 			},
-			debounceMs: 700,
+			debounceMs: AUTOSAVE_DELAY_MS,
 			validate: validateAutosave,
 			getPayload: getAutosavePayload,
 			isSuccess: isAutosaveSuccess,

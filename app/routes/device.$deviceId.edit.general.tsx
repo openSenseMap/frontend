@@ -24,7 +24,10 @@ import {
 } from '~/lib/s3.server'
 import { updateDevice, deleteDevice } from '~/services/device-service.server'
 import { getUserEmail, getUserId } from '~/services/session-service.server'
-import { useAutosaveFetcher } from '~/hooks/use-autosave-fetcher'
+import {
+	useAutosaveFetcher,
+	AUTOSAVE_DELAY_MS,
+} from '~/hooks/use-autosave-fetcher'
 import {
 	DeviceExposureType,
 	DeviceExposureZodEnum,
@@ -574,7 +577,7 @@ export default function EditDeviceGeneral() {
 	>({
 		values: autosaveValues,
 		lastSavedValues: initialAutosaveValues,
-		debounceMs: 700,
+		debounceMs: AUTOSAVE_DELAY_MS,
 		validate: validateAutosave,
 		getPayload: getAutosavePayload,
 		isSuccess: isAutosaveSuccess,
