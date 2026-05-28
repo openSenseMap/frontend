@@ -9,6 +9,8 @@ import {
 	data,
 	redirect,
 	useSearchParams,
+	useSubmit,
+	useNavigation,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/settings.account'
@@ -48,6 +50,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui/dialog'
@@ -285,7 +288,14 @@ export default function EditUserProfilePage() {
 			toast({ title: t('verification_link_invalid'), variant: 'destructive' })
 	}, [params, toast, t])
 
+	const submit = useSubmit()
+	const navigation = useNavigation()
+
+	const profileFormRef = useRef<HTMLFormElement>(null)
 	const passwordUpdRef = useRef<HTMLInputElement>(null)
+
+	const [emailConfirmOpen, setEmailConfirmOpen] = useState(false)
+	const [emailPassword, setEmailPassword] = useState('')
 
 	const { pendingEmail, hasPendingEmail, emailShown, showConfirmed } =
 		useMemo(() => {
@@ -305,6 +315,29 @@ export default function EditUserProfilePage() {
 	const [email, setEmail] = useState(emailShown)
 	const [lang, setLang] = useState(userData?.language ?? 'en_US')
 
+	const emailChanged = email.trim() !== emailShown.trim()
+
+	function submitProfileWithPassword() {
+		if (!profileFormRef.current) return
+
+		const formData = new FormData(profileFormRef.current)
+
+		formData.set('intent', 'update-profile')
+		formData.set('passwordUpdate', emailPassword)
+
+		submit(formData, { method: 'post' })
+	}
+
+	function handleSaveClick(event: React.MouseEvent<HTMLButtonElement>) {
+		if (!emailChanged) return
+
+		event.preventDefault()
+		setEmailConfirmOpen(true)
+
+		window.requestAnimationFrame(() => {
+			passwordUpdRef.current?.focus()
+		})
+	}
 	const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
 
 	const passwordFormRef = useRef<HTMLFormElement>(null)
@@ -324,7 +357,12 @@ export default function EditUserProfilePage() {
 
 		if (actionData.errors?.passwordUpdate) {
 			toast({ title: t('invalid_password'), variant: 'destructive' })
-			passwordUpdRef.current?.focus()
+			setEmailConfirmOpen(true)
+
+			window.requestAnimationFrame(() => {
+				passwordUpdRef.current?.focus()
+			})
+
 			return
 		}
 
@@ -340,6 +378,9 @@ export default function EditUserProfilePage() {
 			})
 			return
 		}
+
+		setEmailConfirmOpen(false)
+		setEmailPassword('')
 
 		toast({ title: t('profile_successfully_updated'), variant: 'success' })
 	}, [actionData, toast, t])
@@ -387,7 +428,7 @@ export default function EditUserProfilePage() {
 
 	return (
 		<>
-			<Form method="post" className="space-y-6" noValidate>
+			<Form ref={profileFormRef} method="post" className="space-y-6" noValidate>
 				<Card className="dark:bg-dark-boxes dark:border-white">
 					<CardHeader>
 						<CardTitle>{t('account_information')}</CardTitle>
@@ -506,12 +547,79 @@ export default function EditUserProfilePage() {
 					</CardContent>
 
 					<CardFooter>
-						<Button type="submit" disabled={saveDisabled}>
+						<Button
+							type="submit"
+							disabled={saveDisabled}
+							onClick={handleSaveClick}
+						>
 							{t('save_changes')}
 						</Button>
 					</CardFooter>
 				</Card>
 			</Form>
+			<Dialog
+				open={emailConfirmOpen}
+				onOpenChange={(open) => {
+					setEmailConfirmOpen(open)
+
+					if (!open) {
+						setEmailPassword('')
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>{t('confirm_email_change')}</DialogTitle>
+						<DialogDescription>
+							{t('confirm_email_change_description', {
+								currentEmail: userData?.email ?? '',
+								newEmail: email,
+							})}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="grid gap-2">
+						<Label htmlFor="passwordUpdate">{t('confirm_password')}</Label>
+						<Input
+							ref={passwordUpdRef}
+							id="passwordUpdate"
+							name="passwordUpdate"
+							type="password"
+							autoComplete="current-password"
+							placeholder={t('enter_current_password')}
+							value={emailPassword}
+							onChange={(event) => setEmailPassword(event.target.value)}
+							onKeyDown={(event) => {
+								if (event.key === 'Enter') {
+									event.preventDefault()
+									submitProfileWithPassword()
+								}
+							}}
+						/>
+					</div>
+
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => {
+								setEmailConfirmOpen(false)
+								setEmailPassword('')
+							}}
+						>
+							{t('cancel')}
+						</Button>
+
+						<Button
+							type="button"
+							disabled={!emailPassword || navigation.state === 'submitting'}
+							onClick={submitProfileWithPassword}
+						>
+							{navigation.state === 'submitting' ? t('saving') : t('confirm')}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 			<Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>

@@ -50,6 +50,7 @@
 	"confirm_password": "Confirm password",
 	"enter_current_password": "Enter your current password",
 	"cancel": "Cancel",
+	"confirm": "Confirm",
 	"try_again": "Please try again.",
 	"update_password": "Update Password",
 	"update_password_description": "Enter your current password and a new password to update your account password.",
@@ -81,5 +82,7 @@
 	"copied": "Copied successfully",
 	"saved": "Saved",
 	"unsaved_changes": "Unsaved changes",
-	"saving": "Saving..."
+	"saving": "Saving...",
+	"confirm_email_change": "Confirm email change",
+	"confirm_email_change_description": "Please enter your current password."
 }

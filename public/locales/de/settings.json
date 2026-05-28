@@ -48,6 +48,7 @@
 	"enter_current_password": "Gib dein aktuelles Passwort ein",
 	"try_again": "Versuche es nochmal.",
 	"cancel": "Abbrechen",
+	"confirm": "Bestätigen",
 	"update_password": "Aktualisiere dein Passwort",
 	"update_password_description": "Gib dein aktuelles und ein neues Passwort ein, um dein Konto Passwort zu aktualisieren.",
 	"current_password": "Aktuelles Passwort",
@@ -77,5 +78,7 @@
 	"copied": "Erfolgreich kopiert",
 	"saved": "Gespeichert",
 	"unsaved_changes": "Ungespeicherte Änderungen",
-	"saving": "Speichern..."
+	"saving": "Speichern...",
+	"confirm_email_change": "Änderung der E-Mail Adresse bestätigen",
+	"confirm_email_change_description": "Bitte gib dein aktuelles Passwort ein."
 }
