@@ -20,7 +20,7 @@ type UseAutosaveFetcherOptions<TValues, TData> = {
 export function useAutosaveFetcher<TValues, TData>({
 	values,
 	lastSavedValues,
-	debounceMs = 700,
+	debounceMs = AUTOSAVE_DELAY_MS,
 	enabled = true,
 	validate,
 	getPayload,
