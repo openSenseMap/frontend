@@ -39,9 +39,18 @@ import {
 	updateUserlocale,
 	verifyLogin,
 	getUserByAnyEmail,
+	updateUserPassword,
 } from '~/db/models/user.server'
 import { getUserId } from '~/services/session-service.server'
 import { resendEmailConfirmation } from '~/services/user-service.server'
+import { validatePassLength, validatePassType } from '~/utils'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from '~/components/ui/dialog'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
@@ -62,6 +71,68 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const user = await getUserById(userId)
 	if (!user) return redirect('/')
+
+	if (intent === 'update-password') {
+		const currPass = String(formData.get('currentPassword') ?? '')
+		const newPass = String(formData.get('newPassword') ?? '')
+		const confirmPass = String(formData.get('newPasswordConfirm') ?? '')
+		const passwordsList = [currPass, newPass, confirmPass]
+
+		const checkPasswordsType = validatePassType(passwordsList)
+		if (!checkPasswordsType.isValid) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'Password is required.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		const validatePasswordsLength = validatePassLength(passwordsList)
+		if (!validatePasswordsLength.isValid) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'Password must be at least 8 characters long.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		if (newPass !== confirmPass) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'New passwords do not match.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		const ok = await verifyLogin(user.email, currPass)
+		if (!ok) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'Current password is incorrect.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		await updateUserPassword(userId, newPass)
+
+		return data({
+			intent,
+			success: true,
+			message: 'Password updated successfully.',
+		})
+	}
 
 	if (intent === 'resend-verification') {
 		try {
@@ -198,7 +269,8 @@ export async function action({ request }: Route.ActionArgs) {
 export default function EditUserProfilePage() {
 	const userData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
-	const fetcher = useFetcher<typeof action>()
+	const resendFetcher = useFetcher<typeof action>()
+	const passwordFetcher = useFetcher<typeof action>()
 	const { toast } = useToast()
 	const { t } = useTranslation('settings')
 
@@ -233,6 +305,13 @@ export default function EditUserProfilePage() {
 	const [email, setEmail] = useState(emailShown)
 	const [lang, setLang] = useState(userData?.language ?? 'en_US')
 
+	const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
+
+	const passwordFormRef = useRef<HTMLFormElement>(null)
+	const currPassRef = useRef<HTMLInputElement>(null)
+	const newPassRef = useRef<HTMLInputElement>(null)
+	const confirmPassRef = useRef<HTMLInputElement>(null)
+
 	useEffect(() => {
 		setName(userData?.name ?? '')
 		setLang(userData?.language ?? 'en_US')
@@ -266,11 +345,32 @@ export default function EditUserProfilePage() {
 	}, [actionData, toast, t])
 
 	useEffect(() => {
-		if (fetcher.state !== 'idle' || !fetcher.data) return
-		if (fetcher.data.intent !== 'resend-verification') return
-		if (!('code' in fetcher.data)) return
+		if (passwordFetcher.state !== 'idle' || !passwordFetcher.data) return
+		if (passwordFetcher.data.intent !== 'update-password') return
+		if (!('success' in passwordFetcher.data)) return
 
-		const { code } = fetcher.data
+		if (passwordFetcher.data.success) {
+			passwordFormRef.current?.reset()
+			toast({ title: passwordFetcher.data.message, variant: 'success' })
+			setPasswordDialogOpen(false)
+			return
+		}
+
+		toast({
+			title: passwordFetcher.data.message,
+			variant: 'destructive',
+			description: t('try_again'),
+		})
+
+		currPassRef.current?.focus()
+	}, [passwordFetcher.state, passwordFetcher.data, toast, t])
+
+	useEffect(() => {
+		if (resendFetcher.state !== 'idle' || !resendFetcher.data) return
+		if (resendFetcher.data.intent !== 'resend-verification') return
+		if (!('code' in resendFetcher.data)) return
+
+		const { code } = resendFetcher.data
 		if (code === 'Ok') {
 			toast({ title: t('verification_email_sent'), variant: 'success' })
 		} else if (code === 'UnprocessableContent') {
@@ -278,7 +378,7 @@ export default function EditUserProfilePage() {
 		} else {
 			toast({ title: t('verification_email_failed'), variant: 'destructive' })
 		}
-	}, [fetcher.state, fetcher.data, toast, t])
+	}, [resendFetcher.state, resendFetcher.data, toast, t])
 
 	const saveDisabled =
 		name === (userData?.name ?? '') &&
@@ -286,125 +386,208 @@ export default function EditUserProfilePage() {
 		email.trim() === emailShown.trim()
 
 	return (
-		<Form method="post" className="space-y-6" noValidate>
-			<Card className="dark:bg-dark-boxes dark:border-white">
-				<CardHeader>
-					<CardTitle>{t('account_information')}</CardTitle>
-					<CardDescription>{t('update_basic_details')}</CardDescription>
-				</CardHeader>
-				<CardContent className="grid gap-6">
-					<div className="grid gap-2">
-						<Label htmlFor="name">{t('name')}</Label>
-						<Input
-							id="name"
-							required
-							name="name"
-							type="text"
-							placeholder={t('enter_name')}
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-						/>
-						{name !== (userData?.name ?? '') && (
-							<Callout variant="warning">
-								<Trans
-									i18nKey="username_change_warning"
-									ns="settings"
-									values={{ oldUsername: userData?.name ?? '' }}
-									components={{ strong: <strong />, code: <code /> }}
-								/>
-							</Callout>
-						)}
-					</div>
+		<>
+			<Form method="post" className="space-y-6" noValidate>
+				<Card className="dark:bg-dark-boxes dark:border-white">
+					<CardHeader>
+						<CardTitle>{t('account_information')}</CardTitle>
+						<CardDescription>{t('update_basic_details')}</CardDescription>
+					</CardHeader>
+					<CardContent className="grid gap-6">
+						<div className="grid gap-2">
+							<Label htmlFor="name">{t('name')}</Label>
+							<Input
+								id="name"
+								required
+								name="name"
+								type="text"
+								placeholder={t('enter_name')}
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+							/>
+							{name !== (userData?.name ?? '') && (
+								<Callout variant="warning">
+									<Trans
+										i18nKey="username_change_warning"
+										ns="settings"
+										values={{ oldUsername: userData?.name ?? '' }}
+										components={{ strong: <strong />, code: <code /> }}
+									/>
+								</Callout>
+							)}
+						</div>
 
-					<div className="grid gap-2">
-						<Label htmlFor="email">{t('email')}</Label>
-						<Input
-							id="email"
-							name="email"
-							placeholder={t('enter_email')}
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-						/>
+						<div className="grid gap-2">
+							<Label htmlFor="email">{t('email')}</Label>
+							<Input
+								id="email"
+								name="email"
+								placeholder={t('enter_email')}
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+							/>
 
-						{showConfirmed ? (
-							<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
-								<span className="inline-flex gap-1">
-									<CheckLine /> {t('email_confirmed')}
-								</span>
-							</p>
-						) : (
-							<div className="flex items-center justify-between gap-3">
-								<p className="flex items-center gap-1 text-sm text-orange-500 dark:text-amber-400">
+							{showConfirmed ? (
+								<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
 									<span className="inline-flex gap-1">
-										<OctagonAlert />{' '}
-										{hasPendingEmail
-											? t('email_not_confirmed')
-											: t('email_not_confirmed')}
+										<CheckLine /> {t('email_confirmed')}
 									</span>
 								</p>
+							) : (
+								<div className="flex items-center justify-between gap-3">
+									<p className="flex items-center gap-1 text-sm text-orange-500 dark:text-amber-400">
+										<span className="inline-flex gap-1">
+											<OctagonAlert />{' '}
+											{hasPendingEmail
+												? t('email_not_confirmed')
+												: t('email_not_confirmed')}
+										</span>
+									</p>
 
-								<Button
-									type="button"
-									variant="default"
-									size="sm"
-									disabled={fetcher.state === 'submitting'}
-									onClick={() => {
-										void fetcher.submit(
-											{ intent: 'resend-verification' },
-											{ method: 'post' },
-										)
-									}}
-								>
-									{fetcher.state === 'submitting'
-										? t('sending')
-										: t('resend_verification')}
-								</Button>
+									<Button
+										type="button"
+										variant="default"
+										size="sm"
+										disabled={resendFetcher.state === 'submitting'}
+										onClick={() => {
+											void resendFetcher.submit(
+												{ intent: 'resend-verification' },
+												{ method: 'post' },
+											)
+										}}
+									>
+										{resendFetcher.state === 'submitting'
+											? t('sending')
+											: t('resend_verification')}
+									</Button>
+								</div>
+							)}
+
+							{hasPendingEmail ? (
+								<p className="text-muted-foreground text-sm">
+									{t('email_change_pending_hint', {
+										pendingEmail,
+										currentEmail: userData?.email ?? '',
+									})}
+								</p>
+							) : null}
+						</div>
+
+						<div className="grid gap-2">
+							<Label htmlFor="language">{t('language')}</Label>
+							<Select value={lang} onValueChange={setLang} name="language">
+								<SelectTrigger className="dark:border-white">
+									<SelectValue placeholder={t('select_language')} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="en_US">English</SelectItem>
+									<SelectItem value="de_DE">Deutsch</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="flex items-center justify-between gap-4 rounded-lg border p-4 dark:border-white">
+							<div className="space-y-1">
+								<p className="font-medium">{t('update_password')}</p>
+								<p className="text-muted-foreground text-sm">
+									{t('update_password_description')}
+								</p>
 							</div>
-						)}
 
-						{hasPendingEmail ? (
-							<p className="text-muted-foreground text-sm">
-								{t('email_change_pending_hint', {
-									pendingEmail,
-									currentEmail: userData?.email ?? '',
-								})}
-							</p>
-						) : null}
-					</div>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setPasswordDialogOpen(true)}
+							>
+								{t('update_password')}
+							</Button>
+						</div>
+					</CardContent>
 
-					<div className="grid gap-2">
-						<Label htmlFor="language">{t('language')}</Label>
-						<Select value={lang} onValueChange={setLang} name="language">
-							<SelectTrigger className="dark:border-white">
-								<SelectValue placeholder={t('select_language')} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="en_US">English</SelectItem>
-								<SelectItem value="de_DE">Deutsch</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+					<CardFooter>
+						<Button type="submit" disabled={saveDisabled}>
+							{t('save_changes')}
+						</Button>
+					</CardFooter>
+				</Card>
+			</Form>
+			<Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>{t('update_password')}</DialogTitle>
+						<DialogDescription>
+							{t('update_password_description')}
+						</DialogDescription>
+					</DialogHeader>
 
-					<div className="grid gap-2">
-						<Label htmlFor="passwordUpdate">{t('confirm_password')}</Label>
-						<Input
-							autoComplete="current-password"
-							ref={passwordUpdRef}
-							id="passwordUpdate"
-							placeholder={t('enter_current_password')}
-							type="password"
-							name="passwordUpdate"
-						/>
-					</div>
-				</CardContent>
+					<passwordFetcher.Form
+						method="post"
+						className="space-y-4"
+						noValidate
+						ref={passwordFormRef}
+					>
+						<input type="hidden" name="intent" value="update-password" />
 
-				<CardFooter>
-					<Button type="submit" disabled={saveDisabled}>
-						{t('save_changes')}
-					</Button>
-				</CardFooter>
-			</Card>
-		</Form>
+						<div className="space-y-2">
+							<Label htmlFor="currentPassword">{t('current_password')}</Label>
+							<Input
+								ref={currPassRef}
+								id="currentPassword"
+								name="currentPassword"
+								placeholder={t('enter_current_password')}
+								type="password"
+								autoComplete="current-password"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="newPassword">{t('new_password')}</Label>
+							<Input
+								ref={newPassRef}
+								id="newPassword"
+								name="newPassword"
+								placeholder={t('enter_new_password')}
+								type="password"
+								autoComplete="new-password"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="newPasswordConfirm">
+								{t('confirm_password')}
+							</Label>
+							<Input
+								ref={confirmPassRef}
+								id="newPasswordConfirm"
+								name="newPasswordConfirm"
+								placeholder={t('confirm_new_password')}
+								type="password"
+								autoComplete="new-password"
+							/>
+						</div>
+
+						<div className="flex justify-end gap-2 pt-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setPasswordDialogOpen(false)}
+							>
+								{t('cancel')}
+							</Button>
+
+							<Button
+								type="submit"
+								disabled={passwordFetcher.state === 'submitting'}
+							>
+								{passwordFetcher.state === 'submitting'
+									? t('saving')
+									: t('save_changes')}
+							</Button>
+						</div>
+					</passwordFetcher.Form>
+				</DialogContent>
+			</Dialog>
+		</>
 	)
 }

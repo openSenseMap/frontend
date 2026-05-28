@@ -47,6 +47,7 @@
 	"confirm_password": "Bestätige dein Passwort",
 	"enter_current_password": "Gib dein aktuelles Passwort ein",
 	"try_again": "Versuche es nochmal.",
+	"cancel": "Abbrechen",
 	"update_password": "Aktualisiere dein Passwort",
 	"update_password_description": "Gib dein aktuelles und ein neues Passwort ein, um dein Konto Passwort zu aktualisieren.",
 	"current_password": "Aktuelles Passwort",

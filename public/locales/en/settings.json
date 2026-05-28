@@ -49,7 +49,7 @@
 	"select_language": "Select language",
 	"confirm_password": "Confirm password",
 	"enter_current_password": "Enter your current password",
-
+	"cancel": "Cancel",
 	"try_again": "Please try again.",
 	"update_password": "Update Password",
 	"update_password_description": "Enter your current password and a new password to update your account password.",
