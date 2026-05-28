@@ -16,11 +16,7 @@ import { MarkdownContent } from '~/components/markdown-content'
 import { Button } from '~/components/ui/button'
 import { getDevice, getDeviceWithoutSensors } from '~/db/models/device.server'
 import { verifyLogin } from '~/db/models/user.server'
-import {
-	DeviceExposureType,
-	DeviceExposureZodEnum,
-	type Device,
-} from '~/db/schema'
+import { type Device } from '~/db/schema'
 import {
 	uploadDeviceImage,
 	deleteDeviceImage,
@@ -29,16 +25,12 @@ import {
 import { updateDevice, deleteDevice } from '~/services/device-service.server'
 import { getUserEmail, getUserId } from '~/services/session-service.server'
 import { useAutosaveFetcher } from '~/hooks/use-autosave-fetcher'
-
-function parseDeviceExposure(value: unknown): DeviceExposureType | null {
-	const result = DeviceExposureZodEnum.safeParse(value)
-
-	return result.success ? result.data : null
-}
-
-function getInitialExposure(value: unknown): DeviceExposureType {
-	return parseDeviceExposure(value) ?? 'unknown'
-}
+import {
+	DeviceExposureType,
+	DeviceExposureZodEnum,
+	getDeviceExposure,
+	parseDeviceExposure,
+} from '~/lib/device-enums'
 
 type GeneralAutosaveValues = {
 	name: string
@@ -161,24 +153,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 		case 'autosave-general': {
 			const name = String(formData.get('name') ?? '')
 			const exposure = parseDeviceExposure(formData.get('exposure'))
-
-			if (!exposure) {
-				return data(
-					{
-						intent,
-						success: false,
-						message: 'Invalid exposure.',
-						errors: {
-							name: null,
-							exposure: 'Invalid exposure.',
-							passwordDelete: null,
-							image: null,
-						},
-						status: 400,
-					} satisfies DeviceGeneralActionData,
-					{ status: 400 },
-				)
-			}
 			const description = String(formData.get('description') ?? '')
 			const website = String(formData.get('website') ?? '')
 			const tags = uniqueTags(parseGroupTag(formData.get('grouptag')))
@@ -192,6 +166,24 @@ export async function action({ request, params }: Route.ActionArgs) {
 						errors: {
 							name: 'Device name is required.',
 							exposure: null,
+							passwordDelete: null,
+							image: null,
+						},
+						status: 400,
+					} satisfies DeviceGeneralActionData,
+					{ status: 400 },
+				)
+			}
+
+			if (!exposure) {
+				return data(
+					{
+						intent,
+						success: false,
+						message: 'Invalid exposure.',
+						errors: {
+							name: null,
+							exposure: 'Invalid exposure.',
 							passwordDelete: null,
 							image: null,
 						},
@@ -476,7 +468,7 @@ export default function EditDeviceGeneral() {
 	const initialAutosaveValues = useMemo<GeneralAutosaveValues>(
 		() => ({
 			name: device.name ?? '',
-			exposure: getInitialExposure(device.exposure),
+			exposure: getDeviceExposure(device.exposure),
 			description: device.description ?? '',
 			website: device.website ?? '',
 			tags: device.tags ?? [],
@@ -490,11 +482,10 @@ export default function EditDeviceGeneral() {
 		],
 	)
 
+	const [name, setName] = useState(initialAutosaveValues.name)
 	const [exposure, setExposure] = useState<DeviceExposureType>(
 		initialAutosaveValues.exposure,
 	)
-
-	const [name, setName] = useState(initialAutosaveValues.name)
 	const [description, setDescription] = useState(
 		initialAutosaveValues.description,
 	)
@@ -522,7 +513,11 @@ export default function EditDeviceGeneral() {
 	)
 
 	const validateAutosave = useCallback((values: GeneralAutosaveValues) => {
-		return values.name.trim().length > 0 && values.description.length <= 5000
+		return (
+			values.name.trim().length > 0 &&
+			DeviceExposureZodEnum.safeParse(values.exposure).success &&
+			values.description.length <= 5000
+		)
 	}, [])
 
 	const getAutosavePayload = useCallback((values: GeneralAutosaveValues) => {
@@ -779,13 +774,9 @@ export default function EditDeviceGeneral() {
 									id="exposure"
 									name="exposure"
 									value={exposure}
-									onChange={(e) => {
-										const nextExposure = parseDeviceExposure(e.target.value)
-
-										if (nextExposure) {
-											setExposure(nextExposure)
-										}
-									}}
+									onChange={(e) =>
+										setExposure(getDeviceExposure(e.target.value))
+									}
 									className="w-full appearance-auto rounded border border-gray-200 px-2 py-1.5 text-base"
 								>
 									<option value="indoor">{t('indoor')}</option>
