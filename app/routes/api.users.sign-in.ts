@@ -123,7 +123,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 }
 
 export const middleware: Route.MiddlewareFunction[] = [
-	requestContentTypeJson,
+	requestContentTypeJson(),
 	responseContentTypeJson,
 ]
 

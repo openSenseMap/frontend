@@ -5,7 +5,6 @@ import { StandardResponse } from '~/lib/responses'
 import { registerUser } from '~/services/user-service.server'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import { UserSchema, UserLanguageSchema } from '~/lib/openapi/schemas/user'
@@ -21,6 +20,10 @@ import {
 	internalServerErrorResponse,
 	methodNotAllowedResponse,
 } from '~/lib/openapi/errors'
+import {
+	requestContentTypeJsonOrForm,
+	responseContentTypeJson,
+} from '~/middleware/content-type-header.server'
 
 const RegistrationNameSchema = z
 	.string()
@@ -49,7 +52,7 @@ const RegisterUserRequestSchema = z
 			format: 'password',
 		}),
 
-		language: UserLanguageSchema.default('en_US').optional().meta({
+		language: UserLanguageSchema.optional().default('en_US').meta({
 			description:
 				'Preferred user language. Used for the website and emails. Defaults to `en_US`.',
 			example: 'en_US',
@@ -224,6 +227,11 @@ function mapRegistrationError(code: string): string {
 			return 'Bad Request'
 	}
 }
+
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJsonOrForm(['POST']),
+	responseContentTypeJson,
+]
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	if (request.method !== 'POST') {

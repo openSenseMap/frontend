@@ -9,12 +9,11 @@ import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
 	DeviceSensorPathParamsSchema,
-	IsoDateTimeSchema,
+	IsoDateTimeToDateSchema,
 } from '~/lib/openapi/schemas/common'
 
 import {
@@ -33,10 +32,6 @@ import {
 	methodNotAllowedResponse,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
-
-const IsoDateTimeToDateSchema = IsoDateTimeSchema.transform(
-	(value) => new Date(value),
-)
 
 const DeleteSensorMeasurementsQueryParamsSchema = z
 	.object({
@@ -85,37 +80,6 @@ const DeleteSensorMeasurementsBadRequestErrorSchema =
 		],
 	})
 
-const parseQueryParams = async (
-	request: Request,
-): Promise<z.infer<typeof DeleteSensorMeasurementsQueryParamsSchema>> => {
-	const url = new URL(request.url)
-	const timestamps = url.searchParams.getAll('timestamps')
-
-	const params = {
-		'from-date': url.searchParams.get('from-date') ?? undefined,
-		'to-date': url.searchParams.get('to-date') ?? undefined,
-		deleteAllMeasurements:
-			url.searchParams.get('deleteAllMeasurements') ?? undefined,
-		timestamps:
-			timestamps.length === 0
-				? undefined
-				: timestamps.length === 1
-					? timestamps[0]
-					: timestamps,
-	}
-
-	const parseResult =
-		DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
-
-	if (!parseResult.success) {
-		const firstError = parseResult.error.issues[0]
-		const message = firstError.message || 'Invalid query parameters'
-		throw StandardResponse.badRequest(message)
-	}
-
-	return parseResult.data
-}
-
 export const openapi: ZodOpenApiPathItemObject = {
 	delete: {
 		tags: ['Measurements'],
@@ -159,6 +123,37 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 		},
 	},
+}
+
+const parseQueryParams = async (
+	request: Request,
+): Promise<z.infer<typeof DeleteSensorMeasurementsQueryParamsSchema>> => {
+	const url = new URL(request.url)
+	const timestamps = url.searchParams.getAll('timestamps')
+
+	const params = {
+		'from-date': url.searchParams.get('from-date') ?? undefined,
+		'to-date': url.searchParams.get('to-date') ?? undefined,
+		deleteAllMeasurements:
+			url.searchParams.get('deleteAllMeasurements') ?? undefined,
+		timestamps:
+			timestamps.length === 0
+				? undefined
+				: timestamps.length === 1
+					? timestamps[0]
+					: timestamps,
+	}
+
+	const parseResult =
+		DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
+
+	if (!parseResult.success) {
+		const firstError = parseResult.error.issues[0]
+		const message = firstError.message || 'Invalid query parameters'
+		throw StandardResponse.badRequest(message)
+	}
+
+	return parseResult.data
 }
 
 export async function action({ request, params }: Route.ActionArgs) {

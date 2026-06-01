@@ -15,13 +15,27 @@ import {
 	badRequestResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
+import { requestContentTypeForm } from '~/middleware/content-type-header.server'
 
 const RequestPasswordResetRequestSchema = z
 	.object({
-		email: z.string().trim().pipe(z.email()).meta({
-			description: 'Email address of the user requesting a password reset.',
-			example: 'user@example.com',
-		}),
+		email: z
+			.string({
+				error: 'No email address specified.',
+			})
+			.trim()
+			.min(1, {
+				error: 'No email address specified.',
+			})
+			.pipe(
+				z.email({
+					error: 'Invalid email address.',
+				}),
+			)
+			.meta({
+				description: 'Email address of the user requesting a password reset.',
+				example: 'user@example.com',
+			}),
 	})
 	.meta({
 		id: 'RequestPasswordResetRequest',
@@ -84,39 +98,103 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-export const action = async ({ request }: Route.ActionArgs) => {
-	let formData = new FormData()
+const parsePasswordResetRequest = async (
+	request: Request,
+): Promise<z.output<typeof RequestPasswordResetRequestSchema> | Response> => {
+	let formData: FormData
+
 	try {
 		formData = await request.formData()
 	} catch {
-		// Just continue, it will fail in the next check
-		// The try catch block handles an exception that occurs if the
-		// request was sent without x-www-form-urlencoded content-type header
+		return StandardResponse.badRequest('Invalid form data.')
 	}
 
-	const email = formData.get('email')?.toString().trim()
+	const parsed = await RequestPasswordResetRequestSchema.safeParseAsync(
+		Object.fromEntries(formData.entries()),
+	)
 
-	if (!email) {
-		return StandardResponse.badRequest('No email address specified.')
+	if (!parsed.success) {
+		const issue = parsed.error.issues[0]
+
+		if (issue?.path.includes('email')) {
+			return StandardResponse.badRequest(
+				issue.code === 'invalid_format'
+					? 'Invalid email address.'
+					: 'No email address specified.',
+			)
+		}
+
+		return StandardResponse.badRequest(
+			issue?.message ?? 'Invalid password reset request.',
+		)
 	}
 
-	const parsedEmail = z.email().safeParse(email)
+	return parsed.data
+}
 
-	if (!parsedEmail.success) {
-		return StandardResponse.badRequest('Invalid email address.')
+export const middleware: Route.MiddlewareFunction[] = [requestContentTypeForm]
+
+export const action = async ({ request }: Route.ActionArgs) => {
+	const parsedRequest = await parsePasswordResetRequest(request)
+
+	if (parsedRequest instanceof Response) {
+		return parsedRequest
 	}
 
 	try {
-		await requestPasswordReset(parsedEmail.data)
+		await requestPasswordReset(parsedRequest.email)
 
-		// We don't want to leak valid/ invalid emails, so we confirm
-		// the initiation no matter what the return value above is
-		return StandardResponse.ok({
-			code: 'Ok',
-			message: 'Password reset initiated',
-		})
+		const responseParsed =
+			await RequestPasswordResetResponseSchema.safeParseAsync({
+				code: 'Ok',
+				message: 'Password reset initiated',
+			})
+
+		if (!responseParsed.success) {
+			console.warn(responseParsed.error)
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.ok(responseParsed.data)
 	} catch (err) {
 		console.warn(err)
 		return StandardResponse.internalServerError()
 	}
 }
+
+// export const action = async ({ request }: Route.ActionArgs) => {
+// 	let formData = new FormData()
+// 	try {
+// 		formData = await request.formData()
+// 	} catch {
+// 		// Just continue, it will fail in the next check
+// 		// The try catch block handles an exception that occurs if the
+// 		// request was sent without x-www-form-urlencoded content-type header
+// 	}
+
+// 	const email = formData.get('email')?.toString().trim()
+
+// 	if (!email) {
+// 		return StandardResponse.badRequest('No email address specified.')
+// 	}
+
+// 	const parsedEmail = z.email().safeParse(email)
+
+// 	if (!parsedEmail.success) {
+// 		return StandardResponse.badRequest('Invalid email address.')
+// 	}
+
+// 	try {
+// 		await requestPasswordReset(parsedEmail.data)
+
+// 		// We don't want to leak valid/ invalid emails, so we confirm
+// 		// the initiation no matter what the return value above is
+// 		return StandardResponse.ok({
+// 			code: 'Ok',
+// 			message: 'Password reset initiated',
+// 		})
+// 	} catch (err) {
+// 		console.warn(err)
+// 		return StandardResponse.internalServerError()
+// 	}
+// }

@@ -20,16 +20,34 @@ import {
 
 const PasswordResetRequestSchema = z
 	.object({
-		password: z.string().min(8).meta({
-			description: 'New password. Must be at least 8 characters long.',
-			example: 'newPassword456',
-			format: 'password',
-		}),
+		password: z
+			.string({
+				error: 'No new password specified.',
+			})
+			.min(1, {
+				error: 'No new password specified.',
+			})
+			.min(8, {
+				error: 'Password must be at least 8 characters.',
+			})
+			.meta({
+				description: 'New password. Must be at least 8 characters long.',
+				example: 'newPassword456',
+				format: 'password',
+			}),
 
-		token: z.string().min(1).meta({
-			description: 'Password reset token sent to the user by email.',
-			example: 'pwreset_01jv7c9x8n0example',
-		}),
+		token: z
+			.string({
+				error: 'No password reset token specified.',
+			})
+			.trim()
+			.min(1, {
+				error: 'No password reset token specified.',
+			})
+			.meta({
+				description: 'Password reset token sent to the user by email.',
+				example: 'pwreset_01jv7c9x8n0example',
+			}),
 	})
 	.meta({
 		id: 'PasswordResetRequest',
@@ -121,52 +139,64 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-export const action = async ({ request }: Route.ActionArgs) => {
-	let formData = new FormData()
+const parsePasswordResetRequest = async (
+	request: Request,
+): Promise<z.output<typeof PasswordResetRequestSchema> | Response> => {
+	let formData: FormData
+
 	try {
 		formData = await request.formData()
 	} catch {
-		// Just continue, it will fail in the next check
-		// The try catch block handles an exception that occurs if the
-		// request was sent without x-www-form-urlencoded content-type header
+		return StandardResponse.badRequest('Bad Request')
 	}
 
-	if (
-		!formData.has('password') ||
-		formData.get('password')?.toString().trim().length === 0
+	const parsed = await PasswordResetRequestSchema.safeParseAsync(
+		Object.fromEntries(formData.entries()),
 	)
-		return StandardResponse.badRequest('No new password specified.')
 
-	if (
-		!formData.has('token') ||
-		formData.get('token')?.toString().trim().length === 0
-	)
-		return StandardResponse.badRequest('No password reset token specified.')
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			parsed.error.issues[0]?.message ?? 'Bad Request',
+		)
+	}
+
+	return parsed.data
+}
+
+export const action = async ({ request }: Route.ActionArgs) => {
+	const requestParsed = await parsePasswordResetRequest(request)
+
+	if (requestParsed instanceof Response) {
+		return requestParsed
+	}
 
 	try {
 		const resetStatus = await resetPassword(
-			formData.get('token')!.toString(),
-			formData.get('password')!.toString(),
+			requestParsed.token,
+			requestParsed.password,
 		)
 
 		switch (resetStatus) {
 			case 'forbidden':
-			case 'expired':
 				return StandardResponse.forbidden(
-					resetStatus === 'forbidden'
-						? 'Password reset for this user not possible'
-						: 'Password reset token expired',
+					'Password reset for this user not possible',
 				)
+
+			case 'expired':
+				return StandardResponse.forbidden('Password reset token expired')
+
 			case 'invalid_password_format':
 				return StandardResponse.badRequest(
 					'Password must be at least 8 characters.',
 				)
+
 			case 'success':
-				return StandardResponse.ok({
+				return await PasswordResetResponseSchema.safeParseAsync({
 					code: 'Ok',
-					message:
-						'Password successfully changed. You can now login with your new password',
 				})
+
+			default:
+				return StandardResponse.internalServerError()
 		}
 	} catch (err) {
 		console.warn(err)

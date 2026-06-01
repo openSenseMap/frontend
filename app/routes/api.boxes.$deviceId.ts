@@ -7,7 +7,7 @@ import {
 } from '~/db/models/device.server'
 import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { getUserFromJwt } from '~/lib/jwt'
+import { getAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import { deleteDevice } from '~/services/device-service.server'
 import { z } from 'zod'
@@ -33,6 +33,12 @@ import {
 	DeviceAddonsUpdateSchema,
 	ApiDeviceSchema,
 } from '~/lib/openapi/schemas/device'
+import { ExposureSchema } from '~/lib/api-schemas/query'
+import {
+	requestContentTypeJson,
+	responseContentTypeJson,
+} from '~/middleware/content-type-header.server'
+import { parseJsonBody } from '~/lib/request-parsing'
 
 const messages = {
 	conflictingSensorsAndAddons:
@@ -46,10 +52,7 @@ const UpdateDeviceRequestSchema = z
 			example: 'My device',
 		}),
 
-		exposure: z.string().optional().meta({
-			description: 'Device exposure',
-			example: 'outdoor',
-		}),
+		exposure: ExposureSchema,
 
 		description: z.string().optional().meta({
 			description: 'Device description',
@@ -282,6 +285,33 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
+const parsePathParams = (params: Route.LoaderArgs['params']) => {
+	const parsed = DevicePathParamsSchema.safeParse(params)
+
+	if (!parsed.success) {
+		return StandardResponse.badRequest(apiMessages.deviceIdRequired)
+	}
+
+	return parsed.data
+}
+
+const okDeviceResponse = async (device: unknown) => {
+	const apiDevice = transformDeviceToApiFormat(device as any)
+	const parsed = await ApiDeviceSchema.safeParseAsync(apiDevice)
+
+	if (!parsed.success) {
+		console.warn(parsed.error)
+		return StandardResponse.internalServerError()
+	}
+
+	return StandardResponse.ok(parsed.data)
+}
+
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJson(['PUT', 'DELETE']),
+	responseContentTypeJson,
+]
+
 export async function loader({ params }: Route.LoaderArgs) {
 	const { deviceId } = params
 
@@ -292,7 +322,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 		if (!device) return StandardResponse.notFound('Device not found.')
 
-		return StandardResponse.ok(device)
+		return await okDeviceResponse(device)
 	} catch (error) {
 		console.error('Error fetching box:', error)
 
@@ -313,32 +343,21 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-	const { deviceId } = params
+	const parsedParams = parsePathParams(params)
+	if (parsedParams instanceof Response) return parsedParams
 
-	if (!deviceId) {
-		return Response.json({ error: 'Device ID is required.' }, { status: 400 })
-	}
-
-	const jwtResponse = await getUserFromJwt(request)
-
-	if (typeof jwtResponse === 'string') {
-		return Response.json(
-			{
-				code: 'Forbidden',
-				message:
-					'Invalid JWT authorization. Please sign in to obtain a new JWT.',
-			},
-			{ status: 403 },
-		)
-	}
+	const user = await getAuthenticatedUser(request)
+	if (user instanceof Response) return user
 
 	switch (request.method) {
 		case 'PUT':
-			return await put(request, jwtResponse, deviceId)
+			return await put(request, user, parsedParams.deviceId)
+
 		case 'DELETE':
-			return await del(request, jwtResponse, deviceId)
+			return await del(request, user, parsedParams.deviceId)
+
 		default:
-			return Response.json({ message: 'Method Not Allowed' }, { status: 405 })
+			return StandardResponse.methodNotAllowed('Method Not Allowed')
 	}
 }
 
@@ -469,22 +488,25 @@ async function put(request: Request, user: any, deviceId: string) {
 }
 
 async function del(request: Request, user: User, deviceId: string) {
-	const device = (await getDevice({ id: deviceId })) as unknown as Device
+	const device = await getDevice({ id: deviceId })
 
-	if (!device) throw StandardResponse.notFound('Device not found')
+	if (!device) {
+		return StandardResponse.notFound('Device not found')
+	}
 
-	const body = await request.json()
-
-	if (!body.password)
-		throw StandardResponse.badRequest(
-			'Password is required for device deletion',
-		)
+	const parsedBody = await parseJsonBody(request, DeleteDeviceRequestSchema)
+	if (parsedBody instanceof Response) return parsedBody
 
 	try {
-		const deleted = await deleteDevice(user, device, body.password)
+		const deleted = await deleteDevice(
+			user,
+			device as Device,
+			parsedBody.password,
+		)
 
-		if (deleted === 'unauthorized')
+		if (deleted === 'unauthorized') {
 			return StandardResponse.unauthorized('Password incorrect')
+		}
 
 		return StandardResponse.ok(null)
 	} catch (err) {

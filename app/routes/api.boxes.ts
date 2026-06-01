@@ -31,6 +31,7 @@ import {
 	UnprocessableContentErrorSchema,
 	unprocessableContentResponse,
 } from '~/lib/openapi/errors'
+import { requestContentTypeJson } from '~/middleware/content-type-header.server'
 
 const BoxesQueryParamsSchema = BoxesQuerySchema.meta({
 	id: 'BoxesQueryParams',
@@ -134,6 +135,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 		},
 	},
 }
+
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJson(['POST']),
+]
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)

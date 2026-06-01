@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import { getUserDeviceIds } from '~/db/models/device.server'
 import { type User } from '~/db/schema/user'
-import { getUserFromJwt } from '~/lib/jwt'
+import { getAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import { deleteUser, updateUserDetails } from '~/services/user-service.server'
 import { type Route } from './+types/api.users.me'
@@ -25,6 +25,11 @@ import {
 } from '~/lib/openapi/errors'
 import { apiMessages } from '~/lib/openapi/messages'
 import { transformUserToApiFormat } from '~/lib/user-transform'
+import {
+	requestContentTypeJson,
+	requestContentTypeJsonOrForm,
+} from '~/middleware/content-type-header.server'
+import { parseFormRequest, parseJsonBody } from '~/lib/request-parsing'
 
 const messages = {
 	noChanges: 'No changed properties supplied. User remains unchanged.',
@@ -296,21 +301,26 @@ const getBearerToken = (request: Request) => {
 	return token
 }
 
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJson(['PUT']),
+	requestContentTypeJsonOrForm(['DELETE']),
+]
+
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	try {
-		const jwtResponse = await getUserFromJwt(request)
+		const user = await getAuthenticatedUser(request)
 
-		if (typeof jwtResponse === 'string') {
-			return StandardResponse.forbidden(apiMessages.invalidJwt)
+		if (user instanceof Response) {
+			return user
 		}
 
-		const deviceIds = await getUserDeviceIds(jwtResponse.id)
+		const deviceIds = await getUserDeviceIds(user.id)
 
 		const responseParsed = await GetMeResponseSchema.safeParseAsync({
 			code: 'Ok',
 			data: {
 				me: {
-					...transformUserToApiFormat(jwtResponse),
+					...transformUserToApiFormat(user),
 					boxes: deviceIds,
 				},
 			},
@@ -329,19 +339,19 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 }
 
 export const action = async ({ request }: Route.ActionArgs) => {
-	const loaderValue = (await loader({
-		request,
-	} as Route.LoaderArgs)) as Response
+	const user = await getAuthenticatedUser(request)
 
-	if (loaderValue.status !== 200) return loaderValue
-
-	const user = (await loaderValue.json()).data.me as User
+	if (user instanceof Response) {
+		return user
+	}
 
 	switch (request.method) {
 		case 'PUT':
 			return await put(user, request)
+
 		case 'DELETE':
 			return await del(user, request)
+
 		default:
 			return StandardResponse.methodNotAllowed('Method Not Allowed')
 	}
@@ -349,21 +359,13 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
 const put = async (user: User, request: Request): Promise<Response> => {
 	try {
-		let body: unknown
+		const requestData = await parseJsonBody(
+			request,
+			UpdateCurrentUserRequestSchema,
+		)
 
-		try {
-			body = await request.json()
-		} catch {
-			return StandardResponse.badRequest(messages.badRequest)
-		}
-
-		const requestParsed =
-			await UpdateCurrentUserRequestSchema.safeParseAsync(body)
-
-		if (!requestParsed.success) {
-			return StandardResponse.badRequest(
-				requestParsed.error.issues[0]?.message ?? messages.badRequest,
-			)
+		if (requestData instanceof Response) {
+			return requestData
 		}
 
 		const jwtString = getBearerToken(request)
@@ -376,7 +378,7 @@ const put = async (user: User, request: Request): Promise<Response> => {
 			updated,
 			messages: updateMessages,
 			updatedUser,
-		} = await updateUserDetails(user, jwtString, requestParsed.data)
+		} = await updateUserDetails(user, jwtString, requestData)
 
 		const messageText = updateMessages.join('.')
 
@@ -420,22 +422,13 @@ const put = async (user: User, request: Request): Promise<Response> => {
 
 const del = async (user: User, request: Request): Promise<Response> => {
 	try {
-		let formData: FormData
-
-		try {
-			formData = await request.formData()
-		} catch {
-			return StandardResponse.badRequest(messages.badRequest)
-		}
-
-		const requestParsed = DeleteCurrentUserRequestSchema.safeParse(
-			Object.fromEntries(formData.entries()),
+		const requestData = await parseFormRequest(
+			request,
+			DeleteCurrentUserRequestSchema,
 		)
 
-		if (!requestParsed.success) {
-			return StandardResponse.badRequest(
-				requestParsed.error.issues[0]?.message ?? messages.badRequest,
-			)
+		if (requestData instanceof Response) {
+			return requestData
 		}
 
 		const jwtString = getBearerToken(request)
@@ -444,11 +437,7 @@ const del = async (user: User, request: Request): Promise<Response> => {
 			return StandardResponse.forbidden(apiMessages.invalidJwt)
 		}
 
-		const deleted = await deleteUser(
-			user,
-			requestParsed.data.password,
-			jwtString,
-		)
+		const deleted = await deleteUser(user, requestData.password, jwtString)
 
 		if (deleted === 'unauthorized') {
 			return StandardResponse.unauthorized(apiMessages.passwordIncorrect)

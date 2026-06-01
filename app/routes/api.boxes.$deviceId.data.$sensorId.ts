@@ -19,12 +19,16 @@ import {
 	NotFoundErrorSchema,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
+import { DeviceSensorPathParamsSchema } from '~/lib/openapi/schemas/common'
 import {
-	DeviceSensorPathParamsSchema,
-	IsoDateTimeSchema,
-} from '~/lib/openapi/schemas/common'
+	DateRangeQuerySchema,
+	DelimiterSchema,
+	OutputFormatSchema,
+	QueryDownloadSchema,
+	SeparatorSchema,
+} from '~/lib/api-schemas/query'
 
-const SensorDataQueryParamsSchema = z.object({
+const SensorDataQueryParamsSchema = DateRangeQuerySchema.extend({
 	outliers: z.enum(['replace', 'mark']).optional().meta({
 		description:
 			'Enables outlier calculation. `mark` adds `isOutlier` to each measurement. `replace` replaces outlier values according to the outlier transformation.',
@@ -37,39 +41,20 @@ const SensorDataQueryParamsSchema = z.object({
 		example: 15,
 	}),
 
-	'from-date': IsoDateTimeSchema.optional().meta({
+	format: OutputFormatSchema,
+
+	download: QueryDownloadSchema,
+
+	delimiter: DelimiterSchema.meta({
 		description:
-			'Beginning date of measurement data. Defaults to 48 hours ago from now.',
-		example: '2026-05-13T12:00:00.000Z',
+			'Only for CSV responses. Controls the CSV delimiter. Defaults to `comma`. Do not use together with `separator`.',
 	}),
 
-	'to-date': IsoDateTimeSchema.optional().meta({
-		description: 'End date of measurement data. Defaults to now.',
-		example: '2026-05-15T12:00:00.000Z',
-	}),
-
-	format: z.enum(['json', 'csv']).default('json').meta({
-		description: "Response format. Can be 'json' or 'csv'. Defaults to 'json'.",
-		example: 'json',
-	}),
-
-	download: z.enum(['true', 'false']).optional().meta({
-		description:
-			'If set to `true`, the API sets a `Content-Disposition` header so browsers download the response instead of displaying it.',
-		example: 'true',
-	}),
-
-	delimiter: z.enum(['comma', 'semicolon']).default('comma').meta({
-		description:
-			'Only for CSV responses. Controls the CSV delimiter. Possible values are `comma` and `semicolon`. Defaults to `comma`. Do not use together with `separator`.',
-		example: 'comma',
-	}),
-
-	separator: z.enum(['comma', 'semicolon']).optional().meta({
-		description:
-			'Alias for `delimiter`. Only for CSV responses. Do not use together with `delimiter`.',
-		example: 'semicolon',
-	}),
+	separator: SeparatorSchema,
+}).meta({
+	id: 'SensorDataQueryParams',
+	description:
+		'Query parameters for retrieving measurements of a single sensor.',
 })
 
 const SensorMeasurementSchema = z

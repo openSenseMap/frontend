@@ -3,15 +3,11 @@ import { StandardResponse } from '~/lib/responses'
 import { getStatistics } from '~/services/statistics-service.server'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
 	InternalServerErrorSchema,
 	createBadRequestErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
@@ -97,25 +93,40 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
+const parseStatsQueryParams = (request: Request) => {
+	const url = new URL(request.url)
+	const query = Object.fromEntries(url.searchParams)
+
+	const parsed = StatsQueryParamsSchema.safeParse(query)
+
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			'Illegal value for parameter human. allowed values: true, false',
+		)
+	}
+
+	return parsed.data
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
 	try {
-		const url = new URL(request.url)
-		const humanParam = url.searchParams.get('human')
+		const query = parseStatsQueryParams(request)
 
-		let humanReadable = false
-		if (
-			humanParam !== null &&
-			humanParam.toLowerCase() !== 'true' &&
-			humanParam.toLowerCase() !== 'false'
-		)
-			return StandardResponse.badRequest(
-				'Illegal value for parameter human. allowed values: true, false',
-			)
+		if (query instanceof Response) {
+			return query
+		}
 
-		humanReadable = humanParam?.toLowerCase() === 'true' || false
-
+		const humanReadable = query.human === 'true'
 		const stats = await getStatistics(humanReadable)
-		return StandardResponse.ok(stats)
+
+		const responseParsed = await StatsResponseSchema.safeParseAsync(stats)
+
+		if (!responseParsed.success) {
+			console.warn(responseParsed.error)
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.ok(responseParsed.data)
 	} catch (e) {
 		console.warn(e)
 		return StandardResponse.internalServerError()

@@ -1,7 +1,5 @@
 import { type Route } from './+types/api.users.refresh-auth'
-import { type User } from '~/db/schema'
 import { getUserFromJwt, hashJwt, refreshJwt } from '~/lib/jwt'
-import { parseRefreshTokenData } from '~/lib/request-parsing'
 import { StandardResponse } from '~/lib/responses'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
@@ -12,6 +10,8 @@ import {
 	InternalServerErrorSchema,
 } from '~/lib/openapi/errors'
 import { UserSchema } from '~/lib/openapi/schemas/user'
+import { transformUserToApiFormat } from '~/lib/user-transform'
+import { parseBearerToken, parseRefreshAuthBody } from '~/lib/request-parsing'
 
 const errorMessages = {
 	tokenRequired: 'You must specify a token to refresh',
@@ -19,7 +19,7 @@ const errorMessages = {
 		'Refresh token invalid or too old. Please sign in with your username and password.',
 }
 
-const RefreshAuthRequestSchema = z
+export const RefreshAuthRequestSchema = z
 	.object({
 		token: z
 			.string()
@@ -126,49 +126,45 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	try {
-		// Parse request data - handles both JSON and form data automatically
-		const data = await parseRefreshTokenData(request)
+		const body = await parseRefreshAuthBody(request)
+		if (body instanceof Response) return body
 
-		if (!data.token || data.token.trim().length === 0)
-			return StandardResponse.forbidden('You must specify a token to refresh')
+		const jwtString = parseBearerToken(request)
+		if (jwtString instanceof Response) return jwtString
 
-		// We deliberately make casts and stuff like that, so everything
-		// but the happy path will result in an internal server error.
-		// This is done s.t. we are not leaking information if someone
-		// tries sending random token to see if users exist or similar
-		const user = (await getUserFromJwt(request)) as User
-		const rawAuthorizationHeader = request.headers
-			.get('authorization')!
-			.toString()
-		const [, jwtString = ''] = rawAuthorizationHeader.split(' ')
+		const jwtResponse = await getUserFromJwt(request)
 
-		if (data.token !== hashJwt(jwtString))
-			return StandardResponse.forbidden(
-				'Refresh token invalid or too old. Please sign in with your username and password.',
-			)
+		if (typeof jwtResponse === 'string') {
+			return StandardResponse.forbidden(errorMessages.refreshTokenInvalid)
+		}
 
-		const { token, refreshToken } = (await refreshJwt(user, data.token)) || {}
+		if (body.token !== hashJwt(jwtString)) {
+			return StandardResponse.forbidden(errorMessages.refreshTokenInvalid)
+		}
 
-		if (token && refreshToken)
-			return StandardResponse.ok({
-				code: 'Authorized',
-				message: 'Successfully refreshed auth',
-				data: { user },
-				token,
-				refreshToken,
-			})
-		else
-			return StandardResponse.forbidden(
-				'Refresh token invalid or too old. Please sign in with your username and password.',
-			)
+		const refreshed = await refreshJwt(jwtResponse, body.token)
+
+		if (!refreshed?.token || !refreshed.refreshToken) {
+			return StandardResponse.forbidden(errorMessages.refreshTokenInvalid)
+		}
+
+		const responseParsed = await RefreshAuthResponseSchema.safeParseAsync({
+			code: 'Authorized',
+			message: 'Successfully refreshed auth',
+			data: {
+				user: transformUserToApiFormat(jwtResponse),
+			},
+			token: refreshed.token,
+			refreshToken: refreshed.refreshToken,
+		})
+
+		if (!responseParsed.success) {
+			console.warn(responseParsed.error)
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.ok(responseParsed.data)
 	} catch (error) {
-		// Handle parsing errors
-		if (error instanceof Error && error.message.includes('Failed to parse'))
-			return StandardResponse.forbidden(
-				`Invalid request format: ${error.message}`,
-			)
-
-		// Handle other errors
 		console.warn(error)
 		return StandardResponse.internalServerError()
 	}

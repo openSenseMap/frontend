@@ -10,34 +10,24 @@ import {
 	createBadRequestErrorSchema,
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	internalServerErrorResponse,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
+
 import { apiMessages } from '~/lib/openapi/messages'
 import {
 	DevicePathParamsSchema,
 	IsoDateTimeSchema,
 } from '~/lib/openapi/schemas/common'
 import { CoordinatesSchema } from '~/lib/openapi/schemas/location'
+import {
+	DateRangeQuerySchema,
+	JsonGeoJsonFormatSchema,
+} from '~/lib/api-schemas/query'
 
-const DeviceLocationsQueryParamsSchema = z.object({
-	'from-date': IsoDateTimeSchema.optional().meta({
-		description:
-			'Beginning date of location data. Defaults to 48 hours ago from now.',
-		example: '2026-05-13T12:00:00.000Z',
-	}),
-	'to-date': IsoDateTimeSchema.optional().meta({
-		description: 'End date of location data. Defaults to now.',
-		example: '2026-05-15T12:00:00.000Z',
-	}),
-	format: z.enum(['json', 'geojson']).default('json').meta({
-		description: "Can be 'json' or 'geojson'. Defaults to 'json'.",
-		example: 'json',
-	}),
+const DeviceLocationsQueryParamsSchema = DateRangeQuerySchema.extend({
+	format: JsonGeoJsonFormatSchema,
 })
 
 const PointLocationSchema = z
