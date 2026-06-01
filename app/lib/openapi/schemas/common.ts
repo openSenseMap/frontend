@@ -24,3 +24,7 @@ export const IsoDateTimeSchema = z.iso.datetime().meta({
 	description: 'ISO 8601 timestamp',
 	example: '2026-05-18T12:34:56.000Z',
 })
+
+export const IsoDateTimeToDateSchema = IsoDateTimeSchema.transform(
+	(value) => new Date(value),
+)
