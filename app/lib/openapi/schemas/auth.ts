@@ -20,3 +20,11 @@ export const PasswordConfirmationRequestSchema = z
 		id: 'PasswordConfirmationRequest',
 		description: 'Password confirmation payload.',
 	})
+
+export const BearerTokenSchema = z
+	.string()
+	.trim()
+	.regex(/^Bearer\s+\S+$/, {
+		error: apiMessages.refreshTokenInvalid,
+	})
+	.transform((header) => header.split(/\s+/)[1])
