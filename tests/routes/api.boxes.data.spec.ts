@@ -131,7 +131,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		expect(res.status).toBe(200)
 		expect(text).not.toBe('')
-		expect(res.headers.get('content-type')).toBe('text/csv')
+		expect(res.headers.get('content-type')).toBe('text/csv; charset=utf-8')
 
 		// Check that CSV has header and data rows
 		const lines = text.trim().split('\n')
@@ -149,7 +149,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		expect(res.status).toBe(200)
 		expect(text).not.toBe('')
-		expect(res.headers.get('content-type')).toBe('text/csv')
+		expect(res.headers.get('content-type')).toBe('text/csv; charset=utf-8')
 	})
 
 	// ---------------------------
@@ -164,7 +164,9 @@ describe('openSenseMap API: /boxes/data', () => {
 		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		expect(res.status).toBe(200)
-		expect(res.headers.get('content-type')).toBe('application/json')
+		expect(res.headers.get('content-type')).toBe(
+			'application/json; charset=utf-8',
+		)
 
 		const body = await res.json()
 		expect(Array.isArray(body)).toBe(true)
@@ -263,7 +265,7 @@ describe('openSenseMap API: /boxes/data', () => {
 		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		expect(res.status).toBe(200)
-		expect(res.headers.get('content-type')).toBe('text/csv')
+		expect(res.headers.get('content-type')).toBe('text/csv; charset=utf-8')
 
 		const text = (await res.text()).trim()
 		const [header, ...lines] = text.split('\n')
@@ -344,7 +346,7 @@ describe('openSenseMap API: /boxes/data', () => {
 
 		expect(res.status).toBe(200)
 
-		expect(res.headers.get('content-type')).toContain('text/csv')
+		expect(res.headers.get('content-type')).toContain('text/csv; charset=utf-8')
 
 		const bodyText = await res.text()
 
@@ -401,7 +403,9 @@ describe('openSenseMap API: /boxes/data', () => {
 		const res = await boxesDataLoader({ request: req } as Route.LoaderArgs)
 
 		expect(res.status).toBe(200)
-		expect(res.headers.get('content-type')).toBe('application/json')
+		expect(res.headers.get('content-type')).toBe(
+			'application/json; charset=utf-8',
+		)
 
 		const body = await res.json()
 		expect(Array.isArray(body)).toBe(true)
