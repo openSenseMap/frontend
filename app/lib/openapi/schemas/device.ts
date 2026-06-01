@@ -98,6 +98,8 @@ export const DeviceSensorUpdateSchema = z
 		description: 'Sensor update or creation payload.',
 	})
 
+export type DeviceSensorUpdate = z.infer<typeof DeviceSensorUpdateSchema>
+
 export const DeviceAddonsUpdateSchema = z
 	.object({
 		add: z.string().optional().meta({
