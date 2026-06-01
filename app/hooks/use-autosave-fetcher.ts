@@ -138,11 +138,22 @@ export function useAutosaveFetcher<TValues, TData>({
 		onError,
 	])
 
-	const resetLastSaved = useCallback((nextValues: TValues) => {
-		lastSavedRef.current = nextValues
-		setHasError(false)
-		setSaveCount((count) => count + 1)
-	}, [])
+	const resetLastSaved = useCallback(
+		(
+			nextValues: TValues,
+			options?: {
+				markSaved?: boolean
+			},
+		) => {
+			lastSavedRef.current = nextValues
+			setHasError(false)
+
+			if (options?.markSaved) {
+				setSaveCount((count) => count + 1)
+			}
+		},
+		[],
+	)
 
 	return {
 		fetcher,
