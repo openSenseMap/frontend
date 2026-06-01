@@ -4,6 +4,25 @@ import { useFetcher } from 'react-router'
 export type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
 export const AUTOSAVE_DELAY_MS = 700
 
+function getAutosaveStatus({
+	isSaving,
+	hasError,
+	hasChanges,
+	saveCount,
+}: {
+	isSaving: boolean
+	hasError: boolean
+	hasChanges: boolean
+	saveCount: number
+}): AutosaveStatus {
+	if (isSaving) return 'saving'
+	if (hasError) return 'error'
+	if (hasChanges) return 'dirty'
+	if (saveCount > 0) return 'saved'
+
+	return 'idle'
+}
+
 type UseAutosaveFetcherOptions<TValues, TData> = {
 	values: TValues
 	lastSavedValues: TValues
@@ -45,15 +64,12 @@ export function useAutosaveFetcher<TValues, TData>({
 
 	const isSaving = fetcher.state === 'submitting' || fetcher.state === 'loading'
 
-	const status: AutosaveStatus = isSaving
-		? 'saving'
-		: hasError
-			? 'error'
-			: hasChanges
-				? 'dirty'
-				: saveCount > 0
-					? 'saved'
-					: 'idle'
+	const status: AutosaveStatus = getAutosaveStatus({
+		isSaving,
+		hasError,
+		hasChanges,
+		saveCount,
+	})
 
 	const submit = useCallback(
 		(nextValues: TValues) => {
