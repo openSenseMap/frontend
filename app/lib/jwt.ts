@@ -7,6 +7,8 @@ import { getUserByEmail } from '~/db/models/user.server'
 import { type Device, type User } from '~/db/schema'
 import { refreshToken, tokenRevocation } from '~/db/schema/refreshToken'
 import { drizzleClient } from '~/db.server'
+import { StandardResponse } from './responses'
+import { apiMessages } from './openapi/messages'
 
 const { sign, verify } = jsonwebtoken
 
@@ -145,6 +147,16 @@ export const getUserFromJwt = async (
 	if (!user)
 		throw new Error('User was not found despite a verified jwt provided')
 	return user
+}
+
+export const getAuthenticatedUser = async (request: Request) => {
+	const jwtResponse = await getUserFromJwt(request)
+
+	if (typeof jwtResponse === 'string') {
+		return StandardResponse.forbidden(apiMessages.invalidJwt)
+	}
+
+	return jwtResponse
 }
 
 const decodeJwtString = (
