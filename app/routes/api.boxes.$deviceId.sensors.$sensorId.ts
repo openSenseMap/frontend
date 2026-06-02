@@ -65,17 +65,17 @@ const LatestSensorResponseSchema = z
 			example: '6649b23072c4c40007105953',
 		}),
 
-		title: z.string().nullable().meta({
+		title: z.string().nullable().optional().meta({
 			description: 'The title of the phenomenon the sensor observes.',
 			example: 'Temperatur',
 		}),
 
-		sensorType: z.string().nullable().meta({
+		sensorType: z.string().nullable().optional().meta({
 			description: 'The type of the sensor.',
 			example: 'HDC1080',
 		}),
 
-		unit: z.string().nullable().meta({
+		unit: z.string().nullable().optional().meta({
 			description: 'The unit of the phenomenon the sensor observes.',
 			example: '°C',
 		}),
@@ -85,7 +85,7 @@ const LatestSensorResponseSchema = z
 			example: 'osem-thermometer',
 		}),
 
-		lastMeasurement: LatestMeasurementSchema.nullable().meta({
+		lastMeasurement: LatestMeasurementSchema.nullable().optional().meta({
 			description: 'Latest measurement of this sensor.',
 		}),
 	})

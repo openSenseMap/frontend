@@ -3,8 +3,6 @@ import { StandardResponse } from '~/lib/responses'
 import { getLatestMeasurements } from '~/services/measurement-service.server'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
-import { SensorSchema } from '~/lib/openapi/schemas/sensor'
-import { MeasurementSchema } from '~/lib/openapi/schemas/measurement'
 import {
 	badRequestResponse,
 	createBadRequestErrorSchema,
@@ -30,12 +28,29 @@ const DeviceSensorsQueryParamsSchema = z.object({
 	}),
 })
 
-const SensorWithLatestMeasurementSchema = SensorSchema.extend({
-	lastMeasurement: MeasurementSchema.nullable().optional(),
-}).meta({
-	id: 'SensorWithLatestMeasurement',
-	description: 'Sensor metadata enriched with latest measurement data.',
-})
+const SensorWithLatestMeasurementSchema = z
+	.object({
+		_id: z.string().optional(),
+		id: z.string().optional(),
+
+		title: z.string().nullable().optional(),
+		unit: z.string().nullable().optional(),
+		sensorType: z.string().nullable().optional(),
+		icon: z.string().nullable().optional(),
+
+		lastMeasurement: z
+			.object({
+				value: z.union([z.string(), z.number()]).nullable(),
+				createdAt: z.string(),
+			})
+			.nullable()
+			.optional(),
+	})
+	.catchall(z.unknown())
+	.meta({
+		id: 'SensorWithLatestMeasurement',
+		description: 'Sensor metadata enriched with latest measurement data.',
+	})
 
 const DeviceWithSensorsSchema = z
 	.object({
