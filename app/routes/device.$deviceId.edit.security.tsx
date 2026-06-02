@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
 	data,
+	Link,
 	redirect,
 	useFetcher,
 	useLoaderData,
@@ -270,20 +271,20 @@ export default function EditBoxSecurity() {
 			<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
 			<p className="py-4">
-				<Trans t={t} i18nKey="device_security.explanation_text">
-					Devices should use their API key shown on this page to authenticate
-					requests sent to the openSenseMap API. This ensures that only
-					authenticated devices update the state of the device on openSenseMap.
-					The API key is appended to every request made to the API. More
-					information can be found{' '}
-					<a
-						href="https://docs.opensensemap.org/#api-Measurements-postNewMeasurement"
-						className="underline"
-					>
-						in the docs
-					</a>
-					.
-				</Trans>
+				<Trans
+					i18nKey="device_security.explanation_text"
+					ns="settings"
+					components={{
+						apiDocLink: (
+							<Link
+								to="https://docs.opensensemap.org/#api-Measurements-postNewMeasurement"
+								target="_blank"
+								rel="noreferrer"
+								className="underline"
+							/>
+						),
+					}}
+				/>
 			</p>
 
 			<Callout variant="caution">
@@ -368,11 +369,11 @@ export default function EditBoxSecurity() {
 
 				<Callout variant="warning">
 					<p>
-						<Trans t={t} i18nKey="device_security.generate_new_key_warning">
-							Generating a new key will require you to update your device (e.g.
-							change the sketch/ code).
-							<b>This step can not be undone.</b>
-						</Trans>
+						<Trans
+							t={t}
+							i18nKey="device_security.generate_new_key_warning"
+							components={{ b: <b /> }}
+						></Trans>
 					</p>
 
 					<button
