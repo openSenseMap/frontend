@@ -1,53 +1,40 @@
-import { MiddlewareFunction } from 'react-router'
+import { type MiddlewareFunction } from 'react-router'
 import { StandardResponse } from '~/lib/responses'
 
-/**
- * A middleware function responding with HTTP 415 Unsupported Media Type
- * to requests that do not contain the Content-Type: application/json header.
- */
-export const requestContentTypeJson =
-	(methods?: string[]): MiddlewareFunction<Response> =>
-	({ request }) => {
-		const allowedMethods = methods?.map((method) => method.toUpperCase())
+const methodMatches = (request: Request, methods?: string[]) => {
+	if (!methods || methods.length === 0) return true
 
-		if (
-			allowedMethods &&
-			!allowedMethods.includes(request.method.toUpperCase())
-		) {
-			return
-		}
-
-		const contentType = request.headers.get('content-type') || ''
-
-		if (!contentType.includes('application/json')) {
-			return StandardResponse.unsupportedMediaType(
-				'Unsupported content-type. Try application/json',
-			)
-		}
-	}
-
-/**
- * A middleware function that sets the Content-Type: application/json
- * header with utf-8 charset for all outgoing responses.
- */
-export const responseContentTypeJson: MiddlewareFunction<Response> = async (
-	_,
-	next,
-) => {
-	const res = await next()
-	res.headers.set('Content-Type', 'application/json; charset=utf-8')
-	return res
+	const allowedMethods = methods.map((method) => method.toUpperCase())
+	return allowedMethods.includes(request.method.toUpperCase())
 }
 
-/**
- * A middleware function responding with HTTP 415 Unsupported Media Type
- * to requests that do not contain the Content-Type application/x-www-form-urlencoded
- * or Content-Type multipart/form-data header.
- */
-export const requestContentTypeForm: MiddlewareFunction<Response> = ({
-	request,
-}) => {
-	const contentType = request.headers.get('content-type') || ''
+const getContentType = (request: Request) =>
+	request.headers.get('content-type')?.toLowerCase() ?? ''
+
+export const validateJsonContentType = (
+	request: Request,
+	methods?: string[],
+): Response | undefined => {
+	if (!methodMatches(request, methods)) return undefined
+
+	const contentType = getContentType(request)
+
+	if (!contentType.includes('application/json')) {
+		return StandardResponse.unsupportedMediaType(
+			'Unsupported content-type. Try application/json',
+		)
+	}
+
+	return undefined
+}
+
+export const validateFormContentType = (
+	request: Request,
+	methods?: string[],
+): Response | undefined => {
+	if (!methodMatches(request, methods)) return undefined
+
+	const contentType = getContentType(request)
 
 	if (
 		!contentType.includes('application/x-www-form-urlencoded') &&
@@ -57,27 +44,67 @@ export const requestContentTypeForm: MiddlewareFunction<Response> = ({
 			'Unsupported content-type. Try application/x-www-form-urlencoded',
 		)
 	}
+
+	return undefined
 }
 
+export const validateJsonOrFormContentType = (
+	request: Request,
+	methods?: string[],
+): Response | undefined => {
+	if (!methodMatches(request, methods)) return undefined
+
+	const contentType = getContentType(request)
+
+	if (
+		!contentType.includes('application/json') &&
+		!contentType.includes('application/x-www-form-urlencoded') &&
+		!contentType.includes('multipart/form-data')
+	) {
+		return StandardResponse.unsupportedMediaType(
+			'Unsupported content-type. Try application/json or application/x-www-form-urlencoded',
+		)
+	}
+
+	return undefined
+}
+
+/**
+ * Responds with 415 Unsupported Media Type if the request does not use JSON.
+ */
+export const requestContentTypeJson =
+	(methods?: string[]): MiddlewareFunction<Response> =>
+	({ request }) =>
+		validateJsonContentType(request, methods)
+
+/**
+ * Responds with 415 Unsupported Media Type if the request does not use form data.
+ */
+export const requestContentTypeForm =
+	(methods?: string[]): MiddlewareFunction<Response> =>
+	({ request }) =>
+		validateFormContentType(request, methods)
+
+/**
+ * Responds with 415 Unsupported Media Type if the request does not use JSON or form data.
+ */
 export const requestContentTypeJsonOrForm =
 	(methods?: string[]): MiddlewareFunction<Response> =>
-	({ request }) => {
-		const allowedMethods = methods?.map((method) => method.toUpperCase())
+	({ request }) =>
+		validateJsonOrFormContentType(request, methods)
 
-		if (
-			allowedMethods &&
-			!allowedMethods.includes(request.method.toUpperCase())
-		) {
-			return
-		}
-		const contentType = request.headers.get('content-type') || ''
+/**
+ * Sets Content-Type: application/json; charset=utf-8 for outgoing responses.
+ */
+export const responseContentTypeJson: MiddlewareFunction<Response> = async (
+	_,
+	next,
+) => {
+	const res = await next()
 
-		if (
-			!contentType.includes('application/json') &&
-			!contentType.includes('application/x-www-form-urlencoded')
-		) {
-			return StandardResponse.unsupportedMediaType(
-				'Unsupported content-type. Try application/json or application/x-www-form-urlencoded',
-			)
-		}
+	if (!res.headers.has('Content-Type')) {
+		res.headers.set('Content-Type', 'application/json; charset=utf-8')
 	}
+
+	return res
+}
