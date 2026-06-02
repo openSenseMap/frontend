@@ -5,7 +5,7 @@ import {
 	deleteSensorMeasurementsForTimeRange,
 	deleteSensorMeasurementsForTimes,
 } from '~/db/models/measurement.server'
-import { getUserFromJwt } from '~/lib/jwt'
+import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 
 import * as z from 'zod/v4'
@@ -19,6 +19,7 @@ import {
 import {
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
+	MessageResponseSchema,
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
 	createBadRequestErrorSchema,
@@ -32,6 +33,7 @@ import {
 	methodNotAllowedResponse,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
+import { parsePathParams } from '~/lib/request-parsing'
 
 const DeleteSensorMeasurementsQueryParamsSchema = z
 	.object({
@@ -125,9 +127,9 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-const parseQueryParams = async (
+const parseQueryParams = (
 	request: Request,
-): Promise<z.infer<typeof DeleteSensorMeasurementsQueryParamsSchema>> => {
+): z.output<typeof DeleteSensorMeasurementsQueryParamsSchema> | Response => {
 	const url = new URL(request.url)
 	const timestamps = url.searchParams.getAll('timestamps')
 
@@ -144,80 +146,89 @@ const parseQueryParams = async (
 					: timestamps,
 	}
 
-	const parseResult =
-		DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
+	const parsed = DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
 
-	if (!parseResult.success) {
-		const firstError = parseResult.error.issues[0]
-		const message = firstError.message || 'Invalid query parameters'
-		throw StandardResponse.badRequest(message)
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			parsed.error.issues[0]?.message ?? 'Invalid query parameters',
+		)
 	}
 
-	return parseResult.data
+	return parsed.data
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-	try {
-		const { deviceId, sensorId } = params
-		if (!deviceId || !sensorId)
-			return StandardResponse.badRequest(
-				'Invalid device id or sensor id specified',
-			)
+	if (request.method !== 'DELETE') {
+		return StandardResponse.methodNotAllowed('Endpoint only supports DELETE')
+	}
 
-		const jwtResponse = await getUserFromJwt(request)
+	const parsedParams = parsePathParams(params, DeviceSensorPathParamsSchema, {
+		message: 'Invalid device id or sensor id specified',
+	})
 
-		if (typeof jwtResponse === 'string')
-			return StandardResponse.forbidden(
-				'Invalid JWT authorization. Please sign in to obtain new JWT.',
-			)
+	if (parsedParams instanceof Response) {
+		return parsedParams
+	}
 
-		if (request.method !== 'DELETE')
-			return StandardResponse.methodNotAllowed('Endpoint only supports DELETE')
-
-		const userDevices = await getUserDevices(jwtResponse.id)
-		if (!userDevices.some((d) => d.id === deviceId))
-			return StandardResponse.forbidden(
-				'You are not allowed to delete data of the given device',
-			)
-
-		const device = userDevices.find((d) => d.id === deviceId)
-		if (!device?.sensors.some((s) => s.id === sensorId))
-			return StandardResponse.notFound(
-				`Sensor with id ${sensorId} not found or not part of this device`,
-			)
-
+	return withAuthenticatedUser(request, async (user) => {
 		try {
-			const parsedParams = await parseQueryParams(request)
+			const userDevices = await getUserDevices(user.id)
+
+			const device = userDevices.find((d) => d.id === parsedParams.deviceId)
+
+			if (!device) {
+				return StandardResponse.forbidden(
+					'You are not allowed to delete data of the given device',
+				)
+			}
+
+			if (!device.sensors.some((s) => s.id === parsedParams.sensorId)) {
+				return StandardResponse.notFound(
+					`Sensor with id ${parsedParams.sensorId} not found or not part of this device`,
+				)
+			}
+
+			const queryParams = parseQueryParams(request)
+
+			if (queryParams instanceof Response) {
+				return queryParams
+			}
+
 			let count = 0
 
-			if (parsedParams.deleteAllMeasurements === 'true')
-				count = (await deleteMeasurementsForSensor(sensorId)).count
-			else if (parsedParams.timestamps)
+			if (queryParams.deleteAllMeasurements === 'true') {
+				count = (await deleteMeasurementsForSensor(parsedParams.sensorId)).count
+			} else if (queryParams.timestamps) {
 				count = (
 					await deleteSensorMeasurementsForTimes(
-						sensorId,
-						parsedParams.timestamps,
+						parsedParams.sensorId,
+						queryParams.timestamps,
 					)
 				).count
-			else if (parsedParams['from-date'] && parsedParams['to-date'])
+			} else if (queryParams['from-date'] && queryParams['to-date']) {
 				count = (
 					await deleteSensorMeasurementsForTimeRange(
-						sensorId,
-						parsedParams['from-date'],
-						parsedParams['to-date'],
+						parsedParams.sensorId,
+						queryParams['from-date'],
+						queryParams['to-date'],
 					)
 				).count
+			}
 
-			return StandardResponse.ok({
-				message: `Successfully deleted ${count} of sensor ${sensorId}`,
+			const responseParsed = await MessageResponseSchema.safeParseAsync({
+				message: `Successfully deleted ${count} of sensor ${parsedParams.sensorId}`,
 			})
-		} catch (e) {
-			if (e instanceof Response) return e
-			else throw e
+
+			if (!responseParsed.success) {
+				console.warn(responseParsed.error.issues)
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.ok(responseParsed.data)
+		} catch (err: any) {
+			return StandardResponse.internalServerError(
+				err.message || 'An unexpected error occured',
+			)
 		}
-	} catch (err: any) {
-		return StandardResponse.internalServerError(
-			err.message || 'An unexpected error occured',
-		)
-	}
+	})
 }
