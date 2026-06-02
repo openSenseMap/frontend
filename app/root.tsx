@@ -21,9 +21,11 @@ import { updateUserlocale } from './db/models/user.server'
 import { getEnv } from './lib/env.server'
 import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
+import { prometheusMetricsMiddleware } from './middleware/metrics.server'
 import { getUser } from './services/session-service.server'
 
 export const middleware: Route.MiddlewareFunction[] = [
+	prometheusMetricsMiddleware,
 	i18nextMiddleware,
 	tosUiMiddleware,
 ]
