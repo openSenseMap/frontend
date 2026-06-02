@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.boxes.transfer'
-import { getUserFromJwt } from '~/lib/jwt'
+import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import {
 	createBoxTransfer,
@@ -26,6 +26,9 @@ import {
 	methodNotAllowedResponse,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
+import { parseJsonOrFormRequest } from '~/lib/request-parsing'
+import { User } from '~/db/schema'
+import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
 
 const TransferTokenSchema = z.string().min(1).meta({
 	description: 'Transfer token used to claim or revoke the device transfer.',
@@ -34,17 +37,27 @@ const TransferTokenSchema = z.string().min(1).meta({
 
 const CreateBoxTransferRequestSchema = z
 	.object({
-		boxId: z.string().min(1).meta({
-			description: 'ID of the device to mark for transfer.',
-			example: '5bdbe70f55d0ad001a04edc9',
-		}),
+		boxId: z
+			.string({
+				error: 'boxId is required',
+			})
+			.trim()
+			.min(1, {
+				error: 'boxId is required',
+			}),
 
-		expiresAt: z.iso.datetime().optional().meta({
+		expiresAt: z.iso.datetime().optional(),
+
+		date: z.iso.datetime().optional().meta({
 			description:
-				'Expiration date for the transfer token. If omitted, the default is 24 hours from now.',
-			example: '2026-05-22T12:00:00.000Z',
+				'Legacy alias for `expiresAt`. Prefer `expiresAt` for new clients.',
+			deprecated: true,
 		}),
 	})
+	.transform((data) => ({
+		boxId: data.boxId,
+		expiresAt: data.expiresAt ?? data.date,
+	}))
 	.meta({
 		id: 'CreateBoxTransferRequest',
 		description: 'Payload for marking a device for transfer.',
@@ -64,23 +77,45 @@ const RemoveBoxTransferRequestSchema = z
 		description: 'Payload for revoking a device transfer token.',
 	})
 
-const CreateBoxTransferResponseSchema = z
+const DeviceTransferDataSchema = z
+	.object({
+		id: z.string().optional().meta({
+			description: 'ID of the transfer claim.',
+			example: 'clm_01jv7c9x8n0example',
+		}),
+
+		boxId: z.string().meta({
+			description: 'ID of the device marked for transfer.',
+			example: '5bdbe70f55d0ad001a04edc9',
+		}),
+
+		token: TransferTokenSchema,
+
+		expiresAt: z.iso.datetime().meta({
+			description: 'Expiration date of the transfer token.',
+			example: '2026-05-22T12:00:00.000Z',
+		}),
+	})
+	.meta({
+		id: 'DeviceTransferData',
+		description: 'Transfer token information for a device.',
+	})
+
+const CreateDeviceTransferResponseSchema = z
 	.object({
 		code: z.literal('Created').default('Created'),
 		message: z
 			.literal('Device successfully prepared for transfer')
 			.default('Device successfully prepared for transfer'),
-		data: TransferTokenSchema.meta({
-			description: 'Generated transfer token.',
-		}),
+		data: DeviceTransferDataSchema,
 	})
 	.meta({
-		id: 'CreateBoxTransferResponse',
+		id: 'CreateDeviceTransferResponse',
 		description: 'Response returned after creating a transfer token.',
 	})
 
-const BoxTransferBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'BoxTransferBadRequestError',
+const DeviceTransferBadRequestErrorSchema = createBadRequestErrorSchema({
+	id: 'DeviceTransferBadRequestError',
 	description:
 		'Bad request. This can happen when required parameters are missing, the expiration date has an invalid format, the expiration date is not in the future, or the transfer token is invalid or expired.',
 	examples: [
@@ -115,16 +150,16 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			201: {
-				description: 'Box successfully prepared for transfer.',
+				description: 'Device successfully prepared for transfer.',
 				content: {
 					'application/json': {
-						schema: CreateBoxTransferResponseSchema,
+						schema: CreateDeviceTransferResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
-				BoxTransferBadRequestErrorSchema,
+				DeviceTransferBadRequestErrorSchema,
 				'Bad request. This can happen when required parameters are missing or invalid.',
 			),
 
@@ -176,7 +211,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				BoxTransferBadRequestErrorSchema,
+				DeviceTransferBadRequestErrorSchema,
 				'Bad request. This can happen when `boxId` or `token` is missing or invalid.',
 			),
 
@@ -203,82 +238,92 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJsonOrForm(['POST', 'DELETE']),
+]
+
 export const action = async ({ request }: Route.ActionArgs) => {
-	const jwtResponse = await getUserFromJwt(request)
-
-	if (typeof jwtResponse === 'string')
-		return StandardResponse.forbidden(
-			'Invalid JWT authorization. Please sign in to obtain new JWT.',
-		)
-
-	if (request.method !== 'POST' && request.method !== 'DELETE')
-		return StandardResponse.methodNotAllowed('')
-
-	switch (request.method) {
-		case 'POST': {
-			return handleCreateTransfer(request, jwtResponse)
-		}
-		case 'DELETE': {
-			return handleRemoveTransfer(request, jwtResponse)
-		}
+	if (request.method !== 'POST' && request.method !== 'DELETE') {
+		return StandardResponse.methodNotAllowed('Method Not Allowed')
 	}
+
+	return withAuthenticatedUser(request, async (user) => {
+		switch (request.method) {
+			case 'POST':
+				return await handleCreateTransfer(request, user)
+
+			case 'DELETE':
+				return await handleRemoveTransfer(request, user)
+
+			default:
+				return StandardResponse.methodNotAllowed('Method Not Allowed')
+		}
+	})
 }
 
-const handleCreateTransfer = async (request: Request, user: any) => {
+const handleCreateTransfer = async (request: Request, user: User) => {
 	try {
-		let boxId: string | undefined
-		let expiresAt: string | undefined
+		const requestData = await parseJsonOrFormRequest(
+			request,
+			CreateBoxTransferRequestSchema,
+		)
 
-		const contentType = request.headers.get('content-type')
-		if (contentType?.includes('application/json')) {
-			const body = await request.json()
-			boxId = body.boxId
-			expiresAt = body.expiresAt || body.date // Support both param names for backwards compatibility
-		} else {
-			const formData = await request.formData()
-			boxId = formData.get('boxId')?.toString()
-			expiresAt =
-				formData.get('expiresAt')?.toString() ||
-				formData.get('date')?.toString()
+		if (requestData instanceof Response) {
+			return requestData
 		}
 
-		const validation = validateTransferParams(boxId, expiresAt)
-		if (!validation.isValid)
+		const validation = validateTransferParams(
+			requestData.boxId,
+			requestData.expiresAt,
+		)
+
+		if (!validation.isValid) {
 			return StandardResponse.badRequest(validation.error ?? '')
+		}
 
-		const transferCode = await createBoxTransfer(user.id, boxId!, expiresAt)
+		const transferCode = await createBoxTransfer(
+			user.id,
+			requestData.boxId,
+			requestData.expiresAt,
+		)
 
-		return StandardResponse.created({
-			message: 'Box successfully prepared for transfer',
-			data: transferCode,
-		})
+		const responseParsed =
+			await CreateDeviceTransferResponseSchema.safeParseAsync({
+				code: 'Created',
+				message: 'Device successfully prepared for transfer',
+				data: {
+					...transferCode,
+					expiresAt:
+						transferCode.expiresAt instanceof Date
+							? transferCode.expiresAt.toISOString()
+							: transferCode.expiresAt,
+				},
+			})
+
+		if (!responseParsed.success) {
+			console.warn(responseParsed.error.issues)
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.created(responseParsed.data)
 	} catch (err) {
 		console.error('Error creating transfer:', err)
 		return handleTransferError(err)
 	}
 }
 
-const handleRemoveTransfer = async (request: Request, user: any) => {
+const handleRemoveTransfer = async (request: Request, user: User) => {
 	try {
-		let boxId: string | undefined
-		let token: string | undefined
+		const requestData = await parseJsonOrFormRequest(
+			request,
+			RemoveBoxTransferRequestSchema,
+		)
 
-		const contentType = request.headers.get('content-type')
-		if (contentType?.includes('application/json')) {
-			const body = await request.json()
-			boxId = body.boxId
-			token = body.token
-		} else {
-			const formData = await request.formData()
-			boxId = formData.get('boxId')?.toString()
-			token = formData.get('token')?.toString()
+		if (requestData instanceof Response) {
+			return requestData
 		}
 
-		if (!boxId) return StandardResponse.badRequest('boxId is required')
-
-		if (!token) return StandardResponse.badRequest('token is required')
-
-		await removeBoxTransfer(user.id, boxId, token)
+		await removeBoxTransfer(user.id, requestData.boxId, requestData.token)
 
 		return StandardResponse.noContent()
 	} catch (err) {
