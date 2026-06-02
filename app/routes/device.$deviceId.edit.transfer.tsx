@@ -14,7 +14,7 @@ import { getDevice } from '~/db/models/device.server'
 import { type Claim } from '~/db/schema'
 import { getUserId } from '~/services/session-service.server'
 import {
-	getBoxTransfer,
+	getDeviceTransfer,
 	createDeviceTransfer,
 } from '~/services/transfer-service.server'
 
@@ -55,7 +55,7 @@ export async function loader({
 	let existingTransfer: Claim | null = null
 
 	try {
-		existingTransfer = await getBoxTransfer(userId, deviceId)
+		existingTransfer = await getDeviceTransfer(userId, deviceId)
 	} catch (err) {
 		const message = err instanceof Error ? err.message : ''
 		if (
