@@ -264,3 +264,8 @@ export function useUser(): User {
 	}
 	return maybeUser
 }
+
+export const toIsoString = (value: Date | string | null | undefined) => {
+	if (value instanceof Date) return value.toISOString()
+	return value ?? null
+}
