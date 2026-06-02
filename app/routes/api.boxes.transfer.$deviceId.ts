@@ -2,15 +2,15 @@ import { type Route } from './+types/api.boxes.transfer.$deviceId'
 import { getUserFromJwt, withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import {
-	getBoxTransfer,
-	updateBoxTransferExpiration,
+	getDeviceTransfer,
+	updateDeviceTransferExpiration,
 } from '~/services/transfer-service.server'
 
 import * as z from 'zod/v4'
 
 import {
-	BoxTransferClaimSchema,
-	BoxTransferTokenSchema,
+	DeviceTransferClaimSchema,
+	DeviceTransferTokenSchema,
 } from '~/lib/openapi/schemas/claim'
 
 import {
@@ -30,9 +30,9 @@ import { ZodOpenApiPathItemObject } from 'zod-openapi'
 import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
 import { parsePathParams } from '~/lib/request-parsing'
 
-const UpdateBoxTransferRequestSchema = z
+const UpdateDeviceTransferRequestSchema = z
 	.object({
-		token: BoxTransferTokenSchema,
+		token: DeviceTransferTokenSchema,
 
 		expiresAt: z
 			.string({
@@ -50,56 +50,58 @@ const UpdateBoxTransferRequestSchema = z
 			}),
 	})
 	.meta({
-		id: 'UpdateBoxTransferRequest',
+		id: 'UpdateDeviceTransferRequest',
 		description:
 			'Payload for updating the expiration date of a transfer token.',
 	})
 
-const GetBoxTransferResponseSchema = z
+const GetDeviceTransferResponseSchema = z
 	.object({
 		code: z.literal('Ok').default('Ok'),
-		data: BoxTransferClaimSchema,
+		data: DeviceTransferClaimSchema,
 	})
 	.meta({
-		id: 'GetBoxTransferResponse',
+		id: 'GetDeviceTransferResponse',
 		description: 'Transfer information for a device.',
 	})
 
-const UpdateBoxTransferResponseSchema = z
+const UpdateDeviceTransferResponseSchema = z
 	.object({
 		code: z.literal('Ok').default('Ok'),
 		message: z
 			.literal('Transfer successfully updated')
 			.default('Transfer successfully updated'),
-		data: BoxTransferClaimSchema,
+		data: DeviceTransferClaimSchema,
 	})
 	.meta({
-		id: 'UpdateBoxTransferResponse',
+		id: 'UpdateDeviceTransferResponse',
 		description: 'Updated transfer information for a device.',
 	})
 
-const BoxTransferByDeviceBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'BoxTransferByDeviceBadRequestError',
-	description:
-		'Bad request. This can happen when the device id, token, or expiration date is missing or invalid.',
-	examples: [
-		'Device ID is required',
-		'token is required',
-		'expiresAt is required',
-		'Invalid transfer token',
-		'Transfer token has expired',
-		'Invalid expiration date format',
-		'Expiration date must be in the future',
-	],
-})
+const DeviceTransferByDeviceBadRequestErrorSchema = createBadRequestErrorSchema(
+	{
+		id: 'DeviceTransferByDeviceBadRequestError',
+		description:
+			'Bad request. This can happen when the device id, token, or expiration date is missing or invalid.',
+		examples: [
+			'Device ID is required',
+			'token is required',
+			'expiresAt is required',
+			'Invalid transfer token',
+			'Transfer token has expired',
+			'Invalid expiration date format',
+			'Expiration date must be in the future',
+		],
+	},
+)
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Get transfer information for a device',
 		description:
-			'Returns transfer information for a device. Requires JWT authorization. Only the owner of the box can view its transfer information.',
-		operationId: 'getBoxTransfer',
+			'Returns transfer information for a device. Requires JWT authorization. Only the owner of the device can view its transfer information.',
+		operationId: 'getDeviceTransfer',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -111,13 +113,13 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Transfer information returned successfully.',
 				content: {
 					'application/json': {
-						schema: GetBoxTransferResponseSchema,
+						schema: GetDeviceTransferResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
-				BoxTransferByDeviceBadRequestErrorSchema,
+				DeviceTransferByDeviceBadRequestErrorSchema,
 				'Bad request. The device ID path parameter is missing or invalid.',
 			),
 
@@ -126,7 +128,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 				'Invalid JWT authorization or the authenticated user is not allowed to view this transfer.',
 			),
 
-			404: notFoundResponse(NotFoundErrorSchema, 'Box or transfer not found.'),
+			404: notFoundResponse(
+				NotFoundErrorSchema,
+				'Device or transfer not found.',
+			),
 
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
@@ -136,11 +141,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 
 	put: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Update transfer expiration date',
 		description:
-			'Updates the expiration date of a transfer token. Requires JWT authorization. Only the owner of the box can update its transfer information. The request body can be sent as JSON or form data.',
-		operationId: 'updateBoxTransfer',
+			'Updates the expiration date of a transfer token. Requires JWT authorization. Only the owner of the device can update its transfer information. The request body can be sent as JSON or form data.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -151,10 +155,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 			required: true,
 			content: {
 				'application/json': {
-					schema: UpdateBoxTransferRequestSchema,
+					schema: UpdateDeviceTransferRequestSchema,
 				},
 				'application/x-www-form-urlencoded': {
-					schema: UpdateBoxTransferRequestSchema,
+					schema: UpdateDeviceTransferRequestSchema,
 				},
 			},
 		},
@@ -164,13 +168,13 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Transfer expiration date updated successfully.',
 				content: {
 					'application/json': {
-						schema: UpdateBoxTransferResponseSchema,
+						schema: UpdateDeviceTransferResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
-				BoxTransferByDeviceBadRequestErrorSchema,
+				DeviceTransferByDeviceBadRequestErrorSchema,
 				'Bad request. This can happen when the token or expiration date is missing or invalid.',
 			),
 
@@ -179,7 +183,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 				'Invalid JWT authorization or the authenticated user is not allowed to update this transfer.',
 			),
 
-			404: notFoundResponse(NotFoundErrorSchema, 'Box or transfer not found.'),
+			404: notFoundResponse(
+				NotFoundErrorSchema,
+				'Device or transfer not found.',
+			),
 
 			405: methodNotAllowedResponse(
 				MethodNotAllowedErrorSchema,
@@ -232,12 +239,13 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
 	return withAuthenticatedUser(request, async (user) => {
 		try {
-			const transfer = await getBoxTransfer(user.id, parsedParams.deviceId)
+			const transfer = await getDeviceTransfer(user.id, parsedParams.deviceId)
 
-			const responseParsed = await GetBoxTransferResponseSchema.safeParseAsync({
-				code: 'Ok',
-				data: toTransferApiData(transfer),
-			})
+			const responseParsed =
+				await GetDeviceTransferResponseSchema.safeParseAsync({
+					code: 'Ok',
+					data: toTransferApiData(transfer),
+				})
 
 			if (!responseParsed.success) {
 				console.warn(responseParsed.error.issues)
@@ -296,7 +304,7 @@ const handleUpdateTransfer = async (
 
 		if (!expiresAt) return StandardResponse.badRequest('expiresAt is required')
 
-		const updated = await updateBoxTransferExpiration(
+		const updated = await updateDeviceTransferExpiration(
 			user.id,
 			deviceId,
 			token,

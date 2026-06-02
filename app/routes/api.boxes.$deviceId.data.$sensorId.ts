@@ -12,8 +12,8 @@ import { StandardResponse } from '~/lib/responses'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
+	BadRequestErrorSchema,
 	badRequestResponse,
-	createBadRequestErrorSchema,
 	internalServerErrorResponse,
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
@@ -121,18 +121,6 @@ const SensorMeasurementsCsvResponseSchema = z.string().meta({
 		'createdAt,value\n2023-09-29T08:06:13.254Z,6.38\n2023-09-29T08:06:12.312Z,6.38',
 })
 
-const SensorMeasurementsBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'SensorMeasurementsBadRequestError',
-	description:
-		'Bad request. This can happen for invalid dates, invalid enum parameters, or an invalid outlier window.',
-	examples: [
-		'Invalid from-date parameter.',
-		'Invalid to-date parameter.',
-		'Invalid format parameter.',
-		'Illegal value for parameter outlier-window. Allowed values: numbers between 1 and 50',
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['Sensors'],
@@ -170,7 +158,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				SensorMeasurementsBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. This can happen for invalid dates, invalid enum parameters, or an invalid outlier window.',
 			),
 

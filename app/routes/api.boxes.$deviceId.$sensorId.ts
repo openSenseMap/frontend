@@ -39,7 +39,7 @@ const PostSensorMeasurementHeaderParamsSchema = z
 	.object({
 		authorization: z.string().optional().meta({
 			description:
-				"Box's unique access token. Used as authorization token if the box has authentication enabled.",
+				"Device's unique access token. Used as authorization token if the device has authentication enabled.",
 			example: 'my-device-access-token',
 		}),
 	})
@@ -87,7 +87,7 @@ const PostSensorMeasurementSuccessResponseSchema = z.string().meta({
 	id: 'PostSensorMeasurementSuccessResponse',
 	description:
 		'Plain text success response returned after the measurement was saved.',
-	example: 'Measurement saved in box',
+	example: 'Measurement saved in device',
 })
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -95,7 +95,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Measurements'],
 		summary: 'Post new measurement',
 		description:
-			'Posts one new measurement to a specific sensor of a box. The request body contains the measured value and can optionally include a timestamp and measurement location.',
+			'Posts one new measurement to a specific sensor of a device. The request body contains the measured value and can optionally include a timestamp and measurement location.',
 		operationId: 'postSensorMeasurement',
 
 		requestParams: {
@@ -224,7 +224,7 @@ export const action = async ({
 		)
 
 		const responseParsed = PostSensorMeasurementSuccessResponseSchema.safeParse(
-			'Measurement saved in box',
+			'Measurement saved in device',
 		)
 
 		if (!responseParsed.success) {

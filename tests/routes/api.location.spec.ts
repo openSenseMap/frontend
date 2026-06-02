@@ -174,7 +174,7 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 
 			expect(response).toBeInstanceOf(Response)
 			expect(response.status).toBe(201)
-			expect(await response.text()).toBe('Measurement saved in box')
+			expect(await response.text()).toBe('Measurement saved in device')
 
 			const currentLocation = await getDeviceCurrentLocation(deviceId)
 			expect(currentLocation).not.toBeNull()

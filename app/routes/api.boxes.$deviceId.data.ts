@@ -64,7 +64,7 @@ const PostBoxDataHeaderParamsSchema = z
 	})
 	.meta({
 		id: 'PostBoxDataHeaderParams',
-		description: 'Headers accepted when posting measurements to a box.',
+		description: 'Headers accepted when posting measurements to a device.',
 	})
 
 export const MeasurementLocationSchema = z
@@ -143,11 +143,11 @@ const PostBoxDataJsonRequestSchema = z
 	})
 
 const PostBoxDataSuccessResponseSchema = z
-	.literal('Measurements saved in box')
+	.literal('Measurements saved in device')
 	.meta({
 		id: 'PostBoxDataSuccessResponse',
 		description: 'Plain text success response.',
-		example: 'Measurements saved in box',
+		example: 'Measurements saved in device',
 	})
 
 const PostBoxDataCsvRequestSchema = z.string().meta({
@@ -161,9 +161,9 @@ const PostBoxDataCsvRequestSchema = z.string().meta({
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
 		tags: ['Sensors'],
-		summary: 'Post multiple new measurements to a box',
+		summary: 'Post multiple new measurements to a device',
 		description:
-			'Posts multiple measurements to a box. Supports JSON array notation, JSON object notation, CSV, luftdaten-compatible JSON, hackAIR-compatible JSON, and sbx binary formats.',
+			'Posts multiple measurements to a device. Supports JSON array notation, JSON object notation, CSV, luftdaten-compatible JSON, hackAIR-compatible JSON, and sbx binary formats.',
 		operationId: 'postBoxMeasurements',
 
 		requestParams: {
@@ -237,7 +237,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			422: unprocessableContentResponse(
 				UnprocessableContentErrorSchema,
-				'Unprocessable content. This can happen when decoding fails, a measurement references a sensor outside the box, a timestamp is too far in the future, or location coordinates are invalid.',
+				'Unprocessable content. This can happen when decoding fails, a measurement references a sensor outside the device, a timestamp is too far in the future, or location coordinates are invalid.',
 			),
 
 			500: internalServerErrorResponse(
@@ -288,7 +288,7 @@ export const action = async ({
 			isTrustedService,
 		})
 
-		return new Response('Measurements saved in box', {
+		return new Response('Measurements saved in device', {
 			status: 201,
 			headers: {
 				'Content-Type': 'text/plain; charset=utf-8',

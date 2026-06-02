@@ -91,7 +91,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			expect(response).toBeInstanceOf(Response)
 			expect(response.status).toBe(201)
-			expect(await response.text()).toBe('Measurement saved in box')
+			expect(await response.text()).toBe('Measurement saved in device')
 		})
 
 		it('should reject with wrong access token', async () => {
@@ -138,7 +138,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			} as postSingleRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toBe('Measurement saved in box')
+			expect(await response.text()).toBe('Measurement saved in device')
 		})
 
 		it('should reject measurement with timestamp too far into the future', async () => {
@@ -187,7 +187,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			} as postMeasurementRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toContain('Measurements saved in box')
+			expect(await response.text()).toContain('Measurements saved in device')
 		})
 
 		it('should accept multiple measurements as CSV via POST (with timestamps)', async () => {
@@ -252,7 +252,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			} as postMeasurementRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toContain('Measurements saved in box')
+			expect(await response.text()).toContain('Measurements saved in device')
 
 			const updatedDevice = await getDevice({ id: deviceId })
 
@@ -289,7 +289,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			} as postMeasurementRoute.ActionArgs)
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toBe('Measurements saved in box')
+			expect(await response.text()).toBe('Measurements saved in device')
 
 			const updatedDevice = await getDevice({ id: deviceId })
 
@@ -432,7 +432,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			const after = new Date()
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toContain('Measurements saved in box')
+			expect(await response.text()).toContain('Measurements saved in device')
 
 			// Verify sensors got updated
 			const updatedDevice = await getDevice({ id: deviceId })
@@ -468,7 +468,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			const after = new Date()
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toContain('Measurements saved in box')
+			expect(await response.text()).toContain('Measurements saved in device')
 
 			const updatedDevice = await getDevice({ id: deviceId })
 			for (const sensor of updatedDevice?.sensors || []) {
@@ -503,7 +503,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			const after = new Date()
 
 			expect(response.status).toBe(201)
-			expect(await response.text()).toContain('Measurements saved in box')
+			expect(await response.text()).toContain('Measurements saved in device')
 
 			const updatedDevice = await getDevice({ id: deviceId })
 			for (const sensor of updatedDevice?.sensors || []) {

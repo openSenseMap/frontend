@@ -5,6 +5,14 @@ import { getDevice } from '~/db/models/device.server'
 import * as z from 'zod/v4'
 import { ZodOpenApiPathItemObject } from 'zod-openapi'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
+import {
+	BadRequestErrorSchema,
+	badRequestResponse,
+	internalServerErrorResponse,
+	InternalServerErrorSchema,
+	NotFoundErrorSchema,
+	notFoundResponse,
+} from '~/lib/openapi/errors'
 
 const SketchPortSchema = z.enum(['A', 'B', 'C'])
 
@@ -74,23 +82,9 @@ const ArduinoSketchResponseSchema = z.string().meta({
 		'// Generated Arduino sketch\n#include <Arduino.h>\n\nvoid setup() {}\nvoid loop() {}',
 })
 
-const ScriptRouteErrorSchema = z
-	.object({
-		code: z.string().meta({
-			example: 'Bad Request',
-		}),
-		message: z.string().meta({
-			example: 'Invalid device id specified',
-		}),
-	})
-	.meta({
-		id: 'ScriptRouteError',
-		description: 'Error response returned by the sketch generation endpoint.',
-	})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Download the Arduino script for a senseBox',
 		description:
 			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as query parameters.',
@@ -111,37 +105,22 @@ export const openapi: ZodOpenApiPathItemObject = {
 				},
 			},
 
-			400: {
-				description: 'Bad request. The device ID is missing or invalid.',
-				content: {
-					'application/json': {
-						schema: ScriptRouteErrorSchema,
-					},
-				},
-			},
+			400: badRequestResponse(
+				BadRequestErrorSchema,
+				'Bad request. The device ID is missing or invalid.',
+			),
 
-			404: {
-				description: 'Device not found.',
-				content: {
-					'application/json': {
-						schema: ScriptRouteErrorSchema,
-					},
-				},
-			},
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
 
-			500: {
-				description: 'Internal server error.',
-				content: {
-					'application/json': {
-						schema: ScriptRouteErrorSchema,
-					},
-				},
-			},
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 
 	post: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Generate the Arduino script for a senseBox from form data',
 		description:
 			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as form fields.',
@@ -173,32 +152,17 @@ export const openapi: ZodOpenApiPathItemObject = {
 				},
 			},
 
-			400: {
-				description: 'Bad request. The device ID is missing or invalid.',
-				content: {
-					'application/json': {
-						schema: ScriptRouteErrorSchema,
-					},
-				},
-			},
+			400: badRequestResponse(
+				BadRequestErrorSchema,
+				'Bad request. The device ID is missing or invalid.',
+			),
 
-			404: {
-				description: 'Device not found.',
-				content: {
-					'application/json': {
-						schema: ScriptRouteErrorSchema,
-					},
-				},
-			},
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
 
-			500: {
-				description: 'Internal server error.',
-				content: {
-					'application/json': {
-						schema: ScriptRouteErrorSchema,
-					},
-				},
-			},
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 }

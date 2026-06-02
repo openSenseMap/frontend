@@ -17,12 +17,12 @@ import {
 } from '~/lib/openapi/schemas/common'
 
 import {
+	BadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
 	MessageResponseSchema,
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
-	createBadRequestErrorSchema,
 	messageResponse,
 } from '~/lib/openapi/errors'
 
@@ -69,18 +69,6 @@ const DeleteSensorMeasurementsQueryParamsSchema = z
 		description:
 			'Query parameters selecting which measurements should be deleted.',
 	})
-const DeleteSensorMeasurementsBadRequestErrorSchema =
-	createBadRequestErrorSchema({
-		id: 'DeleteSensorMeasurementsBadRequestError',
-		description:
-			'Bad request. This can happen for invalid path parameters, invalid dates, or invalid timestamp values.',
-		examples: [
-			'Invalid device id or sensor id specified',
-			'from-date is invalid',
-			'to-date is invalid',
-			'timestamps contains invalid input',
-		],
-	})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	delete: {
@@ -100,7 +88,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			200: messageResponse('Measurements deleted successfully.'),
 
 			400: badRequestResponse(
-				DeleteSensorMeasurementsBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. This can happen for invalid query parameters or invalid parameter combinations.',
 			),
 

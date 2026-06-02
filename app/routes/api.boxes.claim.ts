@@ -1,18 +1,18 @@
 import { type Route } from './+types/api.boxes.claim'
 import { StandardResponse } from '~/lib/responses'
-import { claimBox } from '~/services/transfer-service.server'
+import { claimDevice } from '~/services/transfer-service.server'
 
 import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
+	BadRequestErrorSchema,
 	ForbiddenErrorSchema,
+	GoneErrorSchema,
 	InternalServerErrorSchema,
 	MethodNotAllowedErrorSchema,
+	NotFoundErrorSchema,
 	UnsupportedMediaTypeErrorSchema,
-	createBadRequestErrorSchema,
-	createGoneErrorSchema,
-	createNotFoundErrorSchema,
 } from '~/lib/openapi/errors'
 
 import {
@@ -30,7 +30,7 @@ import {
 } from '~/middleware/content-type-header.server'
 import { withAuthenticatedUser } from '~/lib/jwt'
 
-const ClaimBoxRequestSchema = z
+const ClaimDeviceRequestSchema = z
 	.object({
 		token: z
 			.string()
@@ -44,69 +44,41 @@ const ClaimBoxRequestSchema = z
 			}),
 	})
 	.meta({
-		id: 'ClaimBoxRequest',
+		id: 'ClaimDeviceRequest',
 		description: 'Payload for claiming a device marked for transfer.',
 	})
 
-const ClaimBoxResultSchema = z
-	.object({
-		boxId: z.string().meta({
-			description: 'ID of the claimed device.',
-			example: '5bdbe70f55d0ad001a04edc9',
-		}),
-	})
-	.meta({
-		id: 'ClaimBoxResult',
-		description: 'Result of a successful device claim.',
-	})
-
-const ClaimBoxResponseSchema = z
+const ClaimDeviceResponseSchema = z
 	.object({
 		code: z.literal('Ok').default('Ok'),
 		message: z
 			.literal('Device successfully claimed!')
 			.default('Device successfully claimed!'),
-		data: ClaimBoxResultSchema,
+		data: z.object({
+			boxId: z.string().meta({
+				description: 'ID of the claimed device.',
+				example: '5bdbe70f55d0ad001a04edc9',
+			}),
+		}),
 	})
 	.meta({
-		id: 'ClaimBoxResponse',
+		id: 'ClaimDeviceResponse',
 		description: 'Device claim success response.',
 	})
 
-const ClaimBoxBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'ClaimBoxBadRequestError',
-	description:
-		'Bad request. This can happen when the transfer token is missing, invalid, or belongs to a device the user already owns.',
-	examples: ['token is required', 'You already own this device'],
-})
-
-const ClaimBoxGoneErrorSchema = createGoneErrorSchema({
-	id: 'ClaimBoxGoneError',
-	description: 'Returned when the transfer token is invalid or expired.',
-	examples: ['Invalid or expired transfer token', 'Transfer token has expired'],
-})
-
-const ClaimBoxNotFoundErrorSchema = createNotFoundErrorSchema({
-	id: 'ClaimBoxNotFoundError',
-	description:
-		'Returned when the device referenced by the transfer claim no longer exists.',
-	messageSchema: z.literal('Device not found'),
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Claim a transferred device',
 		description:
 			'Claims a device that has been marked for transfer. Requires a valid JWT bearer token and a valid transfer token in the JSON request body.',
-		operationId: 'claimBox',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
 			required: true,
 			content: {
 				'application/json': {
-					schema: ClaimBoxRequestSchema,
+					schema: ClaimDeviceRequestSchema,
 				},
 			},
 		},
@@ -116,14 +88,14 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Device successfully claimed.',
 				content: {
 					'application/json': {
-						schema: ClaimBoxResponseSchema,
+						schema: ClaimDeviceResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
-				ClaimBoxBadRequestErrorSchema,
-				'Bad request. The transfer token is missing, invalid, or the user already owns the device.',
+				BadRequestErrorSchema,
+				'Bad request. The transfer token is missing, invalid, or belongs to a device the user already owns.',
 			),
 
 			403: forbiddenResponse(
@@ -131,7 +103,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 				'Invalid or missing JWT authorization.',
 			),
 
-			404: notFoundResponse(ClaimBoxNotFoundErrorSchema, 'Device not found.'),
+			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
 
 			405: methodNotAllowedResponse(
 				MethodNotAllowedErrorSchema,
@@ -139,7 +111,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 
 			410: goneResponse(
-				ClaimBoxGoneErrorSchema,
+				GoneErrorSchema,
 				'The transfer token is invalid or expired.',
 			),
 
@@ -156,9 +128,9 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-const parseClaimBoxRequest = async (
+const parseClaimDeviceRequest = async (
 	request: Request,
-): Promise<z.output<typeof ClaimBoxRequestSchema> | Response> => {
+): Promise<z.output<typeof ClaimDeviceRequestSchema> | Response> => {
 	let body: unknown
 
 	try {
@@ -167,7 +139,7 @@ const parseClaimBoxRequest = async (
 		return StandardResponse.badRequest('Invalid JSON in request body')
 	}
 
-	const parsed = await ClaimBoxRequestSchema.safeParseAsync(body)
+	const parsed = await ClaimDeviceRequestSchema.safeParseAsync(body)
 
 	if (!parsed.success) {
 		return StandardResponse.badRequest(
@@ -191,16 +163,16 @@ export const action = async ({ request }: Route.ActionArgs) => {
 	}
 
 	return withAuthenticatedUser(request, async (user) => {
-		const parsedRequest = await parseClaimBoxRequest(request)
+		const parsedRequest = await parseClaimDeviceRequest(request)
 
 		if (parsedRequest instanceof Response) {
 			return parsedRequest
 		}
 
 		try {
-			const result = await claimBox(user.id, parsedRequest.token)
+			const result = await claimDevice(user.id, parsedRequest.token)
 
-			const responseParsed = await ClaimBoxResponseSchema.safeParseAsync({
+			const responseParsed = await ClaimDeviceResponseSchema.safeParseAsync({
 				code: 'Ok',
 				message: 'Device successfully claimed!',
 				data: {
@@ -215,7 +187,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
 			return StandardResponse.ok(responseParsed.data)
 		} catch (err) {
-			console.error('Error claiming box:', err)
+			console.error('Error claiming device:', err)
 			return handleClaimError(err)
 		}
 	})

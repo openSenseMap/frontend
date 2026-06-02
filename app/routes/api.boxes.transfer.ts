@@ -2,8 +2,8 @@ import { type Route } from './+types/api.boxes.transfer'
 import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import {
-	createBoxTransfer,
-	removeBoxTransfer,
+	createDeviceTransfer,
+	removeDeviceTransfer,
 	validateTransferParams,
 } from '~/services/transfer-service.server'
 
@@ -34,7 +34,7 @@ const TransferTokenSchema = z.string().min(1).meta({
 	example: 'clm_01jv7c9x8n0example',
 })
 
-const CreateBoxTransferRequestSchema = z
+const CreateDeviceTransferRequestSchema = z
 	.object({
 		boxId: z
 			.string({
@@ -58,11 +58,11 @@ const CreateBoxTransferRequestSchema = z
 		expiresAt: data.expiresAt ?? data.date,
 	}))
 	.meta({
-		id: 'CreateBoxTransferRequest',
+		id: 'CreateDeviceTransferRequest',
 		description: 'Payload for marking a device for transfer.',
 	})
 
-const RemoveBoxTransferRequestSchema = z
+const RemoveDeviceTransferRequestSchema = z
 	.object({
 		boxId: z.string().min(1).meta({
 			description: 'ID of the device to remove from transfer.',
@@ -72,7 +72,7 @@ const RemoveBoxTransferRequestSchema = z
 		token: TransferTokenSchema,
 	})
 	.meta({
-		id: 'RemoveBoxTransferRequest',
+		id: 'RemoveDeviceTransferRequest',
 		description: 'Payload for revoking a device transfer token.',
 	})
 
@@ -128,21 +128,20 @@ const DeviceTransferBadRequestErrorSchema = createBadRequestErrorSchema({
 
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Mark a device for transfer',
 		description:
 			'Marks a device for transfer to another user account and returns a transfer token. Requires JWT authorization. The request body can be sent as JSON or form data.',
-		operationId: 'createBoxTransfer',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
 			required: true,
 			content: {
 				'application/json': {
-					schema: CreateBoxTransferRequestSchema,
+					schema: CreateDeviceTransferRequestSchema,
 				},
 				'application/x-www-form-urlencoded': {
-					schema: CreateBoxTransferRequestSchema,
+					schema: CreateDeviceTransferRequestSchema,
 				},
 			},
 		},
@@ -164,12 +163,12 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			403: forbiddenResponse(
 				ForbiddenErrorSchema,
-				'Invalid JWT authorization or the authenticated user is not allowed to transfer this box.',
+				'Invalid JWT authorization or the authenticated user is not allowed to transfer this device.',
 			),
 
 			404: notFoundResponse(
 				NotFoundErrorSchema,
-				'Box or transfer record not found.',
+				'Device or transfer record not found.',
 			),
 
 			405: methodNotAllowedResponse(
@@ -185,21 +184,21 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 
 	delete: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Revoke a device transfer token',
 		description:
 			'Revokes a transfer token and removes the device from transfer. Requires JWT authorization. The request body can be sent as JSON or form data.',
-		operationId: 'removeBoxTransfer',
+		operationId: 'removeDeviceTransfer',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
 			required: true,
 			content: {
 				'application/json': {
-					schema: RemoveBoxTransferRequestSchema,
+					schema: RemoveDeviceTransferRequestSchema,
 				},
 				'application/x-www-form-urlencoded': {
-					schema: RemoveBoxTransferRequestSchema,
+					schema: RemoveDeviceTransferRequestSchema,
 				},
 			},
 		},
@@ -221,7 +220,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			404: notFoundResponse(
 				NotFoundErrorSchema,
-				'Box or transfer record not found.',
+				'Device or transfer record not found.',
 			),
 
 			405: methodNotAllowedResponse(
@@ -264,7 +263,7 @@ const handleCreateTransfer = async (request: Request, user: User) => {
 	try {
 		const requestData = await parseJsonOrFormRequest(
 			request,
-			CreateBoxTransferRequestSchema,
+			CreateDeviceTransferRequestSchema,
 		)
 
 		if (requestData instanceof Response) {
@@ -280,7 +279,7 @@ const handleCreateTransfer = async (request: Request, user: User) => {
 			return StandardResponse.badRequest(validation.error ?? '')
 		}
 
-		const transferCode = await createBoxTransfer(
+		const transferCode = await createDeviceTransfer(
 			user.id,
 			requestData.boxId,
 			requestData.expiresAt,
@@ -315,14 +314,14 @@ const handleRemoveTransfer = async (request: Request, user: User) => {
 	try {
 		const requestData = await parseJsonOrFormRequest(
 			request,
-			RemoveBoxTransferRequestSchema,
+			RemoveDeviceTransferRequestSchema,
 		)
 
 		if (requestData instanceof Response) {
 			return requestData
 		}
 
-		await removeBoxTransfer(user.id, requestData.boxId, requestData.token)
+		await removeDeviceTransfer(user.id, requestData.boxId, requestData.token)
 
 		return StandardResponse.noContent()
 	} catch (err) {

@@ -1,11 +1,11 @@
 import * as z from 'zod/v4'
 
-export const BoxTransferTokenSchema = z.string().min(1).meta({
+export const DeviceTransferTokenSchema = z.string().min(1).meta({
 	description: 'Transfer token.',
 	example: 'transfer-token-example',
 })
 
-export const BoxTransferClaimSchema = z
+export const DeviceTransferClaimSchema = z
 	.object({
 		id: z.string().meta({
 			description: 'Unique transfer claim id.',
@@ -17,7 +17,7 @@ export const BoxTransferClaimSchema = z
 			example: '5bdbe70f55d0ad001a04edc9',
 		}),
 
-		token: BoxTransferTokenSchema,
+		token: DeviceTransferTokenSchema,
 
 		expiresAt: z.iso.datetime().nullable().optional().meta({
 			description:
@@ -36,6 +36,6 @@ export const BoxTransferClaimSchema = z
 		}),
 	})
 	.meta({
-		id: 'BoxTransferClaim',
+		id: 'DeviceTransferClaim',
 		description: 'Transfer claim created for a box.',
 	})

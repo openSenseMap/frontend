@@ -10,11 +10,11 @@ import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
+	BadRequestErrorSchema,
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
 	UnprocessableContentErrorSchema,
 	badRequestResponse,
-	createBadRequestErrorSchema,
 	internalServerErrorResponse,
 	notFoundResponse,
 	unprocessableContentResponse,
@@ -33,7 +33,7 @@ import {
 	QueryDownloadSchema,
 } from '~/lib/api-schemas/query'
 
-const BoxesDataRequestSchema = DateRangeQuerySchema.extend({
+const DevicesDataRequestSchema = DateRangeQuerySchema.extend({
 	phenomenon: z.string().optional(),
 	grouptag: z.string().optional(),
 	boxid: z.union([z.string(), z.array(z.string())]).optional(),
@@ -44,12 +44,12 @@ const BoxesDataRequestSchema = DateRangeQuerySchema.extend({
 	delimiter: DelimiterSchema,
 	columns: ColumnsBodySchema,
 }).meta({
-	id: 'BoxesDataRequest',
+	id: 'DevicesDataRequest',
 	description:
 		'JSON body variant of the devices data query. Equivalent to the GET query parameters, but supports arrays naturally.',
 })
 
-const BoxesDataQueryParamsSchema = DateRangeQuerySchema.extend({
+const DevicesDataQueryParamsSchema = DateRangeQuerySchema.extend({
 	phenomenon: z.string().optional().meta({
 		description: 'Filter by sensor phenomenon/title.',
 		example: 'Temperatur',
@@ -77,54 +77,43 @@ const BoxesDataQueryParamsSchema = DateRangeQuerySchema.extend({
 
 	columns: ColumnsQuerySchema,
 }).meta({
-	id: 'BoxesDataQueryParams',
+	id: 'DevicesDataQueryParams',
 	description: 'Query parameters for streaming measurements across devices.',
 })
 
-const BoxesDataJsonMeasurementSchema = z.record(z.string(), z.unknown()).meta({
-	id: 'BoxesDataJsonMeasurement',
-	description:
-		'Measurement row. The included properties depend on the requested `columns` parameter.',
-	example: {
-		createdAt: '2026-05-13T12:00:00.000Z',
-		value: 21.5,
-		boxId: '5bdbe70f55d0ad001a04edc9',
-		boxName: 'My device',
-		sensorId: '60a13611a877b3001b8ffd59',
-		phenomenon: 'Temperatur',
-		unit: '°C',
-		lat: 51.963,
-		lon: 7.628,
-	},
-})
-
-const BoxesDataJsonResponseSchema = z
-	.array(BoxesDataJsonMeasurementSchema)
+const DevicesDataJsonMeasurementSchema = z
+	.record(z.string(), z.unknown())
 	.meta({
-		id: 'BoxesDataJsonResponse',
+		id: 'DevicesDataJsonMeasurement',
+		description:
+			'Measurement row. The included properties depend on the requested `columns` parameter.',
+		example: {
+			createdAt: '2026-05-13T12:00:00.000Z',
+			value: 21.5,
+			boxId: '5bdbe70f55d0ad001a04edc9',
+			boxName: 'My device',
+			sensorId: '60a13611a877b3001b8ffd59',
+			phenomenon: 'Temperatur',
+			unit: '°C',
+			lat: 51.963,
+			lon: 7.628,
+		},
+	})
+
+const DevicesDataJsonResponseSchema = z
+	.array(DevicesDataJsonMeasurementSchema)
+	.meta({
+		id: 'DevicesDataJsonResponse',
 		description:
 			'Streamed JSON array of measurement rows. Each row contains the requested columns.',
 	})
 
-const BoxesDataCsvResponseSchema = z.string().meta({
-	id: 'BoxesDataCsvResponse',
+const DevicesDataCsvResponseSchema = z.string().meta({
+	id: 'DevicesDataCsvResponse',
 	description:
 		'CSV measurement export. The first row contains the requested column names.',
 	example:
 		'createdAt,value,boxId,boxName,sensorId,phenomenon,unit\n2026-05-13T12:00:00.000Z,21.5,5bdbe70f55d0ad001a04edc9,my Device,60a13611a877b3001b8ffd59,Temperatur,°C\n',
-})
-
-const BoxesDataBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'BoxesDataBadRequestError',
-	description:
-		'Bad request. This can happen for invalid query/body parameters, invalid date values, invalid format, invalid delimiter, or invalid column configuration.',
-	examples: [
-		'Invalid query parameters',
-		'Invalid from-date parameter.',
-		'Invalid to-date parameter.',
-		'Invalid format parameter.',
-		'Invalid delimiter parameter.',
-	],
 })
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -133,10 +122,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Stream measurements across devices and sensors',
 		description:
 			'Streams measurements matching the given filters. Results can be returned as JSON or CSV. This endpoint is useful for bulk data downloads and cross-device measurement queries.',
-		operationId: 'getBoxesData',
+		operationId: 'getDevicesData',
 
 		requestParams: {
-			query: BoxesDataQueryParamsSchema,
+			query: DevicesDataQueryParamsSchema,
 		},
 
 		responses: {
@@ -155,16 +144,16 @@ export const openapi: ZodOpenApiPathItemObject = {
 				},
 				content: {
 					'application/json': {
-						schema: BoxesDataJsonResponseSchema,
+						schema: DevicesDataJsonResponseSchema,
 					},
 					'text/csv': {
-						schema: BoxesDataCsvResponseSchema,
+						schema: DevicesDataCsvResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
-				BoxesDataBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. This can happen for invalid query parameters.',
 			),
 
@@ -191,17 +180,17 @@ export const openapi: ZodOpenApiPathItemObject = {
 			'Stream measurements across devices and sensors using a JSON request body',
 		description:
 			'POST variant of the devices data query. Parameters can be sent as a JSON request body. If the request body cannot be parsed as JSON, the server falls back to query parameters.',
-		operationId: 'postBoxesData',
+		operationId: 'postDevicesData',
 
 		requestParams: {
-			query: BoxesDataQueryParamsSchema,
+			query: DevicesDataQueryParamsSchema,
 		},
 
 		requestBody: {
 			required: false,
 			content: {
 				'application/json': {
-					schema: BoxesDataRequestSchema,
+					schema: DevicesDataRequestSchema,
 				},
 			},
 		},
@@ -222,16 +211,16 @@ export const openapi: ZodOpenApiPathItemObject = {
 				},
 				content: {
 					'application/json': {
-						schema: BoxesDataJsonResponseSchema,
+						schema: DevicesDataJsonResponseSchema,
 					},
 					'text/csv': {
-						schema: BoxesDataCsvResponseSchema,
+						schema: DevicesDataCsvResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
-				BoxesDataBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. This can happen for invalid query or body parameters.',
 			),
 

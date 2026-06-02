@@ -145,7 +145,7 @@ const DeviceBadRequestErrorSchema = createBadRequestErrorSchema({
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Get device by ID',
 		description: 'Retrieve a single device by its unique identifier.',
 		operationId: 'getDeviceById',
@@ -179,7 +179,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 
 	put: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Update device',
 		description: 'Updates a device. Requires JWT authorization.',
 		operationId: 'updateDevice',
@@ -228,7 +228,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 
 	delete: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Delete device',
 		description:
 			'Deletes a device. Requires JWT authorization and the current user password.',
@@ -324,14 +324,14 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 		return await okDeviceResponse(device)
 	} catch (error) {
-		console.error('Error fetching box:', error)
+		console.error('Error fetching device:', error)
 
 		if (error instanceof Response) {
 			throw error
 		}
 
 		return new Response(
-			JSON.stringify({ error: 'Internal server error while fetching box' }),
+			JSON.stringify({ error: 'Internal server error while fetching device' }),
 			{
 				status: 500,
 				headers: {

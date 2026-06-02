@@ -7,10 +7,6 @@ import {
 import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { StandardResponse } from '~/lib/responses'
-import {
-	BoxesQuerySchema,
-	CreateBoxSchema,
-} from '~/services/device-service.server'
 
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
@@ -32,34 +28,37 @@ import {
 } from '~/lib/openapi/errors'
 import { requestContentTypeJson } from '~/middleware/content-type-header.server'
 import { withAuthenticatedUser } from '~/lib/jwt'
+import {
+	DevicesQuerySchema,
+	CreateDeviceSchema,
+} from '~/lib/api-schemas/devices'
 
-const BoxesQueryParamsSchema = BoxesQuerySchema.meta({
-	id: 'BoxesQueryParams',
+const DevicesQueryParamsSchema = DevicesQuerySchema.meta({
+	id: 'DevicesQueryParams',
 	description:
 		'Query parameters used to filter and format the devices response.',
 })
 
-const CreateBoxRequestSchema = CreateBoxSchema.meta({
-	id: 'CreateBoxRequest',
+const CreateDeviceRequestSchema = CreateDeviceSchema.meta({
+	id: 'CreateDeviceRequest',
 	description: 'Payload for creating a new device.',
 })
 
-const CreatedBoxResponseSchema = ApiDeviceSchema.meta({
-	id: 'CreatedBoxResponse',
+const CreatedDeviceResponseSchema = ApiDeviceSchema.meta({
+	id: 'CreatedDeviceResponse',
 	description:
-		'Created box/device response transformed through `transformDeviceToApiFormat`.',
+		'Created device response transformed through `transformDeviceToApiFormat`.',
 })
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Get devices',
 		description:
 			'Find devices using query parameters. By default, a JSON array of devices is returned. If `format=geojson`, a GeoJSON FeatureCollection is returned.',
-		operationId: 'findBoxes',
 
 		requestParams: {
-			query: BoxesQueryParamsSchema,
+			query: DevicesQueryParamsSchema,
 		},
 
 		responses: {
@@ -88,34 +87,33 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 
 	post: {
-		tags: ['Boxes'],
-		summary: 'Create a new box',
-		description: 'Creates a new box/device with optional sensors.',
-		operationId: 'createBox',
+		tags: ['Devices'],
+		summary: 'Create a new device',
+		description: 'Creates a new device with optional sensors.',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
 			required: true,
 			content: {
 				'application/json': {
-					schema: CreateBoxRequestSchema,
+					schema: CreateDeviceRequestSchema,
 				},
 			},
 		},
 
 		responses: {
 			201: {
-				description: 'Box created successfully.',
+				description: 'Device created successfully.',
 				content: {
 					'application/json': {
-						schema: CreatedBoxResponseSchema,
+						schema: CreatedDeviceResponseSchema,
 					},
 				},
 			},
 
 			400: badRequestResponse(
 				BadRequestErrorSchema,
-				'Bad request. This can happen when the request body is not valid JSON or does not match CreateBoxSchema.',
+				'Bad request. This can happen when the request body is not valid JSON or does not match CreateDeviceSchema.',
 			),
 
 			403: forbiddenResponse(
@@ -143,7 +141,7 @@ export const middleware: Route.MiddlewareFunction[] = [
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const queryObj = Object.fromEntries(url.searchParams)
-	const parseResult = BoxesQuerySchema.safeParse(queryObj)
+	const parseResult = DevicesQuerySchema.safeParse(queryObj)
 
 	if (!parseResult.success) {
 		const { fieldErrors } = parseResult.error.flatten()
@@ -213,7 +211,7 @@ async function post(request: Request, user: User) {
 		}
 
 		// Validate request data
-		const validationResult = CreateBoxSchema.safeParse(requestData)
+		const validationResult = CreateDeviceSchema.safeParse(requestData)
 		if (!validationResult.success) {
 			return Response.json(
 				{
@@ -231,7 +229,7 @@ async function post(request: Request, user: User) {
 		const sensorsProvided = validatedData.sensors?.length > 0
 		// Extract longitude and latitude from location array [longitude, latitude]
 		const [longitude, latitude] = validatedData.location
-		const newBox = await createDevice(
+		const newDevice = await createDevice(
 			{
 				name: validatedData.name,
 				exposure: validatedData.exposure,
@@ -251,11 +249,11 @@ async function post(request: Request, user: User) {
 		)
 
 		// Build response object using helper function
-		const responseData = transformDeviceToApiFormat(newBox)
+		const responseData = transformDeviceToApiFormat(newDevice)
 
 		return StandardResponse.created(responseData)
 	} catch (err) {
-		console.error('Error creating box:', err)
+		console.error('Error creating device:', err)
 		return StandardResponse.internalServerError()
 	}
 }

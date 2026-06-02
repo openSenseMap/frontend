@@ -7,12 +7,12 @@ import { parseDateParam, parseEnumParam } from '~/lib/params'
 import { StandardResponse } from '~/lib/responses'
 
 import {
-	createBadRequestErrorSchema,
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
 	badRequestResponse,
 	internalServerErrorResponse,
 	notFoundResponse,
+	BadRequestErrorSchema,
 } from '~/lib/openapi/errors'
 
 import { apiMessages } from '~/lib/openapi/messages'
@@ -111,20 +111,9 @@ const GeoJsonLineStringResponseSchema = z
 		},
 	})
 
-const DeviceLocationsBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'DeviceLocationsBadRequestError',
-	description:
-		'Bad request. This can happen for an invalid date parameter or invalid format parameter.',
-	examples: [
-		'Invalid from-date parameter.',
-		'Invalid to-date parameter.',
-		'Invalid format parameter.',
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
-		tags: ['Boxes'],
+		tags: ['Devices'],
 		summary: 'Get locations of a device',
 		description:
 			'Get all locations of the specified device ordered by date. By default, the response is an array of GeoJSON Point-like objects. If `format=geojson`, a GeoJSON LineString Feature is returned, with `properties.timestamps` containing one timestamp for each coordinate.',
@@ -149,7 +138,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceLocationsBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. This can happen for an invalid device id, invalid date parameter, or invalid format parameter.',
 			),
 
