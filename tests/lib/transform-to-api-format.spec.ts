@@ -57,9 +57,9 @@ describe('transformDeviceToApiFormat', () => {
 			useAuth: true,
 			public: false,
 			status: 'active',
-			createdAt: new Date('2024-01-01T00:00:00Z'),
-			updatedAt: new Date('2024-01-01T12:00:00Z'),
-			expiresAt: new Date('2024-12-31T23:59:59Z'),
+			createdAt: new Date('2024-01-01T00:00:00Z').toISOString(),
+			updatedAt: new Date('2024-01-01T12:00:00Z').toISOString(),
+			expiresAt: new Date('2024-12-31T23:59:59Z').toISOString(),
 			userId: 'user-123',
 			currentLocation: {
 				type: 'Point',
@@ -224,9 +224,9 @@ describe('transformDeviceToApiFormat', () => {
 		expect(result.useAuth).toBe(mockDevice.useAuth)
 		expect(result.public).toBe(mockDevice.public)
 		expect(result.status).toBe(mockDevice.status)
-		expect(result.createdAt).toBe(mockDevice.createdAt)
-		expect(result.updatedAt).toBe(mockDevice.updatedAt)
-		expect(result.expiresAt).toBe(mockDevice.expiresAt)
+		expect(result.createdAt).toBe(mockDevice.createdAt.toISOString())
+		expect(result.updatedAt).toBe(mockDevice.updatedAt.toISOString())
+		expect(result.expiresAt).toBe(mockDevice.expiresAt.toISOString())
 		expect(result.userId).toBe(mockDevice.userId)
 	})
 
