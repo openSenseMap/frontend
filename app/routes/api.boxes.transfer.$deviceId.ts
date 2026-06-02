@@ -1,5 +1,5 @@
 import { type Route } from './+types/api.boxes.transfer.$deviceId'
-import { getUserFromJwt } from '~/lib/jwt'
+import { getUserFromJwt, withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import {
 	getBoxTransfer,
@@ -28,16 +28,27 @@ import {
 } from '~/lib/openapi/errors'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 import { ZodOpenApiPathItemObject } from 'zod-openapi'
+import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
+import { parsePathParams } from '~/lib/request-parsing'
 
 const UpdateBoxTransferRequestSchema = z
 	.object({
 		token: BoxTransferTokenSchema,
 
-		expiresAt: z.iso.datetime().meta({
-			description:
-				'New expiration date for the transfer token. Must be in the future.',
-			example: '2026-05-22T12:00:00.000Z',
-		}),
+		expiresAt: z
+			.string({
+				error: 'expiresAt is required',
+			})
+			.trim()
+			.min(1, {
+				error: 'expiresAt is required',
+			})
+			.pipe(z.iso.datetime())
+			.meta({
+				description:
+					'New expiration date for the transfer token. Must be in the future.',
+				example: '2026-05-22T12:00:00.000Z',
+			}),
 	})
 	.meta({
 		id: 'UpdateBoxTransferRequest',
@@ -184,36 +195,62 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
+const toTransferApiData = (transfer: {
+	id: string
+	boxId: string
+	token: string
+	expiresAt: Date | string | null
+	createdAt: Date | string
+	updatedAt: Date | string
+}) => ({
+	id: transfer.id,
+	boxId: transfer.boxId,
+	token: transfer.token,
+	expiresAt:
+		transfer.expiresAt instanceof Date
+			? transfer.expiresAt.toISOString()
+			: transfer.expiresAt,
+	createdAt:
+		transfer.createdAt instanceof Date
+			? transfer.createdAt.toISOString()
+			: transfer.createdAt,
+	updatedAt:
+		transfer.updatedAt instanceof Date
+			? transfer.updatedAt.toISOString()
+			: transfer.updatedAt,
+})
+
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJsonOrForm(['PUT']),
+]
+
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
-	const jwtResponse = await getUserFromJwt(request)
+	const parsedParams = parsePathParams(params, DevicePathParamsSchema)
 
-	if (typeof jwtResponse === 'string')
-		return StandardResponse.forbidden(
-			'Invalid JWT authorization. Please sign in to obtain new JWT.',
-		)
-
-	const { deviceId } = params
-
-	if (!deviceId) return StandardResponse.badRequest('Device ID is required')
-
-	try {
-		// Get transfer details - will throw if user doesn't own the device or transfer doesn't exist
-		const transfer = await getBoxTransfer(jwtResponse.id, deviceId)
-
-		return StandardResponse.ok({
-			data: {
-				id: transfer.id,
-				token: transfer.token,
-				boxId: transfer.boxId,
-				expiresAt: transfer.expiresAt,
-				createdAt: transfer.createdAt,
-				updatedAt: transfer.updatedAt,
-			},
-		})
-	} catch (err) {
-		console.error('Error fetching transfer:', err)
-		return handleTransferError(err)
+	if (parsedParams instanceof Response) {
+		return parsedParams
 	}
+
+	return withAuthenticatedUser(request, async (user) => {
+		try {
+			const transfer = await getBoxTransfer(user.id, parsedParams.deviceId)
+
+			const responseParsed = await GetBoxTransferResponseSchema.safeParseAsync({
+				code: 'Ok',
+				data: toTransferApiData(transfer),
+			})
+
+			if (!responseParsed.success) {
+				console.warn(responseParsed.error.issues)
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.ok(responseParsed.data)
+		} catch (err) {
+			console.error('Error fetching transfer:', err)
+			return handleTransferError(err)
+		}
+	})
 }
 
 export const action = async ({ params, request }: Route.ActionArgs) => {
