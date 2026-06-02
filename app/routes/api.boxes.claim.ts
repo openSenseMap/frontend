@@ -1,5 +1,4 @@
 import { type Route } from './+types/api.boxes.claim'
-import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import { claimBox } from '~/services/transfer-service.server'
 
@@ -26,6 +25,8 @@ import {
 	notFoundResponse,
 	unsupportedMediaTypeResponse,
 } from '~/lib/openapi/errors'
+import { requestContentTypeJson } from '~/middleware/content-type-header.server'
+import { withAuthenticatedUser } from '~/lib/jwt'
 
 const ClaimBoxRequestSchema = z
 	.object({
@@ -153,39 +154,86 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-export const action = async ({ request }: Route.ActionArgs) => {
-	if (request.method !== 'POST')
-		return StandardResponse.methodNotAllowed('Only POST allowed')
-
-	const contentType = request.headers.get('content-type')
-	if (!contentType || !contentType.includes('application/json'))
-		return StandardResponse.unsupportedMediaType(
-			'Unsupported content-type. Try application/json',
-		)
-
-	const jwtResponse = await getUserFromJwt(request)
-
-	if (typeof jwtResponse === 'string')
-		return StandardResponse.forbidden('Invalid JWT. Please sign in')
+const parseClaimBoxRequest = async (
+	request: Request,
+): Promise<z.output<typeof ClaimBoxRequestSchema> | Response> => {
+	let body: unknown
 
 	try {
-		const body = await request.json()
-		const { token } = body
-
-		if (!token) return StandardResponse.badRequest('token is required')
-
-		const result = await claimBox(jwtResponse.id, token)
-
-		return StandardResponse.ok({
-			message: 'Device successfully claimed!',
-			data: {
-				boxId: result.boxId,
-			},
-		})
-	} catch (err) {
-		console.error('Error claiming box:', err)
-		return handleClaimError(err)
+		body = await request.json()
+	} catch {
+		return StandardResponse.badRequest('Invalid JSON in request body')
 	}
+
+	const parsed = await ClaimBoxRequestSchema.safeParseAsync(body)
+
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			parsed.error.issues[0]?.message ?? 'Invalid claim request',
+		)
+	}
+
+	return parsed.data
+}
+
+const createClaimBoxSuccessResponse = async (boxId: string) => {
+	const parsed = await ClaimBoxResponseSchema.safeParseAsync({
+		code: 'Ok',
+		message: 'Device successfully claimed!',
+		data: {
+			boxId,
+		},
+	})
+
+	if (!parsed.success) {
+		console.warn(parsed.error.issues)
+		return StandardResponse.internalServerError()
+	}
+
+	return StandardResponse.ok(parsed.data)
+}
+
+export const middleware: Route.MiddlewareFunction[] = [requestContentTypeJson()]
+
+export const action = async ({ request }: Route.ActionArgs) => {
+	if (request.method !== 'POST') {
+		return StandardResponse.methodNotAllowed('Only POST allowed')
+	}
+
+	// const contentTypeError = validateJsonContentType(request, ['POST'])
+	// if (contentTypeError) {
+	// 	return contentTypeError
+	// }
+
+	return withAuthenticatedUser(request, async (user) => {
+		const parsedRequest = await parseClaimBoxRequest(request)
+
+		if (parsedRequest instanceof Response) {
+			return parsedRequest
+		}
+
+		try {
+			const result = await claimBox(user.id, parsedRequest.token)
+
+			const responseParsed = await ClaimBoxResponseSchema.safeParseAsync({
+				code: 'Ok',
+				message: 'Device successfully claimed!',
+				data: {
+					boxId: result.boxId,
+				},
+			})
+
+			if (!responseParsed.success) {
+				console.warn(responseParsed.error.issues)
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.ok(responseParsed.data)
+		} catch (err) {
+			console.error('Error claiming box:', err)
+			return handleClaimError(err)
+		}
+	})
 }
 
 const handleClaimError = (err: unknown) => {

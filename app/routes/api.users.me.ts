@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import { getUserDeviceIds } from '~/db/models/device.server'
 import { type User } from '~/db/schema/user'
-import { getAuthenticatedUser } from '~/lib/jwt'
+import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import { deleteUser, updateUserDetails } from '~/services/user-service.server'
 import { type Route } from './+types/api.users.me'
@@ -308,30 +308,26 @@ export const middleware: Route.MiddlewareFunction[] = [
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	try {
-		const user = await getAuthenticatedUser(request)
+		return await withAuthenticatedUser(request, async (user) => {
+			const deviceIds = await getUserDeviceIds(user.id)
 
-		if (user instanceof Response) {
-			return user
-		}
-
-		const deviceIds = await getUserDeviceIds(user.id)
-
-		const responseParsed = await GetMeResponseSchema.safeParseAsync({
-			code: 'Ok',
-			data: {
-				me: {
-					...transformUserToApiFormat(user),
-					boxes: deviceIds,
+			const responseParsed = await GetMeResponseSchema.safeParseAsync({
+				code: 'Ok',
+				data: {
+					me: {
+						...transformUserToApiFormat(user),
+						boxes: deviceIds,
+					},
 				},
-			},
+			})
+
+			if (!responseParsed.success) {
+				console.error(responseParsed.error.issues)
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.ok(responseParsed.data)
 		})
-
-		if (!responseParsed.success) {
-			console.error(responseParsed.error.issues)
-			return StandardResponse.internalServerError()
-		}
-
-		return StandardResponse.ok(responseParsed.data)
 	} catch (err) {
 		console.warn(err)
 		return StandardResponse.internalServerError()
@@ -339,22 +335,18 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 }
 
 export const action = async ({ request }: Route.ActionArgs) => {
-	const user = await getAuthenticatedUser(request)
+	return await withAuthenticatedUser(request, async (user) => {
+		switch (request.method) {
+			case 'PUT':
+				return await put(user, request)
 
-	if (user instanceof Response) {
-		return user
-	}
+			case 'DELETE':
+				return await del(user, request)
 
-	switch (request.method) {
-		case 'PUT':
-			return await put(user, request)
-
-		case 'DELETE':
-			return await del(user, request)
-
-		default:
-			return StandardResponse.methodNotAllowed('Method Not Allowed')
-	}
+			default:
+				return StandardResponse.methodNotAllowed('Method Not Allowed')
+		}
+	})
 }
 
 const put = async (user: User, request: Request): Promise<Response> => {

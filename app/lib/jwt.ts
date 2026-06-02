@@ -149,14 +149,17 @@ export const getUserFromJwt = async (
 	return user
 }
 
-export const getAuthenticatedUser = async (request: Request) => {
+export const withAuthenticatedUser = async (
+	request: Request,
+	handler: (user: User) => Promise<Response> | Response,
+): Promise<Response> => {
 	const jwtResponse = await getUserFromJwt(request)
 
 	if (typeof jwtResponse === 'string') {
 		return StandardResponse.forbidden(apiMessages.invalidJwt)
 	}
 
-	return jwtResponse
+	return handler(jwtResponse)
 }
 
 const decodeJwtString = (

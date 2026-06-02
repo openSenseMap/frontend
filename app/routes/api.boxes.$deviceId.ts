@@ -7,7 +7,7 @@ import {
 } from '~/db/models/device.server'
 import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { getAuthenticatedUser } from '~/lib/jwt'
+import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import { deleteDevice } from '~/services/device-service.server'
 import { z } from 'zod'
@@ -346,19 +346,22 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const parsedParams = parsePathParams(params)
 	if (parsedParams instanceof Response) return parsedParams
 
-	const user = await getAuthenticatedUser(request)
-	if (user instanceof Response) return user
-
-	switch (request.method) {
-		case 'PUT':
-			return await put(request, user, parsedParams.deviceId)
-
-		case 'DELETE':
-			return await del(request, user, parsedParams.deviceId)
-
-		default:
-			return StandardResponse.methodNotAllowed('Method Not Allowed')
+	if (request.method !== 'PUT' && request.method !== 'DELETE') {
+		return StandardResponse.methodNotAllowed('Method Not Allowed')
 	}
+
+	return withAuthenticatedUser(request, async (user) => {
+		if (request.method === 'PUT') {
+			return await put(request, user, parsedParams.deviceId)
+		}
+
+		if (request.method === 'DELETE') {
+			return await del(request, user, parsedParams.deviceId)
+		}
+
+		// was already checked, but it makes ts happy
+		return StandardResponse.methodNotAllowed('Method Not Allowed')
+	})
 }
 
 async function put(request: Request, user: any, deviceId: string) {
