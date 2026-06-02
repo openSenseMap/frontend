@@ -648,7 +648,6 @@ export default function EditDeviceGeneral() {
 
 	useEffect(() => {
 		if (!actionData) return
-		if (!('errors' in actionData)) return
 		if (!actionData.errors) return
 
 		const actionErrors = actionData.errors
