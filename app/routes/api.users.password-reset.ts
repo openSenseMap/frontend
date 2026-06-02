@@ -6,9 +6,9 @@ import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
+	BadRequestErrorSchema,
+	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
-	createBadRequestErrorSchema,
-	createForbiddenErrorSchema,
 } from '~/lib/openapi/errors'
 
 import {
@@ -69,27 +69,6 @@ const PasswordResetResponseSchema = z
 		description: 'Password reset success response.',
 	})
 
-const PasswordResetBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'PasswordResetBadRequestError',
-	description:
-		'Bad request. This can happen when the password or token is missing, or when the new password does not meet the password requirements.',
-	examples: [
-		'No new password specified.',
-		'No password reset token specified.',
-		'Password must be at least 8 characters.',
-	],
-})
-
-const PasswordResetForbiddenErrorSchema = createForbiddenErrorSchema({
-	id: 'PasswordResetForbiddenError',
-	description:
-		'Returned when the password reset token is invalid, expired, or password reset is not possible for this user.',
-	examples: [
-		'Password reset for this user not possible',
-		'Password reset token expired',
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
 		tags: ['User Management'],
@@ -120,13 +99,13 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				PasswordResetBadRequestErrorSchema,
-				'Bad request. The password or token is missing, or the password format is invalid.',
+				BadRequestErrorSchema,
+				'Bad request. The password or token is missing, or the new password does not meet the password requirements.',
 			),
 
 			403: forbiddenResponse(
-				PasswordResetForbiddenErrorSchema,
-				'Password reset is not possible because the token is invalid or expired.',
+				ForbiddenErrorSchema,
+				'Password reset is not possible because the token is invalid, expired, or password reset is not possible for this user.',
 			),
 
 			500: internalServerErrorResponse(

@@ -9,7 +9,7 @@ import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
-	createUnprocessableContentErrorSchema,
+	UnprocessableContentErrorSchema,
 } from '~/lib/openapi/errors'
 
 import {
@@ -31,13 +31,6 @@ const ResendEmailConfirmationResponseSchema = z
 		id: 'ResendEmailConfirmationResponse',
 		description: 'Email confirmation resend response.',
 	})
-
-const EmailAlreadyConfirmedErrorSchema = createUnprocessableContentErrorSchema({
-	id: 'EmailAlreadyConfirmedError',
-	description:
-		'Returned when the user email address is already confirmed and there is no pending unconfirmed email address.',
-	examples: ['Email address user@example.com is already confirmed.'],
-})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
@@ -63,8 +56,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 
 			422: unprocessableContentResponse(
-				EmailAlreadyConfirmedErrorSchema,
-				'The email address is already confirmed.',
+				UnprocessableContentErrorSchema,
+				'Email address is already confirmed and there is no pending unconfirmed email address.',
 			),
 
 			500: internalServerErrorResponse(

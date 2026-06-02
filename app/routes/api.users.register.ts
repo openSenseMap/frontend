@@ -90,70 +90,6 @@ const RegisterUserResponseSchema = z
 		description: 'Successfully registered user response.',
 	})
 
-const RegisterUserBadRequestErrorSchema = BadRequestErrorSchema.meta({
-	id: 'RegisterUserBadRequestError',
-	description:
-		'Bad request. This can happen when the request body cannot be parsed or the submitted registration data is invalid.',
-	examples: [
-		{
-			code: 'Bad Request',
-			message: 'Username is required.',
-			error: 'Username is required.',
-		},
-		{
-			code: 'Bad Request',
-			message:
-				'Username must be at least 3 characters long and not more than 40.',
-			error:
-				'Username must be at least 3 characters long and not more than 40.',
-		},
-		{
-			code: 'Bad Request',
-			message:
-				'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.',
-			error:
-				'Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.',
-		},
-		{
-			code: 'Bad Request',
-			message: 'Username is already taken.',
-			error: 'Username is already taken.',
-		},
-		{
-			code: 'Bad Request',
-			message: 'Email is required.',
-			error: 'Email is required.',
-		},
-		{
-			code: 'Bad Request',
-			message: 'Invalid email format.',
-			error: 'Invalid email format.',
-		},
-		{
-			code: 'Bad Request',
-			message: 'User already exists.',
-			error: 'User already exists.',
-		},
-		{
-			code: 'Bad Request',
-			message: 'Password is required.',
-			error: 'Password is required.',
-		},
-		{
-			code: 'Bad Request',
-			message: 'Password must be at least 8 characters long.',
-			error: 'Password must be at least 8 characters long.',
-		},
-		{
-			code: 'Bad Request',
-			message:
-				'Invalid request format: Failed to parse request body as JSON or form data',
-			error:
-				'Invalid request format: Failed to parse request body as JSON or form data',
-		},
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
 		tags: ['Authentication'],
@@ -184,7 +120,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				RegisterUserBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. This can happen when the request body cannot be parsed or the submitted registration data is invalid.',
 			),
 

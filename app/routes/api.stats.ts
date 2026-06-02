@@ -6,8 +6,8 @@ import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
+	BadRequestErrorSchema,
 	InternalServerErrorSchema,
-	createBadRequestErrorSchema,
 	badRequestResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
@@ -25,38 +25,25 @@ const StatsQueryParamsSchema = z
 		description: 'Query parameters for statistics.',
 	})
 
-const NumericStatsResponseSchema = z
-	.tuple([z.number(), z.number(), z.number()])
-	.meta({
-		id: 'NumericStatsResponse',
-		description:
-			'Statistics as numeric values: device count, sensor count, and measurement count from the last minute.',
-		example: [318, 1024, 393],
-	})
-
-const HumanReadableStatsResponseSchema = z
-	.tuple([z.string(), z.string(), z.string()])
-	.meta({
-		id: 'HumanReadableStatsResponse',
-		description:
-			'Statistics as compact human-readable strings: device count, sensor count, and measurement count from the last minute.',
-		example: ['318', '1K', '393'],
-	})
-
 const StatsResponseSchema = z
-	.union([NumericStatsResponseSchema, HumanReadableStatsResponseSchema])
+	.union([
+		z.tuple([z.number(), z.number(), z.number()]).meta({
+			description:
+				'Statistics as numeric values: device count, sensor count, and measurement count from the last minute.',
+			example: [318, 1024, 393],
+		}),
+
+		z.tuple([z.string(), z.string(), z.string()]).meta({
+			description:
+				'Statistics as compact human-readable strings when `human=true`.',
+			example: ['318', '1K', '393'],
+		}),
+	])
 	.meta({
 		id: 'StatsResponse',
 		description:
 			'Statistics response. Returns numbers by default and compact strings when `human=true`.',
 	})
-
-const StatsBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'StatsBadRequestError',
-	description:
-		'Bad request. This happens when the `human` query parameter has an unsupported value.',
-	examples: ['Illegal value for parameter human. allowed values: true, false'],
-})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
@@ -80,7 +67,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				StatsBadRequestErrorSchema,
+				BadRequestErrorSchema,
 				'Bad request. The `human` query parameter must be either `true` or `false`.',
 			),
 
