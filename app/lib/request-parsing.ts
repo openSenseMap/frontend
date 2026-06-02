@@ -180,3 +180,65 @@ export async function parseFormRequest<TSchema extends z.ZodType>(
 
 	return parsed.data
 }
+
+export async function parseJsonOrFormRequest<TSchema extends z.ZodType>(
+	request: Request,
+	schema: TSchema,
+): Promise<z.output<TSchema> | Response> {
+	const contentType = request.headers.get('content-type')?.toLowerCase() ?? ''
+
+	let body: unknown
+
+	if (contentType.includes('application/json')) {
+		try {
+			body = await request.json()
+		} catch {
+			return StandardResponse.badRequest('Invalid JSON in request body')
+		}
+	} else if (
+		contentType.includes('application/x-www-form-urlencoded') ||
+		contentType.includes('multipart/form-data')
+	) {
+		try {
+			const formData = await request.formData()
+			body = Object.fromEntries(formData.entries())
+		} catch {
+			return StandardResponse.badRequest('Invalid form data')
+		}
+	} else {
+		return StandardResponse.unsupportedMediaType(
+			'Unsupported content-type. Try application/json or application/x-www-form-urlencoded',
+		)
+	}
+
+	const parsed = await schema.safeParseAsync(body)
+
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			parsed.error.issues[0]?.message ?? 'Invalid request data',
+		)
+	}
+
+	return parsed.data
+}
+
+export const parsePathParams = <TSchema extends z.ZodType>(
+	params: unknown,
+	schema: TSchema,
+	options: {
+		message?: string
+		useZodMessage?: boolean
+	} = {},
+): z.output<TSchema> | Response => {
+	const parsed = schema.safeParse(params)
+
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			options.useZodMessage
+				? (parsed.error.issues[0]?.message ?? 'Invalid path parameters')
+				: (options.message ?? 'Invalid path parameters'),
+		)
+	}
+
+	return parsed.data
+}
