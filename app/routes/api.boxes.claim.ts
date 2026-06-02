@@ -3,7 +3,6 @@ import { StandardResponse } from '~/lib/responses'
 import { claimBox } from '~/services/transfer-service.server'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
@@ -25,7 +24,10 @@ import {
 	notFoundResponse,
 	unsupportedMediaTypeResponse,
 } from '~/lib/openapi/errors'
-import { requestContentTypeJson } from '~/middleware/content-type-header.server'
+import {
+	requestContentTypeJson,
+	validateJsonContentType,
+} from '~/middleware/content-type-header.server'
 import { withAuthenticatedUser } from '~/lib/jwt'
 
 const ClaimBoxRequestSchema = z
@@ -176,23 +178,6 @@ const parseClaimBoxRequest = async (
 	return parsed.data
 }
 
-const createClaimBoxSuccessResponse = async (boxId: string) => {
-	const parsed = await ClaimBoxResponseSchema.safeParseAsync({
-		code: 'Ok',
-		message: 'Device successfully claimed!',
-		data: {
-			boxId,
-		},
-	})
-
-	if (!parsed.success) {
-		console.warn(parsed.error.issues)
-		return StandardResponse.internalServerError()
-	}
-
-	return StandardResponse.ok(parsed.data)
-}
-
 export const middleware: Route.MiddlewareFunction[] = [requestContentTypeJson()]
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -200,10 +185,10 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		return StandardResponse.methodNotAllowed('Only POST allowed')
 	}
 
-	// const contentTypeError = validateJsonContentType(request, ['POST'])
-	// if (contentTypeError) {
-	// 	return contentTypeError
-	// }
+	const contentTypeError = validateJsonContentType(request, ['POST'])
+	if (contentTypeError) {
+		return contentTypeError
+	}
 
 	return withAuthenticatedUser(request, async (user) => {
 		const parsedRequest = await parseClaimBoxRequest(request)
