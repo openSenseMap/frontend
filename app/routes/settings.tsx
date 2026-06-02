@@ -35,12 +35,6 @@ export default function SettingsLayoutPage() {
 							</TabsTrigger>
 							<TabsTrigger
 								className="data-[state=active]:text-light-green"
-								value="password"
-							>
-								<Link to={`/settings/password`}>{t('password')}</Link>
-							</TabsTrigger>
-							<TabsTrigger
-								className="data-[state=active]:text-light-green"
 								value="delete"
 							>
 								<Link to={`/settings/delete`}>{t('delete_account')}</Link>

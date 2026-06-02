@@ -8,16 +8,13 @@ import {
 import { NavbarContext } from '.'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
-import {
-	type DeviceExposureType,
-	type DeviceStatusType,
-} from '~/db/schema/enum'
 import { type loader as exploreLoader } from '~/routes/explore'
 import FilterOptions from './filter-options/filter-options'
 import FilterTags from './filter-options/filter-tags'
 import FilterPhenomena from './filter-options/filter-phenomena'
 import FilterTime from './filter-options/filter-time'
 import { useTranslation } from 'react-i18next'
+import { DeviceExposureType, DeviceStatusType } from '~/lib/device-enums'
 
 export type TimeFilterState =
 	| {
