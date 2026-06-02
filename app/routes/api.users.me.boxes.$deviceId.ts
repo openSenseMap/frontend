@@ -1,10 +1,9 @@
 import { type Route } from './+types/api.users.me.boxes.$deviceId'
 import { getDevice } from '~/db/models/device.server'
-import { getUserFromJwt } from '~/lib/jwt'
+import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
@@ -21,6 +20,8 @@ import {
 	forbiddenResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
+import { parsePathParams } from '~/lib/request-parsing'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
 
 const CurrentUserPrivateDeviceSchema = ApiDeviceSchema.meta({
 	id: 'CurrentUserPrivateDevice',
@@ -84,28 +85,42 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
 	try {
-		const jwtResponse = await getUserFromJwt(request)
+		const parsedParams = parsePathParams(params, DevicePathParamsSchema, {
+			message: 'Invalid device id specified',
+		})
 
-		if (typeof jwtResponse === 'string')
-			return StandardResponse.forbidden(
-				'Invalid JWT authorization. Please sign in to obtain new JWT.',
-			)
-		const user = jwtResponse
+		if (parsedParams instanceof Response) {
+			return parsedParams
+		}
 
-		const deviceId = params.deviceId
-		if (deviceId === undefined)
-			return StandardResponse.badRequest('Invalid device id specified')
+		return await withAuthenticatedUser(request, async (user) => {
+			const box = await getDevice({ id: parsedParams.deviceId })
 
-		const box = await getDevice({ id: deviceId })
-		if (box === undefined)
-			return StandardResponse.badRequest(
-				'There is no such device with the given id',
-			)
+			if (!box) {
+				return StandardResponse.badRequest(
+					'There is no such device with the given id',
+				)
+			}
 
-		if (box.user.id !== user.id)
-			return StandardResponse.forbidden('User does not own this device')
+			if (box.user.id !== user.id) {
+				return StandardResponse.forbidden('User does not own this device')
+			}
 
-		return StandardResponse.ok({ code: 'Ok', data: { box: box } })
+			const responseParsed =
+				await GetCurrentUserDeviceResponseSchema.safeParseAsync({
+					code: 'Ok',
+					data: {
+						box: transformDeviceToApiFormat(box),
+					},
+				})
+
+			if (!responseParsed.success) {
+				console.warn(responseParsed.error.issues)
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.ok(responseParsed.data)
+		})
 	} catch (err) {
 		console.warn(err)
 		return StandardResponse.internalServerError()
