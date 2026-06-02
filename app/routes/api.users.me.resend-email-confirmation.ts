@@ -45,7 +45,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Resend email confirmation',
 		description:
 			'Requests another email confirmation message for the authenticated user. If the user has a pending unconfirmed email address, the confirmation email is sent to that pending address. Otherwise it is sent to the current user email address. If the email address is already confirmed and there is no pending email change, the request returns 422.',
-		operationId: 'resendEmailConfirmation',
 		security: [{ bearerAuth: [] }],
 
 		responses: {

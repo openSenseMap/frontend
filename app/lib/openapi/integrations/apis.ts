@@ -12,7 +12,6 @@ export const integrationPaths: ZodOpenApiPathsObject = {
 			summary: 'Get integration configuration for a device',
 			description:
 				'Returns the integration configuration associated with the given openSenseMap device ID.',
-			operationId: 'getIntegration',
 			tags: ['Integration Management'],
 			parameters: [
 				{
@@ -46,7 +45,6 @@ export const integrationPaths: ZodOpenApiPathsObject = {
 			summary: 'Create or update integration configuration',
 			description:
 				'Creates or updates the integration configuration for the given openSenseMap device ID.',
-			operationId: 'createOrUpdateIntegration',
 			tags: ['Integration Management'],
 			parameters: [
 				{
@@ -110,7 +108,6 @@ export const integrationPaths: ZodOpenApiPathsObject = {
 			summary: 'Delete integration configuration',
 			description:
 				'Deletes the integration configuration for the given openSenseMap device ID.',
-			operationId: 'deleteIntegration',
 			tags: ['Integration Management'],
 			parameters: [
 				{
@@ -139,7 +136,6 @@ export const integrationPaths: ZodOpenApiPathsObject = {
 			summary: 'Get JSON Schema for integration configuration form',
 			description:
 				'Returns a JSON Schema and optional UI Schema for rendering a configuration form for the requested integration type.',
-			operationId: 'getIntegrationSchema',
 			tags: ['Schema'],
 			parameters: [
 				{
@@ -181,7 +177,6 @@ export const integrationPaths: ZodOpenApiPathsObject = {
 			summary: 'Health check endpoint',
 			description:
 				'Returns the health status of the integration service. This endpoint does not require authentication.',
-			operationId: 'healthCheck',
 			tags: ['Health'],
 			security: [],
 			responses: {

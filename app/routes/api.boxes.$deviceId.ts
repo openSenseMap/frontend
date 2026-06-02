@@ -148,7 +148,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Get device by ID',
 		description: 'Retrieve a single device by its unique identifier.',
-		operationId: 'getDeviceById',
 
 		requestParams: {
 			path: DevicePathParamsSchema,
@@ -182,7 +181,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Update device',
 		description: 'Updates a device. Requires JWT authorization.',
-		operationId: 'updateDevice',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -232,7 +230,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Delete device',
 		description:
 			'Deletes a device. Requires JWT authorization and the current user password.',
-		operationId: 'deleteDevice',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {

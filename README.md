@@ -241,7 +241,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Users'],
 		summary: 'Get user by ID',
 		description: 'Retrieve a single user by their unique identifier',
-		operationId: 'getUserById',
 
 		requestParams: {
 			path: UserPathParamsSchema,

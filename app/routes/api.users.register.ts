@@ -160,7 +160,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Register a new user',
 		description:
 			'Registers a new openSenseMap user and returns an access token and refresh token. The user can sign in with the registered email address.',
-		operationId: 'registerUser',
 
 		requestBody: {
 			required: true,

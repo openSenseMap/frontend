@@ -48,7 +48,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get one device of the current user',
 		description:
 			'Returns a specific device owned by the authenticated user. This endpoint may include private or secret fields that are not returned by public device endpoints.',
-		operationId: 'getCurrentUserDevice',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {

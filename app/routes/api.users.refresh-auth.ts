@@ -86,7 +86,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Refresh authentication token',
 		description:
 			'Refreshes the JWT access token using a valid refresh token. The current access token must be supplied via the Authorization bearer header, and the refresh token must be supplied in the request body.',
-		operationId: 'refreshAuth',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {

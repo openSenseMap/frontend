@@ -101,7 +101,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get transfer information for a device',
 		description:
 			'Returns transfer information for a device. Requires JWT authorization. Only the owner of the device can view its transfer information.',
-		operationId: 'getDeviceTransfer',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {

@@ -122,7 +122,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Stream measurements across devices and sensors',
 		description:
 			'Streams measurements matching the given filters. Results can be returned as JSON or CSV. This endpoint is useful for bulk data downloads and cross-device measurement queries.',
-		operationId: 'getDevicesData',
 
 		requestParams: {
 			query: DevicesDataQueryParamsSchema,
@@ -180,7 +179,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 			'Stream measurements across devices and sensors using a JSON request body',
 		description:
 			'POST variant of the devices data query. Parameters can be sent as a JSON request body. If the request body cannot be parsed as JSON, the server falls back to query parameters.',
-		operationId: 'postDevicesData',
 
 		requestParams: {
 			query: DevicesDataQueryParamsSchema,

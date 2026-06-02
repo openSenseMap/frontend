@@ -119,7 +119,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get latest measurement of a sensor',
 		description:
 			'Returns the latest measurement of a sensor. By default, the response contains sensor metadata and the latest measurement. If `onlyValue=true`, only the measured value is returned.',
-		operationId: 'getLatestSensorMeasurement',
 
 		requestParams: {
 			path: DeviceSensorPathParamsSchema,

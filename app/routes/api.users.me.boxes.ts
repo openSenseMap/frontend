@@ -55,7 +55,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get current user boxes',
 		description:
 			'Returns all boxes owned by the authenticated user. The response may include integration metadata for each box.',
-		operationId: 'getCurrentUserBoxes',
 		security: [{ bearerAuth: [] }],
 
 		responses: {

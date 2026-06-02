@@ -64,7 +64,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get platform statistics',
 		description:
 			'Returns platform statistics as an array with three values: the number of devices, the number of measurements, and the number of measurements recorded in the last minute. By default the values are numbers. If `human=true`, compact human-readable strings are returned.',
-		operationId: 'getStatistics',
 
 		requestParams: {
 			query: StatsQueryParamsSchema,

@@ -164,7 +164,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Post multiple new measurements to a device',
 		description:
 			'Posts multiple measurements to a device. Supports JSON array notation, JSON object notation, CSV, luftdaten-compatible JSON, hackAIR-compatible JSON, and sbx binary formats.',
-		operationId: 'postBoxMeasurements',
 
 		requestParams: {
 			path: DevicePathParamsSchema,

@@ -76,7 +76,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Delete measurements of a sensor',
 		description:
 			'Deletes measurements for the specified sensor. The measurements to delete are selected via query parameters. You can delete all measurements, delete specific timestamps, or delete a time range using `from-date` and `to-date`.',
-		operationId: 'deleteSensorMeasurements',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {

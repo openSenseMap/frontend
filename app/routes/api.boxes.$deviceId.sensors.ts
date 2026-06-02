@@ -84,7 +84,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get latest measurements of all sensors of a device',
 		description:
 			'Returns the specified device with its sensors. Each sensor is enriched with latest measurement data. The optional `count` query parameter controls how many measurements are retrieved per sensor, depending on service behavior.',
-		operationId: 'getDeviceSensorMeasurements',
 
 		requestParams: {
 			path: DevicePathParamsSchema,

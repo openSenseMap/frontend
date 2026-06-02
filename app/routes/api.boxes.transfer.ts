@@ -188,7 +188,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Revoke a device transfer token',
 		description:
 			'Revokes a transfer token and removes the device from transfer. Requires JWT authorization. The request body can be sent as JSON or form data.',
-		operationId: 'removeDeviceTransfer',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {

@@ -96,7 +96,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Reset password',
 		description:
 			'Resets a user password using a password reset token sent by email. The token is valid for the configured password-reset lifetime.',
-		operationId: 'resetPassword',
 
 		requestBody: {
 			required: true,

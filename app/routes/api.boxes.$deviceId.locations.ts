@@ -117,7 +117,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get locations of a device',
 		description:
 			'Get all locations of the specified device ordered by date. By default, the response is an array of GeoJSON Point-like objects. If `format=geojson`, a GeoJSON LineString Feature is returned, with `properties.timestamps` containing one timestamp for each coordinate.',
-		operationId: 'getDeviceLocations',
 
 		requestParams: {
 			path: DevicePathParamsSchema,

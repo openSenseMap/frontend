@@ -88,7 +88,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Download the Arduino script for a senseBox',
 		description:
 			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as query parameters.',
-		operationId: 'getDeviceArduinoScript',
 
 		requestParams: {
 			path: DevicePathParamsSchema,
@@ -124,7 +123,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Generate the Arduino script for a senseBox from form data',
 		description:
 			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as form fields.',
-		operationId: 'postDeviceArduinoScript',
 
 		requestParams: {
 			path: DevicePathParamsSchema,

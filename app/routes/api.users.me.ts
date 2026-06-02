@@ -158,7 +158,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get current user profile',
 		description:
 			"Retrieves the authenticated user's profile information, including the ids of the user's devices.",
-		operationId: 'getCurrentUser',
 		security: [{ bearerAuth: [] }],
 
 		responses: {
@@ -188,7 +187,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Update current user profile',
 		description:
 			"Updates the authenticated user's profile information. To change the password, `currentPassword` must be supplied together with `newPassword`.",
-		operationId: 'updateCurrentUser',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
@@ -238,7 +236,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Delete current user account',
 		description:
 			"Permanently deletes the authenticated user's account. The current password must be supplied as form data.",
-		operationId: 'deleteCurrentUser',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {

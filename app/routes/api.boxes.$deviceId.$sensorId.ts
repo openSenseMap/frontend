@@ -96,7 +96,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Post new measurement',
 		description:
 			'Posts one new measurement to a specific sensor of a device. The request body contains the measured value and can optionally include a timestamp and measurement location.',
-		operationId: 'postSensorMeasurement',
 
 		requestParams: {
 			path: DeviceSensorPathParamsSchema,

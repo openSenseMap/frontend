@@ -60,7 +60,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Request a password reset',
 		description:
 			'Requests a password reset for the given email address. If the email address belongs to a user, an email with reset instructions is sent. To avoid leaking whether an email address exists, a successful response is returned regardless of whether the address is known.',
-		operationId: 'requestPasswordReset',
 
 		requestBody: {
 			required: true,

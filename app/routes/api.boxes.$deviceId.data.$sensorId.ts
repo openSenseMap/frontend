@@ -127,7 +127,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		summary: 'Get measurements from a sensor',
 		description:
 			'Get up to 10000 measurements from a sensor for a specific time frame. `from-date` and `to-date` are optional; if omitted, the last 48 hours are used. The documented maximum time frame is one month. JSON and CSV response formats are supported. If `download=true`, a `Content-Disposition` header is set.',
-		operationId: 'getSensorMeasurements',
 
 		requestParams: {
 			path: DeviceSensorPathParamsSchema,
