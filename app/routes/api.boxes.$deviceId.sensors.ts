@@ -15,6 +15,7 @@ import {
 } from '~/lib/openapi/errors'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 import { apiMessages } from '~/lib/openapi/messages'
+import { parsePathParams } from '~/lib/request-parsing'
 
 const messages = {
 	invalidCount:
@@ -29,11 +30,11 @@ const DeviceSensorsQueryParamsSchema = z.object({
 	}),
 })
 
-const SensorWithLatestMeasurementSchema = SensorSchema.and(
-	MeasurementSchema,
-).meta({
+const SensorWithLatestMeasurementSchema = SensorSchema.extend({
+	lastMeasurement: MeasurementSchema.nullable().optional(),
+}).meta({
 	id: 'SensorWithLatestMeasurement',
-	description: 'Sensor metadata combined with its latest measurement fields.',
+	description: 'Sensor metadata enriched with latest measurement data.',
 })
 
 const DeviceWithSensorsSchema = z
@@ -100,37 +101,60 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
+const parseDeviceSensorsQueryParams = (
+	request: Request,
+): z.output<typeof DeviceSensorsQueryParamsSchema> | Response => {
+	const url = new URL(request.url)
+
+	const parsed = DeviceSensorsQueryParamsSchema.safeParse({
+		count: url.searchParams.get('count') ?? undefined,
+	})
+
+	if (!parsed.success) {
+		return StandardResponse.badRequest(
+			parsed.error.issues[0]?.message ?? messages.invalidCount,
+		)
+	}
+
+	return parsed.data
+}
+
 export const loader = async ({
 	request,
 	params,
 }: Route.LoaderArgs): Promise<Response> => {
 	try {
-		const deviceId = params.deviceId
+		const parsedParams = parsePathParams(params, DevicePathParamsSchema, {
+			message: apiMessages.deviceIdRequired,
+		})
 
-		if (deviceId === undefined) {
-			return StandardResponse.badRequest(apiMessages.deviceIdRequired)
+		if (parsedParams instanceof Response) {
+			return parsedParams
 		}
 
-		const url = new URL(request.url)
-		const countParam = url.searchParams.get('count')
+		const queryParams = parseDeviceSensorsQueryParams(request)
 
-		let count: undefined | number = undefined
-
-		if (countParam !== null) {
-			count = Number(countParam)
-
-			if (!Number.isInteger(count) || count < 1 || count > 100) {
-				return StandardResponse.badRequest(messages.invalidCount)
-			}
+		if (queryParams instanceof Response) {
+			return queryParams
 		}
 
-		const meas = await getLatestMeasurements(deviceId, count)
+		const meas = await getLatestMeasurements(
+			parsedParams.deviceId,
+			queryParams.count,
+		)
 
 		if (!meas) {
 			return StandardResponse.notFound(apiMessages.deviceNotFound)
 		}
 
-		return StandardResponse.ok(meas)
+		const responseParsed = await DeviceWithSensorsSchema.safeParseAsync(meas)
+
+		if (!responseParsed.success) {
+			console.warn(responseParsed.error.issues)
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.ok(responseParsed.data)
 	} catch (err) {
 		console.warn(err)
 		return StandardResponse.internalServerError()
