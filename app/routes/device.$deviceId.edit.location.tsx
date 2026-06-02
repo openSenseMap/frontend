@@ -1,18 +1,11 @@
-import { Save } from 'lucide-react'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
 	type MarkerDragEvent,
 	MapProvider,
 	Marker,
 	NavigationControl,
 } from 'react-map-gl/maplibre'
-import {
-	redirect,
-	Form,
-	useActionData,
-	useLoaderData,
-	useOutletContext,
-} from 'react-router'
+import { data, redirect, useLoaderData } from 'react-router'
 
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.location'
@@ -22,219 +15,409 @@ import {
 } from '~/db/models/device.server'
 import { getUserId } from '~/services/session-service.server'
 import { BaseMap } from '~/components/base-map'
+import {
+	LOCATION_LIMITS,
+	isValidLocation,
+	parseLocationFormData,
+	validateLocationFieldErrors,
+	type LocationData,
+	type LocationFieldErrors,
+} from '~/lib/location'
+import { useTranslation } from 'react-i18next'
+import {
+	useAutosaveFetcher,
+	AUTOSAVE_DELAY_MS,
+} from '~/hooks/use-autosave-fetcher'
+import { AutosaveStatusText } from '~/components/autosave-status.text'
+
+function parseNumberInput(value: string): number | null {
+	if (value.trim() === '') return null
+
+	const parsed = Number(value)
+
+	if (!Number.isFinite(parsed)) return null
+
+	return parsed
+}
+
+function normalizeCoordinate(value: number | null) {
+	if (value === null) return null
+
+	return Number(value.toFixed(6))
+}
+
+function normalizeLocationValues(values: LocationAutosaveValues) {
+	return {
+		latitude: normalizeCoordinate(values.latitude),
+		longitude: normalizeCoordinate(values.longitude),
+	}
+}
+
+type MarkerValue = {
+	latitude: number | null
+	longitude: number | null
+}
+
+export type LocationActionData =
+	| {
+			ok: true
+			location: LocationData
+			errors: null
+			savedAt: string
+	  }
+	| {
+			ok: false
+			errors: LocationFieldErrors
+	  }
+
+type LocationAutosaveValues = {
+	latitude: number | null
+	longitude: number | null
+}
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
-	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
 	const deviceID = params.deviceId
-
-	if (typeof deviceID !== 'string') {
-		return redirect('/profile/me')
-	}
+	invariant(typeof deviceID === 'string', 'Device id not found.')
 
 	const deviceData = await getDeviceWithoutSensors({ id: deviceID })
+
+	if (!deviceData) {
+		throw new Response('Device not found', { status: 404 })
+	}
+
+	if (deviceData.userId !== userId) {
+		throw new Response('Forbidden', { status: 403 })
+	}
 
 	return { device: deviceData }
 }
 
 //*****************************************************
 export async function action({ request, params }: Route.ActionArgs) {
-	const formData = await request.formData()
-	const { latitude, longitude } = Object.fromEntries(formData)
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
 
 	const id = params.deviceId
-	invariant(id, `deviceID not found!`)
+	invariant(typeof id === 'string', 'Device id not found.')
+
+	const device = await getDeviceWithoutSensors({ id })
+
+	if (!device) {
+		throw new Response('Device not found', { status: 404 })
+	}
+
+	if (device.userId !== userId) {
+		throw new Response('Forbidden', { status: 403 })
+	}
+
+	const formData = await request.formData()
+
+	const parsed = parseLocationFormData(formData)
+
+	if (!parsed.success) {
+		return data(
+			{
+				ok: false as const,
+				errors: parsed.errors,
+			},
+			{ status: 400 },
+		)
+	}
 
 	await updateDeviceLocation({
-		id: id,
-		latitude: Number(latitude),
-		longitude: Number(longitude),
+		id,
+		latitude: parsed.data.latitude,
+		longitude: parsed.data.longitude,
 	})
 
-	return { isUpdated: true }
+	return data({
+		ok: true as const,
+		location: parsed.data,
+		errors: null,
+		savedAt: new Date().toISOString(),
+	})
 }
 
 //**********************************
 export default function EditLocation() {
 	const { device } = useLoaderData<typeof loader>()
-	const actionData = useActionData<typeof action>()
-	//* map marker
-	const [marker, setMarker] = useState({
-		latitude: device?.latitude,
-		longitude: device?.longitude,
+	const { t } = useTranslation('edit-device-general')
+
+	const initialLocation = useMemo<LocationData>(
+		() => ({
+			latitude: device.latitude,
+			longitude: device.longitude,
+		}),
+		[device.latitude, device.longitude],
+	)
+
+	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
+
+	const currentLocation = useMemo<LocationData | null>(() => {
+		const candidate = {
+			latitude: marker.latitude,
+			longitude: marker.longitude,
+		}
+
+		return isValidLocation(candidate) ? candidate : null
+	}, [marker.latitude, marker.longitude])
+
+	const originalLocationRef = useRef<LocationData>({
+		latitude: device.latitude,
+		longitude: device.longitude,
 	})
-	//* on-marker-drag event
+
+	const originalLocation = originalLocationRef.current
+
+	const validateAutosave = useCallback((values: LocationAutosaveValues) => {
+		return isValidLocation(values)
+	}, [])
+
+	const getAutosavePayload = useCallback((values: LocationAutosaveValues) => {
+		return {
+			latitude: String(values.latitude),
+			longitude: String(values.longitude),
+		}
+	}, [])
+
+	const isAutosaveSuccess = useCallback((actionData: LocationActionData) => {
+		return actionData.ok
+	}, [])
+
+	const getSavedValues = useCallback(
+		(
+			actionData: LocationActionData,
+			submittedValues: LocationAutosaveValues,
+		): LocationAutosaveValues => {
+			if (!actionData.ok) return submittedValues
+
+			return normalizeLocationValues(submittedValues)
+		},
+		[],
+	)
+
+	const autosaveValues = useMemo<LocationAutosaveValues>(
+		() =>
+			normalizeLocationValues({
+				latitude: marker.latitude,
+				longitude: marker.longitude,
+			}),
+		[marker.latitude, marker.longitude],
+	)
+
+	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
+		() => normalizeLocationValues(initialLocation),
+		[initialLocation],
+	)
+
+	const autosave = useAutosaveFetcher<
+		LocationAutosaveValues,
+		LocationActionData
+	>({
+		values: autosaveValues,
+		lastSavedValues: initialAutosaveValues,
+		debounceMs: AUTOSAVE_DELAY_MS,
+		validate: validateAutosave,
+		getPayload: getAutosavePayload,
+		isSuccess: isAutosaveSuccess,
+		getSavedValues,
+	})
+
+	const clientErrors = validateLocationFieldErrors(marker)
+
+	const serverErrors: LocationFieldErrors =
+		autosave.status === 'error' && autosave.fetcher.data?.ok === false
+			? autosave.fetcher.data.errors
+			: {}
+
+	const locationErrors = {
+		latitude: clientErrors.latitude ?? serverErrors.latitude,
+		longitude: clientErrors.longitude ?? serverErrors.longitude,
+	}
+
+	const hasClientErrors = Boolean(
+		clientErrors.latitude || clientErrors.longitude,
+	)
+
+	const lastSavedLocation = autosave.lastSavedRef.current
+
+	const mapLocation = currentLocation ?? {
+		latitude: lastSavedLocation.latitude ?? initialLocation.latitude,
+		longitude: lastSavedLocation.longitude ?? initialLocation.longitude,
+	}
+
 	const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
 		setMarker({
 			longitude: event.lngLat.lng,
 			latitude: event.lngLat.lat,
 		})
 	}, [])
-	//* to view toast on edit-page
-	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
 
-	React.useEffect(() => {
-		//* if sensors data were updated successfully
-		if (actionData && actionData?.isUpdated) {
-			//* show notification when data is successfully updated
-			setToastOpen(true)
-		}
-	}, [actionData, setToastOpen])
+	const onLatitudeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const latitude = parseNumberInput(event.target.value)
+
+		setMarker((current) => ({
+			...current,
+			latitude,
+		}))
+	}
+
+	const onLongitudeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const longitude = parseNumberInput(event.target.value)
+
+		setMarker((current) => ({
+			...current,
+			longitude,
+		}))
+	}
+
+	const resetToOriginalLocation = () => {
+		setMarker({ ...originalLocation })
+	}
 
 	return (
 		<div className="grid grid-rows-1">
-			{/* location form */}
 			<div className="flex min-h-full items-center justify-center">
 				<div className="font-helvetica mx-auto w-full text-[14px]">
-					{/* Form */}
-					<Form method="post" noValidate>
-						{/* Heading */}
-						<div>
-							{/* Title */}
-							<div className="mt-2 flex justify-between">
-								<div>
-									<h1 className="text-4xl">Location</h1>
-								</div>
-								<div>
-									{/* Save button */}
-									<button
-										name="intent"
-										value="save"
-										disabled={!marker.latitude || !marker.longitude}
-										className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6] disabled:cursor-not-allowed disabled:bg-[#e9e9ed]"
-									>
-										<Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
-									</button>
-								</div>
+					<div>
+						<div className="mt-2 flex justify-between">
+							<div>
+								<h1 className="text-4xl">{t('exposure')}</h1>
+
+								<AutosaveStatusText
+									status={autosave.status}
+									hasValidationErrors={hasClientErrors}
+									namespace="edit-device-general"
+								/>
 							</div>
 						</div>
+					</div>
 
-						{/* divider */}
-						<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
+					<hr className="my-3 mt-6 h-px border-0 bg-[#dcdada] dark:bg-gray-700" />
 
-						{/* Map view */}
-						<div className="mt-5">
-							<MapProvider>
-								<BaseMap
-									initialViewState={{
-										latitude: marker.latitude,
-										longitude: marker.longitude,
-										zoom: 10,
-									}}
-									style={{
-										width: '100%',
-										height: '500px',
-										borderRadius: '6px',
-									}}
-								>
+					<div className="mt-5">
+						<MapProvider>
+							<BaseMap
+								initialViewState={{
+									latitude: mapLocation.latitude,
+									longitude: mapLocation.longitude,
+									zoom: 10,
+								}}
+								style={{
+									width: '100%',
+									height: '500px',
+									borderRadius: '6px',
+								}}
+							>
+								{currentLocation ? (
 									<Marker
-										longitude={marker.longitude || 0}
-										latitude={marker.latitude || 0}
+										longitude={currentLocation.longitude}
+										latitude={currentLocation.latitude}
 										anchor="bottom"
 										draggable
 										onDrag={onMarkerDrag}
-									></Marker>
-									<NavigationControl position="top-left" showCompass={false} />
-								</BaseMap>
-							</MapProvider>
-						</div>
+									/>
+								) : null}
 
-						{/* Latitude, Longitude btns */}
-						<div className="mx-5 mt-[20px]">
-							<div className="grid gap-5 md:grid-cols-2">
-								<div>
-									<label
-										htmlFor="Latitude"
-										className="txt-base block font-bold tracking-normal"
-									>
-										Latitude
-									</label>
+								<NavigationControl position="top-left" showCompass={false} />
+							</BaseMap>
+						</MapProvider>
+					</div>
 
-									<div className="mt-1">
-										<input
-											id="latitude"
-											required
-											autoFocus={true}
-											name="latitude"
-											type="number"
-											min="-85.06"
-											max="85.06"
-											value={marker.latitude}
-											onChange={(e) => {
-												const value = Number(e.target.value)
-												if (value >= -85.06 && value <= 85.06) {
-													setMarker({
-														latitude: value,
-														longitude: marker.longitude,
-													})
-												}
-											}}
-											aria-describedby="name-error"
-											className={
-												'w-full rounded border border-gray-200 px-2 py-1 text-base' +
-												(!marker.latitude
-													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
-													: '')
-											}
-										/>
-									</div>
-								</div>
+					<div className="mx-5 mt-5">
+						<div className="grid gap-5 md:grid-cols-2">
+							<div>
+								<label
+									htmlFor="latitude"
+									className="txt-base block font-bold tracking-normal"
+								>
+									{t('latitude')}
+								</label>
 
-								<div>
-									<label
-										htmlFor="longitude"
-										className="txt-base block font-bold tracking-normal"
-									>
-										Longitude
-									</label>
+								<div className="mt-1">
+									<input
+										id="latitude"
+										required
+										autoFocus={true}
+										name="latitude"
+										type="number"
+										step="any"
+										min={LOCATION_LIMITS.latitude.min}
+										max={LOCATION_LIMITS.latitude.max}
+										value={marker.latitude ?? ''}
+										onChange={onLatitudeChange}
+										aria-describedby="latitude-error"
+										className={
+											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
+											(locationErrors.latitude
+												? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
+												: '')
+										}
+									/>
 
-									<div className="mt-1">
-										<input
-											id="longitude"
-											required
-											autoFocus={true}
-											name="longitude"
-											type="number"
-											min="-180"
-											max="180"
-											value={marker.longitude}
-											onChange={(e) => {
-												const value = Number(e.target.value)
-												if (value >= -180 && value <= 180) {
-													setMarker({
-														latitude: marker.latitude,
-														longitude: value,
-													})
-												}
-											}}
-											aria-describedby="name-error"
-											className={
-												'w-full rounded border border-gray-200 px-2 py-1 text-base' +
-												(!marker.longitude
-													? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
-													: '')
-											}
-										/>
-									</div>
+									{locationErrors.latitude ? (
+										<p
+											id="latitude-error"
+											className="mt-1 text-sm text-red-600"
+										>
+											{locationErrors.latitude}
+										</p>
+									) : null}
 								</div>
 							</div>
 
-							<button
-								onClick={() => {
-									setMarker({
-										latitude: device?.latitude,
-										longitude: device?.longitude,
-									})
-								}}
-								className="mt-4 mb-10 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline"
-							>
-								Reset location
-							</button>
+							<div>
+								<label
+									htmlFor="longitude"
+									className="txt-base block font-bold tracking-normal"
+								>
+									{t('longitude')}
+								</label>
+
+								<div className="mt-1">
+									<input
+										id="longitude"
+										required
+										name="longitude"
+										type="number"
+										step="any"
+										min={LOCATION_LIMITS.longitude.min}
+										max={LOCATION_LIMITS.longitude.max}
+										value={marker.longitude ?? ''}
+										onChange={onLongitudeChange}
+										aria-describedby="longitude-error"
+										className={
+											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
+											(locationErrors.longitude
+												? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
+												: '')
+										}
+									/>
+
+									{locationErrors.longitude ? (
+										<p
+											id="longitude-error"
+											className="mt-1 text-sm text-red-600"
+										>
+											{locationErrors.longitude}
+										</p>
+									) : null}
+								</div>
+							</div>
 						</div>
-					</Form>
+
+						<button
+							type="button"
+							onClick={resetToOriginalLocation}
+							className="mt-4 mb-10 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+						>
+							{t('reset_to_original_location')}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

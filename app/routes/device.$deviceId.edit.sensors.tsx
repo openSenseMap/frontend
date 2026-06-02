@@ -39,6 +39,7 @@ import { getUserId } from '~/services/session-service.server'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { useToast } from '@/components/ui/use-toast'
 import { useTranslation } from 'react-i18next'
+import { Button } from '~/components/ui/button'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -197,12 +198,10 @@ export default function EditBoxSensors() {
 								<div>
 									<h1 className="text-4xl">Sensor</h1>
 								</div>
-								<div>
-									{/* Add button */}
-									<button
-										name="intent"
-										value="add"
+								<div className="flex items-center gap-3">
+									<Button
 										type="button"
+										variant="outline"
 										onClick={() => {
 											setSensorsData([
 												...sensorsData,
@@ -216,18 +215,21 @@ export default function EditBoxSensors() {
 												},
 											])
 										}}
-										className="mr-2 h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
+										className="gap-2"
 									>
-										<Plus className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
-									</button>
-									{/* Save button */}
-									<button
+										<Plus className="h-4 w-4" />
+										{t('add')}
+									</Button>
+
+									<Button
+										type="submit"
 										name="intent"
 										value="save"
-										className="h-12 w-12 rounded-full border-[1.5px] border-[#9b9494] hover:bg-[#e7e6e6]"
+										className="gap-2"
 									>
-										<Save className="mx-auto h-5 w-5 lg:h-7 lg:w-7" />
-									</button>
+										<Save className="h-4 w-4" />
+										{t('save')}
+									</Button>
 								</div>
 							</div>
 						</div>

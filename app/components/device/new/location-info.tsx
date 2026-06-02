@@ -11,10 +11,16 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { BaseMap } from '~/components/base-map'
+import { LOCATION_LIMITS, isValidLocation } from '~/lib/location'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
-	const { register, setValue, watch } = useFormContext()
+	const {
+		register,
+		setValue,
+		watch,
+		formState: { errors },
+	} = useFormContext()
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
@@ -104,7 +110,10 @@ export function LocationStep() {
 					}}
 					onClick={onMapClick}
 				>
-					{marker.latitude && marker.longitude && (
+					{isValidLocation({
+						latitude: Number(marker.latitude),
+						longitude: Number(marker.longitude),
+					}) && (
 						<Marker
 							latitude={Number(marker.latitude)}
 							longitude={Number(marker.longitude)}
@@ -129,17 +138,19 @@ export function LocationStep() {
 						id="latitude"
 						type="number"
 						step="any"
-						{...register('latitude', {
-							valueAsNumber: true,
-							required: 'Latitude is required',
-							min: -90,
-							max: 90,
-						})}
+						min={LOCATION_LIMITS.latitude.min}
+						max={LOCATION_LIMITS.latitude.max}
+						{...register('latitude')}
 						value={marker.latitude === '' ? '' : String(marker.latitude)}
 						onChange={handleLatitudeChange}
 						placeholder={t('enter latitude')}
 						className="w-full rounded-md border p-2"
 					/>
+					{errors.latitude?.message ? (
+						<p className="mt-1 text-sm text-red-600">
+							{String(errors.latitude.message)}
+						</p>
+					) : null}
 				</div>
 
 				<div>
@@ -148,17 +159,19 @@ export function LocationStep() {
 						id="longitude"
 						type="number"
 						step="any"
-						{...register('longitude', {
-							valueAsNumber: true,
-							required: 'Longitude is required',
-							min: -180,
-							max: 180,
-						})}
+						min={LOCATION_LIMITS.longitude.min}
+						max={LOCATION_LIMITS.longitude.max}
+						{...register('longitude')}
 						value={marker.longitude === '' ? '' : String(marker.longitude)}
 						onChange={handleLongitudeChange}
 						placeholder={t('enter longitude')}
 						className="w-full rounded-md border p-2"
 					/>
+					{errors.longitude?.message ? (
+						<p className="mt-1 text-sm text-red-600">
+							{String(errors.longitude.message)}
+						</p>
+					) : null}
 				</div>
 			</div>
 		</div>
