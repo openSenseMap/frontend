@@ -6,7 +6,6 @@ import {
 } from '~/db/models/device.server'
 import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
 import {
 	BoxesQuerySchema,
@@ -32,6 +31,7 @@ import {
 	unprocessableContentResponse,
 } from '~/lib/openapi/errors'
 import { requestContentTypeJson } from '~/middleware/content-type-header.server'
+import { withAuthenticatedUser } from '~/lib/jwt'
 
 const BoxesQueryParamsSchema = BoxesQuerySchema.meta({
 	id: 'BoxesQueryParams',
@@ -189,20 +189,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	try {
-		// Check authentication
-		const jwtResponse = await getUserFromJwt(request)
-
-		if (typeof jwtResponse === 'string')
-			return StandardResponse.forbidden(
-				'Invalid JWT authorization. Please sign in to obtain new JWT.',
-			)
-
-		switch (request.method) {
-			case 'POST':
-				return await post(request, jwtResponse)
-			default:
-				return StandardResponse.methodNotAllowed('Method Not Allowed')
+		if (request.method !== 'POST') {
+			return StandardResponse.methodNotAllowed('Method Not Allowed')
 		}
+
+		return await withAuthenticatedUser(request, async (user) => {
+			return await post(request, user)
+		})
 	} catch (err) {
 		console.error('Error in action:', err)
 		return StandardResponse.internalServerError()
