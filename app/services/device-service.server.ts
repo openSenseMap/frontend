@@ -52,7 +52,6 @@ export const CreateBoxSchema = z.object({
 	sensors: z
 		.array(
 			z.object({
-				id: z.string(),
 				icon: z.string().optional(),
 				title: z.string().min(1),
 				unit: z.string().min(1),
