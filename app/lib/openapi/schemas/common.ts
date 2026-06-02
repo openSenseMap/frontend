@@ -1,5 +1,4 @@
 import * as z from 'zod/v4'
-import 'zod-openapi'
 
 export const DeviceIdSchema = z.string().min(1).meta({
 	description: 'Unique identifier of the device.',

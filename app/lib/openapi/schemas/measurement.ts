@@ -1,5 +1,4 @@
 import * as z from 'zod/v4'
-import 'zod-openapi'
 
 export const MeasurementValueSchema = z.number().nullable().meta({
 	description: 'Measured value',

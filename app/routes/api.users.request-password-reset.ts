@@ -3,7 +3,6 @@ import { StandardResponse } from '~/lib/responses'
 import { requestPasswordReset } from '~/services/user-service.server'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
@@ -132,7 +131,7 @@ const parsePasswordResetRequest = async (
 	return parsed.data
 }
 
-export const middleware: Route.MiddlewareFunction[] = [requestContentTypeForm]
+export const middleware: Route.MiddlewareFunction[] = [requestContentTypeForm()]
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	const parsedRequest = await parsePasswordResetRequest(request)

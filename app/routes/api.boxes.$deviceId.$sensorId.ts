@@ -251,6 +251,10 @@ export const action = async ({
 			return StandardResponse.unprocessableContent(err.message)
 		}
 
+		if (err.name === 'ModelError' && err.type === 'UnprocessableEntityError') {
+			return StandardResponse.unprocessableContent(err.message)
+		}
+
 		if (err.name === 'ArchivedDeviceError') {
 			return new Response(
 				JSON.stringify({

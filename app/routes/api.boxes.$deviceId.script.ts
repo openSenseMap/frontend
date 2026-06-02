@@ -3,7 +3,6 @@ import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/db/models/device.server'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { ZodOpenApiPathItemObject } from 'zod-openapi'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 

@@ -8,7 +8,6 @@ import {
 } from '~/services/transfer-service.server'
 
 import * as z from 'zod/v4'
-import 'zod-openapi'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {

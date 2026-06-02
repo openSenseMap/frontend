@@ -1,5 +1,4 @@
 import * as z from 'zod/v4'
-import 'zod-openapi'
 
 export const UserRoleSchema = z.enum(['admin', 'user']).meta({
 	description: "User's role",

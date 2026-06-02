@@ -1,5 +1,4 @@
 import * as z from 'zod/v4'
-import 'zod-openapi'
 
 export const BoxTransferTokenSchema = z.string().min(1).meta({
 	description: 'Transfer token.',
