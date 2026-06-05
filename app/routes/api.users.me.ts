@@ -103,40 +103,22 @@ const UpdateCurrentUserRequestSchema = z
 		description: 'Payload for updating the authenticated user profile.',
 	})
 
-const UpdateCurrentUserSuccessResponseSchema = z
+const UpdateCurrentUserResponseSchema = z
 	.object({
 		code: z.literal('Ok').default('Ok'),
 		message: z.string().meta({
 			example: 'User successfully saved. Password updated.',
 		}),
-		data: z.object({
-			me: UserSchema,
-		}),
+		data: z
+			.object({
+				me: UserSchema,
+			})
+			.optional(),
 	})
-	.meta({
-		id: 'UpdateCurrentUserSuccessResponse',
-		description: 'Profile updated successfully.',
-	})
-
-const UpdateCurrentUserNoChangesResponseSchema = z
-	.object({
-		code: z.literal('Ok').default('Ok'),
-		message: z.literal(messages.noChanges).default(messages.noChanges),
-	})
-	.meta({
-		id: 'UpdateCurrentUserNoChangesResponse',
-		description: 'No profile changes were applied.',
-	})
-
-const UpdateCurrentUserResponseSchema = z
-	.union([
-		UpdateCurrentUserSuccessResponseSchema,
-		UpdateCurrentUserNoChangesResponseSchema,
-	])
 	.meta({
 		id: 'UpdateCurrentUserResponse',
 		description:
-			'Response returned after updating the current user. If no changed properties are supplied, a no-changes response is returned.',
+			'Response returned after updating the current user. `data` is omitted when no changed properties are supplied.',
 	})
 
 const DeleteCurrentUserRequestSchema = z
@@ -377,7 +359,7 @@ const put = async (user: User, request: Request): Promise<Response> => {
 			}
 
 			const responseParsed =
-				await UpdateCurrentUserNoChangesResponseSchema.safeParseAsync({
+				await UpdateCurrentUserResponseSchema.safeParseAsync({
 					code: 'Ok',
 					message: messages.noChanges,
 				})
@@ -390,12 +372,13 @@ const put = async (user: User, request: Request): Promise<Response> => {
 			return StandardResponse.ok(responseParsed.data)
 		}
 
-		const responseParsed =
-			await UpdateCurrentUserSuccessResponseSchema.safeParseAsync({
+		const responseParsed = await UpdateCurrentUserResponseSchema.safeParseAsync(
+			{
 				code: 'Ok',
 				message: `User successfully saved. ${messageText}`,
 				data: { me: transformUserToApiFormat(updatedUser) },
-			})
+			},
+		)
 
 		if (!responseParsed.success) {
 			console.warn(responseParsed.error)

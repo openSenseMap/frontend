@@ -26,14 +26,10 @@ import {
 	IsoDateTimeSchema,
 } from '~/lib/openapi/schemas/common'
 
-import {
-	CoordinatesWithHeightSchema,
-	LocationObjectSchema,
-	LongitudeLatitudeLocationObjectSchema,
-} from '~/lib/openapi/schemas/location'
 import { parsePathParams } from '~/lib/request-parsing'
 import { isValidServiceKey } from '~/db/models/integration.server'
 import { postSingleMeasurement } from '~/services/measurement-service.server'
+import { MeasurementLocationSchema } from '~/lib/openapi/schemas/measurement'
 
 const PostSensorMeasurementHeaderParamsSchema = z
 	.object({
@@ -46,18 +42,6 @@ const PostSensorMeasurementHeaderParamsSchema = z
 	.meta({
 		id: 'PostSensorMeasurementHeaderParams',
 		description: 'Headers accepted when posting a measurement to one sensor.',
-	})
-
-const MeasurementLocationSchema = z
-	.union([
-		CoordinatesWithHeightSchema,
-		LocationObjectSchema,
-		LongitudeLatitudeLocationObjectSchema,
-	])
-	.meta({
-		id: 'SingleMeasurementLocation',
-		description:
-			'Optional WGS84 measurement location. Accepted as [longitude, latitude, height?], { lng, lat, height? }, or { longitude, latitude, height? }.',
 	})
 
 const PostSensorMeasurementRequestSchema = z
@@ -74,9 +58,7 @@ const PostSensorMeasurementRequestSchema = z
 			example: '2026-05-22T12:00:00.000Z',
 		}),
 
-		location: MeasurementLocationSchema.optional().meta({
-			description: 'Optional WGS84 coordinates of the measurement.',
-		}),
+		location: MeasurementLocationSchema.optional(),
 	})
 	.meta({
 		id: 'PostSensorMeasurementRequest',
@@ -87,7 +69,7 @@ const PostSensorMeasurementSuccessResponseSchema = z.string().meta({
 	id: 'PostSensorMeasurementSuccessResponse',
 	description:
 		'Plain text success response returned after the measurement was saved.',
-	example: 'Measurement saved in device',
+	example: 'Measurement saved in box',
 })
 
 export const openapi: ZodOpenApiPathItemObject = {

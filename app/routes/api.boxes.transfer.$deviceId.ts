@@ -14,12 +14,12 @@ import {
 } from '~/lib/openapi/schemas/claim'
 
 import {
+	BadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
 	badRequestResponse,
-	createBadRequestErrorSchema,
 	forbiddenResponse,
 	internalServerErrorResponse,
 	methodNotAllowedResponse,
@@ -78,23 +78,6 @@ const UpdateDeviceTransferResponseSchema = z
 		description: 'Updated transfer information for a device.',
 	})
 
-const DeviceTransferByDeviceBadRequestErrorSchema = createBadRequestErrorSchema(
-	{
-		id: 'DeviceTransferByDeviceBadRequestError',
-		description:
-			'Bad request. This can happen when the device id, token, or expiration date is missing or invalid.',
-		examples: [
-			'Device ID is required',
-			'token is required',
-			'expiresAt is required',
-			'Invalid transfer token',
-			'Transfer token has expired',
-			'Invalid expiration date format',
-			'Expiration date must be in the future',
-		],
-	},
-)
-
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['Devices'],
@@ -118,8 +101,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceTransferByDeviceBadRequestErrorSchema,
-				'Bad request. The device ID path parameter is missing or invalid.',
+				BadRequestErrorSchema,
+				'Bad request. The device id path parameter is missing or invalid.',
 			),
 
 			403: forbiddenResponse(
@@ -173,8 +156,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceTransferByDeviceBadRequestErrorSchema,
-				'Bad request. This can happen when the token or expiration date is missing or invalid.',
+				BadRequestErrorSchema,
+				'Bad request. The device id, token, or expiration date is missing or invalid.',
 			),
 
 			403: forbiddenResponse(
