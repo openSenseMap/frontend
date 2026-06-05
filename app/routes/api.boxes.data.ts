@@ -81,31 +81,23 @@ const DevicesDataQueryParamsSchema = DateRangeQuerySchema.extend({
 	description: 'Query parameters for streaming measurements across devices.',
 })
 
-const DevicesDataJsonMeasurementSchema = z
-	.record(z.string(), z.unknown())
-	.meta({
-		id: 'DevicesDataJsonMeasurement',
-		description:
-			'Measurement row. The included properties depend on the requested `columns` parameter.',
-		example: {
-			createdAt: '2026-05-13T12:00:00.000Z',
-			value: 21.5,
-			boxId: '5bdbe70f55d0ad001a04edc9',
-			boxName: 'My device',
-			sensorId: '60a13611a877b3001b8ffd59',
-			phenomenon: 'Temperatur',
-			unit: '°C',
-			lat: 51.963,
-			lon: 7.628,
-		},
-	})
-
 const DevicesDataJsonResponseSchema = z
-	.array(DevicesDataJsonMeasurementSchema)
+	.array(z.record(z.string(), z.unknown()))
 	.meta({
 		id: 'DevicesDataJsonResponse',
 		description:
 			'Streamed JSON array of measurement rows. Each row contains the requested columns.',
+		example: [
+			{
+				createdAt: '2026-05-13T12:00:00.000Z',
+				value: 21.5,
+				boxId: '5bdbe70f55d0ad001a04edc9',
+				boxName: 'My device',
+				sensorId: '60a13611a877b3001b8ffd59',
+				phenomenon: 'Temperatur',
+				unit: '°C',
+			},
+		],
 	})
 
 const DevicesDataCsvResponseSchema = z.string().meta({

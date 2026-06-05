@@ -4,8 +4,8 @@ import { getLatestMeasurements } from '~/services/measurement-service.server'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
+	BadRequestErrorSchema,
 	badRequestResponse,
-	createBadRequestErrorSchema,
 	internalServerErrorResponse,
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
@@ -69,15 +69,6 @@ const DeviceWithSensorsSchema = z
 		description: 'Device including sensors with their latest measurement data.',
 	})
 
-const DeviceSensorsBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'DeviceSensorsBadRequestError',
-	description:
-		'Bad request. This can happen when the `count` query parameter is invalid.',
-	examples: [
-		'Illegal value for parameter count. allowed values: numbers from 1 to 100',
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['Sensors'],
@@ -101,8 +92,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceSensorsBadRequestErrorSchema,
-				'Bad request. This can happen when the `count` query parameter is invalid.',
+				BadRequestErrorSchema,
+				'Bad request. The `count` query parameter must be a number from 1 to 100.',
 			),
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),

@@ -5,10 +5,7 @@ import { getLatestMeasurementsForSensor } from '~/services/measurement-service.s
 import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
-import {
-	DeviceSensorPathParamsSchema,
-	IsoDateTimeSchema,
-} from '~/lib/openapi/schemas/common'
+import { DeviceSensorPathParamsSchema } from '~/lib/openapi/schemas/common'
 
 import {
 	BadRequestErrorSchema,
@@ -20,6 +17,7 @@ import {
 } from '~/lib/openapi/errors'
 
 import { parsePathParams } from '~/lib/request-parsing'
+import { LegacyLatestMeasurementSchema } from '~/lib/openapi/schemas/measurement'
 
 const LatestSensorMeasurementQueryParamsSchema = z
 	.object({
@@ -33,23 +31,6 @@ const LatestSensorMeasurementQueryParamsSchema = z
 		id: 'LatestSensorMeasurementQueryParams',
 		description:
 			'Query parameters for retrieving the latest sensor measurement.',
-	})
-
-const LatestMeasurementSchema = z
-	.object({
-		value: z.string().meta({
-			description: 'Measured value of the sensor.',
-			example: '4.78',
-		}),
-
-		createdAt: IsoDateTimeSchema.meta({
-			description: 'Timestamp of the latest measurement.',
-			example: '2026-05-15T12:00:00.000Z',
-		}),
-	})
-	.meta({
-		id: 'LatestSensorMeasurement',
-		description: 'Latest measurement of the sensor.',
 	})
 
 const LatestSensorResponseSchema = z
@@ -85,9 +66,7 @@ const LatestSensorResponseSchema = z
 			example: 'osem-thermometer',
 		}),
 
-		lastMeasurement: LatestMeasurementSchema.nullable().optional().meta({
-			description: 'Latest measurement of this sensor.',
-		}),
+		lastMeasurement: LegacyLatestMeasurementSchema.nullable().optional(),
 	})
 	.catchall(z.unknown())
 	.meta({
@@ -103,14 +82,6 @@ const OnlyValueResponseSchema = z
 		description:
 			'Only the latest measured value. Returns `null` if no latest measurement exists.',
 		example: '4.78',
-	})
-
-const LatestSensorMeasurementResponseSchema = z
-	.union([LatestSensorResponseSchema, OnlyValueResponseSchema])
-	.meta({
-		id: 'LatestSensorMeasurementResponse',
-		description:
-			'Latest sensor measurement response. Returns the full sensor object by default, or only the value when `onlyValue=true`.',
 	})
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -130,7 +101,10 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Latest sensor measurement returned successfully.',
 				content: {
 					'application/json': {
-						schema: LatestSensorMeasurementResponseSchema,
+						schema: z.union([
+							LatestSensorResponseSchema,
+							OnlyValueResponseSchema,
+						]),
 					},
 				},
 			},
