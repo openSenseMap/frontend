@@ -24,11 +24,7 @@ import {
 } from '~/lib/openapi/errors'
 
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
-import {
-	CoordinatesWithHeightSchema,
-	LocationObjectSchema,
-	LongitudeLatitudeLocationObjectSchema,
-} from '~/lib/openapi/schemas/location'
+import { MeasurementLocationSchema } from '~/lib/openapi/schemas/measurement'
 
 const PostBoxDataQueryParamsSchema = z
 	.object({
@@ -65,18 +61,6 @@ const PostBoxDataHeaderParamsSchema = z
 	.meta({
 		id: 'PostBoxDataHeaderParams',
 		description: 'Headers accepted when posting measurements to a device.',
-	})
-
-export const MeasurementLocationSchema = z
-	.union([
-		CoordinatesWithHeightSchema,
-		LocationObjectSchema,
-		LongitudeLatitudeLocationObjectSchema,
-	])
-	.meta({
-		id: 'MeasurementLocation',
-		description:
-			'Optional measurement location. Accepted as [longitude, latitude, height?], { lng, lat, height? }, or { longitude, latitude, height? }.',
 	})
 
 const MeasurementJsonArrayItemSchema = z
@@ -143,11 +127,11 @@ const PostBoxDataJsonRequestSchema = z
 	})
 
 const PostBoxDataSuccessResponseSchema = z
-	.literal('Measurements saved in device')
+	.literal('Measurements saved in box')
 	.meta({
 		id: 'PostBoxDataSuccessResponse',
 		description: 'Plain text success response.',
-		example: 'Measurements saved in device',
+		example: 'Measurements saved in box',
 	})
 
 const PostBoxDataCsvRequestSchema = z.string().meta({
@@ -287,7 +271,7 @@ export const action = async ({
 			isTrustedService,
 		})
 
-		return new Response('Measurements saved in device', {
+		return new Response('Measurements saved in box', {
 			status: 201,
 			headers: {
 				'Content-Type': 'text/plain; charset=utf-8',

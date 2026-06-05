@@ -223,7 +223,7 @@ export const action = async ({
 		)
 
 		const responseParsed = PostSensorMeasurementSuccessResponseSchema.safeParse(
-			'Measurement saved in device',
+			'Measurement saved in box',
 		)
 
 		if (!responseParsed.success) {
