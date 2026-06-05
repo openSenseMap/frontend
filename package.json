@@ -32,7 +32,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",
     "@aws-sdk/s3-request-presigner": "^3.1045.0",
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "@conform-to/react": "^1.19.0",
     "@conform-to/zod": "^1.19.0",
     "@directus/sdk": "^21.3.0",
@@ -70,7 +70,7 @@
     "@react-router/serve": "^7.14.2",
     "@rjsf/core": "^6.5.3",
     "@rjsf/utils": "^6.5.1",
-    "@rjsf/validator-ajv8": "^6.5.1",
+    "@rjsf/validator-ajv8": "^6.6.1",
     "@sensebox/sketch-templater": "^1.13.6",
     "@stepperize/react": "^6.1.0",
     "@tanstack/react-table": "^8.21.3",
