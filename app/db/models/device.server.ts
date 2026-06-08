@@ -724,10 +724,10 @@ const buildWhereClause = function buildWhereClause(
 	if (near && maxDistance !== undefined) {
 		clause.push(
 			sql`ST_DWithin(
-			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326),
-			ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326),
+			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)::geography,
+			ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326)::geography,
 			${maxDistance}
-		  )`,
+		)`,
 		)
 	}
 
