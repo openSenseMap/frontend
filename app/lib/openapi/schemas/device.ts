@@ -1,17 +1,5 @@
 import * as z from 'zod/v4'
-
-export const GeoJsonPointSchema = z
-	.object({
-		type: z.literal('Point'),
-		coordinates: z.tuple([z.number(), z.number()]).meta({
-			description: '[longitude, latitude]',
-			example: [13.404954, 52.520008],
-		}),
-	})
-	.meta({
-		id: 'GeoJsonPoint',
-		description: 'GeoJSON Point geometry.',
-	})
+import { GeoJsonPointSchema, TimestampedGeoJsonPointSchema } from './location'
 
 export const ApiSensorSchema = z
 	.looseObject({
@@ -50,26 +38,6 @@ export const ApiSensorSchema = z
 	.meta({
 		id: 'ApiSensor',
 		description: 'Sensor belonging to a box/device.',
-	})
-
-export const DeviceLocationInputSchema = z
-	.object({
-		lat: z.number().meta({
-			description: 'Latitude',
-			example: 51.9607,
-		}),
-		lng: z.number().meta({
-			description: 'Longitude',
-			example: 7.6261,
-		}),
-		height: z.number().optional().meta({
-			description: 'Optional height in meters',
-			example: 55,
-		}),
-	})
-	.meta({
-		id: 'DeviceLocationInput',
-		description: 'Device location update payload.',
 	})
 
 export const DeviceSensorUpdateSchema = z
@@ -193,16 +161,9 @@ export const ApiDeviceSchema = z
 			description: 'Sensor Wiki model identifier',
 			example: 'homeV2Wifi',
 		}),
-		currentLocation: z
-			.object({
-				type: z.literal('Point'),
-				coordinates: z.tuple([z.number(), z.number()]),
-				timestamp: z.iso.datetime().optional(),
-			})
-			.optional()
-			.meta({
-				description: 'Current location as GeoJSON Point-like object',
-			}),
+		currentLocation: TimestampedGeoJsonPointSchema.optional().meta({
+			description: 'Current location as GeoJSON Point-like object',
+		}),
 		lastMeasurementAt: z.iso.datetime().nullable().optional().meta({
 			description: 'Last measurement timestamp',
 			example: '2023-01-01T00:00:00.000Z',

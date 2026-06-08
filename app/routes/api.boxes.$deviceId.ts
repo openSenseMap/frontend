@@ -27,7 +27,6 @@ import {
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 import { apiMessages } from '~/lib/openapi/messages'
 import {
-	DeviceLocationInputSchema,
 	DeviceSensorUpdateSchema,
 	DeviceAddonsUpdateSchema,
 	ApiDeviceSchema,
@@ -38,6 +37,7 @@ import {
 	responseContentTypeJson,
 } from '~/middleware/content-type-header.server'
 import { parseJsonBody } from '~/lib/request-parsing'
+import { LocationObjectSchema } from '~/lib/openapi/schemas/location'
 
 const messages = {
 	conflictingSensorsAndAddons:
@@ -82,7 +82,7 @@ const UpdateDeviceRequestSchema = z
 			example: 'https://example.com',
 		}),
 
-		location: DeviceLocationInputSchema.optional(),
+		location: LocationObjectSchema.optional(),
 
 		grouptag: z
 			.array(z.string())
