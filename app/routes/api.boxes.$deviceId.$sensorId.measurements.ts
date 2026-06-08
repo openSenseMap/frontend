@@ -24,15 +24,13 @@ import {
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
 	messageResponse,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	forbiddenResponse,
 	internalServerErrorResponse,
 	methodNotAllowedResponse,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
+
 import { parsePathParams } from '~/lib/request-parsing'
 
 const DeleteSensorMeasurementsQueryParamsSchema = z
