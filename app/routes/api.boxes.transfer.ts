@@ -16,7 +16,6 @@ import {
 	InternalServerErrorSchema,
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
-	createBadRequestErrorSchema,
 } from '~/lib/openapi/errors'
 
 import {
