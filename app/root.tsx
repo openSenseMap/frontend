@@ -23,6 +23,15 @@ import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
 import { prometheusMetricsMiddleware } from './middleware/metrics.server'
 import { getUser } from './services/session-service.server'
+import {
+	getServerTheme,
+	ThemePreference,
+	ThemePreferenceSchema,
+} from './lib/theme'
+import {
+	getThemePreference,
+	themeCookie,
+} from './services/theme-service.server'
 
 export const middleware: Route.MiddlewareFunction[] = [
 	prometheusMetricsMiddleware,
@@ -86,13 +95,40 @@ export const meta: MetaFunction = () => [
 	},
 ]
 
+function PreventFlashOnWrongTheme({
+	themePreference,
+}: {
+	themePreference: ThemePreference
+}) {
+	const script = `
+(() => {
+	const preference = ${JSON.stringify(themePreference)};
+	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+	const theme = preference === 'dark' || (preference === 'system' && prefersDark)
+		? 'dark'
+		: 'light';
+
+	const root = document.documentElement;
+	root.classList.remove('light', 'dark');
+	root.classList.add(theme);
+	root.style.colorScheme = theme;
+})();
+`
+
+	return <script dangerouslySetInnerHTML={{ __html: script }} />
+}
+
 export async function loader({ context, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
 	const user = await getUser(request)
+	const themePreference = await getThemePreference(request)
+	const theme = getServerTheme(themePreference)
 	return data(
 		{
 			user: user,
 			locale: locale,
+			themePreference,
+			theme,
 			ENV: getEnv(),
 		},
 		// setting the cookie is required here to make sure we keep the server and client
@@ -105,6 +141,26 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
 export async function action({ context, request }: Route.ActionArgs) {
 	const formData = await request.formData()
+
+	const setTheme = formData.get('set-theme')
+
+	if (setTheme !== null) {
+		const result = ThemePreferenceSchema.safeParse(setTheme)
+
+		if (!result.success) {
+			throw data('Invalid theme preference', { status: 400 })
+		}
+
+		return data(
+			{ ok: true },
+			{
+				headers: {
+					'Set-Cookie': await themeCookie.serialize(result.data),
+				},
+			},
+		)
+	}
+
 	const setLang = formData.get('set-language')?.toString() ?? null
 
 	if (setLang === null) return
@@ -139,7 +195,7 @@ export const useRootRouteLoaderData = () => {
 }
 
 export default function App({
-	loaderData: { locale, ENV },
+	loaderData: { locale, ENV, themePreference, theme },
 }: Route.ComponentProps) {
 	const { i18n } = useTranslation()
 	useEffect(() => {
@@ -152,11 +208,12 @@ export default function App({
 		<html
 			lang={i18n.language}
 			dir={i18n.dir(i18n.language)}
-			className={clsx('light h-full')}
+			className={clsx(theme, 'h-full')}
+			suppressHydrationWarning
 		>
 			<head>
 				<Meta />
-				{/* <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} /> */}
+				<PreventFlashOnWrongTheme themePreference={themePreference} />
 				<Links />
 			</head>
 			<body className="dark:bg-dark-background dark:text-dark-text h-full">
@@ -183,15 +240,17 @@ export default function App({
  */
 export function ErrorBoundary() {
 	return (
-		<html className={clsx('light h-full')}>
+		<html className="light h-full" suppressHydrationWarning>
 			<head>
 				<Meta />
+				<PreventFlashOnWrongTheme themePreference="system" />
 				<Links />
 			</head>
-			<body className="dark:bg-dark-background dark:text-dark-text h-full">
+			<body className="bg-background text-foreground h-full">
 				<div className="flex h-screen w-screen items-center justify-center">
 					<ErrorMessage />
 				</div>
+				<Scripts />
 			</body>
 		</html>
 	)

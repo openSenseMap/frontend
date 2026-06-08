@@ -3,7 +3,7 @@
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @utility container {
 	margin-inline: auto;
@@ -117,7 +117,7 @@
 	--color-light-green: #3d843f;
 	--color-light-blue: #037ea1;
 
-	--color-dark-title: FFFFFF;
+	--color-dark-title: #FFFFFF;
 	--color-dark-menu: #d2d1d0;
 	--color-dark-text: #d2d1d0;
 	--color-dark-green: #6fa161;

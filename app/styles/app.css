@@ -1,6 +1,7 @@
 :root {
 	--color-black: #121212;
 	--color-white: #ffffff;
+
 	/* Logo Colors */
 	--logo-green: #4fae48;
 	--logo-blue: #00b4e4;
@@ -10,8 +11,11 @@
 	--light-text: #363636;
 	--light-green: #3d843f;
 	--light-blue: #037ea1;
+	--light-background: #ffffff;
+	--light-boxes: #eef2ed;
 
 	/* Dark Theme Colors */
+	--dark-title: #ffffff;
 	--dark-menu: #d2d1d0;
 	--dark-text: #d2d1d0;
 	--dark-green: #6fa161;
@@ -19,6 +23,7 @@
 	--dark-background: #242424;
 	--dark-boxes: #3b3a3a;
 
+	/* Raw Color Palette */
 	--color-slate-50: #f8fafc;
 	--color-slate-100: #f1f5f9;
 	--color-slate-200: #e2e8f0;
@@ -29,6 +34,7 @@
 	--color-slate-700: #334155;
 	--color-slate-800: #1e293b;
 	--color-slate-900: #0f172a;
+
 	--color-zinc-50: #fafafa;
 	--color-zinc-100: #f4f4f5;
 	--color-zinc-200: #e4e4e7;
@@ -39,12 +45,14 @@
 	--color-zinc-700: #3f3f46;
 	--color-zinc-800: #27272a;
 	--color-zinc-900: #18181b;
+
 	--color-blue-50: #eff6ff;
 	--color-blue-100: #3d9cce;
 	--color-blue-200: #1879af;
 	--color-blue-400: #60a5fa;
 	--color-blue-500: #3b82f6;
 	--color-blue-700: #1d4ed8;
+
 	--color-gray-50: #f9fafb;
 	--color-gray-100: #f3f4f6;
 	--color-gray-200: #e5e7eb;
@@ -56,6 +64,7 @@
 	--color-gray-800: #1f2937;
 	--color-gray-900: #111827;
 	--color-gray-950: #030712;
+
 	--color-green-50: #f0fdf4;
 	--color-green-100: #dcfce7;
 	--color-green-200: #bbf7d0;
@@ -67,19 +76,23 @@
 	--color-green-800: #166534;
 	--color-green-900: #14532d;
 	--color-green-950: #052e16;
+
 	--color-red-50: #fef2f2;
 	--color-red-100: #fee2e2;
 	--color-red-200: #fecaca;
 	--color-red-400: #f87171;
 	--color-red-500: #ef4444;
 	--color-red-700: #b91c1c;
+
 	--color-orange-500: #f97316;
+
 	--color-violet-50: #f5f3ff;
 	--color-violet-100: #ede9fe;
 	--color-violet-200: #ddd6fe;
 	--color-violet-400: #a78bfa;
 	--color-violet-500: #8b5cf6;
 	--color-violet-700: #6d28d9;
+
 	--color-yellow-50: #fefce8;
 	--color-yellow-100: #fef9c3;
 	--color-yellow-200: #fef08a;
@@ -87,75 +100,106 @@
 	--color-yellow-500: #eab308;
 	--color-yellow-700: #a16207;
 	--color-yellow-sensorWiki: #ffdd57;
+
 	--color-headerBorder: #e3e3e3;
 
-	/* shadcn color definitions */
+	/* Radius */
+	--radius: 0.5rem;
+}
+
+/*
+	Light theme.
+	`:root` makes light the default when no class has been applied yet.
+	`html.light` makes the explicit light state clear.
+*/
+:root,
+html.light {
+	color-scheme: light;
+
+	/* openSenseMap semantic colors */
+	--menu: 180 0.4% 44.9%; /* #727373 */
+	--title: 0 0% 15%;
+	--text: 0 0% 21.2%; /* #363636 */
+	--boxes: 108 16.1% 93.9%;
+	--brand-green: 121.7 36.8% 37.8%; /* #3d843f */
+	--brand-blue: 193.3 96.3% 32.2%; /* #037ea1 */
+
+	/* shadcn/ui semantic colors */
 	--background: 0 0% 100%;
-	--foreground: 222.2 47.4% 11.2%;
+	--foreground: 0 0% 21.2%;
 
 	--muted: 210 40% 96.1%;
 	--muted-foreground: 215.4 16.3% 46.9%;
 
 	--popover: 0 0% 100%;
-	--popover-foreground: 222.2 47.4% 11.2%;
+	--popover-foreground: 0 0% 21.2%;
 
 	--card: 0 0% 100%;
-	--card-foreground: 222.2 47.4% 11.2%;
+	--card-foreground: 0 0% 21.2%;
 
 	--border: 214.3 31.8% 91.4%;
 	--input: 214.3 31.8% 91.4%;
 
-	--primary: 222.2 47.4% 11.2%;
-	--primary-foreground: 210 40% 98%;
+	--primary: 121.7 36.8% 37.8%;
+	--primary-foreground: 0 0% 100%;
 
 	--secondary: 210 40% 96.1%;
-	--secondary-foreground: 222.2 47.4% 11.2%;
+	--secondary-foreground: 0 0% 21.2%;
 
-	--accent: 210 40% 96.1%;
-	--accent-foreground: 222.2 47.4% 11.2%;
+	--accent: 193.3 96.3% 32.2%;
+	--accent-foreground: 0 0% 100%;
 
-	--destructive: 0 100% 50%;
-	--destructive-foreground: 210 40% 98%;
+	--destructive: 0 84.2% 60.2%;
+	--destructive-foreground: 0 0% 100%;
 
-	--ring: 215 20.2% 65.1%;
-
-	/* shadcn radius definition */
-	--radius: 0.5rem;
+	--ring: 121.7 36.8% 37.8%;
 }
 
-.dark {
-	/* shadcn dark mode color definitions */
-	--background: 224 71% 4%;
-	--foreground: 213 31% 91%;
+/*
+	Dark theme.
+	Use `html.dark` instead of `.dark` so these global variables only switch
+	when the document root is dark.
+*/
+html.dark {
+	color-scheme: dark;
 
-	--muted: 223 47% 11%;
-	--muted-foreground: 215.4 16.3% 56.9%;
+	/* openSenseMap semantic colors */
+	--menu: 30 2.2% 82%; /* #d2d1d0 */
+	--title: 0 0% 100%;
+	--text: 30 2.2% 82%; /* #d2d1d0 */
+	--boxes: 0 0.9% 22.9%; /* #3b3a3a */
+	--brand-green: 106.9 25.4% 50.6%; /* #6fa161 */
+	--brand-blue: 192.9 96.5% 33.9%; /* #0386aa */
 
-	--popover: 224 71% 4%;
-	--popover-foreground: 215 20.2% 65.1%;
+	/* shadcn/ui semantic colors */
+	--background: 0 0% 14.1%; /* #242424 */
+	--foreground: 30 2.2% 82%; /* #d2d1d0 */
 
-	--card: 0 0% 100%;
-	--card-foreground: 222.2 47.4% 11.2%;
+	--muted: 0 1.1% 17.8%;
+	--muted-foreground: 30 2% 68%;
 
-	--border: 216 34% 17%;
-	--input: 216 34% 17%;
+	--popover: 0 1.1% 17.8%;
+	--popover-foreground: 30 2.2% 82%;
 
-	--primary: 210 40% 98%;
-	--primary-foreground: 222.2 47.4% 1.2%;
+	--card: 0 0.9% 22.9%; /* #3b3a3a */
+	--card-foreground: 30 2.2% 82%;
 
-	--secondary: 222.2 47.4% 11.2%;
-	--secondary-foreground: 210 40% 98%;
+	--border: 0 0% 28%;
+	--input: 0 0% 28%;
 
-	--accent: 216 34% 17%;
-	--accent-foreground: 210 40% 98%;
+	--primary: 106.9 25.4% 50.6%; /* #6fa161 */
+	--primary-foreground: 0 0% 14.1%;
 
-	--destructive: 0 63% 31%;
-	--destructive-foreground: 210 40% 98%;
+	--secondary: 0 0.9% 22.9%;
+	--secondary-foreground: 30 2.2% 82%;
 
-	--ring: 216 34% 17%;
+	--accent: 192.9 96.5% 33.9%; /* #0386aa */
+	--accent-foreground: 0 0% 100%;
 
-	/* shadcn dark mode radius definition */
-	--radius: 0.5rem;
+	--destructive: 0 90.6% 70.8%;
+	--destructive-foreground: 0 0% 14.1%;
+
+	--ring: 106.9 25.4% 50.6%;
 }
 
 kbd {
