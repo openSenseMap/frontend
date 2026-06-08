@@ -113,19 +113,6 @@ const CreateDeviceTransferResponseSchema = z
 		description: 'Response returned after creating a transfer token.',
 	})
 
-const DeviceTransferBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'DeviceTransferBadRequestError',
-	description:
-		'Bad request. This can happen when required parameters are missing, the expiration date has an invalid format, the expiration date is not in the future, or the transfer token is invalid or expired.',
-	examples: [
-		'boxId is required',
-		'token is required',
-		'Invalid date format',
-		'Expiration date must be in the future',
-		'Invalid or expired transfer token',
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
 		tags: ['Devices'],
