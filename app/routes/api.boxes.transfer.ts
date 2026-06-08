@@ -11,6 +11,7 @@ import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 
 import {
+	BadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
 	MethodNotAllowedErrorSchema,
@@ -157,8 +158,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceTransferBadRequestErrorSchema,
-				'Bad request. This can happen when required parameters are missing or invalid.',
+				BadRequestErrorSchema,
+				'Bad request. This can happen when `boxId` is missing or invalid, the expiration date has an invalid format, or the expiration date is not in the future.',
 			),
 
 			403: forbiddenResponse(
@@ -208,8 +209,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceTransferBadRequestErrorSchema,
-				'Bad request. This can happen when `boxId` or `token` is missing or invalid.',
+				BadRequestErrorSchema,
+				'Bad request. This can happen when `boxId` or `token` is missing or invalid, or the transfer token is invalid or expired.',
 			),
 
 			403: forbiddenResponse(

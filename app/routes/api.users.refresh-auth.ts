@@ -4,10 +4,10 @@ import { StandardResponse } from '~/lib/responses'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
-	createForbiddenErrorSchema,
 	forbiddenResponse,
 	internalServerErrorResponse,
 	InternalServerErrorSchema,
+	standardErrorResponseSchema,
 } from '~/lib/openapi/errors'
 import { UserSchema } from '~/lib/openapi/schemas/user'
 import { transformUserToApiFormat } from '~/lib/user-transform'
@@ -66,11 +66,9 @@ const RefreshAuthResponseSchema = z
 		description: 'Successfully refreshed authentication response.',
 	})
 
-const RefreshAuthForbiddenErrorSchema = createForbiddenErrorSchema({
-	id: 'RefreshAuthForbiddenError',
-	description:
-		'Authentication failed because the refresh token is missing, invalid, expired, or the request body could not be parsed.',
-	messageSchema: z.union([
+const RefreshAuthForbiddenErrorSchema = standardErrorResponseSchema(
+	'Forbidden',
+	z.union([
 		z.literal(errorMessages.tokenRequired),
 		z.literal(errorMessages.refreshTokenInvalid),
 		z.string().startsWith('Invalid request format:').meta({
@@ -78,6 +76,10 @@ const RefreshAuthForbiddenErrorSchema = createForbiddenErrorSchema({
 				'Invalid request format: Failed to parse request body as JSON or form data',
 		}),
 	]),
+).meta({
+	id: 'RefreshAuthForbiddenError',
+	description:
+		'Authentication failed because the refresh token is missing, invalid, expired, or the request body could not be parsed.',
 })
 
 export const openapi: ZodOpenApiPathItemObject = {

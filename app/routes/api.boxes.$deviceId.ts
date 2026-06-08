@@ -15,7 +15,6 @@ import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
 	BadRequestErrorSchema,
 	badRequestResponse,
-	createBadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	forbiddenResponse,
 	internalServerErrorResponse,
@@ -131,18 +130,6 @@ const DeleteDeviceRequestSchema = z
 		id: 'DeleteDeviceRequest',
 		description: 'Device deletion confirmation payload.',
 	})
-
-const DeviceBadRequestErrorSchema = createBadRequestErrorSchema({
-	id: 'DeviceBadRequestError',
-	description:
-		'Bad request. This can happen when the device id is missing, the deletion password is missing, or the update payload contains conflicting fields.',
-	examples: [
-		apiMessages.deviceIdRequired,
-		apiMessages.passwordRequired,
-		messages.conflictingSensorsAndAddons,
-	],
-})
-
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['Devices'],
@@ -207,8 +194,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceBadRequestErrorSchema,
-				'Bad request. This can happen for conflicting parameters or validation errors.',
+				BadRequestErrorSchema,
+				'Bad request. This can happen when the device id is missing or the update payload contains invalid or conflicting fields.',
 			),
 
 			403: forbiddenResponse(
@@ -258,8 +245,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 			},
 
 			400: badRequestResponse(
-				DeviceBadRequestErrorSchema,
-				'Bad request. This can happen when the password is missing.',
+				BadRequestErrorSchema,
+				'Bad request. This can happen when the device id or deletion password is missing.',
 			),
 
 			401: unauthorizedResponse(
