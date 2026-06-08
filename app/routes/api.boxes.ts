@@ -330,10 +330,23 @@ import {
  *                     type: string
  *                     example: "25.13"
  */
+
+function normalizeBoxesQueryParams(query: Record<string, unknown>) {
+	const maxDistance = query.maxDistance ?? query.maxdistance
+
+	return {
+		...query,
+		maxDistance,
+	}
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const queryObj = Object.fromEntries(url.searchParams)
-	const parseResult = BoxesQuerySchema.safeParse(queryObj)
+
+	const normalizedQueryObj = normalizeBoxesQueryParams(queryObj)
+
+	const parseResult = BoxesQuerySchema.safeParse(normalizedQueryObj)
 
 	if (!parseResult.success) {
 		const { fieldErrors } = parseResult.error.flatten()
