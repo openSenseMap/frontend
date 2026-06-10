@@ -17,7 +17,7 @@ import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
 import ErrorMessage from './components/error-message'
 import { Toaster } from './components/ui/toaster'
-import { updateUserlocale } from './db/models/user.server'
+import { updateUserPreferencesById } from './db/models/user.server'
 import { getEnv } from './lib/env.server'
 import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
@@ -121,21 +121,39 @@ function PreventFlashOnWrongTheme({
 export async function loader({ context, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
 	const user = await getUser(request)
-	const themePreference = await getThemePreference(request)
+
+	const cookieThemePreference = await getThemePreference(request)
+
+	const userThemePreferenceResult = ThemePreferenceSchema.safeParse(
+		user?.themePreference,
+	)
+
+	const themePreference = userThemePreferenceResult.success
+		? userThemePreferenceResult.data
+		: cookieThemePreference
+
 	const theme = getServerTheme(themePreference)
+
+	const headers = new Headers()
+
+	// setting the cookie is required here to make sure we keep the server and client
+	// instance of i18n in synch
+	headers.append('Set-Cookie', await i18nCookie.serialize(locale))
+
+	// If the user has a DB-backed preference, mirror it into the cookie too.
+	if (userThemePreferenceResult.success) {
+		headers.append('Set-Cookie', await themeCookie.serialize(themePreference))
+	}
+
 	return data(
 		{
-			user: user,
-			locale: locale,
+			user,
+			locale,
 			themePreference,
 			theme,
 			ENV: getEnv(),
 		},
-		// setting the cookie is required here to make sure we keep the server and client
-		// instance of i18n in synch
-		{
-			headers: { 'Set-Cookie': await i18nCookie.serialize(locale) },
-		},
+		{ headers },
 	)
 }
 
@@ -151,36 +169,61 @@ export async function action({ context, request }: Route.ActionArgs) {
 			throw data('Invalid theme preference', { status: 400 })
 		}
 
+		const user = await getUser(request)
+		const headers = new Headers()
+
+		if (user) {
+			await updateUserPreferencesById(user.id, {
+				themePreference: result.data,
+			})
+		}
+
+		headers.append('Set-Cookie', await themeCookie.serialize(result.data))
+
 		return data(
-			{ ok: true },
 			{
-				headers: {
-					'Set-Cookie': await themeCookie.serialize(result.data),
-				},
+				ok: true,
+				themePreference: result.data,
 			},
+			{ headers },
 		)
 	}
 
 	const setLang = formData.get('set-language')?.toString() ?? null
 
-	if (setLang === null) return
+	if (setLang === null) return null
 
 	const locale = getLocale(context)
-	if (setLang === locale) return
+
+	if (setLang === locale) return null
 
 	const user = await getUser(request)
-	// updating the user locale is sufficient,
-	// because the loader will set the cookie to
-	// the user locale on the next request
-	if (user) await updateUserlocale(user.email, setLang)
-	else {
-		return data(
-			{},
-			{
-				headers: { 'Set-Cookie': await i18nCookie.serialize(setLang) },
-			},
-		)
+
+	if (user) {
+		// updating the user locale is sufficient,
+		// because the loader will set the cookie to
+		// the user locale on the next request
+		await updateUserPreferencesById(user.id, {
+			language: setLang,
+		})
+
+		return data({
+			ok: true,
+			locale: setLang,
+		})
 	}
+
+	return data(
+		{
+			ok: true,
+			locale: setLang,
+		},
+		{
+			headers: {
+				'Set-Cookie': await i18nCookie.serialize(setLang),
+			},
+		},
+	)
 }
 
 /**
