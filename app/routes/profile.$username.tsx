@@ -122,10 +122,10 @@ export default function ProfilePage() {
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
 
 	return (
-		<div className="h-full bg-slate-100">
+		<div className="bg-background text-foreground min-h-screen">
 			<NavBar />
 			<div className="flex w-full flex-col gap-6 p-8 md:flex-row md:gap-8 md:pt-4">
-				<div className="dark:bg-dark-background flex w-full flex-col gap-6 rounded-xl bg-white p-6 shadow-lg md:w-1/3">
+				<div className="border-border bg-card text-card-foreground flex w-full flex-col gap-6 rounded-xl border p-6 shadow-sm md:w-1/3">
 					<div className="dark:text-dark-text flex items-center gap-4">
 						<Avatar className="h-16 w-16">
 							{profile?.profileImage?.id ? (
