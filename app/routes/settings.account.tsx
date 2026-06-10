@@ -38,10 +38,10 @@ import {
 	getUserById,
 	updateUserEmail,
 	updateUserName,
-	updateUserlocale,
 	verifyLogin,
 	getUserByAnyEmail,
 	updateUserPassword,
+	updateUserPreferencesById,
 } from '~/db/models/user.server'
 import { getUserId } from '~/services/session-service.server'
 import { resendEmailConfirmation } from '~/services/user-service.server'
@@ -54,6 +54,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui/dialog'
+import { ThemeSelect } from '~/components/theme-select'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
@@ -235,7 +236,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	if (wantsLanguageChange) {
-		await updateUserlocale(user.email, language)
+		await updateUserPreferencesById(user.id, { language: language })
 	}
 
 	if (wantsEmailChange) {
@@ -527,6 +528,26 @@ export default function EditUserProfilePage() {
 								</SelectContent>
 							</Select>
 						</div>
+
+						<section className="border-border bg-card text-card-foreground rounded-xl border p-6">
+							<div className="mb-4">
+								<h2 className="text-title text-xl font-semibold">Appearance</h2>
+								<p className="text-muted-foreground mt-1 text-sm">
+									Choose how openSenseMap should look on this device.
+								</p>
+							</div>
+
+							<div className="flex items-center justify-between gap-4">
+								<div>
+									<div className="text-foreground font-medium">Theme</div>
+									<div className="text-muted-foreground text-sm">
+										Use your system setting, or always use light or dark mode.
+									</div>
+								</div>
+
+								<ThemeSelect />
+							</div>
+						</section>
 
 						<div className="flex items-center justify-between gap-4 rounded-lg border p-4 dark:border-white">
 							<div className="space-y-1">

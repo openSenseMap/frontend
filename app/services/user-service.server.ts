@@ -23,9 +23,9 @@ import {
 	getUserByUsername,
 	preparePasswordHash,
 	updateUserEmail,
-	updateUserlocale,
 	updateUserName,
 	updateUserPassword,
+	updateUserPreferencesById,
 	verifyLogin,
 } from '~/db/models/user.server'
 import { actionToken, user, type User } from '~/db/schema'
@@ -309,7 +309,7 @@ export const updateUserDetails = async (
 	}
 
 	if (language && user.language !== language) {
-		await updateUserlocale(user.email, language)
+		await updateUserPreferencesById(user.id, { language: language })
 		messages.push('Language changed.')
 		hasChanges = true
 	}
