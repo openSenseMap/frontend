@@ -20,7 +20,7 @@
 	--dark-text: #d2d1d0;
 	--dark-green: #6fa161;
 	--dark-blue: #0386aa;
-	--dark-background: #242424;
+	--dark-background: #091413;
 	--dark-boxes: #3b3a3a;
 
 	/* Raw Color Palette */
@@ -109,20 +109,10 @@
 
 /*
 	Light theme.
-	`:root` makes light the default when no class has been applied yet.
-	`html.light` makes the explicit light state clear.
 */
 :root,
 html.light {
 	color-scheme: light;
-
-	/* openSenseMap semantic colors */
-	--menu: 180 0.4% 44.9%; /* #727373 */
-	--title: 0 0% 15%;
-	--text: 0 0% 21.2%; /* #363636 */
-	--boxes: 108 16.1% 93.9%;
-	--brand-green: 121.7 36.8% 37.8%; /* #3d843f */
-	--brand-blue: 193.3 96.3% 32.2%; /* #037ea1 */
 
 	/* shadcn/ui semantic colors */
 	--background: 0 0% 100%;
@@ -156,23 +146,13 @@ html.light {
 }
 
 /*
-	Dark theme.
-	Use `html.dark` instead of `.dark` so these global variables only switch
-	when the document root is dark.
+	Dark theme
 */
 html.dark {
 	color-scheme: dark;
 
-	/* openSenseMap semantic colors */
-	--menu: 30 2.2% 82%; /* #d2d1d0 */
-	--title: 0 0% 100%;
-	--text: 30 2.2% 82%; /* #d2d1d0 */
-	--boxes: 0 0.9% 22.9%; /* #3b3a3a */
-	--brand-green: 106.9 25.4% 50.6%; /* #6fa161 */
-	--brand-blue: 192.9 96.5% 33.9%; /* #0386aa */
-
 	/* shadcn/ui semantic colors */
-	--background: 0 0% 14.1%; /* #242424 */
+	--background: #091413; 
 	--foreground: 30 2.2% 82%; /* #d2d1d0 */
 
 	--muted: 0 1.1% 17.8%;
