@@ -2,8 +2,8 @@
 	"public_profile": "Public Profile",
 	"account": "Account",
 	"password": "Password",
+	"preferences": "Preferences",
 	"delete_account": "Delete Account",
-
 	"profile_updated": "Profile updated",
 	"profile_updated_description": "Your profile has been updated successfully.",
 	"something_went_wrong": "Something went wrong.",
@@ -84,5 +84,6 @@
 	"unsaved_changes": "Unsaved changes",
 	"saving": "Saving...",
 	"confirm_email_change": "Confirm email change",
-	"confirm_email_change_description": "Please enter your current password."
+	"confirm_email_change_description": "Please enter your current password.",
+	"theme_description": "Choose how OpenSenseMap looks to you."
 }
