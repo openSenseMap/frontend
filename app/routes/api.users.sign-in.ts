@@ -147,8 +147,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			return StandardResponse.forbidden(responseParsed.error.issues[0].message)
 
 		return StandardResponse.ok(responseParsed.data)
-	} catch (error) {
-		console.warn(error)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

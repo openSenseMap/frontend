@@ -16,15 +16,13 @@ import {
 	InternalServerErrorSchema,
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	forbiddenResponse,
 	internalServerErrorResponse,
 	methodNotAllowedResponse,
 	notFoundResponse,
 } from '~/lib/openapi/errors'
+
 import { parseJsonOrFormRequest } from '~/lib/request-parsing'
 import { User } from '~/db/schema'
 import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
@@ -285,13 +283,11 @@ const handleCreateTransfer = async (request: Request, user: User) => {
 			})
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error.issues)
 			return StandardResponse.internalServerError()
 		}
 
 		return StandardResponse.created(responseParsed.data)
 	} catch (err) {
-		console.error('Error creating transfer:', err)
 		return handleTransferError(err)
 	}
 }
@@ -311,7 +307,6 @@ const handleRemoveTransfer = async (request: Request, user: User) => {
 
 		return StandardResponse.noContent()
 	} catch (err) {
-		console.error('Error removing transfer:', err)
 		return handleTransferError(err)
 	}
 }

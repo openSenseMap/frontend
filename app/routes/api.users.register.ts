@@ -207,7 +207,6 @@ export const action = async ({ request }: Route.ActionArgs) => {
 				data: user,
 			})
 		} catch (err) {
-			console.error('Unable to create JWT', err)
 			return StandardResponse.internalServerError(
 				`Unable to create jwt for newly created user: ${(err as Error)?.message}`,
 			)
@@ -219,7 +218,6 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			)
 		}
 
-		console.error('Registration error:', error)
 		return StandardResponse.internalServerError()
 	}
 }

@@ -143,25 +143,24 @@ export const loader = async ({
 			return queryParams
 		}
 
-		const meas = await getLatestMeasurements(
+		const deviceWithSensors = await getLatestMeasurements(
 			parsedParams.deviceId,
 			queryParams.count,
 		)
 
-		if (!meas) {
+		if (!deviceWithSensors) {
 			return StandardResponse.notFound(apiMessages.deviceNotFound)
 		}
 
-		const responseParsed = await DeviceWithSensorsSchema.safeParseAsync(meas)
+		const responseParsed =
+			await DeviceWithSensorsSchema.safeParseAsync(deviceWithSensors)
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error.issues)
 			return StandardResponse.internalServerError()
 		}
 
 		return StandardResponse.ok(responseParsed.data)
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

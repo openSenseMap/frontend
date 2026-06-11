@@ -103,14 +103,12 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 				})
 
 			if (!responseParsed.success) {
-				console.warn(responseParsed.error.issues)
 				return StandardResponse.internalServerError()
 			}
 
 			return StandardResponse.ok(responseParsed.data)
 		})
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

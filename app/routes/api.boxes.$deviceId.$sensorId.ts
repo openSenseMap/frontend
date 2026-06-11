@@ -209,7 +209,6 @@ export const action = async ({
 		)
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error.issues)
 			return StandardResponse.internalServerError()
 		}
 

@@ -194,8 +194,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		return await withAuthenticatedUser(request, async (user) => {
 			return await post(request, user)
 		})
-	} catch (err) {
-		console.error('Error in action:', err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }
@@ -252,8 +251,7 @@ async function post(request: Request, user: User) {
 		const responseData = transformDeviceToApiFormat(newDevice)
 
 		return StandardResponse.created(responseData)
-	} catch (err) {
-		console.error('Error creating device:', err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

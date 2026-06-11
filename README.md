@@ -293,7 +293,6 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 		return StandardResponse.ok(parsed.data)
 	} catch (error) {
-		console.warn(error)
 		return StandardResponse.internalServerError('Internal server error')
 	}
 }

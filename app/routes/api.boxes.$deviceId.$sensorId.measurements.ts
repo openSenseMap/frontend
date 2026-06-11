@@ -205,7 +205,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 			})
 
 			if (!responseParsed.success) {
-				console.warn(responseParsed.error.issues)
 				return StandardResponse.internalServerError()
 			}
 

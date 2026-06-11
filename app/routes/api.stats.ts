@@ -108,13 +108,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 		const responseParsed = await StatsResponseSchema.safeParseAsync(stats)
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error)
 			return StandardResponse.internalServerError()
 		}
 
 		return StandardResponse.ok(responseParsed.data)
-	} catch (e) {
-		console.warn(e)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

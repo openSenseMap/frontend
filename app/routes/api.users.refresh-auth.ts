@@ -160,13 +160,11 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		})
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error)
 			return StandardResponse.internalServerError()
 		}
 
 		return StandardResponse.ok(responseParsed.data)
-	} catch (error) {
-		console.warn(error)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

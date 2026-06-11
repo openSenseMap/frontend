@@ -13,9 +13,6 @@ import {
 	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
 	UnsupportedMediaTypeErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	forbiddenResponse,
 	goneResponse,
@@ -24,6 +21,7 @@ import {
 	notFoundResponse,
 	unsupportedMediaTypeResponse,
 } from '~/lib/openapi/errors'
+
 import {
 	requestContentTypeJson,
 	validateJsonContentType,
@@ -181,13 +179,11 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			})
 
 			if (!responseParsed.success) {
-				console.warn(responseParsed.error.issues)
 				return StandardResponse.internalServerError()
 			}
 
 			return StandardResponse.ok(responseParsed.data)
 		} catch (err) {
-			console.error('Error claiming device:', err)
 			return handleClaimError(err)
 		}
 	})

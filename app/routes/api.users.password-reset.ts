@@ -175,8 +175,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			default:
 				return StandardResponse.internalServerError()
 		}
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

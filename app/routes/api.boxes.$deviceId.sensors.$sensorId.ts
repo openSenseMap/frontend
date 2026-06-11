@@ -179,7 +179,6 @@ export const loader = async ({
 			const responseParsed = await OnlyValueResponseSchema.safeParseAsync(value)
 
 			if (!responseParsed.success) {
-				console.warn(responseParsed.error.issues)
 				return StandardResponse.internalServerError()
 			}
 
@@ -204,13 +203,11 @@ export const loader = async ({
 			await LatestSensorResponseSchema.safeParseAsync(sensorResponse)
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error.issues)
 			return StandardResponse.internalServerError()
 		}
 
 		return StandardResponse.ok(responseParsed.data)
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

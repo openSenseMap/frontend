@@ -284,7 +284,6 @@ const okDeviceResponse = async (device: unknown) => {
 	const parsed = await ApiDeviceSchema.safeParseAsync(apiDevice)
 
 	if (!parsed.success) {
-		console.warn(parsed.error)
 		return StandardResponse.internalServerError()
 	}
 
@@ -308,8 +307,6 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 		return await okDeviceResponse(device)
 	} catch (error) {
-		console.error('Error fetching device:', error)
-
 		if (error instanceof Response) {
 			throw error
 		}
@@ -449,8 +446,6 @@ async function put(request: Request, user: any, deviceId: string) {
 
 		return Response.json(apiResponse, { status: 200 })
 	} catch (error) {
-		console.error('Error updating device:', error)
-
 		// Handle specific device update errors
 		if (error instanceof DeviceUpdateError) {
 			return Response.json(
@@ -496,8 +491,7 @@ async function del(request: Request, user: User, deviceId: string) {
 		}
 
 		return StandardResponse.ok(null)
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

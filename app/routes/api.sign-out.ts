@@ -19,8 +19,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			code: 'Ok',
 			message: 'Successfully signed out',
 		})
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

@@ -91,8 +91,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			code: 'Ok',
 			message: `Email confirmation has been sent to ${recipient}`,
 		})
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

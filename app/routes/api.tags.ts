@@ -10,7 +10,6 @@ export async function loader({}: Route.LoaderArgs) {
 			data: tags,
 		})
 	} catch (e) {
-		console.warn(e)
 		return StandardResponse.internalServerError()
 	}
 }

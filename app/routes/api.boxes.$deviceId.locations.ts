@@ -201,8 +201,7 @@ export const loader = async ({
 		}
 
 		return Response.json(geoJsonLocations, responseInit)
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

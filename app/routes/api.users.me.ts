@@ -301,14 +301,12 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 			})
 
 			if (!responseParsed.success) {
-				console.error(responseParsed.error.issues)
 				return StandardResponse.internalServerError()
 			}
 
 			return StandardResponse.ok(responseParsed.data)
 		})
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }
@@ -365,7 +363,6 @@ const put = async (user: User, request: Request): Promise<Response> => {
 				})
 
 			if (!responseParsed.success) {
-				console.warn(responseParsed.error)
 				return StandardResponse.internalServerError()
 			}
 
@@ -381,13 +378,11 @@ const put = async (user: User, request: Request): Promise<Response> => {
 		)
 
 		if (!responseParsed.success) {
-			console.warn(responseParsed.error)
 			return StandardResponse.internalServerError()
 		}
 
 		return StandardResponse.ok(responseParsed.data)
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }
@@ -416,8 +411,7 @@ const del = async (user: User, request: Request): Promise<Response> => {
 		}
 
 		return StandardResponse.ok(null)
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

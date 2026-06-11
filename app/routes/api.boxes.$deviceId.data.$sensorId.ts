@@ -219,8 +219,7 @@ export const loader = async ({
 			const csv = getCsv(meas, delimiter == 'comma' ? ',' : ';')
 			return new Response(csv, responseInit)
 		}
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

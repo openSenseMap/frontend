@@ -230,13 +230,11 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 				})
 
 			if (!responseParsed.success) {
-				console.warn(responseParsed.error.issues)
 				return StandardResponse.internalServerError()
 			}
 
 			return StandardResponse.ok(responseParsed.data)
 		} catch (err) {
-			console.error('Error fetching transfer:', err)
 			return handleTransferError(err)
 		}
 	})
@@ -305,7 +303,6 @@ const handleUpdateTransfer = async (
 			},
 		})
 	} catch (err) {
-		console.error('Error updating transfer:', err)
 		return handleTransferError(err)
 	}
 }
