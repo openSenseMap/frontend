@@ -14,6 +14,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
+import { cn } from '~/lib/utils'
 
 type ExposureOption = 'outdoor' | 'indoor' | 'mobile' | 'unknown'
 
@@ -140,17 +141,23 @@ export function GeneralInfoStep() {
 					{exposureOptions.map((option) => (
 						<Button
 							key={option.value}
-							type="button" // Prevent form submission
+							type="button"
 							onClick={() => setValue('exposure', option.value)}
-							variant={'outline'}
-							className={`flex items-center gap-2 transition-all duration-200 ease-in-out ${
+							variant="outline"
+							aria-pressed={currentExposure === option.value}
+							className={cn(
+								'flex items-center gap-2 transition-all duration-200 ease-in-out',
 								currentExposure === option.value
-									? 'bg-primary/10 shadow-md hover:bg-green-100'
-									: 'hover:bg-muted'
-							}`}
+									? [
+											'border-primary bg-primary/10 text-primary ring-primary/40 shadow-md ring-2',
+											'hover:bg-primary/15',
+											'dark:border-primary dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/25',
+										]
+									: 'hover:bg-muted',
+							)}
 						>
 							{option.icon}
-							<span className="text-sm">{t(option.label)}</span>
+							<span className="text-sm">{option.label}</span>
 						</Button>
 					))}
 				</div>
