@@ -115,35 +115,33 @@
 html.light {
 	color-scheme: light;
 
-	/* shadcn/ui semantic colors */
-	--background: 0 0% 100%;
-	--foreground: 0 0% 21.2%;
+	--background: #ffffff;
+	--foreground: #363636;
 
-	--muted: 210 40% 96.1%;
-	--muted-foreground: 215.4 16.3% 46.9%;
+	--card: #ffffff;
+	--card-foreground: #363636;
 
-	--popover: 0 0% 100%;
-	--popover-foreground: 0 0% 21.2%;
+	--popover: #ffffff;
+	--popover-foreground: #363636;
 
-	--card: 0 0% 100%;
-	--card-foreground: 0 0% 21.2%;
+	--muted: #f3f6f2;
+	--muted-foreground: #727373;
 
-	--border: 214.3 31.8% 91.4%;
-	--input: 214.3 31.8% 91.4%;
+	--border: #dfe7dd;
+	--input: #dfe7dd;
+	--ring: #3d843f;
 
-	--primary: 121.7 36.8% 37.8%;
-	--primary-foreground: 0 0% 100%;
+	--primary: #3d843f;
+	--primary-foreground: #ffffff;
 
-	--secondary: 210 40% 96.1%;
-	--secondary-foreground: 0 0% 21.2%;
+	--secondary: #eef4ed;
+	--secondary-foreground: #363636;
 
-	--accent: 193.3 96.3% 32.2%;
-	--accent-foreground: 0 0% 100%;
+	--accent: #037ea1;
+	--accent-foreground: #ffffff;
 
-	--destructive: 0 84.2% 60.2%;
-	--destructive-foreground: 0 0% 100%;
-
-	--ring: 121.7 36.8% 37.8%;
+	--destructive: #ef4444;
+	--destructive-foreground: #ffffff;
 }
 
 /*
@@ -152,35 +150,33 @@ html.light {
 html.dark {
 	color-scheme: dark;
 
-	/* shadcn/ui semantic colors */
-	--background: #091413; 
-	--foreground: 30 2.2% 82%; /* #d2d1d0 */
+	--background: #091413;
+	--foreground: #d2d1d0;
 
-	--muted: 0 1.1% 17.8%;
-	--muted-foreground: 30 2% 68%;
+	--card: #13201e;
+	--card-foreground: #d2d1d0;
 
-	--popover: 0 1.1% 17.8%;
-	--popover-foreground: 30 2.2% 82%;
+	--popover: #101b19;
+	--popover-foreground: #d2d1d0;
 
-	--card: 0 0.9% 22.9%; /* #3b3a3a */
-	--card-foreground: 30 2.2% 82%;
+	--muted: #1a2a27;
+	--muted-foreground: #a9aaa7;
 
-	--border: 0 0% 28%;
-	--input: 0 0% 28%;
+	--border: #2a403b;
+	--input: #2a403b;
+	--ring: #6fa161;
 
-	--primary: 106.9 25.4% 50.6%; /* #6fa161 */
-	--primary-foreground: 0 0% 14.1%;
+	--primary: #6fa161;
+	--primary-foreground: #091413;
 
-	--secondary: 0 0.9% 22.9%;
-	--secondary-foreground: 30 2.2% 82%;
+	--secondary: #1a2a27;
+	--secondary-foreground: #d2d1d0;
 
-	--accent: 192.9 96.5% 33.9%; /* #0386aa */
-	--accent-foreground: 0 0% 100%;
+	--accent: #0386aa;
+	--accent-foreground: #ffffff;
 
-	--destructive: 0 90.6% 70.8%;
-	--destructive-foreground: 0 0% 14.1%;
-
-	--ring: 106.9 25.4% 50.6%;
+	--destructive: #f87171;
+	--destructive-foreground: #091413;
 }
 
 kbd {
