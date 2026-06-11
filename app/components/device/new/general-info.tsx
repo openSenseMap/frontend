@@ -145,8 +145,8 @@ export function GeneralInfoStep() {
 							variant={'outline'}
 							className={`flex items-center gap-2 transition-all duration-200 ease-in-out ${
 								currentExposure === option.value
-									? 'bg-green-100 shadow-md hover:bg-green-100'
-									: 'hover:bg-gray-100'
+									? 'bg-primary/10 shadow-md hover:bg-green-100'
+									: 'hover:bg-muted'
 							}`}
 						>
 							{option.icon}

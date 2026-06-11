@@ -87,11 +87,11 @@ export function DataTable<TData, TValue>({
 					onChange={(event) =>
 						table.getColumn('name')?.setFilterValue(event.target.value)
 					}
-					className="max-w-sm dark:border-white dark:text-white"
+					className="border-input bg-background text-foreground placeholder:text-muted-foreground max-w-sm"
 				/>
 			</div>
 
-			<div className="rounded-md border dark:border-white">
+			<div className="border-border bg-card overflow-hidden rounded-md border">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({
 						))}
 					</TableHeader>
 
-					<TableBody className="dark:text-dark-text">
+					<TableBody>
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
 								<TableRow
@@ -121,7 +121,7 @@ export function DataTable<TData, TValue>({
 									{row.getVisibleCells().map((cell, index) => (
 										<TableCell
 											key={cell.id}
-											className={'w-[' + tableColsWidth[index] + '%]'}
+											style={{ width: `${tableColsWidth[index]}%` }}
 										>
 											{flexRender(
 												cell.column.columnDef.cell,
@@ -135,7 +135,7 @@ export function DataTable<TData, TValue>({
 							<TableRow>
 								<TableCell
 									colSpan={columns.length}
-									className="dark:text-dark-text h-24 text-center"
+									className="text-muted-foreground h-24 text-center"
 								>
 									{t('no_results')}
 								</TableCell>
@@ -145,7 +145,7 @@ export function DataTable<TData, TValue>({
 				</Table>
 			</div>
 
-			<div className="dark:text-dark-text flex justify-center py-4">
+			<div className="text-foreground flex justify-center py-4">
 				<div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
 					<div className="flex flex-wrap items-center space-x-2">
 						<span className="text-sm font-medium">{t('rows_per_page')}</span>
@@ -155,7 +155,7 @@ export function DataTable<TData, TValue>({
 								table.setPageSize(Number(value))
 							}}
 						>
-							<SelectTrigger className="dark:border-dark-text h-8 w-16">
+							<SelectTrigger className="border-input bg-background text-foreground h-8 w-16">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>

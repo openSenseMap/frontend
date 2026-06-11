@@ -178,7 +178,7 @@ export default function NewDeviceStepper() {
 			<FormProvider {...form}>
 				<Form
 					onSubmit={form.handleSubmit(onSubmit, onError)}
-					className="flex h-full w-1/2 flex-col justify-between space-y-6 rounded-lg border bg-white p-6"
+					className="bg-card flex h-full w-1/2 flex-col justify-between space-y-6 rounded-lg border p-6"
 				>
 					<div className="space-y-4">
 						{/* Breadcrumb Navigation */}
@@ -192,8 +192,8 @@ export default function NewDeviceStepper() {
 													onClick={() => stepper.navigation.goTo(step.id)}
 													className={` ${
 														stepper.state.current.index === step.index
-															? 'font-bold text-black'
-															: 'cursor-pointer text-gray-500 hover:text-black'
+															? 'text-foreground font-bold'
+															: 'hover:text-foreground text-muted-foreground cursor-pointer'
 													} `}
 												>
 													{t(step.label)}
