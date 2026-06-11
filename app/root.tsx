@@ -23,15 +23,12 @@ import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
 import { prometheusMetricsMiddleware } from './middleware/metrics.server'
 import { getUser } from './services/session-service.server'
-import {
-	getServerTheme,
-	ThemePreference,
-	ThemePreferenceSchema,
-} from './lib/theme'
+import { getServerTheme, ThemePreferenceSchema } from './lib/theme'
 import {
 	getThemePreference,
 	themeCookie,
 } from './services/theme-service.server'
+import { PreventFlashOnWrongTheme } from './components/prevent-theme-flash'
 
 export const middleware: Route.MiddlewareFunction[] = [
 	prometheusMetricsMiddleware,
@@ -94,29 +91,6 @@ export const meta: MetaFunction = () => [
 			'The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source.',
 	},
 ]
-
-function PreventFlashOnWrongTheme({
-	themePreference,
-}: {
-	themePreference: ThemePreference
-}) {
-	const script = `
-(() => {
-	const preference = ${JSON.stringify(themePreference)};
-	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-	const theme = preference === 'dark' || (preference === 'system' && prefersDark)
-		? 'dark'
-		: 'light';
-
-	const root = document.documentElement;
-	root.classList.remove('light', 'dark');
-	root.classList.add(theme);
-	root.style.colorScheme = theme;
-})();
-`
-
-	return <script dangerouslySetInnerHTML={{ __html: script }} />
-}
 
 export async function loader({ context, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
