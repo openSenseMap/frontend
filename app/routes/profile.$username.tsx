@@ -126,7 +126,7 @@ export default function ProfilePage() {
 			<NavBar />
 			<div className="flex w-full flex-col gap-6 p-8 md:flex-row md:gap-8 md:pt-4">
 				<div className="border-border bg-card text-card-foreground flex w-full flex-col gap-6 rounded-xl border p-6 shadow-sm md:w-1/3">
-					<div className="dark:text-dark-text flex items-center gap-4">
+					<div className="flex items-center gap-4">
 						<Avatar className="h-16 w-16">
 							{profile?.profileImage?.id ? (
 								<AvatarImage
@@ -139,13 +139,13 @@ export default function ProfilePage() {
 							</AvatarFallback>
 						</Avatar>
 						<div>
-							<h3 className="dark:text-dark-text text-2xl font-semibold">
+							<h3 className="text-title text-2xl font-semibold">
 								{profile?.displayName || ''}
 							</h3>
-							<h4 className="dark:text-dark-text text-lg">
+							<h4 className="text-foreground text-lg">
 								{profile?.user?.name || ''}
 							</h4>
-							<p className="text-sm text-gray-500 dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								{t('user_since')}{' '}
 								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
 									t('locale'),
@@ -155,24 +155,24 @@ export default function ProfilePage() {
 					</div>
 
 					<div className="grid grid-cols-2 gap-4 md:pt-6">
-						<div className="dark:bg-dark-boxes flex flex-col items-center rounded-lg bg-gray-100 p-4">
-							<span className="dark:text-dark-green text-2xl font-bold">
+						<div className="border-border bg-muted/60 flex flex-col items-center rounded-lg border p-4">
+							<span className="text-primary text-2xl font-bold">
 								{formatCount(profile?.user?.devices.length || 0)}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
 								{t('devices')}
 							</span>
 						</div>
-						<div className="dark:bg-dark-boxes flex flex-col items-center rounded-lg bg-gray-100 p-4">
-							<span className="dark:text-dark-green text-2xl font-bold">
+						<div className="border-border bg-muted/60 flex flex-col items-center rounded-lg border p-4">
+							<span className="text-primary text-2xl font-bold">
 								{sensorsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
 								{t('sensors')}
 							</span>
 						</div>
-						<div className="dark:bg-dark-boxes flex flex-col items-center rounded-lg bg-gray-100 p-4">
-							<span className="dark:text-dark-green text-2xl font-bold">
+						<div className="border-border bg-muted/60 flex flex-col items-center rounded-lg border p-4">
+							<span className="text-primary text-2xl font-bold">
 								{measurementsCount}
 							</span>
 							<span className="text-sm text-gray-500 dark:text-gray-400">
@@ -183,8 +183,8 @@ export default function ProfilePage() {
 				</div>
 
 				<div className="flex w-full flex-col gap-6 md:w-2/3">
-					<div className="dark:bg-dark-background rounded-xl bg-white p-6 shadow-lg">
-						<div className="text-light-green dark:text-dark-green mb-4 text-3xl font-semibold">
+					<div className="border-border bg-card text-card-foreground rounded-xl border p-6 shadow-sm">
+						<div className="text-primary mb-4 text-3xl font-semibold">
 							{t('devices')}
 						</div>
 
