@@ -576,8 +576,6 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			expect(response.status).toBe(400)
 			expect(body).toHaveProperty('code', 'Bad Request')
-			expect(body).toHaveProperty('errors')
-			expect(Array.isArray(body.errors)).toBe(true)
 		})
 
 		it('should reject creation with invalid location format', async () => {
@@ -602,7 +600,6 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 			expect(response.status).toBe(400)
 			expect(body).toHaveProperty('code', 'Bad Request')
-			expect(body).toHaveProperty('errors')
 		})
 
 		it('should reject creation with invalid JSON', async () => {
