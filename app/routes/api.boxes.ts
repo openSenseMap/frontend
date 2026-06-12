@@ -212,15 +212,8 @@ async function post(request: Request, user: User) {
 		// Validate request data
 		const validationResult = CreateDeviceSchema.safeParse(requestData)
 		if (!validationResult.success) {
-			return Response.json(
-				{
-					code: 'Bad Request',
-					message: 'Invalid request data',
-					errors: validationResult.error.issues.map(
-						(err) => `${err.path.join('.')}: ${err.message}`,
-					),
-				},
-				{ status: 400 },
+			return StandardResponse.badRequest(
+				validationResult.error.issues[0]?.message ?? 'Invalid request data',
 			)
 		}
 
