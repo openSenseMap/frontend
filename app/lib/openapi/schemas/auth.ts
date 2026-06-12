@@ -2,6 +2,22 @@ import * as z from 'zod/v4'
 
 import { apiMessages } from '~/lib/openapi/messages'
 
+export const NewPasswordSchema = z
+	.string({
+		error: 'No new password specified.',
+	})
+	.min(1, {
+		error: 'No new password specified.',
+	})
+	.min(8, {
+		error: 'New password should have at least 8 characters',
+	})
+	.meta({
+		description: 'Password. Must be at least 8 characters long.',
+		example: 'correct-horse-battery-staple',
+		format: 'password',
+	})
+
 export const PasswordConfirmationRequestSchema = z
 	.object({
 		password: z

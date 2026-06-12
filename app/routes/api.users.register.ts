@@ -22,6 +22,7 @@ import {
 	requestContentTypeJsonOrForm,
 	responseContentTypeJson,
 } from '~/middleware/content-type-header.server'
+import { NewPasswordSchema } from '~/lib/openapi/schemas/auth'
 
 const RegistrationNameSchema = z
 	.string()
@@ -44,11 +45,7 @@ const RegisterUserRequestSchema = z
 			example: 'jane@example.com',
 		}),
 
-		password: z.string().min(8).meta({
-			description: 'Desired password. Must be at least 8 characters long.',
-			example: 'correct-horse-battery-staple',
-			format: 'password',
-		}),
+		password: NewPasswordSchema,
 
 		language: UserLanguageSchema.optional().default('en_US').meta({
 			description:

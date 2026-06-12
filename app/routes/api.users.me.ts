@@ -30,6 +30,7 @@ import {
 	requestContentTypeJsonOrForm,
 } from '~/middleware/content-type-header.server'
 import { parseFormRequest, parseJsonBody } from '~/lib/request-parsing'
+import { NewPasswordSchema } from '~/lib/openapi/schemas/auth'
 
 const messages = {
 	noChanges: 'No changed properties supplied. User remains unchanged.',
@@ -70,15 +71,7 @@ const UpdateCurrentUserRequestSchema = z
 			example: 'currentPassword123',
 			format: 'password',
 		}),
-		newPassword: z
-			.string()
-			.min(8, 'New password should have at least 8 characters')
-			.optional()
-			.meta({
-				description: 'New password',
-				example: 'newPassword456',
-				format: 'password',
-			}),
+		newPassword: NewPasswordSchema.optional(),
 	})
 	.superRefine((data, ctx) => {
 		if (data.email && data.newPassword) {
@@ -378,6 +371,7 @@ const put = async (user: User, request: Request): Promise<Response> => {
 		)
 
 		if (!responseParsed.success) {
+			console.log('parsed res', responseParsed)
 			return StandardResponse.internalServerError()
 		}
 

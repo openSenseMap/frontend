@@ -13,24 +13,11 @@ import {
 	forbiddenResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
+import { NewPasswordSchema } from '~/lib/openapi/schemas/auth'
 
 const PasswordResetRequestSchema = z
 	.object({
-		password: z
-			.string({
-				error: 'No new password specified.',
-			})
-			.min(1, {
-				error: 'No new password specified.',
-			})
-			.min(8, {
-				error: 'Password must be at least 8 characters.',
-			})
-			.meta({
-				description: 'New password. Must be at least 8 characters long.',
-				example: 'newPassword456',
-				format: 'password',
-			}),
+		password: NewPasswordSchema,
 
 		token: z
 			.string({
