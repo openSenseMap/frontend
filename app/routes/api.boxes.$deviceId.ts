@@ -2,14 +2,13 @@ import { type Route } from './+types/api.boxes.$deviceId'
 import {
 	DeviceUpdateError,
 	getDevice,
-	updateDevice,
 	type UpdateDeviceArgs,
 } from '~/db/models/device.server'
 import { type Device, type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { withAuthenticatedUser } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
-import { deleteDevice } from '~/services/device-service.server'
+import { deleteDevice, updateDevice } from '~/services/device-service.server'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
@@ -30,6 +29,7 @@ import {
 	DeviceSensorUpdateSchema,
 	DeviceAddonsUpdateSchema,
 	ApiDeviceSchema,
+	DeviceSensorUpdate,
 } from '~/lib/openapi/schemas/device'
 import { ExposureSchema } from '~/lib/api-schemas/query'
 import {
@@ -42,6 +42,8 @@ import { LocationObjectSchema } from '~/lib/openapi/schemas/location'
 const messages = {
 	conflictingSensorsAndAddons:
 		'sensors and addons can not appear in the same request.',
+	deviceNotOwned: 'You do not own this device',
+	deviceArchived: 'Device is archived and cannot be updated',
 }
 
 const UpdateDeviceRequestSchema = z
@@ -51,7 +53,7 @@ const UpdateDeviceRequestSchema = z
 			example: 'My device',
 		}),
 
-		exposure: ExposureSchema,
+		exposure: ExposureSchema.optional(),
 
 		description: z.string().optional().meta({
 			description: 'Device description',
@@ -85,7 +87,8 @@ const UpdateDeviceRequestSchema = z
 		location: LocationObjectSchema.optional(),
 
 		grouptag: z
-			.array(z.string())
+			.union([z.string(), z.array(z.string())])
+			.transform((value) => (Array.isArray(value) ? value : [value]))
 			.optional()
 			.meta({
 				description: 'Group tags assigned to the device',
@@ -345,58 +348,80 @@ export async function action({ request, params }: Route.ActionArgs) {
 	})
 }
 
-async function put(request: Request, user: any, deviceId: string) {
-	const body = await request.json()
+async function put(request: Request, user: User, deviceId: string) {
+	let rawBody: unknown
 
-	const currentDevice = await getDevice({ id: deviceId })
-	if (!currentDevice) {
-		return Response.json(
-			{ code: 'NotFound', message: 'Device not found' },
-			{ status: 404 },
+	try {
+		rawBody = await request.json()
+	} catch {
+		return StandardResponse.badRequest('Invalid JSON in request body')
+	}
+
+	const parsedBody = UpdateDeviceRequestSchema.safeParse(rawBody)
+
+	if (!parsedBody.success) {
+		console.warn('PUT /boxes/:deviceId request validation failed', {
+			body: rawBody,
+			issues: parsedBody.error.issues,
+		})
+
+		return StandardResponse.badRequest(
+			parsedBody.error.issues[0]?.message ?? 'Invalid request data',
 		)
 	}
 
-	// Check for conflicting parameters (backwards compatibility)
+	const body = { ...parsedBody.data }
+
+	const currentDevice = await getDevice({ id: deviceId })
+
+	if (!currentDevice) {
+		return StandardResponse.notFound(apiMessages.deviceNotFound)
+	}
+
 	if (body.sensors && body.addons?.add) {
-		return Response.json(
-			{
-				code: 'BadRequest',
-				message: 'sensors and addons can not appear in the same request.',
-			},
-			{ status: 400 },
+		return StandardResponse.badRequest(
+			'sensors and addons can not appear in the same request.',
 		)
 	}
 
 	if (body.addons?.add === 'feinstaub') {
 		const homeModels = ['homeWifi', 'homeEthernet']
+
 		if (currentDevice.model && homeModels.includes(currentDevice.model)) {
 			body.model = `${currentDevice.model}Feinstaub`
 
-			const hasPM10 = currentDevice.sensors.some(
-				(s) => s.sensorType === 'SDS 011' && s.title === 'PM10',
-			)
-			const hasPM25 = currentDevice.sensors.some(
-				(s) => s.sensorType === 'SDS 011' && s.title === 'PM2.5',
+			const currentSensors = currentDevice.sensors ?? []
+
+			const hasPM10 = currentSensors.some(
+				(sensor) => sensor.sensorType === 'SDS 011' && sensor.title === 'PM10',
 			)
 
-			if (!hasPM10 || !hasPM25) {
-				body.sensors = [
-					...(body.sensors ?? []),
-					!hasPM10 && {
-						new: true,
-						title: 'PM10',
-						unit: 'µg/m³',
-						sensorType: 'SDS 011',
-						// icon: 'osem-cloud',
-					},
-					!hasPM25 && {
-						new: true,
-						title: 'PM2.5',
-						unit: 'µg/m³',
-						sensorType: 'SDS 011',
-						// icon: 'osem-cloud',
-					},
-				].filter(Boolean)
+			const hasPM25 = currentSensors.some(
+				(sensor) => sensor.sensorType === 'SDS 011' && sensor.title === 'PM2.5',
+			)
+
+			const sensorsToAdd: DeviceSensorUpdate[] = []
+
+			if (!hasPM10) {
+				sensorsToAdd.push({
+					new: true,
+					title: 'PM10',
+					unit: 'µg/m³',
+					sensorType: 'SDS 011',
+				})
+			}
+
+			if (!hasPM25) {
+				sensorsToAdd.push({
+					new: true,
+					title: 'PM2.5',
+					unit: 'µg/m³',
+					sensorType: 'SDS 011',
+				})
+			}
+
+			if (sensorsToAdd.length > 0) {
+				body.sensors = [...(body.sensors ?? []), ...sensorsToAdd]
 			}
 		}
 	}
@@ -438,34 +463,43 @@ async function put(request: Request, user: any, deviceId: string) {
 	}
 
 	try {
-		const updatedDevice = await updateDevice(deviceId, updateArgs)
+		const updateResult = await updateDevice(user.id, currentDevice, updateArgs)
 
-		const deviceWithSensors = await getDevice({ id: updatedDevice.id })
-
-		const apiResponse = transformDeviceToApiFormat(deviceWithSensors as any)
-
-		return Response.json(apiResponse, { status: 200 })
-	} catch (error) {
-		// Handle specific device update errors
-		if (error instanceof DeviceUpdateError) {
-			return Response.json(
-				{
-					code: error.statusCode === 400 ? 'BadRequest' : 'NotFound',
-					message: error.message,
-				},
-				{ status: error.statusCode },
-			)
+		if (updateResult === 'unauthorized') {
+			return StandardResponse.forbidden(messages.deviceNotOwned)
 		}
 
-		// Return generic error for unexpected errors
-		return Response.json(
-			{
-				code: 'InternalServerError',
-				message:
-					error instanceof Error ? error.message : 'Failed to update device',
-			},
-			{ status: 500 },
-		)
+		if (updateResult === 'archived') {
+			return StandardResponse.conflict(messages.deviceArchived)
+		}
+
+		const deviceWithSensors = await getDevice({ id: updateResult.id })
+
+		if (!deviceWithSensors) {
+			return StandardResponse.internalServerError()
+		}
+
+		const apiResponse = transformDeviceToApiFormat(deviceWithSensors)
+
+		const responseParsed = await ApiDeviceSchema.safeParseAsync(apiResponse)
+
+		if (!responseParsed.success) {
+			return StandardResponse.internalServerError()
+		}
+
+		return StandardResponse.ok(responseParsed.data)
+	} catch (error) {
+		if (error instanceof DeviceUpdateError) {
+			if (error.statusCode === 400) {
+				return StandardResponse.badRequest(error.message)
+			}
+
+			if (error.statusCode === 404) {
+				return StandardResponse.notFound(error.message)
+			}
+		}
+
+		return StandardResponse.internalServerError()
 	}
 }
 
