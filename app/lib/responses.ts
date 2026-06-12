@@ -76,6 +76,14 @@ export class StandardResponse {
 		this.errorResponse('Method Not Allowed', message, 405)
 
 	/**
+	 * Creates a response object for a conflict response
+	 * @param message The message for the response
+	 * @returns The response
+	 */
+	public static conflict = (message: string): Response =>
+		this.errorResponse('Conflict', message, 409)
+
+	/**
 	 * Creates a response object for a gone response
 	 * @param message The message for the response
 	 * @returns The response
