@@ -371,7 +371,6 @@ const put = async (user: User, request: Request): Promise<Response> => {
 		)
 
 		if (!responseParsed.success) {
-			console.log('parsed res', responseParsed)
 			return StandardResponse.internalServerError()
 		}
 
