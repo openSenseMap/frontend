@@ -13,13 +13,11 @@ import {
 	BadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	forbiddenResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
+
 import { parsePathParams } from '~/lib/request-parsing'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 
