@@ -8,12 +8,10 @@ import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
 	BadRequestErrorSchema,
 	InternalServerErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	internalServerErrorResponse,
 } from '~/lib/openapi/errors'
+
 import { requestContentTypeForm } from '~/middleware/content-type-header.server'
 
 const RequestPasswordResetRequestSchema = z

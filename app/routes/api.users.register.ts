@@ -13,13 +13,11 @@ import {
 	BadRequestErrorSchema,
 	InternalServerErrorSchema,
 	MethodNotAllowedErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	internalServerErrorResponse,
 	methodNotAllowedResponse,
 } from '~/lib/openapi/errors'
+
 import {
 	requestContentTypeJsonOrForm,
 	responseContentTypeJson,

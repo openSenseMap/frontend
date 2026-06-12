@@ -9,9 +9,6 @@ import {
 	BadRequestErrorSchema,
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	badRequestResponse,
 	forbiddenResponse,
 	internalServerErrorResponse,
