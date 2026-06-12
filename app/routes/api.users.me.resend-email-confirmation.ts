@@ -10,9 +10,6 @@ import {
 	ForbiddenErrorSchema,
 	InternalServerErrorSchema,
 	UnprocessableContentErrorSchema,
-} from '~/lib/openapi/errors'
-
-import {
 	forbiddenResponse,
 	internalServerErrorResponse,
 	unprocessableContentResponse,
