@@ -8,7 +8,7 @@ import {
 } from '~/components/ui/select'
 import { useRootRouteLoaderData } from '~/root'
 
-const supportedLocales = ['en_US', 'de_DE'] as const
+const supportedLocales = ['en', 'de'] as const
 
 type SupportedLocale = (typeof supportedLocales)[number]
 
@@ -45,8 +45,8 @@ export function LanguageSelect() {
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="en_US">English</SelectItem>
-				<SelectItem value="de_DE">Deutsch</SelectItem>
+				<SelectItem value="en">English</SelectItem>
+				<SelectItem value="de">Deutsch</SelectItem>
 			</SelectContent>
 		</Select>
 	)
