@@ -18,7 +18,7 @@ const errorMessages = {
 	userAndOrPassword: 'User and or password not valid!',
 }
 
-const PostRequestSchema = z.object({
+const SignInRequestSchema = z.object({
 	email: z.string(errorMessages.email).trim().nonempty().meta({
 		description: "User's email address or username",
 		example: 'user@example.com',
@@ -29,7 +29,7 @@ const PostRequestSchema = z.object({
 	}),
 })
 
-const PostResponseSchema = z.object({
+const SignInResponseSchema = z.object({
 	data: z.object(
 		{
 			user: z.object({
@@ -68,14 +68,14 @@ export const openapi: ZodOpenApiPathItemObject = {
 		requestBody: {
 			required: true,
 			content: {
-				'application/json': { schema: PostRequestSchema },
+				'application/json': { schema: SignInRequestSchema },
 			},
 		},
 		responses: {
 			200: {
 				description: 'Signed in',
 				content: {
-					'application/json': { schema: PostResponseSchema },
+					'application/json': { schema: SignInResponseSchema },
 				},
 			},
 			403: {
@@ -129,7 +129,7 @@ export const middleware: Route.MiddlewareFunction[] = [
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	try {
-		const requestParsed = await PostRequestSchema.safeParseAsync(
+		const requestParsed = await SignInRequestSchema.safeParseAsync(
 			await request.json(),
 		)
 		if (!requestParsed.success)
@@ -138,7 +138,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		const { email, password } = requestParsed.data
 		const { user, jwt, refreshToken } = (await signIn(email, password)) || {}
 
-		const responseParsed = await PostResponseSchema.safeParseAsync({
+		const responseParsed = await SignInResponseSchema.safeParseAsync({
 			data: { user },
 			token: jwt,
 			refreshToken,
