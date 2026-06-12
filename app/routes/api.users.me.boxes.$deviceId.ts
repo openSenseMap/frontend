@@ -33,11 +33,11 @@ const GetCurrentUserDeviceResponseSchema = z
 	.object({
 		code: z.literal('Ok').default('Ok'),
 		data: z.object({
-			box: CurrentUserPrivateDeviceSchema,
+			device: CurrentUserPrivateDeviceSchema,
 		}),
 	})
 	.meta({
-		id: 'GetCurrentUserBoxResponse',
+		id: 'GetCurrentUserDeviceResponse',
 		description:
 			'Response containing one device owned by the authenticated user.',
 	})
@@ -93,15 +93,15 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 		}
 
 		return await withAuthenticatedUser(request, async (user) => {
-			const box = await getDevice({ id: parsedParams.deviceId })
+			const device = await getDevice({ id: parsedParams.deviceId })
 
-			if (!box) {
+			if (!device) {
 				return StandardResponse.badRequest(
 					'There is no such device with the given id',
 				)
 			}
 
-			if (box.user.id !== user.id) {
+			if (device.user.id !== user.id) {
 				return StandardResponse.forbidden('User does not own this device')
 			}
 
@@ -109,7 +109,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 				await GetCurrentUserDeviceResponseSchema.safeParseAsync({
 					code: 'Ok',
 					data: {
-						box: transformDeviceToApiFormat(box),
+						device: transformDeviceToApiFormat(device),
 					},
 				})
 
