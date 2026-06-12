@@ -26,7 +26,7 @@ import {
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 import { MeasurementLocationSchema } from '~/lib/openapi/schemas/measurement'
 
-const PostBoxDataQueryParamsSchema = z
+const PostDeviceDataQueryParamsSchema = z
 	.object({
 		luftdaten: z.string().optional().meta({
 			description:
@@ -41,11 +41,11 @@ const PostBoxDataQueryParamsSchema = z
 		}),
 	})
 	.meta({
-		id: 'PostBoxDataQueryParams',
+		id: 'PostDeviceDataQueryParams',
 		description: 'Query parameters controlling legacy decoder selection.',
 	})
 
-const PostBoxDataHeaderParamsSchema = z
+const PostDeviceDataHeaderParamsSchema = z
 	.object({
 		authorization: z.string().optional().meta({
 			description: 'Device API key or bearer-style authorization value.',
@@ -59,7 +59,7 @@ const PostBoxDataHeaderParamsSchema = z
 		}),
 	})
 	.meta({
-		id: 'PostBoxDataHeaderParams',
+		id: 'PostDeviceDataHeaderParams',
 		description: 'Headers accepted when posting measurements to a device.',
 	})
 
@@ -118,24 +118,24 @@ const MeasurementJsonObjectSchema = z
 		},
 	})
 
-const PostBoxDataJsonRequestSchema = z
+const PostDeviceDataJsonRequestSchema = z
 	.union([z.array(MeasurementJsonArrayItemSchema), MeasurementJsonObjectSchema])
 	.meta({
-		id: 'PostBoxDataJsonRequest',
+		id: 'PostDeviceDataJsonRequest',
 		description:
 			'Measurements submitted as JSON array notation or JSON object notation.',
 	})
 
-const PostBoxDataSuccessResponseSchema = z
+const PostDeviceDataSuccessResponseSchema = z
 	.literal('Measurements saved in box')
 	.meta({
-		id: 'PostBoxDataSuccessResponse',
+		id: 'PostDeviceDataSuccessResponse',
 		description: 'Plain text success response.',
 		example: 'Measurements saved in box',
 	})
 
-const PostBoxDataCsvRequestSchema = z.string().meta({
-	id: 'PostBoxDataCsvRequest',
+const PostDeviceDataCsvRequestSchema = z.string().meta({
+	id: 'PostDeviceDataCsvRequest',
 	description:
 		'CSV measurements, one measurement per line: sensorId,value,createdAt?,lng?,lat?,height?.',
 	example:
@@ -151,19 +151,19 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		requestParams: {
 			path: DevicePathParamsSchema,
-			query: PostBoxDataQueryParamsSchema,
-			header: PostBoxDataHeaderParamsSchema,
+			query: PostDeviceDataQueryParamsSchema,
+			header: PostDeviceDataHeaderParamsSchema,
 		},
 
 		requestBody: {
 			required: true,
 			content: {
 				'application/json': {
-					schema: PostBoxDataJsonRequestSchema,
+					schema: PostDeviceDataJsonRequestSchema,
 				},
 
 				'text/csv': {
-					schema: PostBoxDataCsvRequestSchema,
+					schema: PostDeviceDataCsvRequestSchema,
 				},
 
 				'application/sbx-bytes': {
@@ -191,7 +191,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Measurements saved successfully.',
 				content: {
 					'text/plain': {
-						schema: PostBoxDataSuccessResponseSchema,
+						schema: PostDeviceDataSuccessResponseSchema,
 					},
 				},
 			},
