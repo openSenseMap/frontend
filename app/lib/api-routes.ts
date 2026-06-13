@@ -1,8 +1,20 @@
-type RouteInfo = {
+export type RateLimitTierConfig = {
+	maxRequests?: number
+	multiplier?: number
+}
+
+export type RateLimitConfig = {
+	windowMs: number
+	maxRequests: number
+	tiers?: Record<string, RateLimitTierConfig>
+}
+
+export type RouteInfo = {
 	path: string
 	method: 'GET' | 'PUT' | 'POST' | 'DELETE'
 	tosExempt: boolean
 	deprecationNotice?: string
+	rateLimit?: RateLimitConfig | false
 }
 
 export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
@@ -36,11 +48,13 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes`,
 			method: 'GET',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 120 },
 		},
 		{
 			path: `boxes/data`,
 			method: 'GET',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 60 },
 		},
 		// {
 		//   path: `boxes/:boxId`,
@@ -72,36 +86,43 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/:boxId/data`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 600 },
 		},
 		{
 			path: `boxes/:boxId/:sensorId`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 600 },
 		},
 		{
 			path: `users/register`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 5 },
 		},
 		{
 			path: `users/request-password-reset`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 5 },
 		},
 		{
 			path: `users/password-reset`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 5 },
 		},
 		{
 			path: `users/confirm-email`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 10 },
 		},
 		{
 			path: `users/sign-in`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 10 },
 		},
 		{
 			path: `discourse/sso`,
@@ -114,6 +135,7 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `users/refresh-auth`,
 			method: 'POST',
 			tosExempt: true,
+			rateLimit: { windowMs: 60_000, maxRequests: 60 },
 		},
 		{
 			path: `users/me`,

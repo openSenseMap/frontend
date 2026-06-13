@@ -6,7 +6,6 @@ running as a public beta at
 
 <img width="1510" height="858" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/70da4cff-1751-4a13-89e8-607a5198df37">
 
-
 ## Project setup
 
 If you do need to set the project up locally yourself, feel free to follow these
@@ -24,10 +23,15 @@ instructions:
 
 You can configure the API endpoint using the following environmental variables:
 
-| ENV          | Default value                                            |
-| ------------ | -------------------------------------------------------- |
-| OSEM_API_URL | https://api.testing.opensensemap.org                     |
-| DATABASE_URL | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| ENV                  | Default value                                            |
+| -------------------- | -------------------------------------------------------- |
+| OSEM_API_URL         | https://api.testing.opensensemap.org                     |
+| DATABASE_URL         | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| API_RATE_LIMIT_TIERS | Optional JSON map for higher API rate limit tiers        |
+
+`API_RATE_LIMIT_TIERS` can grant higher limits by verified JWT user email, email
+domain, or SHA-256 credential hash. Example:
+`{"education":{"multiplier":5,"emailDomains":["school.example"],"users":["teacher@school.example"],"credentialHashes":[]}}`.
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 To run a local development version, you only need to adjust the `OSEM_API_URL`
