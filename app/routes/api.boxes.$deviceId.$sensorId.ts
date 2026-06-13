@@ -8,6 +8,7 @@ import {
 	BadRequestErrorSchema,
 	ConflictErrorSchema,
 	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
 	NotFoundErrorSchema,
 	UnauthorizedErrorSchema,
 	UnprocessableContentErrorSchema,
@@ -15,6 +16,7 @@ import {
 	badRequestResponse,
 	conflictResponse,
 	internalServerErrorResponse,
+	methodNotAllowedResponse,
 	notFoundResponse,
 	unauthorizedResponse,
 	unprocessableContentResponse,
@@ -114,6 +116,11 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device or sensor not found.'),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed.',
+			),
 
 			409: conflictResponse(
 				ConflictErrorSchema,
@@ -236,16 +243,8 @@ export const action = async ({
 		}
 
 		if (err.name === 'ArchivedDeviceError') {
-			return new Response(
-				JSON.stringify({
-					message: err.message || 'Archived devices are read-only',
-				}),
-				{
-					status: 409,
-					headers: {
-						'Content-Type': 'application/json; charset=utf-8',
-					},
-				},
+			return StandardResponse.conflict(
+				err.message || 'Archived devices are read-only',
 			)
 		}
 
