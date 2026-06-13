@@ -289,14 +289,8 @@ export const action = async ({
 			return StandardResponse.unsupportedMediaType(err.message)
 
 		if (err.name === 'ArchivedDeviceError')
-			return new Response(
-				JSON.stringify({
-					message: err.message || 'Archived devices are read-only',
-				}),
-				{
-					status: 409,
-					headers: { 'Content-Type': 'application/json; charset=utf-8' },
-				},
+			return StandardResponse.conflict(
+				err.message || 'Archived devices are read-only',
 			)
 
 		return StandardResponse.internalServerError(

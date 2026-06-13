@@ -314,14 +314,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 			throw error
 		}
 
-		return new Response(
-			JSON.stringify({ error: 'Internal server error while fetching device' }),
-			{
-				status: 500,
-				headers: {
-					'Content-Type': 'application/json; charset=utf-8',
-				},
-			},
+		return StandardResponse.internalServerError(
+			'Internal server error while fetching device',
 		)
 	}
 }

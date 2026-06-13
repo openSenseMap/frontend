@@ -5,6 +5,7 @@ import { getDevice } from '~/db/models/device.server'
 import * as z from 'zod/v4'
 import { ZodOpenApiPathItemObject } from 'zod-openapi'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
+import { StandardResponse } from '~/lib/responses'
 import {
 	BadRequestErrorSchema,
 	badRequestResponse,
@@ -194,24 +195,12 @@ const handleSketch = async (
 	formEntries: Record<string, FormDataEntryValue>,
 ): Promise<Response> => {
 	if (deviceId === undefined) {
-		return Response.json(
-			{ code: 'Bad Request', message: 'Invalid device id specified' },
-			{
-				status: 400,
-				headers: { 'Content-Type': 'application/json; charset=utf-8' },
-			},
-		)
+		return StandardResponse.badRequest('Invalid device id specified')
 	}
 
 	const box = await getDevice({ id: deviceId })
 	if (!box) {
-		return Response.json(
-			{ code: 'Not Found', message: 'Device not found' },
-			{
-				status: 404,
-				headers: { 'Content-Type': 'application/json; charset=utf-8' },
-			},
-		)
+		return StandardResponse.notFound('Device not found')
 	}
 
 	const boxForSketch = buildBoxForSketch(box, formEntries)
@@ -234,15 +223,8 @@ export const loader = async ({
 
 		return handleSketch(params.deviceId, formEntries)
 	} catch (err: any) {
-		return Response.json(
-			{
-				code: 'Internal Server Error',
-				message: err.message || 'An unexpected error occurred',
-			},
-			{
-				status: 500,
-				headers: { 'Content-Type': 'application/json; charset=utf-8' },
-			},
+		return StandardResponse.internalServerError(
+			err.message || 'An unexpected error occurred',
 		)
 	}
 }
@@ -256,15 +238,8 @@ export const action = async ({
 		const formEntries = Object.fromEntries(formData.entries())
 		return handleSketch(params.deviceId, formEntries)
 	} catch (err: any) {
-		return Response.json(
-			{
-				code: 'Internal Server Error',
-				message: err.message || 'An unexpected error occurred',
-			},
-			{
-				status: 500,
-				headers: { 'Content-Type': 'application/json; charset=utf-8' },
-			},
+		return StandardResponse.internalServerError(
+			err.message || 'An unexpected error occurred',
 		)
 	}
 }
