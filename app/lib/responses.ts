@@ -100,6 +100,14 @@ export class StandardResponse {
 		this.errorResponse('Unsupported Media Type', message, 415)
 
 	/**
+	 * Creates a response object for a bad gateway response
+	 * @param message The message for the response
+	 * @returns The response
+	 */
+	public static badGateway = (message: string): Response =>
+		this.errorResponse('Bad Gateway', message, 502)
+
+	/**
 	 * Creates a response object for an unprocessable entity
 	 * @param message The message for the response
 	 * @returns The response

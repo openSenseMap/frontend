@@ -62,6 +62,11 @@ export const internalServerErrorResponse = (
 	description = 'Internal server error.',
 ) => jsonErrorResponse(description, schema)
 
+export const badGatewayResponse = (
+	schema: ZodType,
+	description = 'Bad gateway.',
+) => jsonErrorResponse(description, schema)
+
 export const methodNotAllowedResponse = (
 	schema: ZodType,
 	description = 'Method not allowed.',

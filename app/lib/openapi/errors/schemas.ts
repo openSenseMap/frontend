@@ -72,8 +72,17 @@ export const InternalServerErrorSchema = standardErrorResponseSchema(
 	id: 'InternalServerError',
 })
 
+export const BadGatewayErrorSchema = standardErrorResponseSchema(
+	'Bad Gateway',
+	z.string().meta({
+		example: 'Upstream service unavailable.',
+	}),
+).meta({
+	id: 'BadGatewayError',
+})
+
 export const MethodNotAllowedErrorSchema = standardErrorResponseSchema(
-	'Method not allowed',
+	'Method Not Allowed',
 	z.string().meta({ example: 'Method not allowed.' }),
 ).meta({
 	id: 'MethodNotAllowedError',
