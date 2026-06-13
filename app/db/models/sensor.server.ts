@@ -1,4 +1,4 @@
-import { eq, sql, inArray, and } from 'drizzle-orm'
+import { eq, sql, inArray, and, ne, isNull } from 'drizzle-orm'
 import {
 	type Measurement,
 	sensor,
@@ -202,6 +202,44 @@ export function getSensor(id: Sensor['id']) {
 	return drizzleClient.query.sensor.findFirst({
 		where: (sensor, { eq }) => eq(sensor.id, id),
 	})
+}
+
+export type ComparableSensor = {
+	id: string
+	title: string
+	unit: string | null
+	deviceId: string
+	deviceName: string
+}
+
+export async function getComparableSensors(
+	baseSensor: Pick<Sensor, 'id' | 'title' | 'unit' | 'deviceId'>,
+): Promise<ComparableSensor[]> {
+	const conditions = [
+		eq(sensor.title, baseSensor.title),
+		ne(sensor.id, baseSensor.id),
+		ne(sensor.deviceId, baseSensor.deviceId),
+		isNull(device.archivedAt),
+	]
+
+	if (baseSensor.unit === null) {
+		conditions.push(isNull(sensor.unit))
+	} else {
+		conditions.push(eq(sensor.unit, baseSensor.unit))
+	}
+
+	return drizzleClient
+		.select({
+			id: sensor.id,
+			title: sensor.title,
+			unit: sensor.unit,
+			deviceId: sensor.deviceId,
+			deviceName: device.name,
+		})
+		.from(sensor)
+		.innerJoin(device, eq(sensor.deviceId, device.id))
+		.where(and(...conditions))
+		.orderBy(device.name)
 }
 
 export function deleteSensor(id: Sensor['id']) {

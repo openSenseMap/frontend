@@ -15,6 +15,7 @@ import 'chartjs-adapter-date-fns'
 import { Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useMemo,
+	useCallback,
 	useRef,
 	useState,
 	useEffect,
@@ -31,6 +32,15 @@ import { ColorPicker } from '../color-picker'
 import { DateRangeFilter } from '../daterange-filter'
 import { HoveredPointContext } from '../map/layers/mobile/mobile-box-layer'
 import Spinner from '../spinner'
+import {
+	Combobox,
+	ComboboxCollection,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxList,
+} from '../ui/combobox'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -57,6 +67,8 @@ ChartJS.register(
 	Filler,
 )
 
+const maxComparableDevices = 5
+
 // ClientOnly component to handle the plugin that needs window
 const GraphWithZoom = (props: any) => {
 	useMemo(() => {
@@ -77,14 +89,39 @@ const GraphWithZoom = (props: any) => {
 
 interface GraphProps {
 	aggregation: string
-	sensors: any[]
+	sensors: GraphSensor[]
+	compareCandidates?: {
+		id: string
+		title: string
+		unit: string | null
+		deviceId: string
+		deviceName: string
+	}[]
 	startDate?: string
 	endDate?: string
+}
+
+type GraphSensor = {
+	id: string
+	title: string
+	unit?: string | null
+	deviceId: string
+	deviceName?: string
+	device_name?: string
+	data: any[]
+	color: string
+}
+
+type CompareCandidate = NonNullable<GraphProps['compareCandidates']>[number]
+
+function getSensorDeviceName(sensor: GraphSensor) {
+	return sensor.deviceName ?? sensor.device_name ?? sensor.deviceId
 }
 
 export default function Graph({
 	aggregation,
 	sensors,
+	compareCandidates = [],
 	startDate,
 	endDate,
 }: GraphProps) {
@@ -136,35 +173,60 @@ export default function Graph({
 	// get theme from tailwind
 	const [theme] = 'light' //useTheme();
 
-	const [chartData, setChartData] = useState(() => {
-		const includeDeviceName =
-			sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
+	const includeDeviceName = useMemo(() => {
+		return new Set(sensors.map(getSensorDeviceName)).size > 1
+	}, [sensors])
 
-		return {
+	const useSharedYAxis = useMemo(() => {
+		const firstSensor = sensors[0]
+
+		if (!firstSensor) return true
+
+		return sensors.every(
+			(sensor) =>
+				sensor.title === firstSensor.title && sensor.unit === firstSensor.unit,
+		)
+	}, [sensors])
+
+	const selectedSensorIds = useMemo(() => {
+		return new Set(sensors.map((sensor) => sensor.id))
+	}, [sensors])
+
+	const availableCompareCandidates = useMemo(() => {
+		if (sensors.length >= maxComparableDevices) return []
+
+		return compareCandidates.filter(
+			(candidate) => !selectedSensorIds.has(candidate.id),
+		)
+	}, [compareCandidates, selectedSensorIds])
+
+	const createDatasetLabel = useCallback(
+		(sensor: GraphSensor) => {
+			if (!includeDeviceName) return sensor.title
+
+			return `${sensor.title} (${getSensorDeviceName(sensor)})`
+		},
+		[includeDeviceName],
+	)
+
+	const createChartData = useCallback(
+		(pointRadius: number) => ({
 			datasets: sensors
-				.map(
-					(
-						sensor: {
-							title: any
-							device_name: any
-							data: any[]
-							color: string
-						},
-						index: number,
-					) => {
+				.map((sensor, index: number) => {
 						const baseDataset = {
-							label: includeDeviceName
-								? `${sensor.title} (${sensor.device_name})`
-								: sensor.title,
+							label: createDatasetLabel(sensor),
+							unit: sensor.unit ?? '',
+							sensorId: sensor.id,
+							deviceName: getSensorDeviceName(sensor),
 							data: sensor.data.map((measurement) => ({
 								x: measurement.time,
 								y: measurement.value,
 								locationId: measurement.locationId,
 							})),
-							pointRadius: 3,
+							pointRadius,
 							borderColor: sensor.color,
 							backgroundColor: sensor.color,
-							yAxisID: index === 0 ? 'y' : 'y1',
+							yAxisID: useSharedYAxis || index === 0 ? 'y' : 'y1',
 							fill: false,
 							tension: 0.4,
 						}
@@ -173,6 +235,7 @@ export default function Graph({
 							const minDataset = {
 								...baseDataset,
 								label: `${baseDataset.label} (Min)`,
+								unit: sensor.unit ?? '',
 								data: sensor.data.map((measurement) => ({
 									x: measurement.time,
 									y: measurement.min_value,
@@ -186,6 +249,7 @@ export default function Graph({
 							const maxDataset = {
 								...baseDataset,
 								label: `${baseDataset.label} (Max)`,
+								unit: sensor.unit ?? '',
 								data: sensor.data.map((measurement) => ({
 									x: measurement.time,
 									y: measurement.max_value,
@@ -200,81 +264,17 @@ export default function Graph({
 						}
 
 						return [baseDataset]
-					},
-				)
+					})
 				.flat(),
-		}
-	})
+		}),
+		[sensors, createDatasetLabel, isAggregated, useSharedYAxis],
+	)
+
+	const [chartData, setChartData] = useState(() => createChartData(3))
 
 	useEffect(() => {
-		const includeDeviceName =
-			sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
-
-		setChartData({
-			datasets: sensors
-				.map(
-					(
-						sensor: {
-							title: any
-							device_name: any
-							data: any[]
-							color: string
-						},
-						index: number,
-					) => {
-						const baseDataset = {
-							label: includeDeviceName
-								? `${sensor.title} (${sensor.device_name})`
-								: sensor.title,
-							data: sensor.data.map((measurement) => ({
-								x: measurement.time,
-								y: measurement.value,
-								locationId: measurement.locationId,
-							})),
-							pointRadius: 1,
-							borderColor: sensor.color,
-							backgroundColor: sensor.color,
-							yAxisID: index === 0 ? 'y' : 'y1',
-							fill: false,
-							tension: 0.4,
-						}
-
-						if (isAggregated && sensors.length === 1) {
-							const minDataset = {
-								...baseDataset,
-								label: `${baseDataset.label} (Min)`,
-								data: sensor.data.map((measurement) => ({
-									x: measurement.time,
-									y: measurement.min_value,
-									locationId: null,
-								})),
-								borderColor: sensor.color + '33',
-								backgroundColor: sensor.color + '33',
-								fill: 1,
-							}
-
-							const maxDataset = {
-								...baseDataset,
-								label: `${baseDataset.label} (Max)`,
-								data: sensor.data.map((measurement) => ({
-									x: measurement.time,
-									y: measurement.max_value,
-									locationId: null,
-								})),
-								borderColor: sensor.color + '33',
-								backgroundColor: sensor.color + '33',
-								fill: 1,
-							}
-
-							return [maxDataset, baseDataset, minDataset]
-						}
-
-						return [baseDataset]
-					},
-				)
-				.flat(),
-		})
-	}, [sensors, isAggregated])
+		setChartData(createChartData(1))
+	}, [createChartData])
 
 	const options: ChartOptions<'scatter'> = useMemo(() => {
 		return {
@@ -353,10 +353,15 @@ export default function Graph({
 				y1: {
 					title: {
 						display: true,
-						text: sensors[1] ? sensors[1].title + ' in ' + sensors[1].unit : '', //data.sensors[1].unit
+						text: useSharedYAxis
+							? ''
+							: sensors
+									.slice(1)
+									.map((sensor) => `${sensor.title} in ${sensor.unit}`)
+									.join(' / '),
 					},
 					// type: 'linear',
-					display: 'auto',
+					display: !useSharedYAxis && sensors.length > 1,
 					position: 'right',
 					grid: {
 						drawOnChartArea: false,
@@ -387,7 +392,11 @@ export default function Graph({
 
 							setHoveredPoint(locationId)
 
-							return `${context.dataset.label}: ${context.raw.y}`
+							const unit = context.dataset.unit
+								? ` ${context.dataset.unit}`
+								: ''
+
+							return `${context.dataset.label}: ${context.raw.y}${unit}`
 						},
 					},
 				},
@@ -449,6 +458,7 @@ export default function Graph({
 		currentZoom?.xMax,
 		theme,
 		sensors,
+		useSharedYAxis,
 		chartData.datasets,
 		setHoveredPoint,
 		colorPickerState.open,
@@ -539,6 +549,23 @@ export default function Graph({
 		}
 	}
 
+	function createCompareLink(sensorId: string) {
+		const graphSearchParams = new URLSearchParams(searchParams.toString())
+		const query = graphSearchParams.toString()
+		const sensorIds = sensors
+			.map((sensor) => sensor.id)
+			.slice(0, maxComparableDevices - 1)
+
+		return `/explore/${sensors[0].deviceId}/${[...sensorIds, sensorId].join('/')}${query ? `?${query}` : ''}`
+	}
+
+	function handleCompareDeviceSelect(candidate: CompareCandidate | null) {
+		if (!candidate) return
+		if (sensors.length >= maxComparableDevices) return
+
+		void navigate(createCompareLink(candidate.id))
+	}
+
 	function handleDrag(_e: any, data: DraggableData) {
 		setOffsetPositionX(data.x)
 		setOffsetPositionY(data.y)
@@ -572,6 +599,42 @@ export default function Graph({
 							<AggregationFilter />
 						</div>
 						<div className="ml-auto flex items-center justify-end gap-4">
+							{sensors.length > 0 && (
+								<Combobox<CompareCandidate>
+									items={availableCompareCandidates}
+									value={null}
+									itemToStringLabel={(candidate) =>
+										candidate?.deviceName ?? ''
+									}
+									itemToStringValue={(candidate) => candidate?.id ?? ''}
+									onValueChange={handleCompareDeviceSelect}
+								>
+									<ComboboxInput
+										className="w-44 md:w-56"
+										placeholder={t('search_device')}
+										disabled={availableCompareCandidates.length === 0}
+										showClear
+									/>
+									<ComboboxContent align="end" className="w-64">
+										<ComboboxEmpty>{t('no_matching_devices')}</ComboboxEmpty>
+										<ComboboxList>
+											<ComboboxCollection>
+												{(candidate: CompareCandidate, index: number) => (
+													<ComboboxItem
+														key={candidate.id}
+														value={candidate}
+														index={index}
+													>
+														<span className="truncate">
+															{candidate.deviceName}
+														</span>
+													</ComboboxItem>
+												)}
+											</ComboboxCollection>
+										</ComboboxList>
+									</ComboboxContent>
+								</Combobox>
+							)}
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
@@ -620,8 +683,7 @@ export default function Graph({
 						</div>
 					</div>
 					<div className="flex min-h-0 w-full flex-1 items-center justify-center">
-						{(sensors[0].data.length === 0 && sensors[1] === undefined) ||
-						(sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
+						{sensors.every((sensor) => sensor.data.length === 0) ? (
 							<div>{t('no_data_in_range')}</div>
 						) : (
 							<ClientOnly fallback={<Spinner />}>

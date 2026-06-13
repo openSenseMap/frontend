@@ -5,7 +5,7 @@ import Graph from '~/components/device-detail/graph'
 import MobileBoxView from '~/components/map/layers/mobile/mobile-box-view'
 import { getDevice } from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
-import { getSensor } from '~/db/models/sensor.server'
+import { getComparableSensors, getSensor } from '~/db/models/sensor.server'
 import { type SensorWithMeasurementData } from '~/db/schema'
 import {
 	categorizeIntoTrips,
@@ -14,11 +14,119 @@ import {
 
 interface SensorWithColor extends SensorWithMeasurementData {
 	color: string
+	deviceName: string
+}
+
+const sensorColors = [
+	'#8da0cb',
+	'#fc8d62',
+	'#66c2a5',
+	'#e78ac3',
+	'#a6d854',
+	'#ffd92f',
+	'#e5c494',
+	'#b3b3b3',
+]
+
+const maxGraphSensors = 5
+
+function normalizeMeasurementData(
+	measurementData: {
+		sensorId: string
+		locationId: bigint | null
+		time: Date
+		value: number | null
+		location: {
+			id: bigint
+			x: number
+			y: number
+		} | null
+	}[],
+) {
+	return measurementData.map((d) => ({
+		...d,
+		locationId: d.locationId === null ? null : Number(d.locationId),
+		location: d.location
+			? {
+					...d.location,
+					id: Number(d.location.id),
+				}
+			: null,
+	}))
+}
+
+function filterLatestTripData(
+	measurementData: ReturnType<typeof normalizeMeasurementData>,
+) {
+	const dataPoints: LocationPoint[] = measurementData
+		.filter((d) => d.location !== null)
+		.map((d) => ({
+			geometry: { x: d.location!.x, y: d.location!.y },
+			time: d.time.toISOString(),
+		}))
+
+	const trips = categorizeIntoTrips(dataPoints, 600)
+	const latestTrip = trips[0]
+
+	if (!latestTrip) {
+		return measurementData
+	}
+
+	const tripStartTime = new Date(latestTrip.startTime).getTime()
+	const tripEndTime = new Date(latestTrip.endTime).getTime()
+
+	return measurementData.filter((point) => {
+		const pointTime = point.time.getTime()
+		return pointTime >= tripStartTime && pointTime <= tripEndTime
+	})
+}
+
+async function loadGraphSensor({
+	sensorId,
+	aggregation,
+	startDate,
+	endDate,
+	color,
+}: {
+	sensorId: string
+	aggregation: string
+	startDate: string | null
+	endDate: string | null
+	color: string
+}): Promise<SensorWithColor | null> {
+	const sensor = (await getSensor(sensorId)) as SensorWithColor | null
+
+	if (!sensor) return null
+
+	const sensorDevice = await getDevice({ id: sensor.deviceId })
+	const sensorData = await getMeasurement(
+		sensorId,
+		aggregation,
+		startDate ? new Date(startDate) : undefined,
+		endDate ? addDays(new Date(endDate), 1) : undefined,
+	)
+	const normalizedData = normalizeMeasurementData(sensorData as any)
+	const data =
+		sensorDevice?.exposure === 'mobile' && !startDate
+			? filterLatestTripData(normalizedData)
+			: normalizedData
+
+	sensor.data = data.map((d) => ({
+		...d,
+		sensorId,
+		locationId: d.locationId ?? null,
+		location: d.location,
+		time: d.time,
+		value: d.value ?? 0,
+	}))
+	sensor.color = color
+	sensor.deviceName = sensorDevice?.name ?? sensor.deviceId
+
+	return sensor
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
 	const { deviceId, sensorId } = params
-	const sensorId2 = params['*']
 
 	if (!deviceId) {
 		return redirect('/explore')
@@ -39,171 +147,41 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		throw new Response('Sensor 1 not found', { status: 404 })
 	}
 
-	const sensor1 = (await getSensor(sensorId)) as SensorWithColor
-	const sensor1Data = await getMeasurement(
-		sensorId,
-		aggregation,
-		startDate ? new Date(startDate) : undefined,
-		endDate ? addDays(new Date(endDate), 1) : undefined,
-	)
+	const comparisonSensorIds = Array.from(
+		new Set(
+			(params['*'] ?? '')
+				.split('/')
+				.map((id) => id.trim())
+				.filter(Boolean),
+		),
+	).slice(0, maxGraphSensors - 1)
 
-	const normalizedSensor1Data = (
-		sensor1Data as {
-			sensorId: string
-			locationId: bigint | null
-			time: Date
-			value: number | null
-			location: {
-				id: bigint
-				x: number
-				y: number
-			}
-		}[]
-	).map((d) => ({
-		...d,
-		locationId: Number(d.locationId),
-		location: d.location
-			? {
-					...d.location,
-					id: Number(d.location.id),
-				}
-			: null,
-	}))
-
-	// If device exposure is 'mobile', process trips
-	if (device.exposure === 'mobile' && !startDate) {
-		// Categorize data into trips
-		const dataPoints: LocationPoint[] = normalizedSensor1Data
-			.filter((d) => d.location !== null)
-			.map((d) => ({
-				// null locations cannot be shown on the map and have been filtered above
-				// hence the ! operator is fine here
-				geometry: { x: d.location!.x, y: d.location!.y },
-				time: d.time.toISOString(), // Ensure the time is in ISO format
-			}))
-
-		const trips = categorizeIntoTrips(dataPoints, 600) // 600 seconds (10 minutes) as the time threshold
-
-		// Get the latest 5 trips
-		const latestTrips = trips.slice(0, 1)
-
-		// Calculate the time range of the latest 5 trips
-		const latestTripTimeRange = {
-			startTime: latestTrips[0].startTime,
-			endTime: latestTrips[latestTrips.length - 1].endTime,
-		}
-
-		// Filter sensor data to include only the points within the time range of the latest 5 trips
-		const filteredData = normalizedSensor1Data.filter((point) => {
-			const pointTime = point.time.getTime()
-			const tripStartTime = new Date(latestTripTimeRange.startTime).getTime()
-			const tripEndTime = new Date(latestTripTimeRange.endTime).getTime()
-
-			// Keep only the points within the time range of the latest trips
-			return pointTime >= tripStartTime && pointTime <= tripEndTime
-		})
-
-		// Update sensor1 data with the filtered data
-		sensor1.data = filteredData.map((d) => ({
-			...d,
-			sensorId: sensorId, // Set the sensorId to match
-			locationId: d.locationId ?? null, // Retain the locationId if available
-			location: d.location,
-			time: d.time, // Keep the timestamp
-			value: d.value ?? 0, // Set value to the actual value or default it to 0
-		}))
-
-		sensor1.color = sensor1.color || '#8da0cb'
-	} else {
-		sensor1.data = normalizedSensor1Data
-		sensor1.color = sensor1.color || '#8da0cb'
-	}
-
-	let sensor2: SensorWithColor | null = null
-
-	if (sensorId2) {
-		sensor2 = (await getSensor(sensorId2)) as SensorWithColor
-		const sensor2Data = await getMeasurement(
-			sensorId2,
-			aggregation,
-			startDate ? new Date(startDate) : undefined,
-			endDate ? addDays(new Date(endDate), 1) : undefined,
+	const sensors = (
+		await Promise.all(
+			[sensorId, ...comparisonSensorIds].map((id, index) =>
+				loadGraphSensor({
+					sensorId: id,
+					aggregation,
+					startDate,
+					endDate,
+					color: sensorColors[index % sensorColors.length],
+				}),
+			),
 		)
+	).filter((sensor): sensor is SensorWithColor => sensor !== null)
 
-		const normalizedSensor2Data = (
-			sensor2Data as {
-				sensorId: string
-				locationId: bigint | null
-				time: Date
-				value: number | null
-				location: {
-					id: bigint
-					x: number
-					y: number
-				}
-			}[]
-		).map((d) => ({
-			...d,
-			locationId: Number(d.locationId),
-			location: d.location
-				? {
-						...d.location,
-						id: Number(d.location.id),
-					}
-				: null,
-		}))
+	const sensor1 = sensors[0]
 
-		if (device.exposure === 'mobile') {
-			// Categorize data into trips
-			const dataPoints: LocationPoint[] = normalizedSensor2Data
-				.filter((d) => d.location !== null)
-				.map((d) => ({
-					// null locations cannot be shown on the map and have been filtered above
-					// hence the ! operator is fine here
-					geometry: { x: d.location!.x, y: d.location!.y },
-					time: d.time.toISOString(), // Ensure the time is in ISO format
-				}))
-
-			const trips = categorizeIntoTrips(dataPoints, 600) // 600 seconds (10 minutes) as the time threshold
-
-			// Get the latest trip --- slice to get more trips if needed
-			const latestTrips = trips.slice(0, 1)
-
-			// Calculate the time range of the latest 5 trips
-			const latestTripTimeRange = {
-				startTime: latestTrips[0].startTime,
-				endTime: latestTrips[latestTrips.length - 1].endTime,
-			}
-
-			// Filter sensor data to include only the points within the time range of the latest 5 trips
-			const filteredData = normalizedSensor2Data.filter((point) => {
-				const pointTime = point.time.getTime()
-				const tripStartTime = new Date(latestTripTimeRange.startTime).getTime()
-				const tripEndTime = new Date(latestTripTimeRange.endTime).getTime()
-
-				// Keep only the points within the time range of the latest trips
-				return pointTime >= tripStartTime && pointTime <= tripEndTime
-			})
-
-			// Update sensor2 data with the filtered data
-			sensor2.data = filteredData.map((d) => ({
-				...d,
-				sensorId: sensorId2, // Set the sensorId to match
-				locationId: d.locationId ?? null, // Retain the locationId if available
-				location: d.location,
-				time: d.time, // Keep the timestamp
-				value: d.value ?? 0, // Set value to the actual value or default it to 0
-			}))
-			sensor2.color = sensor2.color || '#fc8d62'
-		} else {
-			sensor2.data = normalizedSensor2Data
-			sensor2.color = sensor2.color || '#fc8d62'
-		}
+	if (!sensor1) {
+		throw new Response('Sensor 1 not found', { status: 404 })
 	}
+
+	const compareCandidates = await getComparableSensors(sensor1)
 
 	return {
 		device,
-		sensors: sensor2 ? [sensor1, sensor2] : [sensor1],
+		sensors,
+		compareCandidates,
 		startDate,
 		endDate,
 		aggregation,
@@ -218,6 +196,7 @@ export default function SensorView() {
 			<Graph
 				aggregation={loaderData.aggregation}
 				sensors={loaderData.sensors}
+				compareCandidates={loaderData.compareCandidates}
 			/>
 			{loaderData.device?.exposure === 'mobile' && (
 				<MobileBoxView sensors={loaderData.sensors} />
