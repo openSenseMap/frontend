@@ -205,7 +205,7 @@ kbd {
 	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
 	color: var(--popover-foreground);
 	font: inherit;
-	font-weight: 600;
+	font-weight: 500;
 	line-height: 1.25;
 	max-width: 18rem;
 	overflow-wrap: anywhere;
