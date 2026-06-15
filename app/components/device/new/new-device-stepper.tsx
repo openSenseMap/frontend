@@ -10,7 +10,11 @@ import { AdvancedStep } from './advanced-info'
 import { DeviceSelectionStep } from './device-info'
 import { GeneralInfoStep } from './general-info'
 import { LocationStep } from './location-info'
-import { sensorSchema, SensorSelectionStep } from './sensors-info'
+import {
+	customDeviceSchemaUploadSchema,
+	sensorSchema,
+	SensorSelectionStep,
+} from './sensors-info'
 import { SummaryInfo } from './summary-info'
 import {
 	Breadcrumb,
@@ -43,6 +47,7 @@ const sensorsSchema = z.object({
 	selectedSensors: z
 		.array(sensorSchema)
 		.min(1, 'Please select at least one sensor'),
+	deviceSchema: customDeviceSchemaUploadSchema,
 })
 
 const advancedSchema = z.record(z.string(), z.any())

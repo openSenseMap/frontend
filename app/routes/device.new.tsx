@@ -57,6 +57,7 @@ export async function action({ request }: Route.ActionArgs) {
 					unit: sensor.unit,
 					icon: sensor.icon,
 				})),
+				deviceSchema: data['sensor-selection'].deviceSchema,
 			}),
 		}
 

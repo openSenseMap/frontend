@@ -38,6 +38,7 @@ import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sense
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import { getSensorsForModel } from '~/lib/model-definitions'
+import { createOrReusePrivateDeviceSchemaVersionFromUpload } from './device-schema.server'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -62,6 +63,12 @@ const BASE_DEVICE_COLUMNS = {
 	sensorWikiModel: true,
 	public: true,
 	userId: true,
+	deviceSchemaVersionId: true,
+	deviceSchemaPublicId: true,
+	deviceSchemaId: true,
+	deviceSchemaName: true,
+	deviceSchemaVersion: true,
+	deviceSchemaHash: true,
 } as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
@@ -205,6 +212,12 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			useAuth: true,
 			model: true,
 			apiKey: true,
+			deviceSchemaVersionId: true,
+			deviceSchemaPublicId: true,
+			deviceSchemaId: true,
+			deviceSchemaName: true,
+			deviceSchemaVersion: true,
+			deviceSchemaHash: true,
 		},
 	})
 }
@@ -821,6 +834,7 @@ export async function createDevice(deviceData: any, userId: string) {
 
 			// Determine sensors to use
 			let sensorsToAdd = deviceData.sensors
+			let storedDeviceSchemaVersion = null
 
 			// If model and sensors are both specified, reject (backwards compatibility)
 			if (
@@ -860,6 +874,29 @@ export async function createDevice(deviceData: any, userId: string) {
 				sensorsToAdd = deviceData.sensors ?? []
 			}
 
+			if (
+				deviceData.model?.toLowerCase() === 'custom' &&
+				deviceData.deviceSchema
+			) {
+				storedDeviceSchemaVersion =
+					await createOrReusePrivateDeviceSchemaVersionFromUpload(
+						tx,
+						userId,
+						deviceData.deviceSchema,
+					)
+
+				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
+			}
+
+			const schemaTag = storedDeviceSchemaVersion
+				? `schema:${storedDeviceSchemaVersion.schemaSlug}`
+				: null
+			const tags = [...(deviceData.tags ?? [])]
+
+			if (schemaTag && !tags.includes(schemaTag)) {
+				tags.push(schemaTag)
+			}
+
 			// Create the device
 			const [createdDevice] = await tx
 				.insert(device)
@@ -867,7 +904,7 @@ export async function createDevice(deviceData: any, userId: string) {
 					id: deviceData.id,
 					useAuth: deviceData.useAuth ?? true,
 					model: deviceData.model,
-					tags: deviceData.tags,
+					tags,
 					userId: userId,
 					name: deviceData.name,
 					description: deviceData.description,
@@ -880,6 +917,12 @@ export async function createDevice(deviceData: any, userId: string) {
 						: null,
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
+					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
+					deviceSchemaPublicId: storedDeviceSchemaVersion?.schemaSlug,
+					deviceSchemaId: storedDeviceSchemaVersion?.content.id,
+					deviceSchemaName: storedDeviceSchemaVersion?.schemaName,
+					deviceSchemaVersion: storedDeviceSchemaVersion?.version,
+					deviceSchemaHash: storedDeviceSchemaVersion?.hash,
 				})
 				.returning()
 
@@ -902,6 +945,9 @@ export async function createDevice(deviceData: any, userId: string) {
 							unit: sensorData.unit,
 							sensorType: sensorData.sensorType,
 							icon: sensorData.icon,
+							sensorWikiType: sensorData.sensorWikiType,
+							sensorWikiPhenomenon: sensorData.sensorWikiPhenomenon,
+							sensorWikiUnit: sensorData.sensorWikiUnit,
 							deviceId: createdDevice.id,
 						})
 						.returning()
