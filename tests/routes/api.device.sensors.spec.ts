@@ -361,7 +361,7 @@ describe('Device Sensors API: updating sensors', () => {
 
 		expect(response.status).toBe(400)
 		const data = await response.json()
-		expect(data.code).toBe('BadRequest')
+		expect(data.code).toBe('Bad Request')
 		expect(data.message).toContain('Unable to delete sensor')
 
 		const unchangedDevice = await getDevice({ id: queryableDevice.id })
