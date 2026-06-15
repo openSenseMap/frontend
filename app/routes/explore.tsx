@@ -333,7 +333,7 @@ export default function Explore() {
 				closeOnClick: false,
 				closeOnMove: true,
 				anchor: 'left',
-				offset: [15, 0],
+				offset: [15, -25],
 				className: 'device-name-popup',
 			}),
 		[],
