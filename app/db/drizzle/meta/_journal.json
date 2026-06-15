@@ -302,6 +302,13 @@
       "when": 1778596447793,
       "tag": "0042_medical_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1781510400000,
+      "tag": "0043_device_schemas",
+      "breakpoints": true
     }
   ]
 }
