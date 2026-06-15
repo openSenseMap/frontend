@@ -28,3 +28,9 @@ export const DeviceModelEnum = pgEnum('model', [
 	'luftdaten.info',
 	'custom',
 ])
+
+export const themePreference = pgEnum('theme_preference', [
+	'light',
+	'dark',
+	'system',
+])

@@ -136,7 +136,7 @@ export function LocationStep() {
 				</BaseMap>
 			</div>
 
-			<div className="flex w-full items-center justify-around bg-gray-50 p-4 dark:bg-gray-800">
+			<div className="bg-background flex w-full items-center justify-around p-4">
 				<div>
 					<Label htmlFor="latitude">{t('latitude')}</Label>
 					<Input
