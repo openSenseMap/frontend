@@ -317,7 +317,7 @@ export default function EditLocation() {
 									<Marker
 										longitude={currentLocation.longitude}
 										latitude={currentLocation.latitude}
-										anchor="bottom"
+										anchor="center"
 										draggable
 										onDrag={onMarkerDrag}
 									/>

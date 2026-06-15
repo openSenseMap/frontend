@@ -30,6 +30,8 @@ const generateMinimalDevice = () => ({
 
 describe('Device Sensors API: updating sensors', () => {
 	beforeAll(async () => {
+		await deleteUserByEmail(DEVICE_TEST_USER.email)
+
 		const registration = await registerUser(
 			DEVICE_TEST_USER.name,
 			DEVICE_TEST_USER.email,
@@ -88,7 +90,10 @@ describe('Device Sensors API: updating sensors', () => {
 	})
 
 	afterAll(async () => {
-		await deleteDevice({ id: queryableDevice.id })
+		if (queryableDevice) {
+			await deleteDevice({ id: queryableDevice.id })
+		}
+
 		await deleteUserByEmail(DEVICE_TEST_USER.email)
 	})
 
@@ -356,7 +361,7 @@ describe('Device Sensors API: updating sensors', () => {
 
 		expect(response.status).toBe(400)
 		const data = await response.json()
-		expect(data.code).toBe('BadRequest')
+		expect(data.code).toBe('Bad Request')
 		expect(data.message).toContain('Unable to delete sensor')
 
 		const unchangedDevice = await getDevice({ id: queryableDevice.id })

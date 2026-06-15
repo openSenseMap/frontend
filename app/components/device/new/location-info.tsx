@@ -2,9 +2,9 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
+	GeolocateControl,
 	Marker,
 	NavigationControl,
-	GeolocateControl,
 	type MapRef,
 	type MarkerDragEvent,
 } from 'react-map-gl/maplibre'
@@ -124,9 +124,14 @@ export function LocationStep() {
 					)}
 					<NavigationControl position="top-right" showCompass={false} />
 					<GeolocateControl
-						position="top-right"
-						showAccuracyCircle={true}
-						trackUserLocation={true}
+						position="bottom-right"
+						positionOptions={{
+							enableHighAccuracy: true,
+							timeout: 10_000,
+						}}
+						fitBoundsOptions={{
+							maxZoom: 14,
+						}}
 					/>
 				</BaseMap>
 			</div>

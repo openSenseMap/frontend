@@ -13,7 +13,7 @@ import {
 import { formatCount } from '~/lib/numbers'
 import { getInitials } from '~/lib/strings'
 import { getUserId } from '~/services/session-service.server'
-import { claimBox } from '~/services/transfer-service.server'
+import { claimDevice } from '~/services/transfer-service.server'
 import { userNameFromURl } from '~/services/user-service.server'
 
 type ActionData = {
@@ -94,7 +94,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	}
 
 	try {
-		const result = await claimBox(userId, token)
+		const result = await claimDevice(userId, token)
 
 		return {
 			success: true,
