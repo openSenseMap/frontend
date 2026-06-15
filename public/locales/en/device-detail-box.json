@@ -8,7 +8,5 @@
 	"open_external_link": "Open external link",
 	"description": "Description",
 	"sensors": "Sensors",
-	"compare_devices": "Compare devices",
-	"choose_device_for_comparison": "Choose a device on the map to compare with.",
 	"open_device_details": "Open device details"
 }

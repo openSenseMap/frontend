@@ -10,6 +10,9 @@
 	"apply": "Apply",
 	"no_data_in_range": "There is no data for the selected time period.",
 	"reset_zoom": "Reset zoom",
+	"add_device_to_graph": "Add another device to this graph",
+	"search_device": "Add device...",
+	"no_matching_devices": "No other devices with this sensor found",
 	"dateRanges": {
 		"last-30-minutes": "Last 30 minutes",
 		"last-1-hour": "Last 1 hour",
