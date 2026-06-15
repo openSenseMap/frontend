@@ -82,5 +82,6 @@
 	"saving": "Speichern...",
 	"confirm_email_change": "Änderung der E-Mail Adresse bestätigen",
 	"confirm_email_change_description": "Bitte gib dein aktuelles Passwort ein.",
-	"theme_description": "Entscheide selbst, wie OpenSenseMap für dich aussehen soll."
+	"theme_description": "Entscheide selbst, wie openSenseMap für dich aussehen soll.",
+	"theme": "Erscheinungsbild"
 }
