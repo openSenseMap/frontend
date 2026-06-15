@@ -171,7 +171,10 @@ export const loader = async ({
 			return {
 				coordinates: [location.x, location.y],
 				type: 'Point',
-				timestamp: location.time,
+				timestamp:
+					location.time instanceof Date
+						? location.time.toISOString()
+						: location.time,
 			}
 		})
 
@@ -200,7 +203,14 @@ export const loader = async ({
 			},
 		}
 
-		return Response.json(geoJsonLocations, responseInit)
+		const geoJsonResponseParsed =
+			GeoJsonLineStringResponseSchema.safeParse(geoJsonLocations)
+
+		if (!geoJsonResponseParsed.success) {
+			return StandardResponse.internalServerError()
+		}
+
+		return Response.json(geoJsonResponseParsed.data, responseInit)
 	} catch {
 		return StandardResponse.internalServerError()
 	}
