@@ -33,10 +33,16 @@ const convertFilePathToApiPath = (filePath: string) => {
 }
 
 export const generateOpenApiPathsSpec = (): ZodOpenApiPathsObject => {
-	const routes = import.meta.glob<{
-		openapi?: ZodOpenApiPathItemObject
-		[key: string]: any
-	}>('/app/routes/api.*.ts', { eager: true })
+	const routes = {
+		...import.meta.glob<{
+			openapi?: ZodOpenApiPathItemObject
+			[key: string]: any
+		}>('/app/routes/api.ts', { eager: true }),
+		...import.meta.glob<{
+			openapi?: ZodOpenApiPathItemObject
+			[key: string]: any
+		}>('/app/routes/api.*.ts', { eager: true }),
+	}
 
 	const paths: ZodOpenApiPathsObject = {}
 
