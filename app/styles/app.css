@@ -198,6 +198,40 @@ kbd {
 	white-space: nowrap;
 }
 
+.device-name-popup .maplibregl-popup-content {
+	background: var(--popover);
+	border: 1px solid var(--border);
+	border-radius: 0.375rem;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+	color: var(--popover-foreground);
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.25;
+	max-width: 18rem;
+	overflow-wrap: anywhere;
+	padding: 0.375rem 0.625rem;
+}
+
+.device-name-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.device-name-popup.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.device-name-popup.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+	border-bottom-color: var(--popover);
+}
+
+.device-name-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.device-name-popup.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.device-name-popup.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+	border-top-color: var(--popover);
+}
+
+.device-name-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+	border-right-color: var(--popover);
+}
+
+.device-name-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+	border-left-color: var(--popover);
+}
+
 .map-space-shell {
 	position: fixed;
 	inset: 0;
