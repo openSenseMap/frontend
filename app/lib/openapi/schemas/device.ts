@@ -42,12 +42,25 @@ export const ApiSensorSchema = z
 
 export const DeviceSensorUpdateSchema = z
 	.object({
-		id: z.string().optional().meta({
-			description: 'Existing sensor id. Omit when creating a new sensor.',
+		_id: z.string().optional().meta({
+			description: 'Existing sensor id in legacy API format.',
 			example: '60a13611a877b3001b8ffd59',
 		}),
-		new: z.boolean().optional().meta({
+		id: z.string().optional().meta({
+			description:
+				'Existing sensor id. `_id` is used by the legacy API and is preferred for backwards compatibility.',
+			example: '60a13611a877b3001b8ffd59',
+		}),
+		new: z.union([z.literal(true), z.literal('true')]).optional().meta({
 			description: 'Whether this sensor should be created as new.',
+			example: true,
+		}),
+		edited: z.union([z.literal(true), z.literal('true')]).optional().meta({
+			description: 'Whether this sensor should be created or updated.',
+			example: true,
+		}),
+		deleted: z.union([z.literal(true), z.literal('true')]).optional().meta({
+			description: 'Whether this sensor should be deleted.',
 			example: true,
 		}),
 		title: z.string().optional().meta({
@@ -59,7 +72,15 @@ export const DeviceSensorUpdateSchema = z
 		sensorType: z.string().optional().meta({
 			example: 'SDS 011',
 		}),
+		icon: z.string().optional().meta({
+			description: 'Visual representation of this sensor.',
+			example: 'osem-thermometer',
+		}),
 	})
+	.transform(({ id, ...sensor }) => ({
+		...sensor,
+		...(sensor._id ?? id ? { _id: sensor._id ?? id } : {}),
+	}))
 	.meta({
 		id: 'DeviceSensorUpdate',
 		description: 'Sensor update or creation payload.',
