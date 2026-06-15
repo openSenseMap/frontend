@@ -30,6 +30,8 @@ const generateMinimalDevice = () => ({
 
 describe('Device Sensors API: updating sensors', () => {
 	beforeAll(async () => {
+		await deleteUserByEmail(DEVICE_TEST_USER.email)
+
 		const registration = await registerUser(
 			DEVICE_TEST_USER.name,
 			DEVICE_TEST_USER.email,
@@ -88,7 +90,10 @@ describe('Device Sensors API: updating sensors', () => {
 	})
 
 	afterAll(async () => {
-		await deleteDevice({ id: queryableDevice.id })
+		if (queryableDevice) {
+			await deleteDevice({ id: queryableDevice.id })
+		}
+
 		await deleteUserByEmail(DEVICE_TEST_USER.email)
 	})
 
