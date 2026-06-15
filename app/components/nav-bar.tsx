@@ -68,6 +68,12 @@ export function NavBar() {
 											</DropdownMenuItem>
 										</Link>
 
+										<Link to="/campaigns/new">
+											<DropdownMenuItem>
+												<span>{t('new_campaign')}</span>
+											</DropdownMenuItem>
+										</Link>
+
 										<Link to="/device/transfer">
 											<DropdownMenuItem>
 												<span>{t('transfer_device')}</span>

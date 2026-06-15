@@ -7,6 +7,7 @@ import {
 import { pgTable, boolean, text, timestamp } from 'drizzle-orm/pg-core'
 import { v4 as uuidv4 } from 'uuid'
 import { actionToken } from './action-token'
+import { campaign } from './campaign'
 import { device } from './device'
 import { password } from './password'
 import { profile } from './profile'
@@ -48,6 +49,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
 		references: [profile.userId],
 	}),
 	devices: many(device),
+	campaigns: many(campaign),
 	refreshToken: many(refreshToken),
 	actionTokens: many(actionToken),
 }))

@@ -302,6 +302,20 @@
       "when": 1778596447793,
       "tag": "0042_medical_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1781350388023,
+      "tag": "0043_perpetual_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1781371199115,
+      "tag": "0044_magenta_the_professor",
+      "breakpoints": true
     }
   ]
 }
