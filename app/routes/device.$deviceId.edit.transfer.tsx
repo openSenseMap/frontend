@@ -14,8 +14,8 @@ import { getDevice } from '~/db/models/device.server'
 import { type Claim } from '~/db/schema'
 import { getUserId } from '~/services/session-service.server'
 import {
-	getBoxTransfer,
-	createBoxTransfer,
+	getDeviceTransfer,
+	createDeviceTransfer,
 } from '~/services/transfer-service.server'
 
 type LoaderData = {
@@ -55,7 +55,7 @@ export async function loader({
 	let existingTransfer: Claim | null = null
 
 	try {
-		existingTransfer = await getBoxTransfer(userId, deviceId)
+		existingTransfer = await getDeviceTransfer(userId, deviceId)
 	} catch (err) {
 		const message = err instanceof Error ? err.message : ''
 		if (
@@ -121,7 +121,7 @@ export async function action({
 	expiresAt.setDate(expiresAt.getDate() + days)
 
 	try {
-		const transfer = await createBoxTransfer(
+		const transfer = await createDeviceTransfer(
 			userId,
 			deviceId,
 			expiresAt.toISOString(),
@@ -242,7 +242,7 @@ export default function EditDeviceTransfer() {
 						<button
 							type="submit"
 							disabled={isSubmitting || existingTransfer !== null}
-							className="my-4 block w-full rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[12px] py-[6px] text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c] disabled:cursor-not-allowed disabled:opacity-70"
+							className="my-4 block w-full rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-3 py-1.5 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c] disabled:cursor-not-allowed disabled:opacity-70"
 						>
 							{isSubmitting ? t('submitting') : t('submit')}
 						</button>
