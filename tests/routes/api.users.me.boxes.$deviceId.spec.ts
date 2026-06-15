@@ -107,7 +107,7 @@ describe('openSenseMap API Routes: /users', () => {
 				// Assert: Forbidden response
 				expect(forbiddenResponse.status).toBe(403)
 				expect(forbiddenBody.code).toBe('Forbidden')
-				expect(forbiddenBody.message).toBe('User does not own this senseBox')
+				expect(forbiddenBody.message).toBe('User does not own this device')
 			})
 
 			afterAll(async () => {

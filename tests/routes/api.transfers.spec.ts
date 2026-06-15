@@ -1,15 +1,15 @@
-import { type Route } from '../../.react-router/types/app/routes/+types/api.transfer'
-import { type Route as TransferDetailRoute } from '../../.react-router/types/app/routes/+types/api.transfer.$deviceId'
+import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.transfer'
+import { type Route as TransferDetailRoute } from '../../.react-router/types/app/routes/+types/api.boxes.transfer.$deviceId'
 import { BASE_URL } from '../../vitest.setup'
 import { createDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { type Device, type User } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
-import { action as transferAction } from '~/routes/api.transfer'
+import { action as transferAction } from '~/routes/api.boxes.transfer'
 import {
 	action as transferUpdateAction,
 	loader as transferLoader,
-} from '~/routes/api.transfer.$deviceId'
+} from '~/routes/api.boxes.transfer.$deviceId'
 import { registerUser } from '~/services/user-service.server'
 
 const TRANSFER_TEST_USER = {
@@ -88,7 +88,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			expect(response.status).toBe(201)
 			expect(body).toHaveProperty(
 				'message',
-				'Box successfully prepared for transfer',
+				'Device successfully prepared for transfer',
 			)
 			expect(body).toHaveProperty('data')
 			expect(body.data).toBeDefined()

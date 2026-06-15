@@ -34,8 +34,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		}
 
 		return StandardResponse.forbidden('Invalid or expired confirmation token.')
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }
