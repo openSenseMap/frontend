@@ -1,7 +1,7 @@
 import { type Route } from './+types/api.users.refresh-auth'
 import { getUserFromJwt, hashJwt, refreshJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
 	forbiddenResponse,
@@ -12,6 +12,7 @@ import {
 import { UserSchema } from '~/lib/openapi/schemas/user'
 import { transformUserToApiFormat } from '~/lib/user-transform'
 import { parseBearerToken, parseRefreshAuthBody } from '~/lib/request-parsing'
+import { AuthTokensSchema } from '~/lib/openapi/schemas/auth'
 
 const errorMessages = {
 	tokenRequired: 'You must specify a token to refresh',
@@ -39,32 +40,18 @@ export const RefreshAuthRequestSchema = z
 			'Refresh authentication request body. Can be submitted as JSON or form data.',
 	})
 
-const JwtTokenSchema = z.jwt({ alg: 'HS256' }).meta({
-	description: 'JWT access token',
-	example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-})
-
-const RefreshAuthResponseSchema = z
-	.object({
-		code: z.literal('Authorized').default('Authorized'),
-		message: z
-			.literal('Successfully refreshed auth')
+const RefreshAuthResponseSchema = AuthTokensSchema.extend({
+	code: z.literal('Authorized').default('Authorized'),
+	message: z
+		.literal('Successfully refreshed auth')
 			.default('Successfully refreshed auth'),
-		data: z.object({
-			user: UserSchema,
-		}),
-		token: JwtTokenSchema.meta({
-			description: 'New JWT access token',
-		}),
-		refreshToken: z.string().meta({
-			description: 'New refresh token',
-			example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-		}),
-	})
-	.meta({
-		id: 'RefreshAuthResponse',
-		description: 'Successfully refreshed authentication response.',
-	})
+	data: z.object({
+		user: UserSchema,
+	}),
+}).meta({
+	id: 'RefreshAuthResponse',
+	description: 'Successfully refreshed authentication response.',
+})
 
 const RefreshAuthForbiddenErrorSchema = standardErrorResponseSchema(
 	'Forbidden',

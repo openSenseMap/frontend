@@ -36,6 +36,28 @@ export const PasswordConfirmationRequestSchema = z
 		description: 'Password confirmation payload.',
 	})
 
+export const JwtAccessTokenSchema = z.jwt({ alg: 'HS256' }).meta({
+	id: 'JwtAccessToken',
+	description: 'JWT access token',
+	example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+})
+
+export const RefreshTokenSchema = z.string().min(1).meta({
+	id: 'RefreshToken',
+	description: 'Refresh token bound to a JWT access token.',
+	example: 'Wk9qVnlYNjdrMlBpcEVvWjZoZVVGUlQ4WURwRUc=',
+})
+
+export const AuthTokensSchema = z
+	.object({
+		token: JwtAccessTokenSchema,
+		refreshToken: RefreshTokenSchema,
+	})
+	.meta({
+		id: 'AuthTokens',
+		description: 'Access token and refresh token pair.',
+	})
+
 export const BearerTokenSchema = z
 	.string()
 	.trim()

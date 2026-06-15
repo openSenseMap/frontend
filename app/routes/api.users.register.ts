@@ -22,7 +22,11 @@ import {
 	requestContentTypeJsonOrForm,
 	responseContentTypeJson,
 } from '~/middleware/content-type-header.server'
-import { NewPasswordSchema } from '~/lib/openapi/schemas/auth'
+import {
+	AuthTokensSchema,
+	NewPasswordSchema,
+} from '~/lib/openapi/schemas/auth'
+import { transformUserToApiFormat } from '~/lib/user-transform'
 
 const RegistrationNameSchema = z
 	.string()
@@ -58,32 +62,20 @@ const RegisterUserRequestSchema = z
 		description: 'Payload for registering a new user.',
 	})
 
-const RegisterUserResponseSchema = z
-	.object({
-		code: z.literal('Created').default('Created'),
+const RegisterUserResponseSchema = AuthTokensSchema.extend({
+	code: z.literal('Created').default('Created'),
 
-		message: z
+	message: z
 			.literal('Successfully registered new user')
 			.default('Successfully registered new user'),
 
-		token: z.jwt({ alg: 'HS256' }).meta({
-			description: 'JWT access token',
-			example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-		}),
-
-		refreshToken: z.string().meta({
-			description: 'Refresh token',
-			example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-		}),
-
-		data: z.object({
-			user: UserSchema,
-		}),
-	})
-	.meta({
-		id: 'RegisterUserResponse',
-		description: 'Successfully registered user response.',
-	})
+	data: z.object({
+		user: UserSchema,
+	}),
+}).meta({
+	id: 'RegisterUserResponse',
+	description: 'Successfully registered user response.',
+})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
@@ -195,12 +187,21 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		try {
 			const { token, refreshToken } = await createToken(user)
 
-			return StandardResponse.created({
+			const responseParsed = await RegisterUserResponseSchema.safeParseAsync({
+				code: 'Created',
 				message: 'Successfully registered new user',
 				token,
 				refreshToken,
-				data: user,
+				data: {
+					user: transformUserToApiFormat(user),
+				},
 			})
+
+			if (!responseParsed.success) {
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.created(responseParsed.data)
 		} catch (err) {
 			return StandardResponse.internalServerError(
 				`Unable to create jwt for newly created user: ${(err as Error)?.message}`,

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 import { type Route } from './+types/api.users.sign-in'
 import { StandardResponse } from '~/lib/responses'
 import { signIn } from '~/services/user-service.server'
@@ -8,9 +8,13 @@ import {
 	responseContentTypeJson,
 } from '~/middleware/content-type-header.server'
 import {
+	InternalServerErrorSchema,
 	UnsupportedMediaTypeErrorSchema,
+	forbiddenResponse,
+	internalServerErrorResponse,
 	unsupportedMediaTypeResponse,
 } from '~/lib/openapi/errors'
+import { AuthTokensSchema } from '~/lib/openapi/schemas/auth'
 
 const errorMessages = {
 	email: 'You must specify either your email or your username',
@@ -29,7 +33,7 @@ const SignInRequestSchema = z.object({
 	}),
 })
 
-const SignInResponseSchema = z.object({
+const SignInResponseSchema = AuthTokensSchema.extend({
 	data: z.object(
 		{
 			user: z.object({
@@ -49,17 +53,30 @@ const SignInResponseSchema = z.object({
 		},
 		errorMessages.userAndOrPassword,
 	),
-	token: z.jwt({ alg: 'HS256', error: errorMessages.userAndOrPassword }).meta({
-		description: 'valid json web token',
-	}),
-	refreshToken: z.string(errorMessages.userAndOrPassword).meta({
-		description: 'valid json web token',
-	}),
 	code: z.literal('Authorized').default('Authorized'),
 	message: z
 		.literal('Successfully signed in')
 		.default('Successfully signed in'),
 })
+
+const SignInForbiddenErrorSchema = z
+	.object({
+		code: z.literal('Forbidden'),
+		message: z.xor([
+			z.literal(errorMessages.email),
+			z.literal(errorMessages.password),
+			z.literal(errorMessages.userAndOrPassword),
+		]),
+		error: z.xor([
+			z.literal(errorMessages.email),
+			z.literal(errorMessages.password),
+			z.literal(errorMessages.userAndOrPassword),
+		]),
+	})
+	.meta({
+		id: 'SignInForbiddenError',
+		description: 'Sign-in validation or authentication failure.',
+	})
 
 export const openapi: ZodOpenApiPathItemObject = {
 	post: {
@@ -78,46 +95,18 @@ export const openapi: ZodOpenApiPathItemObject = {
 					'application/json': { schema: SignInResponseSchema },
 				},
 			},
-			403: {
-				description: 'Unauthorized',
-				content: {
-					'application/json': {
-						schema: z.object({
-							code: z.literal('Forbidden'),
-							message: z.xor([
-								z.literal(errorMessages.email),
-								z.literal(errorMessages.password),
-								z.literal(errorMessages.userAndOrPassword),
-							]),
-							error: z.xor([
-								z.literal(errorMessages.email),
-								z.literal(errorMessages.password),
-								z.literal(errorMessages.userAndOrPassword),
-							]),
-						}),
-					},
-				},
-			},
+			403: forbiddenResponse(
+				SignInForbiddenErrorSchema,
+				'Sign-in validation or authentication failed.',
+			),
 			415: unsupportedMediaTypeResponse(
 				UnsupportedMediaTypeErrorSchema,
 				'Unsupported content-type. Try application/json.',
 			),
-			500: {
-				description: 'Internal Server Error',
-				content: {
-					'application/json': {
-						schema: z.object({
-							code: z.literal('Internal Server Error'),
-							message: z.literal(
-								'The server was unable to complete your request. Please try again later.',
-							),
-							error: z.literal(
-								'The server was unable to complete your request. Please try again later.',
-							),
-						}),
-					},
-				},
-			},
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
 		},
 	},
 }
@@ -136,7 +125,13 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			return StandardResponse.forbidden(requestParsed.error.issues[0].message)
 
 		const { email, password } = requestParsed.data
-		const { user, jwt, refreshToken } = (await signIn(email, password)) || {}
+		const signInResult = await signIn(email, password)
+
+		if (!signInResult) {
+			return StandardResponse.forbidden(errorMessages.userAndOrPassword)
+		}
+
+		const { user, jwt, refreshToken } = signInResult
 
 		const responseParsed = await SignInResponseSchema.safeParseAsync({
 			data: { user },
@@ -144,7 +139,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			refreshToken,
 		})
 		if (!responseParsed.success)
-			return StandardResponse.forbidden(responseParsed.error.issues[0].message)
+			return StandardResponse.internalServerError()
 
 		return StandardResponse.ok(responseParsed.data)
 	} catch {
