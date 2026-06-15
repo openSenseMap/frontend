@@ -2,7 +2,7 @@
 	"sensor_delete_warning": "Die von den Sensoren gemessenen Daten, die du löschen möchtest, werden ebenfalls gelöscht. Wenn du neue Sensoren hinzufügst, vergiss nicht, dein neues Skript abzurufen (siehe Registerkarte „Skript“).",
 	"copied": "kopiert",
 	"sensor_id_copied": "Sensor ID in Zwischenablage kopiert",
-	"cipy_failed": "Kopieren fehlgeschlagen",
+	"copy_failed": "Kopieren fehlgeschlagen",
 	"copy_failed_desc": "Die Sensor ID wurde nicht kopiert.",
 	"phenomenon": "Phänomen",
 	"unit": "Einheit",
