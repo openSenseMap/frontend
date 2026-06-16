@@ -41,6 +41,7 @@ import PasswordResetEmail, {
 	subject as PasswordResetEmailSubject,
 } from '~/emails/password-reset'
 import { subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
+import { syncNewsletterSubscriptionWithMailgun } from '~/services/newsletter-service.server'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -79,6 +80,7 @@ export const registerUser = async (
 	password: string,
 	language: 'de_DE' | 'en_US',
 	tosAccepted: boolean,
+	newsletterOptIn = false,
 ): Promise<RegisterUserResult> => {
 	const normalizedUsername = username.trim()
 	const normalizedEmail = email.trim().toLowerCase()
@@ -158,6 +160,7 @@ export const registerUser = async (
 		language,
 		password,
 		tos.id,
+		newsletterOptIn,
 	)
 
 	if (newUsers.length === 0) {
@@ -175,6 +178,14 @@ export const registerUser = async (
 
 	const newUser = newUsers[0]
 	const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+
+	if (newUser.newsletterOptIn) {
+		try {
+			await syncNewsletterSubscriptionWithMailgun(newUser)
+		} catch (err) {
+			console.error('Failed to sync newsletter subscription:', err)
+		}
+	}
 
 	const token = await issueEmailConfirmationToken(newUser.id)
 
@@ -222,6 +233,7 @@ export const updateUserDetails = async (
 		name?: string
 		currentPassword?: string
 		newPassword?: string
+		newsletterOptIn?: boolean
 	},
 ): Promise<{
 	updated: boolean
@@ -229,7 +241,14 @@ export const updateUserDetails = async (
 	messages: string[]
 	updatedUser: User
 }> => {
-	const { email, language, name, currentPassword, newPassword } = details
+	const {
+		email,
+		language,
+		name,
+		currentPassword,
+		newPassword,
+		newsletterOptIn,
+	} = details
 	const messages: string[] = []
 
 	if (email && newPassword) {
@@ -347,6 +366,18 @@ export const updateUserDetails = async (
 		await revokeToken(user, jwtString)
 		messages.push('Password changed. Please sign in with your new password')
 		signOut = true
+		hasChanges = true
+	}
+
+	if (
+		typeof newsletterOptIn === 'boolean' &&
+		user.newsletterOptIn !== newsletterOptIn
+	) {
+		const updatedUser = await updateUserPreferencesById(user.id, {
+			newsletterOptIn,
+		})
+		await syncNewsletterSubscriptionWithMailgun(updatedUser)
+		messages.push('Newsletter preference changed.')
 		hasChanges = true
 	}
 

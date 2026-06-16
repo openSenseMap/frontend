@@ -121,13 +121,16 @@ export async function updateUserPassword(
 type UpdateUserPreferencesArgs = {
 	language?: User['language']
 	themePreference?: ThemePreference
+	newsletterOptIn?: User['newsletterOptIn']
 }
 
 export async function updateUserPreferencesById(
 	id: User['id'],
 	args: UpdateUserPreferencesArgs,
 ) {
-	const values: Partial<Pick<User, 'language' | 'themePreference'>> = {}
+	const values: Partial<
+		Pick<User, 'language' | 'themePreference' | 'newsletterOptIn'>
+	> = {}
 
 	if (args.language !== undefined) {
 		values.language = args.language
@@ -135,6 +138,10 @@ export async function updateUserPreferencesById(
 
 	if (args.themePreference !== undefined) {
 		values.themePreference = args.themePreference
+	}
+
+	if (args.newsletterOptIn !== undefined) {
+		values.newsletterOptIn = args.newsletterOptIn
 	}
 
 	if (Object.keys(values).length === 0) {
@@ -234,6 +241,7 @@ export async function createUser(
 	language: User['language'],
 	password: string,
 	tosVersionId?: string,
+	newsletterOptIn = false,
 ) {
 	const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13) // make salt_factor configurable oSeM API uses 13 by default
 
@@ -247,6 +255,7 @@ export async function createUser(
 				unconfirmedEmail: email,
 				acceptedTosVersionId: tosVersionId,
 				acceptedTosAt: new Date(),
+				newsletterOptIn,
 			})
 			.returning()
 		await t.insert(passwordTable).values({

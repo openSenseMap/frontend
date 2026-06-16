@@ -167,6 +167,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		const email = data.email
 		const password = data.password
 		const language = data.language as 'de_DE' | 'en_US'
+		const newsletterOptIn = data.newsletterOptIn
 
 		const registration = await registerUser(
 			username,
@@ -174,6 +175,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			password,
 			language,
 			true,
+			newsletterOptIn,
 		)
 
 		if (!registration.ok) {
