@@ -115,7 +115,10 @@ export async function action({
 		}
 	}
 
-	const updatedProfile = await updateProfile(profile.id, displayName, isPublic)
+	const updatedProfile = await updateProfile(profile.id, {
+		displayName,
+		public: isPublic,
+	})
 
 	if (!updatedProfile) {
 		return {
