@@ -167,13 +167,18 @@ export function addNewSensor({
 	title,
 	unit,
 	sensorType,
+	icon,
 	deviceId,
 	order,
-}: Pick<Sensor, 'title' | 'unit' | 'sensorType' | 'deviceId' | 'order'>) {
+}: Pick<
+	Sensor,
+	'title' | 'unit' | 'sensorType' | 'icon' | 'deviceId' | 'order'
+>) {
 	return drizzleClient.insert(sensor).values({
 		title,
 		unit,
 		sensorType,
+		icon,
 		deviceId,
 		order,
 	})
@@ -184,14 +189,16 @@ export function updateSensor({
 	title,
 	unit,
 	sensorType,
+	icon,
 	order,
-}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'order'>) {
+}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'icon' | 'order'>) {
 	return drizzleClient
 		.update(sensor)
 		.set({
 			title,
 			unit,
 			sensorType,
+			icon,
 			order,
 		})
 		.where(eq(sensor.id, id))
