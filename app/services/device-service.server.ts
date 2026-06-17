@@ -101,6 +101,7 @@ export const CreateDeviceServiceSchema = z
 			)
 			.optional(),
 		deviceSchema: uploadedDeviceSchemaV1.optional(),
+		deviceSchemaVersionId: z.string().optional(),
 	})
 	.refine((data) => !(data.model && data.sensors && data.model !== 'custom'), {
 		message: 'Model and sensors cannot be specified at the same time.',
