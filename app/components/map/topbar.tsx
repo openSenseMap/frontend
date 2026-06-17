@@ -3,20 +3,34 @@ import Menu from '../header/menu'
 import NavBar from '../header/nav-bar'
 import Info from '../header/info'
 import LanguageSelector from '../landing/header/language-selector'
-import { TooltipProvider } from '../ui/tooltip'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '../ui/tooltip'
 import ThemeToggle from '../landing/header/theme-toggle'
+import { MapPinned } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Button } from '../ui/button'
 
 interface MapHeaderProps {
 	devices: any
 	measurementCount: number | undefined
 	onHomeClick?: () => void
+	onMyAreaClick?: () => void
+	canFocusMyArea?: boolean
 }
 
 export default function MapHeader({
 	devices,
 	measurementCount,
 	onHomeClick,
+	onMyAreaClick,
+	canFocusMyArea = false,
 }: MapHeaderProps) {
+	const { t } = useTranslation('menu')
+
 	return (
 		<TooltipProvider>
 			<header className="pointer-events-none absolute top-0 left-0 z-20 w-full">
@@ -27,6 +41,26 @@ export default function MapHeader({
 							measurementCount={measurementCount ?? 0}
 							onHomeClick={onHomeClick}
 						/>
+
+						{canFocusMyArea && (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										type="button"
+										variant="topbar"
+										size="topbarPill"
+										onClick={onMyAreaClick}
+										aria-label={t('zoomToMyArea')}
+									>
+										<MapPinned aria-hidden="true" />
+									</Button>
+								</TooltipTrigger>
+
+								<TooltipContent side="bottom">
+									<p>{t('zoomToMyArea')}</p>
+								</TooltipContent>
+							</Tooltip>
+						)}
 					</div>
 
 					<div className="flex min-w-0 flex-1 justify-center">
