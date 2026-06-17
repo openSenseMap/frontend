@@ -38,7 +38,10 @@ import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sense
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import { getSensorsForModel } from '~/lib/model-definitions'
-import { createOrReusePrivateDeviceSchemaVersionFromUpload } from './device-schema.server'
+import {
+	createOrReusePrivateDeviceSchemaVersionFromUpload,
+	getVisibleDeviceSchemaVersionForCreation,
+} from './device-schema.server'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -220,6 +223,48 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			deviceSchemaHash: true,
 		},
 	})
+}
+
+export async function detachDeviceSchema({
+	id,
+	userId,
+}: Pick<Device, 'id' | 'userId'>) {
+	const [existingDevice] = await drizzleClient
+		.select()
+		.from(device)
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+		.limit(1)
+
+	if (!existingDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	assertDeviceIsMutable(existingDevice)
+
+	const tags = (existingDevice.tags ?? []).filter(
+		(tag) => !tag.startsWith('schema:'),
+	)
+
+	const [updatedDevice] = await drizzleClient
+		.update(device)
+		.set({
+			tags,
+			deviceSchemaVersionId: null,
+			deviceSchemaPublicId: null,
+			deviceSchemaId: null,
+			deviceSchemaName: null,
+			deviceSchemaVersion: null,
+			deviceSchemaHash: null,
+			updatedAt: sql`NOW()`,
+		})
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+		.returning()
+
+	if (!updatedDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	return updatedDevice
 }
 
 export type DeviceWithoutSensors = Awaited<
@@ -835,6 +880,8 @@ export async function createDevice(deviceData: any, userId: string) {
 			// Determine sensors to use
 			let sensorsToAdd = deviceData.sensors
 			let storedDeviceSchemaVersion = null
+			const isCustomDevice =
+				!deviceData.model || deviceData.model?.toLowerCase() === 'custom'
 
 			// If model and sensors are both specified, reject (backwards compatibility)
 			if (
@@ -870,20 +917,32 @@ export async function createDevice(deviceData: any, userId: string) {
 				}
 			}
 
-			if (deviceData.model?.toLowerCase() === 'custom' && deviceData.sensors) {
+			if (isCustomDevice && deviceData.sensors) {
 				sensorsToAdd = deviceData.sensors ?? []
 			}
 
-			if (
-				deviceData.model?.toLowerCase() === 'custom' &&
-				deviceData.deviceSchema
-			) {
+			if (isCustomDevice && deviceData.deviceSchema) {
 				storedDeviceSchemaVersion =
 					await createOrReusePrivateDeviceSchemaVersionFromUpload(
 						tx,
 						userId,
 						deviceData.deviceSchema,
 					)
+
+				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
+			}
+
+			if (isCustomDevice && deviceData.deviceSchemaVersionId) {
+				storedDeviceSchemaVersion =
+					await getVisibleDeviceSchemaVersionForCreation(
+						tx,
+						userId,
+						deviceData.deviceSchemaVersionId,
+					)
+
+				if (!storedDeviceSchemaVersion) {
+					throw new Error('Device schema version not found.')
+				}
 
 				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
 			}
@@ -937,7 +996,7 @@ export async function createDevice(deviceData: any, userId: string) {
 				Array.isArray(sensorsToAdd) &&
 				sensorsToAdd.length > 0
 			) {
-				for (const sensorData of sensorsToAdd) {
+				for (const [index, sensorData] of sensorsToAdd.entries()) {
 					const [newSensor] = await tx
 						.insert(sensor)
 						.values({
@@ -949,6 +1008,10 @@ export async function createDevice(deviceData: any, userId: string) {
 							sensorWikiPhenomenon: sensorData.sensorWikiPhenomenon,
 							sensorWikiUnit: sensorData.sensorWikiUnit,
 							deviceId: createdDevice.id,
+							data: storedDeviceSchemaVersion
+								? { deviceSchemaSensorId: sensorData.id }
+								: sensorData.data,
+							order: index,
 						})
 						.returning()
 
