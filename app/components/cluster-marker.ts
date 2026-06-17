@@ -4,8 +4,6 @@ import maplibregl from 'maplibre-gl'
 const colors = [
 	{ color: '#4EAF47', opacity: 1 },
 	{ color: '#575757', opacity: 0.65 },
-	{ color: '#575757', opacity: 0.65 },
-	{ color: '#38AADD', opacity: 1 },
 ]
 
 /**
@@ -20,10 +18,9 @@ export const ClusterMarker = (props: {
 	const coords = clusterFeature.geometry.coordinates
 	const longitude = coords[0]
 	const latitude = coords[1]
-	const pointCount = clusterFeature.properties?.point_count ?? 0
-	const active = clusterFeature.properties?.active ?? 0
-	const inactive = clusterFeature.properties?.inactive ?? 0
-	const old = clusterFeature.properties?.old ?? 0
+	const pointCount = Number(clusterFeature.properties?.point_count ?? 0)
+	const active = Number(clusterFeature.properties?.active ?? 0)
+	const inactive = Math.max(pointCount - active, 0)
 	const fontSize =
 		pointCount >= 1000
 			? 14
@@ -43,15 +40,23 @@ export const ClusterMarker = (props: {
 	const r0 = Math.round(r * 0.7)
 	const w = r * 2
 
-	const arcOffsets: number[] = []
+	const segments = [active, inactive].map((count, i) => ({
+		count,
+		color: colors[i],
+		offset: 0,
+	}))
 	let total = 0
 
-	for (const c of [active, inactive, old]) {
-		arcOffsets.push(total)
-		total += c
+	for (const segment of segments) {
+		segment.offset = total
+		total += segment.count
 	}
 
 	const e = document.createElement('div')
+	e.setAttribute(
+		'aria-label',
+		`${pointCount} devices, ${active} active, ${inactive} inactive`,
+	)
 	e.innerHTML = `<svg
 				width="${w}"
 				height="${w}"
@@ -59,10 +64,11 @@ export const ClusterMarker = (props: {
 				text-anchor="middle"
 				style="font: bold ${fontSize}px sans-serif; display: block;"
 			>
-				${[active, inactive, old]
-					.map((count, i) => {
-						const start = arcOffsets[i] / total
-						let end = (arcOffsets[i] + count) / total
+				${segments
+					.filter((segment) => segment.count > 0)
+					.map((segment) => {
+						const start = segment.offset / total
+						let end = (segment.offset + segment.count) / total
 
 						if (end - start === 1) end -= 0.00001
 						const a0 = 2 * Math.PI * (start - 0.25)
@@ -82,8 +88,8 @@ export const ClusterMarker = (props: {
 								} ${r + r0 * y1} A ${r0} ${r0} 0 ${largeArc} 0 ${r + r0 * x0} ${
 									r + r0 * y0
 								}"
-								fill="${colors[i].color}"
-								fill-opacity="${colors[i].opacity}"
+								fill="${segment.color.color}"
+								fill-opacity="${segment.color.opacity}"
 							/>
 						`
 					})
