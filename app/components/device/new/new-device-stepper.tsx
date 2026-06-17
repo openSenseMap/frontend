@@ -48,6 +48,8 @@ const sensorsSchema = z.object({
 		.array(sensorSchema)
 		.min(1, 'Please select at least one sensor'),
 	deviceSchema: customDeviceSchemaUploadSchema,
+	deviceSchemaVersionId: z.string().optional(),
+	deviceSchemaRegistrySelection: z.any().optional(),
 })
 
 const advancedSchema = z.record(z.string(), z.any())
