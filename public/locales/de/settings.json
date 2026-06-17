@@ -2,6 +2,7 @@
 	"public_profile": "Öffentliches Profil",
 	"account": "Konto",
 	"password": "Passwort",
+	"preferences": "Einstellungen",
 	"delete_account": "Konto löschen",
 	"profile_updated": "Profil aktualisiert",
 	"profile_updated_description": "Dein Profil wurde erfolgreich aktualisiert.",
@@ -80,5 +81,7 @@
 	"unsaved_changes": "Ungespeicherte Änderungen",
 	"saving": "Speichern...",
 	"confirm_email_change": "Änderung der E-Mail Adresse bestätigen",
-	"confirm_email_change_description": "Bitte gib dein aktuelles Passwort ein."
+	"confirm_email_change_description": "Bitte gib dein aktuelles Passwort ein.",
+	"theme_description": "Entscheide selbst, wie openSenseMap für dich aussehen soll.",
+	"theme": "Erscheinungsbild"
 }

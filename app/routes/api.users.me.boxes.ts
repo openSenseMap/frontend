@@ -2,36 +2,113 @@ import { type Route } from './+types/api.users.me.boxes'
 import { getUserDevices } from '~/db/models/device.server'
 import { enrichDevicesWithIntegrations } from '~/db/models/integration.server'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
-import { getUserFromJwt } from '~/lib/jwt'
 import { StandardResponse } from '~/lib/responses'
+
+import * as z from 'zod/v4'
+
+import { ApiDeviceSchema } from '~/lib/openapi/schemas/device'
+import { ZodOpenApiPathItemObject } from 'zod-openapi'
+import {
+	ForbiddenErrorSchema,
+	forbiddenResponse,
+	internalServerErrorResponse,
+	InternalServerErrorSchema,
+} from '~/lib/openapi/errors'
+import { withAuthenticatedUser } from '~/lib/jwt'
+
+const UserBoxSchema = ApiDeviceSchema.catchall(z.unknown()).meta({
+	id: 'CurrentUserBox',
+	description:
+		'Device owned by the authenticated user. May include integration metadata.',
+})
+
+const GetCurrentUserBoxesResponseSchema = z
+	.object({
+		code: z.literal('Ok').default('Ok'),
+
+		data: z.object({
+			boxes: z.array(UserBoxSchema).meta({
+				description: 'Devices owned by the authenticated user.',
+			}),
+
+			boxes_count: z.number().int().nonnegative().meta({
+				description: 'Number of boxes returned.',
+				example: 2,
+			}),
+
+			sharedBoxes: z.array(UserBoxSchema).meta({
+				description:
+					'Boxes shared with the authenticated user. Currently returned as an empty array.',
+				example: [],
+			}),
+		}),
+	})
+	.meta({
+		id: 'GetCurrentUserBoxesResponse',
+		description:
+			'Response containing the authenticated user’s own boxes and shared boxes.',
+	})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	get: {
+		tags: ['User Management'],
+		summary: 'Get current user boxes',
+		description:
+			'Returns all boxes owned by the authenticated user. The response may include integration metadata for each box.',
+		security: [{ bearerAuth: [] }],
+
+		responses: {
+			200: {
+				description: 'User boxes returned successfully.',
+				content: {
+					'application/json': {
+						schema: GetCurrentUserBoxesResponseSchema,
+					},
+				},
+			},
+
+			403: forbiddenResponse(
+				ForbiddenErrorSchema,
+				'Invalid or missing JWT authorization.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	try {
-		const jwtResponse = await getUserFromJwt(request)
+		return await withAuthenticatedUser(request, async (user) => {
+			const userBoxes = await getUserDevices(user.id)
 
-		if (typeof jwtResponse === 'string') {
-			return StandardResponse.forbidden(
-				'Invalid JWT authorization. Please sign in to obtain new JWT.',
+			const transformedBoxes = userBoxes.map((box) =>
+				transformDeviceToApiFormat(box),
 			)
-		}
 
-		const userBoxes = await getUserDevices(jwtResponse.id)
-		const transformedBoxes = userBoxes.map((box) =>
-			transformDeviceToApiFormat(box),
-		)
-		const boxesWithIntegrations =
-			await enrichDevicesWithIntegrations(transformedBoxes)
+			const boxesWithIntegrations =
+				await enrichDevicesWithIntegrations(transformedBoxes)
 
-		return StandardResponse.ok({
-			code: 'Ok',
-			data: {
-				boxes: boxesWithIntegrations,
-				boxes_count: boxesWithIntegrations.length,
-				sharedBoxes: [],
-			},
+			const responseParsed =
+				await GetCurrentUserBoxesResponseSchema.safeParseAsync({
+					code: 'Ok',
+					data: {
+						boxes: boxesWithIntegrations,
+						boxes_count: boxesWithIntegrations.length,
+						sharedBoxes: [],
+					},
+				})
+
+			if (!responseParsed.success) {
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.ok(responseParsed.data)
 		})
-	} catch (err) {
-		console.warn(err)
+	} catch {
 		return StandardResponse.internalServerError()
 	}
 }

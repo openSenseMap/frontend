@@ -333,7 +333,8 @@ export default function Explore() {
 				closeOnClick: false,
 				closeOnMove: true,
 				anchor: 'left',
-				offset: [15, 0],
+				offset: [15, -25],
+				className: 'device-name-popup',
 			}),
 		[],
 	)
@@ -490,7 +491,7 @@ export default function Explore() {
 				}
 				deviceNamePopup
 					.setLngLat(coordinates as LngLatLike)
-					.setHTML(feature.properties.name)
+					.setText(feature.properties.name ?? '')
 					.addTo(e.target)
 			} else {
 				e.target.getCanvas().style.cursor = ''

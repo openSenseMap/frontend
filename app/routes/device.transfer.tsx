@@ -11,7 +11,7 @@ import { type Route } from './+types/device.transfer'
 import Home from '~/components/header/home'
 import { Separator } from '~/components/ui/separator'
 import { getUserId } from '~/services/session-service.server'
-import { claimBox } from '~/services/transfer-service.server'
+import { claimDevice } from '~/services/transfer-service.server'
 
 type ActionData = {
 	success: boolean
@@ -35,7 +35,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	try {
-		const result = await claimBox(userId, token)
+		const result = await claimDevice(userId, token)
 		return {
 			success: true,
 			message: result.message,

@@ -21,14 +21,15 @@ describe('openSenseMap API Routes: /users', () => {
 
 		describe('POST', () => {
 			it('should allow to request a password reset token', async () => {
-				const params = new URLSearchParams(VALID_USER)
+				const body = new URLSearchParams({
+					email: VALID_USER.email,
+				})
 
 				const request = new Request(
 					`${BASE_URL}/users/request-password-reset`,
 					{
 						method: 'POST',
-						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-						body: params.toString(),
+						body,
 					},
 				)
 
@@ -36,7 +37,13 @@ describe('openSenseMap API Routes: /users', () => {
 					request,
 				} as Route.ActionArgs)) as Response
 
+				const responseBody = await response.json()
+
 				expect(response.status).toBe(200)
+				expect(responseBody).toEqual({
+					code: 'Ok',
+					message: 'Password reset initiated',
+				})
 			})
 		})
 

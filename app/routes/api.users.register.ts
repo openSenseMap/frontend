@@ -4,6 +4,126 @@ import { parseUserRegistrationData } from '~/lib/request-parsing'
 import { StandardResponse } from '~/lib/responses'
 import { registerUser } from '~/services/user-service.server'
 
+import * as z from 'zod/v4'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+
+import { UserSchema, UserLanguageSchema } from '~/lib/openapi/schemas/user'
+
+import {
+	BadRequestErrorSchema,
+	InternalServerErrorSchema,
+	MethodNotAllowedErrorSchema,
+	badRequestResponse,
+	internalServerErrorResponse,
+	methodNotAllowedResponse,
+} from '~/lib/openapi/errors'
+
+import {
+	requestContentTypeJsonOrForm,
+	responseContentTypeJson,
+} from '~/middleware/content-type-header.server'
+import {
+	AuthTokensSchema,
+	NewPasswordSchema,
+} from '~/lib/openapi/schemas/auth'
+import { transformUserToApiFormat } from '~/lib/user-transform'
+
+const RegistrationNameSchema = z
+	.string()
+	.trim()
+	.min(3)
+	.max(40)
+	.regex(/^[a-zA-Z0-9](?:[a-zA-Z0-9._ -]*[a-zA-Z0-9])?$/)
+	.meta({
+		description:
+			'Full name or nickname of the user. Must be 3 to 40 characters long. Allows letters, numbers, dots, dashes, underscores, and spaces. The first and last character must be a letter or number.',
+		example: 'Jane Doe',
+	})
+
+const RegisterUserRequestSchema = z
+	.object({
+		name: RegistrationNameSchema,
+
+		email: z.string().trim().pipe(z.email()).meta({
+			description: 'Email address used for signing in and user-related emails.',
+			example: 'jane@example.com',
+		}),
+
+		password: NewPasswordSchema,
+
+		language: UserLanguageSchema.optional().default('en_US').meta({
+			description:
+				'Preferred user language. Used for the website and emails. Defaults to `en_US`.',
+			example: 'en_US',
+		}),
+	})
+	.meta({
+		id: 'RegisterUserRequest',
+		description: 'Payload for registering a new user.',
+	})
+
+const RegisterUserResponseSchema = AuthTokensSchema.extend({
+	code: z.literal('Created').default('Created'),
+
+	message: z
+			.literal('Successfully registered new user')
+			.default('Successfully registered new user'),
+
+	data: z.object({
+		user: UserSchema,
+	}),
+}).meta({
+	id: 'RegisterUserResponse',
+	description: 'Successfully registered user response.',
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	post: {
+		tags: ['Authentication'],
+		summary: 'Register a new user',
+		description:
+			'Registers a new openSenseMap user and returns an access token and refresh token. The user can sign in with the registered email address.',
+
+		requestBody: {
+			required: true,
+			content: {
+				'application/json': {
+					schema: RegisterUserRequestSchema,
+				},
+				'application/x-www-form-urlencoded': {
+					schema: RegisterUserRequestSchema,
+				},
+			},
+		},
+
+		responses: {
+			201: {
+				description: 'User registered successfully.',
+				content: {
+					'application/json': {
+						schema: RegisterUserResponseSchema,
+					},
+				},
+			},
+
+			400: badRequestResponse(
+				BadRequestErrorSchema,
+				'Bad request. This can happen when the request body cannot be parsed or the submitted registration data is invalid.',
+			),
+
+			405: methodNotAllowedResponse(
+				MethodNotAllowedErrorSchema,
+				'Method not allowed.',
+			),
+
+			500: internalServerErrorResponse(
+				InternalServerErrorSchema,
+				'Internal server error.',
+			),
+		},
+	},
+}
+
 function mapRegistrationError(code: string): string {
 	switch (code) {
 		case 'username_required':
@@ -29,6 +149,11 @@ function mapRegistrationError(code: string): string {
 			return 'Bad Request'
 	}
 }
+
+export const middleware: Route.MiddlewareFunction[] = [
+	requestContentTypeJsonOrForm(['POST']),
+	responseContentTypeJson,
+]
 
 export const action = async ({ request }: Route.ActionArgs) => {
 	if (request.method !== 'POST') {
@@ -62,14 +187,22 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		try {
 			const { token, refreshToken } = await createToken(user)
 
-			return StandardResponse.created({
+			const responseParsed = await RegisterUserResponseSchema.safeParseAsync({
+				code: 'Created',
 				message: 'Successfully registered new user',
 				token,
 				refreshToken,
-				data: user,
+				data: {
+					user: transformUserToApiFormat(user),
+				},
 			})
+
+			if (!responseParsed.success) {
+				return StandardResponse.internalServerError()
+			}
+
+			return StandardResponse.created(responseParsed.data)
 		} catch (err) {
-			console.error('Unable to create JWT', err)
 			return StandardResponse.internalServerError(
 				`Unable to create jwt for newly created user: ${(err as Error)?.message}`,
 			)
@@ -81,7 +214,6 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			)
 		}
 
-		console.error('Registration error:', error)
 		return StandardResponse.internalServerError()
 	}
 }

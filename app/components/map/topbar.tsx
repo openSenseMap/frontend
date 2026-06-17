@@ -4,6 +4,7 @@ import NavBar from '../header/nav-bar'
 import Info from '../header/info'
 import LanguageSelector from '../landing/header/language-selector'
 import { TooltipProvider } from '../ui/tooltip'
+import ThemeToggle from '../landing/header/theme-toggle'
 
 interface MapHeaderProps {
 	devices: any
@@ -34,6 +35,7 @@ export default function MapHeader({
 
 					<div className="flex shrink-0 items-center gap-4">
 						<LanguageSelector />
+						<ThemeToggle />
 
 						<div className="h-7 w-px bg-black/10 dark:bg-white/15" />
 

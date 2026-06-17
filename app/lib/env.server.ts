@@ -39,6 +39,7 @@ export function init() {
 export function getEnv() {
 	return {
 		NOMINATIM_SEARCH_API: process.env.NOMINATIM_SEARCH_API,
+		OSEM_GITHUB_URL: process.env.OSEM_API_URL,
 		MODE: process.env.NODE_ENV,
 		DIRECTUS_URL: process.env.DIRECTUS_URL,
 		MYBADGES_API_URL: process.env.MYBADGES_API_URL,
