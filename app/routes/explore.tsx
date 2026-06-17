@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import bbox from '@turf/bbox'
 import { type FeatureCollection, type Point } from 'geojson'
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import {
@@ -26,6 +27,12 @@ import { getProfileByUserId } from '~/db/models/profile.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { type Device } from '~/db/schema'
 import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
+import {
+	getValidMapView,
+	MAP_ZOOM_LIMITS,
+	validLngLat,
+	type MapView,
+} from '~/lib/location'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
@@ -46,9 +53,22 @@ import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
-	latitude: 7,
-	longitude: 52,
+	latitude: 51.961563,
+	longitude: 7.628202,
 } as const
+
+const MAX_MY_AREA_LATITUDE_SPAN = 35
+const MAX_MY_AREA_LONGITUDE_SPAN = 60
+
+type MyAreaTarget =
+	| {
+			type: 'view'
+			view: MapView
+	  }
+	| {
+			type: 'bounds'
+			bounds: [[number, number], [number, number]]
+	  }
 
 function parseMapHash(hash: string) {
 	const match = hash.match(
@@ -59,10 +79,76 @@ function parseMapHash(hash: string) {
 
 	const [, zoom, latitude, longitude] = match
 
-	return {
-		zoom: Number(zoom),
+	return getValidMapView({
 		latitude: Number(latitude),
 		longitude: Number(longitude),
+		zoom: Number(zoom),
+	})
+}
+
+function getHomeView(
+	profile: Awaited<ReturnType<typeof getProfileByUserId>> | null,
+) {
+	if (!profile) return null
+
+	return getValidMapView({
+		latitude: profile.homeLatitude,
+		longitude: profile.homeLongitude,
+		zoom: profile.homeZoom,
+	})
+}
+
+function getOwnedDevicesAreaTarget(
+	devices: FeatureCollection<Point, any>,
+	userId?: string,
+): MyAreaTarget | null {
+	if (!userId) return null
+
+	const ownedFeatures = devices.features.filter((feature) => {
+		const [longitude, latitude] = feature.geometry.coordinates
+
+		return (
+			feature.properties?.userId === userId &&
+			validLngLat(longitude, latitude)
+		)
+	})
+
+	if (ownedFeatures.length === 0) return null
+
+	if (ownedFeatures.length === 1) {
+		const [longitude, latitude] = ownedFeatures[0].geometry.coordinates
+
+		return {
+			type: 'view',
+			view: {
+				longitude,
+				latitude,
+				zoom: MAP_ZOOM_LIMITS.default,
+			},
+		}
+	}
+
+	const [west, south, east, north] = bbox({
+		type: 'FeatureCollection',
+		features: ownedFeatures,
+	})
+
+	const latitudeSpan = Math.abs(north - south)
+	const longitudeSpan = Math.abs(east - west)
+
+	if (
+		latitudeSpan > MAX_MY_AREA_LATITUDE_SPAN ||
+		longitudeSpan > MAX_MY_AREA_LONGITUDE_SPAN
+	) {
+		return null
+	}
+
+	return {
+		type: 'bounds',
+		bounds: [
+			[west, south],
+			[east, north],
+		],
 	}
 }
 
@@ -309,9 +395,16 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, availableTags, filteredDevices, measurementCount, user } =
-		useLoaderData<typeof loader>()
+	const {
+		devices,
+		availableTags,
+		filteredDevices,
+		measurementCount,
+		user,
+		profile,
+	} = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
+	const appliedInitialMyAreaRef = useRef(false)
 	const navigate = useNavigate()
 	const location = useLocation()
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
@@ -516,19 +609,44 @@ export default function Explore() {
 
 	//* fly to device location when url inludes deviceId
 	const { deviceId } = useParams()
-	var deviceLoc: any
 	let selectedDevice: any
 	if (deviceId) {
 		selectedDevice = (devices as any).features.find(
 			(device: any) => device.properties.id === deviceId,
 		)
-		deviceLoc = [
-			selectedDevice?.properties.latitude,
-			selectedDevice?.properties.longitude,
-		]
 	}
 
 	const selectedDeviceId = selectedDevice?.properties.id
+	const selectedDeviceView = selectedDevice
+		? {
+				latitude: selectedDevice.properties.latitude,
+				longitude: selectedDevice.properties.longitude,
+				zoom: 10,
+			}
+		: null
+	const hashView = parseMapHash(location.hash)
+	const homeView = getHomeView(profile)
+	const ownedDevicesAreaTarget = useMemo(
+		() =>
+			getOwnedDevicesAreaTarget(
+				filteredDevices as FeatureCollection<Point, any>,
+				user?.id,
+			),
+		[filteredDevices, user?.id],
+	)
+	const myAreaTarget = homeView
+		? ({
+				type: 'view',
+				view: homeView,
+			} satisfies MyAreaTarget)
+		: ownedDevicesAreaTarget
+	const initialViewState =
+		selectedDeviceView ?? hashView ?? homeView ?? INITIAL_VIEW_STATE
+	const shouldApplyInitialMyArea =
+		!selectedDeviceView &&
+		!hashView &&
+		!homeView &&
+		Boolean(ownedDevicesAreaTarget)
 
 	const deviceLayerFilter: FilterSpecification = selectedDeviceId
 		? [
@@ -537,6 +655,30 @@ export default function Explore() {
 				['!=', ['get', 'id'], selectedDeviceId],
 			]
 		: ['!', ['has', 'point_count']]
+
+	const focusMyArea = useCallback(
+		(target: MyAreaTarget | null = myAreaTarget, animate = true) => {
+			if (!target) return
+
+			if (target.type === 'view') {
+				mapRef.current?.flyTo({
+					center: [target.view.longitude, target.view.latitude],
+					zoom: target.view.zoom,
+					duration: animate ? 900 : 0,
+					essential: true,
+				})
+				return
+			}
+
+			mapRef.current?.fitBounds(target.bounds, {
+				padding: 80,
+				maxZoom: 12,
+				duration: animate ? 900 : 0,
+				essential: true,
+			})
+		},
+		[myAreaTarget],
+	)
 
 	const buildLayerFromPheno = () => {
 		//TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
@@ -597,6 +739,11 @@ export default function Explore() {
 				retinaImageOptions,
 			),
 		])
+
+		if (shouldApplyInitialMyArea && !appliedInitialMyAreaRef.current) {
+			appliedInitialMyAreaRef.current = true
+			focusMyArea(ownedDevicesAreaTarget, false)
+		}
 	}
 
 	return (
@@ -606,6 +753,8 @@ export default function Explore() {
 					devices={filteredDevices}
 					measurementCount={measurementCount}
 					onHomeClick={handleHomeClick}
+					onMyAreaClick={() => focusMyArea(myAreaTarget)}
+					canFocusMyArea={Boolean(myAreaTarget)}
 				/>
 				{/* <Header devices={devices} /> */}
 				{selectedPheno && (
@@ -626,11 +775,7 @@ export default function Explore() {
 					onMouseLeave={handleMouseLeave}
 					onLoad={handleMapLoad}
 					ref={mapRef}
-					initialViewState={
-						deviceId
-							? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
-							: INITIAL_VIEW_STATE
-					}
+					initialViewState={initialViewState}
 				>
 					{!selectedPheno && (
 						<Source
