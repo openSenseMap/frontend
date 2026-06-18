@@ -185,4 +185,4 @@ function assignIcon(sensorType: string, sensorTitle: string) {
 	return <Thermometer className={sensorIconClassName} />
 }
 
-export { iconsList, getIcon, assignIcon }
+export { iconsList, getSensorIcon, getIcon, assignIcon }
