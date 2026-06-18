@@ -108,9 +108,10 @@ function getIcon(iconName: string) {
 	return <Icon className={sensorIconClassName} />
 }
 
-function assignIcon(sensorType: string, sensorTitle: string) {
-	const normalizedSensorType = sensorType.toLowerCase()
-	const normalizedSensorTitle = sensorTitle.toLowerCase()
+// args should accept null values for drafted / undefined sensors while editing
+function assignIcon(sensorType?: string | null, sensorTitle?: string | null) {
+	const normalizedSensorType = sensorType?.toLowerCase() ?? ''
+	const normalizedSensorTitle = sensorTitle?.toLowerCase() ?? ''
 
 	if (
 		normalizedSensorTitle.includes('luftfeuchte') ||
