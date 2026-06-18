@@ -503,6 +503,7 @@ export default function DeviceDetailBox() {
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
+																						icon={sensor.icon}
 																						className="text-muted-foreground ml-2 h-4 w-4 shrink-0"
 																					/>
 																				</CardHeader>
@@ -580,6 +581,7 @@ export default function DeviceDetailBox() {
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
+																						icon={sensor.icon}
 																						className="text-muted-foreground ml-2 h-4 w-4 shrink-0"
 																					/>
 																				</CardHeader>
