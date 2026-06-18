@@ -23,7 +23,11 @@ export type MapView = {
 	zoom: number
 }
 
-const emptyStringToUndefined = (value: unknown) => {
+const missingLocationValueToUndefined = (value: unknown) => {
+	if (value === null || value === undefined) {
+		return undefined
+	}
+
 	if (typeof value === 'string' && value.trim() === '') {
 		return undefined
 	}
@@ -33,7 +37,7 @@ const emptyStringToUndefined = (value: unknown) => {
 
 export const locationSchema = z.object({
 	latitude: z.preprocess(
-		emptyStringToUndefined,
+		missingLocationValueToUndefined,
 		z.coerce
 			.number({
 				error: (issue) =>
@@ -52,7 +56,7 @@ export const locationSchema = z.object({
 	),
 
 	longitude: z.preprocess(
-		emptyStringToUndefined,
+		missingLocationValueToUndefined,
 		z.coerce
 			.number({
 				error: (issue) =>
