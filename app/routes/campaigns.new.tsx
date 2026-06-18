@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import {
+	data,
 	Form,
 	redirect,
 	useActionData,
@@ -8,18 +9,20 @@ import {
 	useNavigation,
 } from 'react-router'
 import { type Route } from './+types/campaigns.new'
-import { CampaignAreaEditor } from '~/components/campaigns/campaign-area-editor'
 import { ClientOnly } from '~/components/client-only'
-import { NavBar } from '~/components/nav-bar'
-import { Button } from '~/components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
 import { createCampaign } from '~/db/models/campaign.server'
 import { getPhenomena } from '~/db/models/phenomena.server'
 import { getCampaignCenterpoint, parseCampaignArea } from '~/lib/campaign'
+import { requireCampaignsEnabled } from '~/lib/feature-flags.server'
 import { campaignFormSchema } from '~/lib/validations/campaign'
 import { requireUserId } from '~/services/session-service.server'
+import { NavBar } from '~/components/nav-bar'
+import { CampaignAreaEditor } from '~/components/campaigns/campaign-area-editor'
+import { Button } from '~/components/ui/button'
 
 type ActionData = {
 	errors?: Record<string, string>
@@ -27,15 +30,17 @@ type ActionData = {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+	requireCampaignsEnabled()
+
 	await requireUserId(request)
 	const phenomena = await getPhenomena()
 
 	return { phenomena }
 }
 
-export async function action({
-	request,
-}: Route.ActionArgs): Promise<Response | ActionData> {
+export async function action({ request }: Route.ActionArgs) {
+	requireCampaignsEnabled()
+
 	const ownerId = await requireUserId(request)
 	const formData = await request.formData()
 
@@ -55,44 +60,50 @@ export async function action({
 		endDate: parseOptionalDate(formData.get('endDate')),
 	}
 
-	try {
-		const parsed = campaignFormSchema.parse(values)
-		const area = parseCampaignArea(parsed.areaGeojson)
-		const centerpoint = getCampaignCenterpoint(area)
+	const parsed = campaignFormSchema.safeParse(values)
 
+	if (!parsed.success) {
+		return campaignFormError(getActionErrors(parsed.error), values, formData)
+	}
+
+	let area: ReturnType<typeof parseCampaignArea>
+
+	try {
+		area = parseCampaignArea(parsed.data.areaGeojson)
+	} catch (error) {
+		return campaignFormError(
+			{ areaGeojson: getAreaErrorMessage(error) },
+			values,
+			formData,
+		)
+	}
+
+	try {
+		const centerpoint = getCampaignCenterpoint(area)
 		const createdCampaign = await createCampaign({
-			title: parsed.title,
-			description: parsed.description,
-			requirements: parsed.requirements,
-			phenomena: parsed.phenomena,
-			gridSize: parsed.gridSize,
-			minDevicesPerCell: parsed.minDevicesPerCell,
-			minMeasurementsPerCell: parsed.minMeasurementsPerCell,
+			title: parsed.data.title,
+			description: parsed.data.description,
+			requirements: parsed.data.requirements,
+			phenomena: parsed.data.phenomena,
+			gridSize: parsed.data.gridSize,
+			minDevicesPerCell: parsed.data.minDevicesPerCell,
+			minMeasurementsPerCell: parsed.data.minMeasurementsPerCell,
 			area,
 			centerpoint,
 			public: true,
-			startDate: parsed.startDate,
-			endDate: parsed.endDate,
+			startDate: parsed.data.startDate,
+			endDate: parsed.data.endDate,
 			ownerId,
 		})
 
 		return redirect(`/campaigns/${createdCampaign.slug}`)
 	} catch (error) {
-		return {
-			errors: getActionErrors(error),
-			values: {
-				title: values.title,
-				description: values.description,
-				requirements: values.requirements,
-				phenomena: values.phenomena.join(', '),
-				gridSize: String(values.gridSize),
-				minDevicesPerCell: String(values.minDevicesPerCell),
-				minMeasurementsPerCell: String(values.minMeasurementsPerCell),
-				areaGeojson: values.areaGeojson,
-				startDate: String(formData.get('startDate') ?? ''),
-				endDate: String(formData.get('endDate') ?? ''),
-			},
-		}
+		console.error('Campaign could not be created:', error)
+		return campaignFormError(
+			{ form: 'Campaign could not be created.' },
+			values,
+			formData,
+		)
 	}
 }
 
@@ -116,8 +127,19 @@ export default function NewCampaignPage() {
 						{t('create_campaign_description')}
 					</p>
 				</div>
-
 				<Form method="post" className="space-y-8">
+					{actionData?.errors ? (
+						<Alert variant="destructive">
+							<AlertTitle>{t('campaign_not_created')}</AlertTitle>
+							<AlertDescription>
+								<ul className="list-disc space-y-1 pl-4">
+									{Object.values(actionData.errors).map((message) => (
+										<li key={message}>{message}</li>
+									))}
+								</ul>
+							</AlertDescription>
+						</Alert>
+					) : null}
 					<section className="space-y-5 rounded-lg border border-slate-200 bg-white p-6">
 						<div className="grid gap-5 md:grid-cols-2">
 							<div className="space-y-2 md:col-span-2">
@@ -244,7 +266,6 @@ export default function NewCampaignPage() {
 							</div>
 						</div>
 					</section>
-
 					<section className="space-y-5 rounded-lg border border-slate-200 bg-white p-6">
 						<div>
 							<h2 className="text-xl font-semibold text-slate-950">
@@ -256,7 +277,10 @@ export default function NewCampaignPage() {
 						</div>
 						<ClientOnly
 							fallback={
-								<div className="h-[420px] rounded-lg border border-slate-200 bg-slate-100" />
+								<CampaignAreaFallback
+									defaultValue={actionData?.values?.areaGeojson}
+									error={actionData?.errors?.areaGeojson}
+								/>
 							}
 						>
 							{() => (
@@ -267,7 +291,6 @@ export default function NewCampaignPage() {
 							)}
 						</ClientOnly>
 					</section>
-
 					<div className="flex justify-end">
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting ? t('creating_campaign') : t('create_campaign')}
@@ -305,6 +328,40 @@ function parseNumber(value: FormDataEntryValue | null, fallback: number) {
 	return Number(value)
 }
 
+function campaignFormError(
+	errors: Record<string, string>,
+	values: {
+		title: string
+		description: string
+		requirements: string
+		phenomena: string[]
+		gridSize: number
+		minDevicesPerCell: number
+		minMeasurementsPerCell: number
+		areaGeojson: string
+	},
+	formData: FormData,
+) {
+	return data(
+		{
+			errors,
+			values: {
+				title: values.title,
+				description: values.description,
+				requirements: values.requirements,
+				phenomena: values.phenomena.join(', '),
+				gridSize: String(values.gridSize),
+				minDevicesPerCell: String(values.minDevicesPerCell),
+				minMeasurementsPerCell: String(values.minMeasurementsPerCell),
+				areaGeojson: values.areaGeojson,
+				startDate: String(formData.get('startDate') ?? ''),
+				endDate: String(formData.get('endDate') ?? ''),
+			},
+		},
+		{ status: 400 },
+	)
+}
+
 function getActionErrors(error: unknown) {
 	if (error instanceof z.ZodError) {
 		return Object.fromEntries(
@@ -320,4 +377,38 @@ function getActionErrors(error: unknown) {
 	}
 
 	return { form: 'Campaign could not be created.' }
+}
+
+function getAreaErrorMessage(error: unknown) {
+	if (error instanceof SyntaxError) return 'Area GeoJSON is not valid JSON.'
+	if (error instanceof z.ZodError)
+		return 'Area GeoJSON must contain a closed Polygon feature.'
+	return 'Area GeoJSON is invalid.'
+}
+
+function CampaignAreaFallback({
+	defaultValue,
+	error,
+}: {
+	defaultValue?: string
+	error?: string
+}) {
+	const { t } = useTranslation('campaigns')
+
+	return (
+		<div className="space-y-2">
+			<Label htmlFor="areaGeojson">{t('paste_geojson')}</Label>
+			<Textarea
+				id="areaGeojson"
+				name="areaGeojson"
+				defaultValue={defaultValue}
+				placeholder={t('geojson_placeholder')}
+				className="min-h-56 font-mono text-xs"
+			/>
+			<p className="text-sm text-slate-600">
+				{t('map_loading_geojson_fallback')}
+			</p>
+			<FieldError message={error} />
+		</div>
+	)
 }
