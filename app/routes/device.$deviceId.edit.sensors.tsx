@@ -82,6 +82,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 				title: sensor.title,
 				unit: sensor.unit,
 				sensorType: sensor.sensorType,
+				icon: sensor.icon,
 				deviceId,
 				order: index,
 			})
@@ -93,6 +94,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 				title: sensor.title,
 				unit: sensor.unit,
 				sensorType: sensor.sensorType,
+				icon: sensor.icon,
 				order: index,
 			})
 		}
