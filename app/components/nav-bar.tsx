@@ -10,7 +10,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useOptionalUser } from '~/utils'
+import { useFeatureFlags, useOptionalUser } from '~/utils'
 
 export function NavBar() {
 	const { t } = useTranslation('navbar')
@@ -18,6 +18,7 @@ export function NavBar() {
 	// User is optional
 	// If no user render Login button
 	const user = useOptionalUser()
+	const features = useFeatureFlags()
 	const parts = location.pathname
 		.split('/')
 		.slice(1)
@@ -68,11 +69,13 @@ export function NavBar() {
 											</DropdownMenuItem>
 										</Link>
 
-										<Link to="/campaigns/new">
-											<DropdownMenuItem>
-												<span>{t('new_campaign')}</span>
-											</DropdownMenuItem>
-										</Link>
+										{features.campaigns ? (
+											<Link to="/campaigns/new">
+												<DropdownMenuItem>
+													<span>{t('new_campaign')}</span>
+												</DropdownMenuItem>
+											</Link>
+										) : null}
 
 										<Link to="/device/transfer">
 											<DropdownMenuItem>
