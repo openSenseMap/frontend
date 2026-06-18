@@ -138,10 +138,22 @@ export const middleware: Route.MiddlewareFunction[] = [
 	requestContentTypeJson(['POST']),
 ]
 
+function normalizeBoxesQueryParams(query: Record<string, unknown>) {
+	const maxDistance = query.maxDistance ?? query.maxdistance
+
+	return {
+		...query,
+		maxDistance,
+	}
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const queryObj = Object.fromEntries(url.searchParams)
-	const parseResult = DevicesQuerySchema.safeParse(queryObj)
+
+	const normalizedQueryObj = normalizeBoxesQueryParams(queryObj)
+
+	const parseResult = DevicesQuerySchema.safeParse(normalizedQueryObj)
 
 	if (!parseResult.success) {
 		const { fieldErrors } = parseResult.error.flatten()
