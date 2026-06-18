@@ -96,6 +96,8 @@ export async function getSensorsWithLastMeasurement(
         s.sensor_type AS "sensorType",
         s.icon,
         s.status,
+        s.device_id AS "deviceId",
+        s."order",
         json_agg(
           json_build_object(
             'value', measure.value,
@@ -113,7 +115,8 @@ export async function getSensorsWithLastMeasurement(
         LIMIT ${count}
       ) AS measure ON true
       WHERE s.device_id = ${deviceId}
-      GROUP BY s.id;`,
+      GROUP BY s.id
+      ORDER BY s."order" ASC, s.id ASC;`,
 	)
 
 	const cast = [...result].map((r) => {
