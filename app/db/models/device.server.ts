@@ -479,6 +479,18 @@ export function getUserDevices(userId: Device['userId']) {
 	})
 }
 
+export function getUserDeviceLocations(userId: Device['userId']) {
+	return drizzleClient.query.device.findMany({
+		where: (device, { and, eq, isNull }) =>
+			and(eq(device.userId, userId), isNull(device.archivedAt)),
+		columns: {
+			id: true,
+			latitude: true,
+			longitude: true,
+		},
+	})
+}
+
 export function getUserDeviceIds(userId: Device['userId']) {
 	return drizzleClient.query.device
 		.findMany({
