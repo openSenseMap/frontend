@@ -11,10 +11,12 @@ import {
 	lt,
 	lte,
 	or,
+	sql,
 } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
 import {
 	campaign,
+	campaignBookmark,
 	type Campaign,
 	type InsertCampaign,
 	type User,
@@ -25,6 +27,9 @@ export type CampaignListFilters = {
 	query?: string
 	phenomenon?: string
 	status?: 'active' | 'upcoming' | 'ended'
+	bookmarkFilter?: 'bookmarked'
+	sort?: 'newest' | 'starting' | 'bookmarks'
+	userId?: User['id'] | null
 }
 
 export async function createCampaign(
@@ -73,10 +78,22 @@ export async function getCampaigns(filters: CampaignListFilters = {}) {
 				},
 			},
 		},
-		orderBy: (campaign, { desc }) => [
-			desc(campaign.startDate),
-			desc(campaign.createdAt),
-		],
+		orderBy: (campaign, { asc, desc }) => {
+			if (filters.sort === 'bookmarks') {
+				return [
+					desc(
+						sql<number>`(select count(*) from ${campaignBookmark} where ${campaignBookmark.campaignId} = ${campaign.id})`,
+					),
+					desc(campaign.createdAt),
+				]
+			}
+
+			if (filters.sort === 'newest') {
+				return [desc(campaign.createdAt)]
+			}
+
+			return [asc(campaign.startDate), desc(campaign.createdAt)]
+		},
 	})
 }
 
@@ -153,6 +170,21 @@ function getCampaignWhere(filters: CampaignListFilters) {
 
 		if (filters.status === 'ended') {
 			conditions.push(lt(campaign.endDate, now))
+		}
+	}
+
+	if (filters.bookmarkFilter === 'bookmarked') {
+		if (!filters.userId) {
+			conditions.push(sql`false`)
+		} else {
+			conditions.push(
+				sql`exists (
+					select 1
+					from ${campaignBookmark}
+					where ${campaignBookmark.campaignId} = ${campaign.id}
+						and ${campaignBookmark.userId} = ${filters.userId}
+				)`,
+			)
 		}
 	}
 
