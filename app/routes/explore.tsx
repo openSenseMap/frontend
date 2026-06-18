@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import bbox from '@turf/bbox'
 import { type FeatureCollection, type Point } from 'geojson'
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import {
@@ -21,7 +20,11 @@ import { type Route } from './+types/explore'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import Legend, { type LegendValue } from '~/components/map/legend'
-import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
+import {
+	getDevices,
+	getDevicesWithSensors,
+	getUserDeviceLocations,
+} from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
 import { getProfileByUserId } from '~/db/models/profile.server'
 import { getSensors } from '~/db/models/sensor.server'
@@ -70,6 +73,12 @@ type MyAreaTarget =
 			bounds: [[number, number], [number, number]]
 	  }
 
+type OwnedDeviceLocation = {
+	id: string
+	latitude: number
+	longitude: number
+}
+
 function parseMapHash(hash: string) {
 	const match = hash.match(
 		/^#?(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/,
@@ -99,24 +108,16 @@ function getHomeView(
 }
 
 function getOwnedDevicesAreaTarget(
-	devices: FeatureCollection<Point, any>,
-	userId?: string,
+	devices: OwnedDeviceLocation[],
 ): MyAreaTarget | null {
-	if (!userId) return null
+	const validDevices = devices.filter(({ longitude, latitude }) =>
+		validLngLat(longitude, latitude),
+	)
 
-	const ownedFeatures = devices.features.filter((feature) => {
-		const [longitude, latitude] = feature.geometry.coordinates
+	if (validDevices.length === 0) return null
 
-		return (
-			feature.properties?.userId === userId &&
-			validLngLat(longitude, latitude)
-		)
-	})
-
-	if (ownedFeatures.length === 0) return null
-
-	if (ownedFeatures.length === 1) {
-		const [longitude, latitude] = ownedFeatures[0].geometry.coordinates
+	if (validDevices.length === 1) {
+		const { longitude, latitude } = validDevices[0]
 
 		return {
 			type: 'view',
@@ -128,10 +129,18 @@ function getOwnedDevicesAreaTarget(
 		}
 	}
 
-	const [west, south, east, north] = bbox({
-		type: 'FeatureCollection',
-		features: ownedFeatures,
-	})
+	const [firstDevice, ...remainingDevices] = validDevices
+	let west = firstDevice.longitude
+	let east = firstDevice.longitude
+	let south = firstDevice.latitude
+	let north = firstDevice.latitude
+
+	for (const device of remainingDevices) {
+		west = Math.min(west, device.longitude)
+		east = Math.max(east, device.longitude)
+		south = Math.min(south, device.latitude)
+		north = Math.max(north, device.latitude)
+	}
 
 	const latitudeSpan = Math.abs(north - south)
 	const longitudeSpan = Math.abs(east - west)
@@ -357,10 +366,14 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	const phenomena = await getPhenomena()
 
 	if (user) {
-		const profile = await getProfileByUserId(user.id)
+		const [profile, userDeviceLocations] = await Promise.all([
+			getProfileByUserId(user.id),
+			getUserDeviceLocations(user.id),
+		])
 		const userLocale = user.language
 			? user.language.split(/[_-]/)[0].toLowerCase()
 			: 'en'
+
 		return {
 			devices,
 			availableTags,
@@ -368,6 +381,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			measurementCount,
 			user,
 			profile,
+			userDeviceLocations,
 			filteredDevices,
 			filterParams,
 			locale: userLocale,
@@ -380,6 +394,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		measurementCount,
 		user,
 		profile: null,
+		userDeviceLocations: [],
 		filterParams,
 		filteredDevices,
 		message,
@@ -402,6 +417,7 @@ export default function Explore() {
 		measurementCount,
 		user,
 		profile,
+		userDeviceLocations,
 	} = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
 	const appliedInitialMyAreaRef = useRef(false)
@@ -627,12 +643,8 @@ export default function Explore() {
 	const hashView = parseMapHash(location.hash)
 	const homeView = getHomeView(profile)
 	const ownedDevicesAreaTarget = useMemo(
-		() =>
-			getOwnedDevicesAreaTarget(
-				filteredDevices as FeatureCollection<Point, any>,
-				user?.id,
-			),
-		[filteredDevices, user?.id],
+		() => getOwnedDevicesAreaTarget(userDeviceLocations),
+		[userDeviceLocations],
 	)
 	const myAreaTarget = homeView
 		? ({
