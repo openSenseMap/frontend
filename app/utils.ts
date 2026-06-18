@@ -255,6 +255,21 @@ export function useOptionalUser(): User | undefined {
 	return data.user
 }
 
+export function useFeatureFlags() {
+	const data = useMatchesData('root')
+
+	return {
+		campaigns:
+			typeof data?.ENV === 'object' &&
+			data.ENV !== null &&
+			'FEATURES' in data.ENV &&
+			typeof data.ENV.FEATURES === 'object' &&
+			data.ENV.FEATURES !== null &&
+			'campaigns' in data.ENV.FEATURES &&
+			data.ENV.FEATURES.campaigns === true,
+	}
+}
+
 export function useUser(): User {
 	const maybeUser = useOptionalUser()
 	if (!maybeUser) {

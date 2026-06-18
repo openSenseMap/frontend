@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isCampaignsEnabled } from './feature-flags.server'
 
 const schema = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
@@ -17,6 +18,7 @@ const schema = z.object({
 	MYBADGES_CLIENT_ID: z.string(),
 	MYBADGES_CLIENT_SECRET: z.string(),
 	DISCOURSE_URL: z.string().url(),
+	ENABLE_CAMPAIGNS: z.string().optional(),
 })
 
 declare global {
@@ -45,6 +47,9 @@ export function getEnv() {
 		MYBADGES_URL: process.env.MYBADGES_URL,
 		SENSORWIKI_API_URL: process.env.SENSORWIKI_API_URL,
 		COMMUNITY_URL: process.env.DISCOURSE_URL,
+		FEATURES: {
+			campaigns: isCampaignsEnabled(),
+		},
 	}
 }
 
