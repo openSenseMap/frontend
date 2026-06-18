@@ -387,6 +387,9 @@ export async function updateDevice(
 				)
 			}
 
+			let nextSensorOrder =
+				Math.max(...existingSensors.map((sensor) => sensor.order ?? -1)) + 1
+
 			for (const s of args.sensors) {
 				const hasDeleted = 'deleted' in s
 				const hasEdited = 'edited' in s
@@ -423,7 +426,9 @@ export async function updateDevice(
 						sensorType: s.sensorType,
 						icon: s.icon,
 						deviceId,
+						order: nextSensorOrder,
 					})
+					nextSensorOrder += 1
 				} else if (hasEdited && s._id) {
 					const sensorExists = existingSensors.some(
 						(existing) => existing.id === s._id,
@@ -894,7 +899,7 @@ export async function createDevice(deviceData: any, userId: string) {
 				Array.isArray(sensorsToAdd) &&
 				sensorsToAdd.length > 0
 			) {
-				for (const sensorData of sensorsToAdd) {
+				for (const [index, sensorData] of sensorsToAdd.entries()) {
 					const [newSensor] = await tx
 						.insert(sensor)
 						.values({
@@ -903,6 +908,7 @@ export async function createDevice(deviceData: any, userId: string) {
 							sensorType: sensorData.sensorType,
 							icon: sensorData.icon,
 							deviceId: createdDevice.id,
+							order: sensorData.order ?? index,
 						})
 						.returning()
 
