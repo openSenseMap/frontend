@@ -76,15 +76,19 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 	const updatedSensorsDataJson = JSON.parse(updatedSensorsData)
 
-	for (const [index, sensor] of updatedSensorsDataJson.entries()) {
+	let persistedOrder = 0
+
+	for (const sensor of updatedSensorsDataJson) {
 		if (sensor?.new === true && sensor?.edited === true) {
 			await addNewSensor({
 				title: sensor.title,
 				unit: sensor.unit,
 				sensorType: sensor.sensorType,
+				icon: sensor.icon,
 				deviceId,
-				order: index,
+				order: persistedOrder,
 			})
+			persistedOrder++
 		} else if (sensor?.deleted === true) {
 			await deleteSensor(sensor.id)
 		} else if (!sensor?.new) {
@@ -93,8 +97,10 @@ export async function action({ request, params }: Route.ActionArgs) {
 				title: sensor.title,
 				unit: sensor.unit,
 				sensorType: sensor.sensorType,
-				order: index,
+				icon: sensor.icon,
+				order: persistedOrder,
 			})
+			persistedOrder++
 		}
 	}
 
@@ -134,6 +140,16 @@ export default function EditBoxSensors() {
 	const dragIndexRef = React.useRef<number | null>(null)
 	//* to view toast on edit-page
 	const [setToastOpen] = useOutletContext<[(_open: boolean) => void]>()
+
+	// Need to look up original sensor id in case a new sensor is prepended
+	// in edit mode and the operation is cancelled
+	const getOriginalSensor = React.useCallback(
+		(sensor: any, index: number) =>
+			sensor?.id
+				? data.find((item: any) => item.id === sensor.id)
+				: data[index],
+		[data],
+	)
 
 	React.useEffect(() => {
 		//* if sensors data were updated successfully
@@ -207,7 +223,6 @@ export default function EditBoxSensors() {
 										variant="outline"
 										onClick={() => {
 											setSensorsData([
-												...sensorsData,
 												{
 													title: undefined,
 													unit: undefined,
@@ -216,6 +231,7 @@ export default function EditBoxSensors() {
 													new: true,
 													notValidInput: true,
 												},
+												...sensorsData,
 											])
 										}}
 										className="gap-2"
@@ -574,10 +590,14 @@ export default function EditBoxSensors() {
 																if (sensor?.new) {
 																	sensorsData.splice(index, 1)
 																} else {
+																	const originalSensor = getOriginalSensor(
+																		sensor,
+																		index,
+																	)
 																	sensor.editing = false
-																	sensor.title = data[index].title
-																	sensor.unit = data[index].unit
-																	sensor.sensorType = data[index].sensorType
+																	sensor.title = originalSensor?.title
+																	sensor.unit = originalSensor?.unit
+																	sensor.sensorType = originalSensor?.sensorType
 																}
 															}}
 														>

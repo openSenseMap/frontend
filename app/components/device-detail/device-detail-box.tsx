@@ -99,6 +99,11 @@ export default function DeviceDetailBox() {
 	const sensorIds = new Set()
 
 	const data = useLoaderData<typeof loader>()
+	const exploreData = matches.find((match) => match.pathname === '/explore')
+		?.loaderData as { user?: { id?: string } } | undefined
+	const isOwner =
+		typeof data.device?.userId === 'string' &&
+		exploreData?.user?.id === data.device.userId
 	const nodeRef = useRef<HTMLDivElement>(null)
 	// state variables
 	const [open, setOpen] = useState(true)
@@ -111,7 +116,9 @@ export default function DeviceDetailBox() {
 	const [sensors, setSensors] = useState<SensorWithLatestMeasurement[]>()
 	useEffect(() => {
 		const sortedSensors = [...(data.sensors as any)].sort(
-			(a, b) => (a.id as unknown as number) - (b.id as unknown as number),
+			(a, b) =>
+				(a.order ?? Number.MAX_SAFE_INTEGER) -
+					(b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
 		)
 		setSensors(sortedSensors)
 	}, [data])
@@ -192,7 +199,7 @@ export default function DeviceDetailBox() {
 				>
 					<div
 						ref={nodeRef}
-						className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-row px-4 py-2 md:top-auto md:bottom-[30px] md:left-[10px] md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0"
+						className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-row px-4 py-2 md:top-auto md:bottom-7.5 md:left-2.5 md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0"
 					>
 						<div
 							id="deviceDetailBox"
@@ -454,6 +461,19 @@ export default function DeviceDetailBox() {
 														: ''
 												}
 											>
+												{isOwner && (
+													<Alert className="mb-4 py-3">
+														<AlertDescription className="text-xs">
+															{t('sensor_order_hint')}{' '}
+															<Link
+																to={`/device/${data.device.id}/edit/sensors`}
+																className="font-medium underline underline-offset-4"
+															>
+																{t('sensor_order_hint_link')}
+															</Link>
+														</AlertDescription>
+													</Alert>
+												)}
 												<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
 													{sensors &&
 														sensors.map(
@@ -503,6 +523,7 @@ export default function DeviceDetailBox() {
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
+																						icon={sensor.icon}
 																						className="text-muted-foreground ml-2 h-4 w-4 shrink-0"
 																					/>
 																				</CardHeader>
@@ -580,6 +601,7 @@ export default function DeviceDetailBox() {
 																					</CardTitle>
 																					<SensorIcon
 																						title={sensor.title || ''}
+																						icon={sensor.icon}
 																						className="text-muted-foreground ml-2 h-4 w-4 shrink-0"
 																					/>
 																				</CardHeader>
@@ -647,7 +669,7 @@ export default function DeviceDetailBox() {
 					onClick={() => {
 						setOpen(true)
 					}}
-					className="absolute bottom-[10px] left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 sm:bottom-[30px] sm:left-[10px] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
+					className="absolute bottom-2.5 left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 sm:bottom-7.5 sm:left-2.5 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
 				>
 					<TooltipProvider>
 						<Tooltip>

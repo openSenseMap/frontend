@@ -93,7 +93,11 @@ export async function getSensorsWithLastMeasurement(
         s.id,
         s.title,
         s.unit,
-        s.sensor_type,
+        s.sensor_type AS "sensorType",
+        s.icon,
+        s.status,
+        s.device_id AS "deviceId",
+        s."order",
         json_agg(
           json_build_object(
             'value', measure.value,
@@ -111,7 +115,8 @@ export async function getSensorsWithLastMeasurement(
         LIMIT ${count}
       ) AS measure ON true
       WHERE s.device_id = ${deviceId}
-      GROUP BY s.id;`,
+      GROUP BY s.id
+      ORDER BY s."order" ASC, s.id ASC;`,
 	)
 
 	const cast = [...result].map((r) => {
@@ -167,13 +172,18 @@ export function addNewSensor({
 	title,
 	unit,
 	sensorType,
+	icon,
 	deviceId,
 	order,
-}: Pick<Sensor, 'title' | 'unit' | 'sensorType' | 'deviceId' | 'order'>) {
+}: Pick<
+	Sensor,
+	'title' | 'unit' | 'sensorType' | 'icon' | 'deviceId' | 'order'
+>) {
 	return drizzleClient.insert(sensor).values({
 		title,
 		unit,
 		sensorType,
+		icon,
 		deviceId,
 		order,
 	})
@@ -184,14 +194,16 @@ export function updateSensor({
 	title,
 	unit,
 	sensorType,
+	icon,
 	order,
-}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'order'>) {
+}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'icon' | 'order'>) {
 	return drizzleClient
 		.update(sensor)
 		.set({
 			title,
 			unit,
 			sensorType,
+			icon,
 			order,
 		})
 		.where(eq(sensor.id, id))
