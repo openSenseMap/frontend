@@ -5,6 +5,12 @@ export const campaignFormSchema = z
 		title: z.string().trim().min(3).max(80),
 		description: z.string().trim().min(20).max(4000),
 		requirements: z.string().trim().min(10).max(8000),
+		discussionUrl: z
+			.string()
+			.trim()
+			.url()
+			.optional()
+			.or(z.literal('').transform(() => undefined)),
 		phenomena: z.array(z.string().trim().min(1)).min(1),
 		gridSize: z.number().int().min(2).max(20),
 		minDevicesPerCell: z.number().int().min(0).max(100),

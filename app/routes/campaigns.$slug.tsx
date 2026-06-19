@@ -1,30 +1,56 @@
-import { Bookmark, CalendarDays, User } from 'lucide-react'
+import {
+	Bookmark,
+	CalendarDays,
+	ExternalLink,
+	MessageSquare,
+	Radio,
+	User,
+} from 'lucide-react'
 import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import {
+	data,
 	Form,
 	Link,
 	redirect,
+	useActionData,
 	useLoaderData,
 	useNavigation,
 } from 'react-router'
+import { z } from 'zod'
 import { type Route } from './+types/campaigns.$slug'
 import { CampaignMapPreview } from '~/components/campaigns/campaign-map-preview'
 import { ClientOnly } from '~/components/client-only'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { Textarea } from '~/components/ui/textarea'
 import {
 	bookmarkCampaign,
 	getCampaignBookmarkCount,
 	isCampaignBookmarked,
 	removeCampaignBookmark,
 } from '~/db/models/campaign-bookmark.server'
+import {
+	createCampaignUpdate,
+	getCampaignUpdates,
+} from '~/db/models/campaign-update.server'
 import { getCampaignBySlug } from '~/db/models/campaign.server'
 import { formatPhenomenonLabel } from '~/lib/campaign'
 import { requireCampaignsEnabled } from '~/lib/feature-flags.server'
 import { getCampaignCoverage } from '~/services/campaign-coverage.server'
 import { getUserId, requireUserId } from '~/services/session-service.server'
+
+type ActionData = {
+	errors?: {
+		updateBody?: string
+		form?: string
+	}
+}
+
+const campaignUpdateSchema = z.object({
+	body: z.string().trim().min(5).max(2000),
+})
 
 export async function loader({ params, request }: Route.LoaderArgs) {
 	requireCampaignsEnabled()
@@ -36,12 +62,13 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		throw new Response('Campaign not found', { status: 404 })
 	}
 
-	const [coverage, isBookmarked, bookmarkCount] = await Promise.all([
+	const [coverage, isBookmarked, bookmarkCount, updates] = await Promise.all([
 		getCampaignCoverage(campaign),
 		userId
 			? isCampaignBookmarked({ campaignId: campaign.id, userId })
 			: Promise.resolve(false),
 		getCampaignBookmarkCount(campaign.id),
+		getCampaignUpdates(campaign.id),
 	])
 
 	return {
@@ -51,6 +78,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		isLoggedIn: Boolean(userId),
 		isBookmarked,
 		bookmarkCount,
+		updates,
 	}
 }
 
@@ -75,18 +103,62 @@ export async function action({ params, request }: Route.ActionArgs) {
 		await removeCampaignBookmark({ campaignId: campaign.id, userId })
 	}
 
+	if (intent === 'create-update') {
+		if (campaign.ownerId !== userId) {
+			throw new Response('Only the campaign organizer can post updates.', {
+				status: 403,
+			})
+		}
+
+		const parsed = campaignUpdateSchema.safeParse({
+			body: String(formData.get('updateBody') ?? ''),
+		})
+
+		if (!parsed.success) {
+			return data<ActionData>(
+				{
+					errors: {
+						updateBody:
+							parsed.error.issues[0]?.message ?? 'Update text is invalid.',
+					},
+				},
+				{ status: 400 },
+			)
+		}
+
+		await createCampaignUpdate({
+			campaignId: campaign.id,
+			authorId: userId,
+			body: parsed.data.body,
+		})
+	}
+
 	return redirect(`/campaigns/${campaign.slug}`)
 }
 
 export default function CampaignDetailPage() {
-	const { campaign, coverage, isLoggedIn, isBookmarked, bookmarkCount } =
-		useLoaderData<typeof loader>()
+	const {
+		campaign,
+		coverage,
+		isLoggedIn,
+		isBookmarked,
+		bookmarkCount,
+		canEdit,
+		updates,
+	} = useLoaderData<typeof loader>()
+	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
 	const { t } = useTranslation('campaigns')
 	const isBookmarkSubmitting =
 		navigation.state !== 'idle' &&
 		(navigation.formData?.get('intent') === 'bookmark' ||
 			navigation.formData?.get('intent') === 'remove-bookmark')
+	const isUpdateSubmitting =
+		navigation.state !== 'idle' &&
+		navigation.formData?.get('intent') === 'create-update'
+	const contributingDevices = [...coverage.points].sort(
+		(first, second) => second.measurementCount - first.measurementCount,
+	)
 
 	return (
 		<div className="min-h-screen bg-slate-50">
@@ -153,6 +225,72 @@ export default function CampaignDetailPage() {
 							/>
 						</dl>
 					</article>
+
+					<article className="rounded-lg border border-slate-200 bg-white p-6">
+						<div className="flex items-start justify-between gap-4">
+							<div>
+								<h2 className="text-xl font-semibold text-slate-950">
+									{t('organizer_updates')}
+								</h2>
+								<p className="mt-1 text-sm text-slate-600">
+									{t('organizer_updates_description')}
+								</p>
+							</div>
+							{updates.length > 0 ? (
+								<Badge variant="secondary">
+									{t('update_count', { count: updates.length })}
+								</Badge>
+							) : null}
+						</div>
+
+						{canEdit ? (
+							<Form method="post" className="mt-5 space-y-3">
+								<input type="hidden" name="intent" value="create-update" />
+								<Textarea
+									name="updateBody"
+									placeholder={t('organizer_update_placeholder')}
+									className="min-h-28"
+								/>
+								{actionData?.errors?.updateBody ? (
+									<p className="text-sm text-red-600">
+										{actionData.errors.updateBody}
+									</p>
+								) : null}
+								<div className="flex justify-end">
+									<Button type="submit" disabled={isUpdateSubmitting}>
+										{isUpdateSubmitting
+											? t('posting_update')
+											: t('post_update')}
+									</Button>
+								</div>
+							</Form>
+						) : null}
+
+						{updates.length > 0 ? (
+							<div className="mt-6 space-y-4">
+								{updates.map((update) => (
+									<div
+										key={update.id}
+										className="border-t border-slate-200 pt-4 first:border-t-0 first:pt-0"
+									>
+										<div className="flex flex-wrap gap-x-2 gap-y-1 text-sm text-slate-500">
+											<span className="font-medium text-slate-700">
+												{update.author?.name ?? t('unknown_organizer')}
+											</span>
+											<span>{formatDate(update.createdAt)}</span>
+										</div>
+										<p className="mt-2 whitespace-pre-wrap text-slate-700">
+											{update.body}
+										</p>
+									</div>
+								))}
+							</div>
+						) : (
+							<p className="mt-5 rounded-md bg-slate-50 p-4 text-sm text-slate-600">
+								{t('no_organizer_updates')}
+							</p>
+						)}
+					</article>
 				</section>
 
 				<aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
@@ -165,6 +303,33 @@ export default function CampaignDetailPage() {
 							<CampaignMapPreview area={campaign.area} coverage={coverage} />
 						)}
 					</ClientOnly>
+					{campaign.discussionUrl ? (
+						<div className="rounded-lg border border-slate-200 bg-white p-4">
+							<div className="flex items-start gap-3">
+								<div className="rounded-full bg-green-50 p-2 text-green-700">
+									<MessageSquare className="h-4 w-4" />
+								</div>
+								<div>
+									<h2 className="font-semibold text-slate-950">
+										{t('campaign_discussion')}
+									</h2>
+									<p className="mt-1 text-sm text-slate-600">
+										{t('campaign_discussion_description')}
+									</p>
+								</div>
+							</div>
+							<Button asChild variant="outline" className="mt-4 w-full">
+								<a
+									href={campaign.discussionUrl}
+									target="_blank"
+									rel="noreferrer"
+								>
+									{t('open_discussion')}
+									<ExternalLink className="ml-2 h-4 w-4" />
+								</a>
+							</Button>
+						</div>
+					) : null}
 					<div className="rounded-lg border border-slate-200 bg-white p-4">
 						<div className="flex items-start gap-3">
 							<div className="rounded-full bg-green-50 p-2 text-green-700">
@@ -210,6 +375,53 @@ export default function CampaignDetailPage() {
 									{t('login_to_bookmark')}
 								</Link>
 							</Button>
+						)}
+					</div>
+					<div className="rounded-lg border border-slate-200 bg-white p-4">
+						<div className="flex items-start gap-3">
+							<div className="rounded-full bg-green-50 p-2 text-green-700">
+								<Radio className="h-4 w-4" />
+							</div>
+							<div>
+								<h2 className="font-semibold text-slate-950">
+									{t('contributing_devices')}
+								</h2>
+								<p className="mt-1 text-sm text-slate-600">
+									{t('contributing_devices_description')}
+								</p>
+							</div>
+						</div>
+						{contributingDevices.length > 0 ? (
+							<div className="mt-4 space-y-3">
+								{contributingDevices.slice(0, 5).map((point) => (
+									<Link
+										key={point.deviceId}
+										to={`/explore/${point.deviceId}`}
+										className="block rounded-md bg-slate-50 p-3 transition hover:bg-slate-100"
+									>
+										<div className="font-medium text-slate-950">
+											{point.deviceName}
+										</div>
+										<div className="mt-1 text-xs text-slate-600">
+											{t('device_contribution_summary', {
+												sensors: point.sensorCount,
+												measurements: point.measurementCount,
+											})}
+										</div>
+									</Link>
+								))}
+								{contributingDevices.length > 5 ? (
+									<p className="text-xs text-slate-500">
+										{t('additional_contributing_devices', {
+											count: contributingDevices.length - 5,
+										})}
+									</p>
+								) : null}
+							</div>
+						) : (
+							<p className="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+								{t('no_contributing_devices')}
+							</p>
 						)}
 					</div>
 					<div className="rounded-lg border border-slate-200 bg-white p-4">

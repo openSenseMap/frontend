@@ -48,6 +48,7 @@ export async function action({ request }: Route.ActionArgs) {
 		title: String(formData.get('title') ?? ''),
 		description: String(formData.get('description') ?? ''),
 		requirements: String(formData.get('requirements') ?? ''),
+		discussionUrl: String(formData.get('discussionUrl') ?? ''),
 		phenomena: parsePhenomena(String(formData.get('phenomena') ?? '')),
 		gridSize: parseNumber(formData.get('gridSize'), 6),
 		minDevicesPerCell: parseNumber(formData.get('minDevicesPerCell'), 1),
@@ -84,6 +85,7 @@ export async function action({ request }: Route.ActionArgs) {
 			title: parsed.data.title,
 			description: parsed.data.description,
 			requirements: parsed.data.requirements,
+			discussionUrl: parsed.data.discussionUrl,
 			phenomena: parsed.data.phenomena,
 			gridSize: parsed.data.gridSize,
 			minDevicesPerCell: parsed.data.minDevicesPerCell,
@@ -173,6 +175,20 @@ export default function NewCampaignPage() {
 									className="min-h-40"
 								/>
 								<FieldError message={actionData?.errors?.requirements} />
+							</div>
+							<div className="space-y-2 md:col-span-2">
+								<Label htmlFor="discussionUrl">{t('discussion_url')}</Label>
+								<Input
+									id="discussionUrl"
+									name="discussionUrl"
+									type="url"
+									defaultValue={actionData?.values?.discussionUrl}
+									placeholder={t('discussion_url_placeholder')}
+								/>
+								<p className="text-xs text-slate-500">
+									{t('discussion_url_help')}
+								</p>
+								<FieldError message={actionData?.errors?.discussionUrl} />
 							</div>
 							<div className="space-y-2 md:col-span-2">
 								<h2 className="text-lg font-semibold text-slate-950">
@@ -334,6 +350,7 @@ function campaignFormError(
 		title: string
 		description: string
 		requirements: string
+		discussionUrl: string
 		phenomena: string[]
 		gridSize: number
 		minDevicesPerCell: number
@@ -349,6 +366,7 @@ function campaignFormError(
 				title: values.title,
 				description: values.description,
 				requirements: values.requirements,
+				discussionUrl: values.discussionUrl,
 				phenomena: values.phenomena.join(', '),
 				gridSize: String(values.gridSize),
 				minDevicesPerCell: String(values.minDevicesPerCell),

@@ -26,6 +26,7 @@ export const campaign = pgTable('campaign', {
 	title: text('title').notNull(),
 	description: text('description').notNull(),
 	requirements: text('requirements').notNull(),
+	discussionUrl: text('discussion_url'),
 	phenomena: text('phenomena')
 		.array()
 		.notNull()
@@ -81,12 +82,42 @@ export const campaignBookmark = pgTable(
 	],
 )
 
+export const campaignUpdate = pgTable(
+	'campaign_update',
+	{
+		id: text('id')
+			.primaryKey()
+			.notNull()
+			.$defaultFn(() => createId()),
+		campaignId: text('campaign_id')
+			.notNull()
+			.references(() => campaign.id, {
+				onDelete: 'cascade',
+				onUpdate: 'cascade',
+			}),
+		authorId: text('author_id')
+			.notNull()
+			.references(() => user.id, {
+				onDelete: 'cascade',
+				onUpdate: 'cascade',
+			}),
+		body: text('body').notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	},
+	(table) => [
+		index('campaign_update_campaign_id_idx').on(table.campaignId),
+		index('campaign_update_author_id_idx').on(table.authorId),
+	],
+)
+
 export const campaignRelations = relations(campaign, ({ many, one }) => ({
 	owner: one(user, {
 		fields: [campaign.ownerId],
 		references: [user.id],
 	}),
 	bookmarks: many(campaignBookmark),
+	updates: many(campaignUpdate),
 }))
 
 export const campaignBookmarkRelations = relations(
@@ -103,7 +134,20 @@ export const campaignBookmarkRelations = relations(
 	}),
 )
 
+export const campaignUpdateRelations = relations(campaignUpdate, ({ one }) => ({
+	campaign: one(campaign, {
+		fields: [campaignUpdate.campaignId],
+		references: [campaign.id],
+	}),
+	author: one(user, {
+		fields: [campaignUpdate.authorId],
+		references: [user.id],
+	}),
+}))
+
 export type Campaign = InferSelectModel<typeof campaign>
 export type InsertCampaign = InferInsertModel<typeof campaign>
 export type CampaignBookmark = InferSelectModel<typeof campaignBookmark>
 export type InsertCampaignBookmark = InferInsertModel<typeof campaignBookmark>
+export type CampaignUpdate = InferSelectModel<typeof campaignUpdate>
+export type InsertCampaignUpdate = InferInsertModel<typeof campaignUpdate>
