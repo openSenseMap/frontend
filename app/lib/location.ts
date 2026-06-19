@@ -11,7 +11,23 @@ export const LOCATION_LIMITS = {
 	},
 } as const
 
-const emptyStringToUndefined = (value: unknown) => {
+export const MAP_ZOOM_LIMITS = {
+	min: 1.5,
+	max: 20,
+	default: 10,
+} as const
+
+export type MapViewport = {
+	latitude: number
+	longitude: number
+	zoom: number
+}
+
+const missingLocationValueToUndefined = (value: unknown) => {
+	if (value === null || value === undefined) {
+		return undefined
+	}
+
 	if (typeof value === 'string' && value.trim() === '') {
 		return undefined
 	}
@@ -21,7 +37,7 @@ const emptyStringToUndefined = (value: unknown) => {
 
 export const locationSchema = z.object({
 	latitude: z.preprocess(
-		emptyStringToUndefined,
+		missingLocationValueToUndefined,
 		z.coerce
 			.number({
 				error: (issue) =>
@@ -40,7 +56,7 @@ export const locationSchema = z.object({
 	),
 
 	longitude: z.preprocess(
-		emptyStringToUndefined,
+		missingLocationValueToUndefined,
 		z.coerce
 			.number({
 				error: (issue) =>
@@ -66,6 +82,33 @@ export function validLngLat(lng: number, lat: number): boolean {
 		latitude: lat,
 		longitude: lng,
 	}).success
+}
+
+export function isValidMapZoom(value: unknown): value is number {
+	return (
+		typeof value === 'number' &&
+		Number.isFinite(value) &&
+		value >= MAP_ZOOM_LIMITS.min &&
+		value <= MAP_ZOOM_LIMITS.max
+	)
+}
+
+export function getValidMapViewport(value: {
+	latitude: number | null | undefined
+	longitude: number | null | undefined
+	zoom?: number | null | undefined
+}): MapViewport | null {
+	const zoom = value.zoom ?? MAP_ZOOM_LIMITS.default
+
+	if (!isValidLocation(value)) return null
+
+	if (!isValidMapZoom(zoom)) return null
+
+	return {
+		latitude: value.latitude,
+		longitude: value.longitude,
+		zoom,
+	}
 }
 
 export function isValidLocation(value: {
@@ -116,7 +159,9 @@ export type LocationFieldErrors = {
 	longitude?: string
 }
 
-export function validateLocationFieldErrors(value: unknown): LocationFieldErrors {
+export function validateLocationFieldErrors(
+	value: unknown,
+): LocationFieldErrors {
 	const parsed = locationSchema.safeParse(value)
 
 	if (parsed.success) {
@@ -124,4 +169,86 @@ export function validateLocationFieldErrors(value: unknown): LocationFieldErrors
 	}
 
 	return getLocationFieldErrors(parsed.error)
+}
+
+export type OptionalMapViewportInput = {
+	latitude: string
+	longitude: string
+	zoom: string
+}
+
+export function parseOptionalMapViewportInput(input: OptionalMapViewportInput):
+	| {
+			success: true
+			data: {
+				latitude: number | null
+				longitude: number | null
+				zoom: number | null
+			}
+	  }
+	| {
+			success: false
+			message: string
+	  } {
+	const latitudeRaw = input.latitude.trim()
+	const longitudeRaw = input.longitude.trim()
+	const zoomRaw = input.zoom.trim()
+	const hasLatitude = latitudeRaw.length > 0
+	const hasLongitude = longitudeRaw.length > 0
+	const zoom = zoomRaw.length > 0 ? Number(zoomRaw) : MAP_ZOOM_LIMITS.default
+
+	if (hasLatitude !== hasLongitude) {
+		return {
+			success: false,
+			message: 'Please provide both latitude and longitude.',
+		}
+	}
+
+	if (!isValidMapZoom(zoom)) {
+		return {
+			success: false,
+			message: `Zoom must be between ${MAP_ZOOM_LIMITS.min} and ${MAP_ZOOM_LIMITS.max}.`,
+		}
+	}
+
+	if (!hasLatitude && !hasLongitude) {
+		return {
+			success: true,
+			data: {
+				latitude: null,
+				longitude: null,
+				zoom: null,
+			},
+		}
+	}
+
+	const parsedLocation = locationSchema.safeParse({
+		latitude: latitudeRaw,
+		longitude: longitudeRaw,
+	})
+
+	if (!parsedLocation.success) {
+		const errors = getLocationFieldErrors(parsedLocation.error)
+
+		return {
+			success: false,
+			message:
+				errors.latitude ??
+				errors.longitude ??
+				'Please provide a valid latitude and longitude.',
+		}
+	}
+
+	return {
+		success: true,
+		data: {
+			latitude: parsedLocation.data.latitude,
+			longitude: parsedLocation.data.longitude,
+			zoom,
+		},
+	}
+}
+
+export function isOptionalMapViewInputValid(input: OptionalMapViewportInput) {
+	return parseOptionalMapViewportInput(input).success
 }
