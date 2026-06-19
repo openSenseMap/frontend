@@ -31,3 +31,20 @@ export const campaignFormSchema = z
 	)
 
 export type CampaignFormData = z.infer<typeof campaignFormSchema>
+
+export const campaignTemplateFormSchema = z.object({
+	title: z.string().trim().min(3).max(80),
+	summary: z.string().trim().min(10).max(240),
+	description: z.string().trim().min(20).max(4000),
+	requirements: z.string().trim().min(10).max(8000),
+	category: z.enum(['climate', 'air_quality', 'education', 'water']),
+	phenomena: z.array(z.string().trim().min(1)).min(1),
+	gridSize: z.number().int().min(2).max(20),
+	minDevicesPerCell: z.number().int().min(0).max(100),
+	minMeasurementsPerCell: z.number().int().min(1).max(1000000),
+	suggestedDurationDays: z.number().int().min(1).max(365).optional(),
+})
+
+export type CampaignTemplateFormData = z.infer<
+	typeof campaignTemplateFormSchema
+>

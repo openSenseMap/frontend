@@ -330,6 +330,13 @@
       "when": 1781860892903,
       "tag": "0046_calm_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1781863545065,
+      "tag": "0047_bright_sue_storm",
+      "breakpoints": true
     }
   ]
 }

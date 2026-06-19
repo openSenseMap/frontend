@@ -41,6 +41,9 @@ export default function CampaignGuidePage() {
 								<Link to="/campaigns/new">{t('create_campaign')}</Link>
 							</Button>
 							<Button asChild variant="outline">
+								<Link to="/campaigns/templates">{t('campaign_templates')}</Link>
+							</Button>
+							<Button asChild variant="outline">
 								<Link to="/campaigns">{t('browse_campaigns')}</Link>
 							</Button>
 						</div>

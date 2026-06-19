@@ -90,6 +90,9 @@ export default function CampaignsIndexPage() {
 						<Button asChild variant="outline">
 							<Link to="/campaigns/guide">{t('campaign_guide')}</Link>
 						</Button>
+						<Button asChild variant="outline">
+							<Link to="/campaigns/templates">{t('campaign_templates')}</Link>
+						</Button>
 						{isLoggedIn ? (
 							<Button asChild>
 								<Link to="/campaigns/new">{t('create_campaign')}</Link>

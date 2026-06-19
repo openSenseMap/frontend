@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import {
 	data,
@@ -15,9 +16,20 @@ import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
+import {
+	getUserCampaignTemplateById,
+	getUserCampaignTemplates,
+} from '~/db/models/campaign-template.server'
 import { createCampaign } from '~/db/models/campaign.server'
 import { getPhenomena } from '~/db/models/phenomena.server'
 import { getCampaignCenterpoint, parseCampaignArea } from '~/lib/campaign'
+import {
+	campaignTemplates,
+	type CampaignTemplate,
+	type CampaignTemplateDefaults,
+	getCampaignTemplate,
+	getUserTemplateId,
+} from '~/lib/campaign-templates'
 import { requireCampaignsEnabled } from '~/lib/feature-flags.server'
 import { campaignFormSchema } from '~/lib/validations/campaign'
 import { requireUserId } from '~/services/session-service.server'
@@ -33,10 +45,58 @@ type ActionData = {
 export async function loader({ request }: Route.LoaderArgs) {
 	requireCampaignsEnabled()
 
-	await requireUserId(request)
-	const phenomena = await getPhenomena()
+	const userId = await requireUserId(request)
+	const url = new URL(request.url)
+	const templateId = url.searchParams.get('template')
+	const userTemplateId = getUserTemplateId(templateId)
+	const selectedBuiltInTemplate = userTemplateId
+		? undefined
+		: getCampaignTemplate(templateId)
 
-	return { phenomena }
+	const [phenomena, userTemplates, selectedUserTemplate] = await Promise.all([
+		getPhenomena(),
+		getUserCampaignTemplates(userId),
+		userTemplateId
+			? getUserCampaignTemplateById({ id: userTemplateId, userId })
+			: Promise.resolve(undefined),
+	])
+
+	return {
+		phenomena,
+		selectedTemplate: selectedBuiltInTemplate
+			? {
+					id: selectedBuiltInTemplate.id,
+					titleKey: selectedBuiltInTemplate.titleKey,
+					summaryKey: selectedBuiltInTemplate.summaryKey,
+					descriptionKey: selectedBuiltInTemplate.descriptionKey,
+					requirementsKey: selectedBuiltInTemplate.requirementsKey,
+					category: selectedBuiltInTemplate.category,
+					phenomena: selectedBuiltInTemplate.phenomena,
+					gridSize: selectedBuiltInTemplate.gridSize,
+					minDevicesPerCell: selectedBuiltInTemplate.minDevicesPerCell,
+					minMeasurementsPerCell:
+						selectedBuiltInTemplate.minMeasurementsPerCell,
+					suggestedDurationDays: selectedBuiltInTemplate.suggestedDurationDays,
+					source: 'built-in' as const,
+				}
+			: selectedUserTemplate
+				? {
+						id: `user:${selectedUserTemplate.id}`,
+						title: selectedUserTemplate.title,
+						summary: selectedUserTemplate.summary,
+						description: selectedUserTemplate.description,
+						requirements: selectedUserTemplate.requirements,
+						phenomena: selectedUserTemplate.phenomena,
+						gridSize: selectedUserTemplate.gridSize,
+						minDevicesPerCell: selectedUserTemplate.minDevicesPerCell,
+						minMeasurementsPerCell: selectedUserTemplate.minMeasurementsPerCell,
+						suggestedDurationDays: selectedUserTemplate.suggestedDurationDays,
+						source: 'user' as const,
+					}
+				: undefined,
+		templates: campaignTemplates,
+		userTemplates,
+	}
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -111,11 +171,13 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function NewCampaignPage() {
-	const { phenomena } = useLoaderData<typeof loader>()
+	const { phenomena, selectedTemplate, templates, userTemplates } =
+		useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
 	const { t } = useTranslation('campaigns')
 	const isSubmitting = navigation.state !== 'idle'
+	const defaultValues = getDefaultValues(actionData, selectedTemplate, t)
 
 	return (
 		<div className="min-h-screen bg-slate-50">
@@ -133,6 +195,47 @@ export default function NewCampaignPage() {
 						<Link to="/campaigns/guide">{t('read_campaign_guide')}</Link>
 					</Button>
 				</div>
+				<section className="mb-8 space-y-4 rounded-lg border border-slate-200 bg-white p-6">
+					<div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+						<div>
+							<h2 className="text-xl font-semibold text-slate-950">
+								{t('start_from_template')}
+							</h2>
+							<p className="mt-1 text-sm text-slate-600">
+								{t('start_from_template_description')}
+							</p>
+						</div>
+						<Button asChild variant="outline">
+							<Link to="/campaigns/templates">{t('browse_templates')}</Link>
+						</Button>
+					</div>
+					<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+						<TemplateOption
+							to="/campaigns/new"
+							title={t('blank_campaign')}
+							summary={t('blank_campaign_summary')}
+							isSelected={!selectedTemplate}
+						/>
+						{templates.map((template) => (
+							<TemplateOption
+								key={template.id}
+								to={`/campaigns/new?template=${template.id}`}
+								title={t(template.titleKey)}
+								summary={t(template.summaryKey)}
+								isSelected={selectedTemplate?.id === template.id}
+							/>
+						))}
+						{userTemplates.map((template) => (
+							<TemplateOption
+								key={template.id}
+								to={`/campaigns/new?template=user:${template.id}`}
+								title={template.title}
+								summary={template.summary}
+								isSelected={selectedTemplate?.id === `user:${template.id}`}
+							/>
+						))}
+					</div>
+				</section>
 				<Form method="post" className="space-y-8">
 					{actionData?.errors ? (
 						<Alert variant="destructive">
@@ -153,7 +256,7 @@ export default function NewCampaignPage() {
 								<Input
 									id="title"
 									name="title"
-									defaultValue={actionData?.values?.title}
+									defaultValue={defaultValues.title}
 									required
 								/>
 								<FieldError message={actionData?.errors?.title} />
@@ -163,7 +266,7 @@ export default function NewCampaignPage() {
 								<Textarea
 									id="description"
 									name="description"
-									defaultValue={actionData?.values?.description}
+									defaultValue={defaultValues.description}
 									required
 									className="min-h-32"
 								/>
@@ -174,7 +277,7 @@ export default function NewCampaignPage() {
 								<Textarea
 									id="requirements"
 									name="requirements"
-									defaultValue={actionData?.values?.requirements}
+									defaultValue={defaultValues.requirements}
 									required
 									className="min-h-40"
 								/>
@@ -186,7 +289,7 @@ export default function NewCampaignPage() {
 									id="discussionUrl"
 									name="discussionUrl"
 									type="url"
-									defaultValue={actionData?.values?.discussionUrl}
+									defaultValue={defaultValues.discussionUrl}
 									placeholder={t('discussion_url_placeholder')}
 								/>
 								<p className="text-xs text-slate-500">
@@ -207,7 +310,7 @@ export default function NewCampaignPage() {
 								<Input
 									id="phenomena"
 									name="phenomena"
-									defaultValue={actionData?.values?.phenomena}
+									defaultValue={defaultValues.phenomena}
 									list="known-phenomena"
 									placeholder={t('phenomena_placeholder')}
 									required
@@ -228,7 +331,7 @@ export default function NewCampaignPage() {
 									type="number"
 									min={2}
 									max={20}
-									defaultValue={actionData?.values?.gridSize ?? 6}
+									defaultValue={defaultValues.gridSize}
 									required
 								/>
 								<p className="text-xs text-slate-500">{t('grid_size_help')}</p>
@@ -244,7 +347,7 @@ export default function NewCampaignPage() {
 									type="number"
 									min={0}
 									max={100}
-									defaultValue={actionData?.values?.minDevicesPerCell ?? 1}
+									defaultValue={defaultValues.minDevicesPerCell}
 									required
 								/>
 								<FieldError message={actionData?.errors?.minDevicesPerCell} />
@@ -258,7 +361,7 @@ export default function NewCampaignPage() {
 									name="minMeasurementsPerCell"
 									type="number"
 									min={1}
-									defaultValue={actionData?.values?.minMeasurementsPerCell ?? 1}
+									defaultValue={defaultValues.minMeasurementsPerCell}
 									required
 								/>
 								<FieldError
@@ -271,7 +374,7 @@ export default function NewCampaignPage() {
 									id="startDate"
 									name="startDate"
 									type="date"
-									defaultValue={actionData?.values?.startDate}
+									defaultValue={defaultValues.startDate}
 								/>
 							</div>
 							<div className="space-y-2">
@@ -280,7 +383,7 @@ export default function NewCampaignPage() {
 									id="endDate"
 									name="endDate"
 									type="date"
-									defaultValue={actionData?.values?.endDate}
+									defaultValue={defaultValues.endDate}
 								/>
 								<FieldError message={actionData?.errors?.endDate} />
 							</div>
@@ -325,6 +428,73 @@ export default function NewCampaignPage() {
 function FieldError({ message }: { message?: string }) {
 	if (!message) return null
 	return <p className="text-sm text-red-600">{message}</p>
+}
+
+function TemplateOption({
+	to,
+	title,
+	summary,
+	isSelected,
+}: {
+	to: string
+	title: string
+	summary: string
+	isSelected: boolean
+}) {
+	return (
+		<Link
+			to={to}
+			className={`rounded-lg border p-4 transition hover:border-green-700 hover:bg-green-50 ${
+				isSelected
+					? 'border-green-700 bg-green-50'
+					: 'border-slate-200 bg-white'
+			}`}
+		>
+			<div className="font-semibold text-slate-950">{title}</div>
+			<p className="mt-1 text-sm text-slate-600">{summary}</p>
+		</Link>
+	)
+}
+
+function getDefaultValues(
+	actionData: ActionData | undefined,
+	template:
+		| (CampaignTemplateDefaults & {
+				source: 'user'
+		  })
+		| (CampaignTemplate & {
+				source: 'built-in'
+		  })
+		| undefined,
+	t: TFunction<'campaigns'>,
+) {
+	if (actionData?.values) return actionData.values
+
+	return {
+		title: template
+			? template.source === 'built-in'
+				? t(template.titleKey)
+				: template.title
+			: '',
+		description: template
+			? template.source === 'built-in'
+				? t(template.descriptionKey)
+				: template.description
+			: '',
+		requirements: template
+			? template.source === 'built-in'
+				? t(template.requirementsKey)
+				: template.requirements
+			: '',
+		discussionUrl: '',
+		phenomena: template?.phenomena.join(', ') ?? '',
+		gridSize: String(template?.gridSize ?? 6),
+		minDevicesPerCell: String(template?.minDevicesPerCell ?? 1),
+		minMeasurementsPerCell: String(template?.minMeasurementsPerCell ?? 1),
+		areaGeojson: '',
+		startDate: '',
+		endDate: '',
+	}
 }
 
 function parsePhenomena(value: string) {
