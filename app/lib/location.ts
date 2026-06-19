@@ -93,7 +93,7 @@ export function isValidMapZoom(value: unknown): value is number {
 	)
 }
 
-export function getValidMapView(value: {
+export function getValidMapViewport(value: {
 	latitude: number | null | undefined
 	longitude: number | null | undefined
 	zoom?: number | null | undefined

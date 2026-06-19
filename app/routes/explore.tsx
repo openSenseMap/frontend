@@ -31,7 +31,7 @@ import { getSensors } from '~/db/models/sensor.server'
 import { type Device } from '~/db/schema'
 import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import {
-	getValidMapView,
+	getValidMapViewport,
 	MAP_ZOOM_LIMITS,
 	validLngLat,
 	type MapViewport,
@@ -88,7 +88,7 @@ function parseMapHash(hash: string) {
 
 	const [, zoom, latitude, longitude] = match
 
-	return getValidMapView({
+	return getValidMapViewport({
 		latitude: Number(latitude),
 		longitude: Number(longitude),
 		zoom: Number(zoom),
@@ -100,7 +100,7 @@ function getHomeView(
 ) {
 	if (!profile) return null
 
-	return getValidMapView({
+	return getValidMapViewport({
 		latitude: profile.homeLatitude,
 		longitude: profile.homeLongitude,
 		zoom: profile.homeZoom,
