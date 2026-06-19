@@ -123,6 +123,27 @@ type MapPreferenceAutosaveValues = {
 	homeZoom: string
 }
 
+function hasCompleteHomeLocation(values: Pick<
+	MapPreferenceAutosaveValues,
+	'homeLatitude' | 'homeLongitude'
+>) {
+	return (
+		values.homeLatitude.trim().length > 0 &&
+		values.homeLongitude.trim().length > 0
+	)
+}
+
+function normalizeMapPreferenceValues(
+	values: MapPreferenceAutosaveValues,
+): MapPreferenceAutosaveValues {
+	return {
+		...values,
+		homeZoom: hasCompleteHomeLocation(values)
+			? values.homeZoom
+			: DEFAULT_HOME_ZOOM,
+	}
+}
+
 export default function PreferencesSettingsPage() {
 	const data = useLoaderData<typeof loader>()
 	const { t } = useTranslation('settings')
@@ -137,6 +158,12 @@ export default function PreferencesSettingsPage() {
 	const [homeZoom, setHomeZoom] = useState(
 		data.profile.homeZoom?.toString() ?? DEFAULT_HOME_ZOOM,
 	)
+	const autosaveValues = normalizeMapPreferenceValues({
+		homeLatitude,
+		homeLongitude,
+		homeZoom,
+	})
+	const homeZoomEnabled = hasCompleteHomeLocation(autosaveValues)
 
 	const validateAutosave = useCallback(
 		(values: MapPreferenceAutosaveValues) => {
@@ -203,11 +230,7 @@ export default function PreferencesSettingsPage() {
 		MapPreferenceAutosaveValues,
 		PreferencesActionData
 	>({
-		values: {
-			homeLatitude,
-			homeLongitude,
-			homeZoom,
-		},
+		values: autosaveValues,
 		lastSavedValues: {
 			homeLatitude: data.profile.homeLatitude?.toString() ?? '',
 			homeLongitude: data.profile.homeLongitude?.toString() ?? '',
@@ -241,8 +264,10 @@ export default function PreferencesSettingsPage() {
 
 	const submitAutosave = useCallback(
 		(nextValues: MapPreferenceAutosaveValues) => {
-			if (validateAutosave(nextValues)) {
-				autosave.submit(nextValues)
+			const normalizedValues = normalizeMapPreferenceValues(nextValues)
+
+			if (validateAutosave(normalizedValues)) {
+				autosave.submit(normalizedValues)
 			}
 		},
 		[autosave, validateAutosave],
@@ -275,6 +300,9 @@ export default function PreferencesSettingsPage() {
 	const handleHomeZoomChange = useCallback(
 		(value: string) => {
 			setHomeZoom(value)
+
+			if (!hasCompleteHomeLocation({ homeLatitude, homeLongitude })) return
+
 			submitAutosave({
 				homeLatitude,
 				homeLongitude,
@@ -383,6 +411,7 @@ export default function PreferencesSettingsPage() {
 								min={MAP_ZOOM_LIMITS.min}
 								max={MAP_ZOOM_LIMITS.max}
 								step={0.5}
+								disabled={!homeZoomEnabled}
 								value={homeZoom}
 								onChange={(event) => handleHomeZoomChange(event.target.value)}
 							/>
