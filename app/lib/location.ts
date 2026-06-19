@@ -171,13 +171,13 @@ export function validateLocationFieldErrors(
 	return getLocationFieldErrors(parsed.error)
 }
 
-export type OptionalMapViewInput = {
+export type OptionalMapViewportInput = {
 	latitude: string
 	longitude: string
 	zoom: string
 }
 
-export function parseOptionalMapViewInput(input: OptionalMapViewInput):
+export function parseOptionalMapViewportInput(input: OptionalMapViewportInput):
 	| {
 			success: true
 			data: {
@@ -249,6 +249,6 @@ export function parseOptionalMapViewInput(input: OptionalMapViewInput):
 	}
 }
 
-export function isOptionalMapViewInputValid(input: OptionalMapViewInput) {
-	return parseOptionalMapViewInput(input).success
+export function isOptionalMapViewInputValid(input: OptionalMapViewportInput) {
+	return parseOptionalMapViewportInput(input).success
 }

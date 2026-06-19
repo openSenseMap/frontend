@@ -17,7 +17,7 @@ import {
 import {
 	isOptionalMapViewInputValid,
 	MAP_ZOOM_LIMITS,
-	parseOptionalMapViewInput,
+	parseOptionalMapViewportInput,
 } from '~/lib/location'
 import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
 import { requireUserId } from '~/services/session-service.server'
@@ -81,7 +81,7 @@ export async function action({
 		}
 	}
 
-	const parsedMapView = parseOptionalMapViewInput(mapViewInput)
+	const parsedMapView = parseOptionalMapViewportInput(mapViewInput)
 
 	if (!parsedMapView.success) {
 		return {
