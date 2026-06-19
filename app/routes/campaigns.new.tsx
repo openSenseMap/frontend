@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
 	data,
 	Form,
+	Link,
 	redirect,
 	useActionData,
 	useLoaderData,
@@ -128,6 +129,9 @@ export default function NewCampaignPage() {
 					<p className="mt-2 max-w-2xl text-slate-600">
 						{t('create_campaign_description')}
 					</p>
+					<Button asChild variant="link" className="mt-2 h-auto p-0">
+						<Link to="/campaigns/guide">{t('read_campaign_guide')}</Link>
+					</Button>
 				</div>
 				<Form method="post" className="space-y-8">
 					{actionData?.errors ? (

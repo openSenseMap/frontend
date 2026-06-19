@@ -86,17 +86,22 @@ export default function CampaignsIndexPage() {
 							{t('campaign_listing_description')}
 						</p>
 					</div>
-					{isLoggedIn ? (
-						<Button asChild>
-							<Link to="/campaigns/new">{t('create_campaign')}</Link>
-						</Button>
-					) : (
+					<div className="flex flex-wrap gap-2">
 						<Button asChild variant="outline">
-							<Link to="/explore/login?redirectTo=/campaigns/new">
-								{t('login_to_create')}
-							</Link>
+							<Link to="/campaigns/guide">{t('campaign_guide')}</Link>
 						</Button>
-					)}
+						{isLoggedIn ? (
+							<Button asChild>
+								<Link to="/campaigns/new">{t('create_campaign')}</Link>
+							</Button>
+						) : (
+							<Button asChild variant="outline">
+								<Link to="/explore/login?redirectTo=/campaigns/new">
+									{t('login_to_create')}
+								</Link>
+							</Button>
+						)}
+					</div>
 				</section>
 
 				<Form
