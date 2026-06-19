@@ -17,7 +17,7 @@ export const MAP_ZOOM_LIMITS = {
 	default: 10,
 } as const
 
-export type MapView = {
+export type MapViewport = {
 	latitude: number
 	longitude: number
 	zoom: number
@@ -97,7 +97,7 @@ export function getValidMapView(value: {
 	latitude: number | null | undefined
 	longitude: number | null | undefined
 	zoom?: number | null | undefined
-}): MapView | null {
+}): MapViewport | null {
 	const zoom = value.zoom ?? MAP_ZOOM_LIMITS.default
 
 	if (!isValidLocation(value)) return null
@@ -159,7 +159,9 @@ export type LocationFieldErrors = {
 	longitude?: string
 }
 
-export function validateLocationFieldErrors(value: unknown): LocationFieldErrors {
+export function validateLocationFieldErrors(
+	value: unknown,
+): LocationFieldErrors {
 	const parsed = locationSchema.safeParse(value)
 
 	if (parsed.success) {

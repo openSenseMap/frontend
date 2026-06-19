@@ -34,7 +34,7 @@ import {
 	getValidMapView,
 	MAP_ZOOM_LIMITS,
 	validLngLat,
-	type MapView,
+	type MapViewport,
 } from '~/lib/location'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
@@ -66,7 +66,7 @@ const MAX_MY_AREA_LONGITUDE_SPAN = 60
 type MyAreaTarget =
 	| {
 			type: 'view'
-			view: MapView
+			view: MapViewport
 	  }
 	| {
 			type: 'bounds'
