@@ -7,7 +7,7 @@ import { LanguageSelect } from '~/components/language-select'
 import { ThemeSelect } from '~/components/theme-select'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { Input } from '~/components/ui/input'
+import { Input, numberInputWithoutSteppers } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { useToast } from '~/components/ui/use-toast'
 import {
@@ -23,7 +23,6 @@ import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
 import { requireUserId } from '~/services/session-service.server'
 
 const DEFAULT_HOME_ZOOM = String(MAP_ZOOM_LIMITS.default)
-
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
 	const profile = await getProfileByUserId(userId)
@@ -342,6 +341,7 @@ export default function PreferencesSettingsPage() {
 								id="homeLatitude"
 								name="homeLatitude"
 								type="number"
+								className={numberInputWithoutSteppers}
 								inputMode="decimal"
 								min={-90}
 								max={90}
@@ -360,6 +360,7 @@ export default function PreferencesSettingsPage() {
 								id="homeLongitude"
 								name="homeLongitude"
 								type="number"
+								className={numberInputWithoutSteppers}
 								inputMode="decimal"
 								min={-180}
 								max={180}
