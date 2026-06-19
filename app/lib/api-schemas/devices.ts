@@ -1,4 +1,8 @@
 import { z } from 'zod'
+import {
+	LOCATION_PRIVACY_RADIUS_VALUES,
+	LOCATION_PRIVACY_VALUES,
+} from '~/lib/location'
 
 export const CreateDeviceSchema = z.object({
 	// public API request shape
@@ -25,6 +29,18 @@ export const CreateDeviceSchema = z.object({
 			if (Array.isArray(loc)) return loc
 			return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
 		}),
+	locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).optional().default('exact'),
+	locationPrivacyRadiusMeters: z
+		.number()
+		.refine(
+			(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+				LOCATION_PRIVACY_RADIUS_VALUES.includes(
+					value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+				),
+			'Location privacy radius is invalid',
+		)
+		.optional()
+		.default(500),
 	grouptag: z.array(z.string()).optional().default([]),
 	model: z
 		.enum([

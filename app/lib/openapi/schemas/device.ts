@@ -51,18 +51,27 @@ export const DeviceSensorUpdateSchema = z
 				'Existing sensor id. `_id` is used by the legacy API and is preferred for backwards compatibility.',
 			example: '60a13611a877b3001b8ffd59',
 		}),
-		new: z.union([z.literal(true), z.literal('true')]).optional().meta({
-			description: 'Whether this sensor should be created as new.',
-			example: true,
-		}),
-		edited: z.union([z.literal(true), z.literal('true')]).optional().meta({
-			description: 'Whether this sensor should be created or updated.',
-			example: true,
-		}),
-		deleted: z.union([z.literal(true), z.literal('true')]).optional().meta({
-			description: 'Whether this sensor should be deleted.',
-			example: true,
-		}),
+		new: z
+			.union([z.literal(true), z.literal('true')])
+			.optional()
+			.meta({
+				description: 'Whether this sensor should be created as new.',
+				example: true,
+			}),
+		edited: z
+			.union([z.literal(true), z.literal('true')])
+			.optional()
+			.meta({
+				description: 'Whether this sensor should be created or updated.',
+				example: true,
+			}),
+		deleted: z
+			.union([z.literal(true), z.literal('true')])
+			.optional()
+			.meta({
+				description: 'Whether this sensor should be deleted.',
+				example: true,
+			}),
 		title: z.string().optional().meta({
 			example: 'PM10',
 		}),
@@ -79,7 +88,7 @@ export const DeviceSensorUpdateSchema = z
 	})
 	.transform(({ id, ...sensor }) => ({
 		...sensor,
-		...(sensor._id ?? id ? { _id: sensor._id ?? id } : {}),
+		...((sensor._id ?? id) ? { _id: sensor._id ?? id } : {}),
 	}))
 	.meta({
 		id: 'DeviceSensorUpdate',
@@ -150,6 +159,29 @@ export const ApiDeviceSchema = z
 			description: 'Device longitude',
 			example: 13.404954,
 		}),
+		locationPrivacy: z.string().optional().meta({
+			description: 'Stored public location privacy preference.',
+			example: 'masked',
+		}),
+		locationPrivacyRadiusMeters: z.number().optional().meta({
+			description: 'Configured masking radius in meters.',
+			example: 500,
+		}),
+		locationPrivacyMethod: z.string().optional().meta({
+			description: 'Configured location masking method version.',
+			example: 'deterministic-jitter-v1',
+		}),
+		locationDisclosure: z
+			.object({
+				mode: z.enum(['exact', 'masked']),
+				accuracyMeters: z.number(),
+				method: z.string().nullable(),
+			})
+			.optional()
+			.meta({
+				description:
+					'Describes whether returned coordinates are exact or geomasked.',
+			}),
 		useAuth: z.boolean().optional().meta({
 			description: 'Whether the device requires authentication',
 			example: true,

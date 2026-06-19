@@ -11,6 +11,10 @@ export const LOCATION_LIMITS = {
 	},
 } as const
 
+export const LOCATION_PRIVACY_VALUES = ['exact', 'masked'] as const
+export const LOCATION_PRIVACY_RADIUS_VALUES = [250, 500, 1000, 5000] as const
+export const LOCATION_PRIVACY_METHOD = 'deterministic-jitter-v1' as const
+
 const emptyStringToUndefined = (value: unknown) => {
 	if (typeof value === 'string' && value.trim() === '') {
 		return undefined
@@ -59,7 +63,22 @@ export const locationSchema = z.object({
 	),
 })
 
+export const locationPrivacySchema = z.object({
+	locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).default('exact'),
+	locationPrivacyRadiusMeters: z.coerce
+		.number()
+		.refine(
+			(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+				LOCATION_PRIVACY_RADIUS_VALUES.includes(
+					value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+				),
+			'Location privacy radius is invalid',
+		)
+		.default(500),
+})
+
 export type LocationData = z.infer<typeof locationSchema>
+export type LocationPrivacyData = z.infer<typeof locationPrivacySchema>
 
 export function validLngLat(lng: number, lat: number): boolean {
 	return locationSchema.safeParse({
@@ -114,9 +133,13 @@ export function getLocationFieldErrors(error: z.ZodError<LocationData>) {
 export type LocationFieldErrors = {
 	latitude?: string
 	longitude?: string
+	locationPrivacy?: string
+	locationPrivacyRadiusMeters?: string
 }
 
-export function validateLocationFieldErrors(value: unknown): LocationFieldErrors {
+export function validateLocationFieldErrors(
+	value: unknown,
+): LocationFieldErrors {
 	const parsed = locationSchema.safeParse(value)
 
 	if (parsed.success) {
@@ -124,4 +147,37 @@ export function validateLocationFieldErrors(value: unknown): LocationFieldErrors
 	}
 
 	return getLocationFieldErrors(parsed.error)
+}
+
+export function parseLocationPrivacyFormData(formData: FormData):
+	| {
+			success: true
+			data: LocationPrivacyData
+	  }
+	| {
+			success: false
+			errors: LocationFieldErrors
+	  } {
+	const parsed = locationPrivacySchema.safeParse({
+		locationPrivacy: formData.get('locationPrivacy'),
+		locationPrivacyRadiusMeters: formData.get('locationPrivacyRadiusMeters'),
+	})
+
+	if (parsed.success) {
+		return {
+			success: true,
+			data: parsed.data,
+		}
+	}
+
+	const flattened = z.flattenError(parsed.error)
+
+	return {
+		success: false,
+		errors: {
+			locationPrivacy: flattened.fieldErrors.locationPrivacy?.[0],
+			locationPrivacyRadiusMeters:
+				flattened.fieldErrors.locationPrivacyRadiusMeters?.[0],
+		},
+	}
 }

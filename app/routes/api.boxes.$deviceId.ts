@@ -38,6 +38,10 @@ import {
 } from '~/middleware/content-type-header.server'
 import { parseJsonBody } from '~/lib/request-parsing'
 import { LocationObjectSchema } from '~/lib/openapi/schemas/location'
+import {
+	LOCATION_PRIVACY_RADIUS_VALUES,
+	LOCATION_PRIVACY_VALUES,
+} from '~/lib/location'
 
 const messages = {
 	conflictingSensorsAndAddons:
@@ -85,6 +89,28 @@ const UpdateDeviceRequestSchema = z
 		}),
 
 		location: LocationObjectSchema.optional(),
+
+		locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).optional().meta({
+			description:
+				'Whether public responses expose the exact or masked location.',
+			example: 'masked',
+		}),
+
+		locationPrivacyRadiusMeters: z
+			.number()
+			.refine(
+				(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+					LOCATION_PRIVACY_RADIUS_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+					),
+				'Location privacy radius is invalid',
+			)
+			.optional()
+			.meta({
+				description:
+					'Radius in meters used when `locationPrivacy` is `masked`.',
+				example: 500,
+			}),
 
 		grouptag: z
 			.union([z.string(), z.array(z.string())])
@@ -452,6 +478,8 @@ async function put(request: Request, user: User, deviceId: string) {
 		useAuth: body.useAuth,
 		link: body.weblink,
 		location: locationData,
+		locationPrivacy: body.locationPrivacy,
+		locationPrivacyRadiusMeters: body.locationPrivacyRadiusMeters,
 		grouptag: body.grouptag,
 		sensors: body.sensors,
 	}
@@ -473,7 +501,9 @@ async function put(request: Request, user: User, deviceId: string) {
 			return StandardResponse.internalServerError()
 		}
 
-		const apiResponse = transformDeviceToApiFormat(deviceWithSensors)
+		const apiResponse = transformDeviceToApiFormat(deviceWithSensors, {
+			includeExactLocation: true,
+		})
 
 		const responseParsed = await ApiDeviceSchema.safeParseAsync(apiResponse)
 

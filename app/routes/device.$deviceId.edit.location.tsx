@@ -17,11 +17,14 @@ import { getUserId } from '~/services/session-service.server'
 import { BaseMap } from '~/components/base-map'
 import {
 	LOCATION_LIMITS,
+	LOCATION_PRIVACY_RADIUS_VALUES,
 	isValidLocation,
 	parseLocationFormData,
+	parseLocationPrivacyFormData,
 	validateLocationFieldErrors,
 	type LocationData,
 	type LocationFieldErrors,
+	type LocationPrivacyData,
 } from '~/lib/location'
 import { useTranslation } from 'react-i18next'
 import {
@@ -46,7 +49,7 @@ function normalizeCoordinate(value: number | null) {
 	return Number(value.toFixed(6))
 }
 
-function normalizeLocationValues(values: LocationAutosaveValues) {
+function normalizeLocationValues(values: MarkerValue) {
 	return {
 		latitude: normalizeCoordinate(values.latitude),
 		longitude: normalizeCoordinate(values.longitude),
@@ -62,6 +65,7 @@ export type LocationActionData =
 	| {
 			ok: true
 			location: LocationData
+			locationPrivacy: LocationPrivacyData
 			errors: null
 			savedAt: string
 	  }
@@ -73,6 +77,8 @@ export type LocationActionData =
 type LocationAutosaveValues = {
 	latitude: number | null
 	longitude: number | null
+	locationPrivacy: LocationPrivacyData['locationPrivacy']
+	locationPrivacyRadiusMeters: LocationPrivacyData['locationPrivacyRadiusMeters']
 }
 
 //*****************************************************
@@ -117,12 +123,16 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	const parsed = parseLocationFormData(formData)
+	const privacyParsed = parseLocationPrivacyFormData(formData)
 
-	if (!parsed.success) {
+	if (!parsed.success || !privacyParsed.success) {
 		return data(
 			{
 				ok: false as const,
-				errors: parsed.errors,
+				errors: {
+					...(parsed.success ? {} : parsed.errors),
+					...(privacyParsed.success ? {} : privacyParsed.errors),
+				},
 			},
 			{ status: 400 },
 		)
@@ -132,11 +142,14 @@ export async function action({ request, params }: Route.ActionArgs) {
 		id,
 		latitude: parsed.data.latitude,
 		longitude: parsed.data.longitude,
+		locationPrivacy: privacyParsed.data.locationPrivacy,
+		locationPrivacyRadiusMeters: privacyParsed.data.locationPrivacyRadiusMeters,
 	})
 
 	return data({
 		ok: true as const,
 		location: parsed.data,
+		locationPrivacy: privacyParsed.data,
 		errors: null,
 		savedAt: new Date().toISOString(),
 	})
@@ -154,8 +167,28 @@ export default function EditLocation() {
 		}),
 		[device.latitude, device.longitude],
 	)
+	const initialLocationPrivacy = useMemo<LocationPrivacyData>(
+		() => ({
+			locationPrivacy: device.locationPrivacy === 'masked' ? 'masked' : 'exact',
+			locationPrivacyRadiusMeters:
+				device.locationPrivacyRadiusMeters &&
+				LOCATION_PRIVACY_RADIUS_VALUES.includes(
+					device.locationPrivacyRadiusMeters as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+				)
+					? (device.locationPrivacyRadiusMeters as LocationPrivacyData['locationPrivacyRadiusMeters'])
+					: 500,
+		}),
+		[device.locationPrivacy, device.locationPrivacyRadiusMeters],
+	)
 
 	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
+	const [locationPrivacy, setLocationPrivacy] = useState<
+		LocationPrivacyData['locationPrivacy']
+	>(initialLocationPrivacy.locationPrivacy)
+	const [locationPrivacyRadiusMeters, setLocationPrivacyRadiusMeters] =
+		useState<LocationPrivacyData['locationPrivacyRadiusMeters']>(
+			initialLocationPrivacy.locationPrivacyRadiusMeters,
+		)
 
 	const currentLocation = useMemo<LocationData | null>(() => {
 		const candidate = {
@@ -181,6 +214,8 @@ export default function EditLocation() {
 		return {
 			latitude: String(values.latitude),
 			longitude: String(values.longitude),
+			locationPrivacy: values.locationPrivacy,
+			locationPrivacyRadiusMeters: String(values.locationPrivacyRadiusMeters),
 		}
 	}, [])
 
@@ -195,23 +230,41 @@ export default function EditLocation() {
 		): LocationAutosaveValues => {
 			if (!actionData.ok) return submittedValues
 
-			return normalizeLocationValues(submittedValues)
+			return {
+				...normalizeLocationValues(submittedValues),
+				locationPrivacy: actionData.locationPrivacy.locationPrivacy,
+				locationPrivacyRadiusMeters:
+					actionData.locationPrivacy.locationPrivacyRadiusMeters,
+			}
 		},
 		[],
 	)
 
 	const autosaveValues = useMemo<LocationAutosaveValues>(
 		() =>
-			normalizeLocationValues({
-				latitude: marker.latitude,
-				longitude: marker.longitude,
-			}),
-		[marker.latitude, marker.longitude],
+			({
+				...normalizeLocationValues({
+					latitude: marker.latitude,
+					longitude: marker.longitude,
+				}),
+				locationPrivacy,
+				locationPrivacyRadiusMeters,
+			}) as LocationAutosaveValues,
+		[
+			marker.latitude,
+			marker.longitude,
+			locationPrivacy,
+			locationPrivacyRadiusMeters,
+		],
 	)
 
 	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
-		() => normalizeLocationValues(initialLocation),
-		[initialLocation],
+		() =>
+			({
+				...normalizeLocationValues(initialLocation),
+				...initialLocationPrivacy,
+			}) as LocationAutosaveValues,
+		[initialLocation, initialLocationPrivacy],
 	)
 
 	const autosave = useAutosaveFetcher<
@@ -237,6 +290,8 @@ export default function EditLocation() {
 	const locationErrors = {
 		latitude: clientErrors.latitude ?? serverErrors.latitude,
 		longitude: clientErrors.longitude ?? serverErrors.longitude,
+		locationPrivacy: serverErrors.locationPrivacy,
+		locationPrivacyRadiusMeters: serverErrors.locationPrivacyRadiusMeters,
 	}
 
 	const hasClientErrors = Boolean(
@@ -273,6 +328,28 @@ export default function EditLocation() {
 			...current,
 			longitude,
 		}))
+	}
+
+	const onLocationPrivacyChange = (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		setLocationPrivacy(event.target.value === 'masked' ? 'masked' : 'exact')
+	}
+
+	const onLocationPrivacyRadiusChange = (
+		event: React.ChangeEvent<HTMLSelectElement>,
+	) => {
+		const radius = Number(event.target.value)
+
+		if (
+			LOCATION_PRIVACY_RADIUS_VALUES.includes(
+				radius as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+			)
+		) {
+			setLocationPrivacyRadiusMeters(
+				radius as LocationPrivacyData['locationPrivacyRadiusMeters'],
+			)
+		}
 	}
 
 	const resetToOriginalLocation = () => {
@@ -407,6 +484,90 @@ export default function EditLocation() {
 										</p>
 									) : null}
 								</div>
+							</div>
+						</div>
+
+						<div className="mt-6 border-t border-gray-200 pt-5">
+							<fieldset>
+								<legend className="txt-base block font-bold tracking-normal">
+									Public location
+								</legend>
+
+								<div className="mt-3 grid gap-3 md:grid-cols-2">
+									<label className="flex cursor-pointer gap-3 rounded border border-gray-200 p-3">
+										<input
+											type="radio"
+											name="locationPrivacy"
+											value="exact"
+											checked={locationPrivacy === 'exact'}
+											onChange={onLocationPrivacyChange}
+											className="mt-1"
+										/>
+										<span>
+											<span className="block font-semibold">
+												Show exact location
+											</span>
+											<span className="mt-1 block text-sm text-gray-600">
+												Public API responses and maps use this coordinate.
+											</span>
+										</span>
+									</label>
+
+									<label className="flex cursor-pointer gap-3 rounded border border-gray-200 p-3">
+										<input
+											type="radio"
+											name="locationPrivacy"
+											value="masked"
+											checked={locationPrivacy === 'masked'}
+											onChange={onLocationPrivacyChange}
+											className="mt-1"
+										/>
+										<span>
+											<span className="block font-semibold">
+												Show approximate location
+											</span>
+											<span className="mt-1 block text-sm text-gray-600">
+												Public responses use a stable masked point nearby.
+											</span>
+										</span>
+									</label>
+								</div>
+							</fieldset>
+
+							<div className="mt-4 max-w-xs">
+								<label
+									htmlFor="locationPrivacyRadiusMeters"
+									className="txt-base block font-bold tracking-normal"
+								>
+									Approximation radius
+								</label>
+
+								<select
+									id="locationPrivacyRadiusMeters"
+									name="locationPrivacyRadiusMeters"
+									value={locationPrivacyRadiusMeters}
+									onChange={onLocationPrivacyRadiusChange}
+									disabled={locationPrivacy !== 'masked'}
+									aria-describedby="location-privacy-radius-error"
+									className="mt-1 w-full rounded border border-gray-200 px-2 py-1 text-base disabled:bg-gray-100 disabled:text-gray-500"
+								>
+									{LOCATION_PRIVACY_RADIUS_VALUES.map((radius) => (
+										<option key={radius} value={radius}>
+											{radius >= 1000 ? `${radius / 1000} km` : `${radius} m`}
+										</option>
+									))}
+								</select>
+
+								{locationErrors.locationPrivacy ||
+								locationErrors.locationPrivacyRadiusMeters ? (
+									<p
+										id="location-privacy-radius-error"
+										className="mt-1 text-sm text-red-600"
+									>
+										{locationErrors.locationPrivacy ??
+											locationErrors.locationPrivacyRadiusMeters}
+									</p>
+								) : null}
 							</div>
 						</div>
 

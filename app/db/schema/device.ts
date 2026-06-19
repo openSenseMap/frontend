@@ -15,6 +15,7 @@ import {
 	unique,
 	date,
 	bigint,
+	integer,
 } from 'drizzle-orm/pg-core'
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from './enum'
 import { location } from './location'
@@ -51,6 +52,13 @@ export const device = pgTable('device', {
 	expiresAt: date('expires_at', { mode: 'date' }),
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),
+	locationPrivacy: text('location_privacy').default('exact').notNull(),
+	locationPrivacyRadiusMeters: integer('location_privacy_radius_meters')
+		.default(500)
+		.notNull(),
+	locationPrivacyMethod: text('location_privacy_method')
+		.default('deterministic-jitter-v1')
+		.notNull(),
 	sensorWikiModel: text('sensor_wiki_model'),
 	userId: text('user_id')
 		.notNull()

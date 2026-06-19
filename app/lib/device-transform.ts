@@ -1,8 +1,12 @@
 import { type Device, type Sensor } from '~/db/schema'
+import {
+	getPublicLocation,
+	type LocationDisclosure,
+} from '~/lib/geomasking.server'
 import { toIsoString } from '~/utils'
 
 export type DeviceWithSensors = Device & {
-	sensors: Sensor[]
+	sensors?: Sensor[]
 }
 
 export type TransformedDevice = {
@@ -17,6 +21,10 @@ export type TransformedDevice = {
 	model: string | null
 	latitude: number
 	longitude: number
+	locationPrivacy?: string | null
+	locationPrivacyRadiusMeters?: number | null
+	locationPrivacyMethod?: string | null
+	locationDisclosure: LocationDisclosure
 	useAuth: boolean | null
 	access_token: string | null
 	public: boolean | null
@@ -66,15 +74,30 @@ export type TransformedDevice = {
  */
 export function transformDeviceToApiFormat(
 	box: DeviceWithSensors,
+	options: { includeExactLocation?: boolean } = {},
 ): TransformedDevice {
 	const { id, tags, sensors, apiKey, ...rest } = box
 	const timestamp = box.updatedAt.toISOString()
-	const coordinates = [box.longitude, box.latitude]
+	const publicLocation = options.includeExactLocation
+		? {
+				latitude: box.latitude,
+				longitude: box.longitude,
+				disclosure: {
+					mode: 'exact' as const,
+					accuracyMeters: 0 as const,
+					method: null,
+				},
+			}
+		: getPublicLocation(box)
+	const coordinates = [publicLocation.longitude, publicLocation.latitude]
 
 	return {
 		_id: id,
 		grouptag: tags || [],
 		...rest,
+		latitude: publicLocation.latitude,
+		longitude: publicLocation.longitude,
+		locationDisclosure: publicLocation.disclosure,
 		createdAt: toIsoString(box.createdAt)!,
 		updatedAt: toIsoString(box.updatedAt)!,
 		expiresAt: toIsoString(box.expiresAt),

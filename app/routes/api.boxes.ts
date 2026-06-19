@@ -4,7 +4,7 @@ import {
 	findDevices,
 	type FindDevicesOptions,
 } from '~/db/models/device.server'
-import { type Device, type User } from '~/db/schema'
+import { type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { StandardResponse } from '~/lib/responses'
 
@@ -170,9 +170,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const devices = await findDevices(params)
 
 	if (params.format === 'geojson') {
+		const transformedDevices = devices.map((device) =>
+			transformDeviceToApiFormat(device),
+		)
 		const geojson = {
 			type: 'FeatureCollection',
-			features: devices.map((device: Device) => ({
+			features: transformedDevices.map((device) => ({
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
@@ -190,11 +193,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 		})
 	}
-	return Response.json(devices, {
-		headers: {
-			'Content-Type': 'application/json; charset=utf-8',
+	return Response.json(
+		devices.map((device) => transformDeviceToApiFormat(device)),
+		{
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+			},
 		},
-	})
+	)
 }
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -240,6 +246,8 @@ async function post(request: Request, user: User) {
 				model: sensorsProvided ? undefined : validatedData.model,
 				latitude: latitude,
 				longitude: longitude,
+				locationPrivacy: validatedData.locationPrivacy,
+				locationPrivacyRadiusMeters: validatedData.locationPrivacyRadiusMeters,
 				tags: validatedData.grouptag,
 				sensors: sensorsProvided
 					? validatedData.sensors.map((s) => ({
@@ -253,7 +261,9 @@ async function post(request: Request, user: User) {
 		)
 
 		// Build response object using helper function
-		const responseData = transformDeviceToApiFormat(newDevice)
+		const responseData = transformDeviceToApiFormat(newDevice, {
+			includeExactLocation: true,
+		})
 
 		return StandardResponse.created(responseData)
 	} catch {

@@ -51,6 +51,9 @@ const BASE_DEVICE_COLUMNS = {
 	model: true,
 	latitude: true,
 	longitude: true,
+	locationPrivacy: true,
+	locationPrivacyRadiusMeters: true,
+	locationPrivacyMethod: true,
 	status: true,
 	createdAt: true,
 	updatedAt: true,
@@ -161,6 +164,9 @@ export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
+			locationPrivacy: true,
+			locationPrivacyRadiusMeters: true,
+			locationPrivacyMethod: true,
 			userId: true,
 		},
 	})
@@ -201,6 +207,9 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
+			locationPrivacy: true,
+			locationPrivacyRadiusMeters: true,
+			locationPrivacyMethod: true,
 			userId: true,
 			useAuth: true,
 			model: true,
@@ -217,7 +226,10 @@ export async function updateDeviceLocation({
 	id,
 	latitude,
 	longitude,
-}: Pick<Device, 'id' | 'latitude' | 'longitude'>) {
+	locationPrivacy,
+	locationPrivacyRadiusMeters,
+}: Pick<Device, 'id' | 'latitude' | 'longitude'> &
+	Partial<Pick<Device, 'locationPrivacy' | 'locationPrivacyRadiusMeters'>>) {
 	const [existingDevice] = await drizzleClient
 		.select()
 		.from(device)
@@ -232,7 +244,15 @@ export async function updateDeviceLocation({
 
 	return drizzleClient
 		.update(device)
-		.set({ latitude, longitude, updatedAt: sql`NOW()` })
+		.set({
+			latitude,
+			longitude,
+			...(locationPrivacy !== undefined && { locationPrivacy }),
+			...(locationPrivacyRadiusMeters !== undefined && {
+				locationPrivacyRadiusMeters,
+			}),
+			updatedAt: sql`NOW()`,
+		})
 		.where(eq(device.id, id))
 }
 
@@ -247,6 +267,8 @@ export type UpdateDeviceArgs = {
 	model?: string
 	useAuth?: boolean
 	location?: { lat: number; lng: number; height?: number }
+	locationPrivacy?: string
+	locationPrivacyRadiusMeters?: number
 	sensors?: SensorUpdateArgs[]
 }
 
@@ -288,6 +310,8 @@ export async function updateDevice(
 			'model',
 			'useAuth',
 			'link',
+			'locationPrivacy',
+			'locationPrivacyRadiusMeters',
 		]
 
 		for (const field of updatableFields) {
@@ -773,6 +797,9 @@ const MINIMAL_COLUMNS = {
 	exposure: true,
 	longitude: true,
 	latitude: true,
+	locationPrivacy: true,
+	locationPrivacyRadiusMeters: true,
+	locationPrivacyMethod: true,
 }
 
 const DEFAULT_COLUMNS = {
@@ -788,6 +815,9 @@ const DEFAULT_COLUMNS = {
 	updatedAt: true,
 	longitude: true,
 	latitude: true,
+	locationPrivacy: true,
+	locationPrivacyRadiusMeters: true,
+	locationPrivacyMethod: true,
 }
 
 export async function findDevices(
@@ -885,6 +915,8 @@ export async function createDevice(deviceData: any, userId: string) {
 						: null,
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
+					locationPrivacy: deviceData.locationPrivacy,
+					locationPrivacyRadiusMeters: deviceData.locationPrivacyRadiusMeters,
 				})
 				.returning()
 
