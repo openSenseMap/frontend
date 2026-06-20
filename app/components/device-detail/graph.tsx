@@ -8,12 +8,14 @@ import {
 	Legend,
 	Tooltip as ChartTooltip,
 	Filler,
+	type ChartData,
 	type ChartOptions,
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
 // import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
 import {
+	useCallback,
 	useMemo,
 	useRef,
 	useState,
@@ -23,7 +25,10 @@ import {
 } from 'react'
 import { Scatter } from 'react-chartjs-2'
 import { isBrowser, isTablet } from 'react-device-detect'
-import Draggable, { type DraggableData } from 'react-draggable'
+import Draggable, {
+	type DraggableData,
+	type DraggableEvent,
+} from 'react-draggable'
 import { useNavigate, useNavigation, useSearchParams } from 'react-router'
 import { AggregationFilter } from '../aggregation-filter'
 import { ClientOnly } from '../client-only'
@@ -43,7 +48,14 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '../ui/tooltip'
-import { datesHave48HourRange } from '~/lib/utils'
+import { buildChartCsv } from './graph-csv'
+import {
+	buildChartData,
+	type GraphPoint,
+	type GraphSensor,
+} from './graph-chart-data'
+import { useGraphOptions } from './use-graph-options'
+import { useResolvedTheme } from '~/hooks/use-resolved-theme'
 import { useTranslation } from 'react-i18next'
 
 ChartJS.register(
@@ -57,29 +69,56 @@ ChartJS.register(
 	Filler,
 )
 
+type GraphChartData = ChartData<'scatter', GraphPoint[]>
+
+type GraphWithZoomProps = {
+	chartData: GraphChartData
+	options: ChartOptions<'scatter'>
+	chartRef: RefObject<ChartJS<'scatter', GraphPoint[]> | null>
+}
+
 // ClientOnly component to handle the plugin that needs window
-const GraphWithZoom = (props: any) => {
-	useMemo(() => {
-		// Dynamically import the zoom plugin
+const GraphWithZoom = ({
+	chartData,
+	options,
+	chartRef,
+}: GraphWithZoomProps) => {
+	useEffect(() => {
 		void import('chartjs-plugin-zoom').then(({ default: zoomPlugin }) => {
 			ChartJS.register(zoomPlugin)
 		})
 	}, [])
 
-	return (
-		<Scatter
-			data={props.chartData}
-			options={props.options}
-			ref={props.chartRef}
-		></Scatter>
-	)
+	return <Scatter data={chartData} options={options} ref={chartRef}></Scatter>
 }
 
 interface GraphProps {
 	aggregation: string
-	sensors: any[]
+	sensors: GraphSensor[]
 	startDate?: string
 	endDate?: string
+}
+
+type DatasetColorOverrides = Record<number, string>
+
+function applyDatasetColorOverrides(
+	chartData: GraphChartData,
+	colorOverrides: DatasetColorOverrides,
+) {
+	return {
+		...chartData,
+		datasets: chartData.datasets.map((dataset, index) => {
+			const color = colorOverrides[index]
+
+			if (!color) return dataset
+
+			return {
+				...dataset,
+				borderColor: color,
+				backgroundColor: color,
+			}
+		}),
+	}
 }
 
 export default function Graph({
@@ -107,7 +146,7 @@ export default function Graph({
 	const isAggregated = aggregation !== 'raw'
 
 	const nodeRef = useRef<HTMLDivElement>(null)
-	const chartRef = useRef<ChartJS<'scatter'>>(null)
+	const chartRef = useRef<ChartJS<'scatter', GraphPoint[]> | null>(null)
 
 	const dateTimeFormatter = useMemo(() => {
 		return new Intl.DateTimeFormat(i18n.language, {
@@ -133,337 +172,51 @@ export default function Graph({
 		}
 	}, [chartRef, setHoveredPoint])
 
-	// get theme from tailwind
-	const [theme] = 'light' //useTheme();
-
-	const [chartData, setChartData] = useState(() => {
-		const includeDeviceName =
-			sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
-
-		return {
-			datasets: sensors
-				.map(
-					(
-						sensor: {
-							title: any
-							device_name: any
-							data: any[]
-							color: string
-						},
-						index: number,
-					) => {
-						const baseDataset = {
-							label: includeDeviceName
-								? `${sensor.title} (${sensor.device_name})`
-								: sensor.title,
-							data: sensor.data.map((measurement) => ({
-								x: measurement.time,
-								y: measurement.value,
-								locationId: measurement.locationId,
-							})),
-							pointRadius: 3,
-							borderColor: sensor.color,
-							backgroundColor: sensor.color,
-							yAxisID: index === 0 ? 'y' : 'y1',
-							fill: false,
-							tension: 0.4,
-						}
-
-						if (isAggregated && sensors.length === 1) {
-							const minDataset = {
-								...baseDataset,
-								label: `${baseDataset.label} (Min)`,
-								data: sensor.data.map((measurement) => ({
-									x: measurement.time,
-									y: measurement.min_value,
-									locationId: null,
-								})),
-								borderColor: sensor.color + '33',
-								backgroundColor: sensor.color + '33',
-								fill: 1,
-							}
-
-							const maxDataset = {
-								...baseDataset,
-								label: `${baseDataset.label} (Max)`,
-								data: sensor.data.map((measurement) => ({
-									x: measurement.time,
-									y: measurement.max_value,
-									locationId: null,
-								})),
-								borderColor: sensor.color + '33',
-								backgroundColor: sensor.color + '33',
-								fill: 1,
-							}
-
-							return [maxDataset, baseDataset, minDataset]
-						}
-
-						return [baseDataset]
-					},
-				)
-				.flat(),
-		}
-	})
+	const theme = useResolvedTheme()
+	const [datasetColorOverrides, setDatasetColorOverrides] =
+		useState<DatasetColorOverrides>({})
 
 	useEffect(() => {
-		const includeDeviceName =
-			sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
-
-		setChartData({
-			datasets: sensors
-				.map(
-					(
-						sensor: {
-							title: any
-							device_name: any
-							data: any[]
-							color: string
-						},
-						index: number,
-					) => {
-						const baseDataset = {
-							label: includeDeviceName
-								? `${sensor.title} (${sensor.device_name})`
-								: sensor.title,
-							data: sensor.data.map((measurement) => ({
-								x: measurement.time,
-								y: measurement.value,
-								locationId: measurement.locationId,
-							})),
-							pointRadius: 1,
-							borderColor: sensor.color,
-							backgroundColor: sensor.color,
-							yAxisID: index === 0 ? 'y' : 'y1',
-							fill: false,
-							tension: 0.4,
-						}
-
-						if (isAggregated && sensors.length === 1) {
-							const minDataset = {
-								...baseDataset,
-								label: `${baseDataset.label} (Min)`,
-								data: sensor.data.map((measurement) => ({
-									x: measurement.time,
-									y: measurement.min_value,
-									locationId: null,
-								})),
-								borderColor: sensor.color + '33',
-								backgroundColor: sensor.color + '33',
-								fill: 1,
-							}
-
-							const maxDataset = {
-								...baseDataset,
-								label: `${baseDataset.label} (Max)`,
-								data: sensor.data.map((measurement) => ({
-									x: measurement.time,
-									y: measurement.max_value,
-									locationId: null,
-								})),
-								borderColor: sensor.color + '33',
-								backgroundColor: sensor.color + '33',
-								fill: 1,
-							}
-
-							return [maxDataset, baseDataset, minDataset]
-						}
-
-						return [baseDataset]
-					},
-				)
-				.flat(),
-		})
+		setDatasetColorOverrides({})
 	}, [sensors, isAggregated])
 
-	const options: ChartOptions<'scatter'> = useMemo(() => {
-		return {
-			maintainAspectRatio: false,
-			responsive: true,
-			spanGaps: false,
-			interaction: {
-				mode: 'index',
-				intersect: false,
-			},
-			parsing: {
-				xAxisKey: 'x',
-				yAxisKey: 'y',
-			},
-			scales: {
-				x: {
-					type: 'time',
-					time: {
-						unit: datesHave48HourRange(
-							startDate ? new Date(startDate) : new Date(),
-							endDate ? new Date(endDate) : new Date(),
-						)
-							? 'hour'
-							: 'day',
-						displayFormats: {
-							day: 'dd.MM.yyyy',
-							millisecond: 'mm:ss',
-							second: 'mm:ss',
-							minute: 'HH:mm',
-							hour: 'HH:mm',
-						},
-						tooltipFormat: 'dd.MM.yyyy HH:mm',
-					},
-					// adapters: {
-					//   date: {
-					//     locale: data.locale === "de" ? de : enGB,
-					//   },
-					// },
-					min: currentZoom?.xMin,
-					max: currentZoom?.xMax,
-					ticks: {
-						major: {
-							enabled: true,
-						},
-						font: (context) => {
-							if (context.tick && context.tick.major) {
-								return {
-									weight: 'bold',
-								}
-							}
-						},
-						maxTicksLimit: 8,
-					},
-					grid: {
-						color:
-							theme === 'dark' ? 'rgba(255, 255, 255)' : 'rgba(0, 0, 0, 0.1)',
-						borderColor:
-							theme === 'dark' ? 'rgba(255, 255, 255)' : 'rgba(0, 0, 0, 0.1)',
-					},
-				},
-				y: {
-					title: {
-						display: true,
-						text: sensors[0].title + ' in ' + sensors[0].unit,
-					},
-					// type: 'linear',
-					display: true,
-					position: 'left',
-					grid: {
-						color:
-							theme === 'dark' ? 'rgba(255, 255, 255)' : 'rgba(0, 0, 0, 0.1)',
-						borderColor:
-							theme === 'dark' ? 'rgba(255, 255, 255)' : 'rgba(0, 0, 0, 0.1)',
-					},
-				},
-				y1: {
-					title: {
-						display: true,
-						text: sensors[1] ? sensors[1].title + ' in ' + sensors[1].unit : '', //data.sensors[1].unit
-					},
-					// type: 'linear',
-					display: 'auto',
-					position: 'right',
-					grid: {
-						drawOnChartArea: false,
-					},
-				},
-			},
-			plugins: {
-				tooltip: {
-					enabled: true,
-					mode: 'index',
-					intersect: false,
-					callbacks: {
-						title: (tooltipItems: any[]) => {
-							const firstItem = tooltipItems[0]
+	const chartData = useMemo(
+		() =>
+			applyDatasetColorOverrides(
+				buildChartData({ sensors, isAggregated }),
+				datasetColorOverrides,
+			),
+		[sensors, isAggregated, datasetColorOverrides],
+	)
 
-							if (!firstItem) return ''
+	const handleDatasetColorClick = useCallback(
+		(index: number, color: string) => {
+			setColorPickerState((currentState) => ({
+				open: !currentState.open,
+				index,
+				color,
+			}))
+		},
+		[],
+	)
 
-							const timestamp = firstItem.raw.x
-
-							return dateTimeFormatter.format(new Date(timestamp))
-						},
-
-						label: (context: any) => {
-							const dataIndex = context.dataIndex
-							const datasetIndex = context.datasetIndex
-							const point = chartData.datasets[datasetIndex].data[dataIndex]
-							const locationId = point.locationId
-
-							setHoveredPoint(locationId)
-
-							return `${context.dataset.label}: ${context.raw.y}`
-						},
-					},
-				},
-				zoom: {
-					zoom: {
-						wheel: {
-							enabled: true,
-						},
-						drag: {
-							enabled: true,
-						},
-						mode: 'x',
-						onZoom: ({ chart }) => {
-							const xScale = chart.scales['x']
-							const xMin = xScale.min
-							const xMax = xScale.max
-
-							// Track the zoom level
-							setCurrentZoom({ xMin, xMax })
-						},
-					},
-				},
-				legend: {
-					display: true,
-					position: 'bottom',
-					onHover: (e, legendItem, legend) => {
-						const canvas = legend.chart.canvas // Access the chart from the legend context
-
-						// Only change the cursor and add the tooltip when hovering over the color box
-						if (legendItem.fillStyle) {
-							canvas.style.cursor = 'pointer'
-							canvas.title = 'Click to change color' // Tooltip on legend color box
-						}
-					},
-					onLeave: (e, legendItem, legend) => {
-						const canvas = legend.chart.canvas
-						canvas.style.cursor = 'default'
-						canvas.title = '' // Remove tooltip on leave
-					},
-
-					onClick: (e, legendItem, _legend) => {
-						const index = legendItem.datasetIndex ?? 0
-						setColorPickerState({
-							open: !colorPickerState.open,
-							index,
-							color: chartData.datasets[index].borderColor as string,
-						})
-					},
-					labels: {
-						usePointStyle: true,
-					},
-				},
-			},
-		}
-	}, [
-		startDate,
-		endDate,
-		currentZoom?.xMin,
-		currentZoom?.xMax,
-		theme,
-		sensors,
-		chartData.datasets,
-		setHoveredPoint,
-		colorPickerState.open,
+	const options = useGraphOptions({
+		chartData,
+		currentZoom,
 		dateTimeFormatter,
-	])
+		endDate,
+		onDatasetColorClick: handleDatasetColorClick,
+		sensors,
+		setCurrentZoom,
+		setHoveredPoint,
+		startDate,
+		theme,
+	})
 
 	function handleColorChange(newColor: string) {
-		const updatedDatasets = [...chartData.datasets]
-		updatedDatasets[colorPickerState.index].borderColor = newColor
-		updatedDatasets[colorPickerState.index].backgroundColor = newColor
-
-		// Update the chartData state with the new dataset colors
-		setChartData((prevData) => ({
-			...prevData,
-			datasets: updatedDatasets,
+		setDatasetColorOverrides((currentOverrides) => ({
+			...currentOverrides,
+			[colorPickerState.index]: newColor,
 		}))
 	}
 
@@ -488,48 +241,18 @@ export default function Graph({
 	}
 
 	function handleCsvDownloadClick() {
-		const labels = chartData.datasets[0].data.map((point: any) => point.x)
-
-		let csvContent = 'timestamp,deviceId,sensorId,value,unit,phenomena\n'
-
-		// Loop through each timestamp and sensor data
-		labels.forEach((timestamp: any, index: string | number) => {
-			sensors.forEach((sensor: any) => {
-				const dataset = chartData.datasets.find(
-					(ds: { label: string | any[] }) => ds.label.includes(sensor.title),
-				)
-				if (dataset) {
-					const value = (dataset.data as any)[index]?.y ?? ''
-
-					csvContent += `${timestamp},`
-					csvContent += `${sensor.deviceId},`
-					csvContent += `${sensor.id},`
-					csvContent += `${value},`
-					csvContent += `${sensor.unit},`
-					csvContent += `${sensor.title}\n`
-				}
-			})
-		})
-
-		// Create a Blob from the CSV content
+		const csvContent = buildChartCsv(chartData, sensors)
 		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-
-		// Create a temporary link element
 		const link = document.createElement('a')
-		const url = URL.createObjectURL(blob) // Create a URL for the Blob
+		const url = URL.createObjectURL(blob)
 
-		link.href = url // Set the href to the Blob URL
-		link.download = 'chart_data.csv' // Specify the download file name
+		link.href = url
+		link.download = 'chart_data.csv'
 
-		// Append the link to the document body
 		document.body.appendChild(link)
-
-		// Programmatically click the link to trigger the download
 		link.click()
-
-		// Clean up and remove the link from the document
 		document.body.removeChild(link)
-		URL.revokeObjectURL(url) // Clean up the URL object
+		URL.revokeObjectURL(url)
 	}
 
 	function handleResetZoomClick() {
@@ -539,7 +262,7 @@ export default function Graph({
 		}
 	}
 
-	function handleDrag(_e: any, data: DraggableData) {
+	function handleDrag(_event: DraggableEvent, data: DraggableData) {
 		setOffsetPositionX(data.x)
 		setOffsetPositionY(data.y)
 	}
@@ -607,13 +330,14 @@ export default function Graph({
 							<X
 								className="cursor-pointer"
 								onClick={() => {
-									searchParams.delete('date_to')
-									searchParams.delete('date_from')
-									searchParams.delete('aggregation')
-									setSearchParams(searchParams)
+									const nextSearchParams = new URLSearchParams(searchParams)
+									nextSearchParams.delete('date_to')
+									nextSearchParams.delete('date_from')
+									nextSearchParams.delete('aggregation')
+									setSearchParams(nextSearchParams)
 									void navigate({
 										pathname: `/explore/${sensors[0].deviceId}`,
-										search: searchParams.toString(),
+										search: nextSearchParams.toString(),
 									})
 								}}
 							/>
