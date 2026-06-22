@@ -28,12 +28,14 @@ type BuildChartDataArgs = {
 	sensors: GraphSensor[]
 	isAggregated: boolean
 	pointRadius?: number
+	showLines?: boolean
 }
 
 export function buildChartData({
 	sensors,
 	isAggregated,
 	pointRadius = 1,
+	showLines = false,
 }: BuildChartDataArgs): ChartData<'scatter', GraphPoint[]> {
 	const includeDeviceName =
 		sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
@@ -56,6 +58,7 @@ export function buildChartData({
 				backgroundColor: sensor.color,
 				yAxisID: index === 0 ? 'y' : 'y1',
 				fill: false,
+				showLine: showLines,
 				tension: 0.4,
 			}
 

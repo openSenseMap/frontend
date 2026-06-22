@@ -13,7 +13,7 @@ import {
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
 // import { de, enGB } from "date-fns/locale";
-import { Download, RefreshCcw, X } from 'lucide-react'
+import { ChartLine, Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useCallback,
 	useMemo,
@@ -48,6 +48,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '../ui/tooltip'
+import { Toggle } from '../ui/toggle'
 import { buildChartCsv } from './graph-csv'
 import {
 	buildChartData,
@@ -143,6 +144,7 @@ export default function Graph({
 		index: 0,
 		color: '#000000',
 	})
+	const [showLines, setShowLines] = useState(false)
 	const isAggregated = aggregation !== 'raw'
 
 	const nodeRef = useRef<HTMLDivElement>(null)
@@ -183,10 +185,10 @@ export default function Graph({
 	const chartData = useMemo(
 		() =>
 			applyDatasetColorOverrides(
-				buildChartData({ sensors, isAggregated }),
+				buildChartData({ sensors, isAggregated, showLines }),
 				datasetColorOverrides,
 			),
-		[sensors, isAggregated, datasetColorOverrides],
+		[sensors, isAggregated, showLines, datasetColorOverrides],
 	)
 
 	const handleDatasetColorClick = useCallback(
@@ -312,6 +314,24 @@ export default function Graph({
 										</Tooltip>
 									</TooltipProvider>
 								)}
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Toggle
+											pressed={showLines}
+											onPressedChange={setShowLines}
+											size="sm"
+											aria-label={t('connect_points')}
+											className="h-6 w-6 p-1"
+										>
+											<ChartLine className="h-5 w-5" />
+										</Toggle>
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{t('connect_points')}</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 							<DropdownMenu>
 								<DropdownMenuTrigger>
 									<Download />
