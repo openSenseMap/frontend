@@ -85,6 +85,12 @@
 		"generate_new_key_warning": "Generating a new key will require you to update your device (e.g. change the sketch/ code). <b>This step can not be undone</b>."
 	},
 	"public_profile_link": "Your public profile is available here:",
+	"map_start_location": "Map start location",
+	"map_start_location_description": "Center the explore map here by default. Leave it empty to use your own devices as your area.",
+	"latitude": "Latitude",
+	"longitude": "Longitude",
+	"zoom": "Zoom",
+	"clear_home_location": "Clear home location",
 	"view_public_profile": "View public profile",
 	"copied": "Copied successfully",
 	"saved": "Saved",

@@ -1,5 +1,5 @@
 {
-  "id": "ff9187c2-a044-421b-91bc-199450bfd5da",
+  "id": "455bb6e0-7317-40b3-9d71-ef56f4443540",
   "prevId": "07740930-4c95-45f7-8d50-1115b8954086",
   "version": "7",
   "dialect": "postgresql",
@@ -373,6 +373,25 @@
           "notNull": false,
           "default": false
         },
+        "home_latitude": {
+          "name": "home_latitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "home_longitude": {
+          "name": "home_longitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "home_zoom": {
+          "name": "home_zoom",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 10
+        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -658,13 +677,6 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
-          "default": false
-        },
-        "newsletter_opt_in": {
-          "name": "newsletter_opt_in",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
           "default": false
         },
         "created_at": {

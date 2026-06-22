@@ -82,6 +82,12 @@
 		"auth_enable_checkbox_label": "Gerätesicherheit aktivieren"
 	},
 	"public_profile_link": "Dein öffentliches Profil findest du hier:",
+	"map_start_location": "Mein Bereich der Karte",
+	"map_start_location_description": "Die Erkunden-Karte wird standardmäßig hier zentriert. Leer lassen, um deine eigenen Geräte als Bereich zu verwenden.",
+	"latitude": "Breitengrad",
+	"longitude": "Längengrad",
+	"zoom": "Zoom",
+	"clear_home_location": "Meinen Bereich löschen",
 	"view_public_profile": "Öffentliches Profil anschauen",
 	"copied": "Erfolgreich kopiert",
 	"saved": "Gespeichert",
