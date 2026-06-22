@@ -56,6 +56,12 @@ const RegisterUserRequestSchema = z
 				'Preferred user language. Used for the website and emails. Defaults to `en_US`.',
 			example: 'en_US',
 		}),
+
+		newsletterOptIn: z.boolean().optional().default(false).meta({
+			description:
+				'Whether to request a newsletter subscription. If true, a double opt-in confirmation email is sent before the user is subscribed.',
+			example: true,
+		}),
 	})
 	.meta({
 		id: 'RegisterUserRequest',
