@@ -41,7 +41,11 @@ import PasswordResetEmail, {
 	subject as PasswordResetEmailSubject,
 } from '~/emails/password-reset'
 import { subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
-import { syncNewsletterSubscriptionWithMailgun } from '~/services/newsletter-service.server'
+import {
+	disableNewsletterForUser,
+	hasPendingNewsletterConfirmation,
+	requestNewsletterConfirmation,
+} from '~/services/newsletter-service.server'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -160,7 +164,7 @@ export const registerUser = async (
 		language,
 		password,
 		tos.id,
-		newsletterOptIn,
+		false,
 	)
 
 	if (newUsers.length === 0) {
@@ -179,11 +183,11 @@ export const registerUser = async (
 	const newUser = newUsers[0]
 	const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 
-	if (newUser.newsletterOptIn) {
+	if (newsletterOptIn) {
 		try {
-			await syncNewsletterSubscriptionWithMailgun(newUser)
+			await requestNewsletterConfirmation(newUser)
 		} catch (err) {
-			console.error('Failed to sync newsletter subscription:', err)
+			console.error('Failed to send newsletter confirmation email:', err)
 		}
 	}
 
@@ -369,16 +373,20 @@ export const updateUserDetails = async (
 		hasChanges = true
 	}
 
-	if (
-		typeof newsletterOptIn === 'boolean' &&
-		user.newsletterOptIn !== newsletterOptIn
-	) {
-		const updatedUser = await updateUserPreferencesById(user.id, {
-			newsletterOptIn,
-		})
-		await syncNewsletterSubscriptionWithMailgun(updatedUser)
-		messages.push('Newsletter preference changed.')
-		hasChanges = true
+	if (typeof newsletterOptIn === 'boolean') {
+		const newsletterOptInPending = await hasPendingNewsletterConfirmation(user.id)
+		const currentNewsletterRequested =
+			user.newsletterOptIn || newsletterOptInPending
+
+		if (currentNewsletterRequested !== newsletterOptIn) {
+			if (newsletterOptIn) {
+				await requestNewsletterConfirmation(user)
+			} else {
+				await disableNewsletterForUser(user)
+			}
+			messages.push('Newsletter preference changed.')
+			hasChanges = true
+		}
 	}
 
 	if (hasChanges) {
