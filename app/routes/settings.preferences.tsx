@@ -139,6 +139,11 @@ export default function PreferencesSettingsPage() {
 			}),
 			onSuccess: (data) => {
 				setNewsletterOptInPending(data.newsletterOptInPending)
+				toast({
+					title: data.newsletterRequested
+						? t('newsletter_confirmation_email_sent')
+						: t('newsletter_disabled'),
+				})
 			},
 			onError: (data) => {
 				setNewsletterRequested(data.newsletterRequested)
