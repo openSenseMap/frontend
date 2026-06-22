@@ -1,9 +1,21 @@
 import crypto from 'node:crypto'
+import { and, eq, gt, sql } from 'drizzle-orm'
 import {
 	getUserByEmail,
 	updateUserPreferencesById,
 } from '~/db/models/user.server'
-import { type User } from '~/db/schema'
+import {
+	hashActionToken,
+	hasPendingNewsletterConfirmationToken,
+	issueNewsletterConfirmationToken,
+	revokeNewsletterConfirmationToken,
+} from '~/db/models/token.server'
+import { actionToken, user, type User } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
+import NewsletterConfirmationEmail, {
+	subject as NewsletterConfirmationEmailSubject,
+} from '~/emails/newsletter-confirmation'
+import { sendMail } from '~/lib/mail.server'
 
 type MailgunWebhookPayload = {
 	signature?: {
@@ -86,10 +98,115 @@ export async function syncNewsletterSubscriptionWithMailgun(userToSync: User) {
 	)
 }
 
+/** Sends the newsletter double-opt-in confirmation email for a user. */
+export async function requestNewsletterConfirmation(userToConfirm: User) {
+	if (userToConfirm.newsletterOptIn) return 'already_confirmed' as const
+
+	const token = await issueNewsletterConfirmationToken(userToConfirm.id)
+	const lng = (userToConfirm.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+
+	try {
+		await sendMail({
+			recipientAddress: userToConfirm.email,
+			recipientName: userToConfirm.name,
+			subject: NewsletterConfirmationEmailSubject[lng],
+			body: NewsletterConfirmationEmail({
+				user: {
+					name: userToConfirm.name,
+					email: userToConfirm.email,
+				},
+				token,
+				language: lng,
+			}),
+		})
+	} catch (err) {
+		await revokeNewsletterConfirmationToken(userToConfirm.id)
+		throw err
+	}
+
+	return 'confirmation_sent' as const
+}
+
+/** Returns whether a user has an unexpired newsletter confirmation pending. */
+export async function hasPendingNewsletterConfirmation(userId: User['id']) {
+	return hasPendingNewsletterConfirmationToken(userId)
+}
+
+/** Cancels pending confirmation or disables an active newsletter subscription. */
+export async function disableNewsletterForUser(userToDisable: User) {
+	await revokeNewsletterConfirmationToken(userToDisable.id)
+
+	if (!userToDisable.newsletterOptIn) return userToDisable
+
+	const updatedUser = await updateUserPreferencesById(userToDisable.id, {
+		newsletterOptIn: false,
+	})
+	await syncNewsletterSubscriptionWithMailgun(updatedUser)
+
+	return updatedUser
+}
+
+/** Confirms a pending newsletter opt-in token and subscribes the user in Mailgun. */
+export async function confirmNewsletterSubscription(
+	rawToken: string,
+): Promise<'forbidden' | 'expired' | 'success'> {
+	const now = new Date()
+	const tokenHash = hashActionToken(rawToken)
+
+	const token = await drizzleClient.query.actionToken.findFirst({
+		where: (t) =>
+			and(
+				eq(t.purpose, 'newsletter_confirmation'),
+				eq(t.tokenHash, tokenHash),
+			),
+	})
+
+	if (!token) return 'forbidden'
+	if (now.getTime() > token.expiresAt.getTime()) return 'expired'
+
+	const currentUser = await drizzleClient.query.user.findFirst({
+		where: (u) => eq(u.id, token.userId),
+	})
+
+	if (!currentUser) return 'forbidden'
+
+	await syncNewsletterSubscriptionWithMailgun({
+		...currentUser,
+		newsletterOptIn: true,
+	})
+
+	return drizzleClient.transaction(async (tx) => {
+		await tx
+			.update(user)
+			.set({
+				newsletterOptIn: true,
+				updatedAt: sql`NOW()`,
+			})
+			.where(eq(user.id, currentUser.id))
+
+		const deleted = await tx
+			.delete(actionToken)
+			.where(
+				and(
+					eq(actionToken.id, token.id),
+					eq(actionToken.tokenHash, tokenHash),
+					gt(actionToken.expiresAt, now),
+				),
+			)
+			.returning({ id: actionToken.id })
+
+		if (deleted.length === 0) return 'forbidden' as const
+
+		return 'success' as const
+	})
+}
+
 /** Disables the local newsletter preference for a Mailgun recipient email. */
 export async function disableNewsletterForEmail(email: string) {
 	const existingUser = await getUserByEmail(email.toLowerCase())
 	if (!existingUser) return null
+
+	await revokeNewsletterConfirmationToken(existingUser.id)
 
 	return updateUserPreferencesById(existingUser.id, { newsletterOptIn: false })
 }
