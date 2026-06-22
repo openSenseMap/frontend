@@ -49,6 +49,12 @@
 	"receive_newsletter_messages": "Newsletter-Nachrichten erhalten",
 	"newsletter_confirmation_pending": "Bestätigung ausstehend",
 	"newsletter_confirmation_email_sent": "Bitte prüfe dein Postfach, um dein Newsletter-Abonnement zu bestätigen.",
+	"newsletter_confirmed": "Newsletter-Abonnement bestätigt",
+	"newsletter_confirmed_description": "Du erhältst jetzt den openSenseMap-Newsletter.",
+	"newsletter_confirmation_link_expired": "Newsletter-Bestätigungslink abgelaufen",
+	"newsletter_confirmation_link_expired_description": "Bitte fordere in deinen Einstellungen eine neue Bestätigungs-E-Mail an.",
+	"newsletter_confirmation_link_invalid": "Newsletter-Bestätigungslink ungültig",
+	"newsletter_confirmation_link_invalid_description": "Dieser Newsletter-Bestätigungslink ist ungültig oder wurde bereits verwendet.",
 	"newsletter_disabled": "Newsletter-Nachrichten deaktiviert.",
 	"newsletter_confirmation_failed": "Die Newsletter-Bestätigungs-E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.",
 	"newsletter_sync_failed": "Newsletter-Einstellung gespeichert, aber die Synchronisierung mit dem E-Mail-Anbieter ist fehlgeschlagen.Bitte kontaktiere uns unter support@opensensemap.org",
@@ -96,5 +102,8 @@
 	"confirm_email_change": "Änderung der E-Mail Adresse bestätigen",
 	"confirm_email_change_description": "Bitte gib dein aktuelles Passwort ein.",
 	"theme_description": "Entscheide selbst, wie openSenseMap für dich aussehen soll.",
-	"theme": "Erscheinungsbild"
+	"theme": "Erscheinungsbild",
+	"back_to_preferences": "Zurück zu den Einstellungen",
+	"go_to_explore": "Zur Karte",
+	"go_to_login": "Zur Anmeldung"
 }
