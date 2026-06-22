@@ -72,6 +72,11 @@ const UpdateCurrentUserRequestSchema = z
 			format: 'password',
 		}),
 		newPassword: NewPasswordSchema.optional(),
+		newsletterOptIn: z.boolean().optional().meta({
+			description:
+				'Whether to request or disable newsletter messages. Enabling sends a double opt-in confirmation email before the subscription becomes active.',
+			example: true,
+		}),
 	})
 	.superRefine((data, ctx) => {
 		if (data.email && data.newPassword) {
