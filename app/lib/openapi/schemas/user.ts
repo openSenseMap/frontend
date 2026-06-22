@@ -42,6 +42,12 @@ export const UserSchema = z
 			example: true,
 		}),
 
+		newsletterOptIn: z.boolean().meta({
+			description:
+				'Whether the user has confirmed the newsletter double opt-in and is actively subscribed.',
+			example: false,
+		}),
+
 		createdAt: z.iso.datetime().meta({
 			description: 'Account creation timestamp',
 			example: '2024-01-15T10:30:00.000Z',
