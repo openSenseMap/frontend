@@ -11,7 +11,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const token = url.searchParams.get('token')?.trim()
 
 	if (!token) {
-		return redirect('/settings/preferences?newsletterConfirm=missing_params')
+		return redirect('/settings/preferences')
 	}
 
 	const result = await confirmNewsletterSubscription(token)
@@ -19,7 +19,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (result === 'success') {
 		const session = await getUserSession(request)
 
-		return redirect('/settings/preferences?newsletterConfirm=ok', {
+		return redirect('/settings/preferences', {
 			headers: {
 				'Set-Cookie': await authSessionStorage.commitSession(session),
 			},
@@ -27,10 +27,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 
 	if (result === 'expired') {
-		return redirect('/settings/preferences?newsletterConfirm=expired')
+		return redirect('/settings/preferences')
 	}
 
-	return redirect('/settings/preferences?newsletterConfirm=invalid')
+	return redirect('/settings/preferences')
 }
 
 export default function ConfirmNewsletterRoute() {
