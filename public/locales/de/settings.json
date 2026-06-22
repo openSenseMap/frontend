@@ -47,6 +47,8 @@
 	"language": "Sprache",
 	"select_language": "Wähle die Sprache aus",
 	"receive_newsletter_messages": "Newsletter-Nachrichten erhalten",
+	"newsletter_confirmation_pending": "Bestätigung ausstehend",
+	"newsletter_confirmation_failed": "Die Newsletter-Bestätigungs-E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.",
 	"newsletter_sync_failed": "Newsletter-Einstellung gespeichert, aber die Synchronisierung mit dem E-Mail-Anbieter ist fehlgeschlagen.Bitte kontaktiere uns unter support@opensensemap.org",
 	"confirm_password": "Bestätige dein Passwort",
 	"enter_current_password": "Gib dein aktuelles Passwort ein",
