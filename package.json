@@ -68,7 +68,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-router/node": "^7.14.2",
     "@react-router/serve": "^7.14.2",
-    "@rjsf/core": "^6.5.3",
+    "@rjsf/core": "^6.6.2",
     "@rjsf/utils": "^6.6.2",
     "@rjsf/validator-ajv8": "^6.6.1",
     "@sensebox/sketch-templater": "^1.13.6",
