@@ -26,7 +26,6 @@ import {
 	UnprocessableContentErrorSchema,
 	unprocessableContentResponse,
 } from '~/lib/openapi/errors'
-import { validateJsonContentType } from '~/middleware/content-type-header.server'
 import { withAuthenticatedUser } from '~/lib/jwt'
 import {
 	DevicesQuerySchema,
@@ -198,9 +197,6 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		if (request.method !== 'POST') {
 			return StandardResponse.methodNotAllowed('Method Not Allowed')
 		}
-
-		const contentTypeError = validateJsonContentType(request, ['POST'])
-		if (contentTypeError) return contentTypeError
 
 		return await withAuthenticatedUser(request, async (user) => {
 			return await post(request, user)
