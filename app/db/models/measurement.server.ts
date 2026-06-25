@@ -262,7 +262,7 @@ export async function saveMeasurements(
 			locations,
 			minimalDevice.id,
 			tx,
-			{ returning: false },
+			{ shouldReturn: false },
 		)
 		await updateLastMeasurements(lastMeasurements, tx)
 	})
