@@ -231,7 +231,7 @@ export async function saveMeasurements(
 				archivedAt: device.archivedAt,
 			})
 			.from(device)
-			.where(eq(device.id, device.id))
+			.where(eq(device.id, minimalDevice.id))
 			.limit(1)
 
 		if (!currentDevice) {
@@ -244,13 +244,25 @@ export async function saveMeasurements(
 			throw new ArchivedDeviceError(currentDevice.id)
 		}
 
-		const locations = await findOrCreateLocations(deviceLocationUpdates)
-		await addLocationUpdates(deviceLocationUpdates, minimalDevice.id, locations)
+		const locations =
+			deviceLocationUpdates.length > 0
+				? await findOrCreateLocations(deviceLocationUpdates)
+				: []
+
+		if (deviceLocationUpdates.length > 0) {
+			await addLocationUpdates(
+				deviceLocationUpdates,
+				minimalDevice.id,
+				locations,
+			)
+		}
+
 		await insertMeasurementsWithLocation(
 			measurements,
 			locations,
 			minimalDevice.id,
 			tx,
+			{ returning: false },
 		)
 		await updateLastMeasurements(lastMeasurements, tx)
 	})
