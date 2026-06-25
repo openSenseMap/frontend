@@ -4,7 +4,7 @@ import { assertDeviceIsWritable } from './device-service.server'
 import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
-	getDevice,
+	getDeviceForMeasurementWrite,
 } from '~/db/models/device.server'
 import { saveMeasurements } from '~/db/models/measurement.server'
 import {
@@ -135,7 +135,7 @@ export const postNewMeasurements = async (
 		throw new Error('UnsupportedMediaTypeError: Unsupported content-type.')
 	}
 
-	const device = await getDevice({ id: deviceId })
+	const device = await getDeviceForMeasurementWrite({ id: deviceId })
 	if (!device) {
 		throw new Error('NotFoundError: Device not found')
 	}
@@ -181,7 +181,7 @@ export const postSingleMeasurement = async (
 			throw error
 		}
 
-		const device = await getDevice({ id: deviceId })
+		const device = await getDeviceForMeasurementWrite({ id: deviceId })
 
 		if (!device) {
 			const error = new Error('Device not found')
