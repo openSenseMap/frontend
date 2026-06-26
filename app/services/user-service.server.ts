@@ -552,6 +552,7 @@ export const confirmEmail = async (
 		}
 	} else if (result.emailChanged && result.hadPendingNewsletterConfirmation) {
 		try {
+			// This issues a new token for the new email and replaces the old pending newsletter token.
 			await requestNewsletterConfirmation(result.userAfterConfirmation)
 		} catch (err) {
 			console.error(
