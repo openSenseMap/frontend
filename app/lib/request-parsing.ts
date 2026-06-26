@@ -37,6 +37,10 @@ export async function parseRequestData(
 	}
 }
 
+function parseBoolean(value: unknown): boolean {
+	return value === true || value === 'true' || value === 'on'
+}
+
 /**
  * Convenience function to parse user registration data with field mapping.
  * Handles both JSON and form data formats with backward compatibility.
@@ -50,6 +54,7 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 	password: string
 	language: string
 	tosAccepted: boolean
+	newsletterOptIn: boolean
 }> {
 	const data = await parseRequestData(request)
 
@@ -58,7 +63,8 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 		email: data.email || '',
 		password: data.password || '',
 		language: data.language || 'en_US',
-		tosAccepted: data.tosAccepted || false,
+		tosAccepted: parseBoolean(data.tosAccepted),
+		newsletterOptIn: parseBoolean(data.newsletterOptIn ?? data.newsletter_optIn),
 	}
 }
 
