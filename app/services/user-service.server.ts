@@ -375,11 +375,13 @@ export const updateUserDetails = async (
 	}
 
 	if (typeof newsletterOptIn === 'boolean') {
-		const newsletterOptInPending = await hasPendingNewsletterConfirmation(user.id)
-		const currentNewsletterRequested =
+		const newsletterOptInPending = await hasPendingNewsletterConfirmation(
+			user.id,
+		)
+		const newsletterAlreadyRequested =
 			user.newsletterOptIn || newsletterOptInPending
 
-		if (currentNewsletterRequested !== newsletterOptIn) {
+		if (newsletterAlreadyRequested !== newsletterOptIn) {
 			if (newsletterOptIn) {
 				await requestNewsletterConfirmation(user)
 			} else {
@@ -476,15 +478,14 @@ export const confirmEmail = async (
 			: currentUser.email
 		const emailChanged = previousEmail.toLowerCase() !== confirmedEmail
 		// Capture this before replacing it later, so an old newsletter link cannot confirm a new account email.
-		const pendingNewsletterConfirmation =
-			await tx.query.actionToken.findFirst({
-				where: (t, { and, eq, gt }) =>
-					and(
-						eq(t.userId, currentUser.id),
-						eq(t.purpose, 'newsletter_confirmation'),
-						gt(t.expiresAt, now),
-					),
-			})
+		const pendingNewsletterConfirmation = await tx.query.actionToken.findFirst({
+			where: (t, { and, eq, gt }) =>
+				and(
+					eq(t.userId, currentUser.id),
+					eq(t.purpose, 'newsletter_confirmation'),
+					gt(t.expiresAt, now),
+				),
+		})
 
 		if (pendingEmail) {
 			await tx
@@ -523,9 +524,7 @@ export const confirmEmail = async (
 			result: 'success' as const,
 			previousEmail,
 			emailChanged,
-			hadPendingNewsletterConfirmation: Boolean(
-				pendingNewsletterConfirmation,
-			),
+			hadPendingNewsletterConfirmation: Boolean(pendingNewsletterConfirmation),
 			wasNewsletterSubscribed: currentUser.newsletterOptIn,
 			userAfterConfirmation: {
 				...currentUser,
