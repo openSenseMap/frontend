@@ -120,7 +120,7 @@ export async function removeNewsletterMemberFromMailgun(email: string) {
 }
 
 /** Removes the old email and asks the new email address to confirm newsletter opt-in again. */
-export async function requireNewsletterReconfirmationAfterEmailChange(
+export async function triggerNewsletterReconfirmationAfterEmailChange(
 	userToSync: User,
 	previousEmail: string,
 ) {
@@ -201,10 +201,7 @@ export async function confirmNewsletterSubscription(
 
 	const token = await drizzleClient.query.actionToken.findFirst({
 		where: (t) =>
-			and(
-				eq(t.purpose, 'newsletter_confirmation'),
-				eq(t.tokenHash, tokenHash),
-			),
+			and(eq(t.purpose, 'newsletter_confirmation'), eq(t.tokenHash, tokenHash)),
 	})
 
 	if (!token) return 'forbidden'

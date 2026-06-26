@@ -45,7 +45,7 @@ import {
 	disableNewsletterForUser,
 	hasPendingNewsletterConfirmation,
 	requestNewsletterConfirmation,
-	requireNewsletterReconfirmationAfterEmailChange,
+	triggerNewsletterReconfirmationAfterEmailChange,
 } from '~/services/newsletter-service.server'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
@@ -540,7 +540,7 @@ export const confirmEmail = async (
 	// Keep account email confirmation independent from external Mailgun sync.
 	if (result.emailChanged && result.wasNewsletterSubscribed) {
 		try {
-			await requireNewsletterReconfirmationAfterEmailChange(
+			await triggerNewsletterReconfirmationAfterEmailChange(
 				result.userAfterConfirmation,
 				result.previousEmail,
 			)
