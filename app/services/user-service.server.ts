@@ -45,6 +45,7 @@ import {
 	disableNewsletterForUser,
 	hasPendingNewsletterConfirmation,
 	requestNewsletterConfirmation,
+	requireNewsletterReconfirmationAfterEmailChange,
 } from '~/services/newsletter-service.server'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
@@ -461,24 +462,35 @@ export const confirmEmail = async (
 	if (!token) return 'forbidden'
 	if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
-	return drizzleClient.transaction(async (tx) => {
+	const result = await drizzleClient.transaction(async (tx) => {
 		const currentUser = await tx.query.user.findFirst({
 			where: (u, { eq }) => eq(u.id, token.userId),
-			columns: {
-				id: true,
-				unconfirmedEmail: true,
-			},
 		})
 
 		if (!currentUser) return 'forbidden' as const
 
 		const pendingEmail = currentUser.unconfirmedEmail?.trim()
+		const previousEmail = currentUser.email
+		const confirmedEmail = pendingEmail
+			? pendingEmail.toLowerCase()
+			: currentUser.email
+		const emailChanged = previousEmail.toLowerCase() !== confirmedEmail
+		// Capture this before replacing it later, so an old newsletter link cannot confirm a new account email.
+		const pendingNewsletterConfirmation =
+			await tx.query.actionToken.findFirst({
+				where: (t, { and, eq, gt }) =>
+					and(
+						eq(t.userId, currentUser.id),
+						eq(t.purpose, 'newsletter_confirmation'),
+						gt(t.expiresAt, now),
+					),
+			})
 
 		if (pendingEmail) {
 			await tx
 				.update(user)
 				.set({
-					email: pendingEmail.toLowerCase(),
+					email: confirmedEmail,
 					unconfirmedEmail: null,
 					emailIsConfirmed: true,
 					updatedAt: now,
@@ -507,8 +519,50 @@ export const confirmEmail = async (
 
 		if (deleted.length === 0) return 'forbidden' as const
 
-		return 'success' as const
+		return {
+			result: 'success' as const,
+			previousEmail,
+			emailChanged,
+			hadPendingNewsletterConfirmation: Boolean(
+				pendingNewsletterConfirmation,
+			),
+			wasNewsletterSubscribed: currentUser.newsletterOptIn,
+			userAfterConfirmation: {
+				...currentUser,
+				email: confirmedEmail,
+				unconfirmedEmail: null,
+				emailIsConfirmed: true,
+			},
+		}
 	})
+
+	if (result === 'forbidden') return result
+
+	// Keep account email confirmation independent from external Mailgun sync.
+	if (result.emailChanged && result.wasNewsletterSubscribed) {
+		try {
+			await requireNewsletterReconfirmationAfterEmailChange(
+				result.userAfterConfirmation,
+				result.previousEmail,
+			)
+		} catch (err) {
+			console.error(
+				'Failed to require newsletter reconfirmation after email change:',
+				err,
+			)
+		}
+	} else if (result.emailChanged && result.hadPendingNewsletterConfirmation) {
+		try {
+			await requestNewsletterConfirmation(result.userAfterConfirmation)
+		} catch (err) {
+			console.error(
+				'Failed to resend newsletter confirmation after email change:',
+				err,
+			)
+		}
+	}
+
+	return result.result
 }
 
 /**
