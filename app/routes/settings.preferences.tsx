@@ -133,10 +133,10 @@ async function handleNewsletterPreferencesAction(
 
 	const newsletterRequested = formData.get('newsletterOptIn') === 'on'
 	const newsletterOptInPending = await hasPendingNewsletterConfirmation(user.id)
-	const currentNewsletterRequested =
+	const newsletterAlreadyRequested =
 		user.newsletterOptIn || newsletterOptInPending
 
-	if (newsletterRequested === currentNewsletterRequested) {
+	if (newsletterRequested === newsletterAlreadyRequested) {
 		return {
 			intent: 'autosave-newsletter-preferences',
 			success: true,
@@ -180,7 +180,7 @@ async function handleNewsletterPreferencesAction(
 			newsletterConfirmationFailed: newsletterRequested,
 			newsletterOptIn: user.newsletterOptIn,
 			newsletterOptInPending,
-			newsletterRequested: currentNewsletterRequested,
+			newsletterRequested: newsletterAlreadyRequested,
 		}
 	}
 }
