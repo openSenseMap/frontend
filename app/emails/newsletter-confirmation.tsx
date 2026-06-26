@@ -12,12 +12,12 @@ import {
 
 const messages = {
 	en: {
-		preview: 'Confirm your openSenseMap newsletter subscription',
-		heading: 'Confirm newsletter subscription',
+		preview: 'Confirm your openSenseMap info mails subscription',
+		heading: 'Confirm info mails subscription',
 		hello: 'Hi',
 		description:
-			'Please confirm that you want to receive the openSenseMap newsletter by clicking the link below.',
-		link: 'Confirm newsletter subscription',
+			'Please confirm that you want to receive openSenseMap info mails by clicking the link below.',
+		link: 'Confirm info mails subscription',
 		hint: 'If you are unable to click the link, you can also open this address with your web browser:',
 		valid: 'This link is valid for 7 days.',
 		ignore: "If you didn't request this, please ignore this email.",
@@ -25,16 +25,16 @@ const messages = {
 		salutation: 'Best wishes your openSenseMap Team',
 	},
 	de: {
-		preview: 'Bestätige dein openSenseMap Newsletter-Abonnement',
-		heading: 'Newsletter-Abonnement bestätigen',
+		preview: 'Bestätige dein openSenseMap Info-Mails-Abonnement',
+		heading: 'Info-Mails-Abonnement bestätigen',
 		hello: 'Hallo',
 		description:
-			'Bitte bestätige, dass du den openSenseMap-Newsletter erhalten möchtest, indem du auf den folgenden Link klickst.',
-		link: 'Newsletter-Abonnement bestätigen',
+			'Bitte bestätige, dass du die openSenseMap Info-Mails erhalten möchtest, indem du auf den folgenden Link klickst.',
+		link: 'Info-Mails-Abonnement bestätigen',
 		hint: 'Wenn sich der Link nicht anklicken lässt, kannst du auch diese Adresse kopieren und mit deinem Browser öffnen:',
 		valid: 'Dieser Link ist 7 Tage gültig.',
 		ignore:
-			'Falls du den Newsletter nicht angefordert hast, ignoriere diese E-Mail.',
+			'Falls du die Info-Mails nicht angefordert hast, ignoriere diese E-Mail.',
 		support: 'Wenn du Fragen hast, schreib uns eine Mail an:',
 		salutation: 'Viele Grüße, dein openSenseMap Team',
 	},
@@ -94,7 +94,7 @@ export const NewsletterConfirmationEmail = ({
 					<Text>
 						{intl.formatMessage({ id: 'support' })} {}
 						<Link
-							href={`mailto:support@opensensemap.org?Subject=Newsletter%20Best%C3%A4tigung%20f%C3%BCr%20${encodeURIComponent(
+							href={`mailto:support@opensensemap.org?Subject=Info-Mails%20Best%C3%A4tigung%20f%C3%BCr%20${encodeURIComponent(
 								user.email,
 							)}`}
 						>
@@ -111,8 +111,8 @@ export const NewsletterConfirmationEmail = ({
 export default NewsletterConfirmationEmail
 
 export const subject = {
-	de: 'Bestätige dein openSenseMap Newsletter-Abonnement',
-	en: 'Confirm your openSenseMap newsletter subscription',
+	de: 'Bestätige dein openSenseMap Info-Mails-Abonnement',
+	en: 'Confirm your openSenseMap info mails subscription',
 }
 
 const main = {
