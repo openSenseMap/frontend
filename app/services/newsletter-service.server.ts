@@ -56,8 +56,11 @@ const getAuthorizationHeader = (apiKey: string) =>
 /** Sends a form-encoded request to the configured Mailgun API. */
 async function mailgunRequest(
 	path: string,
-	method: 'POST' | 'PUT',
-	body: URLSearchParams,
+	method: 'DELETE' | 'POST' | 'PUT',
+	body?: URLSearchParams,
+	options?: {
+		ignoreNotFound?: boolean
+	},
 ) {
 	const config = getMailgunConfig()
 
@@ -69,6 +72,10 @@ async function mailgunRequest(
 		},
 		body,
 	})
+
+	if (response.status === 404 && options?.ignoreNotFound) {
+		return 'not_found'
+	}
 
 	if (!response.ok) {
 		const message = await response.text()
@@ -96,6 +103,45 @@ export async function syncNewsletterSubscriptionWithMailgun(userToSync: User) {
 		'POST',
 		body,
 	)
+}
+
+/** Removes an email address from the configured Mailgun newsletter list. */
+export async function removeNewsletterMemberFromMailgun(email: string) {
+	const config = getMailgunConfig()
+
+	return mailgunRequest(
+		`/v3/lists/${encodeURIComponent(config.listAddress)}/members/${encodeURIComponent(
+			email,
+		)}`,
+		'DELETE',
+		undefined,
+		{ ignoreNotFound: true },
+	)
+}
+
+/** Removes the old email and asks the new email address to confirm newsletter opt-in again. */
+export async function requireNewsletterReconfirmationAfterEmailChange(
+	userToSync: User,
+	previousEmail: string,
+) {
+	const oldEmail = previousEmail.trim().toLowerCase()
+	const newEmail = userToSync.email.trim().toLowerCase()
+
+	if (!userToSync.newsletterOptIn || oldEmail === newEmail) {
+		return 'unchanged'
+	}
+
+	await removeNewsletterMemberFromMailgun(oldEmail)
+	const updatedUser = await updateUserPreferencesById(userToSync.id, {
+		newsletterOptIn: false,
+	})
+	await requestNewsletterConfirmation({
+		...updatedUser,
+		email: newEmail,
+		newsletterOptIn: false,
+	})
+
+	return 'synced'
 }
 
 /** Sends the newsletter double-opt-in confirmation email for a user. */
