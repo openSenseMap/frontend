@@ -56,13 +56,13 @@ const DEFAULT_LIMITS: Record<
 	Record<HttpMethod, RateLimitConfig>
 > = {
 	noauth: {
-		GET: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 300 },
+		GET: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
 		POST: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
 		PUT: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
 		DELETE: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
 	},
 	auth: {
-		GET: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 600 },
+		GET: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
 		POST: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 180 },
 		PUT: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 120 },
 		DELETE: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 120 },
