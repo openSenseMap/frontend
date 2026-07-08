@@ -1,5 +1,18 @@
 import { createHash } from 'node:crypto'
 import jsonwebtoken from 'jsonwebtoken'
+
+const { activeGrants } = vi.hoisted(() => ({
+	activeGrants: [] as Array<{
+		kind: 'user_email' | 'email_domain' | 'credential_hash'
+		value: string
+		tier: 'standard_plus' | 'trusted' | 'high_volume'
+	}>,
+}))
+
+vi.mock('~/db/models/rate-limit-grant.server', () => ({
+	getActiveRateLimitGrants: vi.fn(async () => activeGrants),
+}))
+
 import {
 	checkApiRateLimit,
 	resetApiRateLimitForTests,
@@ -15,15 +28,15 @@ function restoreEnv(name: string, value: string | undefined) {
 
 describe('API rate limiting', () => {
 	beforeEach(() => {
-		delete process.env.API_RATE_LIMIT_TIERS
+		activeGrants.length = 0
 		resetApiRateLimitForTests()
 	})
 
-	it('limits sensitive auth endpoints with route-specific limits', () => {
-		let result: ReturnType<typeof checkApiRateLimit> = null
+	it('limits sensitive auth endpoints with route-specific limits', async () => {
+		let result: Awaited<ReturnType<typeof checkApiRateLimit>> = null
 
 		for (let i = 0; i < 10; i++) {
-			result = checkApiRateLimit(
+			result = await checkApiRateLimit(
 				new Request(`${BASE_URL}/api/users/sign-in`, {
 					method: 'POST',
 					headers: { 'x-forwarded-for': '203.0.113.1' },
@@ -33,7 +46,7 @@ describe('API rate limiting', () => {
 			expect(result?.allowed).toBe(true)
 		}
 
-		result = checkApiRateLimit(
+		result = await checkApiRateLimit(
 			new Request(`${BASE_URL}/api/users/sign-in`, {
 				method: 'POST',
 				headers: { 'x-forwarded-for': '203.0.113.1' },
@@ -46,9 +59,9 @@ describe('API rate limiting', () => {
 		expect(result?.retryAfterSeconds).toBe(60)
 	})
 
-	it('separates buckets by credential before falling back to the client address', () => {
+	it('separates buckets by credential before falling back to the client address', async () => {
 		for (let i = 0; i < 10; i++) {
-			checkApiRateLimit(
+			await checkApiRateLimit(
 				new Request(`${BASE_URL}/api/users/sign-in`, {
 					method: 'POST',
 					headers: {
@@ -60,7 +73,7 @@ describe('API rate limiting', () => {
 			)
 		}
 
-		const sameAddressDifferentCredential = checkApiRateLimit(
+		const sameAddressDifferentCredential = await checkApiRateLimit(
 			new Request(`${BASE_URL}/api/users/sign-in`, {
 				method: 'POST',
 				headers: {
@@ -75,17 +88,16 @@ describe('API rate limiting', () => {
 		expect(sameAddressDifferentCredential?.remaining).toBe(9)
 	})
 
-	it('can grant a higher tier by credential hash', () => {
+	it('can grant a higher tier by credential hash', async () => {
 		const credential = 'school-device-api-key'
 		const credentialHash = createHash('sha256').update(credential).digest('hex')
-		process.env.API_RATE_LIMIT_TIERS = JSON.stringify({
-			education: {
-				multiplier: 2,
-				credentialHashes: [credentialHash],
-			},
+		activeGrants.push({
+			kind: 'credential_hash',
+			value: credentialHash,
+			tier: 'standard_plus',
 		})
 
-		const result = checkApiRateLimit(
+		const result = await checkApiRateLimit(
 			new Request(`${BASE_URL}/api/users/sign-in`, {
 				method: 'POST',
 				headers: { 'x-osem-device-api-key': credential },
@@ -93,12 +105,12 @@ describe('API rate limiting', () => {
 			1_000,
 		)
 
-		expect(result?.tier).toBe('education')
-		expect(result?.limit.maxRequests).toBe(20)
-		expect(result?.remaining).toBe(19)
+		expect(result?.tier).toBe('standard_plus')
+		expect(result?.limit.maxRequests).toBe(50)
+		expect(result?.remaining).toBe(49)
 	})
 
-	it('can grant a higher tier by verified JWT email domain', () => {
+	it('can grant a higher tier by verified JWT email domain', async () => {
 		const originalAlgorithm = process.env.JWT_ALGORITHM
 		const originalIssuer = process.env.JWT_ISSUER
 		const originalSecret = process.env.JWT_SECRET
@@ -107,11 +119,10 @@ describe('API rate limiting', () => {
 			process.env.JWT_ALGORITHM = 'HS256'
 			process.env.JWT_ISSUER = 'opensensemap-test'
 			process.env.JWT_SECRET = 'test-secret'
-			process.env.API_RATE_LIMIT_TIERS = JSON.stringify({
-				education: {
-					multiplier: 3,
-					emailDomains: ['school.example'],
-				},
+			activeGrants.push({
+				kind: 'email_domain',
+				value: 'school.example',
+				tier: 'standard_plus',
 			})
 
 			const token = sign({ role: 'user' }, process.env.JWT_SECRET, {
@@ -120,7 +131,7 @@ describe('API rate limiting', () => {
 				subject: 'teacher@school.example',
 			})
 
-			const result = checkApiRateLimit(
+			const result = await checkApiRateLimit(
 				new Request(`${BASE_URL}/api/users/sign-in`, {
 					method: 'POST',
 					headers: { authorization: `Bearer ${token}` },
@@ -128,8 +139,8 @@ describe('API rate limiting', () => {
 				1_000,
 			)
 
-			expect(result?.tier).toBe('education')
-			expect(result?.limit.maxRequests).toBe(30)
+			expect(result?.tier).toBe('standard_plus')
+			expect(result?.limit.maxRequests).toBe(50)
 		} finally {
 			restoreEnv('JWT_ALGORITHM', originalAlgorithm)
 			restoreEnv('JWT_ISSUER', originalIssuer)
@@ -137,9 +148,9 @@ describe('API rate limiting', () => {
 		}
 	})
 
-	it('opens a new bucket after the configured window resets', () => {
+	it('opens a new bucket after the configured window resets', async () => {
 		for (let i = 0; i < 10; i++) {
-			checkApiRateLimit(
+			await checkApiRateLimit(
 				new Request(`${BASE_URL}/api/users/sign-in`, {
 					method: 'POST',
 					headers: { 'x-forwarded-for': '203.0.113.3' },
@@ -148,7 +159,7 @@ describe('API rate limiting', () => {
 			)
 		}
 
-		const resetResult = checkApiRateLimit(
+		const resetResult = await checkApiRateLimit(
 			new Request(`${BASE_URL}/api/users/sign-in`, {
 				method: 'POST',
 				headers: { 'x-forwarded-for': '203.0.113.3' },
@@ -160,8 +171,8 @@ describe('API rate limiting', () => {
 		expect(resetResult?.remaining).toBe(9)
 	})
 
-	it('does not rate limit URLs that are not defined in apiRoutes', () => {
-		const result = checkApiRateLimit(
+	it('does not rate limit URLs that are not defined in apiRoutes', async () => {
+		const result = await checkApiRateLimit(
 			new Request(`${BASE_URL}/api/unknown`, { method: 'GET' }),
 			1_000,
 		)
