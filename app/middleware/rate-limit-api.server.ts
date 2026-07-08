@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto'
 import jsonwebtoken, { type Algorithm } from 'jsonwebtoken'
+import {
+	getActiveRateLimitGrants,
+	type ActiveRateLimitGrant,
+} from '~/db/models/rate-limit-grant.server'
+import { type RateLimitTier } from '~/db/schema'
 import { compileApiRoutes, findApiRoute } from '~/lib/api-route-matching'
 import {
 	apiRoutes,
@@ -19,28 +24,32 @@ type RateLimitBucket = {
 type RateLimitResult = {
 	allowed: boolean
 	limit: RateLimitConfig
-	tier: string
+	tier: RateLimitTierName
 	remaining: number
 	resetAt: number
 	retryAfterSeconds: number
 }
 
-type RateLimitTierGrant = {
-	multiplier?: number
-	users?: string[]
-	emailDomains?: string[]
-	credentialHashes?: string[]
-}
-
-type RateLimitTier = {
-	name: string
+type RateLimitTierName = 'default' | RateLimitTier
+type ResolvedRateLimitTier = {
+	name: RateLimitTierName
 	multiplier: number
-	users: Set<string>
-	emailDomains: Set<string>
-	credentialHashes: Set<string>
 }
 
 const DEFAULT_WINDOW_MS = 60_000
+const GRANT_CACHE_TTL_MS = 60_000
+
+const RATE_LIMIT_TIERS = {
+	default: { multiplier: 1 },
+	standard_plus: { multiplier: 5 },
+	trusted: { multiplier: 10 },
+	high_volume: { multiplier: 25 },
+} satisfies Record<RateLimitTierName, { multiplier: number }>
+
+const DEFAULT_RATE_LIMIT_TIER: ResolvedRateLimitTier = {
+	name: 'default',
+	multiplier: RATE_LIMIT_TIERS.default.multiplier,
+}
 
 const DEFAULT_LIMITS: Record<
 	'auth' | 'noauth',
@@ -63,8 +72,8 @@ const DEFAULT_LIMITS: Record<
 const compiledApiRoutes = compileApiRoutes(apiRoutes)
 const buckets = new Map<string, RateLimitBucket>()
 let lastCleanupAt = 0
-let cachedTierConfigRaw: string | undefined
-let cachedTierConfig: RateLimitTier[] = []
+let cachedGrants: ActiveRateLimitGrant[] = []
+let cachedGrantsUntil = 0
 
 function json(body: unknown, status = 200, headers?: HeadersInit) {
 	return new Response(JSON.stringify(body), {
@@ -89,31 +98,18 @@ function normalizeDomain(value: string) {
 	return value.trim().replace(/^@/, '').toLowerCase()
 }
 
-function parseTierConfig() {
-	const raw = process.env.API_RATE_LIMIT_TIERS
-	if (raw === cachedTierConfigRaw) return cachedTierConfig
-
-	cachedTierConfigRaw = raw
-	cachedTierConfig = []
-
-	if (!raw) return cachedTierConfig
+async function getCachedRateLimitGrants(now: number) {
+	if (cachedGrantsUntil > now) return cachedGrants
 
 	try {
-		const parsed = JSON.parse(raw) as Record<string, RateLimitTierGrant>
-		cachedTierConfig = Object.entries(parsed).map(([name, grant]) => ({
-			name,
-			multiplier: grant.multiplier ?? 1,
-			users: new Set((grant.users ?? []).map(normalizeEmail)),
-			emailDomains: new Set((grant.emailDomains ?? []).map(normalizeDomain)),
-			credentialHashes: new Set(
-				(grant.credentialHashes ?? []).map((hash) => hash.trim().toLowerCase()),
-			),
-		}))
+		cachedGrants = await getActiveRateLimitGrants()
+		cachedGrantsUntil = now + GRANT_CACHE_TTL_MS
 	} catch (error) {
-		console.error('Invalid API_RATE_LIMIT_TIERS configuration', error)
+		console.error('Unable to load API rate limit grants', error)
+		cachedGrantsUntil = now + Math.min(GRANT_CACHE_TTL_MS, 10_000)
 	}
 
-	return cachedTierConfig
+	return cachedGrants
 }
 
 function getClientAddress(request: Request) {
@@ -143,6 +139,9 @@ function getRequesterCredential(request: Request) {
 }
 
 function getRequesterKey(request: Request) {
+	const jwtPayload = getVerifiedJwtPayload(request)
+	if (jwtPayload?.sub) return `user:${normalizeEmail(String(jwtPayload.sub))}`
+
 	const credential = getRequesterCredential(request)
 	if (credential) return `credential:${credential.hash}`
 
@@ -178,42 +177,54 @@ function getVerifiedJwtPayload(request: Request) {
 	}
 }
 
-function emailMatchesTier(email: string, tier: RateLimitTier) {
+function emailMatchesGrant(email: string, grant: ActiveRateLimitGrant) {
 	const normalizedEmail = normalizeEmail(email)
 	const domain = normalizedEmail.split('@')[1]
 
-	return (
-		tier.users.has(normalizedEmail) ||
-		(domain ? tier.emailDomains.has(domain) : false)
-	)
+	if (grant.kind === 'user_email') return grant.value === normalizedEmail
+	if (grant.kind === 'email_domain')
+		return domain === normalizeDomain(grant.value)
+	return false
 }
 
-function resolveRateLimitTier(request: Request) {
-	const tiers = parseTierConfig()
-	if (tiers.length === 0) return { name: 'default', multiplier: 1 }
+async function resolveRateLimitTier(
+	request: Request,
+	now: number,
+): Promise<ResolvedRateLimitTier> {
+	const grants = await getCachedRateLimitGrants(now)
+	if (grants.length === 0) return DEFAULT_RATE_LIMIT_TIER
 
 	const credential = getRequesterCredential(request)
 	if (credential) {
-		const matchedCredentialTier = tiers.find((tier) =>
-			tier.credentialHashes.has(credential.hash),
+		const matchedCredentialGrant = grants.find(
+			(grant) =>
+				grant.kind === 'credential_hash' && grant.value === credential.hash,
 		)
-		if (matchedCredentialTier) return matchedCredentialTier
+		if (matchedCredentialGrant)
+			return {
+				name: matchedCredentialGrant.tier,
+				multiplier: RATE_LIMIT_TIERS[matchedCredentialGrant.tier].multiplier,
+			}
 	}
 
 	const jwtPayload = getVerifiedJwtPayload(request)
 	if (jwtPayload?.sub) {
-		const matchedUserTier = tiers.find((tier) =>
-			emailMatchesTier(String(jwtPayload.sub), tier),
+		const matchedUserGrant = grants.find((grant) =>
+			emailMatchesGrant(String(jwtPayload.sub), grant),
 		)
-		if (matchedUserTier) return matchedUserTier
+		if (matchedUserGrant)
+			return {
+				name: matchedUserGrant.tier,
+				multiplier: RATE_LIMIT_TIERS[matchedUserGrant.tier].multiplier,
+			}
 	}
 
-	return { name: 'default', multiplier: 1 }
+	return DEFAULT_RATE_LIMIT_TIER
 }
 
 function resolveTierLimit(
 	baseLimit: RateLimitConfig,
-	tier: { name: string; multiplier: number },
+	tier: ResolvedRateLimitTier,
 ) {
 	const tierOverride = baseLimit.tiers?.[tier.name]
 	const multiplier = tierOverride?.multiplier ?? tier.multiplier
@@ -239,11 +250,11 @@ function cleanupBuckets(now: number) {
 export function resetApiRateLimitForTests() {
 	buckets.clear()
 	lastCleanupAt = 0
-	cachedTierConfigRaw = undefined
-	cachedTierConfig = []
+	cachedGrants = []
+	cachedGrantsUntil = 0
 }
 
-export function checkApiRateLimit(request: Request, now = Date.now()) {
+export async function checkApiRateLimit(request: Request, now = Date.now()) {
 	const url = new URL(request.url)
 	const route = findApiRoute(request, url.pathname, compiledApiRoutes)
 	if (!route) return null
@@ -251,7 +262,7 @@ export function checkApiRateLimit(request: Request, now = Date.now()) {
 	const baseLimit = getRateLimit(route)
 	if (!baseLimit) return null
 
-	const tier = resolveRateLimitTier(request)
+	const tier = await resolveRateLimitTier(request, now)
 	const limit = resolveTierLimit(baseLimit, tier)
 
 	cleanupBuckets(now)
@@ -302,7 +313,7 @@ export async function apiRateLimitMiddleware(
 	{ request }: { request: Request },
 	next: () => Promise<Response>,
 ) {
-	const result = checkApiRateLimit(request)
+	const result = await checkApiRateLimit(request)
 	if (!result) return next()
 
 	if (!result.allowed) {
