@@ -16,8 +16,13 @@ export function apiRoutePath(path: string) {
 
 export function routeToRegex(apiPathPattern: string) {
 	const escaped = apiPathPattern
-		.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-		.replace(/\\:([A-Za-z0-9_]+)/g, '[^/]+')
+		.split('/')
+		.map((segment) =>
+			segment.startsWith(':')
+				? '[^/]+'
+				: segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+		)
+		.join('/')
 	const trailingSlash = apiPathPattern === '/api' ? '/?' : ''
 	return new RegExp(`^${escaped}${trailingSlash}$`)
 }
