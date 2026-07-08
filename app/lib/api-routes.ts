@@ -48,7 +48,7 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes`,
 			method: 'GET',
 			tosExempt: true,
-			rateLimit: { windowMs: 60_000, maxRequests: 120 },
+			rateLimit: { windowMs: 60_000, maxRequests: 60 },
 		},
 		{
 			path: `boxes/data`,
@@ -86,13 +86,13 @@ export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 			path: `boxes/:boxId/data`,
 			method: 'POST',
 			tosExempt: true,
-			rateLimit: { windowMs: 60_000, maxRequests: 600 },
+			rateLimit: { windowMs: 60_000, maxRequests: 6 },
 		},
 		{
 			path: `boxes/:boxId/:sensorId`,
 			method: 'POST',
 			tosExempt: true,
-			rateLimit: { windowMs: 60_000, maxRequests: 600 },
+			rateLimit: { windowMs: 60_000, maxRequests: 6 },
 		},
 		{
 			path: `users/register`,
