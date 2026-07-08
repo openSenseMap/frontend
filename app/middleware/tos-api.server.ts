@@ -32,6 +32,7 @@ export async function tosApiMiddleware(
 	next: () => Promise<Response>,
 ) {
 	const url = new URL(request.url)
+	if (!url.pathname.startsWith('/api')) return next()
 
 	const jwtUser = await getUserFromJwt(request)
 	if (typeof jwtUser !== 'object') return next()
