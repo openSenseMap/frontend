@@ -1,4 +1,6 @@
 import { type Route } from '../+types/root'
+import * as z from 'zod/v4'
+import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import { apiRoutes as routes } from '~/lib/api-routes'
 import { apiRateLimitMiddleware } from '~/middleware/rate-limit-api.server'
 import { tosApiMiddleware } from '~/middleware/tos-api.server'
@@ -9,10 +11,32 @@ export const middleware: Route.MiddlewareFunction[] = [
 	tosApiMiddleware,
 ]
 
-export async function loader({}: Route.LoaderArgs) {
+const ApiIndexResponseSchema = z.string().meta({
+	id: 'ApiIndexResponse',
+	description: 'Plain text overview of available API routes.',
+	example: 'This is the openSenseMap API',
+})
+
+export const openapi: ZodOpenApiPathItemObject = {
+	get: {
+		tags: ['API'],
+		summary: 'Get API route overview',
+		responses: {
+			200: {
+				description: 'Plain text API route overview.',
+				content: {
+					'text/plain': {
+						schema: ApiIndexResponseSchema,
+					},
+				},
+			},
+		},
+	},
+}
+
+export async function loader(_args: Route.LoaderArgs) {
 	const lines = [
 		`This is the openSenseMap API`,
-		'You can find a detailed reference at https://docs.opensensemap.org\n',
 		'Routes requiring no authentication:',
 	]
 

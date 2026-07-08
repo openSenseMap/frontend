@@ -1,7 +1,6 @@
 import { MapPin, Tag, Smartphone, Cpu, Cog } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
 export function SummaryInfo() {

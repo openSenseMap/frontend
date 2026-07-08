@@ -35,15 +35,26 @@ export async function getProfileByUsername(username: string) {
 
 export async function updateProfile(
 	id: Profile['id'],
-	displayName: Profile['displayName'],
-	visibility: boolean,
+	values: {
+		displayName: Profile['displayName']
+		public: boolean
+		homeLatitude?: number | null
+		homeLongitude?: number | null
+		homeZoom?: number | null
+	},
 ) {
+	const updateValues: Partial<Profile> = {
+		displayName: values.displayName,
+		public: values.public,
+	}
+
+	if ('homeLatitude' in values) updateValues.homeLatitude = values.homeLatitude
+	if ('homeLongitude' in values) updateValues.homeLongitude = values.homeLongitude
+	if ('homeZoom' in values) updateValues.homeZoom = values.homeZoom
+
 	const [updatedProfile] = await drizzleClient
 		.update(profile)
-		.set({
-			displayName,
-			public: visibility,
-		})
+		.set(updateValues)
 		.where(eq(profile.id, id))
 		.returning()
 

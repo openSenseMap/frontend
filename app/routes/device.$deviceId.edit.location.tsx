@@ -317,7 +317,7 @@ export default function EditLocation() {
 									<Marker
 										longitude={currentLocation.longitude}
 										latitude={currentLocation.latitude}
-										anchor="bottom"
+										anchor="center"
 										draggable
 										onDrag={onMarkerDrag}
 									/>
@@ -413,7 +413,7 @@ export default function EditLocation() {
 						<button
 							type="button"
 							onClick={resetToOriginalLocation}
-							className="mt-4 mb-10 font-semibold text-[#337ab7] hover:text-[#23527c] hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+							className="mt-4 mb-10 font-semibold text-blue-500 hover:text-blue-700 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
 						>
 							{t('reset_to_original_location')}
 						</button>

@@ -115,7 +115,10 @@ export async function action({
 		}
 	}
 
-	const updatedProfile = await updateProfile(profile.id, displayName, isPublic)
+	const updatedProfile = await updateProfile(profile.id, {
+		displayName,
+		public: isPublic,
+	})
 
 	if (!updatedProfile) {
 		return {
@@ -257,7 +260,7 @@ export default function EditUserProfilePage() {
 	}
 
 	return (
-		<Card className="dark:bg-dark-boxes space-y-6 dark:border-white">
+		<Card className="space-y-6">
 			<CardHeader>
 				<CardTitle>{t('profile_settings')}</CardTitle>
 				<CardDescription>{t('profile_settings_description')}</CardDescription>

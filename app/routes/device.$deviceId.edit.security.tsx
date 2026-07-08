@@ -27,6 +27,8 @@ import {
 	updateDevice,
 } from '~/db/models/device.server'
 import { getUserId } from '~/services/session-service.server'
+import { Button } from '~/components/ui/button'
+import { cn } from '~/lib/utils'
 
 type SecurityAutosaveValues = {
 	authEnabled: boolean
@@ -376,14 +378,17 @@ export default function EditBoxSecurity() {
 						></Trans>
 					</p>
 
-					<button
+					<Button
 						type="submit"
-						className="btn flex items-center space-x-2 bg-[#e9e9ed] disabled:opacity-40"
+						variant="secondary"
 						disabled={!authEnabled || isGeneratingNewKey}
+						className="inline-flex items-center gap-2"
 					>
-						<RefreshCw className="mr-2 inline h-4 w-4 align-sub" />
+						<RefreshCw
+							className={cn('h-4 w-4', isGeneratingNewKey && 'animate-spin')}
+						/>
 						{t('device_security.generate_new_key_button')}
-					</button>
+					</Button>
 				</Callout>
 			</generateKeyFetcher.Form>
 		</div>

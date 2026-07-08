@@ -240,6 +240,7 @@ export async function insertMeasurementsWithLocation(
 	locations: LocationWithId[],
 	deviceId: string,
 	tx: any,
+	options: { shouldReturn?: boolean } = {},
 ): Promise<Measurement[]> {
 	const measuresWithLocationId = measurements.map((measurement) => {
 		const measurementTime = measurement.createdAt || new Date()
@@ -260,13 +261,19 @@ export async function insertMeasurementsWithLocation(
 
 	// Insert measurements with locationIds (may be null for measurements
 	// without location and before any device location was set)
-	return measuresWithLocationId.length > 0
-		? await tx
-				.insert(measurement)
-				.values(measuresWithLocationId)
-				.onConflictDoNothing()
-				.returning()
-		: []
+	if (measuresWithLocationId.length === 0) return []
+
+	const insert = tx
+		.insert(measurement)
+		.values(measuresWithLocationId)
+		.onConflictDoNothing()
+
+	if (options.shouldReturn === false) {
+		await insert
+		return []
+	}
+
+	return await insert.returning()
 }
 
 /**
