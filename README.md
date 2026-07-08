@@ -23,15 +23,10 @@ instructions:
 
 You can configure the API endpoint using the following environmental variables:
 
-| ENV                  | Default value                                            |
-| -------------------- | -------------------------------------------------------- |
-| OSEM_API_URL         | https://api.testing.opensensemap.org                     |
-| DATABASE_URL         | `postgresql://postgres:postgres@localhost:5432/postgres` |
-| API_RATE_LIMIT_TIERS | Optional JSON map for higher API rate limit tiers        |
-
-`API_RATE_LIMIT_TIERS` can grant higher limits by verified JWT user email, email
-domain, or SHA-256 credential hash. Example:
-`{"education":{"multiplier":5,"emailDomains":["school.example"],"users":["teacher@school.example"],"credentialHashes":[]}}`.
+| ENV          | Default value                                            |
+| ------------ | -------------------------------------------------------- |
+| OSEM_API_URL | https://api.testing.opensensemap.org                     |
+| DATABASE_URL | `postgresql://postgres:postgres@localhost:5432/postgres` |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 To run a local development version, you only need to adjust the `OSEM_API_URL`
@@ -167,11 +162,10 @@ flexibility to adjust the outputs to the needs of the respective use case.
 
 ##### Documenting an API Route
 
-API route documentation is generated from route-local `zod-openapi`
-definitions. Each API route can export an `openapi` object that describes the
-route's OpenAPI path item. Request bodies, response bodies, path parameters,
-query parameters, and headers should be described with Zod schemas wherever
-possible.
+API route documentation is generated from route-local `zod-openapi` definitions.
+Each API route can export an `openapi` object that describes the route's OpenAPI
+path item. Request bodies, response bodies, path parameters, query parameters,
+and headers should be described with Zod schemas wherever possible.
 
 The main benefit of this approach is that schemas can be shared between
 validation and documentation. This keeps the OpenAPI documentation closer to the
