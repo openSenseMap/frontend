@@ -924,7 +924,7 @@ export default function Explore() {
 						/>
 					)}
 
-					<div className="pointer-events-none absolute inset-0 z-10">
+					<div className="pointer-events-none absolute inset-0 z-50">
 						<div className="pointer-events-auto">
 							<Outlet />
 						</div>
