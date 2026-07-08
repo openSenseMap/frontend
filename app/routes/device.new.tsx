@@ -78,7 +78,7 @@ export default function NewDevice() {
 	return (
 		<div className="flex h-screen flex-col">
 			<NavBar />
-			<div className="grow overflow-auto bg-gray-100">
+			<div className="bg-background grow overflow-auto">
 				<div className="flex h-full w-full justify-center py-10">
 					<div className="dark:text-dark-text flex h-full w-full items-center justify-center rounded-lg p-6 dark:bg-transparent dark:shadow-none">
 						<ValidationStepperForm />

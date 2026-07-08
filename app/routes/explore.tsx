@@ -20,12 +20,22 @@ import { type Route } from './+types/explore'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import Legend, { type LegendValue } from '~/components/map/legend'
-import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
+import {
+	getDevices,
+	getDevicesWithSensors,
+	getUserDeviceLocations,
+} from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
 import { getProfileByUserId } from '~/db/models/profile.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { type Device } from '~/db/schema'
 import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
+import {
+	getValidMapViewport,
+	MAP_ZOOM_LIMITS,
+	validLngLat,
+	type MapViewport,
+} from '~/lib/location'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
@@ -46,9 +56,28 @@ import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
-	latitude: 7,
-	longitude: 52,
+	latitude: 51.961563,
+	longitude: 7.628202,
 } as const
+
+const MAX_MY_AREA_LATITUDE_SPAN = 35
+const MAX_MY_AREA_LONGITUDE_SPAN = 60
+
+type MyAreaTarget =
+	| {
+			type: 'view'
+			view: MapViewport
+	  }
+	| {
+			type: 'bounds'
+			bounds: [[number, number], [number, number]]
+	  }
+
+type OwnedDeviceLocation = {
+	id: string
+	latitude: number
+	longitude: number
+}
 
 function parseMapHash(hash: string) {
 	const match = hash.match(
@@ -59,10 +88,76 @@ function parseMapHash(hash: string) {
 
 	const [, zoom, latitude, longitude] = match
 
-	return {
-		zoom: Number(zoom),
+	return getValidMapViewport({
 		latitude: Number(latitude),
 		longitude: Number(longitude),
+		zoom: Number(zoom),
+	})
+}
+
+function getHomeView(
+	profile: Awaited<ReturnType<typeof getProfileByUserId>> | null,
+) {
+	if (!profile) return null
+
+	return getValidMapViewport({
+		latitude: profile.homeLatitude,
+		longitude: profile.homeLongitude,
+		zoom: profile.homeZoom,
+	})
+}
+
+function getOwnedDevicesAreaTarget(
+	devices: OwnedDeviceLocation[],
+): MyAreaTarget | null {
+	const validDevices = devices.filter(({ longitude, latitude }) =>
+		validLngLat(longitude, latitude),
+	)
+
+	if (validDevices.length === 0) return null
+
+	if (validDevices.length === 1) {
+		const { longitude, latitude } = validDevices[0]
+
+		return {
+			type: 'view',
+			view: {
+				longitude,
+				latitude,
+				zoom: MAP_ZOOM_LIMITS.default,
+			},
+		}
+	}
+
+	const [firstDevice, ...remainingDevices] = validDevices
+	let west = firstDevice.longitude
+	let east = firstDevice.longitude
+	let south = firstDevice.latitude
+	let north = firstDevice.latitude
+
+	for (const device of remainingDevices) {
+		west = Math.min(west, device.longitude)
+		east = Math.max(east, device.longitude)
+		south = Math.min(south, device.latitude)
+		north = Math.max(north, device.latitude)
+	}
+
+	const latitudeSpan = Math.abs(north - south)
+	const longitudeSpan = Math.abs(east - west)
+
+	if (
+		latitudeSpan > MAX_MY_AREA_LATITUDE_SPAN ||
+		longitudeSpan > MAX_MY_AREA_LONGITUDE_SPAN
+	) {
+		return null
+	}
+
+	return {
+		type: 'bounds',
+		bounds: [
+			[west, south],
+			[east, north],
+		],
 	}
 }
 
@@ -271,10 +366,14 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	const phenomena = await getPhenomena()
 
 	if (user) {
-		const profile = await getProfileByUserId(user.id)
+		const [profile, userDeviceLocations] = await Promise.all([
+			getProfileByUserId(user.id),
+			getUserDeviceLocations(user.id),
+		])
 		const userLocale = user.language
 			? user.language.split(/[_-]/)[0].toLowerCase()
 			: 'en'
+
 		return {
 			devices,
 			availableTags,
@@ -282,6 +381,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			measurementCount,
 			user,
 			profile,
+			userDeviceLocations,
 			filteredDevices,
 			filterParams,
 			locale: userLocale,
@@ -294,6 +394,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		measurementCount,
 		user,
 		profile: null,
+		userDeviceLocations: [],
 		filterParams,
 		filteredDevices,
 		message,
@@ -309,9 +410,17 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, availableTags, filteredDevices, measurementCount, user } =
-		useLoaderData<typeof loader>()
+	const {
+		devices,
+		availableTags,
+		filteredDevices,
+		measurementCount,
+		user,
+		profile,
+		userDeviceLocations,
+	} = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
+	const appliedInitialMyAreaRef = useRef(false)
 	const navigate = useNavigate()
 	const location = useLocation()
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
@@ -333,7 +442,8 @@ export default function Explore() {
 				closeOnClick: false,
 				closeOnMove: true,
 				anchor: 'left',
-				offset: [15, 0],
+				offset: [15, -25],
+				className: 'device-name-popup',
 			}),
 		[],
 	)
@@ -490,7 +600,7 @@ export default function Explore() {
 				}
 				deviceNamePopup
 					.setLngLat(coordinates as LngLatLike)
-					.setHTML(feature.properties.name)
+					.setText(feature.properties.name ?? '')
 					.addTo(e.target)
 			} else {
 				e.target.getCanvas().style.cursor = ''
@@ -515,19 +625,40 @@ export default function Explore() {
 
 	//* fly to device location when url inludes deviceId
 	const { deviceId } = useParams()
-	var deviceLoc: any
 	let selectedDevice: any
 	if (deviceId) {
 		selectedDevice = (devices as any).features.find(
 			(device: any) => device.properties.id === deviceId,
 		)
-		deviceLoc = [
-			selectedDevice?.properties.latitude,
-			selectedDevice?.properties.longitude,
-		]
 	}
 
 	const selectedDeviceId = selectedDevice?.properties.id
+	const selectedDeviceView = selectedDevice
+		? {
+				latitude: selectedDevice.properties.latitude,
+				longitude: selectedDevice.properties.longitude,
+				zoom: 10,
+			}
+		: null
+	const hashView = parseMapHash(location.hash)
+	const homeView = getHomeView(profile)
+	const ownedDevicesAreaTarget = useMemo(
+		() => getOwnedDevicesAreaTarget(userDeviceLocations),
+		[userDeviceLocations],
+	)
+	const myAreaTarget = homeView
+		? ({
+				type: 'view',
+				view: homeView,
+			} satisfies MyAreaTarget)
+		: ownedDevicesAreaTarget
+	const initialViewState =
+		selectedDeviceView ?? hashView ?? homeView ?? INITIAL_VIEW_STATE
+	const shouldApplyInitialMyArea =
+		!selectedDeviceView &&
+		!hashView &&
+		!homeView &&
+		Boolean(ownedDevicesAreaTarget)
 
 	const deviceLayerFilter: FilterSpecification = selectedDeviceId
 		? [
@@ -536,6 +667,30 @@ export default function Explore() {
 				['!=', ['get', 'id'], selectedDeviceId],
 			]
 		: ['!', ['has', 'point_count']]
+
+	const focusMyArea = useCallback(
+		(target: MyAreaTarget | null = myAreaTarget, animate = true) => {
+			if (!target) return
+
+			if (target.type === 'view') {
+				mapRef.current?.flyTo({
+					center: [target.view.longitude, target.view.latitude],
+					zoom: target.view.zoom,
+					duration: animate ? 900 : 0,
+					essential: true,
+				})
+				return
+			}
+
+			mapRef.current?.fitBounds(target.bounds, {
+				padding: 80,
+				maxZoom: 12,
+				duration: animate ? 900 : 0,
+				essential: true,
+			})
+		},
+		[myAreaTarget],
+	)
 
 	const buildLayerFromPheno = () => {
 		//TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
@@ -596,6 +751,11 @@ export default function Explore() {
 				retinaImageOptions,
 			),
 		])
+
+		if (shouldApplyInitialMyArea && !appliedInitialMyAreaRef.current) {
+			appliedInitialMyAreaRef.current = true
+			focusMyArea(ownedDevicesAreaTarget, false)
+		}
 	}
 
 	return (
@@ -605,6 +765,8 @@ export default function Explore() {
 					devices={filteredDevices}
 					measurementCount={measurementCount}
 					onHomeClick={handleHomeClick}
+					onMyAreaClick={() => focusMyArea(myAreaTarget)}
+					canFocusMyArea={Boolean(myAreaTarget)}
 				/>
 				{/* <Header devices={devices} /> */}
 				{selectedPheno && (
@@ -625,11 +787,7 @@ export default function Explore() {
 					onMouseLeave={handleMouseLeave}
 					onLoad={handleMapLoad}
 					ref={mapRef}
-					initialViewState={
-						deviceId
-							? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
-							: INITIAL_VIEW_STATE
-					}
+					initialViewState={initialViewState}
 				>
 					{!selectedPheno && (
 						<Source

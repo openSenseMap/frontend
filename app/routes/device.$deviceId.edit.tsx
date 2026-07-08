@@ -139,7 +139,7 @@ export default function EditBox() {
 				</ToastPrimitive.Provider>
 			</div>
 
-			<div className="rounded text-[#676767]">
+			<div className="rounded">
 				<ArrowLeft className="mr-2 inline h-5 w-5" />
 				<Link to="/profile/me">{t('back_to_dashboard')}</Link>
 			</div>

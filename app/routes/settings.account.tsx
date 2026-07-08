@@ -26,19 +26,11 @@ import {
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '~/components/ui/select'
 import { useToast } from '~/components/ui/use-toast'
 import {
 	getUserById,
 	updateUserEmail,
 	updateUserName,
-	updateUserlocale,
 	verifyLogin,
 	getUserByAnyEmail,
 	updateUserPassword,
@@ -152,12 +144,10 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const name = String(formData.get('name') ?? '').trim()
 	const email = String(formData.get('email') ?? '').trim()
-	const language = String(formData.get('language') ?? '').trim()
 	const currentPassword = String(formData.get('passwordUpdate') ?? '')
 
 	invariant(typeof name === 'string', 'name must be a string')
 	invariant(typeof email === 'string', 'email must be a string')
-	invariant(typeof language === 'string', 'language must be a string')
 	invariant(typeof currentPassword === 'string', 'password must be a string')
 
 	const pendingEmail = (user.unconfirmedEmail ?? '').trim()
@@ -169,10 +159,8 @@ export async function action({ request }: Route.ActionArgs) {
 			(!hasPendingEmail && email !== user.email))
 
 	const wantsNameChange = name.length > 0 && name !== user.name
-	const wantsLanguageChange = language.length > 0 && language !== user.language
 
-	const wantsAnyChange =
-		wantsNameChange || wantsLanguageChange || wantsEmailChange
+	const wantsAnyChange = wantsNameChange || wantsEmailChange
 
 	if (!wantsAnyChange) {
 		return data(
@@ -232,10 +220,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (wantsNameChange) {
 		await updateUserName(user.email, name)
-	}
-
-	if (wantsLanguageChange) {
-		await updateUserlocale(user.email, language)
 	}
 
 	if (wantsEmailChange) {
@@ -313,7 +297,6 @@ export default function EditUserProfilePage() {
 
 	const [name, setName] = useState(userData?.name ?? '')
 	const [email, setEmail] = useState(emailShown)
-	const [lang, setLang] = useState(userData?.language ?? 'en_US')
 
 	const emailChanged = email.trim() !== emailShown.trim()
 
@@ -347,7 +330,6 @@ export default function EditUserProfilePage() {
 
 	useEffect(() => {
 		setName(userData?.name ?? '')
-		setLang(userData?.language ?? 'en_US')
 		setEmail(emailShown)
 	}, [userData, emailShown])
 
@@ -422,14 +404,12 @@ export default function EditUserProfilePage() {
 	}, [resendFetcher.state, resendFetcher.data, toast, t])
 
 	const saveDisabled =
-		name === (userData?.name ?? '') &&
-		lang === (userData?.language ?? 'en_US') &&
-		email.trim() === emailShown.trim()
+		name === (userData?.name ?? '') && email.trim() === emailShown.trim()
 
 	return (
 		<>
 			<Form ref={profileFormRef} method="post" className="space-y-6" noValidate>
-				<Card className="dark:bg-dark-boxes dark:border-white">
+				<Card className="border-border">
 					<CardHeader>
 						<CardTitle>{t('account_information')}</CardTitle>
 						<CardDescription>{t('update_basic_details')}</CardDescription>
@@ -515,19 +495,6 @@ export default function EditUserProfilePage() {
 							) : null}
 						</div>
 
-						<div className="grid gap-2">
-							<Label htmlFor="language">{t('language')}</Label>
-							<Select value={lang} onValueChange={setLang} name="language">
-								<SelectTrigger className="dark:border-white">
-									<SelectValue placeholder={t('select_language')} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="en_US">English</SelectItem>
-									<SelectItem value="de_DE">Deutsch</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-
 						<div className="flex items-center justify-between gap-4 rounded-lg border p-4 dark:border-white">
 							<div className="space-y-1">
 								<p className="font-medium">{t('update_password')}</p>
@@ -557,6 +524,7 @@ export default function EditUserProfilePage() {
 					</CardFooter>
 				</Card>
 			</Form>
+
 			<Dialog
 				open={emailConfirmOpen}
 				onOpenChange={(open) => {
