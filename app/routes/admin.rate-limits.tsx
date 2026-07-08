@@ -16,6 +16,7 @@ const RATE_LIMIT_TIERS = ['standard_plus', 'trusted', 'high_volume'] as const
 type ActionData = {
 	error?: boolean
 	message?: string
+	grantId?: string
 	fieldErrors?: {
 		kind?: string
 		value?: string
@@ -34,12 +35,14 @@ export async function action({
 }: Route.ActionArgs): Promise<Response | ActionData> {
 	const formData = await request.formData()
 	const intent = getString(formData, '_action')
+	const id = getString(formData, 'id')
 
 	const parsed = parseGrantForm(formData)
 	if (!parsed.ok) {
 		return {
 			error: true,
 			message: 'Please fix the highlighted fields.',
+			grantId: intent === 'update' ? id : undefined,
 			fieldErrors: parsed.fieldErrors,
 		}
 	}
@@ -51,7 +54,6 @@ export async function action({
 				return redirect('/admin/rate-limits')
 
 			case 'update': {
-				const id = getString(formData, 'id')
 				if (!id) {
 					return {
 						error: true,
@@ -176,6 +178,9 @@ export default function AdminRateLimitsRoute({
 												</option>
 											))}
 										</select>
+										<RowFieldError actionData={actionData} grantId={grant.id}>
+											{actionData?.fieldErrors?.kind}
+										</RowFieldError>
 									</td>
 									<td className="border-r-2 border-black p-2">
 										<input
@@ -184,6 +189,9 @@ export default function AdminRateLimitsRoute({
 											defaultValue={grant.value}
 											className="w-64 rounded border border-gray-300 px-2 py-1"
 										/>
+										<RowFieldError actionData={actionData} grantId={grant.id}>
+											{actionData?.fieldErrors?.value}
+										</RowFieldError>
 									</td>
 									<td className="border-r-2 border-black p-2">
 										<select
@@ -198,6 +206,9 @@ export default function AdminRateLimitsRoute({
 												</option>
 											))}
 										</select>
+										<RowFieldError actionData={actionData} grantId={grant.id}>
+											{actionData?.fieldErrors?.tier}
+										</RowFieldError>
 									</td>
 									<td className="border-r-2 border-black p-2">
 										<input
@@ -207,6 +218,9 @@ export default function AdminRateLimitsRoute({
 											defaultValue={toDateTimeLocalValue(grant.expiresAt)}
 											className="rounded border border-gray-300 px-2 py-1"
 										/>
+										<RowFieldError actionData={actionData} grantId={grant.id}>
+											{actionData?.fieldErrors?.expiresAt}
+										</RowFieldError>
 									</td>
 									<td className="border-r-2 border-black p-2">
 										<input
@@ -327,6 +341,19 @@ function FieldError({ children }: { children?: string }) {
 	return children ? (
 		<p className="mt-1 text-sm text-red-600">{children}</p>
 	) : null
+}
+
+function RowFieldError({
+	actionData,
+	grantId,
+	children,
+}: {
+	actionData?: ActionData
+	grantId: string
+	children?: string
+}) {
+	if (actionData?.grantId !== grantId) return null
+	return <FieldError>{children}</FieldError>
 }
 
 function parseGrantForm(formData: FormData):
