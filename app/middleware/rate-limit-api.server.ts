@@ -63,9 +63,9 @@ const DEFAULT_LIMITS: Record<
 	},
 	auth: {
 		GET: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
-		POST: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 180 },
-		PUT: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 120 },
-		DELETE: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 120 },
+		POST: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
+		PUT: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 60 },
+		DELETE: { windowMs: DEFAULT_WINDOW_MS, maxRequests: 30 },
 	},
 }
 
