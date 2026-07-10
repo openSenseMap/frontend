@@ -11,6 +11,7 @@
 	"api_key_label": "API Key",
 	"device_settings": "Device settings",
 	"manage_device_data": "Manage your device data.",
+	"show_on_map": "Show on map",
 	"device_updated": "Device successfully updated",
 	"view": "View"
 }
