@@ -5,6 +5,7 @@ import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { type User, type Device } from '~/db/schema'
+import { getPublicLocation } from '~/lib/geomasking.server'
 import { createToken } from '~/lib/jwt'
 import {
 	loader as deviceLoader,
@@ -53,8 +54,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 		queryableDevice = await createDevice(
 			{
 				...generateMinimalDevice(),
-				latitude: 123,
-				longitude: 12,
+				latitude: 51,
+				longitude: 7,
 				tags: ['testgroup'],
 				useAuth: false,
 			},
@@ -94,12 +95,15 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 		})
 
 		it('should return the device with correct location data', () => {
+			const publicLocation = getPublicLocation(queryableDevice)
+
 			expect(result).toBeDefined()
 			expect(result._id || result.id).toBe(queryableDevice?.id)
 			expect(result.latitude).toBeDefined()
 			expect(result.longitude).toBeDefined()
-			expect(result.latitude).toBe(queryableDevice?.latitude)
-			expect(result.longitude).toBe(queryableDevice?.longitude)
+			expect(result.latitude).toBe(publicLocation.latitude)
+			expect(result.longitude).toBe(publicLocation.longitude)
+			expect(result.locationDisclosure).toEqual(publicLocation.disclosure)
 		})
 
 		it('should return the device name and model', () => {
