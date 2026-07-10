@@ -38,6 +38,7 @@ import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sense
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import { getSensorsForModel } from '~/lib/model-definitions'
+import { getPublicLocation } from '~/lib/geomasking.server'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -52,6 +53,7 @@ const BASE_DEVICE_COLUMNS = {
 	latitude: true,
 	longitude: true,
 	locationPrivacy: true,
+	locationPrivacyMinDistanceMeters: true,
 	locationPrivacyRadiusMeters: true,
 	locationPrivacyMethod: true,
 	status: true,
@@ -190,6 +192,7 @@ export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 			latitude: true,
 			longitude: true,
 			locationPrivacy: true,
+			locationPrivacyMinDistanceMeters: true,
 			locationPrivacyRadiusMeters: true,
 			locationPrivacyMethod: true,
 			userId: true,
@@ -233,6 +236,7 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			latitude: true,
 			longitude: true,
 			locationPrivacy: true,
+			locationPrivacyMinDistanceMeters: true,
 			locationPrivacyRadiusMeters: true,
 			locationPrivacyMethod: true,
 			userId: true,
@@ -252,9 +256,17 @@ export async function updateDeviceLocation({
 	latitude,
 	longitude,
 	locationPrivacy,
+	locationPrivacyMinDistanceMeters,
 	locationPrivacyRadiusMeters,
 }: Pick<Device, 'id' | 'latitude' | 'longitude'> &
-	Partial<Pick<Device, 'locationPrivacy' | 'locationPrivacyRadiusMeters'>>) {
+	Partial<
+		Pick<
+			Device,
+			| 'locationPrivacy'
+			| 'locationPrivacyMinDistanceMeters'
+			| 'locationPrivacyRadiusMeters'
+		>
+	>) {
 	const [existingDevice] = await drizzleClient
 		.select()
 		.from(device)
@@ -273,6 +285,9 @@ export async function updateDeviceLocation({
 			latitude,
 			longitude,
 			...(locationPrivacy !== undefined && { locationPrivacy }),
+			...(locationPrivacyMinDistanceMeters !== undefined && {
+				locationPrivacyMinDistanceMeters,
+			}),
 			...(locationPrivacyRadiusMeters !== undefined && {
 				locationPrivacyRadiusMeters,
 			}),
@@ -293,6 +308,7 @@ export type UpdateDeviceArgs = {
 	useAuth?: boolean
 	location?: { lat: number; lng: number; height?: number }
 	locationPrivacy?: string
+	locationPrivacyMinDistanceMeters?: number
 	locationPrivacyRadiusMeters?: number
 	sensors?: SensorUpdateArgs[]
 }
@@ -336,6 +352,7 @@ export async function updateDevice(
 			'useAuth',
 			'link',
 			'locationPrivacy',
+			'locationPrivacyMinDistanceMeters',
 			'locationPrivacyRadiusMeters',
 		]
 
@@ -572,6 +589,10 @@ export async function getDevices(format: DevicesFormat = 'json') {
 			name: true,
 			latitude: true,
 			longitude: true,
+			locationPrivacy: true,
+			locationPrivacyMinDistanceMeters: true,
+			locationPrivacyRadiusMeters: true,
+			locationPrivacyMethod: true,
 			exposure: true,
 			status: true,
 			createdAt: true,
@@ -586,8 +607,15 @@ export async function getDevices(format: DevicesFormat = 'json') {
 		}
 
 		for (const device of devices) {
-			const coordinates = [device.longitude, device.latitude]
-			const feature = point(coordinates, device)
+			const publicLocation = getPublicLocation(device)
+			const publicDevice = {
+				...device,
+				latitude: publicLocation.latitude,
+				longitude: publicLocation.longitude,
+				locationDisclosure: publicLocation.disclosure,
+			}
+			const coordinates = [publicLocation.longitude, publicLocation.latitude]
+			const feature = point(coordinates, publicDevice)
 			geojson.features.push(feature)
 		}
 
@@ -700,8 +728,15 @@ export async function getDevicesWithSensors(options?: {
 		)
 
 	for (const result of resultArray) {
-		const coordinates = [result.device.longitude, result.device.latitude]
-		const feature = point(coordinates, result.device)
+		const publicLocation = getPublicLocation(result.device)
+		const publicDevice = {
+			...result.device,
+			latitude: publicLocation.latitude,
+			longitude: publicLocation.longitude,
+			locationDisclosure: publicLocation.disclosure,
+		}
+		const coordinates = [publicLocation.longitude, publicLocation.latitude]
+		const feature = point(coordinates, publicDevice)
 		geojson.features.push(feature)
 	}
 
@@ -835,6 +870,7 @@ const MINIMAL_COLUMNS = {
 	longitude: true,
 	latitude: true,
 	locationPrivacy: true,
+	locationPrivacyMinDistanceMeters: true,
 	locationPrivacyRadiusMeters: true,
 	locationPrivacyMethod: true,
 }
@@ -853,6 +889,7 @@ const DEFAULT_COLUMNS = {
 	longitude: true,
 	latitude: true,
 	locationPrivacy: true,
+	locationPrivacyMinDistanceMeters: true,
 	locationPrivacyRadiusMeters: true,
 	locationPrivacyMethod: true,
 }
@@ -953,6 +990,8 @@ export async function createDevice(deviceData: any, userId: string) {
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
 					locationPrivacy: deviceData.locationPrivacy,
+					locationPrivacyMinDistanceMeters:
+						deviceData.locationPrivacyMinDistanceMeters,
 					locationPrivacyRadiusMeters: deviceData.locationPrivacyRadiusMeters,
 				})
 				.returning()
