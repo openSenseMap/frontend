@@ -112,7 +112,7 @@ const UpdateDeviceRequestSchema = z
 			.meta({
 				description:
 					'Minimum distance in meters used by donut geomasking when `locationPrivacy` is `masked`.',
-				example: 100,
+				example: 20,
 			}),
 
 		locationPrivacyRadiusMeters: z
@@ -128,7 +128,7 @@ const UpdateDeviceRequestSchema = z
 			.meta({
 				description:
 					'Maximum radius in meters used by donut geomasking when `locationPrivacy` is `masked`.',
-				example: 500,
+				example: 50,
 			}),
 
 		grouptag: z

@@ -217,8 +217,8 @@ describe('transformDeviceToApiFormat', () => {
 		const maskedDevice = {
 			...mockDevice,
 			locationPrivacy: 'masked',
-			locationPrivacyMinDistanceMeters: 100,
-			locationPrivacyRadiusMeters: 500,
+			locationPrivacyMinDistanceMeters: 20,
+			locationPrivacyRadiusMeters: 50,
 			locationPrivacyMethod: 'stable-donut-displacement-v1',
 		}
 
@@ -249,8 +249,8 @@ describe('transformDeviceToApiFormat', () => {
 		const maskedDevice = {
 			...mockDevice,
 			locationPrivacy: 'masked',
-			locationPrivacyMinDistanceMeters: 100,
-			locationPrivacyRadiusMeters: 500,
+			locationPrivacyMinDistanceMeters: 20,
+			locationPrivacyRadiusMeters: 50,
 			locationPrivacyMethod: 'stable-donut-displacement-v1',
 		}
 
@@ -280,13 +280,13 @@ describe('transformDeviceToApiFormat', () => {
 		expect(repeatedResult.currentLocation.coordinates).toEqual(
 			result.currentLocation.coordinates,
 		)
-		expect(displacementMeters).toBeGreaterThanOrEqual(100)
-		expect(displacementMeters).toBeLessThanOrEqual(500)
+		expect(displacementMeters).toBeGreaterThanOrEqual(20)
+		expect(displacementMeters).toBeLessThanOrEqual(50)
 		expect(result.locationDisclosure).toEqual({
 			mode: 'masked',
-			accuracyMeters: 500,
-			minDistanceMeters: 100,
-			maxDistanceMeters: 500,
+			accuracyMeters: 50,
+			minDistanceMeters: 20,
+			maxDistanceMeters: 50,
 			method: 'stable-donut-displacement-v1',
 		})
 	})

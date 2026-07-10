@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import {
+	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
 	LOCATION_PRIVACY_MIN_DISTANCE_VALUES,
 	LOCATION_PRIVACY_RADIUS_VALUES,
 	LOCATION_PRIVACY_VALUES,
@@ -34,7 +36,7 @@ export const CreateDeviceSchema = z
 		locationPrivacy: z
 			.enum(LOCATION_PRIVACY_VALUES)
 			.optional()
-			.default('exact'),
+			.default('masked'),
 		locationPrivacyMinDistanceMeters: z
 			.number()
 			.refine(
@@ -47,7 +49,7 @@ export const CreateDeviceSchema = z
 				'Location privacy minimum distance is invalid',
 			)
 			.optional()
-			.default(100),
+			.default(DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS),
 		locationPrivacyRadiusMeters: z
 			.number()
 			.refine(
@@ -58,7 +60,7 @@ export const CreateDeviceSchema = z
 				'Location privacy radius is invalid',
 			)
 			.optional()
-			.default(500),
+			.default(DEFAULT_LOCATION_PRIVACY_RADIUS_METERS),
 		grouptag: z.array(z.string()).optional().default([]),
 		model: z
 			.enum([

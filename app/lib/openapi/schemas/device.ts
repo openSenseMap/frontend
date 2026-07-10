@@ -165,11 +165,11 @@ export const ApiDeviceSchema = z
 		}),
 		locationPrivacyRadiusMeters: z.number().optional().meta({
 			description: 'Configured maximum masking radius in meters.',
-			example: 500,
+			example: 50,
 		}),
 		locationPrivacyMinDistanceMeters: z.number().optional().meta({
 			description: 'Configured minimum donut masking distance in meters.',
-			example: 100,
+			example: 20,
 		}),
 		locationPrivacyMethod: z.string().optional().meta({
 			description: 'Configured location masking method version.',

@@ -52,14 +52,14 @@ export const device = pgTable('device', {
 	expiresAt: date('expires_at', { mode: 'date' }),
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),
-	locationPrivacy: text('location_privacy').default('exact').notNull(),
+	locationPrivacy: text('location_privacy').default('masked').notNull(),
 	locationPrivacyMinDistanceMeters: integer(
 		'location_privacy_min_distance_meters',
 	)
-		.default(100)
+		.default(20)
 		.notNull(),
 	locationPrivacyRadiusMeters: integer('location_privacy_radius_meters')
-		.default(500)
+		.default(50)
 		.notNull(),
 	locationPrivacyMethod: text('location_privacy_method')
 		.default('stable-donut-displacement-v1')

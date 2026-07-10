@@ -12,15 +12,20 @@ export const LOCATION_LIMITS = {
 } as const
 
 export const LOCATION_PRIVACY_VALUES = ['exact', 'masked'] as const
-export const LOCATION_PRIVACY_RADIUS_VALUES = [250, 500, 1000, 5000] as const
+export const DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS = 20
+export const DEFAULT_LOCATION_PRIVACY_RADIUS_METERS = 50
+export const LOCATION_PRIVACY_RADIUS_VALUES = [50, 100, 250, 500] as const
 export const LOCATION_PRIVACY_MIN_DISTANCE_VALUES = [
-	50, 100, 250, 1000,
+	20, 50, 100, 250,
 ] as const
 export const LOCATION_PRIVACY_DISTANCE_PRESETS = [
+	{
+		min: DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+		max: DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+	},
 	{ min: 50, max: 250 },
 	{ min: 100, max: 500 },
-	{ min: 250, max: 1000 },
-	{ min: 1000, max: 5000 },
+	{ min: 250, max: 500 },
 ] as const
 export const LOCATION_PRIVACY_METHOD = 'stable-donut-displacement-v1' as const
 
@@ -90,7 +95,7 @@ export const locationSchema = z.object({
 
 export const locationPrivacySchema = z
 	.object({
-		locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).default('exact'),
+		locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).default('masked'),
 		locationPrivacyMinDistanceMeters: z.coerce
 			.number()
 			.refine(
@@ -102,7 +107,7 @@ export const locationPrivacySchema = z
 					),
 				'Location privacy minimum distance is invalid',
 			)
-			.default(100),
+			.default(DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS),
 		locationPrivacyRadiusMeters: z.coerce
 			.number()
 			.refine(
@@ -112,7 +117,7 @@ export const locationPrivacySchema = z
 					),
 				'Location privacy radius is invalid',
 			)
-			.default(500),
+			.default(DEFAULT_LOCATION_PRIVACY_RADIUS_METERS),
 	})
 	.refine(
 		(value) =>

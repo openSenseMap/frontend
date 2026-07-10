@@ -1,5 +1,9 @@
 import { createHmac } from 'node:crypto'
-import { LOCATION_PRIVACY_METHOD } from '~/lib/location'
+import {
+	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+	LOCATION_PRIVACY_METHOD,
+} from '~/lib/location'
 
 export type LocationDisclosure =
 	| {
@@ -101,9 +105,11 @@ export function getPublicLocation(
 		}
 	}
 
-	const maxDistanceMeters = device.locationPrivacyRadiusMeters ?? 500
+	const maxDistanceMeters =
+		device.locationPrivacyRadiusMeters ?? DEFAULT_LOCATION_PRIVACY_RADIUS_METERS
 	const configuredMinDistanceMeters =
-		device.locationPrivacyMinDistanceMeters ?? 100
+		device.locationPrivacyMinDistanceMeters ??
+		DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS
 	const minDistanceMeters =
 		configuredMinDistanceMeters < maxDistanceMeters
 			? configuredMinDistanceMeters

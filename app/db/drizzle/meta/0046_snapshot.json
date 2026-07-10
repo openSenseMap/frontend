@@ -142,21 +142,21 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'exact'"
+          "default": "'masked'"
         },
         "location_privacy_min_distance_meters": {
           "name": "location_privacy_min_distance_meters",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 100
+          "default": 20
         },
         "location_privacy_radius_meters": {
           "name": "location_privacy_radius_meters",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 500
+          "default": 50
         },
         "location_privacy_method": {
           "name": "location_privacy_method",
