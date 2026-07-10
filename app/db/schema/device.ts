@@ -53,11 +53,16 @@ export const device = pgTable('device', {
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),
 	locationPrivacy: text('location_privacy').default('exact').notNull(),
+	locationPrivacyMinDistanceMeters: integer(
+		'location_privacy_min_distance_meters',
+	)
+		.default(100)
+		.notNull(),
 	locationPrivacyRadiusMeters: integer('location_privacy_radius_meters')
 		.default(500)
 		.notNull(),
 	locationPrivacyMethod: text('location_privacy_method')
-		.default('deterministic-jitter-v1')
+		.default('stable-donut-displacement-v1')
 		.notNull(),
 	sensorWikiModel: text('sensor_wiki_model'),
 	userId: text('user_id')

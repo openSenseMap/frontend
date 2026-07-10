@@ -164,17 +164,23 @@ export const ApiDeviceSchema = z
 			example: 'masked',
 		}),
 		locationPrivacyRadiusMeters: z.number().optional().meta({
-			description: 'Configured masking radius in meters.',
+			description: 'Configured maximum masking radius in meters.',
 			example: 500,
+		}),
+		locationPrivacyMinDistanceMeters: z.number().optional().meta({
+			description: 'Configured minimum donut masking distance in meters.',
+			example: 100,
 		}),
 		locationPrivacyMethod: z.string().optional().meta({
 			description: 'Configured location masking method version.',
-			example: 'deterministic-jitter-v1',
+			example: 'stable-donut-displacement-v1',
 		}),
 		locationDisclosure: z
 			.object({
 				mode: z.enum(['exact', 'masked']),
 				accuracyMeters: z.number(),
+				minDistanceMeters: z.number(),
+				maxDistanceMeters: z.number(),
 				method: z.string().nullable(),
 			})
 			.optional()
