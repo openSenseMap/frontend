@@ -31,6 +31,13 @@ export function SummaryInfo() {
 					label: 'longitude',
 					value: parseFloat(formData.longitude).toFixed(4),
 				},
+				{
+					label: 'public_location',
+					value:
+						formData.locationPrivacy === 'exact'
+							? 'Exact'
+							: `Approximate (${formData.locationPrivacyMinDistanceMeters} m to ${formData.locationPrivacyRadiusMeters} m)`,
+				},
 			],
 		},
 		{
