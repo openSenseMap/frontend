@@ -117,6 +117,9 @@ export function LocationStep() {
 		)
 	}
 
+	const formatDistance = (meters: number) =>
+		meters >= 1000 ? `${meters / 1000} km` : `${meters} m`
+
 	const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value.trim()
 		const parsedValue = parseFloat(value)
@@ -256,7 +259,9 @@ export function LocationStep() {
 
 				<div className="space-y-3 lg:col-span-2">
 					<fieldset>
-						<legend className="text-sm font-medium">Public location</legend>
+						<legend className="text-sm font-medium">
+							{t('public_location')}
+						</legend>
 
 						<div className="mt-2 grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer gap-3 rounded-md border p-3">
@@ -269,10 +274,10 @@ export function LocationStep() {
 								/>
 								<span>
 									<span className="block text-sm font-medium">
-										Show approximate location
+										{t('show_approximate_location')}
 									</span>
 									<span className="text-muted-foreground mt-1 block text-sm">
-										Public maps and API responses use a stable nearby point.
+										{t('show_approximate_location_description')}
 									</span>
 								</span>
 							</label>
@@ -287,10 +292,10 @@ export function LocationStep() {
 								/>
 								<span>
 									<span className="block text-sm font-medium">
-										Show exact location
+										{t('show_exact_location')}
 									</span>
 									<span className="text-muted-foreground mt-1 block text-sm">
-										Public maps and API responses use this coordinate.
+										{t('show_exact_location_description')}
 									</span>
 								</span>
 							</label>
@@ -298,7 +303,9 @@ export function LocationStep() {
 					</fieldset>
 
 					<div className="max-w-xs">
-						<Label htmlFor="locationPrivacyPreset">Approximation area</Label>
+						<Label htmlFor="locationPrivacyPreset">
+							{t('approximation_area')}
+						</Label>
 						<select
 							id="locationPrivacyPreset"
 							value={`${locationPrivacyMinDistanceMeters}:${locationPrivacyRadiusMeters}`}
@@ -311,13 +318,10 @@ export function LocationStep() {
 									key={`${preset.min}:${preset.max}`}
 									value={`${preset.min}:${preset.max}`}
 								>
-									{preset.min >= 1000
-										? `${preset.min / 1000} km`
-										: `${preset.min} m`}
-									{' to '}
-									{preset.max >= 1000
-										? `${preset.max / 1000} km`
-										: `${preset.max} m`}
+									{t('distance_range', {
+										min: formatDistance(preset.min),
+										max: formatDistance(preset.max),
+									})}
 								</option>
 							))}
 						</select>

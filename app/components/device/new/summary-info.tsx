@@ -7,6 +7,13 @@ export function SummaryInfo() {
 	const { getValues } = useFormContext()
 	const formData = getValues()
 	const { t } = useTranslation('newdevice')
+	const publicLocationValue =
+		formData.locationPrivacy === 'exact'
+			? t('exact_location')
+			: t('approximate_location_summary', {
+					min: formData.locationPrivacyMinDistanceMeters,
+					max: formData.locationPrivacyRadiusMeters,
+				})
 
 	const sections = [
 		{
@@ -33,10 +40,7 @@ export function SummaryInfo() {
 				},
 				{
 					label: 'public_location',
-					value:
-						formData.locationPrivacy === 'exact'
-							? 'Exact'
-							: `Approximate (${formData.locationPrivacyMinDistanceMeters} m to ${formData.locationPrivacyRadiusMeters} m)`,
+					value: publicLocationValue,
 				},
 			],
 		},

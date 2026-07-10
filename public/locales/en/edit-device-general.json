@@ -24,5 +24,12 @@
 	"unsaved_changes": "Unsaved changes",
 	"longitude": "Longitude",
 	"latitude": "Latitude",
+	"public_location": "Public location",
+	"show_approximate_location": "Show approximate location",
+	"show_approximate_location_description": "Public responses use a stable masked point nearby.",
+	"show_exact_location": "Show exact location",
+	"show_exact_location_description": "Public API responses and maps use this coordinate.",
+	"approximation_area": "Approximation area",
+	"distance_range": "{{min}} to {{max}}",
 	"reset_to_original_location": "Reset to original location"
 }
