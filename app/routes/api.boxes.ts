@@ -6,6 +6,7 @@ import {
 } from '~/db/models/device.server'
 import { type User } from '~/db/schema'
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
+import { getPublicLocation } from '~/lib/geomasking.server'
 import { StandardResponse } from '~/lib/responses'
 
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
@@ -165,9 +166,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const devices = await findDevices(params)
 
 	if (params.format === 'geojson') {
-		const transformedDevices = devices.map((device) =>
-			transformDeviceToApiFormat(device),
-		)
+		const transformedDevices = params.minimal
+			? devices.map((device) => {
+					const publicLocation = getPublicLocation(device as any)
+
+					return {
+						...device,
+						latitude: publicLocation.latitude,
+						longitude: publicLocation.longitude,
+						locationDisclosure: publicLocation.disclosure,
+					}
+				})
+			: devices.map((device) => transformDeviceToApiFormat(device))
 		const geojson = {
 			type: 'FeatureCollection',
 			features: transformedDevices.map((device) => ({
@@ -187,6 +197,25 @@ export async function loader({ request }: Route.LoaderArgs) {
 				'Content-Type': 'application/geo+json; charset=utf-8',
 			},
 		})
+	}
+	if (params.minimal) {
+		return Response.json(
+			devices.map((device) => {
+				const publicLocation = getPublicLocation(device as any)
+
+				return {
+					...device,
+					latitude: publicLocation.latitude,
+					longitude: publicLocation.longitude,
+					locationDisclosure: publicLocation.disclosure,
+				}
+			}),
+			{
+				headers: {
+					'Content-Type': 'application/json; charset=utf-8',
+				},
+			},
+		)
 	}
 	return Response.json(
 		devices.map((device) => transformDeviceToApiFormat(device)),
