@@ -22,6 +22,7 @@ export type TransformedDevice = {
 	latitude: number
 	longitude: number
 	locationPrivacy?: string | null
+	locationPrivacyMinDistanceMeters?: number | null
 	locationPrivacyRadiusMeters?: number | null
 	locationPrivacyMethod?: string | null
 	locationDisclosure: LocationDisclosure
@@ -85,6 +86,8 @@ export function transformDeviceToApiFormat(
 				disclosure: {
 					mode: 'exact' as const,
 					accuracyMeters: 0 as const,
+					minDistanceMeters: 0 as const,
+					maxDistanceMeters: 0 as const,
 					method: null,
 				},
 			}
