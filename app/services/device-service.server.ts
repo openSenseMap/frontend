@@ -10,6 +10,13 @@ import {
 } from '~/db/models/device.server'
 import { verifyLogin } from '~/db/models/user.server'
 import { type Device, type User } from '~/db/schema'
+import {
+	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+	LOCATION_PRIVACY_MIN_DISTANCE_VALUES,
+	LOCATION_PRIVACY_RADIUS_VALUES,
+	LOCATION_PRIVACY_VALUES,
+} from '~/lib/location'
 import { deleteDeviceImage } from '~/lib/s3.server'
 
 export const CreateDeviceServiceSchema = z
@@ -28,6 +35,34 @@ export const CreateDeviceServiceSchema = z
 		tags: z.array(z.string()).optional().default([]),
 		latitude: z.number(),
 		longitude: z.number(),
+		locationPrivacy: z
+			.enum(LOCATION_PRIVACY_VALUES)
+			.optional()
+			.default('masked'),
+		locationPrivacyMinDistanceMeters: z
+			.number()
+			.refine(
+				(
+					value,
+				): value is (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number] =>
+					LOCATION_PRIVACY_MIN_DISTANCE_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number],
+					),
+				'Location privacy minimum distance is invalid',
+			)
+			.optional()
+			.default(DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS),
+		locationPrivacyRadiusMeters: z
+			.number()
+			.refine(
+				(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+					LOCATION_PRIVACY_RADIUS_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+					),
+				'Location privacy radius is invalid',
+			)
+			.optional()
+			.default(DEFAULT_LOCATION_PRIVACY_RADIUS_METERS),
 		model: z
 			.enum([
 				'homeV2Lora',
@@ -50,6 +85,16 @@ export const CreateDeviceServiceSchema = z
 			)
 			.optional(),
 	})
+	.refine(
+		(data) =>
+			data.locationPrivacy === 'exact' ||
+			data.locationPrivacyMinDistanceMeters < data.locationPrivacyRadiusMeters,
+		{
+			message:
+				'Location privacy minimum distance must be smaller than the maximum radius',
+			path: ['locationPrivacyMinDistanceMeters'],
+		},
+	)
 	.refine((data) => !(data.model && data.sensors && data.model !== 'custom'), {
 		message: 'Model and sensors cannot be specified at the same time.',
 		path: ['sensors'],
