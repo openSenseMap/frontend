@@ -5,11 +5,15 @@ export type LocationDisclosure =
 	| {
 			mode: 'exact'
 			accuracyMeters: 0
+			minDistanceMeters: 0
+			maxDistanceMeters: 0
 			method: null
 	  }
 	| {
 			mode: 'masked'
 			accuracyMeters: number
+			minDistanceMeters: number
+			maxDistanceMeters: number
 			method: typeof LOCATION_PRIVACY_METHOD
 	  }
 
@@ -24,6 +28,7 @@ export type LocationPrivacyDevice = {
 	latitude: number
 	longitude: number
 	locationPrivacy?: string | null
+	locationPrivacyMinDistanceMeters?: number | null
 	locationPrivacyRadiusMeters?: number | null
 	locationPrivacyMethod?: string | null
 }
@@ -89,20 +94,32 @@ export function getPublicLocation(
 			disclosure: {
 				mode: 'exact',
 				accuracyMeters: 0,
+				minDistanceMeters: 0,
+				maxDistanceMeters: 0,
 				method: null,
 			},
 		}
 	}
 
-	const radiusMeters = device.locationPrivacyRadiusMeters ?? 500
+	const maxDistanceMeters = device.locationPrivacyRadiusMeters ?? 500
+	const configuredMinDistanceMeters =
+		device.locationPrivacyMinDistanceMeters ?? 100
+	const minDistanceMeters =
+		configuredMinDistanceMeters < maxDistanceMeters
+			? configuredMinDistanceMeters
+			: Math.max(0, maxDistanceMeters / 5)
 	const method = LOCATION_PRIVACY_METHOD
 	const [distanceUnit, bearingUnit] = randomUnitValues(
-		`${method}:${device.id}:${radiusMeters}`,
+		`${method}:${device.id}:${minDistanceMeters}:${maxDistanceMeters}`,
+	)
+	const distanceMeters = Math.sqrt(
+		minDistanceMeters ** 2 +
+			distanceUnit * (maxDistanceMeters ** 2 - minDistanceMeters ** 2),
 	)
 	const masked = destinationPoint(
 		device.latitude,
 		device.longitude,
-		radiusMeters * Math.sqrt(distanceUnit),
+		distanceMeters,
 		2 * Math.PI * bearingUnit,
 	)
 
@@ -110,7 +127,9 @@ export function getPublicLocation(
 		...masked,
 		disclosure: {
 			mode: 'masked',
-			accuracyMeters: radiusMeters,
+			accuracyMeters: maxDistanceMeters,
+			minDistanceMeters,
+			maxDistanceMeters,
 			method,
 		},
 	}
