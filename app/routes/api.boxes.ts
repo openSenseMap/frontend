@@ -242,6 +242,8 @@ async function post(request: Request, user: User) {
 				latitude: latitude,
 				longitude: longitude,
 				locationPrivacy: validatedData.locationPrivacy,
+				locationPrivacyMinDistanceMeters:
+					validatedData.locationPrivacyMinDistanceMeters,
 				locationPrivacyRadiusMeters: validatedData.locationPrivacyRadiusMeters,
 				tags: validatedData.grouptag,
 				sensors: sensorsProvided
