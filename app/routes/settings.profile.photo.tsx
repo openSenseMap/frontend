@@ -27,10 +27,7 @@ import { getUserById } from '~/db/models/user.server'
 import { profileImage } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { uploadHandler } from '~/lib/file-upload.server'
-import {
-	isSanitizableImageType,
-	sanitizeImageFile,
-} from '~/lib/image-sanitizer.server'
+import { isSanitizableImageType } from '~/lib/image-types'
 import { getInitials } from '~/lib/strings'
 import { requireUserId } from '~/services/session-service.server'
 
@@ -91,6 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	const { photoFile } = submission.payload as { photoFile: File }
+	const { sanitizeImageFile } = await import('~/lib/image-sanitizer.server')
 	const sanitizedPhoto = await sanitizeImageFile(photoFile)
 
 	// Query user profile
