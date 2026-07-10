@@ -79,6 +79,7 @@ export function transformDeviceToApiFormat(
 ): TransformedDevice {
 	const { id, tags, sensors, apiKey, ...rest } = box
 	const timestamp = box.updatedAt.toISOString()
+	// Public API responses use the privacy-aware location by default.
 	const publicLocation = options.includeExactLocation
 		? {
 				latitude: box.latitude,

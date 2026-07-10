@@ -39,6 +39,7 @@ export type LocationPrivacyDevice = {
 
 const EARTH_RADIUS_METERS = 6371008.8
 
+// Derive repeatable pseudo-random values from stable device/privacy inputs.
 function randomUnitValues(seed: string) {
 	const digest = createHmac(
 		'sha256',
@@ -53,6 +54,7 @@ function randomUnitValues(seed: string) {
 	return [first, second] as const
 }
 
+// Move a latitude/longitude by a distance and bearing on a spherical earth.
 function destinationPoint(
 	latitude: number,
 	longitude: number,
@@ -81,8 +83,11 @@ function destinationPoint(
 		)
 
 	return {
+		// Six decimals are roughly decimeter precision, enough to keep output
+		// stable while avoiding noisy floating point tails.
 		latitude: Number(((destinationLatitude * 180) / Math.PI).toFixed(6)),
 		longitude: Number(
+			// Normalize longitude back into the conventional [-180, 180) range.
 			((((destinationLongitude * 180) / Math.PI + 540) % 360) - 180).toFixed(6),
 		),
 	}
@@ -115,9 +120,16 @@ export function getPublicLocation(
 			? configuredMinDistanceMeters
 			: Math.max(0, maxDistanceMeters / 5)
 	const method = LOCATION_PRIVACY_METHOD
+	const seedLatitude = device.latitude.toFixed(6)
+	const seedLongitude = device.longitude.toFixed(6)
+	// Include rounded exact coordinates in the HMAC seed so moving a device also
+	// rotates the donut offset. This prevents observers from comparing old and new
+	// public points to recover the exact movement vector.
 	const [distanceUnit, bearingUnit] = randomUnitValues(
-		`${method}:${device.id}:${minDistanceMeters}:${maxDistanceMeters}`,
+		`${method}:${device.id}:${seedLatitude}:${seedLongitude}:${minDistanceMeters}:${maxDistanceMeters}`,
 	)
+	// Pick a distance uniformly by ring area, not by radius. Without the square
+	// root, points would be overrepresented near the inner edge of the donut.
 	const distanceMeters = Math.sqrt(
 		minDistanceMeters ** 2 +
 			distanceUnit * (maxDistanceMeters ** 2 - minDistanceMeters ** 2),
