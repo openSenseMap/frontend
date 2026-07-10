@@ -1,70 +1,99 @@
 import { z } from 'zod'
 import {
+	LOCATION_PRIVACY_MIN_DISTANCE_VALUES,
 	LOCATION_PRIVACY_RADIUS_VALUES,
 	LOCATION_PRIVACY_VALUES,
 } from '~/lib/location'
 
-export const CreateDeviceSchema = z.object({
-	// public API request shape
-	name: z.string().min(1).max(100),
-	description: z
-		.string()
-		.max(5000, 'Description should not exceed 5000 characters')
-		.optional()
-		.nullable(),
-	exposure: z
-		.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
-		.optional()
-		.default('unknown'),
-	location: z
-		.union([
-			z.array(z.number()).min(2).max(3),
-			z.object({
-				lng: z.number(),
-				lat: z.number(),
-				height: z.number().optional(),
+export const CreateDeviceSchema = z
+	.object({
+		// public API request shape
+		name: z.string().min(1).max(100),
+		description: z
+			.string()
+			.max(5000, 'Description should not exceed 5000 characters')
+			.optional()
+			.nullable(),
+		exposure: z
+			.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
+			.optional()
+			.default('unknown'),
+		location: z
+			.union([
+				z.array(z.number()).min(2).max(3),
+				z.object({
+					lng: z.number(),
+					lat: z.number(),
+					height: z.number().optional(),
+				}),
+			])
+			.transform((loc) => {
+				if (Array.isArray(loc)) return loc
+				return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
 			}),
-		])
-		.transform((loc) => {
-			if (Array.isArray(loc)) return loc
-			return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
-		}),
-	locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).optional().default('exact'),
-	locationPrivacyRadiusMeters: z
-		.number()
-		.refine(
-			(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
-				LOCATION_PRIVACY_RADIUS_VALUES.includes(
-					value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
-				),
-			'Location privacy radius is invalid',
-		)
-		.optional()
-		.default(500),
-	grouptag: z.array(z.string()).optional().default([]),
-	model: z
-		.enum([
-			'homeV2Lora',
-			'homeV2Ethernet',
-			'homeV2Wifi',
-			'senseBox:Edu',
-			'luftdaten.info',
-			'custom',
-		])
-		.optional()
-		.default('custom'),
-	sensors: z
-		.array(
-			z.object({
-				icon: z.string().optional(),
-				title: z.string().min(1),
-				unit: z.string().min(1),
-				sensorType: z.string().min(1),
-			}),
-		)
-		.optional()
-		.default([]),
-})
+		locationPrivacy: z
+			.enum(LOCATION_PRIVACY_VALUES)
+			.optional()
+			.default('exact'),
+		locationPrivacyMinDistanceMeters: z
+			.number()
+			.refine(
+				(
+					value,
+				): value is (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number] =>
+					LOCATION_PRIVACY_MIN_DISTANCE_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number],
+					),
+				'Location privacy minimum distance is invalid',
+			)
+			.optional()
+			.default(100),
+		locationPrivacyRadiusMeters: z
+			.number()
+			.refine(
+				(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+					LOCATION_PRIVACY_RADIUS_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+					),
+				'Location privacy radius is invalid',
+			)
+			.optional()
+			.default(500),
+		grouptag: z.array(z.string()).optional().default([]),
+		model: z
+			.enum([
+				'homeV2Lora',
+				'homeV2Ethernet',
+				'homeV2Wifi',
+				'senseBox:Edu',
+				'luftdaten.info',
+				'custom',
+			])
+			.optional()
+			.default('custom'),
+		sensors: z
+			.array(
+				z.object({
+					icon: z.string().optional(),
+					title: z.string().min(1),
+					unit: z.string().min(1),
+					sensorType: z.string().min(1),
+				}),
+			)
+			.optional()
+			.default([]),
+	})
+	.refine(
+		(value) =>
+			value.locationPrivacy === 'exact' ||
+			value.locationPrivacyMinDistanceMeters <
+				value.locationPrivacyRadiusMeters,
+		{
+			message:
+				'Location privacy minimum distance must be smaller than the maximum radius',
+			path: ['locationPrivacyMinDistanceMeters'],
+		},
+	)
 
 export const DevicesQuerySchema = z.object({
 	format: z

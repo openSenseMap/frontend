@@ -13,7 +13,16 @@ export const LOCATION_LIMITS = {
 
 export const LOCATION_PRIVACY_VALUES = ['exact', 'masked'] as const
 export const LOCATION_PRIVACY_RADIUS_VALUES = [250, 500, 1000, 5000] as const
-export const LOCATION_PRIVACY_METHOD = 'deterministic-jitter-v1' as const
+export const LOCATION_PRIVACY_MIN_DISTANCE_VALUES = [
+	50, 100, 250, 1000,
+] as const
+export const LOCATION_PRIVACY_DISTANCE_PRESETS = [
+	{ min: 50, max: 250 },
+	{ min: 100, max: 500 },
+	{ min: 250, max: 1000 },
+	{ min: 1000, max: 5000 },
+] as const
+export const LOCATION_PRIVACY_METHOD = 'stable-donut-displacement-v1' as const
 
 export const MAP_ZOOM_LIMITS = {
 	min: 1.5,
@@ -79,19 +88,43 @@ export const locationSchema = z.object({
 	),
 })
 
-export const locationPrivacySchema = z.object({
-	locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).default('exact'),
-	locationPrivacyRadiusMeters: z.coerce
-		.number()
-		.refine(
-			(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
-				LOCATION_PRIVACY_RADIUS_VALUES.includes(
-					value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
-				),
-			'Location privacy radius is invalid',
-		)
-		.default(500),
-})
+export const locationPrivacySchema = z
+	.object({
+		locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).default('exact'),
+		locationPrivacyMinDistanceMeters: z.coerce
+			.number()
+			.refine(
+				(
+					value,
+				): value is (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number] =>
+					LOCATION_PRIVACY_MIN_DISTANCE_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number],
+					),
+				'Location privacy minimum distance is invalid',
+			)
+			.default(100),
+		locationPrivacyRadiusMeters: z.coerce
+			.number()
+			.refine(
+				(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+					LOCATION_PRIVACY_RADIUS_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+					),
+				'Location privacy radius is invalid',
+			)
+			.default(500),
+	})
+	.refine(
+		(value) =>
+			value.locationPrivacy === 'exact' ||
+			value.locationPrivacyMinDistanceMeters <
+				value.locationPrivacyRadiusMeters,
+		{
+			message:
+				'Location privacy minimum distance must be smaller than the maximum radius',
+			path: ['locationPrivacyMinDistanceMeters'],
+		},
+	)
 
 export type LocationData = z.infer<typeof locationSchema>
 export type LocationPrivacyData = z.infer<typeof locationPrivacySchema>
@@ -177,12 +210,10 @@ export type LocationFieldErrors = {
 	latitude?: string
 	longitude?: string
 	locationPrivacy?: string
+	locationPrivacyMinDistanceMeters?: string
 	locationPrivacyRadiusMeters?: string
 }
 
-export function validateLocationFieldErrors(
-	value: unknown,
-): LocationFieldErrors {
 export function validateLocationFieldErrors(
 	value: unknown,
 ): LocationFieldErrors {
@@ -206,6 +237,9 @@ export function parseLocationPrivacyFormData(formData: FormData):
 	  } {
 	const parsed = locationPrivacySchema.safeParse({
 		locationPrivacy: formData.get('locationPrivacy'),
+		locationPrivacyMinDistanceMeters: formData.get(
+			'locationPrivacyMinDistanceMeters',
+		),
 		locationPrivacyRadiusMeters: formData.get('locationPrivacyRadiusMeters'),
 	})
 
@@ -222,6 +256,8 @@ export function parseLocationPrivacyFormData(formData: FormData):
 		success: false,
 		errors: {
 			locationPrivacy: flattened.fieldErrors.locationPrivacy?.[0],
+			locationPrivacyMinDistanceMeters:
+				flattened.fieldErrors.locationPrivacyMinDistanceMeters?.[0],
 			locationPrivacyRadiusMeters:
 				flattened.fieldErrors.locationPrivacyRadiusMeters?.[0],
 		},
