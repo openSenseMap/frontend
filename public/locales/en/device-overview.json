@@ -5,6 +5,8 @@
 	"device": "Device",
 	"exposure": "Exposure",
 	"sensors": "Sensors",
+	"latest_measurement": "Last measurement: {{time}}",
+	"no_measurements_yet": "No measurements yet",
 	"name_label": "Name",
 	"model_label": "Model",
 	"tags_label": "Tags",

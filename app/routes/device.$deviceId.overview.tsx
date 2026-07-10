@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { NavBar } from '~/components/nav-bar'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { getDeviceWithoutSensors } from '~/db/models/device.server'
-import { getSensorsFromDevice } from '~/db/models/sensor.server'
+import { getSensorsWithLastMeasurement } from '~/db/models/sensor.server'
 import { getUserId } from '~/services/session-service.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -18,7 +18,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw new Response('Device not found', { status: 502 })
 	}
 	const deviceData = await getDeviceWithoutSensors({ id: params.deviceId })
-	const sensorsData = await getSensorsFromDevice(params.deviceId)
+	const sensorsData = await getSensorsWithLastMeasurement(params.deviceId)
 
 	// If the user is accessing someone elses device, the apiKey should not be leaked
 	if (deviceData && userId !== deviceData.userId) deviceData.apiKey = null
@@ -28,7 +28,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export default function DeviceOverview() {
 	const { deviceData, sensorsData, userId } = useLoaderData<typeof loader>()
-	const { t } = useTranslation('device-overview')
+	const { t, i18n } = useTranslation('device-overview')
 	const [copiedToClipboard, setCopiedToClipboard] = useState<string | null>(
 		null,
 	)
@@ -41,6 +41,12 @@ export default function DeviceOverview() {
 		await navigator.clipboard.writeText(value)
 		setCopiedToClipboard(id)
 	}
+
+	const formatMeasurementTime = (createdAt: string | Date) =>
+		new Intl.DateTimeFormat(i18n.language, {
+			dateStyle: 'medium',
+			timeStyle: 'short',
+		}).format(new Date(createdAt))
 
 	useEffect(() => {
 		if (copiedToClipboard === null) return
@@ -174,6 +180,22 @@ export default function DeviceOverview() {
 								{sensorsData.map((sensor) => (
 									<TableRow key={sensor.id}>
 										<TableCell className="border-r">{sensor?.title}</TableCell>
+										<TableCell className="border-r font-semibold">
+											<p>
+												{sensor.lastMeasurement
+													? `${sensor.lastMeasurement.value} ${sensor.unit ?? ''}`.trim()
+													: t('no_measurements_yet')}
+											</p>
+											{sensor.lastMeasurement && (
+												<p className="text-muted-foreground text-sm font-normal">
+													{t('latest_measurement', {
+														time: formatMeasurementTime(
+															sensor.lastMeasurement.createdAt,
+														),
+													})}
+												</p>
+											)}
+										</TableCell>
 										<TableCell className="border-r font-semibold">
 											<div className="flex items-center">
 												<div className="grow">{sensor?.id}</div>
