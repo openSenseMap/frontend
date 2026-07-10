@@ -12,6 +12,7 @@ import {
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/explore.register'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Spinner from '~/components/spinner'
@@ -39,7 +40,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ context, request }: Route.ActionArgs) {
 	const formData = await request.formData()
-	const { username, email, password, tosAccepted } =
+	const { username, email, password, tosAccepted, newsletterOptIn } =
 		Object.fromEntries(formData)
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 
@@ -186,6 +187,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 		password,
 		language,
 		tosAccepted === 'on',
+		newsletterOptIn === 'on',
 	)
 
 	if (!result.ok) {
@@ -364,11 +366,10 @@ export default function RegisterDialog() {
 							)}
 						</div>
 						<div className="flex items-center gap-2">
-							<input
+							<Checkbox
 								id="tosAccepted"
 								name="tosAccepted"
-								type="checkbox"
-								className="h-4 w-4"
+								value="on"
 								aria-invalid={actionErrors?.tosAccepted ? true : undefined}
 								aria-describedby="tos-error"
 							/>
@@ -383,6 +384,16 @@ export default function RegisterDialog() {
 									{t('terms_of_service')}
 								</Link>{' '}
 								{t('agree_tos_suffix')}
+							</Label>
+						</div>
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="newsletterOptIn"
+								name="newsletterOptIn"
+								value="on"
+							/>
+							<Label htmlFor="newsletterOptIn" className="text-sm leading-5">
+								{t('newsletter_opt_in')}
 							</Label>
 						</div>
 						<div className="flex items-center gap-2">

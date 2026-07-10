@@ -56,6 +56,12 @@ const RegisterUserRequestSchema = z
 				'Preferred user language. Used for the website and emails. Defaults to `en_US`.',
 			example: 'en_US',
 		}),
+
+		newsletterOptIn: z.boolean().optional().default(false).meta({
+			description:
+				'Whether to request a newsletter subscription. If true, a double opt-in confirmation email is sent before the user is subscribed.',
+			example: true,
+		}),
 	})
 	.meta({
 		id: 'RegisterUserRequest',
@@ -167,6 +173,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		const email = data.email
 		const password = data.password
 		const language = data.language as 'de_DE' | 'en_US'
+		const newsletterOptIn = data.newsletterOptIn
 
 		const registration = await registerUser(
 			username,
@@ -174,6 +181,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 			password,
 			language,
 			true,
+			newsletterOptIn,
 		)
 
 		if (!registration.ok) {

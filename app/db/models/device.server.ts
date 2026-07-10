@@ -150,6 +150,31 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 	})
 }
 
+export type DeviceForMeasurementWrite = Awaited<
+	ReturnType<typeof getDeviceForMeasurementWrite>
+>
+
+export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
+	return drizzleClient.query.device.findFirst({
+		where: (device, { eq }) => eq(device.id, id),
+		columns: {
+			id: true,
+			archivedAt: true,
+			useAuth: true,
+			apiKey: true,
+		},
+		with: {
+			sensors: {
+				columns: {
+					id: true,
+					title: true,
+					sensorType: true,
+				},
+			},
+		},
+	})
+}
+
 export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 	return drizzleClient.query.device.findFirst({
 		where: (d, { and, eq }) => and(eq(d.id, id), eq(d.userId, userId)),
@@ -504,6 +529,18 @@ export function getUserDevices(userId: Device['userId']) {
 		columns: DEVICE_COLUMNS_WITH_SENSORS,
 		with: {
 			sensors: true,
+		},
+	})
+}
+
+export function getUserDeviceLocations(userId: Device['userId']) {
+	return drizzleClient.query.device.findMany({
+		where: (device, { and, eq, isNull }) =>
+			and(eq(device.userId, userId), isNull(device.archivedAt)),
+		columns: {
+			id: true,
+			latitude: true,
+			longitude: true,
 		},
 	})
 }

@@ -26,7 +26,6 @@ import {
 	UnprocessableContentErrorSchema,
 	unprocessableContentResponse,
 } from '~/lib/openapi/errors'
-import { requestContentTypeJson } from '~/middleware/content-type-header.server'
 import { withAuthenticatedUser } from '~/lib/jwt'
 import {
 	DevicesQuerySchema,
@@ -133,10 +132,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 		},
 	},
 }
-
-export const middleware: Route.MiddlewareFunction[] = [
-	requestContentTypeJson(['POST']),
-]
 
 function normalizeBoxesQueryParams(query: Record<string, unknown>) {
 	const maxDistance = query.maxDistance ?? query.maxdistance
