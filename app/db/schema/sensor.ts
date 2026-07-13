@@ -5,7 +5,14 @@ import {
 	type InferInsertModel,
 	type InferSelectModel,
 } from 'drizzle-orm'
-import { pgTable, text, timestamp, json, integer } from 'drizzle-orm/pg-core'
+import {
+	doublePrecision,
+	pgTable,
+	text,
+	timestamp,
+	json,
+	integer,
+} from 'drizzle-orm/pg-core'
 import { device } from './device'
 import { DeviceStatusEnum } from './enum'
 import { type Measurement } from './measurement'
@@ -51,6 +58,18 @@ export const sensor = pgTable('sensor', {
 	order: integer('order').default(0),
 })
 
+export const sensorLastMeasurement = pgTable('sensor_last_measurement', {
+	sensorId: text('sensor_id')
+		.primaryKey()
+		.notNull()
+		.references(() => sensor.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+	time: timestamp('time', { precision: 3, withTimezone: true }).notNull(),
+	value: doublePrecision('value'),
+	updatedAt: timestamp('updated_at', { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+})
+
 /**
  * Relations
  */
@@ -66,6 +85,12 @@ export const sensorRelations = relations(sensor, ({ one }) => ({
  */
 export type Sensor = InferSelectModel<typeof sensor>
 export type InsertSensor = InferInsertModel<typeof sensor>
+export type SensorLastMeasurement = InferSelectModel<
+	typeof sensorLastMeasurement
+>
+export type InsertSensorLastMeasurement = InferInsertModel<
+	typeof sensorLastMeasurement
+>
 
 export type SensorWithLatestMeasurement = Sensor & Measurement
 
