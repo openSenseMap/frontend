@@ -100,11 +100,11 @@ export async function getSensorsWithLastMeasurement(
         s.device_id AS "deviceId",
         s."order",
         CASE
-          WHEN slm.sensor_id IS NOT NULL THEN json_build_object(
+          WHEN slm.sensor_id IS NULL THEN NULL
+          ELSE json_build_object(
             'value', slm.value,
             'createdAt', slm.time
           )
-          ELSE s."lastMeasurement"
         END AS "lastMeasurement"
       FROM sensor s
       LEFT JOIN sensor_last_measurement slm ON slm.sensor_id = s.id

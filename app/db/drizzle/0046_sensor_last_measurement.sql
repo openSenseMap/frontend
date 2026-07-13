@@ -21,3 +21,5 @@ ON CONFLICT ("sensor_id") DO UPDATE SET
 	"value" = excluded."value",
 	"updated_at" = now()
 WHERE "sensor_last_measurement"."time" <= excluded."time";
+--> statement-breakpoint
+ALTER TABLE "sensor" DROP COLUMN IF EXISTS "lastMeasurement";

@@ -15,17 +15,13 @@ import {
 } from 'drizzle-orm/pg-core'
 import { device } from './device'
 import { DeviceStatusEnum } from './enum'
-import { type Measurement } from './measurement'
 
 export function generateHexId(): string {
 	return randomBytes(12).toString('hex')
 }
 
-/**
- * Type for lastMeasurement JSON field
- */
 export type LastMeasurement = {
-	value: number | string
+	value: number | string | null
 	createdAt: string
 	sensorId?: string
 } | null
@@ -53,7 +49,6 @@ export const sensor = pgTable('sensor', {
 	sensorWikiType: text('sensor_wiki_type'),
 	sensorWikiPhenomenon: text('sensor_wiki_phenomenon'),
 	sensorWikiUnit: text('sensor_wiki_unit'),
-	lastMeasurement: json('lastMeasurement').$type<LastMeasurement>(),
 	data: json('data'),
 	order: integer('order').default(0),
 })
@@ -92,7 +87,10 @@ export type InsertSensorLastMeasurement = InferInsertModel<
 	typeof sensorLastMeasurement
 >
 
-export type SensorWithLatestMeasurement = Sensor & Measurement
+export type SensorWithLatestMeasurement = Sensor & {
+	lastMeasurement: LastMeasurement
+	lastMeasurements?: NonNullable<LastMeasurement>[]
+}
 
 export type SensorWithMeasurementData = Sensor & {
 	data: {
