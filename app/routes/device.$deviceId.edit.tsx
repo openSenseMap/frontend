@@ -139,9 +139,20 @@ export default function EditBox() {
 				</ToastPrimitive.Provider>
 			</div>
 
-			<div className="rounded">
-				<ArrowLeft className="mr-2 inline h-5 w-5" />
-				<Link to="/profile/me">{t('back_to_dashboard')}</Link>
+			<div className="flex items-center justify-between gap-4 rounded">
+				<div>
+					<ArrowLeft className="mr-2 inline h-5 w-5" />
+					<Link to="/profile/me">{t('back_to_dashboard')}</Link>
+				</div>
+				{deviceId && (
+					<Link
+						to={`/explore/${deviceId}`}
+						className="text-primary inline-flex shrink-0 items-center gap-2 text-sm hover:underline"
+					>
+						<MapPin className="h-4 w-4" />
+						{t('show_on_map')}
+					</Link>
+				)}
 			</div>
 
 			<div className="space-y-0.5">
