@@ -13,6 +13,7 @@
 	"api_key_label": "API Key",
 	"device_settings": "Gerätseinstellungen",
 	"manage_device_data": "Verwalte die Daten deines Geräts.",
+	"show_on_map": "Auf der Karte anzeigen",
 	"device_updated": "Gerät erfolgreich aktualisiert",
 	"view": "Ansicht"
 }
