@@ -183,13 +183,15 @@ export async function saveMeasurements(
 	if (!device) throw new Error('No device given!')
 	if (!Array.isArray(measurements)) throw new Error('Array expected')
 
-	const sensorIds = minimalDevice.sensors.map((s: any) => s.id)
+	const sensorIds = new Set(minimalDevice.sensors.map((s: any) => s.id))
 	const lastMeasurements: Record<string, NonNullable<LastMeasurement>> = {}
+	const now = new Date()
+	const maxFutureTime = 30 * 1000
 
 	for (let i = measurements.length - 1; i >= 0; i--) {
 		const m = measurements[i]
 
-		if (!sensorIds.includes(m.sensor_id)) {
+		if (!sensorIds.has(m.sensor_id)) {
 			const error = new Error(
 				`Measurement for sensor with id ${m.sensor_id} does not belong to box`,
 			)
@@ -197,8 +199,6 @@ export async function saveMeasurements(
 			throw error
 		}
 
-		const now = new Date()
-		const maxFutureTime = 30 * 1000
 		const measurementTime = new Date(m.createdAt || Date.now())
 
 		if (measurementTime.getTime() > now.getTime() + maxFutureTime) {

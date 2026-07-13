@@ -164,7 +164,7 @@ const parsePostSensorMeasurementBody = async (
 		return StandardResponse.badRequest('Invalid JSON request body')
 	}
 
-	const parsed = await PostSensorMeasurementRequestSchema.safeParseAsync(body)
+	const parsed = PostSensorMeasurementRequestSchema.safeParse(body)
 
 	if (!parsed.success) {
 		return StandardResponse.badRequest(
@@ -211,15 +211,7 @@ export const action = async ({
 			isTrustedService,
 		)
 
-		const responseParsed = PostSensorMeasurementSuccessResponseSchema.safeParse(
-			'Measurement saved in box',
-		)
-
-		if (!responseParsed.success) {
-			return StandardResponse.internalServerError()
-		}
-
-		return new Response(responseParsed.data, {
+		return new Response('Measurement saved in box', {
 			status: 201,
 			headers: {
 				'Content-Type': 'text/plain; charset=utf-8',

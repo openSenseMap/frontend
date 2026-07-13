@@ -24,8 +24,10 @@ import {
 	location,
 	measurement,
 	sensor,
+	sensorLastMeasurement,
 	user,
 	type Device,
+	type LastMeasurement,
 	type Sensor,
 } from '~/db/schema'
 import type * as schema from '~/db/schema/index'
@@ -151,6 +153,10 @@ export type DeviceForMeasurementWrite = Awaited<
 	ReturnType<typeof getDeviceForMeasurementWrite>
 >
 
+export type DeviceForSingleMeasurementWrite = Awaited<
+	ReturnType<typeof getDeviceForSingleMeasurementWrite>
+>
+
 export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
 		where: (device, { eq }) => eq(device.id, id),
@@ -170,6 +176,37 @@ export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
 			},
 		},
 	})
+}
+
+export async function getDeviceForSingleMeasurementWrite({
+	id,
+	sensorId,
+}: Pick<Device, 'id'> & { sensorId: string }) {
+	const [row] = await drizzleClient
+		.select({
+			id: device.id,
+			archivedAt: device.archivedAt,
+			useAuth: device.useAuth,
+			apiKey: device.apiKey,
+			sensorId: sensor.id,
+		})
+		.from(device)
+		.leftJoin(
+			sensor,
+			and(eq(sensor.deviceId, device.id), eq(sensor.id, sensorId)),
+		)
+		.where(eq(device.id, id))
+		.limit(1)
+
+	if (!row) return undefined
+
+	return {
+		id: row.id,
+		archivedAt: row.archivedAt,
+		useAuth: row.useAuth,
+		apiKey: row.apiKey,
+		sensors: row.sensorId ? [{ id: row.sensorId }] : [],
+	}
 }
 
 export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
@@ -628,11 +665,21 @@ export async function getDevicesWithSensors(options?: {
 				id: sensor.id,
 				title: sensor.title,
 				sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
-				lastMeasurement: sensor.lastMeasurement,
+				lastMeasurement: sql<LastMeasurement>`CASE
+					WHEN ${sensorLastMeasurement.sensorId} IS NOT NULL THEN json_build_object(
+						'value', ${sensorLastMeasurement.value},
+						'createdAt', ${sensorLastMeasurement.time}
+					)
+					ELSE ${sensor.lastMeasurement}
+				END`,
 			},
 		})
 		.from(device)
 		.leftJoin(sensor, eq(sensor.deviceId, device.id))
+		.leftJoin(
+			sensorLastMeasurement,
+			eq(sensorLastMeasurement.sensorId, sensor.id),
+		)
 		.where(and(...conditions))
 
 	const geojson: GeoJSON.FeatureCollection<Point, any> = {

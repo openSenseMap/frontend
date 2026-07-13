@@ -5,6 +5,7 @@ import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
 	getDeviceForMeasurementWrite,
+	getDeviceForSingleMeasurementWrite,
 } from '~/db/models/device.server'
 import { saveMeasurements } from '~/db/models/measurement.server'
 import {
@@ -181,7 +182,10 @@ export const postSingleMeasurement = async (
 			throw error
 		}
 
-		const device = await getDeviceForMeasurementWrite({ id: deviceId })
+		const device = await getDeviceForSingleMeasurementWrite({
+			id: deviceId,
+			sensorId,
+		})
 
 		if (!device) {
 			const error = new Error('Device not found')
@@ -191,8 +195,7 @@ export const postSingleMeasurement = async (
 
 		assertDeviceIsWritable(device)
 
-		const sensor = device.sensors?.find((s: any) => s.id === sensorId)
-		if (!sensor) {
+		if (device.sensors.length === 0) {
 			const error = new Error('Sensor not found on device')
 			error.name = 'NotFoundError'
 			throw error

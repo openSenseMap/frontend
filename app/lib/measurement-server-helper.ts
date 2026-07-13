@@ -1,11 +1,11 @@
-import { desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm'
+import { desc, eq, or, sql } from 'drizzle-orm'
 import {
 	deviceToLocation,
 	type LastMeasurement,
 	location,
 	type Measurement,
 	measurement,
-	sensor,
+	sensorLastMeasurement,
 } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 
@@ -285,21 +285,29 @@ export async function updateLastMeasurements(
 	lastMeasurements: Record<string, NonNullable<LastMeasurement>>,
 	tx: any,
 ) {
-	const sqlChunks: SQL[] = [
-		sql`(case`,
-		...Object.entries(lastMeasurements)
-			.map(([sensorId, lastMeasurement]) => [
-				sql`when ${sensor.id} = ${sensorId} then`,
-				sql<LastMeasurement>`${JSON.stringify(lastMeasurement)}::json`,
-			])
-			.flat(),
-		sql`end)`,
-	]
+	const values = Object.entries(lastMeasurements).map(
+		([sensorId, lastMeasurement]) => ({
+			sensorId,
+			time: new Date(lastMeasurement.createdAt),
+			value:
+				typeof lastMeasurement.value === 'number'
+					? lastMeasurement.value
+					: Number(lastMeasurement.value),
+		}),
+	)
 
-	const finalSql: SQL = sql.join(sqlChunks, sql.raw(' '))
+	if (values.length === 0) return
 
 	await tx
-		.update(sensor)
-		.set({ lastMeasurement: finalSql })
-		.where(inArray(sensor.id, Object.keys(lastMeasurements)))
+		.insert(sensorLastMeasurement)
+		.values(values)
+		.onConflictDoUpdate({
+			target: sensorLastMeasurement.sensorId,
+			set: {
+				time: sql`excluded.time`,
+				value: sql`excluded.value`,
+				updatedAt: sql`now()`,
+			},
+			where: sql`${sensorLastMeasurement.time} <= excluded.time`,
+		})
 }
