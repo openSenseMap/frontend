@@ -88,36 +88,6 @@ export async function getSensorsWithLastMeasurement(
 	deviceId: Sensor['deviceId'],
 	count: number = 1,
 ): Promise<SensorWithLatestMeasurement[]> {
-	if (count === 1) {
-		const result = await drizzleClient.execute(
-			sql`SELECT
-        s.id,
-        s.title,
-        s.unit,
-        s.sensor_type AS "sensorType",
-        s.icon,
-        s.status,
-        s.device_id AS "deviceId",
-        s."order",
-        CASE
-          WHEN slm.sensor_id IS NOT NULL THEN json_build_object(
-            'value', slm.value,
-            'createdAt', slm.time
-          )
-          ELSE s."lastMeasurement"
-        END AS "lastMeasurement"
-      FROM sensor s
-      LEFT JOIN sensor_last_measurement slm ON slm.sensor_id = s.id
-      WHERE s.device_id = ${deviceId}
-      ORDER BY s."order" ASC, s.id ASC;`,
-		)
-
-		return [...result].map((r) => ({
-			...r,
-			lastMeasurement: r['lastMeasurement'] ?? null,
-		})) as any
-	}
-
 	const result = await drizzleClient.execute(
 		sql`SELECT 
         s.id,

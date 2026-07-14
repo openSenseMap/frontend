@@ -69,12 +69,6 @@ export function transformDeviceToApiFormat(
 ): TransformedDevice {
 	const { id, tags, sensors, apiKey, ...rest } = box
 	const timestamp = box.updatedAt.toISOString()
-	const lastMeasurementAt =
-		sensors
-			?.map((sensor) => sensor.lastMeasurement?.createdAt)
-			.filter((createdAt): createdAt is string => Boolean(createdAt))
-			.sort()
-			.at(-1) ?? timestamp
 	const coordinates = [box.longitude, box.latitude]
 
 	return {
@@ -89,7 +83,7 @@ export function transformDeviceToApiFormat(
 			coordinates,
 			timestamp,
 		},
-		lastMeasurementAt,
+		lastMeasurementAt: timestamp,
 		loc: [
 			{
 				geometry: { type: 'Point', coordinates, timestamp },
