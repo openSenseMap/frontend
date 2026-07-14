@@ -24,5 +24,12 @@
 	"unsaved_changes": "Ungesicherte Änderungen",
 	"longitude": "Längengrad",
 	"latitude": "Breitengrad",
+	"public_location": "Öffentlicher Standort",
+	"show_approximate_location": "Ungefähren Standort anzeigen",
+	"show_approximate_location_description": "Öffentliche Antworten verwenden einen stabilen maskierten Punkt in der Nähe.",
+	"show_exact_location": "Exakten Standort anzeigen",
+	"show_exact_location_description": "Öffentliche API-Antworten und Karten verwenden diese Koordinate.",
+	"approximation_area": "Bereich der Annäherung",
+	"distance_range": "{{min}} bis {{max}}",
 	"reset_to_original_location": "Zurücksetzen auf ursprünglichen Standort"
 }

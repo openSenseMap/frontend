@@ -16,12 +16,18 @@ import {
 import { getUserId } from '~/services/session-service.server'
 import { BaseMap } from '~/components/base-map'
 import {
+	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
 	LOCATION_LIMITS,
+	LOCATION_PRIVACY_DISTANCE_PRESETS,
+	LOCATION_PRIVACY_RADIUS_VALUES,
 	isValidLocation,
 	parseLocationFormData,
+	parseLocationPrivacyFormData,
 	validateLocationFieldErrors,
 	type LocationData,
 	type LocationFieldErrors,
+	type LocationPrivacyData,
 } from '~/lib/location'
 import { useTranslation } from 'react-i18next'
 import {
@@ -46,7 +52,7 @@ function normalizeCoordinate(value: number | null) {
 	return Number(value.toFixed(6))
 }
 
-function normalizeLocationValues(values: LocationAutosaveValues) {
+function normalizeLocationValues(values: MarkerValue) {
 	return {
 		latitude: normalizeCoordinate(values.latitude),
 		longitude: normalizeCoordinate(values.longitude),
@@ -62,6 +68,7 @@ export type LocationActionData =
 	| {
 			ok: true
 			location: LocationData
+			locationPrivacy: LocationPrivacyData
 			errors: null
 			savedAt: string
 	  }
@@ -73,6 +80,9 @@ export type LocationActionData =
 type LocationAutosaveValues = {
 	latitude: number | null
 	longitude: number | null
+	locationPrivacy: LocationPrivacyData['locationPrivacy']
+	locationPrivacyMinDistanceMeters: LocationPrivacyData['locationPrivacyMinDistanceMeters']
+	locationPrivacyRadiusMeters: LocationPrivacyData['locationPrivacyRadiusMeters']
 }
 
 //*****************************************************
@@ -117,12 +127,16 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	const parsed = parseLocationFormData(formData)
+	const privacyParsed = parseLocationPrivacyFormData(formData)
 
-	if (!parsed.success) {
+	if (!parsed.success || !privacyParsed.success) {
 		return data(
 			{
 				ok: false as const,
-				errors: parsed.errors,
+				errors: {
+					...(parsed.success ? {} : parsed.errors),
+					...(privacyParsed.success ? {} : privacyParsed.errors),
+				},
 			},
 			{ status: 400 },
 		)
@@ -132,11 +146,16 @@ export async function action({ request, params }: Route.ActionArgs) {
 		id,
 		latitude: parsed.data.latitude,
 		longitude: parsed.data.longitude,
+		locationPrivacy: privacyParsed.data.locationPrivacy,
+		locationPrivacyMinDistanceMeters:
+			privacyParsed.data.locationPrivacyMinDistanceMeters,
+		locationPrivacyRadiusMeters: privacyParsed.data.locationPrivacyRadiusMeters,
 	})
 
 	return data({
 		ok: true as const,
 		location: parsed.data,
+		locationPrivacy: privacyParsed.data,
 		errors: null,
 		savedAt: new Date().toISOString(),
 	})
@@ -154,8 +173,47 @@ export default function EditLocation() {
 		}),
 		[device.latitude, device.longitude],
 	)
+	const initialLocationPrivacy = useMemo<LocationPrivacyData>(
+		() => ({
+			locationPrivacy: device.locationPrivacy === 'masked' ? 'masked' : 'exact',
+			locationPrivacyMinDistanceMeters:
+				device.locationPrivacyMinDistanceMeters &&
+				LOCATION_PRIVACY_DISTANCE_PRESETS.some(
+					(preset) =>
+						preset.min === device.locationPrivacyMinDistanceMeters &&
+						preset.max === device.locationPrivacyRadiusMeters,
+				)
+					? (device.locationPrivacyMinDistanceMeters as LocationPrivacyData['locationPrivacyMinDistanceMeters'])
+					: DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+			locationPrivacyRadiusMeters:
+				device.locationPrivacyRadiusMeters &&
+				LOCATION_PRIVACY_RADIUS_VALUES.includes(
+					device.locationPrivacyRadiusMeters as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+				)
+					? (device.locationPrivacyRadiusMeters as LocationPrivacyData['locationPrivacyRadiusMeters'])
+					: DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+		}),
+		[
+			device.locationPrivacy,
+			device.locationPrivacyMinDistanceMeters,
+			device.locationPrivacyRadiusMeters,
+		],
+	)
 
 	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
+	const [locationPrivacy, setLocationPrivacy] = useState<
+		LocationPrivacyData['locationPrivacy']
+	>(initialLocationPrivacy.locationPrivacy)
+	const [
+		locationPrivacyMinDistanceMeters,
+		setLocationPrivacyMinDistanceMeters,
+	] = useState<LocationPrivacyData['locationPrivacyMinDistanceMeters']>(
+		initialLocationPrivacy.locationPrivacyMinDistanceMeters,
+	)
+	const [locationPrivacyRadiusMeters, setLocationPrivacyRadiusMeters] =
+		useState<LocationPrivacyData['locationPrivacyRadiusMeters']>(
+			initialLocationPrivacy.locationPrivacyRadiusMeters,
+		)
 
 	const currentLocation = useMemo<LocationData | null>(() => {
 		const candidate = {
@@ -181,6 +239,11 @@ export default function EditLocation() {
 		return {
 			latitude: String(values.latitude),
 			longitude: String(values.longitude),
+			locationPrivacy: values.locationPrivacy,
+			locationPrivacyMinDistanceMeters: String(
+				values.locationPrivacyMinDistanceMeters,
+			),
+			locationPrivacyRadiusMeters: String(values.locationPrivacyRadiusMeters),
 		}
 	}, [])
 
@@ -195,23 +258,45 @@ export default function EditLocation() {
 		): LocationAutosaveValues => {
 			if (!actionData.ok) return submittedValues
 
-			return normalizeLocationValues(submittedValues)
+			return {
+				...normalizeLocationValues(submittedValues),
+				locationPrivacy: actionData.locationPrivacy.locationPrivacy,
+				locationPrivacyMinDistanceMeters:
+					actionData.locationPrivacy.locationPrivacyMinDistanceMeters,
+				locationPrivacyRadiusMeters:
+					actionData.locationPrivacy.locationPrivacyRadiusMeters,
+			}
 		},
 		[],
 	)
 
 	const autosaveValues = useMemo<LocationAutosaveValues>(
 		() =>
-			normalizeLocationValues({
-				latitude: marker.latitude,
-				longitude: marker.longitude,
-			}),
-		[marker.latitude, marker.longitude],
+			({
+				...normalizeLocationValues({
+					latitude: marker.latitude,
+					longitude: marker.longitude,
+				}),
+				locationPrivacy,
+				locationPrivacyMinDistanceMeters,
+				locationPrivacyRadiusMeters,
+			}) as LocationAutosaveValues,
+		[
+			marker.latitude,
+			marker.longitude,
+			locationPrivacy,
+			locationPrivacyMinDistanceMeters,
+			locationPrivacyRadiusMeters,
+		],
 	)
 
 	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
-		() => normalizeLocationValues(initialLocation),
-		[initialLocation],
+		() =>
+			({
+				...normalizeLocationValues(initialLocation),
+				...initialLocationPrivacy,
+			}) as LocationAutosaveValues,
+		[initialLocation, initialLocationPrivacy],
 	)
 
 	const autosave = useAutosaveFetcher<
@@ -237,6 +322,10 @@ export default function EditLocation() {
 	const locationErrors = {
 		latitude: clientErrors.latitude ?? serverErrors.latitude,
 		longitude: clientErrors.longitude ?? serverErrors.longitude,
+		locationPrivacy: serverErrors.locationPrivacy,
+		locationPrivacyMinDistanceMeters:
+			serverErrors.locationPrivacyMinDistanceMeters,
+		locationPrivacyRadiusMeters: serverErrors.locationPrivacyRadiusMeters,
 	}
 
 	const hasClientErrors = Boolean(
@@ -274,6 +363,35 @@ export default function EditLocation() {
 			longitude,
 		}))
 	}
+
+	const onLocationPrivacyChange = (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		setLocationPrivacy(event.target.value === 'masked' ? 'masked' : 'exact')
+	}
+
+	const onLocationPrivacyPresetChange = (
+		event: React.ChangeEvent<HTMLSelectElement>,
+	) => {
+		const [minDistance, maxDistance] = event.target.value.split(':').map(Number)
+
+		const preset = LOCATION_PRIVACY_DISTANCE_PRESETS.find(
+			(candidate) =>
+				candidate.min === minDistance && candidate.max === maxDistance,
+		)
+
+		if (!preset) return
+
+		setLocationPrivacyMinDistanceMeters(
+			preset.min as LocationPrivacyData['locationPrivacyMinDistanceMeters'],
+		)
+		setLocationPrivacyRadiusMeters(
+			preset.max as LocationPrivacyData['locationPrivacyRadiusMeters'],
+		)
+	}
+
+	const formatDistance = (meters: number) =>
+		meters >= 1000 ? `${meters / 1000} km` : `${meters} m`
 
 	const resetToOriginalLocation = () => {
 		setMarker({ ...originalLocation })
@@ -407,6 +525,107 @@ export default function EditLocation() {
 										</p>
 									) : null}
 								</div>
+							</div>
+						</div>
+
+						<div className="mt-6 border-t border-gray-200 pt-5">
+							<fieldset>
+								<legend className="txt-base block font-bold tracking-normal">
+									{t('public_location')}
+								</legend>
+
+								<div className="mt-3 grid gap-3 md:grid-cols-2">
+									<label className="flex cursor-pointer gap-3 rounded border border-gray-200 p-3">
+										<input
+											type="radio"
+											name="locationPrivacy"
+											value="exact"
+											checked={locationPrivacy === 'exact'}
+											onChange={onLocationPrivacyChange}
+											className="mt-1"
+										/>
+										<span>
+											<span className="block font-semibold">
+												{t('show_exact_location')}
+											</span>
+											<span className="mt-1 block text-sm text-gray-600">
+												{t('show_exact_location_description')}
+											</span>
+										</span>
+									</label>
+
+									<label className="flex cursor-pointer gap-3 rounded border border-gray-200 p-3">
+										<input
+											type="radio"
+											name="locationPrivacy"
+											value="masked"
+											checked={locationPrivacy === 'masked'}
+											onChange={onLocationPrivacyChange}
+											className="mt-1"
+										/>
+										<span>
+											<span className="block font-semibold">
+												{t('show_approximate_location')}
+											</span>
+											<span className="mt-1 block text-sm text-gray-600">
+												{t('show_approximate_location_description')}
+											</span>
+										</span>
+									</label>
+								</div>
+							</fieldset>
+
+							<div className="mt-4 max-w-xs">
+								<label
+									htmlFor="locationPrivacyRadiusMeters"
+									className="txt-base block font-bold tracking-normal"
+								>
+									{t('approximation_area')}
+								</label>
+
+								<select
+									id="locationPrivacyRadiusMeters"
+									value={`${locationPrivacyMinDistanceMeters}:${locationPrivacyRadiusMeters}`}
+									onChange={onLocationPrivacyPresetChange}
+									disabled={locationPrivacy !== 'masked'}
+									aria-describedby="location-privacy-radius-error"
+									className="mt-1 w-full rounded border border-gray-200 px-2 py-1 text-base disabled:bg-gray-100 disabled:text-gray-500"
+								>
+									{LOCATION_PRIVACY_DISTANCE_PRESETS.map((preset) => (
+										<option
+											key={`${preset.min}:${preset.max}`}
+											value={`${preset.min}:${preset.max}`}
+										>
+											{t('distance_range', {
+												min: formatDistance(preset.min),
+												max: formatDistance(preset.max),
+											})}
+										</option>
+									))}
+								</select>
+								<input
+									type="hidden"
+									name="locationPrivacyMinDistanceMeters"
+									value={locationPrivacyMinDistanceMeters}
+								/>
+								<input
+									type="hidden"
+									name="locationPrivacyRadiusMeters"
+									value={locationPrivacyRadiusMeters}
+								/>
+
+								{locationErrors.locationPrivacy ||
+								locationErrors.locationPrivacyMinDistanceMeters ||
+								locationErrors.locationPrivacyRadiusMeters ? (
+									<p
+										id="location-privacy-radius-error"
+										className="mt-1 text-sm text-red-600"
+									>
+										{locationErrors.locationPrivacy ??
+											locationErrors.locationPrivacyMinDistanceMeters ??
+											locationErrors.locationPrivacyRadiusMeters}
+									</p>
+								) : null}
 							</div>
 						</div>
 

@@ -29,7 +29,12 @@ import {
 import { useToast } from '~/components/ui/use-toast'
 import { DeviceModelEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/device.new'
-import { locationSchema, type LocationData } from '~/lib/location'
+import {
+	locationPrivacySchema,
+	locationSchema,
+	type LocationData,
+	type LocationPrivacyData,
+} from '~/lib/location'
 import { generalInfoSchema, type GeneralInfoData } from '~/lib/device-general'
 
 const deviceSchema = z.object({
@@ -46,10 +51,11 @@ const sensorsSchema = z.object({
 })
 
 const advancedSchema = z.record(z.string(), z.any())
+const deviceLocationSchema = locationSchema.and(locationPrivacySchema)
 
 const formSchema = z.union([
 	generalInfoSchema,
-	locationSchema,
+	deviceLocationSchema,
 	deviceSchema,
 	sensorsSchema,
 	advancedSchema,
@@ -67,7 +73,7 @@ export const Stepper = defineStepper(
 		id: 'location',
 		label: 'location',
 		infoKey: 'location_info_text',
-		schema: locationSchema,
+		schema: deviceLocationSchema,
 		index: 1,
 	},
 	{
@@ -106,7 +112,7 @@ type AdvancedData = z.infer<typeof advancedSchema>
 
 type FormData =
 	| GeneralInfoData
-	| LocationData
+	| (LocationData & LocationPrivacyData)
 	| DeviceData
 	| SensorData
 	| AdvancedData

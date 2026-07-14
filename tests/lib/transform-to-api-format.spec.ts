@@ -1,6 +1,25 @@
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 
 describe('transformDeviceToApiFormat', () => {
+	const distanceMeters = (
+		first: { latitude: number; longitude: number },
+		second: { latitude: number; longitude: number },
+	) => {
+		const earthRadiusMeters = 6371008.8
+		const toRadians = (value: number) => (value * Math.PI) / 180
+		const firstLatitude = toRadians(first.latitude)
+		const secondLatitude = toRadians(second.latitude)
+		const deltaLatitude = toRadians(second.latitude - first.latitude)
+		const deltaLongitude = toRadians(second.longitude - first.longitude)
+		const a =
+			Math.sin(deltaLatitude / 2) ** 2 +
+			Math.cos(firstLatitude) *
+				Math.cos(secondLatitude) *
+				Math.sin(deltaLongitude / 2) ** 2
+
+		return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+	}
+
 	const mockDevice = {
 		id: 'test-device-id',
 		name: 'Test Device',
@@ -43,65 +62,75 @@ describe('transformDeviceToApiFormat', () => {
 	test('transforms device with all fields', () => {
 		const result = transformDeviceToApiFormat(mockDevice as any)
 
-		expect(result).toEqual({
-			_id: 'test-device-id',
-			grouptag: ['bike', 'outdoor'],
-			name: 'Test Device',
-			description: 'A test device',
-			image: 'https://example.com/image.jpg',
-			link: 'https://example.com',
-			exposure: 'mobile',
-			model: 'custom',
-			latitude: 37.7749,
-			longitude: -122.4194,
-			useAuth: true,
-			public: false,
-			status: 'active',
-			createdAt: new Date('2024-01-01T00:00:00Z').toISOString(),
-			updatedAt: new Date('2024-01-01T12:00:00Z').toISOString(),
-			expiresAt: new Date('2024-12-31T23:59:59Z').toISOString(),
-			userId: 'user-123',
-			currentLocation: {
-				type: 'Point',
-				coordinates: [-122.4194, 37.7749],
-				timestamp: '2024-01-01T12:00:00.000Z',
-			},
-			lastMeasurementAt: '2024-01-01T12:00:00.000Z',
-			loc: [
-				{
-					geometry: {
-						type: 'Point',
-						coordinates: [-122.4194, 37.7749],
-						timestamp: '2024-01-01T12:00:00.000Z',
+		expect(result).toEqual(
+			expect.objectContaining({
+				_id: 'test-device-id',
+				grouptag: ['bike', 'outdoor'],
+				name: 'Test Device',
+				description: 'A test device',
+				image: 'https://example.com/image.jpg',
+				link: 'https://example.com',
+				exposure: 'mobile',
+				model: 'custom',
+				latitude: 37.7749,
+				longitude: -122.4194,
+				locationDisclosure: {
+					mode: 'exact',
+					accuracyMeters: 0,
+					minDistanceMeters: 0,
+					maxDistanceMeters: 0,
+					method: null,
+				},
+				useAuth: true,
+				public: false,
+				status: 'active',
+				createdAt: new Date('2024-01-01T00:00:00Z').toISOString(),
+				updatedAt: new Date('2024-01-01T12:00:00Z').toISOString(),
+				expiresAt: new Date('2024-12-31T23:59:59Z').toISOString(),
+				userId: 'user-123',
+				currentLocation: {
+					type: 'Point',
+					coordinates: [-122.4194, 37.7749],
+					timestamp: '2024-01-01T12:00:00.000Z',
+				},
+				lastMeasurementAt: '2024-01-01T12:00:00.000Z',
+				loc: [
+					{
+						geometry: {
+							type: 'Point',
+							coordinates: [-122.4194, 37.7749],
+							timestamp: '2024-01-01T12:00:00.000Z',
+						},
+						type: 'Feature',
 					},
-					type: 'Feature',
-				},
-			],
-			integrations: {
-				mqtt: {
-					enabled: false,
-				},
-			},
-			sensors: [
-				{
-					_id: 'sensor-1',
-					title: 'Temperature',
-					unit: '°C',
-					sensorType: 'HDC1080',
-					lastMeasurement: {
-						createdAt: '2024-01-01T12:00:00Z',
-						value: '25.5',
+				],
+				integrations: {
+					mqtt: {
+						enabled: false,
 					},
 				},
-				{
-					_id: 'sensor-2',
-					title: 'Humidity',
-					unit: '%',
-					sensorType: 'HDC1080',
-					lastMeasurement: null,
-				},
-			],
-		})
+				access_token: undefined,
+				sensors: [
+					expect.objectContaining({
+						_id: 'sensor-1',
+						title: 'Temperature',
+						unit: '°C',
+						sensorType: 'HDC1080',
+						lastMeasurement: {
+							createdAt: '2024-01-01T12:00:00Z',
+							value: '25.5',
+						},
+					}),
+					expect.objectContaining({
+						_id: 'sensor-2',
+						title: 'Humidity',
+						unit: '%',
+						sensorType: 'HDC1080',
+						lastMeasurement: null,
+					}),
+				],
+			}),
+		)
 	})
 
 	test('handles null tags by defaulting to empty array', () => {
@@ -136,23 +165,27 @@ describe('transformDeviceToApiFormat', () => {
 		const result = transformDeviceToApiFormat(mockDevice as any)
 
 		expect(result.sensors).toHaveLength(2)
-		expect(result.sensors[0]).toEqual({
-			_id: 'sensor-1',
-			title: 'Temperature',
-			unit: '°C',
-			sensorType: 'HDC1080',
-			lastMeasurement: {
-				createdAt: '2024-01-01T12:00:00Z',
-				value: '25.5',
-			},
-		})
-		expect(result.sensors[1]).toEqual({
-			_id: 'sensor-2',
-			title: 'Humidity',
-			unit: '%',
-			sensorType: 'HDC1080',
-			lastMeasurement: null,
-		})
+		expect(result.sensors[0]).toEqual(
+			expect.objectContaining({
+				_id: 'sensor-1',
+				title: 'Temperature',
+				unit: '°C',
+				sensorType: 'HDC1080',
+				lastMeasurement: {
+					createdAt: '2024-01-01T12:00:00Z',
+					value: '25.5',
+				},
+			}),
+		)
+		expect(result.sensors[1]).toEqual(
+			expect.objectContaining({
+				_id: 'sensor-2',
+				title: 'Humidity',
+				unit: '%',
+				sensorType: 'HDC1080',
+				lastMeasurement: null,
+			}),
+		)
 	})
 
 	test('generates correct currentLocation structure', () => {
@@ -178,6 +211,84 @@ describe('transformDeviceToApiFormat', () => {
 				type: 'Feature',
 			},
 		])
+	})
+
+	test('returns exact coordinates when includeExactLocation is true', () => {
+		const maskedDevice = {
+			...mockDevice,
+			locationPrivacy: 'masked',
+			locationPrivacyMinDistanceMeters: 20,
+			locationPrivacyRadiusMeters: 50,
+			locationPrivacyMethod: 'stable-donut-displacement-v1',
+		}
+
+		const result = transformDeviceToApiFormat(maskedDevice as any, {
+			includeExactLocation: true,
+		})
+
+		expect(result.latitude).toBe(mockDevice.latitude)
+		expect(result.longitude).toBe(mockDevice.longitude)
+		expect(result.currentLocation.coordinates).toEqual([
+			mockDevice.longitude,
+			mockDevice.latitude,
+		])
+		expect(result.loc[0].geometry.coordinates).toEqual([
+			mockDevice.longitude,
+			mockDevice.latitude,
+		])
+		expect(result.locationDisclosure).toEqual({
+			mode: 'exact',
+			accuracyMeters: 0,
+			minDistanceMeters: 0,
+			maxDistanceMeters: 0,
+			method: null,
+		})
+	})
+
+	test('returns stable donut-masked coordinates by default for masked devices', () => {
+		const maskedDevice = {
+			...mockDevice,
+			locationPrivacy: 'masked',
+			locationPrivacyMinDistanceMeters: 20,
+			locationPrivacyRadiusMeters: 50,
+			locationPrivacyMethod: 'stable-donut-displacement-v1',
+		}
+
+		const result = transformDeviceToApiFormat(maskedDevice as any)
+		const repeatedResult = transformDeviceToApiFormat(maskedDevice as any)
+		const displacementMeters = distanceMeters(
+			{
+				latitude: mockDevice.latitude,
+				longitude: mockDevice.longitude,
+			},
+			{
+				latitude: result.latitude,
+				longitude: result.longitude,
+			},
+		)
+
+		expect(result.latitude).not.toBe(mockDevice.latitude)
+		expect(result.longitude).not.toBe(mockDevice.longitude)
+		expect(result.currentLocation.coordinates).toEqual([
+			result.longitude,
+			result.latitude,
+		])
+		expect(result.loc[0].geometry.coordinates).toEqual([
+			result.longitude,
+			result.latitude,
+		])
+		expect(repeatedResult.currentLocation.coordinates).toEqual(
+			result.currentLocation.coordinates,
+		)
+		expect(displacementMeters).toBeGreaterThanOrEqual(20)
+		expect(displacementMeters).toBeLessThanOrEqual(50)
+		expect(result.locationDisclosure).toEqual({
+			mode: 'masked',
+			accuracyMeters: 50,
+			minDistanceMeters: 20,
+			maxDistanceMeters: 50,
+			method: 'stable-donut-displacement-v1',
+		})
 	})
 
 	test('sets correct integrations structure', () => {

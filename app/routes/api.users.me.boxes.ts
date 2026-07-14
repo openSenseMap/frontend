@@ -86,7 +86,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 			const userBoxes = await getUserDevices(user.id)
 
 			const transformedBoxes = userBoxes.map((box) =>
-				transformDeviceToApiFormat(box),
+				transformDeviceToApiFormat(box, { includeExactLocation: true }),
 			)
 
 			const boxesWithIntegrations =

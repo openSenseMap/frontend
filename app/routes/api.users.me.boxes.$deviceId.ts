@@ -107,7 +107,9 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 				await GetCurrentUserDeviceResponseSchema.safeParseAsync({
 					code: 'Ok',
 					data: {
-						device: transformDeviceToApiFormat(device),
+						device: transformDeviceToApiFormat(device, {
+							includeExactLocation: true,
+						}),
 					},
 				})
 

@@ -11,7 +11,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { BaseMap } from '~/components/base-map'
-import { LOCATION_LIMITS, isValidLocation } from '~/lib/location'
+import {
+	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+	LOCATION_LIMITS,
+	LOCATION_PRIVACY_DISTANCE_PRESETS,
+	isValidLocation,
+	type LocationPrivacyData,
+} from '~/lib/location'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -24,6 +31,13 @@ export function LocationStep() {
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
+	const locationPrivacy = watch('locationPrivacy') ?? 'masked'
+	const locationPrivacyMinDistanceMeters =
+		watch('locationPrivacyMinDistanceMeters') ??
+		DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS
+	const locationPrivacyRadiusMeters =
+		watch('locationPrivacyRadiusMeters') ??
+		DEFAULT_LOCATION_PRIVACY_RADIUS_METERS
 
 	const [marker, setMarker] = useState<{
 		latitude: number | string
@@ -34,6 +48,33 @@ export function LocationStep() {
 	})
 
 	useEffect(() => {
+		if (!locationPrivacy) {
+			setValue('locationPrivacy', 'masked', { shouldValidate: true })
+		}
+		if (!locationPrivacyMinDistanceMeters) {
+			setValue(
+				'locationPrivacyMinDistanceMeters',
+				DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+				{
+					shouldValidate: true,
+				},
+			)
+		}
+		if (!locationPrivacyRadiusMeters) {
+			setValue(
+				'locationPrivacyRadiusMeters',
+				DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+				{ shouldValidate: true },
+			)
+		}
+	}, [
+		locationPrivacy,
+		locationPrivacyMinDistanceMeters,
+		locationPrivacyRadiusMeters,
+		setValue,
+	])
+
+	useEffect(() => {
 		if (savedLatitude !== undefined && savedLongitude !== undefined) {
 			setMarker({
 				latitude: savedLatitude,
@@ -41,6 +82,43 @@ export function LocationStep() {
 			})
 		}
 	}, [savedLatitude, savedLongitude])
+
+	const onLocationPrivacyChange = (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		setValue(
+			'locationPrivacy',
+			event.target.value === 'exact' ? 'exact' : 'masked',
+			{ shouldValidate: true },
+		)
+	}
+
+	const onLocationPrivacyPresetChange = (
+		event: React.ChangeEvent<HTMLSelectElement>,
+	) => {
+		const [minDistance, maxDistance] = event.target.value.split(':').map(Number)
+
+		const preset = LOCATION_PRIVACY_DISTANCE_PRESETS.find(
+			(candidate) =>
+				candidate.min === minDistance && candidate.max === maxDistance,
+		)
+
+		if (!preset) return
+
+		setValue(
+			'locationPrivacyMinDistanceMeters',
+			preset.min as LocationPrivacyData['locationPrivacyMinDistanceMeters'],
+			{ shouldValidate: true },
+		)
+		setValue(
+			'locationPrivacyRadiusMeters',
+			preset.max as LocationPrivacyData['locationPrivacyRadiusMeters'],
+			{ shouldValidate: true },
+		)
+	}
+
+	const formatDistance = (meters: number) =>
+		meters >= 1000 ? `${meters / 1000} km` : `${meters} m`
 
 	const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value.trim()
@@ -136,7 +214,7 @@ export function LocationStep() {
 				</BaseMap>
 			</div>
 
-			<div className="bg-background flex w-full items-center justify-around p-4">
+			<div className="bg-background grid w-full gap-4 p-4 lg:grid-cols-2">
 				<div>
 					<Label htmlFor="latitude">{t('latitude')}</Label>
 					<Input
@@ -177,6 +255,88 @@ export function LocationStep() {
 							{String(errors.longitude.message)}
 						</p>
 					) : null}
+				</div>
+
+				<div className="space-y-3 lg:col-span-2">
+					<fieldset>
+						<legend className="text-sm font-medium">
+							{t('public_location')}
+						</legend>
+
+						<div className="mt-2 grid gap-3 md:grid-cols-2">
+							<label className="flex cursor-pointer gap-3 rounded-md border p-3">
+								<input
+									type="radio"
+									value="masked"
+									checked={locationPrivacy !== 'exact'}
+									onChange={onLocationPrivacyChange}
+									className="mt-1"
+								/>
+								<span>
+									<span className="block text-sm font-medium">
+										{t('show_approximate_location')}
+									</span>
+									<span className="text-muted-foreground mt-1 block text-sm">
+										{t('show_approximate_location_description')}
+									</span>
+								</span>
+							</label>
+
+							<label className="flex cursor-pointer gap-3 rounded-md border p-3">
+								<input
+									type="radio"
+									value="exact"
+									checked={locationPrivacy === 'exact'}
+									onChange={onLocationPrivacyChange}
+									className="mt-1"
+								/>
+								<span>
+									<span className="block text-sm font-medium">
+										{t('show_exact_location')}
+									</span>
+									<span className="text-muted-foreground mt-1 block text-sm">
+										{t('show_exact_location_description')}
+									</span>
+								</span>
+							</label>
+						</div>
+					</fieldset>
+
+					<div className="max-w-xs">
+						<Label htmlFor="locationPrivacyPreset">
+							{t('approximation_area')}
+						</Label>
+						<select
+							id="locationPrivacyPreset"
+							value={`${locationPrivacyMinDistanceMeters}:${locationPrivacyRadiusMeters}`}
+							onChange={onLocationPrivacyPresetChange}
+							disabled={locationPrivacy === 'exact'}
+							className="mt-1 w-full rounded-md border bg-transparent px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+						>
+							{LOCATION_PRIVACY_DISTANCE_PRESETS.map((preset) => (
+								<option
+									key={`${preset.min}:${preset.max}`}
+									value={`${preset.min}:${preset.max}`}
+								>
+									{t('distance_range', {
+										min: formatDistance(preset.min),
+										max: formatDistance(preset.max),
+									})}
+								</option>
+							))}
+						</select>
+						<input type="hidden" {...register('locationPrivacy')} />
+						<input
+							type="hidden"
+							{...register('locationPrivacyMinDistanceMeters')}
+						/>
+						<input type="hidden" {...register('locationPrivacyRadiusMeters')} />
+						{errors.locationPrivacyMinDistanceMeters?.message ? (
+							<p className="mt-1 text-sm text-red-600">
+								{String(errors.locationPrivacyMinDistanceMeters.message)}
+							</p>
+						) : null}
+					</div>
 				</div>
 			</div>
 		</div>

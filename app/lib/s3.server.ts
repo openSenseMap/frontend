@@ -7,6 +7,7 @@ import {
 	CreateBucketCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { sanitizeImageFile } from '~/lib/image-sanitizer.server'
 
 const S3_ENDPOINT = (
 	process.env.S3_ENDPOINT || 'http://localhost:9000'
@@ -56,17 +57,15 @@ export async function uploadDeviceImage(
 ): Promise<string> {
 	await ensureBucketExists()
 
-	const fileExtension = file.name.split('.').pop()
-	const key = `devices/${deviceId}.${fileExtension}`
-
-	const buffer = Buffer.from(await file.arrayBuffer())
+	const image = await sanitizeImageFile(file)
+	const key = `devices/${deviceId}.${image.extension}`
 
 	await s3Client.send(
 		new PutObjectCommand({
 			Bucket: BUCKET_NAME,
 			Key: key,
-			Body: buffer,
-			ContentType: file.type,
+			Body: image.buffer,
+			ContentType: image.contentType,
 		}),
 	)
 

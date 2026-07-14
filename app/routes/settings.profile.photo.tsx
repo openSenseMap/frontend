@@ -27,6 +27,7 @@ import { getUserById } from '~/db/models/user.server'
 import { profileImage } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { uploadHandler } from '~/lib/file-upload.server'
+import { isSanitizableImageType } from '~/lib/image-types'
 import { getInitials } from '~/lib/strings'
 import { requireUserId } from '~/services/session-service.server'
 
@@ -48,7 +49,10 @@ const PhotoFormSchema = z.object({
 			)
 			.refine((file) => {
 				return file.size <= MAX_SIZE
-			}, 'Image size must be less than 3MB'),
+			}, 'Image size must be less than 3MB')
+			.refine((file) => {
+				return isSanitizableImageType(file.type)
+			}, 'Please upload a JPEG, PNG, WebP, or GIF image.'),
 	),
 })
 
@@ -84,6 +88,8 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	const { photoFile } = submission.payload as { photoFile: File }
+	const { sanitizeImageFile } = await import('~/lib/image-sanitizer.server')
+	const sanitizedPhoto = await sanitizeImageFile(photoFile)
 
 	// Query user profile
 	const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
@@ -98,8 +104,8 @@ export async function action({ request }: Route.ActionArgs) {
 	const [newImage] = await drizzleClient
 		.insert(profileImage)
 		.values({
-			blob: Buffer.from(await photoFile.arrayBuffer()),
-			contentType: photoFile.type,
+			blob: sanitizedPhoto.buffer,
+			contentType: sanitizedPhoto.contentType,
 			profileId: previousProfileWithImage?.id,
 		})
 		.returning()

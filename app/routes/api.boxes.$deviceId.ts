@@ -38,6 +38,11 @@ import {
 } from '~/middleware/content-type-header.server'
 import { parseJsonBody } from '~/lib/request-parsing'
 import { LocationObjectSchema } from '~/lib/openapi/schemas/location'
+import {
+	LOCATION_PRIVACY_MIN_DISTANCE_VALUES,
+	LOCATION_PRIVACY_RADIUS_VALUES,
+	LOCATION_PRIVACY_VALUES,
+} from '~/lib/location'
 
 const messages = {
 	conflictingSensorsAndAddons:
@@ -86,6 +91,46 @@ const UpdateDeviceRequestSchema = z
 
 		location: LocationObjectSchema.optional(),
 
+		locationPrivacy: z.enum(LOCATION_PRIVACY_VALUES).optional().meta({
+			description:
+				'Whether public responses expose the exact or masked location.',
+			example: 'masked',
+		}),
+
+		locationPrivacyMinDistanceMeters: z
+			.number()
+			.refine(
+				(
+					value,
+				): value is (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number] =>
+					LOCATION_PRIVACY_MIN_DISTANCE_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_MIN_DISTANCE_VALUES)[number],
+					),
+				'Location privacy minimum distance is invalid',
+			)
+			.optional()
+			.meta({
+				description:
+					'Minimum distance in meters used by donut geomasking when `locationPrivacy` is `masked`.',
+				example: 20,
+			}),
+
+		locationPrivacyRadiusMeters: z
+			.number()
+			.refine(
+				(value): value is (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number] =>
+					LOCATION_PRIVACY_RADIUS_VALUES.includes(
+						value as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
+					),
+				'Location privacy radius is invalid',
+			)
+			.optional()
+			.meta({
+				description:
+					'Maximum radius in meters used by donut geomasking when `locationPrivacy` is `masked`.',
+				example: 50,
+			}),
+
 		grouptag: z
 			.union([z.string(), z.array(z.string())])
 			.transform((value) => (Array.isArray(value) ? value : [value]))
@@ -102,6 +147,19 @@ const UpdateDeviceRequestSchema = z
 
 		addons: DeviceAddonsUpdateSchema.optional(),
 	})
+	.refine(
+		(value) =>
+			value.locationPrivacy !== 'masked' ||
+			value.locationPrivacyMinDistanceMeters === undefined ||
+			value.locationPrivacyRadiusMeters === undefined ||
+			value.locationPrivacyMinDistanceMeters <
+				value.locationPrivacyRadiusMeters,
+		{
+			message:
+				'Location privacy minimum distance must be smaller than the maximum radius',
+			path: ['locationPrivacyMinDistanceMeters'],
+		},
+	)
 	.superRefine((body, ctx) => {
 		if (body.sensors && body.addons?.add) {
 			ctx.addIssue({
@@ -452,6 +510,9 @@ async function put(request: Request, user: User, deviceId: string) {
 		useAuth: body.useAuth,
 		link: body.weblink,
 		location: locationData,
+		locationPrivacy: body.locationPrivacy,
+		locationPrivacyMinDistanceMeters: body.locationPrivacyMinDistanceMeters,
+		locationPrivacyRadiusMeters: body.locationPrivacyRadiusMeters,
 		grouptag: body.grouptag,
 		sensors: body.sensors,
 	}
@@ -473,7 +534,9 @@ async function put(request: Request, user: User, deviceId: string) {
 			return StandardResponse.internalServerError()
 		}
 
-		const apiResponse = transformDeviceToApiFormat(deviceWithSensors)
+		const apiResponse = transformDeviceToApiFormat(deviceWithSensors, {
+			includeExactLocation: true,
+		})
 
 		const responseParsed = await ApiDeviceSchema.safeParseAsync(apiResponse)
 
