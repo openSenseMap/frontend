@@ -16,6 +16,7 @@ import {
 	Form,
 	useActionData,
 	useLoaderData,
+	useNavigation,
 	useOutletContext,
 } from 'react-router'
 import invariant from 'tiny-invariant'
@@ -121,6 +122,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 export default function EditBoxSensors() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
+	const navigation = useNavigation()
+	const isSubmitting = navigation.state !== 'idle'
 
 	const { copyToClipboard } = useCopyToClipboard()
 	const { toast } = useToast()
@@ -221,6 +224,7 @@ export default function EditBoxSensors() {
 									<Button
 										type="button"
 										variant="outline"
+										disabled={isSubmitting}
 										onClick={() => {
 											setSensorsData([
 												{
@@ -244,6 +248,7 @@ export default function EditBoxSensors() {
 										type="submit"
 										name="intent"
 										value="save"
+										disabled={isSubmitting}
 										className="gap-2"
 									>
 										<Save className="h-4 w-4" />
