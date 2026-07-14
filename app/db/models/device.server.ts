@@ -24,10 +24,8 @@ import {
 	location,
 	measurement,
 	sensor,
-	sensorLastMeasurement,
 	user,
 	type Device,
-	type LastMeasurement,
 	type Sensor,
 } from '~/db/schema'
 import type * as schema from '~/db/schema/index'
@@ -665,21 +663,11 @@ export async function getDevicesWithSensors(options?: {
 				id: sensor.id,
 				title: sensor.title,
 				sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
-				lastMeasurement: sql<LastMeasurement>`CASE
-					WHEN ${sensorLastMeasurement.sensorId} IS NOT NULL THEN json_build_object(
-						'value', ${sensorLastMeasurement.value},
-						'createdAt', ${sensorLastMeasurement.time}
-					)
-					ELSE ${sensor.lastMeasurement}
-				END`,
+				lastMeasurement: sensor.lastMeasurement,
 			},
 		})
 		.from(device)
 		.leftJoin(sensor, eq(sensor.deviceId, device.id))
-		.leftJoin(
-			sensorLastMeasurement,
-			eq(sensorLastMeasurement.sensorId, sensor.id),
-		)
 		.where(and(...conditions))
 
 	const geojson: GeoJSON.FeatureCollection<Point, any> = {
