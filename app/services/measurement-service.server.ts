@@ -17,6 +17,7 @@ import {
 	decodeMeasurements,
 	hasDecoder,
 } from '~/services/decoding-service.server'
+import { type MeasurementTiming } from '~/lib/measurement-timing.server'
 
 export type DeviceWithSensors = DeviceWithoutSensors & {
 	sensors: SensorWithLatestMeasurement[]
@@ -174,6 +175,7 @@ export const postSingleMeasurement = async (
 	body: SingleMeasurementBody,
 	authorization?: string | null,
 	isTrustedService?: boolean,
+	timing?: MeasurementTiming | null,
 ): Promise<void> => {
 	try {
 		if (typeof body.value !== 'number' || isNaN(body.value)) {
@@ -181,10 +183,15 @@ export const postSingleMeasurement = async (
 			error.name = 'UnprocessableEntityError'
 			throw error
 		}
+		timing?.mark('validateBody')
 
 		const device = await getDeviceForSingleMeasurementWrite({
 			id: deviceId,
 			sensorId,
+		})
+		timing?.mark('deviceLookup', {
+			deviceFound: Boolean(device),
+			sensorCount: device?.sensors.length ?? 0,
 		})
 
 		if (!device) {
@@ -200,6 +207,7 @@ export const postSingleMeasurement = async (
 			error.name = 'NotFoundError'
 			throw error
 		}
+		timing?.mark('validateDeviceAndSensor')
 
 		if (device.useAuth && !isTrustedService) {
 			if (device.apiKey !== authorization) {
@@ -208,6 +216,10 @@ export const postSingleMeasurement = async (
 				throw error
 			}
 		}
+		timing?.mark('authorizeDevice', {
+			deviceUsesAuth: Boolean(device.useAuth),
+			isTrustedService: Boolean(isTrustedService),
+		})
 
 		let timestamp: Date | undefined
 		if (body.createdAt) {
@@ -219,6 +231,7 @@ export const postSingleMeasurement = async (
 				throw error
 			}
 		}
+		timing?.mark('parseTimestamp')
 
 		let locationData: LocationData | null = null
 		if (body.location) {
@@ -230,6 +243,9 @@ export const postSingleMeasurement = async (
 				throw error
 			}
 		}
+		timing?.mark('validateLocation', {
+			hasLocation: Boolean(locationData),
+		})
 
 		const measurements = [
 			{
@@ -239,8 +255,10 @@ export const postSingleMeasurement = async (
 				location: locationData,
 			},
 		]
+		timing?.mark('buildMeasurements')
 
-		await saveMeasurements(device, measurements)
+		await saveMeasurements(device, measurements, timing)
+		timing?.mark('saveMeasurements')
 	} catch (error) {
 		if (
 			error instanceof Error &&

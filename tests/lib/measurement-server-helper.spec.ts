@@ -7,8 +7,8 @@ import {
 } from '~/db/models/measurement.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
-import { deviceToLocation, location, sensorLastMeasurement } from '~/db/schema'
-import { type LastMeasurement, type Sensor } from '~/db/schema/sensor'
+import { deviceToLocation, location } from '~/db/schema'
+import { type LastMeasurement, sensor, type Sensor } from '~/db/schema/sensor'
 import { type User } from '~/db/schema/user'
 import { drizzleClient } from '~/db.server'
 import {
@@ -319,26 +319,16 @@ describe('measurement server helper', () => {
 
 		const results = await drizzleClient
 			.select()
-			.from(sensorLastMeasurement)
-			.where(
-				inArray(sensorLastMeasurement.sensorId, [sensors[0].id, sensors[1].id]),
-			)
+			.from(sensor)
+			.where(inArray(sensor.id, [sensors[0].id, sensors[1].id]))
 
 		expect(results).toHaveLength(2)
-		expect(results.find((row) => row.sensorId === sensors[0].id)).toMatchObject(
-			{
-				sensorId: sensors[0].id,
-				time: new Date(lastMeasurements[sensors[0].id].createdAt),
-				value: lastMeasurements[sensors[0].id].value,
-			},
-		)
-		expect(results.find((row) => row.sensorId === sensors[1].id)).toMatchObject(
-			{
-				sensorId: sensors[1].id,
-				time: new Date(lastMeasurements[sensors[1].id].createdAt),
-				value: lastMeasurements[sensors[1].id].value,
-			},
-		)
+		expect(
+			results.find((sensor) => sensor.id == sensors[0].id)?.lastMeasurement,
+		).toEqual(lastMeasurements[sensors[0].id])
+		expect(
+			results.find((sensor) => sensor.id == sensors[1].id)?.lastMeasurement,
+		).toEqual(lastMeasurements[sensors[1].id])
 	})
 
 	afterAll(async () => {
