@@ -1,12 +1,8 @@
-import { type Device, type LastMeasurement, type Sensor } from '~/db/schema'
+import { type Device, type Sensor } from '~/db/schema'
 import { toIsoString } from '~/utils'
 
-type SensorWithApiLastMeasurement = Sensor & {
-	lastMeasurement?: LastMeasurement
-}
-
 export type DeviceWithSensors = Device & {
-	sensors: SensorWithApiLastMeasurement[]
+	sensors: Sensor[]
 }
 
 export type TransformedDevice = {
@@ -55,7 +51,7 @@ export type TransformedDevice = {
 		unit: string | null
 		sensorType: string | null
 		lastMeasurement: {
-			value: string | null
+			value: string
 			createdAt: string
 		} | null
 	}>

@@ -4,7 +4,6 @@ import {
 	sql,
 	desc,
 	ilike,
-	inArray,
 	arrayContains,
 	and,
 	between,
@@ -95,10 +94,6 @@ export class ArchivedDeviceError extends Error {
 	}
 }
 
-export type DeviceWithLatestSensorMeasurements = Device & {
-	sensors: Array<Sensor & { lastMeasurement: LastMeasurement }>
-}
-
 export function assertDeviceIsMutable(
 	device: Pick<Device, 'id' | 'archivedAt'>,
 ) {
@@ -107,8 +102,8 @@ export function assertDeviceIsMutable(
 	}
 }
 
-export async function getDevice({ id }: Pick<Device, 'id'>) {
-	const foundDevice = await drizzleClient.query.device.findFirst({
+export function getDevice({ id }: Pick<Device, 'id'>) {
+	return drizzleClient.query.device.findFirst({
 		where: (device, { eq }) => eq(device.id, id),
 		columns: BASE_DEVICE_COLUMNS,
 		with: {
@@ -152,46 +147,6 @@ export async function getDevice({ id }: Pick<Device, 'id'>) {
 			sensors: true,
 		},
 	})
-
-	if (!foundDevice) {
-		return undefined
-	}
-
-	if (foundDevice.sensors.length === 0) {
-		return {
-			...foundDevice,
-			sensors: [],
-		}
-	}
-
-	const latestMeasurements = await drizzleClient
-		.select()
-		.from(sensorLastMeasurement)
-		.where(
-			inArray(
-				sensorLastMeasurement.sensorId,
-				foundDevice.sensors.map((sensor) => sensor.id),
-			),
-		)
-
-	const latestBySensorId = new Map(
-		latestMeasurements.map((latest) => [
-			latest.sensorId,
-			{
-				value: latest.value,
-				createdAt: latest.time.toISOString(),
-				sensorId: latest.sensorId,
-			} satisfies NonNullable<LastMeasurement>,
-		]),
-	)
-
-	return {
-		...foundDevice,
-		sensors: foundDevice.sensors.map((sensor) => ({
-			...sensor,
-			lastMeasurement: latestBySensorId.get(sensor.id) ?? null,
-		})),
-	}
 }
 
 export type DeviceForMeasurementWrite = Awaited<
@@ -711,11 +666,11 @@ export async function getDevicesWithSensors(options?: {
 				title: sensor.title,
 				sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
 				lastMeasurement: sql<LastMeasurement>`CASE
-					WHEN ${sensorLastMeasurement.sensorId} IS NULL THEN NULL
-					ELSE json_build_object(
+					WHEN ${sensorLastMeasurement.sensorId} IS NOT NULL THEN json_build_object(
 						'value', ${sensorLastMeasurement.value},
 						'createdAt', ${sensorLastMeasurement.time}
 					)
+					ELSE ${sensor.lastMeasurement}
 				END`,
 			},
 		})
@@ -732,9 +687,10 @@ export async function getDevicesWithSensors(options?: {
 		features: [],
 	}
 
-	type PartialSensor = Pick<Sensor, 'id' | 'title' | 'sensorWikiPhenomenon'> & {
-		lastMeasurement: LastMeasurement
-	}
+	type PartialSensor = Pick<
+		Sensor,
+		'id' | 'title' | 'sensorWikiPhenomenon' | 'lastMeasurement'
+	>
 
 	const deviceMap = new Map<
 		string,
