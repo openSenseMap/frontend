@@ -72,7 +72,7 @@
     "@rjsf/utils": "^6.6.2",
     "@rjsf/validator-ajv8": "^6.6.1",
     "@sensebox/sketch-templater": "^1.13.6",
-    "@stepperize/react": "^6.1.0",
+    "@stepperize/react": "^7.0.0",
     "@tanstack/react-table": "^8.21.3",
     "@turf/bbox": "^7.3.5",
     "@turf/helpers": "^7.3.5",
