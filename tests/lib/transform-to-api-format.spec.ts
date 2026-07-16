@@ -1,6 +1,15 @@
 import { transformDeviceToApiFormat } from '~/lib/device-transform'
 
 describe('transformDeviceToApiFormat', () => {
+	beforeAll(() => {
+		vi.useFakeTimers()
+		vi.setSystemTime(new Date('2024-01-02T00:00:00Z'))
+	})
+
+	afterAll(() => {
+		vi.useRealTimers()
+	})
+
 	const mockDevice = {
 		id: 'test-device-id',
 		name: 'Test Device',
@@ -209,7 +218,7 @@ describe('transformDeviceToApiFormat', () => {
 		expect(result.loc[0].geometry.coordinates).toEqual([0, 0])
 	})
 
-	test('preserves all original device fields', () => {
+	test('preserves original device fields except derived status', () => {
 		const result = transformDeviceToApiFormat(mockDevice as any)
 
 		// Check that all original fields are preserved
@@ -228,6 +237,63 @@ describe('transformDeviceToApiFormat', () => {
 		expect(result.updatedAt).toBe(mockDevice.updatedAt.toISOString())
 		expect(result.expiresAt).toBe(mockDevice.expiresAt.toISOString())
 		expect(result.userId).toBe(mockDevice.userId)
+	})
+
+	test.each([
+		['active', '2023-12-31T00:00:00Z'],
+		['inactive', '2023-12-20T00:00:00Z'],
+		['old', '2023-11-01T00:00:00Z'],
+	] as const)(
+		'derives %s status from the latest measurement',
+		(status, createdAt) => {
+			const result = transformDeviceToApiFormat({
+				...mockDevice,
+				status: status === 'active' ? 'old' : 'active',
+				sensors: [
+					{
+						...mockDevice.sensors[0],
+						lastMeasurement: { value: '1', createdAt },
+					},
+				],
+			} as any)
+
+			expect(result.status).toBe(status)
+		},
+	)
+
+	test('uses the newest measurement across all sensors', () => {
+		const result = transformDeviceToApiFormat({
+			...mockDevice,
+			status: 'old',
+			sensors: [
+				{
+					...mockDevice.sensors[0],
+					lastMeasurement: {
+						value: '1',
+						createdAt: '2023-11-01T00:00:00Z',
+					},
+				},
+				{
+					...mockDevice.sensors[1],
+					lastMeasurement: {
+						value: '2',
+						createdAt: '2024-01-01T00:00:00Z',
+					},
+				},
+			],
+		} as any)
+
+		expect(result.status).toBe('active')
+	})
+
+	test('returns old for a device without valid measurements', () => {
+		const result = transformDeviceToApiFormat({
+			...mockDevice,
+			status: 'active',
+			sensors: [],
+		} as any)
+
+		expect(result.status).toBe('old')
 	})
 
 	test('converts numeric lastMeasurement values to strings', () => {
