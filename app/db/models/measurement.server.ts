@@ -1,5 +1,4 @@
 import { and, desc, eq, gt, gte, inArray, lt, lte, sql } from 'drizzle-orm'
-import { ArchivedDeviceError } from './device.server'
 import {
 	type LastMeasurement,
 	location,
@@ -9,9 +8,8 @@ import {
 	measurements1hourView,
 	measurements1monthView,
 	measurements1yearView,
-	device,
 } from '~/db/schema'
-import { drizzleClient } from '~/db.server'
+import { drizzleClient, type DatabaseTransaction } from '~/db.server'
 import {
 	type MinimalDevice,
 	type MeasurementWithLocation,
@@ -178,11 +176,11 @@ export function getMeasurement(
 }
 
 export async function saveMeasurements(
+	tx: DatabaseTransaction,
 	minimalDevice: MinimalDevice,
 	measurements: MeasurementWithLocation[],
 	timing?: MeasurementTiming | null,
 ): Promise<void> {
-	if (!device) throw new Error('No device given!')
 	if (!Array.isArray(measurements)) throw new Error('Array expected')
 
 	const sensorIds = new Set(minimalDevice.sensors.map((s: any) => s.id))
@@ -234,57 +232,35 @@ export async function saveMeasurements(
 		locationUpdateCount: deviceLocationUpdates.length,
 	})
 
-	await drizzleClient.transaction(async (tx) => {
-		const [currentDevice] = await tx
-			.select({
-				id: device.id,
-				archivedAt: device.archivedAt,
-			})
-			.from(device)
-			.where(eq(device.id, minimalDevice.id))
-			.limit(1)
-		timing?.mark('transactionDeviceLookup')
-
-		if (!currentDevice) {
-			const error = new Error('Device not found')
-			error.name = 'NotFoundError'
-			throw error
-		}
-
-		if (currentDevice.archivedAt) {
-			throw new ArchivedDeviceError(currentDevice.id)
-		}
-
-		const locations =
-			deviceLocationUpdates.length > 0
-				? await findOrCreateLocations(deviceLocationUpdates)
-				: []
-		timing?.mark('findOrCreateLocations', {
-			locationCount: locations.length,
-		})
-
-		if (deviceLocationUpdates.length > 0) {
-			await addLocationUpdates(
-				deviceLocationUpdates,
-				minimalDevice.id,
-				locations,
-			)
-		}
-		timing?.mark('addLocationUpdates')
-
-		await insertMeasurementsWithLocation(
-			measurements,
-			locations,
-			minimalDevice.id,
-			tx,
-			{ shouldReturn: false },
-			timing,
-		)
-		timing?.mark('insertMeasurements')
-		await updateLastMeasurements(lastMeasurements, tx, timing)
-		timing?.mark('updateLastMeasurements')
+	const locations =
+		deviceLocationUpdates.length > 0
+			? await findOrCreateLocations(deviceLocationUpdates, tx)
+			: []
+	timing?.mark('findOrCreateLocations', {
+		locationCount: locations.length,
 	})
-	timing?.mark('transaction')
+
+	if (deviceLocationUpdates.length > 0) {
+		await addLocationUpdates(
+			deviceLocationUpdates,
+			minimalDevice.id,
+			locations,
+			tx,
+		)
+	}
+	timing?.mark('addLocationUpdates')
+
+	await insertMeasurementsWithLocation(
+		measurements,
+		locations,
+		minimalDevice.id,
+		tx,
+		{ shouldReturn: false },
+		timing,
+	)
+	timing?.mark('insertMeasurements')
+	await updateLastMeasurements(lastMeasurements, tx, timing)
+	timing?.mark('updateLastMeasurements')
 }
 
 export async function insertMeasurements(measurements: any[]): Promise<void> {
