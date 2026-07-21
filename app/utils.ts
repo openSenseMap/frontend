@@ -240,7 +240,7 @@ export function useMatchesData(
 		[matchingRoutes, id],
 	)
 
-	return route?.data as Record<string, unknown>
+	return route?.loaderData as Record<string, unknown>
 }
 
 function isUser(user: any): user is User {
