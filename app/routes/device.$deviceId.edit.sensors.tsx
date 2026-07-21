@@ -364,8 +364,7 @@ export default function EditBoxSensors() {
 									<Button
 										type="button"
 										variant="outline"
-										disabled={isSchemaBacked}
-										disabled={isSubmitting}
+										disabled={isSubmitting || isSchemaBacked}
 										onClick={() => {
 											setSensorsData([
 												{
@@ -391,6 +390,7 @@ export default function EditBoxSensors() {
 											name="intent"
 											value="detach-schema"
 											variant="outline"
+											disabled={isSubmitting}
 											onClick={(event) => {
 												if (!window.confirm(t('schema_detach_confirm'))) {
 													event.preventDefault()
