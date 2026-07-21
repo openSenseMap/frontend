@@ -21,6 +21,7 @@ import {
 	insertMeasurementsWithLocation,
 	updateLastMeasurements,
 } from '~/lib/measurement-server-helper'
+import { type MeasurementTiming } from '~/lib/measurement-timing.server'
 
 // This function retrieves measurements from the database based on the provided parameters.
 export function getMeasurement(
@@ -179,17 +180,21 @@ export function getMeasurement(
 export async function saveMeasurements(
 	minimalDevice: MinimalDevice,
 	measurements: MeasurementWithLocation[],
+	timing?: MeasurementTiming | null,
 ): Promise<void> {
 	if (!device) throw new Error('No device given!')
 	if (!Array.isArray(measurements)) throw new Error('Array expected')
 
-	const sensorIds = minimalDevice.sensors.map((s: any) => s.id)
+	const sensorIds = new Set(minimalDevice.sensors.map((s: any) => s.id))
 	const lastMeasurements: Record<string, NonNullable<LastMeasurement>> = {}
+	const now = new Date()
+	const maxFutureTime = 30 * 1000
+	timing?.mark('savePrepare')
 
 	for (let i = measurements.length - 1; i >= 0; i--) {
 		const m = measurements[i]
 
-		if (!sensorIds.includes(m.sensor_id)) {
+		if (!sensorIds.has(m.sensor_id)) {
 			const error = new Error(
 				`Measurement for sensor with id ${m.sensor_id} does not belong to box`,
 			)
@@ -197,8 +202,6 @@ export async function saveMeasurements(
 			throw error
 		}
 
-		const now = new Date()
-		const maxFutureTime = 30 * 1000
 		const measurementTime = new Date(m.createdAt || Date.now())
 
 		if (measurementTime.getTime() > now.getTime() + maxFutureTime) {
@@ -221,8 +224,15 @@ export async function saveMeasurements(
 			}
 		}
 	}
+	timing?.mark('validateMeasurements', {
+		measurementCount: measurements.length,
+		lastMeasurementCount: Object.keys(lastMeasurements).length,
+	})
 
 	const deviceLocationUpdates = getLocationUpdates(measurements)
+	timing?.mark('collectLocationUpdates', {
+		locationUpdateCount: deviceLocationUpdates.length,
+	})
 
 	await drizzleClient.transaction(async (tx) => {
 		const [currentDevice] = await tx
@@ -233,6 +243,7 @@ export async function saveMeasurements(
 			.from(device)
 			.where(eq(device.id, minimalDevice.id))
 			.limit(1)
+		timing?.mark('transactionDeviceLookup')
 
 		if (!currentDevice) {
 			const error = new Error('Device not found')
@@ -248,6 +259,9 @@ export async function saveMeasurements(
 			deviceLocationUpdates.length > 0
 				? await findOrCreateLocations(deviceLocationUpdates)
 				: []
+		timing?.mark('findOrCreateLocations', {
+			locationCount: locations.length,
+		})
 
 		if (deviceLocationUpdates.length > 0) {
 			await addLocationUpdates(
@@ -256,6 +270,7 @@ export async function saveMeasurements(
 				locations,
 			)
 		}
+		timing?.mark('addLocationUpdates')
 
 		await insertMeasurementsWithLocation(
 			measurements,
@@ -263,9 +278,13 @@ export async function saveMeasurements(
 			minimalDevice.id,
 			tx,
 			{ shouldReturn: false },
+			timing,
 		)
-		await updateLastMeasurements(lastMeasurements, tx)
+		timing?.mark('insertMeasurements')
+		await updateLastMeasurements(lastMeasurements, tx, timing)
+		timing?.mark('updateLastMeasurements')
 	})
+	timing?.mark('transaction')
 }
 
 export async function insertMeasurements(measurements: any[]): Promise<void> {
