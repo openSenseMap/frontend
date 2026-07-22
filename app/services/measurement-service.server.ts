@@ -13,6 +13,7 @@ import {
 	getSensorWithLastMeasurement,
 } from '~/db/models/sensor.server'
 import { type SensorWithLatestMeasurement } from '~/db/schema'
+import { drizzleClient } from '~/db.server'
 import {
 	decodeMeasurements,
 	hasDecoder,
@@ -137,36 +138,38 @@ export const postNewMeasurements = async (
 		throw new Error('UnsupportedMediaTypeError: Unsupported content-type.')
 	}
 
-	const device = await getDeviceForMeasurementWrite({ id: deviceId })
-	if (!device) {
-		throw new Error('NotFoundError: Device not found')
-	}
-
-	assertDeviceIsWritable(device)
-
-	if (device.useAuth && !isTrustedService) {
-		if (device.apiKey !== authorization) {
-			const error = new Error('Device access token not valid!')
-			error.name = 'UnauthorizedError'
-			throw error
+	await drizzleClient.transaction(async (tx) => {
+		const device = await getDeviceForMeasurementWrite({ id: deviceId }, tx)
+		if (!device) {
+			throw new Error('NotFoundError: Device not found')
 		}
-	}
 
-	const measurements = await decodeMeasurements(body, {
-		contentType,
-		sensors: device.sensors,
+		assertDeviceIsWritable(device)
+
+		if (device.useAuth && !isTrustedService) {
+			if (device.apiKey !== authorization) {
+				const error = new Error('Device access token not valid!')
+				error.name = 'UnauthorizedError'
+				throw error
+			}
+		}
+
+		const measurements = await decodeMeasurements(body, {
+			contentType,
+			sensors: device.sensors,
+		})
+
+		for (const m of measurements) {
+			const locationData: LocationData | null = m.location ?? null
+			if (locationData && !validLngLat(locationData.lng, locationData.lat)) {
+				const error = new Error('Invalid location coordinates')
+				error.name = 'UnprocessableEntityError'
+				throw error
+			}
+		}
+
+		await saveMeasurements(tx, device, measurements)
 	})
-
-	for (const m of measurements) {
-		const locationData: LocationData | null = m.location ?? null
-		if (locationData && !validLngLat(locationData.lng, locationData.lat)) {
-			const error = new Error('Invalid location coordinates')
-			error.name = 'UnprocessableEntityError'
-			throw error
-		}
-	}
-
-	await saveMeasurements(device, measurements)
 }
 
 export const postSingleMeasurement = async (
@@ -184,42 +187,6 @@ export const postSingleMeasurement = async (
 			throw error
 		}
 		timing?.mark('validateBody')
-
-		const device = await getDeviceForSingleMeasurementWrite({
-			id: deviceId,
-			sensorId,
-		})
-		timing?.mark('deviceLookup', {
-			deviceFound: Boolean(device),
-			sensorCount: device?.sensors.length ?? 0,
-		})
-
-		if (!device) {
-			const error = new Error('Device not found')
-			error.name = 'NotFoundError'
-			throw error
-		}
-
-		assertDeviceIsWritable(device)
-
-		if (device.sensors.length === 0) {
-			const error = new Error('Sensor not found on device')
-			error.name = 'NotFoundError'
-			throw error
-		}
-		timing?.mark('validateDeviceAndSensor')
-
-		if (device.useAuth && !isTrustedService) {
-			if (device.apiKey !== authorization) {
-				const error = new Error('Device access token not valid!')
-				error.name = 'UnauthorizedError'
-				throw error
-			}
-		}
-		timing?.mark('authorizeDevice', {
-			deviceUsesAuth: Boolean(device.useAuth),
-			isTrustedService: Boolean(isTrustedService),
-		})
 
 		let timestamp: Date | undefined
 		if (body.createdAt) {
@@ -257,7 +224,47 @@ export const postSingleMeasurement = async (
 		]
 		timing?.mark('buildMeasurements')
 
-		await saveMeasurements(device, measurements, timing)
+		await drizzleClient.transaction(async (tx) => {
+			timing?.mark('transactionAcquire')
+			const device = await getDeviceForSingleMeasurementWrite(
+				{ id: deviceId, sensorId },
+				tx,
+			)
+			timing?.mark('deviceLookup', {
+				deviceFound: Boolean(device),
+				sensorCount: device?.sensors.length ?? 0,
+			})
+
+			if (!device) {
+				const error = new Error('Device not found')
+				error.name = 'NotFoundError'
+				throw error
+			}
+
+			assertDeviceIsWritable(device)
+
+			if (device.sensors.length === 0) {
+				const error = new Error('Sensor not found on device')
+				error.name = 'NotFoundError'
+				throw error
+			}
+			timing?.mark('validateDeviceAndSensor')
+
+			if (device.useAuth && !isTrustedService) {
+				if (device.apiKey !== authorization) {
+					const error = new Error('Device access token not valid!')
+					error.name = 'UnauthorizedError'
+					throw error
+				}
+			}
+			timing?.mark('authorizeDevice', {
+				deviceUsesAuth: Boolean(device.useAuth),
+				isTrustedService: Boolean(isTrustedService),
+			})
+
+			await saveMeasurements(tx, device, measurements, timing)
+		})
+		timing?.mark('transaction')
 		timing?.mark('saveMeasurements')
 	} catch (error) {
 		if (

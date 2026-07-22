@@ -29,7 +29,7 @@ import {
 	type Sensor,
 } from '~/db/schema'
 import type * as schema from '~/db/schema/index'
-import { drizzleClient } from '~/db.server'
+import { drizzleClient, type DatabaseTransaction } from '~/db.server'
 import BaseNewDeviceEmail, {
 	messages as BaseNewDeviceMessages,
 } from '~/emails/base-new-device'
@@ -155,56 +155,66 @@ export type DeviceForSingleMeasurementWrite = Awaited<
 	ReturnType<typeof getDeviceForSingleMeasurementWrite>
 >
 
-export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
-	return drizzleClient.query.device.findFirst({
-		where: (device, { eq }) => eq(device.id, id),
-		columns: {
-			id: true,
-			archivedAt: true,
-			useAuth: true,
-			apiKey: true,
-		},
-		with: {
-			sensors: {
-				columns: {
-					id: true,
-					title: true,
-					sensorType: true,
-				},
-			},
-		},
-	})
+export async function getDeviceForMeasurementWrite(
+	{ id }: Pick<Device, 'id'>,
+	tx: DatabaseTransaction,
+) {
+	const currentDevice = await lockDeviceForMeasurementWrite(id, tx)
+	if (!currentDevice) return undefined
+
+	const sensors = await tx
+		.select({
+			id: sensor.id,
+			title: sensor.title,
+			sensorType: sensor.sensorType,
+		})
+		.from(sensor)
+		.where(eq(sensor.deviceId, id))
+		.orderBy(sensor.id)
+		.for('update')
+
+	return { ...currentDevice, sensors }
 }
 
-export async function getDeviceForSingleMeasurementWrite({
-	id,
-	sensorId,
-}: Pick<Device, 'id'> & { sensorId: string }) {
-	const [row] = await drizzleClient
+export async function getDeviceForSingleMeasurementWrite(
+	{ id, sensorId }: Pick<Device, 'id'> & { sensorId: string },
+	tx: DatabaseTransaction,
+) {
+	const currentDevice = await lockDeviceForMeasurementWrite(id, tx)
+	if (!currentDevice) return undefined
+
+	const [currentSensor] = await tx
+		.select({
+			id: sensor.id,
+		})
+		.from(sensor)
+		.where(and(eq(sensor.deviceId, currentDevice.id), eq(sensor.id, sensorId)))
+		.limit(1)
+		.for('update')
+
+	return {
+		...currentDevice,
+		sensors: currentSensor ? [currentSensor] : [],
+	}
+}
+
+async function lockDeviceForMeasurementWrite(
+	id: Device['id'],
+	tx: DatabaseTransaction,
+) {
+	const [currentDevice] = await tx
 		.select({
 			id: device.id,
 			archivedAt: device.archivedAt,
 			useAuth: device.useAuth,
 			apiKey: device.apiKey,
-			sensorId: sensor.id,
 		})
 		.from(device)
-		.leftJoin(
-			sensor,
-			and(eq(sensor.deviceId, device.id), eq(sensor.id, sensorId)),
-		)
 		.where(eq(device.id, id))
 		.limit(1)
+		.for('share')
 
-	if (!row) return undefined
-
-	return {
-		id: row.id,
-		archivedAt: row.archivedAt,
-		useAuth: row.useAuth,
-		apiKey: row.apiKey,
-		sensors: row.sensorId ? [{ id: row.sensorId }] : [],
-	}
+	return currentDevice
 }
 
 export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
