@@ -83,13 +83,11 @@ export function getMeasurement(
 		}
 		// If aggregation is not specified or different from "15m" and "1d", fetch default measurements.
 		return drizzleClient.query.measurement.findMany({
-			where: (measurement, { eq, gte, lte }) =>
-				and(
-					eq(measurement.sensorId, sensorId),
-					gte(measurement.time, startDate),
-					lte(measurement.time, endDate),
-				),
-			orderBy: [desc(measurement.time)],
+			where: {
+				sensorId,
+				time: { gte: startDate, lte: endDate },
+			},
+			orderBy: { time: 'desc' },
 			with: {
 				location: {
 					// https://github.com/drizzle-team/drizzle-orm/pull/2778
@@ -100,8 +98,8 @@ export function getMeasurement(
 						id: true,
 					},
 					extras: {
-						x: sql<number>`ST_X(${location.location})`.as('x'),
-						y: sql<number>`ST_Y(${location.location})`.as('y'),
+						x: (location) => sql<number>`ST_X(${location.location})`.as('x'),
+						y: (location) => sql<number>`ST_Y(${location.location})`.as('y'),
 					},
 				},
 			},
@@ -143,8 +141,8 @@ export function getMeasurement(
 
 	// If neither start date nor aggregation are specified, fetch default measurements with a limit of 20000.
 	return drizzleClient.query.measurement.findMany({
-		where: (measurement, { eq }) => eq(measurement.sensorId, sensorId),
-		orderBy: [desc(measurement.time)],
+		where: { sensorId },
+		orderBy: { time: 'desc' },
 		with: {
 			location: {
 				// https://github.com/drizzle-team/drizzle-orm/pull/2778
@@ -155,8 +153,8 @@ export function getMeasurement(
 					id: true,
 				},
 				extras: {
-					x: sql<number>`ST_X(${location.location})`.as('x'),
-					y: sql<number>`ST_Y(${location.location})`.as('y'),
+					x: (location) => sql<number>`ST_X(${location.location})`.as('x'),
+					y: (location) => sql<number>`ST_Y(${location.location})`.as('y'),
 				},
 			},
 		},

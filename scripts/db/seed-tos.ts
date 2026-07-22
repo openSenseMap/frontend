@@ -303,7 +303,7 @@ async function main() {
 		ssl: envDBSchema.PG_CLIENT_SSL === 'true' ? true : false,
 	})
 
-	const db = drizzle(queryClient)
+	const db = drizzle({ client: queryClient })
 
 	try {
 		await seedTos(db)

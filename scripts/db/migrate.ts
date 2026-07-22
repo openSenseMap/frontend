@@ -11,7 +11,7 @@ const migrationConnection = postgres(envDBSchema.DATABASE_URL, {
 
 async function main() {
 	console.log('Migrations started...')
-	await migrate(drizzle(migrationConnection), {
+	await migrate(drizzle({ client: migrationConnection }), {
 		migrationsFolder: './app/db/drizzle',
 	})
 	await migrationConnection.end()

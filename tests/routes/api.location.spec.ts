@@ -44,19 +44,19 @@ describe('openSenseMap API Routes: Location Measurements', () => {
 	// Helper function to get device's current location
 	async function getDeviceCurrentLocation(deviceId: string) {
 		const deviceWithLocations = await drizzleClient.query.device.findFirst({
-			where: (device, { eq }) => eq(device.id, deviceId),
+			where: { id: deviceId },
 			with: {
 				locations: {
-					orderBy: (deviceToLocation, { desc }) => [
-						desc(deviceToLocation.time),
-					],
+					orderBy: { time: 'desc' },
 					limit: 1,
 					with: {
 						geometry: {
 							columns: {},
 							extras: {
-								x: sql<number>`ST_X(${location.location})`.as('x'),
-								y: sql<number>`ST_Y(${location.location})`.as('y'),
+								x: (location) =>
+									sql<number>`ST_X(${location.location})`.as('x'),
+								y: (location) =>
+									sql<number>`ST_Y(${location.location})`.as('y'),
 							},
 						},
 					},

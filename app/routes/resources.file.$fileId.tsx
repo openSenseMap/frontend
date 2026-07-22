@@ -7,8 +7,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	// Keep it as a string - your ID column is PgText, not an integer
 	const image = await drizzleClient.query.profileImage.findFirst({
-		where: (profileImage, { eq }) =>
-			eq(profileImage.id, params.fileId as string),
+		where: { id: params.fileId as string },
 	})
 
 	if (!image || !image.blob) {

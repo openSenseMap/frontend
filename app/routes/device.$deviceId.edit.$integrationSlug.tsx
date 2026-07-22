@@ -29,7 +29,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	// Get integration config from DB
 	const intg = await drizzleClient.query.integration.findFirst({
-		where: eq(integration.slug, integrationSlug),
+		where: { slug: integrationSlug },
 	})
 
 	if (!intg) {
@@ -99,7 +99,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 	// Get integration config from DB
 	const intg = await drizzleClient.query.integration.findFirst({
-		where: eq(integration.slug, integrationSlug),
+		where: { slug: integrationSlug },
 	})
 
 	if (!intg) {

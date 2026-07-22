@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import {
 	bigserial,
 	geometry,
@@ -6,7 +6,6 @@ import {
 	pgTable,
 	unique,
 } from 'drizzle-orm/pg-core'
-import { measurement } from './measurement'
 
 /**
  * Table
@@ -30,11 +29,3 @@ export const location = pgTable(
 		)`,
 	],
 )
-
-/**
- * Relations
- * 1. One-to-many: Location - Measurement (One location can have many measurements)
- */
-export const locationRelations = relations(location, ({ many }) => ({
-	measurements: many(measurement),
-}))

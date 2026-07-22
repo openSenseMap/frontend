@@ -12,7 +12,7 @@ const queryClient = postgres(envDBSchema.DATABASE_URL, {
 	ssl: envDBSchema.PG_CLIENT_SSL === 'true' ? true : false,
 })
 
-const client = drizzle(queryClient)
+const client = drizzle({ client: queryClient })
 
 async function seed() {
 	await client

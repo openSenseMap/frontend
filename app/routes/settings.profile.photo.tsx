@@ -87,7 +87,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	// Query user profile
 	const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
-		where: (profile, { eq }) => eq(profile.userId, userId),
+		where: { userId },
 		with: { profileImage: true },
 	})
 

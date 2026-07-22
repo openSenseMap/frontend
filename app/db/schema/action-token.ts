@@ -1,5 +1,4 @@
 import { createId } from '@paralleldrive/cuid2'
-import { relations } from 'drizzle-orm'
 import {
 	pgTable,
 	text,
@@ -42,10 +41,3 @@ export const actionToken = pgTable(
 		expiresAtIdx: index('action_token_expires_at_idx').on(t.expiresAt),
 	}),
 )
-
-export const actionTokenRelations = relations(actionToken, ({ one }) => ({
-	user: one(user, {
-		fields: [actionToken.userId],
-		references: [user.id],
-	}),
-}))

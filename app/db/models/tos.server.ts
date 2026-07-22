@@ -6,15 +6,14 @@ import { drizzleClient } from '~/db.server'
 
 export async function getCurrentEffectiveTos(now = new Date()) {
 	return drizzleClient.query.tosVersion.findFirst({
-		where: (t, { lte }) => lte(t.effectiveFrom, now),
-		orderBy: (t, { desc }) => [desc(t.effectiveFrom)],
+		where: { effectiveFrom: { lte: now } },
+		orderBy: { effectiveFrom: 'desc' },
 	})
 }
 
 async function getUserAcceptance(userId: string, tosVersionId: string) {
 	return drizzleClient.query.tosUserState.findFirst({
-		where: (s, { and, eq }) =>
-			and(eq(s.userId, userId), eq(s.tosVersionId, tosVersionId)),
+		where: { userId, tosVersionId },
 		columns: { acceptedAt: true },
 	})
 }
@@ -105,12 +104,11 @@ export async function getValidTosAcceptanceToken(
 	const tokenHash = hashActionToken(rawToken)
 
 	return drizzleClient.query.actionToken.findFirst({
-		where: (t, { and, eq, gt, isNull }) =>
-			and(
-				eq(t.purpose, 'tos_acceptance'),
-				eq(t.tokenHash, tokenHash),
-				gt(t.expiresAt, now),
-			),
+		where: {
+			purpose: 'tos_acceptance',
+			tokenHash,
+			expiresAt: { gt: now },
+		},
 	})
 }
 
@@ -120,13 +118,12 @@ export async function getActiveTosAcceptanceTokenById(
 	now = new Date(),
 ) {
 	return drizzleClient.query.actionToken.findFirst({
-		where: (t, { and, eq, gt, isNull }) =>
-			and(
-				eq(t.id, tokenId),
-				eq(t.userId, userId),
-				eq(t.purpose, 'tos_acceptance'),
-				gt(t.expiresAt, now),
-			),
+		where: {
+			id: tokenId,
+			userId,
+			purpose: 'tos_acceptance',
+			expiresAt: { gt: now },
+		},
 	})
 }
 
@@ -155,8 +152,8 @@ export async function acceptCurrentTosViaEmailFlow({
 		if (consumed.length === 0) return 'forbidden'
 
 		const current = await tx.query.tosVersion.findFirst({
-			where: (t, { lte }) => lte(t.effectiveFrom, now),
-			orderBy: (t, { desc }) => [desc(t.effectiveFrom)],
+			where: { effectiveFrom: { lte: now } },
+			orderBy: { effectiveFrom: 'desc' },
 		})
 
 		if (!current) return 'not_configured'

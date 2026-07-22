@@ -1,10 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import {
-	relations,
-	sql,
-	type InferInsertModel,
-	type InferSelectModel,
-} from 'drizzle-orm'
+import { sql, type InferInsertModel, type InferSelectModel } from 'drizzle-orm'
 import {
 	pgTable,
 	boolean,
@@ -18,8 +13,6 @@ import {
 } from 'drizzle-orm/pg-core'
 import { DeviceExposureEnum, DeviceModelEnum, DeviceStatusEnum } from './enum'
 import { location } from './location'
-import { logEntry } from './log-entry'
-import { sensor } from './sensor'
 import { user } from './user'
 
 /**
@@ -79,34 +72,6 @@ export const deviceToLocation = pgTable(
 	(t) => ({
 		pk: primaryKey({ columns: [t.deviceId, t.locationId, t.time] }),
 		unique: unique().on(t.deviceId, t.locationId, t.time), // Device can only be at one location at the same time
-	}),
-)
-
-/**
- * Relations
- */
-export const deviceRelations = relations(device, ({ one, many }) => ({
-	user: one(user, {
-		fields: [device.userId],
-		references: [user.id],
-	}),
-	sensors: many(sensor),
-	locations: many(deviceToLocation),
-	logEntries: many(logEntry),
-}))
-
-// Many-to-many
-export const deviceToLocationRelations = relations(
-	deviceToLocation,
-	({ one }) => ({
-		device: one(device, {
-			fields: [deviceToLocation.deviceId],
-			references: [device.id],
-		}),
-		geometry: one(location, {
-			fields: [deviceToLocation.locationId],
-			references: [location.id],
-		}),
 	}),
 )
 

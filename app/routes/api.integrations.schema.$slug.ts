@@ -12,7 +12,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	try {
 		const intg = await drizzleClient.query.integration.findFirst({
-			where: eq(integration.slug, slug),
+			where: { slug },
 		})
 
 		if (!intg) {

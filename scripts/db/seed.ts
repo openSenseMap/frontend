@@ -19,7 +19,7 @@ const queryClient = postgres(envDBSchema.DATABASE_URL, {
 	max: 1,
 	ssl: envDBSchema.PG_CLIENT_SSL === 'true' ? true : false,
 })
-const client = drizzle(queryClient)
+const client = drizzle({ client: queryClient })
 
 function printProgress(text: string) {
 	if (process.stdout.cursorTo) {

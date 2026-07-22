@@ -51,7 +51,7 @@ export const generateTransferCode = (): string => {
 
 export function getTransfer({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.claim.findFirst({
-		where: (claim, { eq }) => eq(claim.boxId, id),
+		where: { boxId: id },
 	})
 }
 

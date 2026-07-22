@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { and, eq, gt } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { actionToken } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 
@@ -62,12 +62,11 @@ export async function issueNewsletterConfirmationToken(userId: string) {
 
 export async function hasPendingNewsletterConfirmationToken(userId: string) {
 	const token = await drizzleClient.query.actionToken.findFirst({
-		where: (t) =>
-			and(
-				eq(t.userId, userId),
-				eq(t.purpose, 'newsletter_confirmation'),
-				gt(t.expiresAt, new Date()),
-			),
+		where: {
+			userId,
+			purpose: 'newsletter_confirmation',
+			expiresAt: { gt: new Date() },
+		},
 	})
 
 	return Boolean(token)

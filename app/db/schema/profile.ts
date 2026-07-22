@@ -1,9 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import {
-	relations,
-	type InferInsertModel,
-	type InferSelectModel,
-} from 'drizzle-orm'
+import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm'
 import {
 	pgTable,
 	boolean,
@@ -11,7 +7,6 @@ import {
 	real,
 	text,
 } from 'drizzle-orm/pg-core'
-import { profileImage } from './profile-image'
 import { user } from './user'
 
 /**
@@ -35,20 +30,6 @@ export const profile = pgTable('profile', {
 			onUpdate: 'cascade',
 		}),
 })
-
-/**
- * Relations
- */
-export const profileRelations = relations(profile, ({ one }) => ({
-	user: one(user, {
-		fields: [profile.userId],
-		references: [user.id],
-	}),
-	profileImage: one(profileImage, {
-		fields: [profile.id],
-		references: [profileImage.profileId],
-	}),
-}))
 
 /**
  * Types

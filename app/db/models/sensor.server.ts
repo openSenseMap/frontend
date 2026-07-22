@@ -13,7 +13,7 @@ import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-sc
 
 export function getSensors(deviceId: Sensor['deviceId']) {
 	return drizzleClient.query.sensor.findMany({
-		where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
+		where: { deviceId },
 	})
 
 	// const geojson: GeoJSON.FeatureCollection<Point, any> = {
@@ -68,8 +68,8 @@ export function getSensors(deviceId: Sensor['deviceId']) {
 
 export function getSensorsFromDevice(deviceId: Sensor['deviceId']) {
 	return drizzleClient.query.sensor.findMany({
-		where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
-		orderBy: (sensor, { asc }) => [asc(sensor.order)],
+		where: { deviceId },
+		orderBy: { order: 'asc' },
 	})
 }
 
@@ -212,7 +212,7 @@ export function updateSensor({
 // return first sensor with its device name
 export function getSensor(id: Sensor['id']) {
 	return drizzleClient.query.sensor.findFirst({
-		where: (sensor, { eq }) => eq(sensor.id, id),
+		where: { id },
 	})
 }
 
