@@ -1,9 +1,5 @@
 import * as z from 'zod/v4'
-import {
-	CoordinatesWithHeightSchema,
-	LocationObjectSchema,
-	LongitudeLatitudeLocationObjectSchema,
-} from './location'
+import { CoordinatesWithHeightSchema, LocationObjectSchema } from './location'
 
 export const MeasurementValueSchema = z.number().nullable().meta({
 	description: 'Measured value',
@@ -20,11 +16,7 @@ export const MeasurementLocationIdSchema = z
 	})
 
 export const MeasurementLocationSchema = z
-	.union([
-		CoordinatesWithHeightSchema,
-		LocationObjectSchema,
-		LongitudeLatitudeLocationObjectSchema,
-	])
+	.union([CoordinatesWithHeightSchema, LocationObjectSchema])
 	.meta({
 		id: 'MeasurementLocation',
 		description:
