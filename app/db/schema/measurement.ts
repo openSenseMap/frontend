@@ -1,4 +1,4 @@
-import { relations, type InferSelectModel } from 'drizzle-orm'
+import { type InferSelectModel } from 'drizzle-orm'
 import {
 	bigint,
 	doublePrecision,
@@ -30,17 +30,6 @@ export const measurement = pgTable(
 		unq: unique().on(t.sensorId, t.time), // Only one measurement for a sensor at the same time
 	}),
 )
-
-/**
- * Relations
- * 1. One-to-many: One measurement could have exactly on location (mobile) or no location (stationary)
- */
-export const measurementRelations = relations(measurement, ({ one }) => ({
-	location: one(location, {
-		fields: [measurement.locationId],
-		references: [location.id],
-	}),
-}))
 
 /**
  * Views

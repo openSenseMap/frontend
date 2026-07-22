@@ -1,14 +1,14 @@
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres, { type Sql } from 'postgres'
 import invariant from 'tiny-invariant'
-import * as schema from './db/schema'
+import { relations } from './db/relations'
 
-let drizzleClient: PostgresJsDatabase<typeof schema>
+let drizzleClient: PostgresJsDatabase<typeof relations>
 let pg: Sql<any>
 declare global {
 	var __db__:
 		| {
-				drizzle: PostgresJsDatabase<typeof schema>
+				drizzle: PostgresJsDatabase<typeof relations>
 				pg: Sql<any>
 		  }
 		| undefined
@@ -39,7 +39,7 @@ function initClient() {
 		max: maxConnections,
 	})
 
-	const drizzleDb = drizzle(rawPg, { schema })
+	const drizzleDb = drizzle({ client: rawPg, relations })
 
 	return { drizzle: drizzleDb, pg: rawPg }
 }
@@ -57,3 +57,6 @@ function parsePoolSize(value: string | undefined): number {
 }
 
 export { drizzleClient, pg }
+export type DrizzleTransaction = Parameters<
+	Parameters<typeof drizzleClient.transaction>[0]
+>[0]

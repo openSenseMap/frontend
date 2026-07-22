@@ -1,14 +1,10 @@
 import { randomBytes } from 'crypto'
 import { createId } from '@paralleldrive/cuid2'
-import {
-	relations,
-	type InferInsertModel,
-	type InferSelectModel,
-} from 'drizzle-orm'
+import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm'
 import { pgTable, text, timestamp, json, integer } from 'drizzle-orm/pg-core'
-import { device } from './device'
 import { DeviceStatusEnum } from './enum'
 import { type Measurement } from './measurement'
+import { device } from './device'
 
 export function generateHexId(): string {
 	return randomBytes(12).toString('hex')
@@ -50,16 +46,6 @@ export const sensor = pgTable('sensor', {
 	data: json('data'),
 	order: integer('order').default(0),
 })
-
-/**
- * Relations
- */
-export const sensorRelations = relations(sensor, ({ one }) => ({
-	device: one(device, {
-		fields: [sensor.deviceId],
-		references: [device.id],
-	}),
-}))
 
 /**
  * Types
