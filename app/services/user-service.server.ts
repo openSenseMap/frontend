@@ -457,8 +457,7 @@ export const confirmEmail = async (
 	const tokenHash = hashActionToken(rawToken)
 
 	const token = await drizzleClient.query.actionToken.findFirst({
-		where: (t, { and, eq }) =>
-			and(eq(t.purpose, 'email_confirmation'), eq(t.tokenHash, tokenHash)),
+		where: { purpose: 'email_confirmation', tokenHash },
 	})
 
 	if (!token) return 'forbidden'
@@ -466,7 +465,7 @@ export const confirmEmail = async (
 
 	const result = await drizzleClient.transaction(async (tx) => {
 		const currentUser = await tx.query.user.findFirst({
-			where: (u, { eq }) => eq(u.id, token.userId),
+			where: { id: token.userId },
 		})
 
 		if (!currentUser) return 'forbidden' as const
@@ -479,12 +478,11 @@ export const confirmEmail = async (
 		const emailChanged = previousEmail.toLowerCase() !== confirmedEmail
 		// Capture this before replacing it later, so an old newsletter link cannot confirm a new account email.
 		const pendingNewsletterConfirmation = await tx.query.actionToken.findFirst({
-			where: (t, { and, eq, gt }) =>
-				and(
-					eq(t.userId, currentUser.id),
-					eq(t.purpose, 'newsletter_confirmation'),
-					gt(t.expiresAt, now),
-				),
+			where: {
+				userId: currentUser.id,
+				purpose: 'newsletter_confirmation',
+				expiresAt: { gt: now },
+			},
 		})
 
 		if (pendingEmail) {
@@ -572,7 +570,7 @@ export const confirmEmail = async (
  */
 export const requestPasswordReset = async (email: string) => {
 	const user = await drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.email, email.toLowerCase()),
+		where: { email: email.toLowerCase() },
 	})
 
 	if (!user) return
@@ -620,8 +618,7 @@ export const resetPassword = async (
 	const tokenHash = hashActionToken(passwordResetToken)
 
 	const token = await drizzleClient.query.actionToken.findFirst({
-		where: (t, { and, eq }) =>
-			and(eq(t.purpose, 'password_reset'), eq(t.tokenHash, tokenHash)),
+		where: { purpose: 'password_reset', tokenHash },
 	})
 
 	if (!token) return 'forbidden'
@@ -693,8 +690,9 @@ export const signIn = async (
 	password: string,
 ): Promise<{ user: User; jwt: string; refreshToken: string } | null> => {
 	const user = await drizzleClient.query.user.findFirst({
-		where: (user, { eq, or }) =>
-			or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
+		where: {
+			OR: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }],
+		},
 		with: {
 			password: true,
 			devices: { columns: { id: true } },

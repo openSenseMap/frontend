@@ -200,15 +200,14 @@ export async function confirmNewsletterSubscription(
 	const tokenHash = hashActionToken(rawToken)
 
 	const token = await drizzleClient.query.actionToken.findFirst({
-		where: (t) =>
-			and(eq(t.purpose, 'newsletter_confirmation'), eq(t.tokenHash, tokenHash)),
+		where: { purpose: 'newsletter_confirmation', tokenHash },
 	})
 
 	if (!token) return 'forbidden'
 	if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
 	const currentUser = await drizzleClient.query.user.findFirst({
-		where: (u) => eq(u.id, token.userId),
+		where: { id: token.userId },
 	})
 
 	if (!currentUser) return 'forbidden'

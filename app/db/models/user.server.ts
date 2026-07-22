@@ -15,19 +15,19 @@ import { ThemePreference } from '~/lib/theme'
 
 export async function getUserById(id: User['id']) {
 	return drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.id, id),
+		where: { id },
 	})
 }
 
 export async function getUserByEmail(email: User['email']) {
 	return drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.email, email),
+		where: { email },
 	})
 }
 
 export async function getUserByUnconfirmedEmail(unconfirmedEmail: string) {
 	return drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.unconfirmedEmail, unconfirmedEmail),
+		where: { unconfirmedEmail },
 	})
 }
 
@@ -36,14 +36,13 @@ export async function getUserByUnconfirmedEmail(unconfirmedEmail: string) {
  */
 export async function getUserByAnyEmail(email: User['email']) {
 	return drizzleClient.query.user.findFirst({
-		where: (user, { eq, or }) =>
-			or(eq(user.email, email), eq(user.unconfirmedEmail, email)),
+		where: { OR: [{ email }, { unconfirmedEmail: email }] },
 	})
 }
 
 export async function getUserByUsername(username: User['name']) {
 	return drizzleClient.query.user.findFirst({
-		where: (user, { eq }) => eq(user.name, username),
+		where: { name: username },
 	})
 }
 
@@ -281,8 +280,9 @@ export async function verifyLogin(identifier: string, password: string) {
 	const trimmedIdentifier = identifier.trim()
 
 	const userWithPassword = await drizzleClient.query.user.findFirst({
-		where: (user, { eq, or }) =>
-			or(eq(user.email, trimmedIdentifier), eq(user.name, trimmedIdentifier)),
+		where: {
+			OR: [{ email: trimmedIdentifier }, { name: trimmedIdentifier }],
+		},
 		with: {
 			profile: true,
 			password: true,

@@ -1,16 +1,15 @@
-import { asc, eq } from 'drizzle-orm'
-import { type Integration, integration } from '~/db/schema/integration'
+import { type Integration } from '~/db/schema/integration'
 import { drizzleClient } from '~/db.server'
 
 export async function getIntegrations() {
 	return drizzleClient.query.integration.findMany({
-		orderBy: [asc(integration.order)],
+		orderBy: { order: 'asc' },
 	})
 }
 
 export async function getIntegrationById({ id }: Pick<Integration, 'id'>) {
 	return drizzleClient.query.integration.findFirst({
-		where: eq(integration.id, id),
+		where: { id },
 	})
 }
 

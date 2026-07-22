@@ -253,7 +253,7 @@ export const refreshJwt = async (
 ): Promise<{ token: string; refreshToken: string } | null> => {
 	// We have to check if the refresh token actually belongs to the user
 	const userForToken = await drizzleClient.query.refreshToken.findFirst({
-		where: (r, { eq }) => eq(r.token, refreshToken),
+		where: { token: refreshToken },
 		with: {
 			user: true,
 		},

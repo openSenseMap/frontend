@@ -1,19 +1,11 @@
-import {
-	eq,
-	type ExtractTablesWithRelations,
-	count,
-	inArray,
-} from 'drizzle-orm'
-import { type PgTransaction } from 'drizzle-orm/pg-core'
-import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
+import { eq, count, inArray } from 'drizzle-orm'
 import { type User, type Profile, profile, measurement } from '~/db/schema'
-import type * as schema from '~/db/schema'
-import { drizzleClient } from '~/db.server'
+import { drizzleClient, type DrizzleTransaction } from '~/db.server'
 import { formatCount } from '~/lib/numbers'
 
 export async function getProfileByUserId(userId: User['id']) {
 	return drizzleClient.query.profile.findFirst({
-		where: (profile, { eq }) => eq(profile.userId, userId),
+		where: { userId },
 		with: {
 			profileImage: true,
 			user: {
@@ -27,7 +19,7 @@ export async function getProfileByUserId(userId: User['id']) {
 
 export async function getProfileByUsername(username: string) {
 	const userRecord = await drizzleClient.query.user.findFirst({
-		where: (u, { eq }) => eq(u.name, username),
+		where: { name: username },
 	})
 	if (!userRecord) return null
 	return getProfileByUserId(userRecord.id)
@@ -49,7 +41,8 @@ export async function updateProfile(
 	}
 
 	if ('homeLatitude' in values) updateValues.homeLatitude = values.homeLatitude
-	if ('homeLongitude' in values) updateValues.homeLongitude = values.homeLongitude
+	if ('homeLongitude' in values)
+		updateValues.homeLongitude = values.homeLongitude
 	if ('homeZoom' in values) updateValues.homeZoom = values.homeZoom
 
 	const [updatedProfile] = await drizzleClient
@@ -71,11 +64,7 @@ export async function createProfile(
 }
 
 export async function createProfileWithTransaction(
-	transaction: PgTransaction<
-		PostgresJsQueryResultHKT,
-		typeof schema,
-		ExtractTablesWithRelations<typeof schema>
-	>,
+	transaction: DrizzleTransaction,
 	userId: User['id'],
 	displayName: Profile['displayName'],
 ) {
@@ -92,7 +81,7 @@ export async function getProfileSensorsAndMeasurementsCount(profile: Profile) {
 	if (userId == null) return { sensorsCount: '0', measurementsCount: '0' }
 
 	const devices = await drizzleClient.query.device.findMany({
-		where: (device, { eq }) => eq(device.userId, userId),
+		where: { userId },
 	})
 	const deviceIds = devices.map((device) => device.id)
 
@@ -102,7 +91,7 @@ export async function getProfileSensorsAndMeasurementsCount(profile: Profile) {
 
 	// Get sensor IDs for measurements count
 	const sensors = await drizzleClient.query.sensor.findMany({
-		where: (s, { inArray }) => inArray(s.deviceId, deviceIds),
+		where: { deviceId: { in: deviceIds } },
 		columns: { id: true },
 	})
 	const sensorsCount = sensors.length

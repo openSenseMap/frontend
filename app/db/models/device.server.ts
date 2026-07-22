@@ -8,15 +8,13 @@ import {
 	and,
 	between,
 	isNull,
-	type ExtractTablesWithRelations,
 	isNotNull,
 	type SQL,
 	gte,
 	lt,
 	exists,
 } from 'drizzle-orm'
-import { alias, type PgTransaction } from 'drizzle-orm/pg-core'
-import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
+import { alias } from 'drizzle-orm/pg-core'
 import { type Point } from 'geojson'
 import {
 	device,
@@ -28,8 +26,7 @@ import {
 	type Device,
 	type Sensor,
 } from '~/db/schema'
-import type * as schema from '~/db/schema/index'
-import { drizzleClient } from '~/db.server'
+import { drizzleClient, type DrizzleTransaction } from '~/db.server'
 import BaseNewDeviceEmail, {
 	messages as BaseNewDeviceMessages,
 } from '~/emails/base-new-device'
@@ -102,7 +99,7 @@ export function assertDeviceIsMutable(
 
 export function getDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
-		where: (device, { eq }) => eq(device.id, id),
+		where: { id },
 		columns: BASE_DEVICE_COLUMNS,
 		with: {
 			user: {
@@ -111,7 +108,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 			},
 			logEntries: {
-				where: (entry, { eq }) => eq(entry.public, true),
+				where: { public: true },
 				columns: {
 					id: true,
 					content: true,
@@ -121,26 +118,18 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 			},
 			locations: {
-				// https://github.com/drizzle-team/drizzle-orm/pull/2778
-				// with: {
-				//   geometry: true
-				// },
 				columns: {
-					// time: true,
-				},
-				extras: {
-					time: sql<Date>`time`.as('time'),
+					time: true,
 				},
 				with: {
 					geometry: {
 						columns: {},
 						extras: {
-							x: sql<number>`ST_X(${location.location})`.as('x'),
-							y: sql<number>`ST_Y(${location.location})`.as('y'),
+							x: (location) => sql<number>`ST_X(${location.location})`.as('x'),
+							y: (location) => sql<number>`ST_Y(${location.location})`.as('y'),
 						},
 					},
 				},
-				// limit: 1000,
 			},
 			sensors: true,
 		},
@@ -157,7 +146,7 @@ export type DeviceForSingleMeasurementWrite = Awaited<
 
 export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
-		where: (device, { eq }) => eq(device.id, id),
+		where: { id },
 		columns: {
 			id: true,
 			archivedAt: true,
@@ -209,7 +198,7 @@ export async function getDeviceForSingleMeasurementWrite({
 
 export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 	return drizzleClient.query.device.findFirst({
-		where: (d, { and, eq }) => and(eq(d.id, id), eq(d.userId, userId)),
+		where: { id, userId },
 		columns: {
 			id: true,
 			name: true,
@@ -249,7 +238,7 @@ export function getLocations(
 }
 export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.query.device.findFirst({
-		where: (device, { eq }) => eq(device.id, id),
+		where: { id },
 		columns: {
 			id: true,
 			name: true,
@@ -536,7 +525,7 @@ export function deleteDevice({ id }: Pick<Device, 'id'>) {
 
 export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
-		where: (device, { eq }) => eq(device.userId, userId),
+		where: { userId },
 		columns: DEVICE_COLUMNS_WITH_SENSORS,
 		with: {
 			sensors: true,
@@ -546,8 +535,7 @@ export function getUserDevices(userId: Device['userId']) {
 
 export function getUserDeviceLocations(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
-		where: (device, { and, eq, isNull }) =>
-			and(eq(device.userId, userId), isNull(device.archivedAt)),
+		where: { userId, archivedAt: { isNull: true } },
 		columns: {
 			id: true,
 			latitude: true,
@@ -559,7 +547,7 @@ export function getUserDeviceLocations(userId: Device['userId']) {
 export function getUserDeviceIds(userId: Device['userId']) {
 	return drizzleClient.query.device
 		.findMany({
-			where: (device, { eq }) => eq(device.userId, userId),
+			where: { userId },
 			columns: { id: true },
 		})
 		.then((d) => d.map((d) => d.id))
@@ -577,7 +565,7 @@ export async function getDevices(
 
 export async function getDevices(format: DevicesFormat = 'json') {
 	const devices = await drizzleClient.query.device.findMany({
-		where: (device) => isNull(device.archivedAt),
+		where: { archivedAt: { isNull: true } },
 		columns: {
 			id: true,
 			name: true,
@@ -610,7 +598,7 @@ export async function getDevices(format: DevicesFormat = 'json') {
 
 export async function getArchivedDevices() {
 	const devices = await drizzleClient.query.device.findMany({
-		where: (device) => isNotNull(device.archivedAt),
+		where: { archivedAt: { isNotNull: true } },
 		columns: {
 			id: true,
 			name: true,
@@ -742,7 +730,7 @@ export interface FindDevicesOptions extends BuildWhereClauseOptions {
 
 interface WhereClauseResult {
 	includeColumns: Record<string, any>
-	whereClause: any[]
+	whereClause: Array<(table: typeof device) => SQL>
 }
 
 const buildWhereClause = function buildWhereClause(
@@ -758,20 +746,18 @@ const buildWhereClause = function buildWhereClause(
 		maxDistance,
 		grouptag,
 	} = opts
-	const clause = []
+	const clause: Array<(table: typeof device) => SQL> = []
 	const columns = {}
 
 	if (name) {
-		clause.push(ilike(device.name, `%${name}%`))
+		clause.push((table) => ilike(table.name, `%${name}%`))
 	}
 
 	if (phenomenon) {
 		// @ts-ignore
 		columns['sensors'] = {
 			// @ts-ignore
-			where: (sensor, { ilike }) =>
-				// @ts-ignore
-				ilike(sensorTable['title'], `%${phenomenon}%`),
+			where: { title: { ilike: `%${phenomenon}%` } },
 		}
 	}
 
@@ -783,7 +769,7 @@ const buildWhereClause = function buildWhereClause(
 	// }
 
 	if (grouptag) {
-		clause.push(arrayContains(device.tags, grouptag))
+		clause.push((table) => arrayContains(table.tags, grouptag))
 	}
 
 	// https://orm.drizzle.team/learn/guides/postgis-geometry-point
@@ -791,17 +777,17 @@ const buildWhereClause = function buildWhereClause(
 		const [latSW, lngSW] = bbox.coordinates[0][0]
 		const [latNE, lngNE] = bbox.coordinates[0][2]
 		clause.push(
-			sql`ST_Contains(
+			(table) => sql`ST_Contains(
 			ST_MakeEnvelope(${lngSW}, ${latSW}, ${lngNE}, ${latNE}, 4326),
-			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)
+			ST_SetSRID(ST_MakePoint(${table.longitude}, ${table.latitude}), 4326)
 		  )`,
 		)
 	}
 
 	if (near && maxDistance !== undefined) {
 		clause.push(
-			sql`ST_DWithin(
-			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)::geography,
+			(table) => sql`ST_DWithin(
+			ST_SetSRID(ST_MakePoint(${table.longitude}, ${table.latitude}), 4326)::geography,
 			ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326)::geography,
 			${maxDistance}
 		)`,
@@ -811,22 +797,13 @@ const buildWhereClause = function buildWhereClause(
 	if (phenomenon && (fromDate || toDate)) {
 		// @ts-ignore
 		columns['sensors'] = {
-			include: {
+			with: {
 				measurements: {
-					where: (measurement: any) => {
-						const conditions = []
-
-						if (fromDate && toDate) {
-							conditions.push(
-								sql`${measurement.createdAt} BETWEEN ${fromDate} AND ${toDate}`,
-							)
-						} else if (fromDate) {
-							conditions.push(sql`${measurement.createdAt} >= ${fromDate}`)
-						} else if (toDate) {
-							conditions.push(sql`${measurement.createdAt} <= ${toDate}`)
-						}
-
-						return and(...conditions)
+					where: {
+						time: {
+							...(fromDate && { gte: fromDate }),
+							...(toDate && { lte: toDate }),
+						},
 					},
 				},
 			},
@@ -852,7 +829,7 @@ const DEFAULT_COLUMNS = {
 	name: true,
 	model: true,
 	exposure: true,
-	grouptag: true,
+	tags: true,
 	image: true,
 	description: true,
 	link: true,
@@ -878,7 +855,9 @@ export async function findDevices(
 		...(Object.keys(columns).length !== 0 && { columns }),
 		...(Object.keys(relations).length !== 0 && { with: relations }),
 		...(Object.keys(whereClause).length !== 0 && {
-			where: (_, { and }) => and(...whereClause),
+			where: {
+				RAW: (table) => and(...whereClause.map((clause) => clause(table)))!,
+			},
 		}),
 		limit,
 	})
@@ -1088,11 +1067,7 @@ export async function getLatestDevices() {
 
 export async function addOrReplaceDeviceApiKey(
 	d: Device,
-	tx?: PgTransaction<
-		PostgresJsQueryResultHKT,
-		typeof schema,
-		ExtractTablesWithRelations<typeof schema>
-	>,
+	tx?: DrizzleTransaction,
 ): Promise<{ apiKey: string }> {
 	const { key } = await createDeviceApiKey(d)
 	const result = await (tx ?? drizzleClient)
