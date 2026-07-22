@@ -180,7 +180,7 @@ export async function getDeviceForSingleMeasurementWrite({
 	id,
 	sensorId,
 }: Pick<Device, 'id'> & { sensorId: string }) {
-	const [row] = await drizzleClient
+	const prepared = await drizzleClient
 		.select({
 			id: device.id,
 			archivedAt: device.archivedAt,
@@ -191,10 +191,16 @@ export async function getDeviceForSingleMeasurementWrite({
 		.from(device)
 		.leftJoin(
 			sensor,
-			and(eq(sensor.deviceId, device.id), eq(sensor.id, sensorId)),
+			and(
+				eq(sensor.deviceId, device.id),
+				eq(sensor.id, sql.placeholder('sensorId')),
+			),
 		)
-		.where(eq(device.id, id))
+		.where(eq(device.id, sql.placeholder('deviceId')))
 		.limit(1)
+		.prepare('getDeviceForSingleMeasurementWrite')
+
+	const [row] = await prepared.execute({ deviceId: id, sensorId: sensorId })
 
 	if (!row) return undefined
 
