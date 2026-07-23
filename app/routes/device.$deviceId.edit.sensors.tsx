@@ -18,6 +18,7 @@ import {
 	useLoaderData,
 	useNavigation,
 	useOutletContext,
+	useSubmit,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.sensors'
@@ -49,6 +50,17 @@ import { Button } from '~/components/ui/button'
 import { Callout } from '~/components/ui/alert'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '~/components/ui/alert-dialog'
 
 //*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -248,6 +260,7 @@ export default function EditBoxSensors() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
+	const submit = useSubmit()
 	const isSubmitting = navigation.state !== 'idle'
 
 	const { copyToClipboard } = useCopyToClipboard()
@@ -385,20 +398,44 @@ export default function EditBoxSensors() {
 									</Button>
 
 									{isSchemaBacked && (
-										<Button
-											type="submit"
-											name="intent"
-											value="detach-schema"
-											variant="outline"
-											disabled={isSubmitting}
-											onClick={(event) => {
-												if (!window.confirm(t('schema_detach_confirm'))) {
-													event.preventDefault()
-												}
-											}}
-										>
-											{t('schema_detach')}
-										</Button>
+										<AlertDialog>
+											<AlertDialogTrigger asChild>
+												<Button
+													type="button"
+													variant="outline"
+													disabled={isSubmitting}
+												>
+													{t('schema_detach')}
+												</Button>
+											</AlertDialogTrigger>
+											<AlertDialogContent>
+												<AlertDialogHeader>
+													<AlertDialogTitle>
+														{t('schema_detach')}
+													</AlertDialogTitle>
+													<AlertDialogDescription>
+														{t('schema_detach_confirm')}
+													</AlertDialogDescription>
+												</AlertDialogHeader>
+												<AlertDialogFooter>
+													<AlertDialogCancel type="button">
+														{t('cancel')}
+													</AlertDialogCancel>
+													<AlertDialogAction
+														type="button"
+														disabled={isSubmitting}
+														onClick={() =>
+															submit(
+																{ intent: 'detach-schema' },
+																{ method: 'post' },
+															)
+														}
+													>
+														{t('schema_detach')}
+													</AlertDialogAction>
+												</AlertDialogFooter>
+											</AlertDialogContent>
+										</AlertDialog>
 									)}
 
 									<Button
