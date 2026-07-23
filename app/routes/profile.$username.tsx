@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link, redirect, useLoaderData } from 'react-router'
+import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/profile.$username'
 import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
@@ -125,8 +125,7 @@ export default function ProfilePage() {
 		measurementsCount,
 		requestingUserId,
 		deviceSchemas,
-	} =
-		useLoaderData<typeof loader>()
+	} = useLoaderData<typeof loader>()
 
 	const { t } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
@@ -214,8 +213,8 @@ export default function ProfilePage() {
 					</div>
 
 					{deviceSchemas.length > 0 && (
-						<div className="dark:bg-dark-background rounded-xl bg-white p-6 shadow-lg">
-							<div className="text-light-green dark:text-dark-green mb-4 text-3xl font-semibold">
+						<div className="border-border bg-card text-card-foreground rounded-xl border p-6 shadow-sm">
+							<div className="text-primary mb-4 text-3xl font-semibold">
 								{t('device_schemas')}
 							</div>
 							<div className="space-y-3">
@@ -239,9 +238,9 @@ export default function ProfilePage() {
 											)}
 										</div>
 										<Button asChild variant="outline">
-											<Link to={`/resources/device-schema/${schema.versionId}`}>
+											<a href={`/resources/device-schema/${schema.versionId}`}>
 												{t('download')}
-											</Link>
+											</a>
 										</Button>
 									</div>
 								))}
