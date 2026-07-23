@@ -95,7 +95,11 @@ export async function getSensorsWithLastMeasurement(
         s.unit,
         s.sensor_type AS "sensorType",
         s.icon,
-        s.status,
+	        CASE
+	          WHEN max(measure.time) > now() - interval '7 days' THEN 'active'::status
+	          WHEN max(measure.time) > now() - interval '30 days' THEN 'inactive'::status
+	          ELSE 'old'::status
+	        END AS status,
         s.device_id AS "deviceId",
         s."order",
         json_agg(
