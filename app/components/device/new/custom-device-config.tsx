@@ -237,7 +237,7 @@ export function CustomDeviceConfig() {
 				</TabsList>
 
 				<TabsContent value="schema" className="space-y-4">
-					<div className="rounded-lg border border-dashed p-4">
+					<div className="border-border bg-muted/20 rounded-lg border border-dashed p-4">
 						<div className="space-y-3">
 							<div className="space-y-1">
 								<div className="flex items-center gap-2 font-medium">
@@ -305,7 +305,7 @@ export function CustomDeviceConfig() {
 						</div>
 					</div>
 
-					<div className="rounded-lg border border-dashed p-4">
+					<div className="border-border bg-muted/20 rounded-lg border border-dashed p-4">
 						<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 							<div className="space-y-1">
 								<div className="flex items-center gap-2 font-medium">

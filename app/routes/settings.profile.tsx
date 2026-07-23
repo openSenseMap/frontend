@@ -589,7 +589,7 @@ export default function EditUserProfilePage() {
 									<Form
 										method="post"
 										encType="multipart/form-data"
-										className="flex flex-col gap-2 rounded-md bg-gray-50 p-3 md:flex-row md:items-end dark:bg-gray-900"
+										className="bg-muted/50 flex flex-col gap-2 rounded-md p-3 md:flex-row md:items-end"
 									>
 										<input
 											type="hidden"
@@ -621,7 +621,7 @@ export default function EditUserProfilePage() {
 										{schema.versions.map((version) => (
 											<div
 												key={version.id}
-												className="flex flex-col gap-3 rounded-md bg-gray-50 p-3 md:flex-row md:items-center md:justify-between dark:bg-gray-900"
+												className="bg-muted/50 flex flex-col gap-3 rounded-md p-3 md:flex-row md:items-center md:justify-between"
 											>
 												<div className="space-y-1">
 													<div className="flex flex-wrap items-center gap-2">

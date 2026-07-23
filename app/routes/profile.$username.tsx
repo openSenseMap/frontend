@@ -221,7 +221,7 @@ export default function ProfilePage() {
 								{deviceSchemas.map((schema) => (
 									<div
 										key={schema.versionId}
-										className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+										className="border-border bg-muted/40 flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
 									>
 										<div className="space-y-1">
 											<div className="flex flex-wrap items-center gap-2">
