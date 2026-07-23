@@ -56,6 +56,7 @@
 	"add_sensor": "Add Sensor",
 	"device_schema_upload": "Upload device schema",
 	"device_schema_upload_text": "Import a JSON schema to use a fixed set of sensors for this device.",
+	"device_schema_example_download": "Download example schema",
 	"device_schema_registry": "Choose from registry",
 	"device_schema_registry_text": "Search public schemas and your own private schemas, then use one as the fixed sensor set.",
 	"device_schema_registry_search": "Search schemas",

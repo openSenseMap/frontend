@@ -56,6 +56,7 @@
 	"add_sensor": "Sensor hinzufügen",
 	"device_schema_upload": "Geräteschema hochladen",
 	"device_schema_upload_text": "Importiere ein JSON-Schema, um einen festen Sensorsatz für dieses Gerät zu verwenden.",
+	"device_schema_example_download": "Beispielschema herunterladen",
 	"device_schema_registry": "Aus Registry wählen",
 	"device_schema_registry_text": "Durchsuche öffentliche Schemas und deine eigenen privaten Schemas und verwende eines als festen Sensorsatz.",
 	"device_schema_registry_search": "Schemas suchen",
