@@ -315,6 +315,13 @@ export function CustomDeviceConfig() {
 								<p className="text-muted-foreground text-sm">
 									{t('device_schema_upload_text')}
 								</p>
+								<a
+									href="/examples/device-schema.json"
+									download
+									className="text-primary inline-flex text-sm font-medium underline-offset-4 hover:underline"
+								>
+									{t('device_schema_example_download')}
+								</a>
 							</div>
 							<div className="flex items-center gap-2">
 								<Input
