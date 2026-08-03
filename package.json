@@ -36,7 +36,7 @@
     "@conform-to/react": "^1.19.4",
     "@conform-to/zod": "^1.19.0",
     "@directus/sdk": "^21.3.0",
-    "@formatjs/intl": "^4.1.10",
+    "@formatjs/intl": "^4.1.17",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.4.0",
     "@mantine/hooks": "^9.2.1",
