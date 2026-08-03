@@ -468,7 +468,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'published'"
+          "default": "'current'"
         },
         "created_by_user_id": {
           "name": "created_by_user_id",
@@ -1709,7 +1709,7 @@
       "name": "device_schema_version_status",
       "schema": "public",
       "values": [
-        "published",
+        "current",
         "deprecated"
       ]
     },

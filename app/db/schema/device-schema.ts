@@ -19,7 +19,7 @@ export const deviceSchemaVisibilityEnum = pgEnum('device_schema_visibility', [
 
 export const deviceSchemaVersionStatusEnum = pgEnum(
 	'device_schema_version_status',
-	['published', 'deprecated'],
+	['current', 'deprecated'],
 )
 
 export const deviceSchema = pgTable(
@@ -74,7 +74,7 @@ export const deviceSchemaVersion = pgTable(
 		content: jsonb('content').$type<UploadedDeviceSchemaV1>().notNull(),
 		hash: text('hash').notNull(),
 		status: deviceSchemaVersionStatusEnum('status')
-			.default('published')
+			.default('current')
 			.notNull(),
 		createdByUserId: text('created_by_user_id')
 			.notNull()

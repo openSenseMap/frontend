@@ -1,4 +1,4 @@
-CREATE TYPE "public"."device_schema_version_status" AS ENUM('published', 'deprecated');--> statement-breakpoint
+CREATE TYPE "public"."device_schema_version_status" AS ENUM('current', 'deprecated');--> statement-breakpoint
 CREATE TYPE "public"."device_schema_visibility" AS ENUM('private', 'public');--> statement-breakpoint
 CREATE TABLE "device_schema" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE "device_schema_version" (
 	"format_version" text NOT NULL,
 	"content" jsonb NOT NULL,
 	"hash" text NOT NULL,
-	"status" "device_schema_version_status" DEFAULT 'published' NOT NULL,
+	"status" "device_schema_version_status" DEFAULT 'current' NOT NULL,
 	"created_by_user_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"published_at" timestamp,

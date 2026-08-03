@@ -26,8 +26,8 @@ import {
 import { useToast } from '~/components/ui/use-toast'
 
 import {
+	createCurrentDeviceSchemaVersion,
 	getOwnedDeviceSchemasWithVersions,
-	publishNewDeviceSchemaVersion,
 	updateDeviceSchemaVisibility,
 } from '~/db/models/device-schema.server'
 import { getProfileByUserId, updateProfile } from '~/db/models/profile.server'
@@ -111,11 +111,11 @@ type DeviceSchemaActionData =
 			message: string
 	  }
 	| {
-			intent: 'publish-device-schema-version'
+			intent: 'create-device-schema-version'
 			success: true
 	  }
 	| {
-			intent: 'publish-device-schema-version'
+			intent: 'create-device-schema-version'
 			success: false
 			message: string
 	  }
@@ -172,7 +172,7 @@ export async function action({
 		}
 	}
 
-	if (intent === 'publish-device-schema-version') {
+	if (intent === 'create-device-schema-version') {
 		const schemaId = String(formData.get('schemaId') ?? '')
 		const schemaFile = formData.get('schemaFile')
 
@@ -186,7 +186,7 @@ export async function action({
 
 		try {
 			const parsedSchema = JSON.parse(await schemaFile.text())
-			await publishNewDeviceSchemaVersion(userId, schemaId, parsedSchema)
+			await createCurrentDeviceSchemaVersion(userId, schemaId, parsedSchema)
 
 			return {
 				intent,
@@ -199,7 +199,7 @@ export async function action({
 				message:
 					error instanceof Error
 						? error.message
-						: 'Schema version could not be published.',
+						: 'Schema version could not be created.',
 			}
 		}
 	}
@@ -594,7 +594,7 @@ export default function EditUserProfilePage() {
 										<input
 											type="hidden"
 											name="intent"
-											value="publish-device-schema-version"
+											value="create-device-schema-version"
 										/>
 										<input type="hidden" name="schemaId" value={schema.id} />
 										<div className="grow space-y-1">
@@ -630,7 +630,7 @@ export default function EditUserProfilePage() {
 														</Badge>
 														<Badge
 															variant={
-																version.status === 'published'
+																version.status === 'current'
 																	? 'default'
 																	: 'secondary'
 															}
@@ -658,7 +658,7 @@ export default function EditUserProfilePage() {
 														size="sm"
 														disabled={
 															schema.visibility !== 'public' ||
-															version.status !== 'published'
+															version.status !== 'current'
 														}
 														onClick={() =>
 															handleCopySchemaLink(version.downloadUrl)

@@ -80,7 +80,7 @@ export async function createOrReusePrivateDeviceSchemaVersionFromUpload(
 			formatVersion: parsedSchema.schemaVersion,
 			content: parsedSchema,
 			hash,
-			status: 'published',
+			status: 'current',
 			createdByUserId: userId,
 			publishedAt: new Date(),
 		})
@@ -126,7 +126,7 @@ export async function getPublicDeviceSchemasForUser(userId: string) {
 			and(
 				eq(deviceSchema.ownerUserId, userId),
 				eq(deviceSchema.visibility, 'public'),
-				eq(deviceSchemaVersion.status, 'published'),
+				eq(deviceSchemaVersion.status, 'current'),
 			),
 		)
 		.orderBy(desc(deviceSchemaVersion.publishedAt))
@@ -176,7 +176,7 @@ export async function getVisibleDeviceSchemaVersions(options: {
 		.where(
 			and(
 				visibilityClause,
-				eq(deviceSchemaVersion.status, 'published'),
+				eq(deviceSchemaVersion.status, 'current'),
 				searchClause,
 			),
 		)
@@ -208,7 +208,7 @@ export async function getVisibleDeviceSchemaVersionForCreation(
 		.where(
 			and(
 				eq(deviceSchemaVersion.id, versionId),
-				eq(deviceSchemaVersion.status, 'published'),
+				eq(deviceSchemaVersion.status, 'current'),
 				or(
 					eq(deviceSchema.visibility, 'public'),
 					eq(deviceSchema.ownerUserId, userId),
@@ -265,7 +265,7 @@ export async function getOwnedDeviceSchemasWithVersions(userId: string) {
 				version: string
 				formatVersion: string
 				hash: string
-				status: 'published' | 'deprecated'
+				status: 'current' | 'deprecated'
 				createdAt: Date
 				publishedAt: Date | null
 				deprecatedAt: Date | null
@@ -305,7 +305,7 @@ export async function getOwnedDeviceSchemasWithVersions(userId: string) {
 	return Array.from(grouped.values())
 }
 
-export async function publishNewDeviceSchemaVersion(
+export async function createCurrentDeviceSchemaVersion(
 	userId: string,
 	schemaId: string,
 	input: unknown,
@@ -374,7 +374,7 @@ export async function publishNewDeviceSchemaVersion(
 			.limit(1)
 
 		if (existingHash) {
-			throw new Error('This schema content has already been published.')
+			throw new Error('This schema content already exists.')
 		}
 
 		const now = new Date()
@@ -387,14 +387,14 @@ export async function publishNewDeviceSchemaVersion(
 				formatVersion: parsedSchema.schemaVersion,
 				content: parsedSchema,
 				hash,
-				status: 'published',
+				status: 'current',
 				createdByUserId: userId,
 				publishedAt: now,
 			})
 			.returning()
 
 		if (!createdVersion) {
-			throw new Error('Failed to publish schema version.')
+			throw new Error('Failed to create schema version.')
 		}
 
 		await tx
@@ -406,7 +406,7 @@ export async function publishNewDeviceSchemaVersion(
 			.where(
 				and(
 					eq(deviceSchemaVersion.deviceSchemaId, schemaId),
-					eq(deviceSchemaVersion.status, 'published'),
+					eq(deviceSchemaVersion.status, 'current'),
 					ne(deviceSchemaVersion.id, createdVersion.id),
 				),
 			)
@@ -460,13 +460,13 @@ export async function getSharedDeviceSchemaVersion(
 					? or(
 							and(
 								eq(deviceSchema.visibility, 'public'),
-								eq(deviceSchemaVersion.status, 'published'),
+								eq(deviceSchemaVersion.status, 'current'),
 							),
 							eq(deviceSchema.ownerUserId, userId),
 						)
 					: and(
 							eq(deviceSchema.visibility, 'public'),
-							eq(deviceSchemaVersion.status, 'published'),
+							eq(deviceSchemaVersion.status, 'current'),
 						),
 			),
 		)
