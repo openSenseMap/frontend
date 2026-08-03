@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { format, formatDistanceToNow } from 'date-fns'
+import { de, enUS } from 'date-fns/locale'
 import {
 	ChevronUp,
 	Minus,
@@ -94,7 +95,8 @@ export default function DeviceDetailBox() {
 	const navigate = useNavigate()
 	const matches = useMatches()
 	const { toast } = useToast()
-	const { t } = useTranslation('device-detail-box')
+	const { t, i18n } = useTranslation('device-detail-box')
+	const dateLocale = i18n.language.startsWith('de') ? de : enUS
 
 	const sensorIds = new Set()
 
@@ -267,7 +269,7 @@ export default function DeviceDetailBox() {
 													href={getArchiveLink(data.device)}
 													target="_blank"
 													rel="noopener noreferrer"
-													title="Open archive"
+													title={t('open_archive')}
 													className="w-full cursor-pointer"
 												>
 													{t('open_archive')}
@@ -281,7 +283,7 @@ export default function DeviceDetailBox() {
 													href={data.device.link || '#'}
 													target="_blank"
 													rel="noopener noreferrer"
-													title="Open external link"
+													title={t('open_external_link')}
 													className="w-full cursor-pointer"
 												>
 													{t('open_external_link')}
@@ -311,7 +313,7 @@ export default function DeviceDetailBox() {
 										{data.deviceImageUrl ? (
 											<img
 												className="w-full rounded-lg object-cover"
-												alt="device_image"
+												alt={t('device_image')}
 												src={data.deviceImageUrl}
 											/>
 										) : (
@@ -323,33 +325,39 @@ export default function DeviceDetailBox() {
 									<div className="space-y-2 sm:w-1/2">
 										<InfoItem
 											icon={LandPlot}
-											title="Exposure"
-											text={data.device.exposure || 'Unknown'}
+											title={t('exposure')}
+											text={data.device.exposure || t('unknown')}
 										/>
 										<InfoItem
 											icon={Cpu}
-											title="Sensor Model"
-											text={data.device.sensorWikiModel || 'Unknown'}
+											title={t('sensor_model')}
+											text={data.device.sensorWikiModel || t('unknown')}
 										/>
 										<Separator className="my-2" />
 										<InfoItem
 											icon={Rss}
-											title="Last Updated"
-											text={format(new Date(data.device.updatedAt), 'PPP')}
+											title={t('last_updated')}
+											text={format(new Date(data.device.updatedAt), 'PPP', {
+												locale: dateLocale,
+											})}
 										/>
 										<Separator className="my-2" />
 										<InfoItem
 											icon={CalendarPlus}
-											title="Created At"
-											text={format(new Date(data.device.createdAt), 'PPP')}
+											title={t('created_at')}
+											text={format(new Date(data.device.createdAt), 'PPP', {
+												locale: dateLocale,
+											})}
 										/>
 										{data.device.expiresAt && (
 											<>
 												<Separator className="my-2" />
 												<InfoItem
 													icon={CalendarPlus}
-													title="Expires At"
-													text={format(new Date(data.device.expiresAt), 'PPP')}
+													title={t('expires_at')}
+													text={format(new Date(data.device.expiresAt), 'PPP', {
+														locale: dateLocale,
+													})}
 												/>
 											</>
 										)}
@@ -359,7 +367,7 @@ export default function DeviceDetailBox() {
 									<div className="pt-4">
 										<div className="space-y-2">
 											<div className="text-muted-foreground text-sm font-medium">
-												Tags
+												{t('tags')}
 											</div>
 											<div className="flex items-center space-x-2">
 												<Hash className="text-muted-foreground h-4 w-4 shrink-0" />
@@ -486,10 +494,10 @@ export default function DeviceDetailBox() {
 																			className="flex h-full flex-col"
 																			onClick={() =>
 																				toast({
-																					title:
-																						'Cant select more than 2 sensors',
-																					description:
-																						'Deselect one sensor to select another',
+																					title: t('sensor_limit_title'),
+																					description: t(
+																						'sensor_limit_description',
+																					),
 																					variant: 'destructive',
 																				})
 																			}
@@ -550,8 +558,17 @@ export default function DeviceDetailBox() {
 																						></div>
 																						<p className="text-muted-foreground text-xs">
 																							{sensor.lastMeasurement
-																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
-																								: 'No recent data'}
+																								? formatDistanceToNow(
+																										new Date(
+																											sensor.lastMeasurement
+																												.createdAt,
+																										),
+																										{
+																											addSuffix: true,
+																											locale: dateLocale,
+																										},
+																									)
+																								: t('no_recent_data')}
 																						</p>
 																					</div>
 																				</CardFooter>
@@ -628,8 +645,17 @@ export default function DeviceDetailBox() {
 																						></div>
 																						<p className="text-muted-foreground text-xs">
 																							{sensor.lastMeasurement
-																								? `${formatDistanceToNow(new Date(sensor.lastMeasurement.createdAt), { addSuffix: true })}`
-																								: 'No recent data'}
+																								? formatDistanceToNow(
+																										new Date(
+																											sensor.lastMeasurement
+																												.createdAt,
+																										),
+																										{
+																											addSuffix: true,
+																											locale: dateLocale,
+																										},
+																									)
+																								: t('no_recent_data')}
 																						</p>
 																					</div>
 																				</CardFooter>
