@@ -326,7 +326,13 @@ export default function DeviceDetailBox() {
 										<InfoItem
 											icon={LandPlot}
 											title={t('exposure')}
-											text={data.device.exposure || t('unknown')}
+											text={
+												data.device.exposure
+													? t(`exposure_values.${data.device.exposure}`, {
+															defaultValue: data.device.exposure,
+														})
+													: t('unknown')
+											}
 										/>
 										<InfoItem
 											icon={Cpu}
