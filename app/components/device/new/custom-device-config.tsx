@@ -1,6 +1,6 @@
 import { FileJson, Library, Lock, Search, X } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { useFormContext } from 'react-hook-form'
+import { useState, useEffect, useMemo } from 'react'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { type CustomDeviceSchemaUpload, type Sensor } from './sensors-info'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -12,6 +12,11 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '~/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
+import {
+	getSensorWikiAliasSuggestions,
+	matchSensorWikiAlias,
+	type SensorWikiAliasSuggestion,
+} from '~/lib/device-schemas/sensor-wiki-aliases'
 
 type RegistryDeviceSchema = {
 	id: string
@@ -33,22 +38,36 @@ type RegistryResponse = {
 	schemas: RegistryDeviceSchema[]
 }
 
-export function CustomDeviceConfig() {
-	const { setValue, watch } = useFormContext()
+function enrichSensorWithAlias<T extends Sensor>(sensor: T): T {
+	const match = matchSensorWikiAlias(sensor)
 
-	// Initialize state from form context
-	const [sensors, setSensors] = useState<Sensor[]>(
-		() => watch('selectedSensors') || [],
-	)
-	const [deviceSchema, setDeviceSchema] = useState<CustomDeviceSchemaUpload>(
-		() => watch('deviceSchema'),
-	)
-	const [deviceSchemaVersionId, setDeviceSchemaVersionId] = useState<
-		string | undefined
-	>(() => watch('deviceSchemaVersionId'))
-	const [selectedRegistrySchema, setSelectedRegistrySchema] = useState<
-		RegistryDeviceSchema | undefined
-	>(() => watch('deviceSchemaRegistrySelection'))
+	if (!match) return sensor
+
+	return {
+		...sensor,
+		sensorWikiPhenomenon:
+			sensor.sensorWikiPhenomenon ?? match.sensorWikiPhenomenon,
+		sensorWikiUnit: sensor.sensorWikiUnit ?? match.sensorWikiUnit,
+	}
+}
+
+export function CustomDeviceConfig() {
+	const { control, setValue } = useFormContext()
+	const sensors =
+		(useWatch({ control, name: 'selectedSensors' }) as Sensor[] | undefined) ??
+		[]
+	const deviceSchema = useWatch({
+		control,
+		name: 'deviceSchema',
+	}) as CustomDeviceSchemaUpload
+	const deviceSchemaVersionId = useWatch({
+		control,
+		name: 'deviceSchemaVersionId',
+	}) as string | undefined
+	const selectedRegistrySchema = useWatch({
+		control,
+		name: 'deviceSchemaRegistrySelection',
+	}) as RegistryDeviceSchema | undefined
 	const [schemaError, setSchemaError] = useState<string | null>(null)
 	const [registryQuery, setRegistryQuery] = useState('')
 	const [registrySchemas, setRegistrySchemas] = useState<
@@ -60,30 +79,13 @@ export function CustomDeviceConfig() {
 		unit: '',
 		sensorType: '',
 	})
+	const [isSuggestionListOpen, setIsSuggestionListOpen] = useState(false)
 	const { t } = useTranslation('newdevice')
 
-	// Sync state with form context on mount
-	useEffect(() => {
-		const savedSensors = watch('selectedSensors') || []
-		if (savedSensors.length > 0) {
-			setSensors(savedSensors)
-		}
-
-		const savedDeviceSchema = watch('deviceSchema')
-		if (savedDeviceSchema) {
-			setDeviceSchema(savedDeviceSchema)
-		}
-
-		const savedDeviceSchemaVersionId = watch('deviceSchemaVersionId')
-		if (savedDeviceSchemaVersionId) {
-			setDeviceSchemaVersionId(savedDeviceSchemaVersionId)
-		}
-
-		const savedRegistrySchema = watch('deviceSchemaRegistrySelection')
-		if (savedRegistrySchema) {
-			setSelectedRegistrySchema(savedRegistrySchema)
-		}
-	}, [watch])
+	const sensorSuggestions = useMemo(
+		() => getSensorWikiAliasSuggestions(newSensor),
+		[newSensor],
+	)
 
 	useEffect(() => {
 		const abortController = new AbortController()
@@ -122,30 +124,53 @@ export function CustomDeviceConfig() {
 	}, [registryQuery, t])
 
 	const updateNewSensor = (field: keyof Sensor, value: string) => {
-		setNewSensor((prev) => ({ ...prev, [field]: value }))
+		setNewSensor((prev) => {
+			const nextSensor = { ...prev, [field]: value }
+
+			if (field === 'title') {
+				return {
+					...nextSensor,
+					sensorWikiPhenomenon: undefined,
+					sensorWikiUnit: undefined,
+				}
+			}
+
+			if (field === 'unit') {
+				return {
+					...nextSensor,
+					sensorWikiUnit: undefined,
+				}
+			}
+
+			return nextSensor
+		})
+	}
+
+	const applySensorSuggestion = (suggestion: SensorWikiAliasSuggestion) => {
+		setNewSensor((prev) => ({
+			...prev,
+			title: suggestion.title,
+			unit: prev.unit || suggestion.unit || '',
+			sensorWikiPhenomenon: suggestion.sensorWikiPhenomenon,
+			sensorWikiUnit: suggestion.sensorWikiUnit,
+		}))
+		setIsSuggestionListOpen(false)
 	}
 
 	const addSensor = () => {
-		if (
-			!deviceSchema &&
-			!deviceSchemaVersionId &&
-			newSensor.title &&
-			newSensor.unit &&
-			newSensor.sensorType
-		) {
-			const updatedSensors = [...sensors, newSensor]
-			setSensors(updatedSensors)
-			setValue('selectedSensors', updatedSensors) // Sync with form
-			setNewSensor({ title: '', unit: '', sensorType: '' })
-		}
+		if (deviceSchema || deviceSchemaVersionId) return
+		if (!newSensor.title || !newSensor.unit || !newSensor.sensorType) return
+
+		const updatedSensors = [...sensors, enrichSensorWithAlias(newSensor)]
+		setValue('selectedSensors', updatedSensors)
+		setNewSensor({ title: '', unit: '', sensorType: '' })
 	}
 
 	const removeSensor = (index: number) => {
 		if (deviceSchema || deviceSchemaVersionId) return
 
 		const updatedSensors = sensors.filter((_, i) => i !== index)
-		setSensors(updatedSensors)
-		setValue('selectedSensors', updatedSensors) // Sync with form
+		setValue('selectedSensors', updatedSensors)
 	}
 
 	const importDeviceSchema = async (file: File) => {
@@ -154,7 +179,13 @@ export function CustomDeviceConfig() {
 		try {
 			const parsedJson = JSON.parse(await file.text())
 			const parsedSchema = uploadedDeviceSchemaV1.parse(parsedJson)
-			const schemaSensors = parsedSchema.sensors.map((sensor) => ({
+			const enrichedSchema = {
+				...parsedSchema,
+				sensors: parsedSchema.sensors.map((sensor) =>
+					enrichSensorWithAlias(sensor),
+				),
+			}
+			const schemaSensors = enrichedSchema.sensors.map((sensor) => ({
 				id: sensor.id,
 				title: sensor.title,
 				unit: sensor.unit,
@@ -165,11 +196,7 @@ export function CustomDeviceConfig() {
 				sensorWikiUnit: sensor.sensorWikiUnit,
 			}))
 
-			setDeviceSchema(parsedSchema)
-			setDeviceSchemaVersionId(undefined)
-			setSelectedRegistrySchema(undefined)
-			setSensors(schemaSensors)
-			setValue('deviceSchema', parsedSchema)
+			setValue('deviceSchema', enrichedSchema)
 			setValue('deviceSchemaVersionId', undefined)
 			setValue('deviceSchemaRegistrySelection', undefined)
 			setValue('selectedSensors', schemaSensors)
@@ -183,18 +210,14 @@ export function CustomDeviceConfig() {
 	}
 
 	const clearDeviceSchema = () => {
-		setDeviceSchema(undefined)
-		setDeviceSchemaVersionId(undefined)
-		setSelectedRegistrySchema(undefined)
 		setSchemaError(null)
-		setSensors([])
 		setValue('deviceSchema', undefined)
 		setValue('deviceSchemaVersionId', undefined)
 		setValue('deviceSchemaRegistrySelection', undefined)
 		setValue('selectedSensors', [])
 	}
 
-	const useRegistrySchema = (schema: RegistryDeviceSchema) => {
+	const applyRegistrySchema = (schema: RegistryDeviceSchema) => {
 		const schemaSensors = schema.content.sensors.map((sensor) => ({
 			id: sensor.id,
 			title: sensor.title,
@@ -207,10 +230,6 @@ export function CustomDeviceConfig() {
 		}))
 
 		setSchemaError(null)
-		setDeviceSchema(undefined)
-		setDeviceSchemaVersionId(schema.versionId)
-		setSelectedRegistrySchema(schema)
-		setSensors(schemaSensors)
 		setValue('deviceSchema', undefined)
 		setValue('deviceSchemaVersionId', schema.versionId)
 		setValue('deviceSchemaRegistrySelection', schema)
@@ -292,7 +311,7 @@ export function CustomDeviceConfig() {
 														? 'secondary'
 														: 'outline'
 												}
-												onClick={() => useRegistrySchema(schema)}
+												onClick={() => applyRegistrySchema(schema)}
 											>
 												{deviceSchemaVersionId === schema.versionId
 													? t('selected')
@@ -384,13 +403,65 @@ export function CustomDeviceConfig() {
 						<div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
 							<div>
 								<Label htmlFor="phenomenon">{t('phenomenon')}</Label>
-								<Input
-									id="phenomenon"
-									value={newSensor.title}
-									onChange={(e) => updateNewSensor('title', e.target.value)}
-									placeholder="e.g., Temperature"
-									disabled={hasLockedSchema}
-								/>
+								<div className="relative">
+									<Input
+										id="phenomenon"
+										value={newSensor.title}
+										onChange={(e) => {
+											updateNewSensor('title', e.target.value)
+											setIsSuggestionListOpen(true)
+										}}
+										onFocus={() => setIsSuggestionListOpen(true)}
+										onBlur={() => setIsSuggestionListOpen(false)}
+										placeholder="e.g., Temperature"
+										disabled={hasLockedSchema}
+										autoComplete="off"
+										aria-autocomplete="list"
+										aria-expanded={
+											isSuggestionListOpen && sensorSuggestions.length > 0
+										}
+										aria-controls="sensor-wiki-suggestions"
+									/>
+									{isSuggestionListOpen && sensorSuggestions.length > 0 && (
+										<div
+											id="sensor-wiki-suggestions"
+											role="listbox"
+											className="border-border bg-popover text-popover-foreground absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border p-1 shadow-md"
+										>
+											{sensorSuggestions.map((suggestion) => (
+												<button
+													key={`${suggestion.sensorWikiPhenomenon}-${suggestion.sensorWikiUnit ?? 'unitless'}`}
+													type="button"
+													role="option"
+													className="hover:bg-muted focus:bg-muted flex w-full flex-col items-start gap-1 rounded-sm px-3 py-2 text-left text-sm outline-none"
+													onMouseDown={(event) => {
+														event.preventDefault()
+														applySensorSuggestion(suggestion)
+													}}
+												>
+													<span className="font-medium">
+														{suggestion.title}
+													</span>
+													<span className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
+														<span>
+															{t('device_schema_sensor_wiki_match', {
+																phenomenon: suggestion.sensorWikiPhenomenon,
+															})}
+														</span>
+														{suggestion.unit && <span>{suggestion.unit}</span>}
+														<Badge variant="outline">
+															{t(
+																suggestion.confidence === 'high'
+																	? 'device_schema_alias_confidence_high'
+																	: 'device_schema_alias_confidence_medium',
+															)}
+														</Badge>
+													</span>
+												</button>
+											))}
+										</div>
+									)}
+								</div>
 							</div>
 							<div>
 								<Label htmlFor="unit">{t('unit')}</Label>
