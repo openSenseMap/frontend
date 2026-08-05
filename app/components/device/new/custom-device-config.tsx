@@ -217,7 +217,7 @@ export function CustomDeviceConfig() {
 		setValue('selectedSensors', schemaSensors)
 	}
 
-	const hasLockedSchema = !!deviceSchema || !!deviceSchemaVersionId
+	const userHasSelectedSchema = !!deviceSchema || !!deviceSchemaVersionId
 	const selectedSchemaName = deviceSchema?.name ?? selectedRegistrySchema?.name
 	const selectedSchemaVersion =
 		deviceSchema?.version ?? selectedRegistrySchema?.version
@@ -334,7 +334,7 @@ export function CustomDeviceConfig() {
 										event.target.value = ''
 									}}
 								/>
-								{hasLockedSchema && (
+								{userHasSelectedSchema && (
 									<Button
 										type="button"
 										variant="outline"
@@ -346,7 +346,7 @@ export function CustomDeviceConfig() {
 							</div>
 						</div>
 
-						{hasLockedSchema && (
+						{userHasSelectedSchema && (
 							<Alert className="mt-4">
 								<Lock className="h-4 w-4" />
 								<AlertTitle className="flex items-center gap-2">
@@ -370,7 +370,7 @@ export function CustomDeviceConfig() {
 				</TabsContent>
 
 				<TabsContent value="manual" className="space-y-4">
-					{hasLockedSchema && (
+					{userHasSelectedSchema && (
 						<Alert>
 							<Lock className="h-4 w-4" />
 							<AlertTitle>{t('manual_sensors_locked')}</AlertTitle>
@@ -389,7 +389,7 @@ export function CustomDeviceConfig() {
 									value={newSensor.title}
 									onChange={(e) => updateNewSensor('title', e.target.value)}
 									placeholder="e.g., Temperature"
-									disabled={hasLockedSchema}
+									disabled={userHasSelectedSchema}
 								/>
 							</div>
 							<div>
@@ -399,7 +399,7 @@ export function CustomDeviceConfig() {
 									value={newSensor.unit}
 									onChange={(e) => updateNewSensor('unit', e.target.value)}
 									placeholder="e.g., °C"
-									disabled={hasLockedSchema}
+									disabled={userHasSelectedSchema}
 								/>
 							</div>
 							<div>
@@ -411,7 +411,7 @@ export function CustomDeviceConfig() {
 										updateNewSensor('sensorType', e.target.value)
 									}
 									placeholder="e.g., HDC1080"
-									disabled={hasLockedSchema}
+									disabled={userHasSelectedSchema}
 								/>
 							</div>
 						</div>
@@ -419,7 +419,7 @@ export function CustomDeviceConfig() {
 							type="button"
 							onClick={addSensor}
 							disabled={
-								hasLockedSchema ||
+								userHasSelectedSchema ||
 								!newSensor.title ||
 								!newSensor.unit ||
 								!newSensor.sensorType
@@ -448,7 +448,7 @@ export function CustomDeviceConfig() {
 										<Button
 											variant="ghost"
 											size="icon"
-											disabled={hasLockedSchema}
+											disabled={userHasSelectedSchema}
 											onClick={(e) => {
 												e.preventDefault()
 												removeSensor(index)
