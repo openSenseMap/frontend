@@ -111,7 +111,7 @@
     "react-day-picker": "^9.14.0",
     "react-device-detect": "^2.2.3",
     "react-dom": "19.2.7",
-    "react-draggable": "^4.5.0",
+    "react-draggable": "^4.7.1",
     "react-email": "^6.9.1",
     "react-globe.gl": "^2.37.1",
     "react-hook-form": "^7.73.1",
