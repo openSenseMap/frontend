@@ -26,6 +26,48 @@ type Args = {
 	minCount: number
 	minFuzzyScore: number
 	fuzzyLimit: number
+	sensorWikiUrl: string
+	sensorWikiTimeoutMs: number
+	skipSensorWiki: boolean
+	requireSensorWiki: boolean
+}
+
+type SensorWikiApiSensor = {
+	_id?: string
+	id?: string
+	sensorLabel?: Array<{ value?: string | null }>
+	label?: { item?: Array<{ text?: string | null }> }
+	name?: string | null
+}
+
+type SensorWikiSensor = {
+	id?: string
+	labels: string[]
+}
+
+type SensorWikiFetchResult =
+	| {
+			status: 'fetched'
+			url: string
+			sensors: SensorWikiSensor[]
+	  }
+	| {
+			status: 'skipped'
+			url: string
+			sensors: SensorWikiSensor[]
+	  }
+	| {
+			status: 'failed'
+			url: string
+			error: string
+			sensors: SensorWikiSensor[]
+	  }
+
+type SensorWikiSensorMatch = {
+	id?: string
+	label: string
+	score: number
+	matchedInput: string
 }
 
 type FuzzyMatch = {
@@ -56,6 +98,7 @@ type Candidate = {
 	exampleBoxIds: string[]
 	suggestedMatch?: ReturnType<typeof matchSensorWikiAlias>
 	fuzzyMatches: FuzzyMatch[]
+	sensorWikiSensorMatches: SensorWikiSensorMatch[]
 	reviewStatus: 'suggested' | 'fuzzy-suggested' | 'needs-review'
 }
 
@@ -66,6 +109,10 @@ function parseArgs(argv: string[]): Args {
 		minCount: 5,
 		minFuzzyScore: 0.62,
 		fuzzyLimit: 3,
+		sensorWikiUrl: 'https://api.sensor-wiki.opensensemap.org/sensors/all',
+		sensorWikiTimeoutMs: 10000,
+		skipSensorWiki: false,
+		requireSensorWiki: false,
 	}
 
 	for (let index = 0; index < argv.length; index += 1) {
@@ -87,6 +134,16 @@ function parseArgs(argv: string[]): Args {
 		} else if (arg === '--fuzzy-limit' && next) {
 			args.fuzzyLimit = Number(next)
 			index += 1
+		} else if (arg === '--sensor-wiki-url' && next) {
+			args.sensorWikiUrl = next
+			index += 1
+		} else if (arg === '--sensor-wiki-timeout-ms' && next) {
+			args.sensorWikiTimeoutMs = Number(next)
+			index += 1
+		} else if (arg === '--skip-sensor-wiki') {
+			args.skipSensorWiki = true
+		} else if (arg === '--require-sensor-wiki') {
+			args.requireSensorWiki = true
 		} else if (arg === '--help') {
 			printHelp()
 			process.exit(0)
@@ -106,6 +163,12 @@ function parseArgs(argv: string[]): Args {
 	if (!Number.isFinite(args.fuzzyLimit) || args.fuzzyLimit < 1) {
 		throw new Error('--fuzzy-limit must be a positive number')
 	}
+	if (
+		!Number.isFinite(args.sensorWikiTimeoutMs) ||
+		args.sensorWikiTimeoutMs < 1000
+	) {
+		throw new Error('--sensor-wiki-timeout-ms must be at least 1000')
+	}
 
 	return args
 }
@@ -123,6 +186,10 @@ Options:
   --min-count  Only include title/unit/type combinations seen at least this often.
   --min-fuzzy-score  Minimum fuzzy score between 0 and 1. Defaults to 0.62.
   --fuzzy-limit      Maximum fuzzy suggestions per candidate. Defaults to 3.
+  --sensor-wiki-url  Sensor-Wiki sensors endpoint. Defaults to the public API.
+  --sensor-wiki-timeout-ms  Sensor-Wiki request timeout. Defaults to 10000.
+  --skip-sensor-wiki  Do not fetch Sensor-Wiki sensor labels.
+  --require-sensor-wiki  Fail when the Sensor-Wiki request fails.
 `)
 }
 
@@ -220,6 +287,102 @@ function aliasIncludesValue(aliases: string[] | undefined, value: string) {
 	)
 }
 
+function labelsFromSensorWikiSensor(sensor: SensorWikiApiSensor) {
+	return unique([
+		...(sensor.sensorLabel ?? [])
+			.map((label) => label.value?.trim())
+			.filter((value): value is string => !!value),
+		...(sensor.label?.item ?? [])
+			.map((label) => label.text?.trim())
+			.filter((value): value is string => !!value),
+		...(sensor.name ? [sensor.name] : []),
+	])
+}
+
+async function fetchSensorWikiSensors(
+	args: Args,
+): Promise<SensorWikiFetchResult> {
+	if (args.skipSensorWiki) {
+		return {
+			status: 'skipped',
+			url: args.sensorWikiUrl,
+			sensors: [],
+		}
+	}
+
+	try {
+		const response = await fetch(args.sensorWikiUrl, {
+			signal: AbortSignal.timeout(args.sensorWikiTimeoutMs),
+		})
+
+		if (!response.ok) {
+			throw new Error(`Sensor-Wiki responded with ${response.status}`)
+		}
+
+		const data = (await response.json()) as SensorWikiApiSensor[]
+
+		if (!Array.isArray(data)) {
+			throw new Error('Sensor-Wiki response is not an array')
+		}
+
+		return {
+			status: 'fetched',
+			url: args.sensorWikiUrl,
+			sensors: data
+				.map((sensor) => ({
+					id: sensor.id ?? sensor._id,
+					labels: labelsFromSensorWikiSensor(sensor),
+				}))
+				.filter((sensor) => sensor.labels.length > 0),
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error)
+
+		if (args.requireSensorWiki) {
+			throw new Error(`Failed to fetch Sensor-Wiki sensors: ${message}`)
+		}
+
+		return {
+			status: 'failed',
+			url: args.sensorWikiUrl,
+			error: message,
+			sensors: [],
+		}
+	}
+}
+
+function findSensorWikiSensorMatches(
+	sensor: LegacySensor,
+	sensorWikiSensors: SensorWikiSensor[],
+	limit: number,
+): SensorWikiSensorMatch[] {
+	const normalizedSensorType = normalizeSensorWikiAliasValue(sensor.sensorType)
+
+	if (normalizedSensorType.length < 3 || sensorWikiSensors.length === 0) {
+		return []
+	}
+
+	return sensorWikiSensors
+		.flatMap((sensorWikiSensor) =>
+			sensorWikiSensor.labels.map((label) => {
+				const normalizedLabel = normalizeSensorWikiAliasValue(label)
+				return {
+					id: sensorWikiSensor.id,
+					label,
+					score: titleSimilarity(normalizedSensorType, normalizedLabel),
+					matchedInput: sensor.sensorType ?? '',
+				}
+			}),
+		)
+		.filter((match) => match.score >= 0.75)
+		.sort((left, right) => right.score - left.score)
+		.slice(0, limit)
+		.map((match) => ({
+			...match,
+			score: Number(match.score.toFixed(3)),
+		}))
+}
+
 function confidenceForScore(
 	score: number,
 	unitMatched: boolean,
@@ -302,6 +465,17 @@ function findFuzzyMatches(
 
 async function main() {
 	const args = parseArgs(process.argv.slice(2))
+	const sensorWiki = await fetchSensorWikiSensors(args)
+	if (sensorWiki.status === 'fetched') {
+		console.log(
+			`Fetched ${sensorWiki.sensors.length} Sensor-Wiki sensors from ${sensorWiki.url}.`,
+		)
+	} else if (sensorWiki.status === 'failed') {
+		console.warn(
+			`Sensor-Wiki fetch failed (${sensorWiki.error}); continuing without Sensor-Wiki sensor label matches.`,
+		)
+	}
+
 	const raw = await readFile(args.input, 'utf8')
 	const boxes = JSON.parse(raw) as LegacyBox[]
 	const candidatesByKey = new Map<string, Candidate>()
@@ -327,6 +501,11 @@ async function main() {
 
 			const suggestedMatch = matchSensorWikiAlias(sensor)
 			const fuzzyMatches = suggestedMatch ? [] : findFuzzyMatches(sensor, args)
+			const sensorWikiSensorMatches = findSensorWikiSensorMatches(
+				sensor,
+				sensorWiki.sensors,
+				args.fuzzyLimit,
+			)
 
 			candidatesByKey.set(key, {
 				title: sensor.title ?? '',
@@ -340,6 +519,7 @@ async function main() {
 				exampleBoxIds: box._id ? [box._id] : [],
 				suggestedMatch,
 				fuzzyMatches,
+				sensorWikiSensorMatches,
 				reviewStatus: suggestedMatch
 					? 'suggested'
 					: fuzzyMatches.length > 0
@@ -356,6 +536,18 @@ async function main() {
 	const output = {
 		generatedAt: new Date().toISOString(),
 		input: args.input,
+		sensorWiki:
+			sensorWiki.status === 'failed'
+				? {
+						status: sensorWiki.status,
+						url: sensorWiki.url,
+						error: sensorWiki.error,
+					}
+				: {
+						status: sensorWiki.status,
+						url: sensorWiki.url,
+						sensorCount: sensorWiki.sensors.length,
+					},
 		minCount: args.minCount,
 		totalBoxes: boxes.length,
 		totalSensors: sensorCount,
