@@ -53,6 +53,7 @@ import { getMeasurementsCount } from '~/db/models/measurement.server'
 import { getTags } from '~/services/device-service.server'
 import { getPhenomena } from '~/db/models/phenomena.server'
 import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
+import { sensorMatchesAnyPhenomenonFilter } from '~/lib/phenomenon-filter'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
@@ -204,9 +205,7 @@ export async function action({ request }: { request: Request }) {
 
 	const filterParams = getDownloadFilterParams(formdata)
 
-	const selectedPhenomena = parseCsv(formdata.get('phenomenon')).map(
-		(phenomenon) => phenomenon.toLowerCase(),
-	)
+	const selectedPhenomena = parseCsv(formdata.get('phenomenon'))
 
 	const measurementTimeRange =
 		getMeasurementTimeRangeFromSearchParams(filterParams)
@@ -230,7 +229,7 @@ export async function action({ request }: { request: Request }) {
 		const filteredSensors =
 			selectedPhenomena.length > 0
 				? sensors.filter((sensor) =>
-						selectedPhenomena.includes(sensor.title?.toLowerCase() ?? ''),
+						sensorMatchesAnyPhenomenonFilter(sensor, selectedPhenomena),
 					)
 				: sensors
 
@@ -924,7 +923,7 @@ export default function Explore() {
 						/>
 					)}
 
-					<div className="pointer-events-none absolute inset-0 z-10">
+					<div className="pointer-events-none absolute inset-0 z-50">
 						<div className="pointer-events-auto">
 							<Outlet />
 						</div>
