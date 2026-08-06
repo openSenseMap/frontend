@@ -93,6 +93,12 @@ export function CustomDeviceConfig() {
 		() => getSensorWikiAliasSuggestions(newSensor, 5, sensorWikiAliasEntries),
 		[newSensor, sensorWikiAliasEntries],
 	)
+	const sensorWikiMatch = useMemo(
+		() => matchSensorWikiAlias(newSensor, sensorWikiAliasEntries),
+		[newSensor, sensorWikiAliasEntries],
+	)
+	const hasManualSensorTitle = newSensor.title.trim().length >= 2
+	const firstSensorSuggestion = sensorSuggestions[0]
 
 	useEffect(() => {
 		const abortController = new AbortController()
@@ -410,6 +416,9 @@ export function CustomDeviceConfig() {
 					)}
 
 					<div>
+						<p className="text-muted-foreground mb-4 text-sm">
+							{t('manual_sensors_sensor_wiki_hint')}
+						</p>
 						<div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
 							<div>
 								<Label htmlFor="phenomenon">{t('phenomenon')}</Label>
@@ -436,7 +445,7 @@ export function CustomDeviceConfig() {
 										<div
 											id="sensor-wiki-suggestions"
 											role="listbox"
-											className="border-border bg-popover text-popover-foreground absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border p-1 shadow-md"
+											className="border-border bg-popover text-popover-foreground mt-1 max-h-64 w-full overflow-auto rounded-md border p-1 shadow-md"
 										>
 											{sensorSuggestions.map((suggestion) => (
 												<button
@@ -496,6 +505,46 @@ export function CustomDeviceConfig() {
 								/>
 							</div>
 						</div>
+						{!hasLockedSchema && hasManualSensorTitle && (
+							<div className="border-border bg-muted/20 mb-4 flex flex-col gap-2 rounded-md border p-3 text-sm md:flex-row md:items-center">
+								{sensorWikiMatch ? (
+									<>
+										<Badge variant="secondary">
+											{t(
+												sensorWikiMatch.confidence === 'high'
+													? 'device_schema_alias_confidence_high'
+													: 'device_schema_alias_confidence_medium',
+											)}
+										</Badge>
+										<span className="text-muted-foreground">
+											{t('manual_sensor_wiki_matched', {
+												phenomenon: sensorWikiMatch.sensorWikiPhenomenon,
+											})}
+										</span>
+									</>
+								) : firstSensorSuggestion ? (
+									<>
+										<Badge variant="outline">
+											{t('device_schema_alias_confidence_medium')}
+										</Badge>
+										<span className="text-muted-foreground">
+											{t('manual_sensor_wiki_suggestion_available', {
+												phenomenon: firstSensorSuggestion.sensorWikiPhenomenon,
+											})}
+										</span>
+									</>
+								) : (
+									<>
+										<Badge variant="outline">
+											{t('manual_sensor_wiki_unmatched')}
+										</Badge>
+										<span className="text-muted-foreground">
+											{t('manual_sensor_wiki_unmatched_text')}
+										</span>
+									</>
+								)}
+							</div>
+						)}
 						<Button
 							type="button"
 							onClick={addSensor}
