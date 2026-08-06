@@ -2,6 +2,7 @@ import { FileJson, Library, Lock, Search, X } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useLoaderData } from 'react-router'
 import { type CustomDeviceSchemaUpload, type Sensor } from './sensors-info'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -15,8 +16,10 @@ import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
 import {
 	getSensorWikiAliasSuggestions,
 	matchSensorWikiAlias,
+	type SensorWikiAliasEntry,
 	type SensorWikiAliasSuggestion,
 } from '~/lib/device-schemas/sensor-wiki-aliases'
+import { type loader } from '~/routes/device.new'
 
 type RegistryDeviceSchema = {
 	id: string
@@ -38,8 +41,11 @@ type RegistryResponse = {
 	schemas: RegistryDeviceSchema[]
 }
 
-function enrichSensorWithAlias<T extends Sensor>(sensor: T): T {
-	const match = matchSensorWikiAlias(sensor)
+function enrichSensorWithAlias<T extends Sensor>(
+	sensor: T,
+	sensorWikiAliasEntries: SensorWikiAliasEntry[],
+): T {
+	const match = matchSensorWikiAlias(sensor, sensorWikiAliasEntries)
 
 	if (!match) return sensor
 
@@ -52,6 +58,7 @@ function enrichSensorWithAlias<T extends Sensor>(sensor: T): T {
 }
 
 export function CustomDeviceConfig() {
+	const { sensorWikiAliasEntries } = useLoaderData<typeof loader>()
 	const { control, setValue } = useFormContext()
 	const sensors =
 		(useWatch({ control, name: 'selectedSensors' }) as Sensor[] | undefined) ??
@@ -83,8 +90,8 @@ export function CustomDeviceConfig() {
 	const { t } = useTranslation('newdevice')
 
 	const sensorSuggestions = useMemo(
-		() => getSensorWikiAliasSuggestions(newSensor),
-		[newSensor],
+		() => getSensorWikiAliasSuggestions(newSensor, 5, sensorWikiAliasEntries),
+		[newSensor, sensorWikiAliasEntries],
 	)
 
 	useEffect(() => {
@@ -161,7 +168,10 @@ export function CustomDeviceConfig() {
 		if (deviceSchema || deviceSchemaVersionId) return
 		if (!newSensor.title || !newSensor.unit || !newSensor.sensorType) return
 
-		const updatedSensors = [...sensors, enrichSensorWithAlias(newSensor)]
+		const updatedSensors = [
+			...sensors,
+			enrichSensorWithAlias(newSensor, sensorWikiAliasEntries),
+		]
 		setValue('selectedSensors', updatedSensors)
 		setNewSensor({ title: '', unit: '', sensorType: '' })
 	}
@@ -182,7 +192,7 @@ export function CustomDeviceConfig() {
 			const enrichedSchema = {
 				...parsedSchema,
 				sensors: parsedSchema.sensors.map((sensor) =>
-					enrichSensorWithAlias(sensor),
+					enrichSensorWithAlias(sensor, sensorWikiAliasEntries),
 				),
 			}
 			const schemaSensors = enrichedSchema.sensors.map((sensor) => ({
