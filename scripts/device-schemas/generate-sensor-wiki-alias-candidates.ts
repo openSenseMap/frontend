@@ -5,7 +5,7 @@ import {
 	normalizeSensorWikiAliasValue,
 	sensorWikiAliasEntries,
 	type SensorWikiAliasEntry,
-} from '../../app/lib/device-schemas/sensor-wiki-aliases.ts'
+} from '../../app/lib/device-schemas/sensor-wiki-aliases'
 
 type LegacySensor = {
 	_id?: string
@@ -269,13 +269,13 @@ function bestTitleMatch(inputTitle: string, entry: SensorWikiAliasEntry) {
 	const aliases = unique([entry.title, ...entry.titleAliases])
 
 	return aliases
-		.map((alias) => {
-			const normalizedAlias = normalizeSensorWikiAliasValue(alias)
-			return {
-				alias,
-				score: titleSimilarity(inputTitle, normalizedAlias),
-			}
-		})
+		.map((alias) => ({
+			alias,
+			score: titleSimilarity(
+				inputTitle,
+				normalizeSensorWikiAliasValue(alias),
+			),
+		}))
 		.sort((left, right) => right.score - left.score)[0]
 }
 
@@ -499,7 +499,10 @@ async function main() {
 				continue
 			}
 
-			const suggestedMatch = matchSensorWikiAlias(sensor)
+			const suggestedMatch = matchSensorWikiAlias(
+				sensor,
+				sensorWikiAliasEntries,
+			)
 			const fuzzyMatches = suggestedMatch ? [] : findFuzzyMatches(sensor, args)
 			const sensorWikiSensorMatches = findSensorWikiSensorMatches(
 				sensor,
