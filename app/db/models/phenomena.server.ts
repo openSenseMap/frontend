@@ -11,6 +11,7 @@ import {
 } from '~/lib/phenomenon-filter'
 import { type SensorWikiTranslation } from '~/lib/sensor-wiki'
 import { device, sensor } from '../schema'
+import { getActiveSensorWikiAliasEntries } from './sensor-wiki-alias.server'
 
 export type Phenomenon = {
 	id: number
@@ -57,6 +58,7 @@ export const getPhenomena = async function findPhenomena(): Promise<
 		)
 		.orderBy(asc(sensor.title))
 
+	const sensorWikiAliasEntries = await getActiveSensorWikiAliasEntries()
 	const optionsByValue = new Map<string, PhenomenonFilterOption>()
 	const fallbackOptionsByValue = new Map<
 		string,
@@ -64,13 +66,19 @@ export const getPhenomena = async function findPhenomena(): Promise<
 	>()
 
 	for (const row of rows) {
-		const canonicalPhenomenon = getCanonicalSensorWikiPhenomenon(row)
+		const canonicalPhenomenon = getCanonicalSensorWikiPhenomenon(
+			row,
+			sensorWikiAliasEntries,
+		)
 
 		if (canonicalPhenomenon) {
 			const value = getSensorWikiPhenomenonFilterValue(canonicalPhenomenon)
 			const option = optionsByValue.get(value) ?? {
 				value,
-				label: getSensorWikiPhenomenonLabel(canonicalPhenomenon),
+				label: getSensorWikiPhenomenonLabel(
+					canonicalPhenomenon,
+					sensorWikiAliasEntries,
+				),
 				source: 'sensor-wiki',
 				aliases: [],
 			}
@@ -87,6 +95,7 @@ export const getPhenomena = async function findPhenomena(): Promise<
 		const fuzzyMatch = getFuzzySensorWikiPhenomenonMatch(
 			row,
 			PHENOMENON_FUZZY_MATCH_THRESHOLD,
+			sensorWikiAliasEntries,
 		)
 
 		if (fuzzyMatch || row.count < MIN_FALLBACK_PHENOMENON_COUNT) continue

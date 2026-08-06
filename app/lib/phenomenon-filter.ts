@@ -1,8 +1,8 @@
 import {
 	matchSensorWikiAlias,
 	normalizeSensorWikiAliasValue,
-	sensorWikiAliasEntries,
 	type SensorWikiAliasInput,
+	type SensorWikiAliasEntry,
 } from '~/lib/device-schemas/sensor-wiki-aliases'
 
 const SENSOR_WIKI_FILTER_PREFIX = 'sensor-wiki:'
@@ -54,30 +54,37 @@ export function parsePhenomenonFilterValue(value: string):
 	}
 }
 
-export function getSensorWikiPhenomenonLabel(phenomenon: string) {
+export function getSensorWikiPhenomenonLabel(
+	phenomenon: string,
+	entries: SensorWikiAliasEntry[] = [],
+) {
 	return (
-		sensorWikiAliasEntries.find(
-			(entry) => entry.sensorWikiPhenomenon === phenomenon,
-		)?.title ?? phenomenon
+		entries.find((entry) => entry.sensorWikiPhenomenon === phenomenon)?.title ??
+		phenomenon
 	)
 }
 
-export function getSensorWikiPhenomenonAliases(phenomenon: string) {
-	return sensorWikiAliasEntries
+export function getSensorWikiPhenomenonAliases(
+	phenomenon: string,
+	entries: SensorWikiAliasEntry[] = [],
+) {
+	return entries
 		.filter((entry) => entry.sensorWikiPhenomenon === phenomenon)
 		.flatMap((entry) => [entry.title, ...entry.titleAliases])
 }
 
 export function getCanonicalSensorWikiPhenomenon(
 	input: SensorWikiAliasInput & { sensorWikiPhenomenon?: string | null },
+	entries: SensorWikiAliasEntry[] = [],
 ) {
-	const existingCanonicalPhenomenon = sensorWikiAliasEntries.find(
+	const existingCanonicalPhenomenon = entries.find(
 		(entry) => entry.sensorWikiPhenomenon === input.sensorWikiPhenomenon,
 	)?.sensorWikiPhenomenon
 
 	return (
 		existingCanonicalPhenomenon ??
-		matchSensorWikiAlias(input)?.sensorWikiPhenomenon
+		input.sensorWikiPhenomenon ??
+		matchSensorWikiAlias(input, entries)?.sensorWikiPhenomenon
 	)
 }
 
@@ -152,6 +159,7 @@ function aliasIncludesValue(aliases: string[] | undefined, value: string) {
 export function getFuzzySensorWikiPhenomenonMatch(
 	input: SensorWikiAliasInput,
 	threshold = PHENOMENON_FUZZY_MATCH_THRESHOLD,
+	entries: SensorWikiAliasEntry[] = [],
 ) {
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
@@ -159,7 +167,7 @@ export function getFuzzySensorWikiPhenomenonMatch(
 
 	if (normalizedTitle.length < 3) return undefined
 
-	const bestMatch = sensorWikiAliasEntries
+	const bestMatch = entries
 		.map((entry) => {
 			const titleScore = [entry.title, ...entry.titleAliases].reduce(
 				(bestScore, alias) =>
@@ -202,6 +210,7 @@ export function getFuzzySensorWikiPhenomenonMatch(
 export function sensorMatchesPhenomenonFilter(
 	sensor: SensorWikiAliasInput & { sensorWikiPhenomenon?: string | null },
 	filterValue: string,
+	entries: SensorWikiAliasEntry[] = [],
 ) {
 	const parsedFilter = parsePhenomenonFilterValue(filterValue)
 
@@ -212,16 +221,20 @@ export function sensorMatchesPhenomenonFilter(
 		)
 	}
 
-	const canonicalPhenomenon = getCanonicalSensorWikiPhenomenon(sensor)
+	const canonicalPhenomenon = getCanonicalSensorWikiPhenomenon(sensor, entries)
 	if (canonicalPhenomenon === parsedFilter.phenomenon) return true
 
-	const fuzzyPhenomenon = getFuzzySensorWikiPhenomenonMatch(sensor)
+	const fuzzyPhenomenon = getFuzzySensorWikiPhenomenonMatch(
+		sensor,
+		PHENOMENON_FUZZY_MATCH_THRESHOLD,
+		entries,
+	)
 	if (fuzzyPhenomenon?.sensorWikiPhenomenon === parsedFilter.phenomenon) {
 		return true
 	}
 
 	const normalizedTitle = normalizeSensorWikiAliasValue(sensor.title)
-	return getSensorWikiPhenomenonAliases(parsedFilter.phenomenon).some(
+	return getSensorWikiPhenomenonAliases(parsedFilter.phenomenon, entries).some(
 		(alias) => normalizeSensorWikiAliasValue(alias) === normalizedTitle,
 	)
 }
@@ -229,8 +242,9 @@ export function sensorMatchesPhenomenonFilter(
 export function sensorMatchesAnyPhenomenonFilter(
 	sensor: SensorWikiAliasInput & { sensorWikiPhenomenon?: string | null },
 	filterValues: string[],
+	entries: SensorWikiAliasEntry[] = [],
 ) {
 	return filterValues.some((filterValue) =>
-		sensorMatchesPhenomenonFilter(sensor, filterValue),
+		sensorMatchesPhenomenonFilter(sensor, filterValue, entries),
 	)
 }
