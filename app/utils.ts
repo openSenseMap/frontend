@@ -4,6 +4,7 @@ import { useMatches } from 'react-router'
 import { type MyBadge } from './db/models/badge.server'
 import { type User } from './db/schema/user'
 import { validLngLat } from './lib/location'
+import { type SensorWikiAliasEntry } from './lib/device-schemas/sensor-wiki-aliases'
 import { sensorMatchesAnyPhenomenonFilter } from './lib/phenomenon-filter'
 import { validateEmail as validateEmailNew } from './services/user-service'
 
@@ -95,6 +96,7 @@ export function validatePassLength(passwords: any) {
 export function getFilteredDevices(
 	devices: any,
 	filterParams: URLSearchParams,
+	sensorWikiAliasEntries?: SensorWikiAliasEntry[],
 ) {
 	const statusFilter = filterParams.get('status')?.toLowerCase().split(',') || [
 		'all',
@@ -132,7 +134,11 @@ export function getFilteredDevices(
 			// If phenomenon is provided, check if any sensor matches the selected phenomenon
 			(!filterParams.get('phenomenon') ||
 				sensorsList.some((sensor: any) =>
-					sensorMatchesAnyPhenomenonFilter(sensor, phenomenonList ?? []),
+					sensorMatchesAnyPhenomenonFilter(
+						sensor,
+						phenomenonList ?? [],
+						sensorWikiAliasEntries,
+					),
 				)) &&
 			(tagsFilter.length === 0 ||
 				tagsFilter.some((tag) => deviceTags.includes(tag)))
