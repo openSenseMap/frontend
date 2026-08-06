@@ -52,6 +52,7 @@ import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
 import { getTags } from '~/services/device-service.server'
 import { getPhenomena } from '~/db/models/phenomena.server'
+import { getActiveSensorWikiAliasEntries } from '~/db/models/sensor-wiki-alias.server'
 import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
 import { sensorMatchesAnyPhenomenonFilter } from '~/lib/phenomenon-filter'
 
@@ -206,6 +207,7 @@ export async function action({ request }: { request: Request }) {
 	const filterParams = getDownloadFilterParams(formdata)
 
 	const selectedPhenomena = parseCsv(formdata.get('phenomenon'))
+	const sensorWikiAliasEntries = await getActiveSensorWikiAliasEntries()
 
 	const measurementTimeRange =
 		getMeasurementTimeRangeFromSearchParams(filterParams)
@@ -229,7 +231,11 @@ export async function action({ request }: { request: Request }) {
 		const filteredSensors =
 			selectedPhenomena.length > 0
 				? sensors.filter((sensor) =>
-						sensorMatchesAnyPhenomenonFilter(sensor, selectedPhenomena),
+						sensorMatchesAnyPhenomenonFilter(
+							sensor,
+							selectedPhenomena,
+							sensorWikiAliasEntries,
+						),
 					)
 				: sensors
 
@@ -359,7 +365,12 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	const session = await getUserSession(request)
 	const message = session.get('global_message') || null
 
-	var filteredDevices = getFilteredDevices(devices, urlFilterParams)
+	const sensorWikiAliasEntries = await getActiveSensorWikiAliasEntries()
+	var filteredDevices = getFilteredDevices(
+		devices,
+		urlFilterParams,
+		sensorWikiAliasEntries,
+	)
 
 	const user = await getUser(request)
 	const phenomena = await getPhenomena()
