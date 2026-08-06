@@ -330,6 +330,13 @@
       "when": 1783497137959,
       "tag": "0046_unknown_dakota_north",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1786010697550,
+      "tag": "0047_outstanding_kylun",
+      "breakpoints": true
     }
   ]
 }
