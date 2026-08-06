@@ -8,7 +8,7 @@ export type SensorWikiAliasMatch = {
 	sensorWikiPhenomenon: string
 	sensorWikiUnit?: string
 	confidence: 'high' | 'medium'
-	source: 'curated-alias'
+	source: 'curated-alias' | 'database-alias'
 	reasons: string[]
 }
 
@@ -36,9 +36,23 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 		unit: '°C',
 		titleAliases: [
 			'air temperature',
+			'bodentemperatur',
+			'bodentemperatur 10cm',
+			'bodentemperatur 30cm',
+			'bodentemperatur_1',
+			'bodentemperatur_2',
 			'lufttemperatur',
 			'temperatur',
+			'temperatur bme280',
+			'temperatur dht22',
+			'temperatur heca',
+			'temperatur scd30',
+			'temperatura',
 			'temperature',
+			'temperature bme280',
+			'temperature dht22',
+			'temperature heca',
+			'temperature scd30',
 			'temp',
 		],
 		unitAliases: ['c', 'cel', 'celsius', 'degc', 'degree celsius', '°c'],
@@ -53,7 +67,17 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 			'luftfeuchte',
 			'luftfeuchtigkeit',
 			'rel luftfeuchte',
+			'rel luftfeuchte bme280',
+			'rel luftfeuchte dht22',
+			'rel luftfeuchte heca',
+			'rel luftfeuchte scd30',
 			'rel. luftfeuchte',
+			'rel. luftfeuchte bme280',
+			'rel. luftfeuchte dht22',
+			'rel. luftfeuchte heca',
+			'rel. luftfeuchte scd30',
+			'rel luftfeuchtigkeit',
+			'rel. luftfeuchtigkeit',
 			'relative humidity',
 		],
 		unitAliases: ['%', '%rh', 'percent', 'rh'],
@@ -67,11 +91,18 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 			'air pressure',
 			'atm luftdruck',
 			'atm. luftdruck',
+			'barametric pressure',
 			'barometric pressure',
+			'luftdruck absolut',
+			'luftdruck bme280',
+			'luftdruck bmp',
+			'luftdruck relativ',
 			'luftdruck',
+			'presion atmosferica',
+			'presión atmosferica',
 			'pressure',
 		],
-		unitAliases: ['hpa', 'mbar'],
+		unitAliases: ['hpa', 'inhg', 'mbar'],
 	},
 	{
 		sensorWikiPhenomenon: 'barometric_pressure',
@@ -82,8 +113,13 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 			'air pressure',
 			'atm luftdruck',
 			'atm. luftdruck',
+			'barametric pressure',
 			'barometric pressure',
+			'luftdruck bme280',
+			'luftdruck bmp',
 			'luftdruck',
+			'presion atmosferica',
+			'presión atmosferica',
 			'pressure',
 		],
 		unitAliases: ['pa'],
@@ -93,7 +129,13 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 		sensorWikiUnit: 'ug/m3',
 		title: 'PM10',
 		unit: 'µg/m³',
-		titleAliases: ['particle 10', 'particulate matter 10', 'pm 10', 'pm10'],
+		titleAliases: [
+			'feinstaub pm10',
+			'particle 10',
+			'particulate matter 10',
+			'pm 10',
+			'pm10',
+		],
 		unitAliases: ['ug/m3', 'µg/m³', 'μg/m³'],
 	},
 	{
@@ -106,6 +148,8 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 			'particle 2,5',
 			'particulate matter 2 5',
 			'particulate matter 2.5',
+			'feinstaub pm2 5',
+			'feinstaub pm2.5',
 			'pm 2 5',
 			'pm 2.5',
 			'pm2 5',
@@ -124,6 +168,7 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 			'beleuchtungsstarke',
 			'beleuchtungsstärke',
 			'helligkeit',
+			'illuminance',
 			'light',
 		],
 		unitAliases: ['lux', 'lx'],
@@ -137,14 +182,154 @@ export const sensorWikiAliasEntries: SensorWikiAliasEntry[] = [
 		unitAliases: ['uw/cm2', 'uw/cm²', 'µw/cm2', 'µw/cm²', 'μw/cm2', 'μw/cm²'],
 	},
 	{
+		sensorWikiPhenomenon: 'ultraviolet_a_light',
+		sensorWikiUnit: 'W/m²',
+		title: 'Ultraviolet A light',
+		unit: 'W/m²',
+		titleAliases: ['ultraviolet a light'],
+		unitAliases: ['w/m2', 'w/m²'],
+	},
+	{
 		sensorWikiPhenomenon: 'soil_moisture',
 		sensorWikiUnit: '%',
 		title: 'Soil moisture',
 		unit: '%',
-		titleAliases: ['bodenfeuchte', 'soil moisture'],
+		titleAliases: [
+			'bodenfeuchte',
+			'bodenfeuchte 10cm',
+			'bodenfeuchte 30cm',
+			'bodenfeuchte 60cm',
+			'bodenfeuchte_1',
+			'bodenfeuchte_2',
+			'soil moisture',
+		],
 		unitAliases: ['%', 'percent'],
 	},
+	{
+		sensorWikiPhenomenon: 'co2',
+		sensorWikiUnit: 'ppm',
+		title: 'CO2',
+		unit: 'ppm',
+		titleAliases: ['carbon dioxide', 'co2'],
+		unitAliases: ['parts per million', 'ppm'],
+	},
+	{
+		sensorWikiPhenomenon: 'humidity',
+		title: 'Humidity',
+		titleAliases: ['humedad', 'humidity'],
+	},
+	{
+		sensorWikiPhenomenon: 'pm10_concentration',
+		sensorWikiUnit: 'ug/m3',
+		title: 'PM10 concentration',
+		unit: 'µg/m³',
+		titleAliases: ['particulate matter 10 concentration', 'pm10 concentration'],
+		unitAliases: ['ug/m3', 'µg/m³', 'μg/m³'],
+	},
+	{
+		sensorWikiPhenomenon: 'air_temperature',
+		sensorWikiUnit: '°C',
+		title: 'Air temperature',
+		unit: '°C',
+		titleAliases: ['air temperature'],
+		unitAliases: ['c', 'cel', 'celsius', 'degc', 'degree celsius', '°c'],
+	},
+	{
+		sensorWikiPhenomenon: 'precipitation',
+		sensorWikiUnit: 'mm',
+		title: 'Precipitation',
+		unit: 'mm',
+		titleAliases: [
+			'niederschlag',
+			'precipitation',
+			'rain rate',
+			'rainfall',
+			'regen stunde',
+			'regen tag',
+			'regenrate',
+		],
+		unitAliases: ['in/hr', 'millimeter', 'mm', 'mm/d', 'mm/h'],
+	},
+	{
+		sensorWikiPhenomenon: 'volatile_organic_compound_voc',
+		title: 'Volatile organic compound (VOC)',
+		titleAliases: ['tvoc', 'voc', 'volatile organic compound voc'],
+	},
+	{
+		sensorWikiPhenomenon: 'voltage',
+		sensorWikiUnit: 'V',
+		title: 'Voltage',
+		unit: 'V',
+		titleAliases: [
+			'batteriespannung',
+			'battery voltage',
+			'betriebsspannung',
+			'power supply',
+			'solar voltage',
+			'spannung',
+			'voltage',
+		],
+		unitAliases: ['mv', 'millivolt', 'v', 'volt'],
+	},
+	{
+		sensorWikiPhenomenon: 'sound_level',
+		title: 'Sound level',
+		titleAliases: [
+			'durchschnitt umgebungslautstarke',
+			'durchschnitt umgebungslautstärke',
+			'lautstarke',
+			'lautstärke',
+			'minimum umgebungslautstarke',
+			'minimum umgebungslautstärke',
+			'noise',
+			'sound level',
+			'soundpresure dba',
+			'soundpressure dba',
+		],
+		unitAliases: ['db', 'dba', 'dbavg', 'dbmin'],
+	},
+	{
+		sensorWikiPhenomenon: 'water_level',
+		title: 'Water level',
+		titleAliases: ['pegel', 'water level'],
+	},
+	{
+		sensorWikiPhenomenon: 'water_temperature',
+		title: 'Water temperature',
+		titleAliases: ['water temperature'],
+	},
+	{
+		sensorWikiPhenomenon: 'wind_direction',
+		title: 'Wind direction',
+		titleAliases: ['wind direction', 'windrichtung'],
+	},
+	{
+		sensorWikiPhenomenon: 'wind_speed',
+		sensorWikiUnit: 'm/s',
+		title: 'Wind speed',
+		unit: 'm/s',
+		titleAliases: [
+			'viento',
+			'wind boen',
+			'wind böen',
+			'wind gust speed',
+			'wind speed',
+			'windboen',
+			'windböen',
+			'windgeschwindigkeit',
+			'windstarke',
+			'windstärke',
+		],
+		unitAliases: ['m/s', 'meter per second', 'miles per hour', 'mph'],
+	},
 ]
+
+export function createSensorWikiAliasKey(entry: {
+	sensorWikiPhenomenon: string
+	sensorWikiUnit?: string | null
+}) {
+	return `${entry.sensorWikiPhenomenon}:${entry.sensorWikiUnit ?? ''}`
+}
 
 export function normalizeSensorWikiAliasValue(value?: string | null) {
 	return (value ?? '')
@@ -164,13 +349,14 @@ export function normalizeSensorWikiAliasValue(value?: string | null) {
 
 export function matchSensorWikiAlias(
 	input: SensorWikiAliasInput,
+	entries: SensorWikiAliasEntry[] = [],
 ): SensorWikiAliasMatch | undefined {
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
 	const normalizedSensorType = normalizeSensorWikiAliasValue(input.sensorType)
 
-	for (const entry of sensorWikiAliasEntries) {
-		const titleMatched = entry.titleAliases.some(
+	for (const entry of entries) {
+		const titleMatched = [entry.title, ...entry.titleAliases].some(
 			(alias) => normalizeSensorWikiAliasValue(alias) === normalizedTitle,
 		)
 		const unitMatched =
@@ -195,7 +381,8 @@ export function matchSensorWikiAlias(
 			sensorWikiPhenomenon: entry.sensorWikiPhenomenon,
 			sensorWikiUnit: unitMatched ? entry.sensorWikiUnit : undefined,
 			confidence: unitMatched || sensorTypeMatched ? 'high' : 'medium',
-			source: 'curated-alias',
+			source:
+				entries === sensorWikiAliasEntries ? 'curated-alias' : 'database-alias',
 			reasons,
 		}
 	}
@@ -206,6 +393,7 @@ export function matchSensorWikiAlias(
 export function getSensorWikiAliasSuggestions(
 	input: SensorWikiAliasInput,
 	limit = 5,
+	entries: SensorWikiAliasEntry[] = [],
 ): SensorWikiAliasSuggestion[] {
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
@@ -213,7 +401,7 @@ export function getSensorWikiAliasSuggestions(
 
 	if (normalizedTitle.length < 2) return []
 
-	return sensorWikiAliasEntries
+	return entries
 		.map((entry) => {
 			const normalizedAliases = [entry.title, ...entry.titleAliases].map(
 				(alias) => normalizeSensorWikiAliasValue(alias),
@@ -249,7 +437,10 @@ export function getSensorWikiAliasSuggestions(
 					sensorWikiPhenomenon: entry.sensorWikiPhenomenon,
 					sensorWikiUnit: entry.sensorWikiUnit,
 					confidence: unitMatched || sensorTypeMatched ? 'high' : 'medium',
-					source: 'curated-alias',
+					source:
+						entries === sensorWikiAliasEntries
+							? 'curated-alias'
+							: 'database-alias',
 					reasons,
 					aliases: entry.titleAliases,
 				} satisfies SensorWikiAliasSuggestion,
