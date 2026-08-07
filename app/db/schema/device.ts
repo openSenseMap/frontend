@@ -66,7 +66,6 @@ export const device = pgTable('device', {
 			onUpdate: 'cascade',
 		},
 	),
-	deviceSchemaPublicId: text('device_schema_public_id'),
 })
 
 // Many-to-many relation between device - location

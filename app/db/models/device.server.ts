@@ -67,7 +67,6 @@ const BASE_DEVICE_COLUMNS = {
 	public: true,
 	userId: true,
 	deviceSchemaVersionId: true,
-	deviceSchemaPublicId: true,
 } as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
@@ -272,7 +271,6 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			model: true,
 			apiKey: true,
 			deviceSchemaVersionId: true,
-			deviceSchemaPublicId: true,
 		},
 	})
 }
@@ -302,7 +300,6 @@ export async function detachDeviceSchema({
 		.set({
 			tags,
 			deviceSchemaVersionId: null,
-			deviceSchemaPublicId: null,
 			updatedAt: sql`NOW()`,
 		})
 		.where(and(eq(device.id, id), eq(device.userId, userId)))
@@ -1042,7 +1039,6 @@ export async function createDevice(deviceData: any, userId: string) {
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
 					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
-					deviceSchemaPublicId: storedDeviceSchemaVersion?.schemaSlug,
 				})
 				.returning()
 

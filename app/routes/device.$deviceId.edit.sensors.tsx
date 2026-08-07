@@ -89,9 +89,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		sensors: rawSensorsData,
 		deviceSchema: deviceSchema
 			? {
-					name: device.deviceSchemaName ?? deviceSchema.name,
-					version: device.deviceSchemaVersion ?? deviceSchema.version,
-					hash: device.deviceSchemaHash,
+					name: deviceSchema.name,
+					version: deviceSchema.version,
 					sensors: deviceSchema.content.sensors,
 				}
 			: null,
