@@ -15,6 +15,7 @@ import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 import { getSensorsForModel } from '~/lib/model-definitions'
 import { cn } from '~/lib/utils'
+import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
 
 export const sensorSchema = z.object({
 	title: z.string(),
@@ -23,9 +24,17 @@ export const sensorSchema = z.object({
 	icon: z.string().optional(),
 	image: z.string().optional(),
 	id: z.string().optional(),
+	sensorWikiType: z.string().optional(),
+	sensorWikiPhenomenon: z.string().optional(),
+	sensorWikiUnit: z.string().optional(),
 })
 
+export const customDeviceSchemaUploadSchema = uploadedDeviceSchemaV1.optional()
+
 export type Sensor = z.infer<typeof sensorSchema>
+export type CustomDeviceSchemaUpload = z.infer<
+	typeof customDeviceSchemaUploadSchema
+>
 
 type SensorGroup = {
 	sensorType: string
