@@ -436,6 +436,12 @@ export async function updateDeviceSchemaVisibility(
 	return updatedSchema
 }
 
+/**
+ * Loads a schema version for places where schema content may be shared outside
+ * the owner-only settings view. Anonymous users only see public current
+ * versions; signed-in owners may also access their own private or deprecated
+ * versions.
+ */
 export async function getSharedDeviceSchemaVersion(
 	versionId: string,
 	userId?: string | null,
