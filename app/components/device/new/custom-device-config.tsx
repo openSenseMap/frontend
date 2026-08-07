@@ -104,16 +104,11 @@ export function CustomDeviceConfig() {
 	}
 
 	const addSensor = () => {
-		if (
-			!deviceSchema &&
-			!deviceSchemaVersionId &&
-			newSensor.title &&
-			newSensor.unit &&
-			newSensor.sensorType
-		) {
-			setValue('selectedSensors', [...sensors, newSensor])
-			setNewSensor({ title: '', unit: '', sensorType: '' })
-		}
+		if (deviceSchema || deviceSchemaVersionId) return
+		if (!newSensor.title || !newSensor.unit || !newSensor.sensorType) return
+
+		setValue('selectedSensors', [...sensors, newSensor])
+		setNewSensor({ title: '', unit: '', sensorType: '' })
 	}
 
 	const removeSensor = (index: number) => {
