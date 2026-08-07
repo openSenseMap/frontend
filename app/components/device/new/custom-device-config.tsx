@@ -1,6 +1,6 @@
 import { FileJson, Library, Lock, Search, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { type CustomDeviceSchemaUpload, type Sensor } from './sensors-info'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -34,21 +34,22 @@ type RegistryResponse = {
 }
 
 export function CustomDeviceConfig() {
-	const { setValue, watch } = useFormContext()
-
-	// Initialize state from form context
-	const [sensors, setSensors] = useState<Sensor[]>(
-		() => watch('selectedSensors') || [],
-	)
-	const [deviceSchema, setDeviceSchema] = useState<CustomDeviceSchemaUpload>(
-		() => watch('deviceSchema'),
-	)
-	const [deviceSchemaVersionId, setDeviceSchemaVersionId] = useState<
-		string | undefined
-	>(() => watch('deviceSchemaVersionId'))
-	const [selectedRegistrySchema, setSelectedRegistrySchema] = useState<
-		RegistryDeviceSchema | undefined
-	>(() => watch('deviceSchemaRegistrySelection'))
+	const { control, setValue } = useFormContext()
+	const sensors =
+		(useWatch({ control, name: 'selectedSensors' }) as Sensor[] | undefined) ??
+		[]
+	const deviceSchema = useWatch({
+		control,
+		name: 'deviceSchema',
+	}) as CustomDeviceSchemaUpload | undefined
+	const deviceSchemaVersionId = useWatch({
+		control,
+		name: 'deviceSchemaVersionId',
+	}) as string | undefined
+	const selectedRegistrySchema = useWatch({
+		control,
+		name: 'deviceSchemaRegistrySelection',
+	}) as RegistryDeviceSchema | undefined
 	const [schemaError, setSchemaError] = useState<string | null>(null)
 	const [registryQuery, setRegistryQuery] = useState('')
 	const [registrySchemas, setRegistrySchemas] = useState<
@@ -61,29 +62,6 @@ export function CustomDeviceConfig() {
 		sensorType: '',
 	})
 	const { t } = useTranslation('newdevice')
-
-	// Sync state with form context on mount
-	useEffect(() => {
-		const savedSensors = watch('selectedSensors') || []
-		if (savedSensors.length > 0) {
-			setSensors(savedSensors)
-		}
-
-		const savedDeviceSchema = watch('deviceSchema')
-		if (savedDeviceSchema) {
-			setDeviceSchema(savedDeviceSchema)
-		}
-
-		const savedDeviceSchemaVersionId = watch('deviceSchemaVersionId')
-		if (savedDeviceSchemaVersionId) {
-			setDeviceSchemaVersionId(savedDeviceSchemaVersionId)
-		}
-
-		const savedRegistrySchema = watch('deviceSchemaRegistrySelection')
-		if (savedRegistrySchema) {
-			setSelectedRegistrySchema(savedRegistrySchema)
-		}
-	}, [watch])
 
 	useEffect(() => {
 		const abortController = new AbortController()
@@ -133,9 +111,7 @@ export function CustomDeviceConfig() {
 			newSensor.unit &&
 			newSensor.sensorType
 		) {
-			const updatedSensors = [...sensors, newSensor]
-			setSensors(updatedSensors)
-			setValue('selectedSensors', updatedSensors) // Sync with form
+			setValue('selectedSensors', [...sensors, newSensor])
 			setNewSensor({ title: '', unit: '', sensorType: '' })
 		}
 	}
@@ -144,8 +120,7 @@ export function CustomDeviceConfig() {
 		if (deviceSchema || deviceSchemaVersionId) return
 
 		const updatedSensors = sensors.filter((_, i) => i !== index)
-		setSensors(updatedSensors)
-		setValue('selectedSensors', updatedSensors) // Sync with form
+		setValue('selectedSensors', updatedSensors)
 	}
 
 	const importDeviceSchema = async (file: File) => {
@@ -165,10 +140,6 @@ export function CustomDeviceConfig() {
 				sensorWikiUnit: sensor.sensorWikiUnit,
 			}))
 
-			setDeviceSchema(parsedSchema)
-			setDeviceSchemaVersionId(undefined)
-			setSelectedRegistrySchema(undefined)
-			setSensors(schemaSensors)
 			setValue('deviceSchema', parsedSchema)
 			setValue('deviceSchemaVersionId', undefined)
 			setValue('deviceSchemaRegistrySelection', undefined)
@@ -183,11 +154,7 @@ export function CustomDeviceConfig() {
 	}
 
 	const clearDeviceSchema = () => {
-		setDeviceSchema(undefined)
-		setDeviceSchemaVersionId(undefined)
-		setSelectedRegistrySchema(undefined)
 		setSchemaError(null)
-		setSensors([])
 		setValue('deviceSchema', undefined)
 		setValue('deviceSchemaVersionId', undefined)
 		setValue('deviceSchemaRegistrySelection', undefined)
@@ -207,10 +174,6 @@ export function CustomDeviceConfig() {
 		}))
 
 		setSchemaError(null)
-		setDeviceSchema(undefined)
-		setDeviceSchemaVersionId(schema.versionId)
-		setSelectedRegistrySchema(schema)
-		setSensors(schemaSensors)
 		setValue('deviceSchema', undefined)
 		setValue('deviceSchemaVersionId', schema.versionId)
 		setValue('deviceSchemaRegistrySelection', schema)
