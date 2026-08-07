@@ -161,7 +161,7 @@ export function CustomDeviceConfig() {
 		setValue('selectedSensors', [])
 	}
 
-	const useRegistrySchema = (schema: RegistryDeviceSchema) => {
+	const applyRegistrySchema = (schema: RegistryDeviceSchema) => {
 		const schemaSensors = schema.content.sensors.map((sensor) => ({
 			id: sensor.id,
 			title: sensor.title,
@@ -255,7 +255,7 @@ export function CustomDeviceConfig() {
 														? 'secondary'
 														: 'outline'
 												}
-												onClick={() => useRegistrySchema(schema)}
+												onClick={() => applyRegistrySchema(schema)}
 											>
 												{deviceSchemaVersionId === schema.versionId
 													? t('selected')
