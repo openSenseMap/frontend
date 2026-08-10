@@ -1,4 +1,16 @@
-export const sensorDefinitions = {
+type SensorDefinition = {
+	title: string
+	unit: string
+	sensorType: string
+	icon: string
+	image?: string
+	phenomenon?: string
+	decoderMappings?: {
+		luftdaten?: readonly string[]
+	}
+}
+
+const sensorDefinitionTemplates = {
 	windspeed: {
 		title: 'Windgeschwindigkeit',
 		unit: 'm/s',
@@ -254,6 +266,41 @@ export const sensorDefinitions = {
 		icon: 'osem-cloud',
 		image: '/img/sensor_images/SPS30.jpg',
 	},
+	sps30_nc05: {
+		title: 'NC0.5',
+		unit: '#/cm³',
+		sensorType: 'SPS30',
+		icon: 'osem-cloud',
+		image: '/img/sensor_images/SPS30.jpg',
+	},
+	sps30_nc1: {
+		title: 'NC1.0',
+		unit: '#/cm³',
+		sensorType: 'SPS30',
+		icon: 'osem-cloud',
+		image: '/img/sensor_images/SPS30.jpg',
+	},
+	sps30_nc25: {
+		title: 'NC2.5',
+		unit: '#/cm³',
+		sensorType: 'SPS30',
+		icon: 'osem-cloud',
+		image: '/img/sensor_images/SPS30.jpg',
+	},
+	sps30_nc4: {
+		title: 'NC4.0',
+		unit: '#/cm³',
+		sensorType: 'SPS30',
+		icon: 'osem-cloud',
+		image: '/img/sensor_images/SPS30.jpg',
+	},
+	sps30_nc10: {
+		title: 'NC10',
+		unit: '#/cm³',
+		sensorType: 'SPS30',
+		icon: 'osem-cloud',
+		image: '/img/sensor_images/SPS30.jpg',
+	},
 	pms1003_pm10: {
 		title: 'PM10',
 		unit: 'µg/m³',
@@ -338,4 +385,201 @@ export const sensorDefinitions = {
 		icon: 'osem-humidity',
 		image: '/img/sensor_images/HDC1008.png',
 	},
+} as const satisfies Record<string, SensorDefinition>
+
+type SensorDefinitionMetadata = {
+	phenomenon: string
+	decoderMappings?: SensorDefinition['decoderMappings']
 }
+
+const sensorDefinitionMetadata = {
+	windspeed: { phenomenon: 'wind-speed' },
+	dht22_temperature: {
+		phenomenon: 'air-temperature',
+		decoderMappings: { luftdaten: ['temperature', 'DHT22_temperature'] },
+	},
+	bme680_temperature: { phenomenon: 'air-temperature' },
+	smt50_soilmoisture: { phenomenon: 'soil-moisture' },
+	sht3x_temperature: {
+		phenomenon: 'air-temperature',
+		decoderMappings: { luftdaten: ['SHT3X_temperature'] },
+	},
+	pms5003_pm01: {
+		phenomenon: 'particulate-matter-mass-concentration-1um',
+		decoderMappings: { luftdaten: ['PMS_P0'] },
+	},
+	pms5003_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: { luftdaten: ['PMS_P2'] },
+	},
+	bme280_pressure_pa: {
+		phenomenon: 'atmospheric-pressure',
+		decoderMappings: { luftdaten: ['BME280_pressure'] },
+	},
+	bme680_humidity: { phenomenon: 'relative-humidity' },
+	bme280_humidity: {
+		phenomenon: 'relative-humidity',
+		decoderMappings: { luftdaten: ['BME280_humidity'] },
+	},
+	pms5003_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: { luftdaten: ['PMS_P1'] },
+	},
+	bme280_temperature: {
+		phenomenon: 'air-temperature',
+		decoderMappings: { luftdaten: ['BME280_temperature'] },
+	},
+	veml6070_uvintensity: { phenomenon: 'ultraviolet-intensity' },
+	sht3x_humidity: {
+		phenomenon: 'relative-humidity',
+		decoderMappings: { luftdaten: ['SHT3X_humidity'] },
+	},
+	bme680_pressure: { phenomenon: 'atmospheric-pressure' },
+	tsl45315_lightintensity: { phenomenon: 'illuminance' },
+	bmp180_temperature: {
+		phenomenon: 'air-temperature',
+		decoderMappings: { luftdaten: ['BMP180_temperature'] },
+	},
+	sds011_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: { luftdaten: ['SDS_P2'] },
+	},
+	sps30_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: { luftdaten: ['SPS30_P1'] },
+	},
+	soundlevelmeter: { phenomenon: 'sound-pressure-level' },
+	pms7003_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: { luftdaten: ['PMS_P2'] },
+	},
+	bme680_voc: { phenomenon: 'volatile-organic-compounds' },
+	dnms_la_min: { phenomenon: 'sound-pressure-level-minimum' },
+	dht22_humidity: {
+		phenomenon: 'relative-humidity',
+		decoderMappings: { luftdaten: ['humidity', 'DHT22_humidity'] },
+	},
+	pms7003_pm01: {
+		phenomenon: 'particulate-matter-mass-concentration-1um',
+		decoderMappings: { luftdaten: ['PMS_P0'] },
+	},
+	dps310_temperature: { phenomenon: 'air-temperature' },
+	pms7003_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: { luftdaten: ['PMS_P1'] },
+	},
+	sps30_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: { luftdaten: ['SPS30_P2'] },
+	},
+	dps310_pressure: { phenomenon: 'atmospheric-pressure' },
+	bme280_pressure_hpa: {
+		phenomenon: 'atmospheric-pressure',
+		decoderMappings: { luftdaten: ['BME280_pressure'] },
+	},
+	bmp180_pressure_pa: {
+		phenomenon: 'atmospheric-pressure',
+		decoderMappings: { luftdaten: ['BMP180_pressure'] },
+	},
+	sds011_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: { luftdaten: ['SDS_P1'] },
+	},
+	sps30_pm1: {
+		phenomenon: 'particulate-matter-mass-concentration-1um',
+		decoderMappings: { luftdaten: ['SPS30_P0'] },
+	},
+	pms1003_pm01: {
+		phenomenon: 'particulate-matter-mass-concentration-1um',
+		decoderMappings: { luftdaten: ['PMS_P0'] },
+	},
+	hdc1080_temperature: { phenomenon: 'air-temperature' },
+	pms1003_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: { luftdaten: ['PMS_P2'] },
+	},
+	scd30_co2: {
+		phenomenon: 'carbon-dioxide-concentration',
+		decoderMappings: { luftdaten: ['SCD30_co2', 'SCD30_co2_ppm'] },
+	},
+	hdc1008_temperature: { phenomenon: 'air-temperature' },
+	sps30_pm4: {
+		phenomenon: 'particulate-matter-mass-concentration-4um',
+		decoderMappings: { luftdaten: ['SPS30_P4'] },
+	},
+	sps30_nc05: {
+		phenomenon: 'particle-number-concentration-0.5um',
+		decoderMappings: { luftdaten: ['SPS30_N05'] },
+	},
+	sps30_nc1: {
+		phenomenon: 'particle-number-concentration-1um',
+		decoderMappings: { luftdaten: ['SPS30_N1'] },
+	},
+	sps30_nc25: {
+		phenomenon: 'particle-number-concentration-2.5um',
+		decoderMappings: { luftdaten: ['SPS30_N25'] },
+	},
+	sps30_nc4: {
+		phenomenon: 'particle-number-concentration-4um',
+		decoderMappings: { luftdaten: ['SPS30_N4'] },
+	},
+	sps30_nc10: {
+		phenomenon: 'particle-number-concentration-10um',
+		decoderMappings: { luftdaten: ['SPS30_N10'] },
+	},
+	pms1003_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: { luftdaten: ['PMS_P1'] },
+	},
+	pms3003_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: { luftdaten: ['PMS_P2'] },
+	},
+	bmp180_pressure_hpa: {
+		phenomenon: 'atmospheric-pressure',
+		decoderMappings: { luftdaten: ['BMP180_pressure'] },
+	},
+	dnms_la_max: { phenomenon: 'sound-pressure-level-maximum' },
+	hdc1080_humidity: { phenomenon: 'relative-humidity' },
+	pms3003_pm01: {
+		phenomenon: 'particulate-matter-mass-concentration-1um',
+		decoderMappings: { luftdaten: ['PMS_P0'] },
+	},
+	dht11_temperature: {
+		phenomenon: 'air-temperature',
+		decoderMappings: { luftdaten: ['temperature', 'DHT11_temperature'] },
+	},
+	smt50_soiltemperature: { phenomenon: 'soil-temperature' },
+	dht11_humidity: {
+		phenomenon: 'relative-humidity',
+		decoderMappings: { luftdaten: ['humidity', 'DHT11_humidity'] },
+	},
+	pms3003_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: { luftdaten: ['PMS_P1'] },
+	},
+	dnms_la_eq: {
+		phenomenon: 'equivalent-continuous-sound-pressure-level',
+		decoderMappings: { luftdaten: ['DNMS_noise_LAeq'] },
+	},
+	bmp280_pressure: { phenomenon: 'atmospheric-pressure' },
+	hdc1008_humidity: { phenomenon: 'relative-humidity' },
+} as const satisfies Record<
+	keyof typeof sensorDefinitionTemplates,
+	SensorDefinitionMetadata
+>
+
+type SensorDefinitions = {
+	[Key in keyof typeof sensorDefinitionTemplates]: (typeof sensorDefinitionTemplates)[Key] &
+		(typeof sensorDefinitionMetadata)[Key]
+}
+
+export const sensorDefinitions = Object.fromEntries(
+	Object.entries(sensorDefinitionTemplates).map(([id, definition]) => [
+		id,
+		{
+			...definition,
+			...sensorDefinitionMetadata[id as keyof typeof sensorDefinitionMetadata],
+		},
+	]),
+) as SensorDefinitions
