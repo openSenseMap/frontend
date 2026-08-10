@@ -67,7 +67,6 @@ const BASE_DEVICE_COLUMNS = {
 	public: true,
 	userId: true,
 	deviceSchemaVersionId: true,
-	deviceSchemaPublicId: true,
 } as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
@@ -186,7 +185,7 @@ export async function getDeviceForSingleMeasurementWrite({
 	id,
 	sensorId,
 }: Pick<Device, 'id'> & { sensorId: string }) {
-	const [row] = await drizzleClient
+	const prepared = await drizzleClient
 		.select({
 			id: device.id,
 			archivedAt: device.archivedAt,
@@ -197,10 +196,16 @@ export async function getDeviceForSingleMeasurementWrite({
 		.from(device)
 		.leftJoin(
 			sensor,
-			and(eq(sensor.deviceId, device.id), eq(sensor.id, sensorId)),
+			and(
+				eq(sensor.deviceId, device.id),
+				eq(sensor.id, sql.placeholder('sensorId')),
+			),
 		)
-		.where(eq(device.id, id))
+		.where(eq(device.id, sql.placeholder('deviceId')))
 		.limit(1)
+		.prepare('getDeviceForSingleMeasurementWrite')
+
+	const [row] = await prepared.execute({ deviceId: id, sensorId: sensorId })
 
 	if (!row) return undefined
 
@@ -272,7 +277,6 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			model: true,
 			apiKey: true,
 			deviceSchemaVersionId: true,
-			deviceSchemaPublicId: true,
 		},
 	})
 }
@@ -302,7 +306,6 @@ export async function detachDeviceSchema({
 		.set({
 			tags,
 			deviceSchemaVersionId: null,
-			deviceSchemaPublicId: null,
 			updatedAt: sql`NOW()`,
 		})
 		.where(and(eq(device.id, id), eq(device.userId, userId)))
@@ -613,6 +616,20 @@ export function getUserDeviceIds(userId: Device['userId']) {
 
 type DevicesFormat = 'json' | 'geojson'
 
+// Extract the cached ISO timestamp from sensor.lastMeasurement JSON as a
+// PostgreSQL timestamp so it can be compared and aggregated in SQL.
+const cachedLastMeasurementAt = sql<Date | null>`
+	(${sensor.lastMeasurement}->>'createdAt')::timestamptz
+`
+
+const deriveDeviceStatus = (lastMeasurementAt: SQL) => sql<Device['status']>`
+	CASE
+		WHEN ${lastMeasurementAt} > now() - interval '7 days' THEN 'active'::status
+		WHEN ${lastMeasurementAt} > now() - interval '30 days' THEN 'inactive'::status
+		ELSE 'old'::status
+	END
+`
+
 export async function getDevices(format: 'json'): Promise<Device[]>
 export async function getDevices(
 	format: 'geojson',
@@ -622,19 +639,29 @@ export async function getDevices(
 ): Promise<Device[] | GeoJSON.FeatureCollection<Point>>
 
 export async function getDevices(format: DevicesFormat = 'json') {
-	const devices = await drizzleClient.query.device.findMany({
-		where: (device) => isNull(device.archivedAt),
-		columns: {
-			id: true,
-			name: true,
-			latitude: true,
-			longitude: true,
-			exposure: true,
-			status: true,
-			createdAt: true,
-			tags: true,
-		},
-	})
+	const latestMeasurementAt = sql<Date | null>`max(${cachedLastMeasurementAt})`
+	const rows = await drizzleClient
+		.select({
+			device: {
+				id: device.id,
+				name: device.name,
+				latitude: device.latitude,
+				longitude: device.longitude,
+				exposure: device.exposure,
+				createdAt: device.createdAt,
+				tags: device.tags,
+			},
+			status: deriveDeviceStatus(latestMeasurementAt),
+		})
+		.from(device)
+		.leftJoin(sensor, eq(sensor.deviceId, device.id))
+		.where(isNull(device.archivedAt))
+		.groupBy(device.id)
+
+	const devices = rows.map((row) => ({
+		...row.device,
+		status: row.status,
+	}))
 
 	if (format === 'geojson') {
 		const geojson: GeoJSON.FeatureCollection<Point> = {
@@ -705,6 +732,11 @@ export async function getDevicesWithSensors(options?: {
 	const rows = await drizzleClient
 		.select({
 			device: device,
+			// Keep one result row per sensor, but calculate the newest cached sensor
+			// measurement across the device and derive the same status on every row.
+			status: deriveDeviceStatus(
+				sql`max(${cachedLastMeasurementAt}) over (partition by ${device.id})`,
+			),
 			sensor: {
 				id: sensor.id,
 				title: sensor.title,
@@ -734,7 +766,7 @@ export async function getDevicesWithSensors(options?: {
 	const resultArray: Array<{ device: Device & { sensors: PartialSensor[] } }> =
 		rows.reduce(
 			(acc, row) => {
-				const currentDevice = row.device
+				const currentDevice = { ...row.device, status: row.status }
 				const currentSensor = row.sensor
 
 				if (!deviceMap.has(currentDevice.id)) {
@@ -1042,7 +1074,6 @@ export async function createDevice(deviceData: any, userId: string) {
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
 					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
-					deviceSchemaPublicId: storedDeviceSchemaVersion?.schemaSlug,
 				})
 				.returning()
 

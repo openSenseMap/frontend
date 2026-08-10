@@ -223,7 +223,6 @@ export const action = async ({
 		await postSingleMeasurement(
 			parsedParams.deviceId,
 			parsedParams.sensorId,
-			//@ts-ignore
 			parsedBody,
 			authorization,
 			isTrustedService,

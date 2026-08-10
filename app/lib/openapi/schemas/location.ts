@@ -13,6 +13,27 @@ export const CoordinatesWithHeightSchema = z
 		example: [7.68123, 51.9123, 66.6],
 	})
 
+export const LongitudeLatitudeLocationObjectSchema = z
+	.object({
+		longitude: z.number().meta({
+			description: 'Longitude',
+			example: 7.68123,
+		}),
+		latitude: z.number().meta({
+			description: 'Latitude',
+			example: 51.9123,
+		}),
+		height: z.number().optional().meta({
+			description: 'Height above ground in meters.',
+			example: 66.6,
+		}),
+	})
+	.meta({
+		id: 'LongitudeLatitudeLocationObject',
+		description:
+			'Location object with longitude, latitude, and optional height.',
+	})
+
 export const LocationObjectSchema = z
 	.object({
 		lng: z.number().meta({
@@ -33,26 +54,15 @@ export const LocationObjectSchema = z
 		description:
 			'Location object with longitude, latitude, and optional height.',
 	})
-
-export const LongitudeLatitudeLocationObjectSchema = z
-	.object({
-		longitude: z.number().meta({
-			description: 'Longitude',
-			example: 7.68123,
-		}),
-		latitude: z.number().meta({
-			description: 'Latitude',
-			example: 51.9123,
-		}),
-		height: z.number().optional().meta({
-			description: 'Height above ground in meters.',
-			example: 66.6,
-		}),
-	})
-	.meta({
-		id: 'LongitudeLatitudeLocationObject',
-		description:
-			'Location object with longitude, latitude, and optional height.',
+	.or(LongitudeLatitudeLocationObjectSchema)
+	.transform((location) => {
+		if ('lng' in location) return location
+		else
+			return {
+				lng: location.longitude,
+				lat: location.latitude,
+				height: location.height,
+			}
 	})
 
 export const GeoJsonPointSchema = z

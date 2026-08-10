@@ -1,6 +1,6 @@
 {
-  "id": "3285f8be-bd73-4ead-b46a-8a783965c4d7",
-  "prevId": "38a49253-c64d-4bd1-8107-d6c6b6ba61b1",
+  "id": "f745826f-5e8c-4bb5-bbab-7e9e77ffdbf2",
+  "prevId": "3285f8be-bd73-4ead-b46a-8a783965c4d7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1685,6 +1685,107 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sensor_wiki_alias": {
+      "name": "sensor_wiki_alias",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sensor_wiki_phenomenon": {
+          "name": "sensor_wiki_phenomenon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sensor_wiki_unit": {
+          "name": "sensor_wiki_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title_aliases": {
+          "name": "title_aliases",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::text[]"
+        },
+        "unit_aliases": {
+          "name": "unit_aliases",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::text[]"
+        },
+        "sensor_type_aliases": {
+          "name": "sensor_type_aliases",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::text[]"
+        }
+      },
+      "indexes": {
+        "sensor_wiki_alias_key_unique": {
+          "name": "sensor_wiki_alias_key_unique",
+          "columns": [
+            {
+              "expression": "key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sensor_wiki_alias_phenomenon_idx": {
+          "name": "sensor_wiki_alias_phenomenon_idx",
+          "columns": [
+            {
+              "expression": "sensor_wiki_phenomenon",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
