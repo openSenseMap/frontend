@@ -175,6 +175,7 @@ export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
 					id: true,
 					title: true,
 					sensorType: true,
+					data: true,
 				},
 			},
 		},
@@ -979,6 +980,8 @@ export async function createDevice(deviceData: any, userId: string) {
 			let storedDeviceSchemaVersion = null
 			const isCustomDevice =
 				!deviceData.model || deviceData.model?.toLowerCase() === 'custom'
+			const usesSensorDefinitions =
+				Boolean(deviceData.model) && !isCustomDevice && !deviceData.sensors
 
 			// If model and sensors are both specified, reject (backwards compatibility)
 			if (
@@ -1089,6 +1092,24 @@ export async function createDevice(deviceData: any, userId: string) {
 				sensorsToAdd.length > 0
 			) {
 				for (const [index, sensorData] of sensorsToAdd.entries()) {
+					const existingSensorData =
+						sensorData.data &&
+						typeof sensorData.data === 'object' &&
+						!Array.isArray(sensorData.data)
+							? sensorData.data
+							: {}
+					const sensorMetadata = storedDeviceSchemaVersion
+						? {
+								...existingSensorData,
+								deviceSchemaSensorId: sensorData.id,
+							}
+						: usesSensorDefinitions
+							? {
+									...existingSensorData,
+									sensorDefinitionId: sensorData.id,
+								}
+							: sensorData.data
+
 					const [newSensor] = await tx
 						.insert(sensor)
 						.values({
@@ -1100,9 +1121,7 @@ export async function createDevice(deviceData: any, userId: string) {
 							sensorWikiPhenomenon: sensorData.sensorWikiPhenomenon,
 							sensorWikiUnit: sensorData.sensorWikiUnit,
 							deviceId: createdDevice.id,
-							data: storedDeviceSchemaVersion
-								? { deviceSchemaSensorId: sensorData.id }
-								: sensorData.data,
+							data: sensorMetadata,
 							order: sensorData.order ?? index,
 						})
 						.returning()
