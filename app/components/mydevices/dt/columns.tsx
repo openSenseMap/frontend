@@ -202,7 +202,6 @@ export function getColumns(
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem
-									asChild
 									onClick={() => navigator.clipboard.writeText(device.id)}
 									className="cursor-pointer"
 								>

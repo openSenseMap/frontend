@@ -51,12 +51,15 @@ export async function action({ request }: Route.ActionArgs) {
 			}),
 
 			...(data['device-selection'].model === 'custom' && {
+				model: data['device-selection'].model,
 				sensors: selectedSensors.map((sensor: any) => ({
 					title: sensor.title,
 					sensorType: sensor.sensorType,
 					unit: sensor.unit,
 					icon: sensor.icon,
 				})),
+				deviceSchema: data['sensor-selection'].deviceSchema,
+				deviceSchemaVersionId: data['sensor-selection'].deviceSchemaVersionId,
 			}),
 		}
 

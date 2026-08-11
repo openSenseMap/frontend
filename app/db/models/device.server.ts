@@ -38,6 +38,10 @@ import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sense
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import { getSensorsForModel } from '~/lib/model-definitions'
+import {
+	createOrReusePrivateDeviceSchemaVersionFromUpload,
+	getVisibleDeviceSchemaVersionForCreation,
+} from './device-schema.server'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -62,6 +66,7 @@ const BASE_DEVICE_COLUMNS = {
 	sensorWikiModel: true,
 	public: true,
 	userId: true,
+	deviceSchemaVersionId: true,
 } as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
@@ -271,8 +276,46 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			useAuth: true,
 			model: true,
 			apiKey: true,
+			deviceSchemaVersionId: true,
 		},
 	})
+}
+
+export async function detachDeviceSchema({
+	id,
+	userId,
+}: Pick<Device, 'id' | 'userId'>) {
+	const [existingDevice] = await drizzleClient
+		.select()
+		.from(device)
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+		.limit(1)
+
+	if (!existingDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	assertDeviceIsMutable(existingDevice)
+
+	const tags = (existingDevice.tags ?? []).filter(
+		(tag) => !tag.startsWith('schema:'),
+	)
+
+	const [updatedDevice] = await drizzleClient
+		.update(device)
+		.set({
+			tags,
+			deviceSchemaVersionId: null,
+			updatedAt: sql`NOW()`,
+		})
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+		.returning()
+
+	if (!updatedDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	return updatedDevice
 }
 
 export type DeviceWithoutSensors = Awaited<
@@ -933,6 +976,9 @@ export async function createDevice(deviceData: any, userId: string) {
 
 			// Determine sensors to use
 			let sensorsToAdd = deviceData.sensors
+			let storedDeviceSchemaVersion = null
+			const isCustomDevice =
+				!deviceData.model || deviceData.model?.toLowerCase() === 'custom'
 
 			// If model and sensors are both specified, reject (backwards compatibility)
 			if (
@@ -968,8 +1014,43 @@ export async function createDevice(deviceData: any, userId: string) {
 				}
 			}
 
-			if (deviceData.model?.toLowerCase() === 'custom' && deviceData.sensors) {
+			if (isCustomDevice && deviceData.sensors) {
 				sensorsToAdd = deviceData.sensors ?? []
+			}
+
+			if (isCustomDevice && deviceData.deviceSchema) {
+				storedDeviceSchemaVersion =
+					await createOrReusePrivateDeviceSchemaVersionFromUpload(
+						tx,
+						userId,
+						deviceData.deviceSchema,
+					)
+
+				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
+			}
+
+			if (isCustomDevice && deviceData.deviceSchemaVersionId) {
+				storedDeviceSchemaVersion =
+					await getVisibleDeviceSchemaVersionForCreation(
+						tx,
+						userId,
+						deviceData.deviceSchemaVersionId,
+					)
+
+				if (!storedDeviceSchemaVersion) {
+					throw new Error('Device schema version not found.')
+				}
+
+				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
+			}
+
+			const schemaTag = storedDeviceSchemaVersion
+				? `schema:${storedDeviceSchemaVersion.schemaSlug}`
+				: null
+			const tags = [...(deviceData.tags ?? [])]
+
+			if (schemaTag && !tags.includes(schemaTag)) {
+				tags.push(schemaTag)
 			}
 
 			// Create the device
@@ -979,7 +1060,7 @@ export async function createDevice(deviceData: any, userId: string) {
 					id: deviceData.id,
 					useAuth: deviceData.useAuth ?? true,
 					model: deviceData.model,
-					tags: deviceData.tags,
+					tags,
 					userId: userId,
 					name: deviceData.name,
 					description: deviceData.description,
@@ -992,6 +1073,7 @@ export async function createDevice(deviceData: any, userId: string) {
 						: null,
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
+					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
 				})
 				.returning()
 
@@ -1014,7 +1096,13 @@ export async function createDevice(deviceData: any, userId: string) {
 							unit: sensorData.unit,
 							sensorType: sensorData.sensorType,
 							icon: sensorData.icon,
+							sensorWikiType: sensorData.sensorWikiType,
+							sensorWikiPhenomenon: sensorData.sensorWikiPhenomenon,
+							sensorWikiUnit: sensorData.sensorWikiUnit,
 							deviceId: createdDevice.id,
+							data: storedDeviceSchemaVersion
+								? { deviceSchemaSensorId: sensorData.id }
+								: sensorData.data,
 							order: sensorData.order ?? index,
 						})
 						.returning()
