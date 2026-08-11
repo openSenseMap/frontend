@@ -5,6 +5,9 @@ import { getColumns } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { getPublicDeviceSchemasForUser } from '~/db/models/device-schema.server'
 import {
 	getProfileByUserId,
 	getProfileByUsername,
@@ -33,6 +36,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			requestingUserId,
 			sensorsCount: '0',
 			measurementsCount: '0',
+			deviceSchemas: [],
 		}
 	}
 
@@ -46,12 +50,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	}
 
 	const counts = await getProfileSensorsAndMeasurementsCount(profile)
+	const deviceSchemas = await getPublicDeviceSchemasForUser(profile.userId)
 
 	return {
 		profile,
 		requestingUserId,
 		sensorsCount: counts.sensorsCount,
 		measurementsCount: counts.measurementsCount,
+		deviceSchemas,
 	}
 }
 
@@ -113,8 +119,13 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export default function ProfilePage() {
-	const { profile, sensorsCount, measurementsCount, requestingUserId } =
-		useLoaderData<typeof loader>()
+	const {
+		profile,
+		sensorsCount,
+		measurementsCount,
+		requestingUserId,
+		deviceSchemas,
+	} = useLoaderData<typeof loader>()
 
 	const { t } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
@@ -200,6 +211,42 @@ export default function ProfilePage() {
 							/>
 						)}
 					</div>
+
+					{deviceSchemas.length > 0 && (
+						<div className="border-border bg-card text-card-foreground rounded-xl border p-6 shadow-sm">
+							<div className="text-primary mb-4 text-3xl font-semibold">
+								{t('device_schemas')}
+							</div>
+							<div className="space-y-3">
+								{deviceSchemas.map((schema) => (
+									<div
+										key={schema.versionId}
+										className="border-border bg-muted/40 flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+									>
+										<div className="space-y-1">
+											<div className="flex flex-wrap items-center gap-2">
+												<h3 className="font-medium">{schema.name}</h3>
+												<Badge variant="secondary">v{schema.version}</Badge>
+												<Badge variant="outline">
+													{schema.content.sensors.length} {t('sensors')}
+												</Badge>
+											</div>
+											{schema.description && (
+												<p className="text-muted-foreground text-sm">
+													{schema.description}
+												</p>
+											)}
+										</div>
+										<Button asChild variant="outline">
+											<a href={`/resources/device-schema/${schema.versionId}`}>
+												{t('download')}
+											</a>
+										</Button>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

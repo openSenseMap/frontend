@@ -69,7 +69,7 @@ export function getSensors(deviceId: Sensor['deviceId']) {
 export function getSensorsFromDevice(deviceId: Sensor['deviceId']) {
 	return drizzleClient.query.sensor.findMany({
 		where: (sensor, { eq }) => eq(sensor.deviceId, deviceId),
-		orderBy: (sensor, { asc }) => [asc(sensor.order)],
+		orderBy: (sensor, { asc }) => [asc(sensor.order), asc(sensor.createdAt)],
 	})
 }
 
@@ -179,10 +179,9 @@ export function addNewSensor({
 	icon,
 	deviceId,
 	order,
-}: Pick<
-	Sensor,
-	'title' | 'unit' | 'sensorType' | 'icon' | 'deviceId' | 'order'
->) {
+}: Pick<Sensor, 'title' | 'unit' | 'sensorType' | 'deviceId' | 'order'> & {
+	icon?: Sensor['icon']
+}) {
 	return drizzleClient.insert(sensor).values({
 		title,
 		unit,
@@ -199,18 +198,28 @@ export function updateSensor({
 	unit,
 	sensorType,
 	icon,
+	data,
 	order,
-}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'icon' | 'order'>) {
-	return drizzleClient
-		.update(sensor)
-		.set({
-			title,
-			unit,
-			sensorType,
-			icon,
-			order,
-		})
-		.where(eq(sensor.id, id))
+}: Pick<Sensor, 'id' | 'title' | 'unit' | 'sensorType' | 'order'> & {
+	icon?: Sensor['icon']
+	data?: Sensor['data']
+}) {
+	const setColumns: Partial<Sensor> = {
+		title,
+		unit,
+		sensorType,
+		order,
+	}
+
+	if (icon !== undefined) {
+		setColumns.icon = icon
+	}
+
+	if (data !== undefined) {
+		setColumns.data = data
+	}
+
+	return drizzleClient.update(sensor).set(setColumns).where(eq(sensor.id, id))
 }
 
 // return first sensor with its device name
