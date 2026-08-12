@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { de, enUS } from 'date-fns/locale'
 import {
 	ChevronUp,
@@ -97,6 +97,11 @@ export default function DeviceDetailBox() {
 	const { toast } = useToast()
 	const { t, i18n } = useTranslation('device-detail-box')
 	const dateLocale = i18n.language.startsWith('de') ? de : enUS
+	const dateFormatter = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+	})
 
 	const sensorIds = new Set()
 
@@ -343,17 +348,17 @@ export default function DeviceDetailBox() {
 										<InfoItem
 											icon={Rss}
 											title={t('last_updated')}
-											text={format(new Date(data.device.updatedAt), 'PPP', {
-												locale: dateLocale,
-											})}
+											text={dateFormatter.format(
+												new Date(data.device.updatedAt),
+											)}
 										/>
 										<Separator className="my-2" />
 										<InfoItem
 											icon={CalendarPlus}
 											title={t('created_at')}
-											text={format(new Date(data.device.createdAt), 'PPP', {
-												locale: dateLocale,
-											})}
+											text={dateFormatter.format(
+												new Date(data.device.createdAt),
+											)}
 										/>
 										{data.device.expiresAt && (
 											<>
@@ -361,9 +366,9 @@ export default function DeviceDetailBox() {
 												<InfoItem
 													icon={CalendarPlus}
 													title={t('expires_at')}
-													text={format(new Date(data.device.expiresAt), 'PPP', {
-														locale: dateLocale,
-													})}
+													text={dateFormatter.format(
+														new Date(data.device.expiresAt),
+													)}
 												/>
 											</>
 										)}
