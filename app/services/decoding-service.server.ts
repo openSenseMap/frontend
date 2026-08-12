@@ -1,7 +1,13 @@
+import {
+	type DecoderValueMapping,
+	sensorDefinitions,
+} from '~/lib/sensor-definitions'
+
 type SensorLike = {
 	id: string
 	title?: string
 	sensorType?: string
+	data?: unknown
 }
 
 const luftdatenMatchings: Record<string, string[]> = {
@@ -30,7 +36,21 @@ const luftdatenMatchings: Record<string, string[]> = {
 	noise_laeq: ['schallpegel', 'geräuschpegel'],
 }
 
-function findLuftdatenSensorId(
+function getSensorDefinitionId(sensor: SensorLike): string | undefined {
+	if (
+		!sensor.data ||
+		typeof sensor.data !== 'object' ||
+		Array.isArray(sensor.data)
+	) {
+		return undefined
+	}
+
+	const sensorDefinitionId = (sensor.data as Record<string, unknown>)
+		.sensorDefinitionId
+	return typeof sensorDefinitionId === 'string' ? sensorDefinitionId : undefined
+}
+
+function findLuftdatenSensorIdByTitle(
 	sensors: SensorLike[],
 	value_type: string,
 ): string | undefined {
@@ -67,27 +87,84 @@ function findLuftdatenSensorId(
 
 	if (!luftdatenMatchings[vt_phenomenon]) return undefined
 
-	for (const sensor of sensors) {
-		if (!sensor?.id) continue
-		if (!sensor.title) continue
+	const aliases = luftdatenMatchings[vt_phenomenon]
+	const compatibleSensors = sensors.filter((sensor) => {
+		if (!sensor?.id || !sensor.title) return false
+		if (!sensor.sensorType) return true
 
-		const title = sensor.title.toLowerCase()
+		return sensor.sensorType.toLowerCase().startsWith(vt_sensortype)
+	})
 
-		if (sensor.sensorType) {
-			const type = sensor.sensorType.toLowerCase()
-			if (!type.startsWith(vt_sensortype)) continue
-		}
+	const exactMatches = compatibleSensors.filter((sensor) => {
+		const title = sensor.title!.toLowerCase()
+		return title === vt_phenomenon || aliases.includes(title)
+	})
 
-		const aliases = luftdatenMatchings[vt_phenomenon]
-		const titleMatches =
-			title === vt_phenomenon ||
-			aliases.includes(title) ||
-			aliases.some((alias) => title.includes(alias))
+	if (exactMatches.length > 1) {
+		throw new Error(
+			`Ambiguous Luftdaten sensor mapping for value type ${value_type}`,
+		)
+	}
+	if (exactMatches.length === 1) return exactMatches[0].id
 
-		if (titleMatches) return sensor.id
+	const substringMatches = compatibleSensors.filter((sensor) => {
+		const title = sensor.title!.toLowerCase()
+		return aliases.some((alias) => title.includes(alias))
+	})
+
+	if (substringMatches.length > 1) {
+		throw new Error(
+			`Ambiguous Luftdaten sensor mapping for value type ${value_type}`,
+		)
 	}
 
-	return undefined
+	return substringMatches[0]?.id
+}
+
+type LuftdatenSensorMapping = {
+	sensorId: string
+	mapping: DecoderValueMapping
+}
+
+function findLuftdatenSensorMapping(
+	sensors: SensorLike[],
+	valueType: string,
+): LuftdatenSensorMapping | undefined {
+	const normalizedValueType = valueType?.toLowerCase()
+	if (!normalizedValueType) return undefined
+
+	const definitionMatches = sensors.flatMap<LuftdatenSensorMapping>(
+		(sensor) => {
+			const definitionId = getSensorDefinitionId(sensor)
+			if (!definitionId || !(definitionId in sensorDefinitions)) return []
+
+			const definition =
+				sensorDefinitions[definitionId as keyof typeof sensorDefinitions]
+			if (!('decoderMappings' in definition)) return []
+
+			const mapping = definition.decoderMappings.luftdaten?.find(
+				(candidate) =>
+					candidate.valueType.toLowerCase() === normalizedValueType,
+			)
+
+			return mapping ? [{ sensorId: sensor.id, mapping }] : []
+		},
+	)
+
+	if (definitionMatches.length > 1) {
+		throw new Error(
+			`Ambiguous Luftdaten sensor definition mapping for value type ${valueType}`,
+		)
+	}
+	if (definitionMatches.length === 1) return definitionMatches[0]
+
+	const legacySensors = sensors.filter(
+		(sensor) => getSensorDefinitionId(sensor) === undefined,
+	)
+	const legacySensorId = findLuftdatenSensorIdByTitle(legacySensors, valueType)
+	return legacySensorId
+		? { sensorId: legacySensorId, mapping: { valueType } }
+		: undefined
 }
 
 const hackairMatchings: Record<string, string[]> = {
@@ -108,22 +185,30 @@ function findHackairSensorId(
 
 	if (!hackairMatchings[vt_sensortype]) return undefined
 
-	for (const sensor of sensors) {
-		if (!sensor?.id) continue
-		if (!sensor.title) continue
+	const aliases = hackairMatchings[vt_sensortype]
+	const titledSensors = sensors.filter(
+		(sensor) => Boolean(sensor?.id) && Boolean(sensor.title),
+	)
+	const exactMatches = titledSensors.filter((sensor) => {
+		const title = sensor.title!.toLowerCase()
+		return title === vt_sensortype || aliases.includes(title)
+	})
 
-		const title = sensor.title.toLowerCase()
-		const aliases = hackairMatchings[vt_sensortype]
+	if (exactMatches.length > 1) {
+		throw new Error(`Ambiguous hackAIR sensor mapping for key ${readingKey}`)
+	}
+	if (exactMatches.length === 1) return exactMatches[0].id
 
-		const titleMatches =
-			title === vt_sensortype ||
-			aliases.includes(title) ||
-			aliases.some((alias) => title.includes(alias))
+	const substringMatches = titledSensors.filter((sensor) => {
+		const title = sensor.title!.toLowerCase()
+		return aliases.some((alias) => title.includes(alias))
+	})
 
-		if (titleMatches) return sensor.id
+	if (substringMatches.length > 1) {
+		throw new Error(`Ambiguous hackAIR sensor mapping for key ${readingKey}`)
 	}
 
-	return undefined
+	return substringMatches[0]?.id
 }
 
 function parseLocation(
@@ -192,7 +277,7 @@ const decodeHandlers: {
 	[key: string]: { decodeMessage: (data: any, options: any) => any[] }
 } = {
 	'application/json': {
-		decodeMessage: (body: any, {}: { sensors: any[] }) => {
+		decodeMessage: (body: any) => {
 			if (Array.isArray(body)) {
 				return body.map((measurement) => ({
 					sensor_id: measurement.sensor_id ?? measurement.sensor,
@@ -228,7 +313,7 @@ const decodeHandlers: {
 	},
 
 	'text/csv': {
-		decodeMessage: (body: string, {}: { sensors: any[] }) => {
+		decodeMessage: (body: string) => {
 			const lines = body.trim().split('\n')
 			return lines.map((line) => {
 				const parts = line.split(',').map((part) => part.trim())
@@ -264,18 +349,20 @@ const decodeHandlers: {
 				throw new Error('Invalid luftdaten json. Missing `sensordatavalues`')
 			}
 
+			const createdAt = new Date()
 			const out = body.sensordatavalues
 				.map((sdv: any) => {
-					const sensor_id = findLuftdatenSensorId(sensors, sdv.value_type)
-					if (!sensor_id) return null
+					const resolved = findLuftdatenSensorMapping(sensors, sdv.value_type)
+					if (!resolved) return null
 
-					const value = parseFloat(sdv.value)
-					if (Number.isNaN(value)) return null
+					const rawValue = parseFloat(sdv.value)
+					if (Number.isNaN(rawValue)) return null
+					const value = rawValue * (resolved.mapping.multiplier ?? 1)
 
 					return {
-						sensor_id,
+						sensor_id: resolved.sensorId,
 						value,
-						createdAt: new Date(),
+						createdAt,
 						location: null,
 					}
 				})
@@ -283,6 +370,16 @@ const decodeHandlers: {
 
 			if (out.length === 0) {
 				throw new Error('No applicable values found')
+			}
+
+			const destinationSensorIds = new Set<string>()
+			for (const measurement of out) {
+				if (destinationSensorIds.has(measurement.sensor_id)) {
+					throw new Error(
+						`Multiple Luftdaten values resolved to sensor ${measurement.sensor_id}`,
+					)
+				}
+				destinationSensorIds.add(measurement.sensor_id)
 			}
 
 			return out
