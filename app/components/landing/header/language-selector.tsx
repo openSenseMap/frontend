@@ -4,6 +4,7 @@ import { Button } from '~/components/ui/button'
 import {
 	Tooltip,
 	TooltipContent,
+	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useRootRouteLoaderData } from '~/root'
@@ -25,20 +26,23 @@ export default function LanguageSelector() {
 	const nextLanguageLabel = locale === 'de' ? 'English' : 'Deutsch'
 
 	return (
-		<Tooltip>
-			<TooltipTrigger asChild>
-				<Button
-					variant="topbar"
-					size="topbarPill"
-					onClick={toggleLanguage}
-					disabled={fetcher.state !== 'idle'}
-					aria-label={`Current language: ${languageLabel}. Switch to ${nextLanguageLabel}.`}
-				>
-					<Languages />
-				</Button>
-			</TooltipTrigger>
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						variant="topbar"
+						size="topbarPill"
+						className="max-lg:size-11 max-lg:px-0"
+						onClick={toggleLanguage}
+						disabled={fetcher.state !== 'idle'}
+						aria-label={`Current language: ${languageLabel}. Switch to ${nextLanguageLabel}.`}
+					>
+						<Languages />
+					</Button>
+				</TooltipTrigger>
 
-			<TooltipContent side="bottom">{languageLabel}</TooltipContent>
-		</Tooltip>
+				<TooltipContent side="bottom">{languageLabel}</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
 	)
 }
