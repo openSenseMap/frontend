@@ -1,6 +1,7 @@
 import { useMediaQuery } from '@mantine/hooks'
 import { Activity, Clock, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import {
 	Dialog,
@@ -37,11 +38,12 @@ export default function EntryLogs({
 }) {
 	const [open, setOpen] = useState(false)
 	const isDesktop = useMediaQuery('(min-width: 768px)')
+	const { t, i18n } = useTranslation('device-detail-box')
 
 	if (isDesktop) {
 		return (
 			<div className="flex flex-col">
-				<p className="pb-4 font-bold">Logs</p>
+				<p className="pb-4 font-bold">{t('logs')}</p>
 				<div className="flex items-center">
 					<div className="flex w-full items-start space-x-4">
 						<div className="border-muted-foreground text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4">
@@ -53,7 +55,7 @@ export default function EntryLogs({
 							</p>
 							<div className="text-muted-foreground flex items-center text-xs">
 								<Clock className="mr-1 h-3 w-3" />
-								{new Date(entryLogs[0].createdAt).toLocaleString()}
+								{new Date(entryLogs[0].createdAt).toLocaleString(i18n.language)}
 							</div>
 						</div>
 					</div>
@@ -68,7 +70,7 @@ export default function EntryLogs({
 												<ExternalLink className="ml-2 h-5 w-5" />
 											</TooltipTrigger>
 											<TooltipContent className="z-auto overflow-visible">
-												<p>Show all logs.</p>
+												<p>{t('show_all_logs')}</p>
 											</TooltipContent>
 										</Tooltip>
 									</TooltipProvider>
@@ -76,13 +78,10 @@ export default function EntryLogs({
 							</DialogTrigger>
 							<DialogContent className="sm:max-w-2/3">
 								<DialogHeader>
-									<DialogTitle>Device Logs</DialogTitle>
-									<DialogDescription>
-										If this is your device, you can make changes in your device
-										settings.
-									</DialogDescription>
+									<DialogTitle>{t('device_logs')}</DialogTitle>
+									<DialogDescription>{t('logs_owner_hint')}</DialogDescription>
 								</DialogHeader>
-								<LogList entryLogs={entryLogs} />
+								<LogList entryLogs={entryLogs} locale={i18n.language} />
 							</DialogContent>
 						</Dialog>
 					</div>
@@ -93,7 +92,7 @@ export default function EntryLogs({
 
 	return (
 		<div className="flex flex-col">
-			<p className="pb-4 font-bold">Logs</p>
+			<p className="pb-4 font-bold">{t('logs')}</p>
 			<div className="flex items-center">
 				<div className="flex w-full items-start space-x-4">
 					<div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
@@ -103,7 +102,7 @@ export default function EntryLogs({
 						<p className="mb-2 text-sm font-medium">{entryLogs[0].content}</p>
 						<div className="text-muted-foreground flex items-center text-xs">
 							<Clock className="mr-1 h-3 w-3" />
-							{new Date(entryLogs[0].createdAt).toLocaleString()}
+							{new Date(entryLogs[0].createdAt).toLocaleString(i18n.language)}
 						</div>
 					</div>
 				</div>
@@ -116,16 +115,13 @@ export default function EntryLogs({
 					</DrawerTrigger>
 					<DrawerContent>
 						<DrawerHeader className="text-left">
-							<DrawerTitle>Device Logs</DrawerTitle>
-							<DrawerDescription>
-								If this is your device, you can make changes in your device
-								settings.
-							</DrawerDescription>
+							<DrawerTitle>{t('device_logs')}</DrawerTitle>
+							<DrawerDescription>{t('logs_owner_hint')}</DrawerDescription>
 						</DrawerHeader>
-						<LogList entryLogs={entryLogs} />
+						<LogList entryLogs={entryLogs} locale={i18n.language} />
 						<DrawerFooter className="pt-2">
 							<DrawerClose asChild>
-								<Button variant="outline">Close</Button>
+								<Button variant="outline">{t('close')}</Button>
 							</DrawerClose>
 						</DrawerFooter>
 					</DrawerContent>
@@ -135,9 +131,15 @@ export default function EntryLogs({
 	)
 }
 
-function LogList({ entryLogs = [] }: { entryLogs: LogEntry[] }) {
+function LogList({
+	entryLogs = [],
+	locale,
+}: {
+	entryLogs: LogEntry[]
+	locale: string
+}) {
 	return (
-		<ScrollArea className="h-[300px] w-full rounded-md border p-4">
+		<ScrollArea className="h-75 w-full rounded-md border p-4">
 			<div className="space-y-4 pr-4">
 				{entryLogs.map((log, index) => (
 					<div key={log.id} className="relative flex items-start space-x-4">
@@ -149,7 +151,7 @@ function LogList({ entryLogs = [] }: { entryLogs: LogEntry[] }) {
 								<p className="mb-2 text-sm font-medium">{log.content}</p>
 								<div className="text-muted-foreground flex items-center text-xs">
 									<Clock className="mr-1 h-3 w-3" />
-									{new Date(log.createdAt).toLocaleString()}
+									{new Date(log.createdAt).toLocaleString(locale)}
 								</div>
 							</Card>
 						</div>
