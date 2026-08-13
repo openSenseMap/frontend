@@ -264,7 +264,7 @@ export function ErrorBoundary() {
 				<Links />
 			</head>
 			<body className="bg-background text-foreground h-full">
-				<div className="flex h-screen w-screen items-center justify-center">
+				<div className="flex min-h-dvh w-full items-start justify-center sm:items-center">
 					<ErrorMessage />
 				</div>
 				<Scripts />
