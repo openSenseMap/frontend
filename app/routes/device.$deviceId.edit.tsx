@@ -89,7 +89,7 @@ export default function EditBox() {
 	]
 
 	return (
-		<div className="font-helvetica space-y-6 px-10 pb-16">
+		<div className="font-helvetica space-y-6 px-4 pb-16 sm:px-6 lg:px-10">
 			<NavBar />
 
 			{/*Toast notification */}
@@ -139,8 +139,8 @@ export default function EditBox() {
 				</ToastPrimitive.Provider>
 			</div>
 
-			<div className="flex items-center justify-between gap-4 rounded">
-				<div>
+			<div className="flex flex-col items-start gap-2 rounded sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+				<div className="min-w-0">
 					<ArrowLeft className="mr-2 inline h-5 w-5" />
 					<Link to="/profile/me">{t('back_to_dashboard')}</Link>
 				</div>
