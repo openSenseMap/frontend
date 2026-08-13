@@ -185,12 +185,12 @@ export default function NewDeviceStepper() {
 			<FormProvider {...form}>
 				<Form
 					onSubmit={form.handleSubmit(onSubmit, onError)}
-					className="bg-card flex h-full w-1/2 flex-col justify-between space-y-6 rounded-lg border p-6"
+					className="bg-card flex h-full min-h-0 w-full max-w-5xl flex-col space-y-6 rounded-lg border p-4 sm:p-6"
 				>
-					<div className="space-y-4">
+					<div className="shrink-0 space-y-4">
 						{/* Breadcrumb Navigation */}
-						<Breadcrumb>
-							<BreadcrumbList>
+						<Breadcrumb className="w-full overflow-x-auto pb-2">
+							<BreadcrumbList className="w-max flex-nowrap">
 								{Stepper.steps.map((step, index) => {
 									return (
 										<div className="flex gap-2" key={index}>
@@ -246,7 +246,7 @@ export default function NewDeviceStepper() {
 					</div>
 
 					{/* Form Content */}
-					<div className="h-full overflow-auto">
+					<div className="min-h-0 flex-1 overflow-auto">
 						{stepper.match({
 							advanced: () => <AdvancedStep integrations={integrations} />,
 							'general-info': () => <GeneralInfoStep />,
@@ -258,7 +258,7 @@ export default function NewDeviceStepper() {
 					</div>
 
 					{/* Navigation Buttons */}
-					<div className="mt-4 flex justify-between">
+					<div className="mt-4 flex shrink-0 justify-between">
 						<Button
 							type="button"
 							variant="secondary"

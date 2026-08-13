@@ -59,6 +59,7 @@ export default function ThemeToggle() {
 					<Button
 						variant="topbar"
 						size="topbarPill"
+						className="max-lg:size-11 max-lg:px-0"
 						onClick={toggleTheme}
 						disabled={fetcher.state !== 'idle'}
 						aria-label={`Toggle theme. Current preference: ${themePreference}`}

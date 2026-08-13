@@ -73,8 +73,8 @@ export default function Imprint({
 	return (
 		<>
 			<header>
-				<nav className="relative mx-auto flex h-16 max-w-7xl justify-between py-6 dark:border-gray-300 dark:bg-black">
-					<div className="container flex flex-wrap items-center justify-between px-4 font-serif">
+				<nav className="relative mx-auto flex min-h-16 max-w-7xl justify-between py-2 dark:border-gray-300 dark:bg-black">
+					<div className="flex w-full flex-wrap items-center justify-between px-4 font-serif">
 						<div className="flex max-w-(--breakpoint-xl) flex-wrap items-center justify-between">
 							<Link to="/" className="flex items-center md:pr-10">
 								<img
@@ -95,8 +95,8 @@ export default function Imprint({
 					</div>
 				</nav>
 			</header>
-			<main className="mx-auto mt-8 flex max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
-				<h1 className="my-4 text-4xl">{title}</h1>
+			<main className="mx-auto mt-4 flex w-full max-w-7xl min-w-0 flex-col justify-center px-4 sm:mt-8 sm:px-6 lg:px-8">
+				<h1 className="my-4 text-3xl wrap-break-word sm:text-4xl">{title}</h1>
 				<MarkdownContent>{content}</MarkdownContent>
 			</main>
 		</>
