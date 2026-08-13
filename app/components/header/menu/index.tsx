@@ -8,7 +8,7 @@ import {
 	DownloadIcon,
 	Info,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	Form,
@@ -43,6 +43,7 @@ export default function Menu({ devices }: MenuProps) {
 
 	const [open, setOpen] = useState(false)
 	const [downloadOpen, setDownloadOpen] = useState(false)
+	const logoutFormRef = useRef<HTMLFormElement>(null)
 
 	const navigation = useNavigation()
 	const isLoggingOut = Boolean(navigation.state === 'submitting')
@@ -56,15 +57,18 @@ export default function Menu({ devices }: MenuProps) {
 		<>
 			<DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
 				<DropdownMenuTrigger asChild>
-					<div className="pointer-events-auto box-border h-10 w-10">
-						<Button variant="topbar" size="topbarIcon">
-							<User2 />
-						</Button>
-					</div>
+					<Button
+						variant="topbar"
+						size="topbarIcon"
+						className="pointer-events-auto size-11 lg:size-10"
+						aria-label={t('user_menu', 'User menu')}
+					>
+						<User2 />
+					</Button>
 				</DropdownMenuTrigger>
 
 				<DropdownMenuContent
-					className="w-56 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95"
+					className="max-h-[calc(100dvh-1rem)] w-56 max-w-[calc(100vw-1rem)] overflow-x-hidden overflow-y-auto overscroll-contain dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 [&_[role=menuitem]]:min-h-11 [&_[role=menuitem]]:touch-manipulation lg:[&_[role=menuitem]]:min-h-0"
 					align="end"
 					forceMount
 				>
@@ -84,11 +88,17 @@ export default function Menu({ devices }: MenuProps) {
 									</p>
 								</div>
 							) : (
-								<div className="flex flex-col space-y-1 p-2">
-									<p className="text-sm leading-none font-medium">
+								<div className="flex min-w-0 flex-col space-y-1 p-2">
+									<p
+										className="truncate text-sm leading-none font-medium"
+										title={user?.name}
+									>
 										{user?.name}
 									</p>
-									<p className="text-muted-foreground text-xs leading-none">
+									<p
+										className="text-muted-foreground truncate text-xs leading-none"
+										title={user?.email}
+									>
 										{user?.email}
 									</p>
 								</div>
@@ -168,12 +178,8 @@ export default function Menu({ devices }: MenuProps) {
 						)}
 
 						<DropdownMenuGroup>
-							<DropdownMenuItem
-								onSelect={(e) => {
-									e.preventDefault()
-								}}
-							>
-								{!user ? (
+							{!user ? (
+								<DropdownMenuItem asChild>
 									<Link
 										to={{
 											pathname: 'login',
@@ -182,37 +188,37 @@ export default function Menu({ devices }: MenuProps) {
 										onClick={() => setOpen(false)}
 										className="w-full cursor-pointer"
 									>
-										<button className="hover:bg-accent focus:bg-accent focus:text-accent-foreground relative flex w-full items-center rounded-sm text-sm outline-hidden transition-colors select-none">
-											<LogIn className="mr-2 h-5 w-5" />
-											<span className="text-light-green">
-												{t('login_label')}
-											</span>
-										</button>
+										<LogIn className="mr-2 h-5 w-5 shrink-0" />
+										<span className="text-light-green">{t('login_label')}</span>
 									</Link>
-								) : (
-									<Form
-										action="/logout"
-										method="post"
-										onSubmit={() => {
-											setOpen(false)
-											toast({
-												description: 'Successfully logged out.',
-											})
-										}}
+								</DropdownMenuItem>
+							) : (
+								<Form
+									ref={logoutFormRef}
+									action="/logout"
+									method="post"
+									onSubmit={() => {
+										setOpen(false)
+										toast({
+											description: 'Successfully logged out.',
+										})
+									}}
+									className="w-full cursor-pointer"
+								>
+									<input type="hidden" name="redirectTo" value={redirectTo} />
+									<DropdownMenuItem
 										className="w-full cursor-pointer"
+										disabled={isLoggingOut}
+										onSelect={(event) => {
+											event.preventDefault()
+											logoutFormRef.current?.requestSubmit()
+										}}
 									>
-										<input type="hidden" name="redirectTo" value={redirectTo} />
-										<button
-											type="submit"
-											className="hover:bg-accent focus:bg-accent focus:text-accent-foreground relative flex w-full items-center rounded-sm text-sm outline-hidden transition-colors select-none"
-											disabled={isLoggingOut}
-										>
-											<LogOut className="mr-2 h-5 w-5" />
-											<span className="text-red-500">{t('logout_label')}</span>
-										</button>
-									</Form>
-								)}
-							</DropdownMenuItem>
+										<LogOut className="mr-2 h-5 w-5 shrink-0" />
+										<span className="text-red-500">{t('logout_label')}</span>
+									</DropdownMenuItem>
+								</Form>
+							)}
 						</DropdownMenuGroup>
 					</div>
 				</DropdownMenuContent>

@@ -31,11 +31,14 @@ export default function Info() {
 	return (
 		<DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
 			<DropdownMenuTrigger asChild>
-				<div className="pointer-events-auto box-border h-10 w-10">
-					<Button variant="topbar" size="topbarIcon">
-						<InfoIcon />
-					</Button>
-				</div>
+				<Button
+					variant="topbar"
+					size="topbarIcon"
+					className="pointer-events-auto size-11 lg:size-10"
+					aria-label={t('information_menu', 'Information')}
+				>
+					<InfoIcon />
+				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				className="w-56 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95"
