@@ -1,6 +1,5 @@
 import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
 import {
 	ChevronUp,
 	Minus,
@@ -96,7 +95,7 @@ export default function DeviceDetailBox() {
 	const matches = useMatches()
 	const { toast } = useToast()
 	const { t, i18n } = useTranslation('device-detail-box')
-	const dateLocale = i18n.language.startsWith('de') ? de : enUS
+	const dateLocale = i18n.language
 	const dateFormatter = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
 		year: 'numeric',
 		month: 'long',
