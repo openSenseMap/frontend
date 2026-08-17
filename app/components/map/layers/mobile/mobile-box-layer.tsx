@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useMemo } from 'react'
 import { Layer, Popup, Source, useMap } from 'react-map-gl/maplibre'
 import { HIGH_COLOR, LOW_COLOR, createPalette } from './color-palette'
 import { type Sensor } from '~/db/schema'
+import { validLngLat } from '~/lib/location'
 
 interface CustomGeoJsonProperties {
 	locationId: number
@@ -42,6 +43,7 @@ export default function MobileBoxLayer({
 		const mappableData = sensorData.filter(
 			(measurement) =>
 				measurement.location !== null &&
+				validLngLat(measurement.location.x, measurement.location.y) &&
 				measurement.value !== null &&
 				Number.isFinite(Number(measurement.value)),
 		)

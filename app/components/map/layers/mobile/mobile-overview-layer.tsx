@@ -204,10 +204,15 @@ export default function MobileOverviewLayer({
 	const [showOriginalColors, setShowOriginalColors] = useState(true)
 
 	useEffect(() => {
+		setHighlightedTrip(null)
+		setHoveredCluster(null)
+		setPopupInfo(null)
+
 		if (clusteredTrips.length === 0) {
 			setSourceData(null)
 			setExpandedSourceData(null)
 			setLegendItems([])
+			if (mapRef) mapRef.getCanvas().style.cursor = ''
 			return
 		}
 
@@ -259,7 +264,7 @@ export default function MobileOverviewLayer({
 		setSourceData(featureCollection(points))
 		setExpandedSourceData(featureCollection(expandedPoints))
 		setLegendItems(legend)
-	}, [clusteredTrips, tripDateTimeFormatter])
+	}, [clusteredTrips, mapRef, tripDateTimeFormatter])
 
 	useEffect(() => {
 		if (!mapRef || !sourceData) return
