@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Separator } from '~/components/ui/separator'
 import { cn } from '~/lib/utils'
 
+const SENSOR_COMMUNITY_CATEGORY = 'Sensor.Community'
+
 const devices = [
 	{
 		name: 'senseBox:Home',
@@ -21,7 +23,7 @@ const devices = [
 		imageHasPadding: true,
 	},
 	{
-		name: 'luftdaten.info',
+		name: SENSOR_COMMUNITY_CATEGORY,
 		image:
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdpbmQiPjxwYXRoIGQ9Ik0xMi44IDE5LjZBMiAyIDAgMSAwIDE0IDE2SDIiLz48cGF0aCBkPSJNMTcuNSA4YTIuNSAyLjUgMCAxIDEgMiA0SDIiLz48cGF0aCBkPSJNOS44IDQuNEEyIDIgMCAxIDEgMTEgOEgyIi8+PC9zdmc+',
 		imageHasPadding: false,
@@ -60,6 +62,9 @@ export function DeviceSelectionStep() {
 				homeV2Lora: 'Lora',
 			}
 			setSelectedConnectionType(connectionMap[model] || '')
+		} else if (model === 'luftdaten.info') {
+			setSelectedDevice(SENSOR_COMMUNITY_CATEGORY)
+			setSelectedConnectionType('')
 		} else {
 			setSelectedDevice(model || '')
 			setSelectedConnectionType('')
@@ -79,6 +84,8 @@ export function DeviceSelectionStep() {
 			// Set the model for the selected device
 			if (value === 'senseBox:Home') {
 				setValue('model', 'homeV2Wifi') // Default to a valid connection type for Home
+			} else if (value === SENSOR_COMMUNITY_CATEGORY) {
+				setValue('model', 'luftdaten.info')
 			} else {
 				setValue('model', value) // Set model to the selected device name
 			}
@@ -98,25 +105,22 @@ export function DeviceSelectionStep() {
 
 	const handleClose = () => {
 		setSelectedDevice(null)
+		setSelectedConnectionType('')
 		setValue('model', null)
 	}
+
+	const isConfiguringDevice = selectedDevice === 'senseBox:Home'
 
 	return (
 		<div className="overflow-hidden p-4">
 			<div
 				className={cn(
 					'grid gap-6',
-					selectedDevice === 'senseBox:Home'
-						? 'grid-cols-1'
-						: 'grid-cols-1 lg:grid-cols-2',
+					isConfiguringDevice ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2',
 				)}
 			>
 				{devices.map((device) => {
-					if (
-						selectedDevice === 'senseBox:Home' &&
-						device.name !== selectedDevice
-					)
-						return null
+					if (isConfiguringDevice && device.name !== selectedDevice) return null
 
 					return (
 						<Card
@@ -131,7 +135,7 @@ export function DeviceSelectionStep() {
 									'border-primary bg-primary/10 ring-primary/40 shadow-sm ring-2',
 							)}
 							onClick={() => {
-								if (selectedDevice === 'senseBox:Home') {
+								if (isConfiguringDevice) {
 									return
 								}
 								handleDeviceChange(device.name)
@@ -140,7 +144,7 @@ export function DeviceSelectionStep() {
 								if (event.key === 'Enter' || event.key === ' ') {
 									event.preventDefault()
 
-									if (selectedDevice === 'senseBox:Home') {
+									if (isConfiguringDevice) {
 										return
 									}
 
@@ -163,7 +167,7 @@ export function DeviceSelectionStep() {
 								</div>
 
 								<div className="flex min-w-0 flex-1 flex-col justify-center p-3">
-									{selectedDevice === 'senseBox:Home' && (
+									{isConfiguringDevice && (
 										<Button
 											variant="ghost"
 											size="icon"
