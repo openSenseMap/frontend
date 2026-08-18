@@ -97,9 +97,7 @@ export function SensorSelectionStep() {
 	const sensorGroups = groupSensorsByType(sensors)
 
 	const isSensorSelected = (sensor: Sensor) =>
-		selectedSensors.some(
-			(s) => s.title === sensor.title && s.sensorType === sensor.sensorType,
-		)
+		selectedSensors.some((selected) => selected.id === sensor.id)
 
 	const isGroupFullySelected = (group: SensorGroup) =>
 		group.sensors.every((sensor) => isSensorSelected(sensor))
@@ -115,10 +113,7 @@ export function SensorSelectionStep() {
 		const isAlreadySelected = isSensorSelected(sensor)
 
 		const updatedSensors = isAlreadySelected
-			? selectedSensors.filter(
-					(s) =>
-						!(s.title === sensor.title && s.sensorType === sensor.sensorType),
-				)
+			? selectedSensors.filter((selected) => selected.id !== sensor.id)
 			: [...selectedSensors, sensor]
 
 		setSelectedSensors(updatedSensors)
@@ -130,15 +125,15 @@ export function SensorSelectionStep() {
 
 		const updatedSensors = isFullySelected
 			? selectedSensors.filter(
-					(s) =>
-						!group.sensors.some(
-							(sensor) =>
-								s.title === sensor.title && s.sensorType === sensor.sensorType,
-						),
+					(selected) =>
+						!group.sensors.some((sensor) => selected.id === sensor.id),
 				)
 			: [
-					...selectedSensors,
-					...group.sensors.filter((sensor) => !isSensorSelected(sensor)),
+					...selectedSensors.filter(
+						(selected) =>
+							!group.sensors.some((sensor) => selected.id === sensor.id),
+					),
+					...group.sensors,
 				]
 
 		setSelectedSensors(updatedSensors)
@@ -248,11 +243,11 @@ export function SensorSelectionStep() {
 										<div className="border-muted ml-2 space-y-2 border-l-2 pl-4">
 											{group.sensors.map((sensor) => {
 												const isSelected = isSensorSelected(sensor)
-												const sensorId = `sensor-${group.sensorType}-${sensor.title}`
+												const sensorId = `sensor-${sensor.id}`
 
 												return (
 													<div
-														key={sensor.title}
+														key={sensor.id}
 														className={cn(
 															'flex items-center space-x-3 rounded-md p-2 transition-colors',
 															isSelected
