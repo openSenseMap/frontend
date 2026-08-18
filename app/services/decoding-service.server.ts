@@ -101,9 +101,10 @@ function findLuftdatenSensorIdByTitle(
 	})
 
 	if (exactMatches.length > 1) {
-		throw new Error(
+		console.warn(
 			`Ambiguous Luftdaten sensor mapping for value type ${value_type}`,
 		)
+		return undefined
 	}
 	if (exactMatches.length === 1) return exactMatches[0].id
 
@@ -113,9 +114,10 @@ function findLuftdatenSensorIdByTitle(
 	})
 
 	if (substringMatches.length > 1) {
-		throw new Error(
+		console.warn(
 			`Ambiguous Luftdaten sensor mapping for value type ${value_type}`,
 		)
+		return undefined
 	}
 
 	return substringMatches[0]?.id
@@ -152,9 +154,10 @@ function findLuftdatenSensorMapping(
 	)
 
 	if (definitionMatches.length > 1) {
-		throw new Error(
+		console.warn(
 			`Ambiguous Luftdaten sensor definition mapping for value type ${valueType}`,
 		)
+		return undefined
 	}
 	if (definitionMatches.length === 1) return definitionMatches[0]
 
@@ -195,7 +198,8 @@ function findHackairSensorId(
 	})
 
 	if (exactMatches.length > 1) {
-		throw new Error(`Ambiguous hackAIR sensor mapping for key ${readingKey}`)
+		console.warn(`Ambiguous hackAIR sensor mapping for key ${readingKey}`)
+		return undefined
 	}
 	if (exactMatches.length === 1) return exactMatches[0].id
 
@@ -205,7 +209,8 @@ function findHackairSensorId(
 	})
 
 	if (substringMatches.length > 1) {
-		throw new Error(`Ambiguous hackAIR sensor mapping for key ${readingKey}`)
+		console.warn(`Ambiguous hackAIR sensor mapping for key ${readingKey}`)
+		return undefined
 	}
 
 	return substringMatches[0]?.id
@@ -350,36 +355,33 @@ const decodeHandlers: {
 			}
 
 			const createdAt = new Date()
-			const out = body.sensordatavalues
-				.map((sdv: any) => {
-					const resolved = findLuftdatenSensorMapping(sensors, sdv.value_type)
-					if (!resolved) return null
+			const destinationSensorIds = new Set<string>()
+			const out = []
 
-					const rawValue = parseFloat(sdv.value)
-					if (Number.isNaN(rawValue)) return null
-					const value = rawValue * (resolved.mapping.multiplier ?? 1)
+			for (const sdv of body.sensordatavalues) {
+				const resolved = findLuftdatenSensorMapping(sensors, sdv.value_type)
+				if (!resolved) continue
 
-					return {
-						sensor_id: resolved.sensorId,
-						value,
-						createdAt,
-						location: null,
-					}
+				const rawValue = parseFloat(sdv.value)
+				if (Number.isNaN(rawValue)) continue
+				if (destinationSensorIds.has(resolved.sensorId)) {
+					console.warn(
+						`Multiple Luftdaten values resolved to sensor ${resolved.sensorId}; keeping the first value`,
+					)
+					continue
+				}
+
+				destinationSensorIds.add(resolved.sensorId)
+				out.push({
+					sensor_id: resolved.sensorId,
+					value: rawValue * (resolved.mapping.multiplier ?? 1),
+					createdAt,
+					location: null,
 				})
-				.filter(Boolean) as any[]
+			}
 
 			if (out.length === 0) {
 				throw new Error('No applicable values found')
-			}
-
-			const destinationSensorIds = new Set<string>()
-			for (const measurement of out) {
-				if (destinationSensorIds.has(measurement.sensor_id)) {
-					throw new Error(
-						`Multiple Luftdaten values resolved to sensor ${measurement.sensor_id}`,
-					)
-				}
-				destinationSensorIds.add(measurement.sensor_id)
 			}
 
 			return out
