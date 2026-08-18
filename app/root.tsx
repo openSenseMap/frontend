@@ -80,18 +80,6 @@ export const links = () => {
 	]
 }
 
-export const meta: MetaFunction = () => [
-	{ charset: 'utf-8' },
-	{ title: 'openSenseMap' },
-	{ viewport: 'width=device-width,initial-scale=1' },
-	{ 'theme-color': '#3d843f', media: '(prefers-color-scheme: light)' },
-	{ 'theme-color': '#6fa161', media: '(prefers-color-scheme: dark)' },
-	{
-		description:
-			'The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source.',
-	},
-]
-
 export async function loader({ context, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
 	const user = await getUser(request)
@@ -229,11 +217,26 @@ export default function App({
 			suppressHydrationWarning
 		>
 			<head>
-				<Meta />
 				<PreventFlashOnWrongTheme themePreference={themePreference} />
 				<Links />
 			</head>
 			<body className="dark:bg-dark-background dark:text-dark-text h-full">
+				<meta charSet="utf-8" />
+				<meta name="viewport" content="width=device-width,initial-scale=1" />
+				<meta
+					name="theme-color"
+					content="#3d843f"
+					media="(prefers-color-scheme: light)"
+				/>
+				<meta
+					name="theme-color"
+					content="#6fa161"
+					media="(prefers-color-scheme: dark)"
+				/>
+				<meta
+					name="description"
+					content="The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source."
+				/>
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />

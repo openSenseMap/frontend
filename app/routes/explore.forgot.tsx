@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type MetaFunction,
 	data,
 	redirect,
 	Form,
@@ -68,10 +67,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-export const meta: MetaFunction = () => {
-	return [{ title: 'Forgot Password' }]
-}
-
 export default function ForgotPasswordPage() {
 	const [searchParams] = useSearchParams()
 	const actionData = useActionData<typeof action>()
@@ -88,6 +83,7 @@ export default function ForgotPasswordPage() {
 
 	return (
 		<div className="flex h-screen items-center justify-center">
+			<title>{t('forgot_your_password')}</title>
 			<Link
 				to={{
 					pathname: '/explore',

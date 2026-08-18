@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type MetaFunction,
 	data,
 	redirect,
 	Form,
@@ -217,10 +216,6 @@ export async function action({ context, request }: Route.ActionArgs) {
 	})
 }
 
-export const meta: MetaFunction = () => {
-	return [{ title: 'Explore' }]
-}
-
 export default function RegisterDialog() {
 	const { t } = useTranslation('register')
 	const navigation = useNavigation()
@@ -252,6 +247,7 @@ export default function RegisterDialog() {
 	) {
 		return (
 			<div className="flex h-screen items-center justify-center">
+				<title>{t('register')}</title>
 				<Link
 					to={{
 						pathname: '/explore',
@@ -283,6 +279,7 @@ export default function RegisterDialog() {
 
 	return (
 		<div className="flex h-screen items-center justify-center">
+			<title>{t('register')}</title>
 			<Link
 				to={{
 					pathname: '/explore',

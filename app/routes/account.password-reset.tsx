@@ -121,10 +121,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-export const meta: MetaFunction = () => {
-	return [{ title: 'Password reset' }]
-}
-
 export default function PasswordResetRoute() {
 	const { token } = useLoaderData() as LoaderData
 	const actionData = useActionData() as ActionData | undefined
@@ -144,6 +140,7 @@ export default function PasswordResetRoute() {
 	if (!token) {
 		return (
 			<div className="flex h-screen items-center justify-center">
+				<title>{t('set_new_password')}</title>
 				<Link
 					to={{
 						pathname: '/explore',
@@ -181,6 +178,7 @@ export default function PasswordResetRoute() {
 
 	return (
 		<div className="flex h-screen items-center justify-center">
+			<title>{t('set_new_password')}</title>
 			<Link
 				to={{
 					pathname: '/explore',
