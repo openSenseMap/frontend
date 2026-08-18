@@ -37,7 +37,10 @@ import { messages as NewLufdatenDeviceMessages } from '~/emails/new-device-luftd
 import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sensebox'
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
-import { getSensorsForModel } from '~/lib/model-definitions'
+import {
+	getSensorsForModel,
+	getSensorTemplateValidationError,
+} from '~/lib/model-definitions'
 import {
 	createOrReusePrivateDeviceSchemaVersionFromUpload,
 	getVisibleDeviceSchemaVersionForCreation,
@@ -996,7 +999,16 @@ export async function createDevice(deviceData: any, userId: string) {
 
 			// If model is specified but sensors are not, get sensors from model layout
 			if (deviceData.model && !deviceData.sensors) {
-				const modelSensors = getSensorsForModel(deviceData.model as any)
+				const sensorTemplateError = getSensorTemplateValidationError(
+					deviceData.model,
+					deviceData.sensorTemplates,
+				)
+				if (sensorTemplateError) throw new Error(sensorTemplateError)
+
+				const modelSensors = getSensorsForModel(
+					deviceData.model as any,
+					deviceData.sensorTemplates,
+				)
 
 				if (
 					!Array.isArray(modelSensors) &&
@@ -1005,16 +1017,7 @@ export async function createDevice(deviceData: any, userId: string) {
 					throw new Error(`Unknown model: ${deviceData.model}`)
 				}
 
-				if (
-					Array.isArray(deviceData.sensorTemplates) &&
-					deviceData.sensorTemplates.length > 0
-				) {
-					sensorsToAdd = modelSensors.filter((sensor) =>
-						deviceData.sensorTemplates.includes(sensor.id),
-					)
-				} else {
-					sensorsToAdd = modelSensors
-				}
+				sensorsToAdd = modelSensors
 			}
 
 			if (isCustomDevice && deviceData.sensors) {
@@ -1108,7 +1111,15 @@ export async function createDevice(deviceData: any, userId: string) {
 									...existingSensorData,
 									sensorDefinitionId: sensorData.id,
 								}
-							: sensorData.data
+							: sensorData.data &&
+								  typeof sensorData.data === 'object' &&
+								  !Array.isArray(sensorData.data)
+								? Object.fromEntries(
+										Object.entries(sensorData.data).filter(
+											([key]) => key !== 'sensorDefinitionId',
+										),
+									)
+								: sensorData.data
 
 					const [newSensor] = await tx
 						.insert(sensor)
@@ -1151,11 +1162,6 @@ export async function createDevice(deviceData: any, userId: string) {
 		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 		switch (newDevice.model) {
 			case 'luftdaten.info':
-			case 'luftdaten_sds011':
-			case 'luftdaten_sds011_bme280':
-			case 'luftdaten_sds011_bmp180':
-			case 'luftdaten_sds011_dht11':
-			case 'luftdaten_sds011_dht22':
 				await sendMail({
 					recipientAddress: usr.email,
 					recipientName: usr.name,
