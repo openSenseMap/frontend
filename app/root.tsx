@@ -6,12 +6,10 @@ import { useTranslation } from 'react-i18next'
 import {
 	data,
 	Links,
-	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
 	useRouteLoaderData,
-	type MetaFunction,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
@@ -269,7 +267,6 @@ export function ErrorBoundary() {
 	return (
 		<html className="light h-full" suppressHydrationWarning>
 			<head>
-				<Meta />
 				<PreventFlashOnWrongTheme themePreference="system" />
 				<Links />
 			</head>
