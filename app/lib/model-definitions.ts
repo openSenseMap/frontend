@@ -6,6 +6,13 @@ type SensorWithDefinitionId = (typeof sensorDefinitions)[SensorKey] & {
 	id: SensorKey
 }
 
+export const luftdatenSensorDefinitionKeys = Object.entries(sensorDefinitions)
+	.filter(([, definition]) => {
+		if (!('decoderMappings' in definition)) return false
+		return Boolean(definition.decoderMappings?.luftdaten?.length)
+	})
+	.map(([id]) => id as SensorKey)
+
 const senseBoxHomeV2: readonly SensorKey[] = [
 	'hdc1080_temperature',
 	'hdc1080_humidity',
@@ -31,33 +38,6 @@ const senseBoxHomeV2: readonly SensorKey[] = [
 ] as const
 
 const luftdatenSds011 = ['sds011_pm10', 'sds011_pm25'] as const
-const luftdatenBme280 = [
-	'bme280_temperature',
-	'bme280_humidity',
-	'bme280_pressure_pa',
-] as const
-
-const luftdatenPms1003 = [
-	'pms1003_pm01',
-	'pms1003_pm25',
-	'pms1003_pm10',
-] as const
-const luftdatenPms3003 = [
-	'pms3003_pm01',
-	'pms3003_pm25',
-	'pms3003_pm10',
-] as const
-const luftdatenPms5003 = [
-	'pms5003_pm01',
-	'pms5003_pm25',
-	'pms5003_pm10',
-] as const
-const luftdatenPms7003 = [
-	'pms7003_pm01',
-	'pms7003_pm25',
-	'pms7003_pm10',
-] as const
-const luftdatenSps30 = ['sps30_pm1', 'sps30_pm25', 'sps30_pm10'] as const
 
 export const modelDefinitions = {
 	senseBoxHomeV2,
@@ -91,37 +71,7 @@ export const modelDefinitions = {
 		'sps30_pm25',
 	] as const satisfies readonly SensorKey[],
 
-	luftdaten_sds011: luftdatenSds011,
-	luftdaten_sds011_dht11: [
-		...luftdatenSds011,
-		'dht11_temperature',
-		'dht11_humidity',
-	],
-	luftdaten_sds011_dht22: [
-		...luftdatenSds011,
-		'dht22_temperature',
-		'dht22_humidity',
-	],
-	luftdaten_sds011_bmp180: [
-		...luftdatenSds011,
-		'bmp180_temperature',
-		'bmp180_pressure_pa',
-	],
-	luftdaten_sds011_bme280: [...luftdatenSds011, ...luftdatenBme280],
-	luftdaten_pms1003: luftdatenPms1003,
-	luftdaten_pms1003_bme280: [...luftdatenPms1003, ...luftdatenBme280],
-	luftdaten_pms3003: luftdatenPms3003,
-	luftdaten_pms3003_bme280: [...luftdatenPms3003, ...luftdatenBme280],
-	luftdaten_pms5003: luftdatenPms5003,
-	luftdaten_pms5003_bme280: [...luftdatenPms5003, ...luftdatenBme280],
-	luftdaten_pms7003: luftdatenPms7003,
-	luftdaten_pms7003_bme280: [...luftdatenPms7003, ...luftdatenBme280],
-	luftdaten_sps30_bme280: [...luftdatenSps30, ...luftdatenBme280],
-	luftdaten_sps30_sht3x: [
-		'sht3x_temperature',
-		'sht3x_humidity',
-		...luftdatenSps30,
-	],
+	'luftdaten.info': luftdatenSensorDefinitionKeys,
 	hackair_home_v2: luftdatenSds011,
 
 	homeEthernet: [
@@ -208,15 +158,47 @@ export function getSensorTemplateValidationError(
 ): string | undefined {
 	if (!model || model.toLowerCase() === 'custom') return undefined
 	if (!(model in modelDefinitions)) return `Unknown model: ${model}`
-	if (!sensorTemplates?.length) return undefined
+	if (model === 'luftdaten.info' && !sensorTemplates?.length) {
+		return `At least one sensor template is required for model ${model}`
+	}
 
 	const definitionModel = model as ModelDefinitionKey
-	const unknownTemplates = getUnknownSensorTemplates(
-		definitionModel,
-		sensorTemplates,
+	if (sensorTemplates?.length) {
+		const unknownTemplates = getUnknownSensorTemplates(
+			definitionModel,
+			sensorTemplates,
+		)
+		if (unknownTemplates.length > 0) {
+			return `Unknown sensor templates for model ${model}: ${unknownTemplates.join(', ')}`
+		}
+	}
+
+	if (model !== 'luftdaten.info') return undefined
+
+	const mappingsByValueType = new Map<
+		string,
+		{ valueType: string; sensorDefinitionIds: Set<SensorKey> }
+	>()
+
+	for (const sensor of getSensorsForModel(definitionModel, sensorTemplates)) {
+		if (!('decoderMappings' in sensor)) continue
+
+		for (const mapping of sensor.decoderMappings?.luftdaten ?? []) {
+			const normalizedValueType = mapping.valueType.toLowerCase()
+			const destination = mappingsByValueType.get(normalizedValueType) ?? {
+				valueType: mapping.valueType,
+				sensorDefinitionIds: new Set<SensorKey>(),
+			}
+			destination.sensorDefinitionIds.add(sensor.id)
+			mappingsByValueType.set(normalizedValueType, destination)
+		}
+	}
+
+	const ambiguousMapping = [...mappingsByValueType.values()].find(
+		({ sensorDefinitionIds }) => sensorDefinitionIds.size > 1,
 	)
-	if (unknownTemplates.length > 0) {
-		return `Unknown sensor templates for model ${model}: ${unknownTemplates.join(', ')}`
+	if (ambiguousMapping) {
+		return `Ambiguous Luftdaten value type ${ambiguousMapping.valueType} maps to multiple selected sensor definitions: ${[...ambiguousMapping.sensorDefinitionIds].join(', ')}`
 	}
 
 	return undefined
