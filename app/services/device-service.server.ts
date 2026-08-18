@@ -11,6 +11,8 @@ import {
 import { verifyLogin } from '~/db/models/user.server'
 import { type Device, type User } from '~/db/schema'
 import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
+import { DeviceModelZodEnum } from '~/lib/device-enums'
+import { getSensorTemplateValidationError } from '~/lib/model-definitions'
 import { deleteDeviceImage } from '~/lib/s3.server'
 
 export const CreateDeviceServiceSchema = z
@@ -29,16 +31,7 @@ export const CreateDeviceServiceSchema = z
 		tags: z.array(z.string()).optional().default([]),
 		latitude: z.number(),
 		longitude: z.number(),
-		model: z
-			.enum([
-				'homeV2Lora',
-				'homeV2Ethernet',
-				'homeV2Wifi',
-				'senseBox:Edu',
-				'luftdaten.info',
-				'custom',
-			])
-			.optional(),
+		model: DeviceModelZodEnum.optional(),
 		sensorTemplates: z.array(z.string()).optional(),
 		sensors: z
 			.array(
@@ -56,6 +49,19 @@ export const CreateDeviceServiceSchema = z
 	.refine((data) => !(data.model && data.sensors && data.model !== 'custom'), {
 		message: 'Model and sensors cannot be specified at the same time.',
 		path: ['sensors'],
+	})
+	.superRefine((data, ctx) => {
+		const message = getSensorTemplateValidationError(
+			data.model,
+			data.sensorTemplates,
+		)
+		if (message) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['sensorTemplates'],
+				message,
+			})
+		}
 	})
 
 export type CreateDeviceServiceInput = z.infer<typeof CreateDeviceServiceSchema>
