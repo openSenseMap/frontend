@@ -306,6 +306,90 @@ const sensorDefinitionTemplates = {
 		icon: 'osem-cloud',
 		image: '/img/sensor_images/SPS30.jpg',
 	},
+	sen55_pm1: {
+		title: 'PM1',
+		unit: 'µg/m³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_pm25: {
+		title: 'PM2.5',
+		unit: 'µg/m³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_pm4: {
+		title: 'PM4',
+		unit: 'µg/m³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_pm10: {
+		title: 'PM10',
+		unit: 'µg/m³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_nc05: {
+		title: 'NC0.5',
+		unit: '#/cm³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_nc1: {
+		title: 'NC1.0',
+		unit: '#/cm³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_nc25: {
+		title: 'NC2.5',
+		unit: '#/cm³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_nc4: {
+		title: 'NC4.0',
+		unit: '#/cm³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_nc10: {
+		title: 'NC10',
+		unit: '#/cm³',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_typical_particle_size: {
+		title: 'Typische Partikelgröße',
+		unit: 'µm',
+		sensorType: 'SEN55',
+		icon: 'osem-cloud',
+	},
+	sen55_temperature: {
+		title: 'Temperatur',
+		unit: '°C',
+		sensorType: 'SEN55',
+		icon: 'osem-thermometer',
+	},
+	sen55_humidity: {
+		title: 'rel. Luftfeuchte',
+		unit: '%',
+		sensorType: 'SEN55',
+		icon: 'osem-humidity',
+	},
+	sen55_voc: {
+		title: 'VOC-Index',
+		unit: 'Index',
+		sensorType: 'SEN55',
+		icon: 'osem-gauge',
+	},
+	sen55_nox: {
+		title: 'NOx-Index',
+		unit: 'Index',
+		sensorType: 'SEN55',
+		icon: 'osem-gauge',
+	},
 	pms1003_pm10: {
 		title: 'PM10',
 		unit: 'µg/m³',
@@ -542,6 +626,143 @@ const sensorDefinitionMetadata = {
 	sps30_nc10: {
 		phenomenon: 'particle-number-concentration-10um',
 		decoderMappings: { luftdaten: [{ valueType: 'SPS30_N10' }] },
+	},
+	sen55_pm1: {
+		phenomenon: 'particulate-matter-mass-concentration-1um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_P0' },
+				{ valueType: 'SEN5X_P0' },
+				{ valueType: 'SEN55_P0' },
+			],
+		},
+	},
+	sen55_pm25: {
+		phenomenon: 'particulate-matter-mass-concentration-2.5um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_P2' },
+				{ valueType: 'SEN5X_P2' },
+				{ valueType: 'SEN55_P2' },
+			],
+		},
+	},
+	sen55_pm4: {
+		phenomenon: 'particulate-matter-mass-concentration-4um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_P4' },
+				{ valueType: 'SEN5X_P4' },
+				{ valueType: 'SEN55_P4' },
+			],
+		},
+	},
+	sen55_pm10: {
+		phenomenon: 'particulate-matter-mass-concentration-10um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_P1' },
+				{ valueType: 'SEN5X_P1' },
+				{ valueType: 'SEN55_P1' },
+			],
+		},
+	},
+	sen55_nc05: {
+		phenomenon: 'particle-number-concentration-0.5um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_N05' },
+				{ valueType: 'SEN5X_N05' },
+				{ valueType: 'SEN55_N05' },
+			],
+		},
+	},
+	sen55_nc1: {
+		phenomenon: 'particle-number-concentration-1um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_N1' },
+				{ valueType: 'SEN5X_N1' },
+				{ valueType: 'SEN55_N1' },
+			],
+		},
+	},
+	sen55_nc25: {
+		phenomenon: 'particle-number-concentration-2.5um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_N25' },
+				{ valueType: 'SEN5X_N25' },
+				{ valueType: 'SEN55_N25' },
+			],
+		},
+	},
+	sen55_nc4: {
+		phenomenon: 'particle-number-concentration-4um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_N4' },
+				{ valueType: 'SEN5X_N4' },
+				{ valueType: 'SEN55_N4' },
+			],
+		},
+	},
+	sen55_nc10: {
+		phenomenon: 'particle-number-concentration-10um',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_N10' },
+				{ valueType: 'SEN5X_N10' },
+				{ valueType: 'SEN55_N10' },
+			],
+		},
+	},
+	sen55_typical_particle_size: {
+		phenomenon: 'typical-particle-size',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SPS30_TS' },
+				{ valueType: 'SEN5X_TS' },
+				{ valueType: 'SEN55_TS' },
+			],
+		},
+	},
+	sen55_temperature: {
+		phenomenon: 'air-temperature',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SHT3X_temperature' },
+				{ valueType: 'SEN5X_temperature' },
+				{ valueType: 'SEN55_temperature' },
+			],
+		},
+	},
+	sen55_humidity: {
+		phenomenon: 'relative-humidity',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SHT3X_humidity' },
+				{ valueType: 'SEN5X_humidity' },
+				{ valueType: 'SEN55_humidity' },
+			],
+		},
+	},
+	sen55_voc: {
+		phenomenon: 'volatile-organic-compounds-index',
+		decoderMappings: {
+			luftdaten: [{ valueType: 'SEN5X_voc' }, { valueType: 'SEN55_voc' }],
+		},
+	},
+	sen55_nox: {
+		phenomenon: 'nitrogen-oxides-index',
+		decoderMappings: {
+			luftdaten: [
+				{ valueType: 'SHT3X_co2_ppm' },
+				{ valueType: 'SEN5X_nox' },
+				{ valueType: 'SEN55_nox' },
+				{ valueType: 'SEN55_co2_ppm' },
+			],
+		},
 	},
 	pms1003_pm10: {
 		phenomenon: 'particulate-matter-mass-concentration-10um',
