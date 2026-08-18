@@ -180,6 +180,19 @@ export default function NewDeviceStepper() {
 		}
 	}
 
+	const onBack = () => {
+		const parsed = stepper.current.schema.safeParse(form.getValues())
+
+		if (parsed.success) {
+			setFormData((current) => ({
+				...current,
+				[stepper.current.id]: parsed.data,
+			}))
+		}
+
+		stepper.prev()
+	}
+
 	return (
 		<Stepper.Provider>
 			<FormProvider {...form}>
@@ -196,7 +209,17 @@ export default function NewDeviceStepper() {
 										<div className="flex gap-2" key={index}>
 											<BreadcrumbItem key={step.id}>
 												<BreadcrumbLink
-													onClick={() => stepper.goTo(step.id)}
+													onClick={() => {
+														if (stepper.current.id === step.id) return
+
+														void form.handleSubmit((data) => {
+															setFormData((current) => ({
+																...current,
+																[stepper.current.id]: data,
+															}))
+															stepper.goTo(step.id)
+														}, onError)()
+													}}
 													className={` ${
 														stepper.index === step.index
 															? 'text-foreground font-bold'
@@ -262,7 +285,7 @@ export default function NewDeviceStepper() {
 						<Button
 							type="button"
 							variant="secondary"
-							onClick={() => stepper.prev()}
+							onClick={onBack}
 							disabled={isFirst || isSubmitting}
 						>
 							{t('back')}

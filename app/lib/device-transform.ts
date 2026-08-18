@@ -21,6 +21,7 @@ export type TransformedDevice = {
 	model: string | null
 	latitude: number
 	longitude: number
+	height: number | null
 	useAuth: boolean | null
 	access_token: string | null
 	public: boolean | null
@@ -73,7 +74,10 @@ export function transformDeviceToApiFormat(
 ): TransformedDevice {
 	const { id, tags, sensors, apiKey, ...rest } = box
 	const timestamp = box.updatedAt.toISOString()
-	const coordinates = [box.longitude, box.latitude]
+	const coordinates =
+		box.height === null || box.height === undefined
+			? [box.longitude, box.latitude]
+			: [box.longitude, box.latitude, box.height]
 
 	return {
 		_id: id,

@@ -52,6 +52,7 @@ export const device = pgTable('device', {
 	expiresAt: date('expires_at', { mode: 'date' }),
 	latitude: doublePrecision('latitude').notNull(),
 	longitude: doublePrecision('longitude').notNull(),
+	height: doublePrecision('height'),
 	sensorWikiModel: text('sensor_wiki_model'),
 	userId: text('user_id')
 		.notNull()

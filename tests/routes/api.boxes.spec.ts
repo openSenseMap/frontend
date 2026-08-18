@@ -1,4 +1,5 @@
 import { generateTestUserCredentials } from 'tests/data/generate_test_user'
+import invariant from 'tiny-invariant'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes'
 import { BASE_URL } from '../../vitest.setup'
 import { createDevice, deleteDevice } from '~/db/models/device.server'
@@ -101,6 +102,46 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(body.type).toBe('FeatureCollection')
 			expect(Array.isArray(body.features)).toBe(true)
 			expect(body.features.length).lessThanOrEqual(2)
+		})
+
+		it('should include a non-null height in device GeoJSON coordinates', async () => {
+			invariant(user, 'Test user must be registered')
+
+			const heightDevice = await createDevice(
+				{
+					name: `GeoJSON Height Device ${Date.now()}`,
+					latitude: 51.969,
+					longitude: 7.596,
+					height: -12.5,
+					exposure: 'outdoor',
+					model: 'custom',
+					sensors: [],
+				},
+				user.id,
+			)
+			createdDeviceIds.push(heightDevice.id)
+
+			const searchParams = new URLSearchParams({
+				format: 'geojson',
+				name: heightDevice.name,
+				limit: '1',
+			})
+			const request = new Request(`${BASE_URL}?${searchParams}`, {
+				method: 'GET',
+			})
+
+			const response = (await loader({
+				request,
+			} as Route.LoaderArgs)) as Response
+			const body = await response.json()
+			const feature = body.features.find(
+				(candidate: any) => candidate.properties.id === heightDevice.id,
+			)
+
+			expect(response.status).toBe(200)
+			expect(feature).toBeDefined()
+			expect(feature.properties.height).toBe(-12.5)
+			expect(feature.geometry.coordinates).toEqual([7.596, 51.969, -12.5])
 		})
 
 		it('should deny searching for a name if limit is greater than max value', async () => {
@@ -311,7 +352,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 				expect(feature.geometry).toBeDefined()
 				expect(feature.geometry.type).toBe('Point')
 				expect(Array.isArray(feature.geometry.coordinates)).toBe(true)
-				expect(feature.geometry.coordinates).toHaveLength(2)
+				expect([2, 3]).toContain(feature.geometry.coordinates.length)
 				expect(feature.geometry.coordinates[0]).toBeDefined()
 				expect(feature.geometry.coordinates[1]).toBeDefined()
 				expect(feature.properties).toBeDefined()
@@ -505,6 +546,8 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(body).toHaveProperty('sensors')
 			expect(Array.isArray(body.sensors)).toBe(true)
 			expect(body.sensors).toHaveLength(0)
+			expect(body.height).toBeNull()
+			expect(body.currentLocation.coordinates).toEqual([7.5, 51.9])
 		})
 
 		it('should reject creation without authentication', async () => {
@@ -655,7 +698,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 		it('should allow to set the location for a new box as array', async () => {
 			// Arrange
-			const loc = [0, 0, 0]
+			const loc = [7.123456, 51.654321, 123.4]
 			const requestBody = generateMinimalDevice(loc)
 
 			const request = new Request(`${BASE_URL}/boxes`, {
@@ -678,8 +721,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(response.status).toBe(201)
 			expect(responseData.latitude).toBeDefined()
 			expect(responseData.longitude).toBeDefined()
-			expect(responseData.latitude).toBe(loc[0])
-			expect(responseData.longitude).toBe(loc[1])
+			expect(responseData.latitude).toBe(loc[1])
+			expect(responseData.longitude).toBe(loc[0])
+			expect(responseData.height).toBe(loc[2])
+			expect(responseData.currentLocation.coordinates).toEqual(loc)
+			expect(responseData.loc[0].geometry.coordinates).toEqual(loc)
 			expect(responseData.createdAt).toBeDefined()
 
 			// Check that createdAt is recent (within 5 minutes)
@@ -691,7 +737,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 
 		it('should allow to set the location for a new box as latLng object', async () => {
 			// Arrange
-			const loc = { lng: 120.123456, lat: 60.654321 }
+			const loc = { lng: 120.123456, lat: 60.654321, height: 0 }
 			const requestBody = generateMinimalDevice(loc)
 
 			const request = new Request(BASE_URL, {
@@ -713,6 +759,17 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(responseData.latitude).toBe(loc.lat)
 			expect(responseData.longitude).toBeDefined()
 			expect(responseData.longitude).toBe(loc.lng)
+			expect(responseData.height).toBe(0)
+			expect(responseData.currentLocation.coordinates).toEqual([
+				loc.lng,
+				loc.lat,
+				0,
+			])
+			expect(responseData.loc[0].geometry.coordinates).toEqual([
+				loc.lng,
+				loc.lat,
+				0,
+			])
 			expect(responseData.createdAt).toBeDefined()
 
 			// Check that createdAt is recent (within 5 minutes)

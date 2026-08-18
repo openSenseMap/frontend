@@ -73,6 +73,16 @@ export const locationSchema = z.object({
 				`Longitude must be less than or equal to ${LOCATION_LIMITS.longitude.max}`,
 			),
 	),
+
+	height: z.preprocess(
+		missingLocationValueToUndefined,
+		z.coerce
+			.number({
+				error: 'Height must be a valid number',
+			})
+			.finite('Height must be a finite number')
+			.optional(),
+	),
 })
 
 export type LocationData = z.infer<typeof locationSchema>
@@ -130,6 +140,7 @@ export function parseLocationFormData(formData: FormData):
 	const parsed = locationSchema.safeParse({
 		latitude: formData.get('latitude'),
 		longitude: formData.get('longitude'),
+		height: formData.get('height'),
 	})
 
 	if (parsed.success) {
@@ -151,12 +162,14 @@ export function getLocationFieldErrors(error: z.ZodError<LocationData>) {
 	return {
 		latitude: flattened.fieldErrors.latitude?.[0],
 		longitude: flattened.fieldErrors.longitude?.[0],
+		height: flattened.fieldErrors.height?.[0],
 	}
 }
 
 export type LocationFieldErrors = {
 	latitude?: string
 	longitude?: string
+	height?: string
 }
 
 export function validateLocationFieldErrors(

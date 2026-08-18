@@ -9,7 +9,8 @@ export const CoordinatesWithHeightSchema = z
 	.tuple([z.number(), z.number(), z.number().optional()])
 	.meta({
 		id: 'CoordinatesWithHeight',
-		description: '[longitude, latitude, height?]',
+		description:
+			'[longitude, latitude, height?], where height is above sea level in meters',
 		example: [7.68123, 51.9123, 66.6],
 	})
 
@@ -24,7 +25,7 @@ export const LongitudeLatitudeLocationObjectSchema = z
 			example: 51.9123,
 		}),
 		height: z.number().optional().meta({
-			description: 'Height above ground in meters.',
+			description: 'Height above sea level in meters.',
 			example: 66.6,
 		}),
 	})
@@ -45,7 +46,7 @@ export const LocationObjectSchema = z
 			example: 51.9123,
 		}),
 		height: z.number().optional().meta({
-			description: 'Height above ground in meters.',
+			description: 'Height above sea level in meters.',
 			example: 66.6,
 		}),
 	})
@@ -68,10 +69,7 @@ export const LocationObjectSchema = z
 export const GeoJsonPointSchema = z
 	.object({
 		type: z.literal('Point'),
-		coordinates: z.tuple([z.number(), z.number()]).meta({
-			description: '[longitude, latitude]',
-			example: [13.404954, 52.520008],
-		}),
+		coordinates: CoordinatesWithHeightSchema,
 	})
 	.meta({
 		id: 'GeoJsonPoint',

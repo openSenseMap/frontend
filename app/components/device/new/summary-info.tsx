@@ -31,6 +31,11 @@ export function SummaryInfo() {
 					label: 'longitude',
 					value: parseFloat(formData.longitude).toFixed(4),
 				},
+				...(formData.height !== undefined &&
+				formData.height !== null &&
+				formData.height !== ''
+					? [{ label: 'height', value: `${formData.height} m` }]
+					: []),
 			],
 		},
 		{

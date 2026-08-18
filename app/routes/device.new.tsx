@@ -43,6 +43,7 @@ export async function action({ request }: Route.ActionArgs) {
 				[],
 			latitude: data.location.latitude,
 			longitude: data.location.longitude,
+			height: data.location.height,
 
 			...(data['device-selection'].model !== 'custom' && {
 				model: data['device-selection'].model,

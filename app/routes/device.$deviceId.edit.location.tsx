@@ -40,6 +40,14 @@ function parseNumberInput(value: string): number | null {
 	return parsed
 }
 
+function parseHeightInput(value: string): number | null | undefined {
+	if (value.trim() === '') return null
+
+	const parsed = Number(value)
+
+	return Number.isFinite(parsed) ? parsed : undefined
+}
+
 function normalizeCoordinate(value: number | null) {
 	if (value === null) return null
 
@@ -50,6 +58,7 @@ function normalizeLocationValues(values: LocationAutosaveValues) {
 	return {
 		latitude: normalizeCoordinate(values.latitude),
 		longitude: normalizeCoordinate(values.longitude),
+		height: values.height,
 	}
 }
 
@@ -73,6 +82,12 @@ export type LocationActionData =
 type LocationAutosaveValues = {
 	latitude: number | null
 	longitude: number | null
+	height: number | null | undefined
+}
+
+type InitialLocationValues = LocationAutosaveValues & {
+	latitude: number
+	longitude: number
 }
 
 //*****************************************************
@@ -132,6 +147,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 		id,
 		latitude: parsed.data.latitude,
 		longitude: parsed.data.longitude,
+		height: parsed.data.height ?? null,
 	})
 
 	return data({
@@ -147,15 +163,26 @@ export default function EditLocation() {
 	const { device } = useLoaderData<typeof loader>()
 	const { t } = useTranslation('edit-device-general')
 
-	const initialLocation = useMemo<LocationData>(
+	const initialLocation = useMemo<InitialLocationValues>(
 		() => ({
 			latitude: device.latitude,
 			longitude: device.longitude,
+			height: device.height ?? null,
 		}),
-		[device.latitude, device.longitude],
+		[device.latitude, device.longitude, device.height],
 	)
 
-	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
+	const [marker, setMarker] = useState<MarkerValue>({
+		latitude: initialLocation.latitude,
+		longitude: initialLocation.longitude,
+	})
+	const [heightInput, setHeightInput] = useState(
+		initialLocation.height == null ? '' : String(initialLocation.height),
+	)
+	const parsedHeight = useMemo(
+		() => parseHeightInput(heightInput),
+		[heightInput],
+	)
 
 	const currentLocation = useMemo<LocationData | null>(() => {
 		const candidate = {
@@ -166,21 +193,23 @@ export default function EditLocation() {
 		return isValidLocation(candidate) ? candidate : null
 	}, [marker.latitude, marker.longitude])
 
-	const originalLocationRef = useRef<LocationData>({
+	const originalLocationRef = useRef<LocationAutosaveValues>({
 		latitude: device.latitude,
 		longitude: device.longitude,
+		height: device.height ?? null,
 	})
 
 	const originalLocation = originalLocationRef.current
 
 	const validateAutosave = useCallback((values: LocationAutosaveValues) => {
-		return isValidLocation(values)
+		return values.height !== undefined && isValidLocation(values)
 	}, [])
 
 	const getAutosavePayload = useCallback((values: LocationAutosaveValues) => {
 		return {
 			latitude: String(values.latitude),
 			longitude: String(values.longitude),
+			height: values.height == null ? '' : String(values.height),
 		}
 	}, [])
 
@@ -205,8 +234,9 @@ export default function EditLocation() {
 			normalizeLocationValues({
 				latitude: marker.latitude,
 				longitude: marker.longitude,
+				height: parsedHeight,
 			}),
-		[marker.latitude, marker.longitude],
+		[marker.latitude, marker.longitude, parsedHeight],
 	)
 
 	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
@@ -227,7 +257,10 @@ export default function EditLocation() {
 		getSavedValues,
 	})
 
-	const clientErrors = validateLocationFieldErrors(marker)
+	const clientErrors = validateLocationFieldErrors({
+		...marker,
+		height: parsedHeight === undefined ? Number.NaN : parsedHeight,
+	})
 
 	const serverErrors: LocationFieldErrors =
 		autosave.status === 'error' && autosave.fetcher.data?.ok === false
@@ -237,10 +270,11 @@ export default function EditLocation() {
 	const locationErrors = {
 		latitude: clientErrors.latitude ?? serverErrors.latitude,
 		longitude: clientErrors.longitude ?? serverErrors.longitude,
+		height: clientErrors.height ?? serverErrors.height,
 	}
 
 	const hasClientErrors = Boolean(
-		clientErrors.latitude || clientErrors.longitude,
+		clientErrors.latitude || clientErrors.longitude || clientErrors.height,
 	)
 
 	const lastSavedLocation = autosave.lastSavedRef.current
@@ -251,10 +285,11 @@ export default function EditLocation() {
 	}
 
 	const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
-		setMarker({
+		setMarker((current) => ({
+			...current,
 			longitude: event.lngLat.lng,
 			latitude: event.lngLat.lat,
-		})
+		}))
 	}, [])
 
 	const onLatitudeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,8 +310,18 @@ export default function EditLocation() {
 		}))
 	}
 
+	const onHeightChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setHeightInput(event.target.value)
+	}
+
 	const resetToOriginalLocation = () => {
-		setMarker({ ...originalLocation })
+		setMarker({
+			latitude: originalLocation.latitude,
+			longitude: originalLocation.longitude,
+		})
+		setHeightInput(
+			originalLocation.height == null ? '' : String(originalLocation.height),
+		)
 	}
 
 	return (
@@ -329,7 +374,7 @@ export default function EditLocation() {
 					</div>
 
 					<div className="mx-5 mt-5">
-						<div className="grid gap-5 md:grid-cols-2">
+						<div className="grid gap-5 md:grid-cols-3">
 							<div>
 								<label
 									htmlFor="latitude"
@@ -404,6 +449,47 @@ export default function EditLocation() {
 											className="mt-1 text-sm text-red-600"
 										>
 											{locationErrors.longitude}
+										</p>
+									) : null}
+								</div>
+							</div>
+
+							<div>
+								<label
+									htmlFor="height"
+									className="txt-base block font-bold tracking-normal"
+								>
+									{t('height')} ({t('optional')})
+								</label>
+
+								<div className="mt-1">
+									<input
+										id="height"
+										name="height"
+										type="text"
+										inputMode="decimal"
+										value={heightInput}
+										onChange={onHeightChange}
+										placeholder={t('enter_height')}
+										aria-describedby="height-info height-error"
+										className={
+											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
+											(locationErrors.height
+												? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
+												: '')
+										}
+									/>
+
+									<p
+										id="height-info"
+										className="text-muted-foreground mt-1 text-xs"
+									>
+										{t('height_info_text')}
+									</p>
+
+									{locationErrors.height ? (
+										<p id="height-error" className="mt-1 text-sm text-red-600">
+											{locationErrors.height}
 										</p>
 									) : null}
 								</div>

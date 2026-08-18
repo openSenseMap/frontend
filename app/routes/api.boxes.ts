@@ -171,7 +171,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
-					coordinates: [device.longitude, device.latitude],
+					coordinates:
+						device.height === null
+							? [device.longitude, device.latitude]
+							: [device.longitude, device.latitude, device.height],
 				},
 				properties: {
 					...device,
@@ -226,8 +229,8 @@ async function post(request: Request, user: User) {
 
 		const validatedData = validationResult.data
 		const sensorsProvided = validatedData.sensors?.length > 0
-		// Extract longitude and latitude from location array [longitude, latitude]
-		const [longitude, latitude] = validatedData.location
+		// Extract coordinates from location array [longitude, latitude, height?]
+		const [longitude, latitude, height] = validatedData.location
 		const newDevice = await createDevice(
 			{
 				name: validatedData.name,
@@ -235,6 +238,7 @@ async function post(request: Request, user: User) {
 				model: sensorsProvided ? undefined : validatedData.model,
 				latitude: latitude,
 				longitude: longitude,
+				height: height ?? null,
 				tags: validatedData.grouptag,
 				sensors: sensorsProvided
 					? validatedData.sensors.map((s) => ({

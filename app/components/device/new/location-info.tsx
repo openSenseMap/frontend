@@ -136,7 +136,7 @@ export function LocationStep() {
 				</BaseMap>
 			</div>
 
-			<div className="bg-background flex w-full items-center justify-around p-4">
+			<div className="bg-background grid w-full gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
 				<div>
 					<Label htmlFor="latitude">{t('latitude')}</Label>
 					<Input
@@ -175,6 +175,29 @@ export function LocationStep() {
 					{errors.longitude?.message ? (
 						<p className="mt-1 text-sm text-red-600">
 							{String(errors.longitude.message)}
+						</p>
+					) : null}
+				</div>
+
+				<div>
+					<Label htmlFor="height">
+						{t('height')} ({t('optional')})
+					</Label>
+					<Input
+						id="height"
+						type="number"
+						step="any"
+						{...register('height')}
+						placeholder={t('enter height')}
+						aria-describedby="height-info height-error"
+						className="w-full rounded-md border p-2"
+					/>
+					<p id="height-info" className="text-muted-foreground mt-1 text-xs">
+						{t('height_info_text')}
+					</p>
+					{errors.height?.message ? (
+						<p id="height-error" className="mt-1 text-sm text-red-600">
+							{String(errors.height.message)}
 						</p>
 					) : null}
 				</div>

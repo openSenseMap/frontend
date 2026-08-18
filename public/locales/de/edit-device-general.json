@@ -24,5 +24,9 @@
 	"unsaved_changes": "Ungesicherte Änderungen",
 	"longitude": "Längengrad",
 	"latitude": "Breitengrad",
+	"height": "Höhe",
+	"optional": "optional",
+	"enter_height": "Höhe über dem Meeresspiegel eingeben (m)",
+	"height_info_text": "Optionale Höhe über dem Meeresspiegel in Metern. Wenn du das Gerät deutlich über dem Boden installiert hast (z. B. auf einem hohen Gebäude), addiere diese Installationshöhe zur Geländehöhe. Dieser Wert hilft dabei, Luftdruckmessungen vergleichbar zu machen.",
 	"reset_to_original_location": "Zurücksetzen auf ursprünglichen Standort"
 }

@@ -24,5 +24,9 @@
 	"unsaved_changes": "Unsaved changes",
 	"longitude": "Longitude",
 	"latitude": "Latitude",
+	"height": "Height",
+	"optional": "optional",
+	"enter_height": "Enter height above sea level (m)",
+	"height_info_text": "Optional height above sea level in meters. If the device is installed above ground level (for example, on a tall building), add that installation height to the terrain elevation. This value helps make air-pressure measurements comparable.",
 	"reset_to_original_location": "Reset to original location"
 }

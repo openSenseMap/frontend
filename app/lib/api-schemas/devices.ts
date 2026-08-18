@@ -14,16 +14,36 @@ export const CreateDeviceSchema = z.object({
 		.default('unknown'),
 	location: z
 		.union([
-			z.array(z.number()).min(2).max(3),
-			z.object({
-				lng: z.number(),
-				lat: z.number(),
-				height: z.number().optional(),
-			}),
+			z
+				.array(z.number())
+				.min(2)
+				.max(3)
+				.meta({
+					description:
+						'Coordinates as [longitude, latitude, height?], where height is above sea level in meters.',
+					example: [7.68123, 51.9123, 66.6],
+				}),
+			z
+				.object({
+					lng: z.number().meta({ description: 'Longitude' }),
+					lat: z.number().meta({ description: 'Latitude' }),
+					height: z.number().optional().meta({
+						description: 'Height above sea level in meters.',
+						example: 66.6,
+					}),
+				})
+				.meta({
+					description:
+						'Device location with an optional height above sea level in meters.',
+				}),
 		])
 		.transform((loc) => {
 			if (Array.isArray(loc)) return loc
-			return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
+			return [
+				loc.lng,
+				loc.lat,
+				...(loc.height !== undefined ? [loc.height] : []),
+			]
 		}),
 	grouptag: z.array(z.string()).optional().default([]),
 	model: z

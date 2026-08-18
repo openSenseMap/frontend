@@ -29,6 +29,7 @@ export const CreateDeviceServiceSchema = z
 		tags: z.array(z.string()).optional().default([]),
 		latitude: z.number(),
 		longitude: z.number(),
+		height: z.number().optional().nullable(),
 		model: z
 			.enum([
 				'homeV2Lora',

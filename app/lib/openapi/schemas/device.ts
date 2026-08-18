@@ -88,6 +88,17 @@ export const DeviceSensorUpdateSchema = z
 
 export type DeviceSensorUpdate = z.infer<typeof DeviceSensorUpdateSchema>
 
+const ApiDeviceLocationFeatureSchema = z
+	.object({
+		type: z.literal('Feature'),
+		geometry: TimestampedGeoJsonPointSchema,
+	})
+	.meta({
+		id: 'ApiDeviceLocationFeature',
+		description:
+			'Device location feature whose coordinates are [longitude, latitude, height?].',
+	})
+
 export const DeviceAddonsUpdateSchema = z
 	.object({
 		add: z.string().optional().meta({
@@ -150,6 +161,10 @@ export const ApiDeviceSchema = z
 			description: 'Device longitude',
 			example: 13.404954,
 		}),
+		height: z.number().nullable().optional().meta({
+			description: 'Device height above sea level in meters',
+			example: 66.6,
+		}),
 		useAuth: z.boolean().optional().meta({
 			description: 'Whether the device requires authentication',
 			example: true,
@@ -189,7 +204,7 @@ export const ApiDeviceSchema = z
 			description: 'Last measurement timestamp',
 			example: '2023-01-01T00:00:00.000Z',
 		}),
-		loc: z.array(z.looseObject({})).optional().meta({
+		loc: z.array(ApiDeviceLocationFeatureSchema).optional().meta({
 			description: 'Location history as GeoJSON features',
 		}),
 		integrations: z
@@ -240,7 +255,7 @@ export const DevicesGeoJsonResponseSchema = z
 					type: 'Feature',
 					geometry: {
 						type: 'Point',
-						coordinates: [13.404954, 52.520008],
+						coordinates: [13.404954, 52.520008, 66.6],
 					},
 					properties: {
 						id: 'clx1234567890abcdef',

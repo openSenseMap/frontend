@@ -2,7 +2,11 @@ import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import invariant from 'tiny-invariant'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId'
 import { BASE_URL } from '../../vitest.setup'
-import { createDevice, deleteDevice } from '~/db/models/device.server'
+import {
+	createDevice,
+	deleteDevice,
+	updateDeviceLocation,
+} from '~/db/models/device.server'
 import { deleteUserByEmail } from '~/db/models/user.server'
 import { type User, type Device } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
@@ -127,7 +131,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				exposure: 'indoor',
 				grouptag: 'testgroup',
 				description: 'total neue beschreibung',
-				location: { lat: 54.2, lng: 21.1 },
+				location: { lat: 54.2, lng: 21.1, height: 45.75 },
 				weblink: 'http://www.google.de',
 				useAuth: true,
 				image:
@@ -156,9 +160,14 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			expect(data.grouptag).toContain(update_payload.grouptag)
 			expect(data.description).toBe(update_payload.description)
 			expect(data.access_token).not.toBeNull()
+			expect(data.height).toBe(update_payload.location.height)
 			expect(data.currentLocation).toEqual({
 				type: 'Point',
-				coordinates: [update_payload.location.lng, update_payload.location.lat],
+				coordinates: [
+					update_payload.location.lng,
+					update_payload.location.lat,
+					update_payload.location.height,
+				],
 				timestamp: expect.any(String),
 			})
 
@@ -170,6 +179,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 						coordinates: [
 							update_payload.location.lng,
 							update_payload.location.lat,
+							update_payload.location.height,
 						],
 						timestamp: expect.any(String),
 					},
@@ -178,6 +188,13 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 		})
 
 		it('should allow to update the device via PUT with array as grouptags', async () => {
+			await updateDeviceLocation({
+				id: queryableDevice.id,
+				latitude: queryableDevice.latitude,
+				longitude: queryableDevice.longitude,
+				height: 32.5,
+			})
+
 			const update_payload = {
 				name: 'neuername',
 				exposure: 'outdoor',
@@ -213,6 +230,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			expect(data.grouptag).toEqual(update_payload.grouptag)
 
 			expect(data.description).toBe(update_payload.description)
+			expect(data.height).toBeNull()
 			expect(data.currentLocation.coordinates).toEqual([
 				update_payload.location.lng,
 				update_payload.location.lat,
@@ -228,6 +246,42 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			// const tsMs = parseInt(ts36, 36) * 1000
 			// expect(Date.now() - tsMs).toBeLessThan(1000)
 		})
+
+		it('should persist a zero location height via PUT', async () => {
+			const updatePayload = {
+				location: { lat: 52.52, lng: 13.405, height: 0 },
+			}
+
+			const request = new Request(`${BASE_URL}/${queryableDevice.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${jwt}`,
+				},
+				body: JSON.stringify(updatePayload),
+			})
+
+			const response = await deviceAction({
+				request,
+				params: { deviceId: queryableDevice.id },
+			} as Route.ActionArgs)
+			const data = await response.json()
+
+			expect(response.status).toBe(200)
+			expect(data.height).toBe(0)
+			expect(data.currentLocation.coordinates).toEqual([13.405, 52.52, 0])
+			expect(data.loc[0].geometry.coordinates).toEqual([13.405, 52.52, 0])
+
+			const getResponse = (await deviceLoader({
+				params: { deviceId: queryableDevice.id },
+			} as Route.LoaderArgs)) as Response
+			const persisted = await getResponse.json()
+
+			expect(getResponse.status).toBe(200)
+			expect(persisted.height).toBe(0)
+			expect(persisted.currentLocation.coordinates).toEqual([13.405, 52.52, 0])
+		})
+
 		it('should remove image when deleteImage=true', async () => {
 			const update_payload = {
 				deleteImage: true,
