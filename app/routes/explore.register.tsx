@@ -247,7 +247,6 @@ export default function RegisterDialog() {
 	) {
 		return (
 			<div className="flex h-screen items-center justify-center">
-				<title>{t('register')}</title>
 				<Link
 					to={{
 						pathname: '/explore',
@@ -279,7 +278,6 @@ export default function RegisterDialog() {
 
 	return (
 		<div className="flex h-screen items-center justify-center">
-			<title>{t('register')}</title>
 			<Link
 				to={{
 					pathname: '/explore',

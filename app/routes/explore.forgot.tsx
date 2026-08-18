@@ -83,7 +83,6 @@ export default function ForgotPasswordPage() {
 
 	return (
 		<div className="flex h-screen items-center justify-center">
-			<title>{t('forgot_your_password')}</title>
 			<Link
 				to={{
 					pathname: '/explore',

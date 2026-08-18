@@ -199,6 +199,28 @@ export const useRootRouteLoaderData = () => {
 	return rootData
 }
 
+const meta = () => (
+	<>
+		<title>openSenseMap</title>
+		<meta charSet="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta
+			name="theme-color"
+			content="#3d843f"
+			media="(prefers-color-scheme: light)"
+		/>
+		<meta
+			name="theme-color"
+			content="#6fa161"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta
+			name="description"
+			content="The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source."
+		/>
+	</>
+)
+
 export default function App({
 	loaderData: { locale, ENV, themePreference, theme },
 }: Route.ComponentProps) {
@@ -221,22 +243,7 @@ export default function App({
 				<Links />
 			</head>
 			<body className="dark:bg-dark-background dark:text-dark-text h-full">
-				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width,initial-scale=1" />
-				<meta
-					name="theme-color"
-					content="#3d843f"
-					media="(prefers-color-scheme: light)"
-				/>
-				<meta
-					name="theme-color"
-					content="#6fa161"
-					media="(prefers-color-scheme: dark)"
-				/>
-				<meta
-					name="description"
-					content="The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source."
-				/>
+				{meta()}
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -267,22 +274,7 @@ export function ErrorBoundary() {
 				<Links />
 			</head>
 			<body className="bg-background text-foreground h-full">
-				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width,initial-scale=1" />
-				<meta
-					name="theme-color"
-					content="#3d843f"
-					media="(prefers-color-scheme: light)"
-				/>
-				<meta
-					name="theme-color"
-					content="#6fa161"
-					media="(prefers-color-scheme: dark)"
-				/>
-				<meta
-					name="description"
-					content="The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source."
-				/>
+				{meta()}
 				<div className="flex h-screen w-screen items-center justify-center">
 					<ErrorMessage />
 				</div>

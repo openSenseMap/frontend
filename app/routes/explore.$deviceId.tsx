@@ -97,7 +97,6 @@ export default function DeviceId() {
 
 	return (
 		<>
-			<title>{data.device?.name}</title>
 			<HoveredPointContext.Provider
 				value={{ hoveredPoint, setHoveredPoint: setHoveredPointDebug }}
 			>

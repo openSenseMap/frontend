@@ -140,7 +140,6 @@ export default function PasswordResetRoute() {
 	if (!token) {
 		return (
 			<div className="flex h-screen items-center justify-center">
-				<title>{t('set_new_password')}</title>
 				<Link
 					to={{
 						pathname: '/explore',
@@ -178,7 +177,6 @@ export default function PasswordResetRoute() {
 
 	return (
 		<div className="flex h-screen items-center justify-center">
-			<title>{t('set_new_password')}</title>
 			<Link
 				to={{
 					pathname: '/explore',
