@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { addDays, format } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { type DateRange } from '@daypicker/react'
 
@@ -13,11 +12,19 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover'
+import { useTranslation } from 'react-i18next'
 
 export function DatePickerWithRange() {
+	const { i18n } = useTranslation()
 	const [date, setDate] = React.useState<DateRange | undefined>({
 		from: new Date(new Date().getFullYear(), 0, 20),
-		to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+		to: new Date(new Date().getFullYear(), 1, 10),
+	})
+
+	const dateTimeFormat = new Intl.DateTimeFormat(i18n.language, {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
 	})
 
 	return (
@@ -34,11 +41,11 @@ export function DatePickerWithRange() {
 						{date?.from ? (
 							date.to ? (
 								<>
-									{format(date.from, 'LLL dd, y')} -{' '}
-									{format(date.to, 'LLL dd, y')}
+									{dateTimeFormat.format(date.from)} -{' '}
+									{dateTimeFormat.format(date.to)}
 								</>
 							) : (
-								format(date.from, 'LLL dd, y')
+								dateTimeFormat.format(date.from)
 							)
 						) : (
 							<span>Pick a date</span>
