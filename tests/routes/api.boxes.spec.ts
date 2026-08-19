@@ -352,7 +352,9 @@ describe('openSenseMap API Routes: /boxes', () => {
 				expect(feature.geometry).toBeDefined()
 				expect(feature.geometry.type).toBe('Point')
 				expect(Array.isArray(feature.geometry.coordinates)).toBe(true)
-				expect([2, 3]).toContain(feature.geometry.coordinates.length)
+				expect(feature.geometry.coordinates.length).toBe(
+					feature.properties.height === null ? 2 : 3,
+				)
 				expect(feature.geometry.coordinates[0]).toBeDefined()
 				expect(feature.geometry.coordinates[1]).toBeDefined()
 				expect(feature.properties).toBeDefined()
