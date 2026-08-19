@@ -21,7 +21,7 @@ export const dateDiffToNowInWords = (locale: string, date: Date) => {
 	if (diffInSeconds < ONE_MONTH_IN_S)
 		return r.format(-Math.round(diffInSeconds / ONE_WEEK_IN_S), 'week')
 	if (diffInSeconds < ONE_QUARTER_IN_S)
-		return r.format(-Math.round(diffInSeconds / ONE_QUARTER_IN_S), 'week')
+		return r.format(-Math.round(diffInSeconds / ONE_QUARTER_IN_S), 'quarter')
 	if (diffInSeconds < ONE_YEAR_IN_S)
 		return r.format(-Math.round(diffInSeconds / ONE_MONTH_IN_S), 'month')
 }

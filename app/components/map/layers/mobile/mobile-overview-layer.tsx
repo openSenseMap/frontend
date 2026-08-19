@@ -122,7 +122,10 @@ export default function MobileOverviewLayer({
 	locations: LocationPoint[]
 }) {
 	const { i18n } = useTranslation()
-	const dateTimeFormat = new Intl.DateTimeFormat(i18n.language)
+	const dateTimeFormat = new Intl.DateTimeFormat(i18n.language, {
+		hour: 'numeric',
+		minute: '2-digit',
+	})
 
 	// Generate trips and assign colors once
 	const trips = useMemo(() => categorizeIntoTrips(locations, 50), [locations])
