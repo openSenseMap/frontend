@@ -466,7 +466,9 @@ export async function updateDevice(
 
 			setColumns['latitude'] = lat
 			setColumns['longitude'] = lng
-			setColumns['height'] = height ?? null
+			if (height !== undefined) {
+				setColumns['height'] = height
+			}
 		}
 
 		let updatedDevice = existingDevice
