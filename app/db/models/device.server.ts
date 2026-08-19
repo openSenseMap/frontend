@@ -42,6 +42,7 @@ import {
 	createOrReusePrivateDeviceSchemaVersionFromUpload,
 	getVisibleDeviceSchemaVersionForCreation,
 } from './device-schema.server'
+import { toGeoJsonPosition } from '~/lib/location'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -678,10 +679,11 @@ export async function getDevices(format: DevicesFormat = 'json') {
 		}
 
 		for (const device of devices) {
-			const coordinates =
-				device.height === null
-					? [device.longitude, device.latitude]
-					: [device.longitude, device.latitude, device.height]
+			const coordinates = toGeoJsonPosition(
+				device.longitude,
+				device.latitude,
+				device.height,
+			)
 			const feature = point(coordinates, device)
 			geojson.features.push(feature)
 		}
@@ -801,14 +803,11 @@ export async function getDevicesWithSensors(options?: {
 		)
 
 	for (const result of resultArray) {
-		const coordinates =
-			result.device.height === null
-				? [result.device.longitude, result.device.latitude]
-				: [
-						result.device.longitude,
-						result.device.latitude,
-						result.device.height,
-					]
+		const coordinates = toGeoJsonPosition(
+			result.device.longitude,
+			result.device.latitude,
+			result.device.height,
+		)
 		const feature = point(coordinates, result.device)
 		geojson.features.push(feature)
 	}

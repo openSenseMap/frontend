@@ -265,3 +265,11 @@ export function parseOptionalMapViewportInput(input: OptionalMapViewportInput):
 export function isOptionalMapViewInputValid(input: OptionalMapViewportInput) {
 	return parseOptionalMapViewportInput(input).success
 }
+
+export function toGeoJsonPosition(
+	longitude: number,
+	latitude: number,
+	height: number | null | undefined,
+): [number, number] | [number, number, number] {
+	return height == null ? [longitude, latitude] : [longitude, latitude, height]
+}
