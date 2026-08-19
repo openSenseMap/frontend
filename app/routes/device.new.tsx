@@ -6,6 +6,7 @@ import { getIntegrations } from '~/db/models/integration.server'
 import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
+import { getElevation, calculateFinalHeight } from '~/services/elevation.service'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
@@ -33,6 +34,26 @@ export async function action({ request }: Route.ActionArgs) {
 
 		const selectedSensors = data['sensor-selection'].selectedSensors
 
+		// Get coordinates
+		const latitude = data.location.latitude
+		const longitude = data.location.longitude
+
+		// Get height above ground from user input
+		const heightAboveGround = data.location.height
+
+		// Fetch terrain elevation from OpenTopoData API
+		let finalHeight: number | null | undefined = heightAboveGround
+		if (latitude !== undefined && longitude !== undefined) {
+			const terrainElevation = await getElevation(latitude, longitude)
+			finalHeight = calculateFinalHeight(terrainElevation, heightAboveGround)
+
+			// If elevation fetch failed, log but continue with heightAboveGround as fallback
+			if (finalHeight === null && terrainElevation === null && heightAboveGround !== undefined) {
+				console.warn('Terrain elevation not available, using height above ground as final height')
+				finalHeight = heightAboveGround
+			}
+		}
+
 		const devicePayload = {
 			name: data['general-info'].name.trim(),
 			description: data['general-info'].description?.trim() || null,
@@ -43,7 +64,7 @@ export async function action({ request }: Route.ActionArgs) {
 				[],
 			latitude: data.location.latitude,
 			longitude: data.location.longitude,
-			height: data.location.height,
+			height: finalHeight,
 
 			...(data['device-selection'].model !== 'custom' && {
 				model: data['device-selection'].model,
