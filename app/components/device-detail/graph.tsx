@@ -11,7 +11,6 @@ import {
 	type ChartOptions,
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
-// import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useMemo,

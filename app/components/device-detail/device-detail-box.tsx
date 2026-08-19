@@ -1,6 +1,4 @@
 import clsx from 'clsx'
-import { formatDistanceToNow } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
 import {
 	ChevronUp,
 	Minus,
@@ -81,6 +79,7 @@ import { useGlobalCompareMode } from './useGlobalCompareMode'
 import { type SensorWithLatestMeasurement } from '~/db/schema'
 import { getArchiveLink } from '~/lib/archive-link'
 import { type loader } from '~/routes/explore.$deviceId'
+import { dateDiffToNowInWords } from '~/lib/date'
 
 export interface MeasurementProps {
 	sensorId: string
@@ -96,7 +95,6 @@ export default function DeviceDetailBox() {
 	const matches = useMatches()
 	const { toast } = useToast()
 	const { t, i18n } = useTranslation('device-detail-box')
-	const dateLocale = i18n.language.startsWith('de') ? de : enUS
 	const dateFormatter = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
 		year: 'numeric',
 		month: 'long',
@@ -569,15 +567,12 @@ export default function DeviceDetailBox() {
 																						></div>
 																						<p className="text-muted-foreground text-xs">
 																							{sensor.lastMeasurement
-																								? formatDistanceToNow(
+																								? dateDiffToNowInWords(
+																										i18n.language,
 																										new Date(
 																											sensor.lastMeasurement
 																												.createdAt,
 																										),
-																										{
-																											addSuffix: true,
-																											locale: dateLocale,
-																										},
 																									)
 																								: t('no_recent_data')}
 																						</p>
@@ -656,15 +651,12 @@ export default function DeviceDetailBox() {
 																						></div>
 																						<p className="text-muted-foreground text-xs">
 																							{sensor.lastMeasurement
-																								? formatDistanceToNow(
+																								? dateDiffToNowInWords(
+																										i18n.language,
 																										new Date(
 																											sensor.lastMeasurement
 																												.createdAt,
 																										),
-																										{
-																											addSuffix: true,
-																											locale: dateLocale,
-																										},
 																									)
 																								: t('no_recent_data')}
 																						</p>
