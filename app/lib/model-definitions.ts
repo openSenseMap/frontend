@@ -137,7 +137,7 @@ export const getSensorsForModel = (
 	)
 }
 
-export function getUnknownSensorTemplates(
+export function findUnsupportedSensorTemplates(
 	model: ModelDefinitionKey,
 	sensorTemplates: readonly string[],
 ): string[] {
@@ -152,35 +152,23 @@ export function getUnknownSensorTemplates(
 	})
 }
 
-export function getSensorTemplateValidationError(
+export type SensorTemplateMappingConflict = {
+	valueType: string
+	sensorDefinitionIds: string[]
+}
+
+export function findSensorTemplateMappingConflict(
 	model: string | undefined,
 	sensorTemplates: readonly string[] | undefined,
-): string | undefined {
-	if (!model || model.toLowerCase() === 'custom') return undefined
-	if (!(model in modelDefinitions)) return `Unknown model: ${model}`
-	if (model === 'luftdaten.info' && !sensorTemplates?.length) {
-		return `At least one sensor template is required for model ${model}`
-	}
-
-	const definitionModel = model as ModelDefinitionKey
-	if (sensorTemplates?.length) {
-		const unknownTemplates = getUnknownSensorTemplates(
-			definitionModel,
-			sensorTemplates,
-		)
-		if (unknownTemplates.length > 0) {
-			return `Unknown sensor templates for model ${model}: ${unknownTemplates.join(', ')}`
-		}
-	}
-
-	if (model !== 'luftdaten.info') return undefined
+): SensorTemplateMappingConflict | undefined {
+	if (model !== 'luftdaten.info' || !sensorTemplates?.length) return undefined
 
 	const mappingsByValueType = new Map<
 		string,
 		{ valueType: string; sensorDefinitionIds: Set<SensorKey> }
 	>()
 
-	for (const sensor of getSensorsForModel(definitionModel, sensorTemplates)) {
+	for (const sensor of getSensorsForModel('luftdaten.info', sensorTemplates)) {
 		if (!('decoderMappings' in sensor)) continue
 
 		for (const mapping of sensor.decoderMappings?.luftdaten ?? []) {
@@ -194,11 +182,41 @@ export function getSensorTemplateValidationError(
 		}
 	}
 
-	const ambiguousMapping = [...mappingsByValueType.values()].find(
+	const conflict = [...mappingsByValueType.values()].find(
 		({ sensorDefinitionIds }) => sensorDefinitionIds.size > 1,
 	)
-	if (ambiguousMapping) {
-		return `Ambiguous Luftdaten value type ${ambiguousMapping.valueType} maps to multiple selected sensor definitions: ${[...ambiguousMapping.sensorDefinitionIds].join(', ')}`
+	if (!conflict) return undefined
+
+	return {
+		valueType: conflict.valueType,
+		sensorDefinitionIds: [...conflict.sensorDefinitionIds],
+	}
+}
+
+export function getSensorTemplateValidationError(
+	model: string | undefined,
+	sensorTemplates: readonly string[] | undefined,
+): string | undefined {
+	if (!model || model.toLowerCase() === 'custom') return undefined
+	if (!(model in modelDefinitions)) return `Unknown model: ${model}`
+	if (model === 'luftdaten.info' && !sensorTemplates?.length) {
+		return `At least one sensor template is required for model ${model}`
+	}
+
+	const definitionModel = model as ModelDefinitionKey
+	if (sensorTemplates?.length) {
+		const unsupportedTemplates = findUnsupportedSensorTemplates(
+			definitionModel,
+			sensorTemplates,
+		)
+		if (unsupportedTemplates.length > 0) {
+			return `Unsupported sensor templates for model ${model}: ${unsupportedTemplates.join(', ')}`
+		}
+	}
+
+	const conflict = findSensorTemplateMappingConflict(model, sensorTemplates)
+	if (conflict) {
+		return `Ambiguous Luftdaten value type ${conflict.valueType} maps to multiple selected sensor definitions: ${conflict.sensorDefinitionIds.join(', ')}`
 	}
 
 	return undefined

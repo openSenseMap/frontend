@@ -1,4 +1,4 @@
-import { Cpu } from 'lucide-react'
+import { Cpu, TriangleAlert } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -10,10 +10,15 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '~/components/ui/accordion'
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Badge } from '~/components/ui/badge'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
-import { getSensorsForModel } from '~/lib/model-definitions'
+import {
+	findSensorTemplateMappingConflict,
+	getSensorsForModel,
+	type SensorTemplateMappingConflict,
+} from '~/lib/model-definitions'
 import { cn } from '~/lib/utils'
 import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
 
@@ -51,8 +56,11 @@ export function SensorSelectionStep() {
 	)
 	const [sensors, setSensors] = useState<Sensor[]>([])
 	const [selectedSensors, setSelectedSensors] = useState<Sensor[]>([])
+	const [selectionConflict, setSelectionConflict] =
+		useState<SensorTemplateMappingConflict>()
 
 	useEffect(() => {
+		setSelectionConflict(undefined)
 		if (selectedDevice) {
 			const deviceModel = selectedDevice.startsWith('homeV2')
 				? 'senseBoxHomeV2'
@@ -109,6 +117,25 @@ export function SensorSelectionStep() {
 	const getSelectedCountForGroup = (group: SensorGroup) =>
 		group.sensors.filter((sensor) => isSensorSelected(sensor)).length
 
+	const updateSelectedSensors = (updatedSensors: Sensor[]) => {
+		const sensorDefinitionIds = updatedSensors.flatMap((sensor) =>
+			sensor.id ? [sensor.id] : [],
+		)
+		const conflict = findSensorTemplateMappingConflict(
+			selectedDevice,
+			sensorDefinitionIds,
+		)
+
+		if (conflict) {
+			setSelectionConflict(conflict)
+			return
+		}
+
+		setSelectionConflict(undefined)
+		setSelectedSensors(updatedSensors)
+		setValue('selectedSensors', updatedSensors)
+	}
+
 	const handleSensorToggle = (sensor: Sensor) => {
 		const isAlreadySelected = isSensorSelected(sensor)
 
@@ -116,8 +143,7 @@ export function SensorSelectionStep() {
 			? selectedSensors.filter((selected) => selected.id !== sensor.id)
 			: [...selectedSensors, sensor]
 
-		setSelectedSensors(updatedSensors)
-		setValue('selectedSensors', updatedSensors)
+		updateSelectedSensors(updatedSensors)
 	}
 
 	const handleGroupToggle = (group: SensorGroup) => {
@@ -136,9 +162,19 @@ export function SensorSelectionStep() {
 					...group.sensors,
 				]
 
-		setSelectedSensors(updatedSensors)
-		setValue('selectedSensors', updatedSensors)
+		updateSelectedSensors(updatedSensors)
 	}
+
+	const conflictingSensorLabels = selectionConflict?.sensorDefinitionIds.map(
+		(sensorDefinitionId) => {
+			const sensor = sensors.find(
+				(candidate) => candidate.id === sensorDefinitionId,
+			)
+			return sensor
+				? `${sensor.sensorType}: ${sensor.title}`
+				: sensorDefinitionId
+		},
+	)
 
 	if (!selectedDevice) {
 		return <p className="text-center text-lg">{t('device_not_selected')}</p>
@@ -161,14 +197,26 @@ export function SensorSelectionStep() {
 						type="button"
 						className="text-destructive text-sm hover:underline"
 						onClick={() => {
-							setSelectedSensors([])
-							setValue('selectedSensors', [])
+							updateSelectedSensors([])
 						}}
 					>
 						{t('clear_all')}
 					</button>
 				)}
 			</div>
+
+			{selectionConflict && (
+				<Alert variant="destructive" className="sticky top-0 z-10 mb-4">
+					<TriangleAlert className="h-5 w-5" />
+					<AlertTitle>{t('sensor_mapping_conflict_title')}</AlertTitle>
+					<AlertDescription>
+						{t('sensor_mapping_conflict_description', {
+							sensors: conflictingSensorLabels?.join(', '),
+							valueType: selectionConflict.valueType,
+						})}
+					</AlertDescription>
+				</Alert>
+			)}
 
 			<Accordion type="multiple" className="w-full space-y-2">
 				{sensorGroups.map((group) => {
