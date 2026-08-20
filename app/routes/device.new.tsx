@@ -1,4 +1,4 @@
-import { redirect } from 'react-router'
+import { data as responseData, redirect } from 'react-router'
 import { type Route } from './+types/device.new'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
@@ -6,7 +6,20 @@ import { getIntegrations } from '~/db/models/integration.server'
 import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
-import { getElevation, calculateFinalHeight } from '~/services/elevation.service'
+import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
+import { deviceLocationInputSchema } from '~/lib/location'
+import {
+	ElevationLookupError,
+	getTerrainElevation,
+} from '~/services/elevation-service.server'
+
+export type NewDeviceActionData = {
+	ok: false
+	error:
+		| 'invalid_device_form'
+		| 'elevation_required_error'
+		| 'device_creation_failed'
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
@@ -20,68 +33,96 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
-	const rawData = formData.get('formData') as string
+	const rawData = formData.get('formData')
+	const userId = await getUserId(request)
+
+	if (!userId) return redirect('/explore/login')
+
+	if (typeof rawData !== 'string') {
+		return responseData<NewDeviceActionData>(
+			{ ok: false, error: 'invalid_device_form' },
+			{ status: 400 },
+		)
+	}
+
+	let submittedData: Record<string, any>
 
 	try {
-		const userId = await getUserId(request)
+		submittedData = JSON.parse(rawData) as Record<string, any>
+	} catch {
+		return responseData<NewDeviceActionData>(
+			{ ok: false, error: 'invalid_device_form' },
+			{ status: 400 },
+		)
+	}
 
-		if (!userId) {
-			throw new Error('User is not authenticated.')
-		}
+	const parsedLocation = deviceLocationInputSchema.safeParse(
+		submittedData.location,
+	)
 
-		const data = JSON.parse(rawData)
-		const advanced = data.advanced
+	if (!parsedLocation.success) {
+		return responseData<NewDeviceActionData>(
+			{ ok: false, error: 'invalid_device_form' },
+			{ status: 400 },
+		)
+	}
 
-		const selectedSensors = data['sensor-selection'].selectedSensors
+	const { latitude, longitude, heightAboveGround } = parsedLocation.data
+	let terrainElevation
 
-		// Get coordinates
-		const latitude = data.location.latitude
-		const longitude = data.location.longitude
+	try {
+		terrainElevation = await getTerrainElevation(latitude, longitude)
+	} catch (error) {
+		console.error(
+			'Could not calculate device height above sea level:',
+			error instanceof ElevationLookupError ? error.code : error,
+		)
 
-		// Get height above ground from user input
-		const heightAboveGround = data.location.height
+		return responseData<NewDeviceActionData>(
+			{ ok: false, error: 'elevation_required_error' },
+			{ status: 503 },
+		)
+	}
 
-		// Fetch terrain elevation from OpenTopoData API
-		let finalHeight: number | null | undefined = heightAboveGround
-		if (latitude !== undefined && longitude !== undefined) {
-			const terrainElevation = await getElevation(latitude, longitude)
-			finalHeight = calculateFinalHeight(terrainElevation, heightAboveGround)
+	const finalHeight = calculateHeightAboveSeaLevel(
+		terrainElevation.elevation,
+		heightAboveGround,
+	)
 
-			// If elevation fetch failed, log but continue with heightAboveGround as fallback
-			if (finalHeight === null && terrainElevation === null && heightAboveGround !== undefined) {
-				console.warn('Terrain elevation not available, using height above ground as final height')
-				finalHeight = heightAboveGround
-			}
-		}
+	try {
+		const advanced = submittedData.advanced
+		const selectedSensors = submittedData['sensor-selection'].selectedSensors
 
 		const devicePayload = {
-			name: data['general-info'].name.trim(),
-			description: data['general-info'].description?.trim() || null,
-			exposure: data['general-info'].exposure,
-			expiresAt: data['general-info'].temporaryExpirationDate,
+			name: submittedData['general-info'].name.trim(),
+			description: submittedData['general-info'].description?.trim() || null,
+			exposure: submittedData['general-info'].exposure,
+			expiresAt: submittedData['general-info'].temporaryExpirationDate,
 			tags:
-				data['general-info'].tags?.map((tag: { value: string }) => tag.value) ||
-				[],
-			latitude: data.location.latitude,
-			longitude: data.location.longitude,
+				submittedData['general-info'].tags?.map(
+					(tag: { value: string }) => tag.value,
+				) || [],
+			latitude,
+			longitude,
 			height: finalHeight,
 
-			...(data['device-selection'].model !== 'custom' && {
-				model: data['device-selection'].model,
+			...(submittedData['device-selection'].model !== 'custom' && {
+				model: submittedData['device-selection'].model,
 
 				sensorTemplates: selectedSensors.map((sensor: any) => sensor.id),
 			}),
 
-			...(data['device-selection'].model === 'custom' && {
-				model: data['device-selection'].model,
+			...(submittedData['device-selection'].model === 'custom' && {
+				model: submittedData['device-selection'].model,
 				sensors: selectedSensors.map((sensor: any) => ({
 					title: sensor.title,
 					sensorType: sensor.sensorType,
 					unit: sensor.unit,
 					icon: sensor.icon,
 				})),
-				deviceSchema: data['sensor-selection'].deviceSchema,
-				deviceSchemaVersionId: data['sensor-selection'].deviceSchemaVersionId,
+				deviceSchema: submittedData['sensor-selection'].deviceSchema,
+				deviceSchemaVersionId:
+					submittedData['sensor-selection'].deviceSchemaVersionId,
 			}),
 		}
 
@@ -92,7 +133,10 @@ export async function action({ request }: Route.ActionArgs) {
 		return redirect('/profile/me')
 	} catch (error) {
 		console.error('Error creating device:', error)
-		return redirect('/profile/me')
+		return responseData<NewDeviceActionData>(
+			{ ok: false, error: 'device_creation_failed' },
+			{ status: 500 },
+		)
 	}
 }
 
