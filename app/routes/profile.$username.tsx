@@ -127,7 +127,7 @@ export default function ProfilePage() {
 		deviceSchemas,
 	} = useLoaderData<typeof loader>()
 
-	const { t } = useTranslation('profile')
+	const { t, i18n } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
 
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
@@ -159,7 +159,7 @@ export default function ProfilePage() {
 							<p className="text-muted-foreground text-sm">
 								{t('user_since')}{' '}
 								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
-									t('locale'),
+									i18n.language,
 								)}
 							</p>
 						</div>

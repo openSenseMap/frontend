@@ -144,7 +144,7 @@ export default function EditDeviceTransfer() {
 	const { deviceName, existingTransfer } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
-	const { t } = useTranslation('device-transfer')
+	const { t, i18n } = useTranslation('device-transfer')
 
 	const [copied, setCopied] = useState(false)
 
@@ -293,7 +293,7 @@ export default function EditDeviceTransfer() {
 								<p className="mt-3 text-sm">
 									{t('valid_until')}{' '}
 									<b>
-										{new Date(transferExpiresAt).toLocaleString(t('locale'), {
+										{new Date(transferExpiresAt).toLocaleString(i18n.language, {
 											dateStyle: 'medium',
 											timeStyle: 'short',
 										})}
