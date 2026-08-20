@@ -1044,14 +1044,17 @@ export async function createDevice(deviceData: any, userId: string) {
 				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
 			}
 
-			const schemaTag = storedDeviceSchemaVersion
+			const schemaTags = storedDeviceSchemaVersion?.content.tags ?? []
+			const schemaIdentityTag = storedDeviceSchemaVersion
 				? `schema:${storedDeviceSchemaVersion.schemaSlug}`
 				: null
-			const tags = [...(deviceData.tags ?? [])]
-
-			if (schemaTag && !tags.includes(schemaTag)) {
-				tags.push(schemaTag)
-			}
+			const tags = Array.from(
+				new Set([
+					...(deviceData.tags ?? []),
+					...schemaTags,
+					...(schemaIdentityTag ? [schemaIdentityTag] : []),
+				]),
+			)
 
 			// Create the device
 			const [createdDevice] = await tx
