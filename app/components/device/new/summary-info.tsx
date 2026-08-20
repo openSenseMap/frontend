@@ -7,6 +7,8 @@ export function SummaryInfo() {
 	const { getValues } = useFormContext()
 	const formData = getValues()
 	const { t } = useTranslation('newdevice')
+	const modelLabel =
+		formData.model === 'luftdaten.info' ? 'Sensor.Community' : formData.model
 
 	const sections = [
 		{
@@ -36,7 +38,7 @@ export function SummaryInfo() {
 		{
 			title: 'Device',
 			icon: <Smartphone className="h-5 w-5" />,
-			data: [{ label: 'Model', value: formData.model }],
+			data: [{ label: 'Model', value: modelLabel }],
 		},
 		{
 			title: 'Sensors',

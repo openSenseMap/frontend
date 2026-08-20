@@ -107,6 +107,10 @@ export function getColumns(
 					</Button>
 				)
 			},
+			cell: ({ row }) => {
+				const exposure = row.original.exposure
+				return <div>{t(`exposure_values.${exposure}`)}</div>
+			},
 		},
 		/* {
     accessorKey: "model",
