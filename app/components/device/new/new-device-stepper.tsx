@@ -4,7 +4,13 @@ import { Info, Slash } from 'lucide-react'
 import { type MouseEvent, useEffect, useState } from 'react'
 import { type FieldErrors, FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Form, useLoaderData, useSubmit, useNavigation } from 'react-router'
+import {
+	Form,
+	useActionData,
+	useLoaderData,
+	useNavigation,
+	useSubmit,
+} from 'react-router'
 import { z } from 'zod'
 import { AdvancedStep } from './advanced-info'
 import { DeviceSelectionStep } from './device-info'
@@ -32,8 +38,11 @@ import {
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
 import { DeviceModelEnum } from '~/db/schema/enum'
-import { type loader } from '~/routes/device.new'
-import { locationSchema, type LocationData } from '~/lib/location'
+import { type action, type loader } from '~/routes/device.new'
+import {
+	deviceLocationInputSchema,
+	type DeviceLocationInput,
+} from '~/lib/location'
 import { generalInfoSchema, type GeneralInfoData } from '~/lib/device-general'
 
 const deviceSchema = z.object({
@@ -56,7 +65,7 @@ const advancedSchema = z.record(z.string(), z.any())
 
 const formSchema = z.union([
 	generalInfoSchema,
-	locationSchema,
+	deviceLocationInputSchema,
 	deviceSchema,
 	sensorsSchema,
 	advancedSchema,
@@ -74,7 +83,7 @@ export const Stepper = defineStepper([
 		id: 'location',
 		label: 'location',
 		infoKey: 'location_info_text',
-		schema: locationSchema,
+		schema: deviceLocationInputSchema,
 		index: 1,
 	},
 	{
@@ -113,7 +122,7 @@ type AdvancedData = z.infer<typeof advancedSchema>
 
 type FormData =
 	| GeneralInfoData
-	| LocationData
+	| DeviceLocationInput
 	| DeviceData
 	| SensorData
 	| AdvancedData
@@ -135,11 +144,22 @@ export default function NewDeviceStepper() {
 	const { t } = useTranslation('newdevice')
 	const [isFirst, setIsFirst] = useState(false)
 	const navigation = useNavigation()
+	const actionData = useActionData<typeof action>()
 	const isSubmitting = navigation.state !== 'idle'
 
 	useEffect(() => {
 		setIsFirst(stepper.isFirst)
 	}, [stepper.isFirst])
+
+	useEffect(() => {
+		if (!actionData || actionData.ok) return
+
+		toast({
+			title: t('device_creation_error'),
+			description: t(actionData.error),
+			variant: 'destructive',
+		})
+	}, [actionData, t, toast])
 
 	const onSubmit = (data: FormData) => {
 		const updatedData = {
