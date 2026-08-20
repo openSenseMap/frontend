@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	type MarkerDragEvent,
 	MapProvider,
@@ -18,10 +18,10 @@ import { BaseMap } from '~/components/base-map'
 import {
 	LOCATION_LIMITS,
 	isValidLocation,
-	parseLocationFormData,
-	validateLocationFieldErrors,
-	type LocationData,
-	type LocationFieldErrors,
+	parseDeviceLocationInputFormData,
+	validateDeviceLocationInputFieldErrors,
+	type DeviceLocationInputFieldErrors,
+	type LocationCoordinates,
 } from '~/lib/location'
 import { useTranslation } from 'react-i18next'
 import {
@@ -29,6 +29,16 @@ import {
 	AUTOSAVE_DELAY_MS,
 } from '~/hooks/use-autosave-fetcher'
 import { AutosaveStatusText } from '~/components/autosave-status.text'
+import Spinner from '~/components/spinner'
+import { useTerrainElevation } from '~/hooks/use-terrain-elevation'
+import {
+	calculateHeightAboveSeaLevel,
+	type TerrainElevationResult,
+} from '~/lib/elevation'
+import {
+	ElevationLookupError,
+	getTerrainElevation,
+} from '~/services/elevation-service.server'
 
 function parseNumberInput(value: string): number | null {
 	if (value.trim() === '') return null
@@ -58,7 +68,7 @@ function normalizeLocationValues(values: LocationAutosaveValues) {
 	return {
 		latitude: normalizeCoordinate(values.latitude),
 		longitude: normalizeCoordinate(values.longitude),
-		height: values.height,
+		heightAboveGround: values.heightAboveGround,
 	}
 }
 
@@ -70,24 +80,30 @@ type MarkerValue = {
 export type LocationActionData =
 	| {
 			ok: true
-			location: LocationData
+			location: StoredDeviceLocation
+			heightAboveGround: number | null
+			terrainElevation: TerrainElevationResult
 			errors: null
 			savedAt: string
 	  }
 	| {
 			ok: false
-			errors: LocationFieldErrors
+			errors: DeviceLocationInputFieldErrors
 	  }
 
 type LocationAutosaveValues = {
 	latitude: number | null
 	longitude: number | null
-	height: number | null | undefined
+	heightAboveGround: number | null | undefined
 }
 
 type InitialLocationValues = LocationAutosaveValues & {
 	latitude: number
 	longitude: number
+}
+
+type StoredDeviceLocation = LocationCoordinates & {
+	height: number
 }
 
 //*****************************************************
@@ -131,7 +147,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 	const formData = await request.formData()
 
-	const parsed = parseLocationFormData(formData)
+	const parsed = parseDeviceLocationInputFormData(formData)
 
 	if (!parsed.success) {
 		return data(
@@ -143,16 +159,51 @@ export async function action({ request, params }: Route.ActionArgs) {
 		)
 	}
 
+	let terrainElevation: TerrainElevationResult
+
+	try {
+		terrainElevation = await getTerrainElevation(
+			parsed.data.latitude,
+			parsed.data.longitude,
+		)
+	} catch (error) {
+		console.warn(
+			'Could not calculate device height above sea level:',
+			error instanceof ElevationLookupError ? error.code : error,
+		)
+
+		return data(
+			{
+				ok: false as const,
+				errors: {
+					elevation: 'elevation_save_error',
+				},
+			},
+			{ status: 503 },
+		)
+	}
+
+	const finalHeight = calculateHeightAboveSeaLevel(
+		terrainElevation.elevation,
+		parsed.data.heightAboveGround,
+	)
+
 	await updateDeviceLocation({
 		id,
 		latitude: parsed.data.latitude,
 		longitude: parsed.data.longitude,
-		height: parsed.data.height ?? null,
+		height: finalHeight,
 	})
 
 	return data({
 		ok: true as const,
-		location: parsed.data,
+		location: {
+			latitude: parsed.data.latitude,
+			longitude: parsed.data.longitude,
+			height: finalHeight,
+		},
+		heightAboveGround: parsed.data.heightAboveGround ?? null,
+		terrainElevation,
 		errors: null,
 		savedAt: new Date().toISOString(),
 	})
@@ -162,29 +213,33 @@ export async function action({ request, params }: Route.ActionArgs) {
 export default function EditLocation() {
 	const { device } = useLoaderData<typeof loader>()
 	const { t } = useTranslation('edit-device-general')
+	const initialHeightAboveGround = device.height === null ? null : undefined
 
 	const initialLocation = useMemo<InitialLocationValues>(
 		() => ({
 			latitude: device.latitude,
 			longitude: device.longitude,
-			height: device.height ?? null,
+			heightAboveGround: initialHeightAboveGround,
 		}),
-		[device.latitude, device.longitude, device.height],
+		[device.latitude, device.longitude, initialHeightAboveGround],
 	)
 
 	const [marker, setMarker] = useState<MarkerValue>({
 		latitude: initialLocation.latitude,
 		longitude: initialLocation.longitude,
 	})
-	const [heightInput, setHeightInput] = useState(
-		initialLocation.height == null ? '' : String(initialLocation.height),
+	const [heightAboveGroundInput, setHeightAboveGroundInput] = useState(
+		initialHeightAboveGround == null ? '' : String(initialHeightAboveGround),
 	)
-	const parsedHeight = useMemo(
-		() => parseHeightInput(heightInput),
-		[heightInput],
+	const [heightInputReady, setHeightInputReady] = useState(
+		initialHeightAboveGround !== undefined,
+	)
+	const parsedHeightAboveGround = useMemo(
+		() => parseHeightInput(heightAboveGroundInput),
+		[heightAboveGroundInput],
 	)
 
-	const currentLocation = useMemo<LocationData | null>(() => {
+	const currentLocation = useMemo<LocationCoordinates | null>(() => {
 		const candidate = {
 			latitude: marker.latitude,
 			longitude: marker.longitude,
@@ -192,24 +247,39 @@ export default function EditLocation() {
 
 		return isValidLocation(candidate) ? candidate : null
 	}, [marker.latitude, marker.longitude])
+	const originalElevation = useTerrainElevation({
+		latitude: device.latitude,
+		longitude: device.longitude,
+	})
+	const elevation = useTerrainElevation({
+		latitude: currentLocation?.latitude,
+		longitude: currentLocation?.longitude,
+	})
 
 	const originalLocationRef = useRef<LocationAutosaveValues>({
 		latitude: device.latitude,
 		longitude: device.longitude,
-		height: device.height ?? null,
+		heightAboveGround: initialHeightAboveGround,
 	})
 
 	const originalLocation = originalLocationRef.current
 
 	const validateAutosave = useCallback((values: LocationAutosaveValues) => {
-		return values.height !== undefined && isValidLocation(values)
+		if (values.heightAboveGround === undefined) return false
+
+		const errors = validateDeviceLocationInputFieldErrors(values)
+
+		return !(errors.latitude || errors.longitude || errors.heightAboveGround)
 	}, [])
 
 	const getAutosavePayload = useCallback((values: LocationAutosaveValues) => {
 		return {
 			latitude: String(values.latitude),
 			longitude: String(values.longitude),
-			height: values.height == null ? '' : String(values.height),
+			heightAboveGround:
+				values.heightAboveGround == null
+					? ''
+					: String(values.heightAboveGround),
 		}
 	}, [])
 
@@ -234,9 +304,9 @@ export default function EditLocation() {
 			normalizeLocationValues({
 				latitude: marker.latitude,
 				longitude: marker.longitude,
-				height: parsedHeight,
+				heightAboveGround: parsedHeightAboveGround,
 			}),
-		[marker.latitude, marker.longitude, parsedHeight],
+		[marker.latitude, marker.longitude, parsedHeightAboveGround],
 	)
 
 	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
@@ -251,18 +321,49 @@ export default function EditLocation() {
 		values: autosaveValues,
 		lastSavedValues: initialAutosaveValues,
 		debounceMs: AUTOSAVE_DELAY_MS,
+		enabled: heightInputReady && elevation.status === 'success',
 		validate: validateAutosave,
 		getPayload: getAutosavePayload,
 		isSuccess: isAutosaveSuccess,
 		getSavedValues,
 	})
+	const resetLastSaved = autosave.resetLastSaved
 
-	const clientErrors = validateLocationFieldErrors({
+	useEffect(() => {
+		if (heightInputReady || device.height === null || !originalElevation.result)
+			return
+
+		const derivedHeight = Number(
+			(device.height - originalElevation.result.elevation).toFixed(3),
+		)
+		const originalValues = normalizeLocationValues({
+			latitude: device.latitude,
+			longitude: device.longitude,
+			heightAboveGround: derivedHeight,
+		})
+
+		setHeightAboveGroundInput(String(derivedHeight))
+		setHeightInputReady(true)
+		originalLocationRef.current = originalValues
+		resetLastSaved(originalValues)
+	}, [
+		device.height,
+		device.latitude,
+		device.longitude,
+		heightInputReady,
+		originalElevation.result,
+		resetLastSaved,
+	])
+
+	const clientErrors = validateDeviceLocationInputFieldErrors({
 		...marker,
-		height: parsedHeight === undefined ? Number.NaN : parsedHeight,
+		heightAboveGround:
+			parsedHeightAboveGround === undefined
+				? Number.NaN
+				: parsedHeightAboveGround,
 	})
 
-	const serverErrors: LocationFieldErrors =
+	const serverErrors: DeviceLocationInputFieldErrors =
 		autosave.status === 'error' && autosave.fetcher.data?.ok === false
 			? autosave.fetcher.data.errors
 			: {}
@@ -270,11 +371,15 @@ export default function EditLocation() {
 	const locationErrors = {
 		latitude: clientErrors.latitude ?? serverErrors.latitude,
 		longitude: clientErrors.longitude ?? serverErrors.longitude,
-		height: clientErrors.height ?? serverErrors.height,
+		heightAboveGround:
+			clientErrors.heightAboveGround ?? serverErrors.heightAboveGround,
+		elevation: serverErrors.elevation,
 	}
 
 	const hasClientErrors = Boolean(
-		clientErrors.latitude || clientErrors.longitude || clientErrors.height,
+		clientErrors.latitude ||
+		clientErrors.longitude ||
+		clientErrors.heightAboveGround,
 	)
 
 	const lastSavedLocation = autosave.lastSavedRef.current
@@ -284,7 +389,7 @@ export default function EditLocation() {
 		longitude: lastSavedLocation.longitude ?? initialLocation.longitude,
 	}
 
-	const onMarkerDrag = useCallback((event: MarkerDragEvent) => {
+	const onMarkerDragEnd = useCallback((event: MarkerDragEvent) => {
 		setMarker((current) => ({
 			...current,
 			longitude: event.lngLat.lng,
@@ -311,7 +416,7 @@ export default function EditLocation() {
 	}
 
 	const onHeightChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setHeightInput(event.target.value)
+		setHeightAboveGroundInput(event.target.value)
 	}
 
 	const resetToOriginalLocation = () => {
@@ -319,10 +424,20 @@ export default function EditLocation() {
 			latitude: originalLocation.latitude,
 			longitude: originalLocation.longitude,
 		})
-		setHeightInput(
-			originalLocation.height == null ? '' : String(originalLocation.height),
+		setHeightAboveGroundInput(
+			originalLocation.heightAboveGround == null
+				? ''
+				: String(originalLocation.heightAboveGround),
 		)
 	}
+
+	const finalHeight =
+		elevation.result && parsedHeightAboveGround !== undefined
+			? calculateHeightAboveSeaLevel(
+					elevation.result.elevation,
+					parsedHeightAboveGround,
+				)
+			: null
 
 	return (
 		<div className="grid grid-rows-1">
@@ -364,7 +479,7 @@ export default function EditLocation() {
 										latitude={currentLocation.latitude}
 										anchor="center"
 										draggable
-										onDrag={onMarkerDrag}
+										onDragEnd={onMarkerDragEnd}
 									/>
 								) : null}
 
@@ -456,25 +571,26 @@ export default function EditLocation() {
 
 							<div>
 								<label
-									htmlFor="height"
+									htmlFor="heightAboveGround"
 									className="txt-base block font-bold tracking-normal"
 								>
-									{t('height')} ({t('optional')})
+									{t('height_above_ground')} ({t('optional')})
 								</label>
 
 								<div className="mt-1">
 									<input
-										id="height"
-										name="height"
-										type="text"
+										id="heightAboveGround"
+										name="heightAboveGround"
+										type="number"
 										inputMode="decimal"
-										value={heightInput}
+										disabled={!heightInputReady}
+										value={heightAboveGroundInput}
 										onChange={onHeightChange}
-										placeholder={t('enter_height')}
+										placeholder={t('enter_height_above_ground')}
 										aria-describedby="height-info height-error"
 										className={
 											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
-											(locationErrors.height
+											(locationErrors.heightAboveGround
 												? ' border-[#FF0000] shadow-[#FF0000] focus:border-[#FF0000] focus:shadow-sm focus:shadow-[#FF0000]'
 												: '')
 										}
@@ -487,9 +603,77 @@ export default function EditLocation() {
 										{t('height_info_text')}
 									</p>
 
-									{locationErrors.height ? (
+									{!heightInputReady && originalElevation.status === 'error' ? (
+										<div className="mt-2 text-sm text-amber-600">
+											<p>{t('elevation_error')}</p>
+											<button
+												type="button"
+												onClick={originalElevation.retry}
+												className="font-semibold underline"
+											>
+												{t('retry_elevation')}
+											</button>
+										</div>
+									) : !heightInputReady ? (
+										<div className="mt-2 flex items-center gap-2">
+											<div className="h-4 w-4">
+												<Spinner />
+											</div>
+											<span className="text-muted-foreground text-sm">
+												{t('calculating_height_above_ground')}
+											</span>
+										</div>
+									) : elevation.status === 'loading' ? (
+										<div className="mt-2 flex items-center gap-2">
+											<div className="h-4 w-4">
+												<Spinner />
+											</div>
+											<span className="text-muted-foreground text-sm">
+												{t('fetching_elevation')}
+											</span>
+										</div>
+									) : elevation.status === 'error' ? (
+										<div className="mt-2 text-sm text-amber-600">
+											<p>{t('elevation_error')}</p>
+											<button
+												type="button"
+												onClick={elevation.retry}
+												className="font-semibold underline"
+											>
+												{t('retry_elevation')}
+											</button>
+										</div>
+									) : elevation.result ? (
+										<div className="text-muted-foreground mt-2 text-sm">
+											<div>
+												{t('terrain_elevation')}:{' '}
+												{Math.round(elevation.result.elevation)} m
+											</div>
+											{finalHeight !== null ? (
+												<div>
+													{t('final_height')}: {Math.round(finalHeight)} m
+												</div>
+											) : null}
+											<div className="text-xs">
+												{t('elevation_source')}:{' '}
+												{elevation.result.attribution ??
+													elevation.result.dataset}
+												{elevation.result.datum
+													? ` (${elevation.result.datum})`
+													: ''}
+											</div>
+										</div>
+									) : null}
+
+									{locationErrors.heightAboveGround ? (
 										<p id="height-error" className="mt-1 text-sm text-red-600">
-											{locationErrors.height}
+											{locationErrors.heightAboveGround}
+										</p>
+									) : null}
+
+									{locationErrors.elevation ? (
+										<p className="mt-1 text-sm text-red-600">
+											{t(locationErrors.elevation)}
 										</p>
 									) : null}
 								</div>
