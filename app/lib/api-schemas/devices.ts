@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { DeviceLocationInputSchema } from '~/lib/openapi/schemas/location'
 
 export const CreateDeviceSchema = z.object({
 	// public API request shape
@@ -20,22 +21,10 @@ export const CreateDeviceSchema = z.object({
 				.max(3)
 				.meta({
 					description:
-						'Coordinates as [longitude, latitude, height?], where height is above sea level in meters.',
-					example: [7.68123, 51.9123, 66.6],
+						'Coordinates as [longitude, latitude, height?], where height is above the local ground surface in meters.',
+					example: [7.68123, 51.9123, 3.5],
 				}),
-			z
-				.object({
-					lng: z.number().meta({ description: 'Longitude' }),
-					lat: z.number().meta({ description: 'Latitude' }),
-					height: z.number().optional().meta({
-						description: 'Height above sea level in meters.',
-						example: 66.6,
-					}),
-				})
-				.meta({
-					description:
-						'Device location with an optional height above sea level in meters.',
-				}),
+			DeviceLocationInputSchema,
 		])
 		.transform((loc) => {
 			if (Array.isArray(loc)) return loc
