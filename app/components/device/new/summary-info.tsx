@@ -2,11 +2,31 @@ import { MapPin, Tag, Smartphone, Cpu, Cog } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
+import { useTerrainElevation } from '~/hooks/use-terrain-elevation'
+import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
 
 export function SummaryInfo() {
 	const { getValues } = useFormContext()
 	const formData = getValues()
 	const { t } = useTranslation('newdevice')
+	const heightAboveGround =
+		formData.heightAboveGround === undefined ||
+		formData.heightAboveGround === null ||
+		formData.heightAboveGround === ''
+			? null
+			: Number(formData.heightAboveGround)
+	const latitude = Number(formData.latitude)
+	const longitude = Number(formData.longitude)
+	const elevation = useTerrainElevation({
+		latitude,
+		longitude,
+		debounceMs: 0,
+	})
+	const terrainElevation = elevation.result?.elevation ?? null
+	const hasTerrainElevation = terrainElevation !== null
+	const finalHeight = hasTerrainElevation
+		? calculateHeightAboveSeaLevel(terrainElevation, heightAboveGround)
+		: null
 
 	const sections = [
 		{
@@ -31,11 +51,15 @@ export function SummaryInfo() {
 					label: 'longitude',
 					value: parseFloat(formData.longitude).toFixed(4),
 				},
-				...(formData.height !== undefined &&
-				formData.height !== null &&
-				formData.height !== ''
-					? [{ label: 'height', value: `${formData.height} m` }]
-					: []),
+				{
+					label: 'height',
+					value:
+						finalHeight !== null
+							? `${Math.round(finalHeight)} m`
+							: elevation.status === 'loading'
+								? t('fetching_elevation')
+								: t('elevation_unavailable'),
+				},
 			],
 		},
 		{

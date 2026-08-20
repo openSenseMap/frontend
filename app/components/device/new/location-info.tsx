@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
@@ -11,9 +11,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { BaseMap } from '~/components/base-map'
-import { LOCATION_LIMITS, isValidLocation } from '~/lib/location'
-import { getElevation } from '~/services/elevation.service'
 import Spinner from '~/components/spinner'
+import { useTerrainElevation } from '~/hooks/use-terrain-elevation'
+import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
+import { LOCATION_LIMITS, isValidLocation } from '~/lib/location'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -26,7 +27,7 @@ export function LocationStep() {
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
-	const savedHeight = watch('height')
+	const savedHeightAboveGround = watch('heightAboveGround')
 
 	const [marker, setMarker] = useState<{
 		latitude: number | string
@@ -36,142 +37,120 @@ export function LocationStep() {
 		longitude: savedLongitude || '',
 	})
 
-	// State for terrain elevation (from OpenTopoData API)
-	const [terrainElevation, setTerrainElevation] = useState<number | null>(null)
-	// Loading state for elevation fetch
-	const [isFetchingElevation, setIsFetchingElevation] = useState(false)
-	// Error state for elevation fetch
-	const [elevationError, setElevationError] = useState<string | null>(null)
-
 	useEffect(() => {
 		if (savedLatitude !== undefined && savedLongitude !== undefined) {
-			setMarker({
-				latitude: savedLatitude,
-				longitude: savedLongitude,
-			})
+			setMarker({ latitude: savedLatitude, longitude: savedLongitude })
 		}
 	}, [savedLatitude, savedLongitude])
 
-	// Function to fetch terrain elevation from OpenTopoData API
-	const fetchTerrainElevation = useCallback(
-		async (lat: number, lng: number) => {
-			setIsFetchingElevation(true)
-			setElevationError(null)
+	const markerLocation = useMemo(() => {
+		if (marker.latitude === '' || marker.longitude === '') return null
 
-			try {
-				const elevation = await getElevation(lat, lng)
-				if (elevation !== null) {
-					setTerrainElevation(elevation)
-				} else {
-					setElevationError(t('elevation_unavailable'))
-				}
-			} catch {
-				setElevationError(t('elevation_error'))
-			}
-			finally {
-				setIsFetchingElevation(false)
-			}
-		},
-		[t],
-	)
-
-	// Effect to fetch elevation when marker position changes
-	useEffect(() => {
-		const lat = typeof marker.latitude === 'number' ? marker.latitude : Number(marker.latitude)
-		const lng = typeof marker.longitude === 'number' ? marker.longitude : Number(marker.longitude)
-
-		if (isValidLocation({ latitude: lat, longitude: lng })) {
-			void fetchTerrainElevation(lat, lng)
-		} else {
-			// Clear elevation if location is invalid
-			setTerrainElevation(null)
-			setElevationError(null)
+		const candidate = {
+			latitude: Number(marker.latitude),
+			longitude: Number(marker.longitude),
 		}
-	}, [marker.latitude, marker.longitude, fetchTerrainElevation])
 
-	// Calculate final height above sea level for display
-	const finalHeightAboveSeaLevel = useCallback(() => {
-		if (terrainElevation === null) return null
-		if (savedHeight === undefined || savedHeight === null || savedHeight === '') {
-			// If no height above ground is specified, final height is just terrain elevation
-			return terrainElevation
-		}
-		// Add terrain elevation and height above ground
-		return terrainElevation + Number(savedHeight)
-	}, [terrainElevation, savedHeight])
+		return isValidLocation(candidate) ? candidate : null
+	}, [marker.latitude, marker.longitude])
 
-	const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value.trim()
-		const parsedValue = parseFloat(value)
+	const elevation = useTerrainElevation({
+		latitude: markerLocation?.latitude,
+		longitude: markerLocation?.longitude,
+	})
 
-		setMarker((prev) => ({
-			...prev,
-			latitude: value === '' || isNaN(parsedValue) ? '' : parsedValue,
-		}))
+	const finalHeight =
+		elevation.result === null
+			? null
+			: calculateHeightAboveSeaLevel(
+					elevation.result.elevation,
+					savedHeightAboveGround === '' ||
+						savedHeightAboveGround === undefined ||
+						savedHeightAboveGround === null
+						? undefined
+						: Number(savedHeightAboveGround),
+				)
+
+	const handleLatitudeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value.trim()
+		const parsedValue = Number(value)
+		const latitude =
+			value === '' || !Number.isFinite(parsedValue) ? '' : parsedValue
+
+		setMarker((current) => ({ ...current, latitude }))
+		setValue('latitude', latitude === '' ? undefined : latitude, {
+			shouldDirty: true,
+			shouldValidate: true,
+		})
+	}
+
+	const handleLongitudeChange = (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const value = event.target.value.trim()
+		const parsedValue = Number(value)
+		const longitude =
+			value === '' || !Number.isFinite(parsedValue) ? '' : parsedValue
+
+		setMarker((current) => ({ ...current, longitude }))
+		setValue('longitude', longitude === '' ? undefined : longitude, {
+			shouldDirty: true,
+			shouldValidate: true,
+		})
+	}
+
+	const handleHeightChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value.trim()
+		const parsedValue = Number(value)
 
 		setValue(
-			'latitude',
-			value === '' || isNaN(parsedValue) ? undefined : parsedValue,
+			'heightAboveGround',
+			value === '' || !Number.isFinite(parsedValue) ? undefined : parsedValue,
+			{ shouldDirty: true, shouldValidate: true },
 		)
 	}
 
-	const handleLongitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value.trim()
-		const parsedValue = parseFloat(value)
+	const updateMarker = useCallback(
+		(longitude: number, latitude: number) => {
+			const roundedLatitude = Math.round(latitude * 1_000_000) / 1_000_000
+			const roundedLongitude = Math.round(longitude * 1_000_000) / 1_000_000
 
-		setMarker((prev) => ({
-			...prev,
-			longitude: value === '' || isNaN(parsedValue) ? '' : parsedValue,
-		}))
-
-		setValue(
-			'longitude',
-			value === '' || isNaN(parsedValue) ? undefined : parsedValue,
-		)
-	}
-
-	const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value.trim()
-		const parsedValue = parseFloat(value)
-
-		// Store height above ground in the form
-		setValue(
-			'height',
-			value === '' || isNaN(parsedValue) ? undefined : parsedValue,
-		)
-	}
-
-	const onMarkerDrag = useCallback(
-		(event: MarkerDragEvent) => {
-			const { lng, lat } = event.lngLat
 			setMarker({
-				latitude: Math.round(lat * 1000000) / 1000000,
-				longitude: Math.round(lng * 1000000) / 1000000,
+				latitude: roundedLatitude,
+				longitude: roundedLongitude,
 			})
-			setValue('latitude', lat)
-			setValue('longitude', lng)
+			setValue('latitude', roundedLatitude, {
+				shouldDirty: true,
+				shouldValidate: true,
+			})
+			setValue('longitude', roundedLongitude, {
+				shouldDirty: true,
+				shouldValidate: true,
+			})
 		},
 		[setValue],
+	)
+
+	const onMarkerDragEnd = useCallback(
+		(event: MarkerDragEvent) => {
+			updateMarker(event.lngLat.lng, event.lngLat.lat)
+		},
+		[updateMarker],
 	)
 
 	const onMapClick = useCallback(
-		(event: any) => {
-			const { lng, lat } = event.lngLat
-			setMarker({
-				latitude: Math.round(lat * 1000000) / 1000000,
-				longitude: Math.round(lng * 1000000) / 1000000,
-			})
-			setValue('latitude', lat)
-			setValue('longitude', lng)
+		(event: { lngLat: { lng: number; lat: number } }) => {
+			updateMarker(event.lngLat.lng, event.lngLat.lat)
 		},
-		[setValue],
+		[updateMarker],
 	)
 
-	const displayHeightValue = savedHeight !== undefined && savedHeight !== null && savedHeight !== ''
-		? String(savedHeight)
-		: ''
-
-	const finalHeight = finalHeightAboveSeaLevel()
+	const displayHeightValue =
+		savedHeightAboveGround !== undefined &&
+		savedHeightAboveGround !== null &&
+		savedHeightAboveGround !== ''
+			? String(savedHeightAboveGround)
+			: ''
 
 	return (
 		<div className="flex h-full w-full flex-col">
@@ -179,24 +158,21 @@ export function LocationStep() {
 				<BaseMap
 					ref={mapRef}
 					initialViewState={{
-						latitude: marker.latitude ? Number(marker.latitude) : 51,
-						longitude: marker.longitude ? Number(marker.longitude) : 7,
+						latitude: markerLocation?.latitude ?? 51,
+						longitude: markerLocation?.longitude ?? 7,
 						zoom: 3.5,
 					}}
 					onClick={onMapClick}
 				>
-					{isValidLocation({
-						latitude: Number(marker.latitude),
-						longitude: Number(marker.longitude),
-					}) && (
+					{markerLocation ? (
 						<Marker
-							latitude={Number(marker.latitude)}
-							longitude={Number(marker.longitude)}
+							latitude={markerLocation.latitude}
+							longitude={markerLocation.longitude}
 							anchor="center"
 							draggable
-							onDrag={onMarkerDrag}
+							onDragEnd={onMarkerDragEnd}
 						/>
-					)}
+					) : null}
 					<NavigationControl position="top-right" showCompass={false} />
 					<GeolocateControl
 						position="bottom-right"
@@ -204,9 +180,7 @@ export function LocationStep() {
 							enableHighAccuracy: true,
 							timeout: 10_000,
 						}}
-						fitBoundsOptions={{
-							maxZoom: 14,
-						}}
+						fitBoundsOptions={{ maxZoom: 14 }}
 					/>
 				</BaseMap>
 			</div>
@@ -255,14 +229,14 @@ export function LocationStep() {
 				</div>
 
 				<div>
-					<Label htmlFor="height">
+					<Label htmlFor="heightAboveGround">
 						{t('height_above_ground')} ({t('optional')})
 					</Label>
 					<Input
-						id="height"
+						id="heightAboveGround"
 						type="number"
 						step="any"
-						{...register('height')}
+						{...register('heightAboveGround')}
 						value={displayHeightValue}
 						onChange={handleHeightChange}
 						placeholder={t('enter height above ground')}
@@ -273,34 +247,52 @@ export function LocationStep() {
 						{t('height_info_text')}
 					</p>
 
-					{/* Display terrain elevation and final height */}
-					{isFetchingElevation ? (
+					{elevation.status === 'loading' ? (
 						<div className="mt-2 flex items-center gap-2">
 							<div className="h-4 w-4">
 								<Spinner />
 							</div>
-							<span className="text-sm text-muted-foreground">
+							<span className="text-muted-foreground text-sm">
 								{t('fetching_elevation')}
 							</span>
 						</div>
-					) : elevationError ? (
-						<p className="mt-2 text-sm text-amber-600">{elevationError}</p>
-					) : terrainElevation !== null ? (
-						<div className="mt-2 text-sm">
-							<div className="text-muted-foreground">
-								{t('terrain_elevation')}: {terrainElevation.toFixed(1)} m
+					) : elevation.status === 'error' ? (
+						<div className="mt-2 text-sm text-amber-600">
+							<p>
+								{elevation.error === 'unavailable'
+									? t('elevation_unavailable')
+									: t('elevation_error')}
+							</p>
+							<button
+								type="button"
+								onClick={elevation.retry}
+								className="font-semibold underline"
+							>
+								{t('retry_elevation')}
+							</button>
+						</div>
+					) : elevation.result ? (
+						<div className="text-muted-foreground mt-2 text-sm">
+							<div>
+								{t('terrain_elevation')}:{' '}
+								{Math.round(elevation.result.elevation)} m
 							</div>
-							{finalHeight !== null && (
-								<div className="text-muted-foreground">
-									{t('final_height')}: {finalHeight.toFixed(1)} m
+							{finalHeight !== null ? (
+								<div>
+									{t('final_height')}: {Math.round(finalHeight)} m
 								</div>
-							)}
+							) : null}
+							<div className="text-xs">
+								{t('elevation_source')}:{' '}
+								{elevation.result.attribution ?? elevation.result.dataset}
+								{elevation.result.datum ? ` (${elevation.result.datum})` : ''}
+							</div>
 						</div>
 					) : null}
 
-					{errors.height?.message ? (
+					{errors.heightAboveGround?.message ? (
 						<p id="height-error" className="mt-1 text-sm text-red-600">
-							{String(errors.height.message)}
+							{String(errors.heightAboveGround.message)}
 						</p>
 					) : null}
 				</div>
