@@ -15,6 +15,8 @@ import {
 	DevicesResponseSchema,
 } from '~/lib/openapi/schemas/device'
 import {
+	BadGatewayErrorSchema,
+	badGatewayResponse,
 	BadRequestErrorSchema,
 	badRequestResponse,
 	ForbiddenErrorSchema,
@@ -31,6 +33,10 @@ import {
 	DevicesQuerySchema,
 	CreateDeviceSchema,
 } from '~/lib/api-schemas/devices'
+import {
+	calculateDeviceHeightAboveSeaLevel,
+	ElevationLookupError,
+} from '~/services/elevation-service.server'
 
 const DevicesQueryParamsSchema = DevicesQuerySchema.meta({
 	id: 'DevicesQueryParams',
@@ -88,7 +94,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 	post: {
 		tags: ['Devices'],
 		summary: 'Create a new device',
-		description: 'Creates a new device with optional sensors.',
+		description:
+			'Creates a new device with optional sensors. An optional location height is interpreted as height above ground; the response contains the calculated height above sea level.',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
@@ -123,6 +130,11 @@ export const openapi: ZodOpenApiPathItemObject = {
 			405: methodNotAllowedResponse(
 				MethodNotAllowedErrorSchema,
 				'Method not allowed.',
+			),
+
+			502: badGatewayResponse(
+				BadGatewayErrorSchema,
+				'Terrain elevation could not be resolved for the supplied device location.',
 			),
 
 			500: internalServerErrorResponse(
@@ -229,8 +241,30 @@ async function post(request: Request, user: User) {
 
 		const validatedData = validationResult.data
 		const sensorsProvided = validatedData.sensors?.length > 0
-		// Extract coordinates from location array [longitude, latitude, height?]
-		const [longitude, latitude, height] = validatedData.location
+		// Request height is relative to ground; persisted height is above sea level.
+		const [longitude, latitude, heightAboveGround] = validatedData.location
+		let heightAboveSeaLevel: number | null = null
+
+		if (heightAboveGround !== undefined) {
+			try {
+				heightAboveSeaLevel = await calculateDeviceHeightAboveSeaLevel(
+					latitude,
+					longitude,
+					heightAboveGround,
+				)
+			} catch (error) {
+				console.warn('POST /boxes terrain elevation lookup failed', {
+					error: error instanceof ElevationLookupError ? error.code : error,
+					latitude,
+					longitude,
+				})
+
+				return StandardResponse.badGateway(
+					'Terrain elevation could not be resolved for the supplied device location.',
+				)
+			}
+		}
+
 		const newDevice = await createDevice(
 			{
 				name: validatedData.name,
@@ -238,7 +272,7 @@ async function post(request: Request, user: User) {
 				model: sensorsProvided ? undefined : validatedData.model,
 				latitude: latitude,
 				longitude: longitude,
-				height: height ?? null,
+				height: heightAboveSeaLevel,
 				tags: validatedData.grouptag,
 				sensors: sensorsProvided
 					? validatedData.sensors.map((s) => ({
