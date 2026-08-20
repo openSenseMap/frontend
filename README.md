@@ -6,7 +6,6 @@ running as a public beta at
 
 <img width="1510" height="858" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/70da4cff-1751-4a13-89e8-607a5198df37">
 
-
 ## Project setup
 
 If you do need to set the project up locally yourself, feel free to follow these
@@ -24,14 +23,19 @@ instructions:
 
 You can configure the API endpoint using the following environmental variables:
 
-| ENV          | Default value                                            |
-| ------------ | -------------------------------------------------------- |
-| OSEM_API_URL | https://api.testing.opensensemap.org                     |
-| DATABASE_URL | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| ENV                           | Default value                                            |
+| ----------------------------- | -------------------------------------------------------- |
+| OSEM_API_URL                  | https://api.testing.opensensemap.org                     |
+| DATABASE_URL                  | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| OPENTOPO_DATA_API_URL         | `https://api.opentopodata.org/v1`                        |
+| OPENTOPO_DATA_DATASET         | `eudem25m,mapzen`                                        |
+| OPENTOPO_DATA_MIN_INTERVAL_MS | `1100`                                                   |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 To run a local development version, you only need to adjust the `OSEM_API_URL`
-to the one given above.
+to the one given above. Configure `OPENTOPO_DATA_API_URL` explicitly in
+production and point it to a self-hosted or managed instance; the default public
+instance is intended for development and evaluation.
 
 ### Setup Steps
 
@@ -163,11 +167,10 @@ flexibility to adjust the outputs to the needs of the respective use case.
 
 ##### Documenting an API Route
 
-API route documentation is generated from route-local `zod-openapi`
-definitions. Each API route can export an `openapi` object that describes the
-route's OpenAPI path item. Request bodies, response bodies, path parameters,
-query parameters, and headers should be described with Zod schemas wherever
-possible.
+API route documentation is generated from route-local `zod-openapi` definitions.
+Each API route can export an `openapi` object that describes the route's OpenAPI
+path item. Request bodies, response bodies, path parameters, query parameters,
+and headers should be described with Zod schemas wherever possible.
 
 The main benefit of this approach is that schemas can be shared between
 validation and documentation. This keeps the OpenAPI documentation closer to the
