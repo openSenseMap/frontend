@@ -34,9 +34,6 @@ export function getColumns(
 ): ColumnDef<SenseBox>[] {
 	const { t, i18n } = useTranslation
 	const isOwner = opts?.isOwner ?? false
-	const dateTimeFormat = Intl.DateTimeFormat(i18n.language, {
-		dateStyle: 'short',
-	})
 	return [
 		{
 			accessorKey: 'name',
@@ -93,7 +90,7 @@ export function getColumns(
 			},
 			cell: ({ row }) => {
 				const date = new Date(row.getValue('createdAt'))
-				return <div>{dateTimeFormat.format(date)}</div>
+				return <div>{date.toLocaleDateString(i18n.language)}</div>
 			},
 		},
 		{
