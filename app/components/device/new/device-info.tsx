@@ -109,18 +109,21 @@ export function DeviceSelectionStep() {
 		setValue('model', null)
 	}
 
-	const isConfiguringDevice = selectedDevice === 'senseBox:Home'
+	const isConfiguringSenseBoxHome = selectedDevice === 'senseBox:Home'
 
 	return (
 		<div className="overflow-hidden p-4">
 			<div
 				className={cn(
 					'grid gap-6',
-					isConfiguringDevice ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2',
+					isConfiguringSenseBoxHome
+						? 'grid-cols-1'
+						: 'grid-cols-1 lg:grid-cols-2',
 				)}
 			>
 				{devices.map((device) => {
-					if (isConfiguringDevice && device.name !== selectedDevice) return null
+					if (isConfiguringSenseBoxHome && device.name !== selectedDevice)
+						return null
 
 					return (
 						<Card
@@ -135,7 +138,7 @@ export function DeviceSelectionStep() {
 									'border-primary bg-primary/10 ring-primary/40 shadow-sm ring-2',
 							)}
 							onClick={() => {
-								if (isConfiguringDevice) {
+								if (isConfiguringSenseBoxHome) {
 									return
 								}
 								handleDeviceChange(device.name)
@@ -144,7 +147,7 @@ export function DeviceSelectionStep() {
 								if (event.key === 'Enter' || event.key === ' ') {
 									event.preventDefault()
 
-									if (isConfiguringDevice) {
+									if (isConfiguringSenseBoxHome) {
 										return
 									}
 
@@ -167,7 +170,7 @@ export function DeviceSelectionStep() {
 								</div>
 
 								<div className="flex min-w-0 flex-1 flex-col justify-center p-3">
-									{isConfiguringDevice && (
+									{isConfiguringSenseBoxHome && (
 										<Button
 											variant="ghost"
 											size="icon"
