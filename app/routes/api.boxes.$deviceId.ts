@@ -12,6 +12,8 @@ import { deleteDevice, updateDevice } from '~/services/device-service.server'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
+	BadGatewayErrorSchema,
+	badGatewayResponse,
 	BadRequestErrorSchema,
 	badRequestResponse,
 	ForbiddenErrorSchema,
@@ -37,7 +39,11 @@ import {
 	responseContentTypeJson,
 } from '~/middleware/content-type-header.server'
 import { parseJsonBody } from '~/lib/request-parsing'
-import { LocationObjectSchema } from '~/lib/openapi/schemas/location'
+import { DeviceLocationInputSchema } from '~/lib/openapi/schemas/location'
+import {
+	calculateDeviceHeightAboveSeaLevel,
+	ElevationLookupError,
+} from '~/services/elevation-service.server'
 
 const messages = {
 	conflictingSensorsAndAddons:
@@ -84,7 +90,7 @@ const UpdateDeviceRequestSchema = z
 			example: 'https://example.com',
 		}),
 
-		location: LocationObjectSchema.optional(),
+		location: DeviceLocationInputSchema.optional(),
 
 		grouptag: z
 			.union([z.string(), z.array(z.string())])
@@ -170,7 +176,8 @@ export const openapi: ZodOpenApiPathItemObject = {
 	put: {
 		tags: ['Devices'],
 		summary: 'Update device',
-		description: 'Updates a device. Requires JWT authorization.',
+		description:
+			'Updates a device. Requires JWT authorization. An optional location height is interpreted as height above ground; the response contains the calculated height above sea level.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -207,6 +214,11 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
+
+			502: badGatewayResponse(
+				BadGatewayErrorSchema,
+				'Terrain elevation could not be resolved for the supplied device location.',
+			),
 
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
@@ -372,6 +384,10 @@ async function put(request: Request, user: User, deviceId: string) {
 		return StandardResponse.notFound(apiMessages.deviceNotFound)
 	}
 
+	if (currentDevice.userId !== user.id) {
+		return StandardResponse.forbidden(messages.deviceNotOwned)
+	}
+
 	if (body.sensors && body.addons?.add) {
 		return StandardResponse.badRequest(
 			'sensors and addons can not appear in the same request.',
@@ -439,7 +455,24 @@ async function put(request: Request, user: User, deviceId: string) {
 			lng: body.location.lng,
 		}
 		if (body.location.height !== undefined) {
-			locationData.height = body.location.height
+			try {
+				locationData.height = await calculateDeviceHeightAboveSeaLevel(
+					body.location.lat,
+					body.location.lng,
+					body.location.height,
+				)
+			} catch (error) {
+				console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
+					error: error instanceof ElevationLookupError ? error.code : error,
+					deviceId,
+					latitude: body.location.lat,
+					longitude: body.location.lng,
+				})
+
+				return StandardResponse.badGateway(
+					'Terrain elevation could not be resolved for the supplied device location.',
+				)
+			}
 		}
 	}
 
