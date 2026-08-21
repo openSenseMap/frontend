@@ -27,7 +27,7 @@ export function LocationStep() {
 		setValue,
 		watch,
 		formState: { errors },
-	} = useFormContext<DeviceLocationInput>()
+	} = useFormContext<Partial<DeviceLocationInput>>()
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
