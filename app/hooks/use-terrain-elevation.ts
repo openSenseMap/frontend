@@ -82,9 +82,9 @@ export function useTerrainElevation({
 
 		const requestId = ++requestIdRef.current
 		const controller = new AbortController()
-		const timeout = window.setTimeout(async () => {
-			setState({ status: 'loading', result: null, error: null })
+		setState({ status: 'loading', result: null, error: null })
 
+		const timeout = window.setTimeout(async () => {
 			const url = new URL('/resources/elevation', window.location.origin)
 			url.searchParams.set('latitude', String(location.latitude))
 			url.searchParams.set('longitude', String(location.longitude))
