@@ -9,8 +9,6 @@ import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Separator } from '~/components/ui/separator'
 import { cn } from '~/lib/utils'
 
-const SENSOR_COMMUNITY_CATEGORY = 'Sensor.Community'
-
 const devices = [
 	{
 		name: 'senseBox:Home',
@@ -23,7 +21,8 @@ const devices = [
 		imageHasPadding: true,
 	},
 	{
-		name: SENSOR_COMMUNITY_CATEGORY,
+		name: 'luftdaten.info',
+		label: 'Sensor.Community',
 		image:
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdpbmQiPjxwYXRoIGQ9Ik0xMi44IDE5LjZBMiAyIDAgMSAwIDE0IDE2SDIiLz48cGF0aCBkPSJNMTcuNSA4YTIuNSAyLjUgMCAxIDEgMiA0SDIiLz48cGF0aCBkPSJNOS44IDQuNEEyIDIgMCAxIDEgMTEgOEgyIi8+PC9zdmc+',
 		imageHasPadding: false,
@@ -62,9 +61,6 @@ export function DeviceSelectionStep() {
 				homeV2Lora: 'Lora',
 			}
 			setSelectedConnectionType(connectionMap[model] || '')
-		} else if (model === 'luftdaten.info') {
-			setSelectedDevice(SENSOR_COMMUNITY_CATEGORY)
-			setSelectedConnectionType('')
 		} else {
 			setSelectedDevice(model || '')
 			setSelectedConnectionType('')
@@ -84,8 +80,6 @@ export function DeviceSelectionStep() {
 			// Set the model for the selected device
 			if (value === 'senseBox:Home') {
 				setValue('model', 'homeV2Wifi') // Default to a valid connection type for Home
-			} else if (value === SENSOR_COMMUNITY_CATEGORY) {
-				setValue('model', 'luftdaten.info')
 			} else {
 				setValue('model', value) // Set model to the selected device name
 			}
@@ -159,7 +153,7 @@ export function DeviceSelectionStep() {
 								<div className="border-border flex w-24 shrink-0 items-center justify-center border-r bg-white">
 									<img
 										src={device.image}
-										alt={device.name}
+										alt={'label' in device ? device.label : device.name}
 										className={cn(
 											'h-full w-full',
 											device.imageHasPadding
@@ -185,7 +179,7 @@ export function DeviceSelectionStep() {
 									)}
 
 									<h3 className="text-foreground text-lg font-semibold wrap-break-word">
-										{device.name}
+										{'label' in device ? device.label : device.name}
 									</h3>
 
 									{device.name === 'senseBox:Home' &&

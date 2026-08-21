@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type MetaFunction,
 	data,
 	redirect,
 	Form,
@@ -66,10 +65,6 @@ export async function action({ request }: Route.ActionArgs) {
 			{ status: 500 },
 		)
 	}
-}
-
-export const meta: MetaFunction = () => {
-	return [{ title: 'Forgot Password' }]
 }
 
 export default function ForgotPasswordPage() {
