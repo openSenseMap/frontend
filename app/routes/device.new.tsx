@@ -32,11 +32,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-	const formData = await request.formData()
-	const rawData = formData.get('formData')
 	const userId = await getUserId(request)
 
 	if (!userId) return redirect('/explore/login')
+
+	const formData = await request.formData()
+	const rawData = formData.get('formData')
 
 	if (typeof rawData !== 'string') {
 		return responseData<NewDeviceActionData>(
