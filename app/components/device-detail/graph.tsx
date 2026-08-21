@@ -67,12 +67,18 @@ ChartJS.register(
 
 let zoomPluginRegistration: Promise<void> | null = null
 
-function registerZoomPlugin() {
-	zoomPluginRegistration ??= import('chartjs-plugin-zoom').then(
-		({ default: zoomPlugin }) => {
+function registerZoomPlugin(): Promise<void> {
+	if (zoomPluginRegistration) return zoomPluginRegistration
+
+	zoomPluginRegistration = import('chartjs-plugin-zoom')
+		.then(({ default: zoomPlugin }) => {
 			ChartJS.register(zoomPlugin)
-		},
-	)
+		})
+		.catch((error: unknown) => {
+			zoomPluginRegistration = null
+			console.error('Failed to register chartjs-plugin-zoom:', error)
+			throw error
+		})
 
 	return zoomPluginRegistration
 }
@@ -91,21 +97,25 @@ const GraphWithZoom = ({
 	chartRef,
 	onMouseLeave,
 }: GraphWithZoomProps) => {
-	const [isZoomPluginReady, setIsZoomPluginReady] = useState(false)
+	const [isZoomPluginSettled, setIsZoomPluginSettled] = useState(false)
 
 	useEffect(() => {
 		let isMounted = true
+		const finishLoadingZoomPlugin = () => {
+			if (isMounted) setIsZoomPluginSettled(true)
+		}
 
-		void registerZoomPlugin().then(() => {
-			if (isMounted) setIsZoomPluginReady(true)
-		})
+		void registerZoomPlugin().then(
+			finishLoadingZoomPlugin,
+			finishLoadingZoomPlugin,
+		)
 
 		return () => {
 			isMounted = false
 		}
 	}, [])
 
-	if (!isZoomPluginReady) return <Spinner />
+	if (!isZoomPluginSettled) return <Spinner />
 
 	return (
 		<Line
