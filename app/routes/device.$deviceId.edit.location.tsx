@@ -584,10 +584,13 @@ export default function EditLocation() {
 										type="number"
 										inputMode="decimal"
 										disabled={!heightInputReady}
+										aria-busy={
+											!heightInputReady || elevation.status === 'loading'
+										}
 										value={heightAboveGroundInput}
 										onChange={onHeightChange}
 										placeholder={t('enter_height_above_ground')}
-										aria-describedby="height-info height-error"
+										aria-describedby="height-info height-status height-error"
 										className={
 											'w-full rounded border border-gray-200 px-2 py-1 text-base' +
 											(locationErrors.heightAboveGround
@@ -602,68 +605,70 @@ export default function EditLocation() {
 									>
 										{t('height_info_text')}
 									</p>
-
-									{!heightInputReady && originalElevation.status === 'error' ? (
-										<div className="mt-2 text-sm text-amber-600">
-											<p>{t('elevation_error')}</p>
-											<button
-												type="button"
-												onClick={originalElevation.retry}
-												className="font-semibold underline"
-											>
-												{t('retry_elevation')}
-											</button>
-										</div>
-									) : !heightInputReady ? (
-										<div className="mt-2 flex items-center gap-2">
-											<div className="h-4 w-4">
-												<Spinner />
+									<div id="height-status" aria-live="polite">
+										{!heightInputReady &&
+										originalElevation.status === 'error' ? (
+											<div className="mt-2 text-sm text-amber-600">
+												<p>{t('elevation_error')}</p>
+												<button
+													type="button"
+													onClick={originalElevation.retry}
+													className="font-semibold underline"
+												>
+													{t('retry_elevation')}
+												</button>
 											</div>
-											<span className="text-muted-foreground text-sm">
-												{t('calculating_height_above_ground')}
-											</span>
-										</div>
-									) : elevation.status === 'loading' ? (
-										<div className="mt-2 flex items-center gap-2">
-											<div className="h-4 w-4">
-												<Spinner />
-											</div>
-											<span className="text-muted-foreground text-sm">
-												{t('fetching_elevation')}
-											</span>
-										</div>
-									) : elevation.status === 'error' ? (
-										<div className="mt-2 text-sm text-amber-600">
-											<p>{t('elevation_error')}</p>
-											<button
-												type="button"
-												onClick={elevation.retry}
-												className="font-semibold underline"
-											>
-												{t('retry_elevation')}
-											</button>
-										</div>
-									) : elevation.result ? (
-										<div className="text-muted-foreground mt-2 text-sm">
-											<div>
-												{t('terrain_elevation')}:{' '}
-												{Math.round(elevation.result.elevation)} m
-											</div>
-											{finalHeight !== null ? (
-												<div>
-													{t('final_height')}: {Math.round(finalHeight)} m
+										) : !heightInputReady ? (
+											<div className="mt-2 flex items-center gap-2">
+												<div className="h-4 w-4">
+													<Spinner />
 												</div>
-											) : null}
-											<div className="text-xs">
-												{t('elevation_source')}:{' '}
-												{elevation.result.attribution ??
-													elevation.result.dataset}
-												{elevation.result.datum
-													? ` (${elevation.result.datum})`
-													: ''}
+												<span className="text-muted-foreground text-sm">
+													{t('calculating_height_above_ground')}
+												</span>
 											</div>
-										</div>
-									) : null}
+										) : elevation.status === 'loading' ? (
+											<div className="mt-2 flex items-center gap-2">
+												<div className="h-4 w-4">
+													<Spinner />
+												</div>
+												<span className="text-muted-foreground text-sm">
+													{t('fetching_elevation')}
+												</span>
+											</div>
+										) : elevation.status === 'error' ? (
+											<div className="mt-2 text-sm text-amber-600">
+												<p>{t('elevation_error')}</p>
+												<button
+													type="button"
+													onClick={elevation.retry}
+													className="font-semibold underline"
+												>
+													{t('retry_elevation')}
+												</button>
+											</div>
+										) : elevation.result ? (
+											<div className="text-muted-foreground mt-2 text-sm">
+												<div>
+													{t('terrain_elevation')}:{' '}
+													{Math.round(elevation.result.elevation)} m
+												</div>
+												{finalHeight !== null ? (
+													<div>
+														{t('final_height')}: {Math.round(finalHeight)} m
+													</div>
+												) : null}
+												<div className="text-xs">
+													{t('elevation_source')}:{' '}
+													{elevation.result.attribution ??
+														elevation.result.dataset}
+													{elevation.result.datum
+														? ` (${elevation.result.datum})`
+														: ''}
+												</div>
+											</div>
+										) : null}
+									</div>
 
 									{locationErrors.heightAboveGround ? (
 										<p id="height-error" className="mt-1 text-sm text-red-600">
