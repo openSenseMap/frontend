@@ -121,10 +121,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-export const meta: MetaFunction = () => {
-	return [{ title: 'Password reset' }]
-}
-
 export default function PasswordResetRoute() {
 	const { token } = useLoaderData() as LoaderData
 	const actionData = useActionData() as ActionData | undefined

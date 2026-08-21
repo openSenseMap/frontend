@@ -27,6 +27,8 @@ export function SummaryInfo() {
 	const finalHeight = hasTerrainElevation
 		? calculateHeightAboveSeaLevel(terrainElevation, heightAboveGround)
 		: null
+	const modelLabel =
+		formData.model === 'luftdaten.info' ? 'Sensor.Community' : formData.model
 
 	const sections = [
 		{
@@ -65,7 +67,7 @@ export function SummaryInfo() {
 		{
 			title: 'Device',
 			icon: <Smartphone className="h-5 w-5" />,
-			data: [{ label: 'Model', value: formData.model }],
+			data: [{ label: 'Model', value: modelLabel }],
 		},
 		{
 			title: 'Sensors',

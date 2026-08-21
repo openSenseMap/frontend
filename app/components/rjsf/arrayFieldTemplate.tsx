@@ -1,9 +1,11 @@
 import { type ArrayFieldTemplateProps } from '@rjsf/utils'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
 
 export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
+	const { t } = useTranslation('ui-components')
 	const { items, canAdd, onAddClick } = props
 
 	const renderedItems = React.Children.toArray(items)
@@ -18,7 +20,7 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
 
 			{canAdd && (
 				<Button type="button" variant="outline" onClick={onAddClick}>
-					Add item
+					{t('array_field.add_item')}
 				</Button>
 			)}
 		</div>
