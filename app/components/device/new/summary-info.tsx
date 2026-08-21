@@ -9,12 +9,17 @@ export function SummaryInfo() {
 	const { getValues } = useFormContext()
 	const formData = getValues()
 	const { t } = useTranslation('newdevice')
-	const heightAboveGround =
-		formData.heightAboveGround === undefined ||
-		formData.heightAboveGround === null ||
-		formData.heightAboveGround === ''
+	const rawHeightAboveGround = formData.heightAboveGround
+	const parsedHeightAboveGround =
+		rawHeightAboveGround === undefined ||
+		rawHeightAboveGround === null ||
+		rawHeightAboveGround === ''
 			? null
-			: Number(formData.heightAboveGround)
+			: Number(rawHeightAboveGround)
+	const heightAboveGround =
+		parsedHeightAboveGround === null || Number.isFinite(parsedHeightAboveGround)
+			? parsedHeightAboveGround
+			: null
 	const latitude = Number(formData.latitude)
 	const longitude = Number(formData.longitude)
 	const elevation = useTerrainElevation({
@@ -54,7 +59,7 @@ export function SummaryInfo() {
 					value: parseFloat(formData.longitude).toFixed(4),
 				},
 				{
-					label: 'height',
+					label: 'final_height',
 					value:
 						finalHeight !== null
 							? `${Math.round(finalHeight)} m`
