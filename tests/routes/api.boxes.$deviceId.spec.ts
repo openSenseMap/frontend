@@ -16,6 +16,22 @@ import {
 } from '~/routes/api.boxes.$deviceId'
 import { registerUser } from '~/services/user-service.server'
 
+const TEST_TERRAIN_ELEVATION = vi.hoisted(() => 250)
+
+vi.mock('~/services/elevation-service.server', async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import('~/services/elevation-service.server')>()
+
+	return {
+		...actual,
+		calculateDeviceHeightAboveSeaLevel: async (
+			_latitude: number,
+			_longitude: number,
+			heightAboveGround: number,
+		) => TEST_TERRAIN_ELEVATION + heightAboveGround,
+	}
+})
+
 const DEVICE_TEST_USER = generateTestUserCredentials()
 
 const generateMinimalDevice = (
@@ -152,6 +168,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 				params: { deviceId: queryableDevice?.id },
 			} as Route.ActionArgs as Route.ActionArgs)
 			const data = await response.json()
+			const expectedHeight =
+				TEST_TERRAIN_ELEVATION + update_payload.location.height
 
 			expect(response.status).toBe(200)
 			expect(data.name).toBe(update_payload.name)
@@ -160,13 +178,13 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			expect(data.grouptag).toContain(update_payload.grouptag)
 			expect(data.description).toBe(update_payload.description)
 			expect(data.access_token).not.toBeNull()
-			expect(data.height).toBe(update_payload.location.height)
+			expect(data.height).toBe(expectedHeight)
 			expect(data.currentLocation).toEqual({
 				type: 'Point',
 				coordinates: [
 					update_payload.location.lng,
 					update_payload.location.lat,
-					update_payload.location.height,
+					expectedHeight,
 				],
 				timestamp: expect.any(String),
 			})
@@ -179,7 +197,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 						coordinates: [
 							update_payload.location.lng,
 							update_payload.location.lat,
-							update_payload.location.height,
+							expectedHeight,
 						],
 						timestamp: expect.any(String),
 					},
@@ -187,7 +205,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			])
 		})
 
-		it('should allow to update the device via PUT with array as grouptags', async () => {
+		it('should preserve height when PUT omits it', async () => {
 			await updateDeviceLocation({
 				id: queryableDevice.id,
 				latitude: queryableDevice.latitude,
@@ -230,14 +248,16 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			expect(data.grouptag).toEqual(update_payload.grouptag)
 
 			expect(data.description).toBe(update_payload.description)
-			expect(data.height).toBeNull()
+			expect(data.height).toBe(32.5)
 			expect(data.currentLocation.coordinates).toEqual([
 				update_payload.location.lng,
 				update_payload.location.lat,
+				32.5,
 			])
 			expect(data.loc[0].geometry.coordinates).toEqual([
 				update_payload.location.lng,
 				update_payload.location.lat,
+				32.5,
 			])
 
 			//TODO: this fails, check if we actually need timestamps in images
@@ -247,7 +267,7 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			// expect(Date.now() - tsMs).toBeLessThan(1000)
 		})
 
-		it('should persist a zero location height via PUT', async () => {
+		it('should convert a zero above-ground height via PUT', async () => {
 			const updatePayload = {
 				location: { lat: 52.52, lng: 13.405, height: 0 },
 			}
@@ -268,9 +288,17 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const data = await response.json()
 
 			expect(response.status).toBe(200)
-			expect(data.height).toBe(0)
-			expect(data.currentLocation.coordinates).toEqual([13.405, 52.52, 0])
-			expect(data.loc[0].geometry.coordinates).toEqual([13.405, 52.52, 0])
+			expect(data.height).toBe(TEST_TERRAIN_ELEVATION)
+			expect(data.currentLocation.coordinates).toEqual([
+				13.405,
+				52.52,
+				TEST_TERRAIN_ELEVATION,
+			])
+			expect(data.loc[0].geometry.coordinates).toEqual([
+				13.405,
+				52.52,
+				TEST_TERRAIN_ELEVATION,
+			])
 
 			const getResponse = (await deviceLoader({
 				params: { deviceId: queryableDevice.id },
@@ -278,8 +306,12 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			const persisted = await getResponse.json()
 
 			expect(getResponse.status).toBe(200)
-			expect(persisted.height).toBe(0)
-			expect(persisted.currentLocation.coordinates).toEqual([13.405, 52.52, 0])
+			expect(persisted.height).toBe(TEST_TERRAIN_ELEVATION)
+			expect(persisted.currentLocation.coordinates).toEqual([
+				13.405,
+				52.52,
+				TEST_TERRAIN_ELEVATION,
+			])
 		})
 
 		it('should remove image when deleteImage=true', async () => {

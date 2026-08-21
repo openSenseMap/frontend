@@ -9,6 +9,22 @@ import { createToken } from '~/lib/jwt'
 import { loader, action } from '~/routes/api.boxes'
 import { registerUser } from '~/services/user-service.server'
 
+const TEST_TERRAIN_ELEVATION = vi.hoisted(() => 250)
+
+vi.mock('~/services/elevation-service.server', async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import('~/services/elevation-service.server')>()
+
+	return {
+		...actual,
+		calculateDeviceHeightAboveSeaLevel: async (
+			_latitude: number,
+			_longitude: number,
+			heightAboveGround: number,
+		) => TEST_TERRAIN_ELEVATION + heightAboveGround,
+	}
+})
+
 const BOXES_TEST_USER = generateTestUserCredentials()
 const generateMinimalDevice = (
 	location: number[] | {} = [123, 12, 34],
@@ -718,6 +734,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 			} as Route.ActionArgs)) as Response
 			const responseData = await response.json()
 			await deleteDevice({ id: responseData._id })
+			const expectedHeight = TEST_TERRAIN_ELEVATION + loc[2]
 
 			// Assert
 			expect(response.status).toBe(201)
@@ -725,9 +742,17 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(responseData.longitude).toBeDefined()
 			expect(responseData.latitude).toBe(loc[1])
 			expect(responseData.longitude).toBe(loc[0])
-			expect(responseData.height).toBe(loc[2])
-			expect(responseData.currentLocation.coordinates).toEqual(loc)
-			expect(responseData.loc[0].geometry.coordinates).toEqual(loc)
+			expect(responseData.height).toBe(expectedHeight)
+			expect(responseData.currentLocation.coordinates).toEqual([
+				loc[0],
+				loc[1],
+				expectedHeight,
+			])
+			expect(responseData.loc[0].geometry.coordinates).toEqual([
+				loc[0],
+				loc[1],
+				expectedHeight,
+			])
 			expect(responseData.createdAt).toBeDefined()
 
 			// Check that createdAt is recent (within 5 minutes)
@@ -761,16 +786,16 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(responseData.latitude).toBe(loc.lat)
 			expect(responseData.longitude).toBeDefined()
 			expect(responseData.longitude).toBe(loc.lng)
-			expect(responseData.height).toBe(0)
+			expect(responseData.height).toBe(TEST_TERRAIN_ELEVATION)
 			expect(responseData.currentLocation.coordinates).toEqual([
 				loc.lng,
 				loc.lat,
-				0,
+				TEST_TERRAIN_ELEVATION,
 			])
 			expect(responseData.loc[0].geometry.coordinates).toEqual([
 				loc.lng,
 				loc.lat,
-				0,
+				TEST_TERRAIN_ELEVATION,
 			])
 			expect(responseData.createdAt).toBeDefined()
 
