@@ -1,4 +1,3 @@
-import { useMediaQuery } from '@mantine/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SearchIcon, XIcon } from 'lucide-react'
 import { useState, useEffect, useRef, createContext } from 'react'
@@ -58,8 +57,6 @@ export default function NavBar(props: NavBarProps) {
 			setSearchString('')
 		}
 	}, [open])
-
-	const isDesktop = useMediaQuery('(min-width: 1024px)')
 
 	return (
 		<div className="pointer-events-auto relative w-11 shrink-0 lg:w-full lg:max-w-176">
@@ -169,8 +166,8 @@ export default function NavBar(props: NavBarProps) {
 					</AnimatePresence>
 				</NavbarContext.Provider>
 			</motion.div>
-			{!open && isDesktop && (
-				<div className="flex w-full items-center justify-center">
+			{!open && (
+				<div className="hidden w-full items-center justify-center lg:flex">
 					<FilterVisualization />
 				</div>
 			)}

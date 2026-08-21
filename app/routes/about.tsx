@@ -1,5 +1,4 @@
 import { readItems } from '@directus/sdk'
-import { useMediaQuery } from '@mantine/hooks'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { data, Link, useLoaderData } from 'react-router'
@@ -105,8 +104,6 @@ export default function Index() {
 
 	const { t } = useTranslation('landing')
 
-	const showGlobe = useMediaQuery('(min-width: 1120px)')
-
 	return (
 		<div className="min-h-screen bg-white dark:bg-black">
 			<header className="z-10">
@@ -198,11 +195,9 @@ export default function Index() {
 								</motion.div>
 							</div>
 						</div>
-						{showGlobe && (
-							<div className="w-[500px] shrink-0 cursor-pointer">
-								<GlobeComponent latestDevices={latestDevices} />
-							</div>
-						)}
+						<div className="hidden w-125 shrink-0 cursor-pointer min-[1120px]:block">
+							<GlobeComponent latestDevices={latestDevices} />
+						</div>
 					</div>
 					<div>
 						<Stats {...stats} />
