@@ -48,21 +48,33 @@ export default function EditBox() {
 	const { deviceId } = useParams()
 
 	const staticNavItems = [
-		{ title: 'General', href: `/device/${deviceId}/edit/general`, icon: Sheet },
-		{ title: 'Sensors', href: `/device/${deviceId}/edit/sensors`, icon: Cpu },
 		{
-			title: 'Location',
+			title: t('sidebar.general'),
+			href: `/device/${deviceId}/edit/general`,
+			icon: Sheet,
+		},
+		{
+			title: t('sidebar.sensors'),
+			href: `/device/${deviceId}/edit/sensors`,
+			icon: Cpu,
+		},
+		{
+			title: t('sidebar.location'),
 			href: `/device/${deviceId}/edit/location`,
 			icon: MapPin,
 		},
-		{ title: 'Logs', href: `/device/${deviceId}/edit/logs`, icon: NotepadText },
 		{
-			title: 'Security',
+			title: t('sidebar.logs'),
+			href: `/device/${deviceId}/edit/logs`,
+			icon: NotepadText,
+		},
+		{
+			title: t('sidebar.security'),
 			href: `/device/${deviceId}/edit/security`,
 			icon: Lock,
 		},
 		{
-			title: 'Script',
+			title: t('sidebar.script'),
 			href: `/device/${deviceId}/edit/script`,
 			icon: FileText,
 		},
@@ -82,7 +94,7 @@ export default function EditBox() {
 		...staticNavItems,
 		...integrationItems,
 		{
-			title: 'Transfer',
+			title: t('sidebar.transfer'),
 			href: `/device/${deviceId}/edit/transfer`,
 			icon: ArrowRightLeft,
 		},

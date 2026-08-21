@@ -5,5 +5,8 @@
 		"callout_title_important": "Important",
 		"callout_title_warning": "Warning",
 		"callout_title_caution": "Caution"
+	},
+	"array_field": {
+		"add_item": "Add item"
 	}
 }
