@@ -363,7 +363,7 @@ const decodeHandlers: {
 				if (!resolved) continue
 
 				const rawValue = parseFloat(sdv.value)
-				if (Number.isNaN(rawValue)) continue
+				if (!Number.isFinite(rawValue)) continue
 				if (destinationSensorIds.has(resolved.sensorId)) {
 					console.warn(
 						`Multiple Luftdaten values resolved to sensor ${resolved.sensorId}; keeping the first value`,
@@ -371,10 +371,13 @@ const decodeHandlers: {
 					continue
 				}
 
+				const value = rawValue * (resolved.mapping.multiplier ?? 1)
+				if (!Number.isFinite(value)) continue
+
 				destinationSensorIds.add(resolved.sensorId)
 				out.push({
 					sensor_id: resolved.sensorId,
-					value: rawValue * (resolved.mapping.multiplier ?? 1),
+					value,
 					createdAt,
 					location: null,
 				})
