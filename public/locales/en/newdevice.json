@@ -118,7 +118,6 @@
 	"longitude": "Longitude",
 	"enter latitude": "Enter latitude (-90 to 90)",
 	"enter longitude": "Enter longitude (-180 to 180)",
-	"enter height": "Enter height above sea level (m)",
 	"enter height above ground": "Enter height above ground (m)",
 	"height": "Height",
 	"height_above_ground": "Height above ground",

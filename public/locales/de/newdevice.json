@@ -118,7 +118,6 @@
 	"longitude": "Längengrad",
 	"enter latitude": "Breitengrad eingeben (-90 bis 90)",
 	"enter longitude": "Längengrad eingeben (-180 bis 180)",
-	"enter height": "Höhe über dem Meeresspiegel eingeben (m)",
 	"enter height above ground": "Höhe über dem Boden eingeben (m)",
 	"height": "Höhe",
 	"height_above_ground": "Höhe über dem Boden",
