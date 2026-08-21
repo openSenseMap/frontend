@@ -7,7 +7,7 @@ import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
 import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
-import { deviceLocationInputSchema } from '~/lib/location'
+import { newDeviceSubmissionSchema } from '~/lib/new-device-form'
 import {
 	ElevationLookupError,
 	getTerrainElevation,
@@ -45,10 +45,10 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	let submittedData: Record<string, any>
+	let submittedData: unknown
 
 	try {
-		submittedData = JSON.parse(rawData) as Record<string, any>
+		submittedData = JSON.parse(rawData) as unknown
 	} catch {
 		return responseData<NewDeviceActionData>(
 			{ ok: false, error: 'invalid_device_form' },
@@ -56,18 +56,21 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	const parsedLocation = deviceLocationInputSchema.safeParse(
-		submittedData.location,
-	)
+	const parsedSubmission = newDeviceSubmissionSchema.safeParse(submittedData)
 
-	if (!parsedLocation.success) {
+	if (!parsedSubmission.success) {
 		return responseData<NewDeviceActionData>(
 			{ ok: false, error: 'invalid_device_form' },
 			{ status: 400 },
 		)
 	}
 
-	const { latitude, longitude, heightAboveGround } = parsedLocation.data
+	const submission = parsedSubmission.data
+	const generalInfo = submission['general-info']
+	const { model } = submission['device-selection']
+	const sensorSelection = submission['sensor-selection']
+	const selectedSensors = sensorSelection.selectedSensors
+	const { latitude, longitude, heightAboveGround } = submission.location
 	let terrainElevation
 
 	try {
@@ -90,45 +93,42 @@ export async function action({ request }: Route.ActionArgs) {
 	)
 
 	try {
-		const advanced = submittedData.advanced
-		const selectedSensors = submittedData['sensor-selection'].selectedSensors
-
-		const devicePayload = {
-			name: submittedData['general-info'].name.trim(),
-			description: submittedData['general-info'].description?.trim() || null,
-			exposure: submittedData['general-info'].exposure,
-			expiresAt: submittedData['general-info'].temporaryExpirationDate,
-			tags:
-				submittedData['general-info'].tags?.map(
-					(tag: { value: string }) => tag.value,
-				) || [],
+		const commonDevicePayload = {
+			name: generalInfo.name,
+			description: generalInfo.description?.trim() || null,
+			exposure: generalInfo.exposure,
+			expiresAt: generalInfo.temporaryExpirationDate?.toISOString(),
+			tags: generalInfo.tags?.map((tag) => tag.value) ?? [],
 			latitude,
 			longitude,
 			height: finalHeight,
-
-			...(submittedData['device-selection'].model !== 'custom' && {
-				model: submittedData['device-selection'].model,
-
-				sensorTemplates: selectedSensors.map((sensor: any) => sensor.id),
-			}),
-
-			...(submittedData['device-selection'].model === 'custom' && {
-				model: submittedData['device-selection'].model,
-				sensors: selectedSensors.map((sensor: any) => ({
-					title: sensor.title,
-					sensorType: sensor.sensorType,
-					unit: sensor.unit,
-					icon: sensor.icon,
-				})),
-				deviceSchema: submittedData['sensor-selection'].deviceSchema,
-				deviceSchemaVersionId:
-					submittedData['sensor-selection'].deviceSchemaVersionId,
-			}),
 		}
+
+		const devicePayload =
+			model === 'custom'
+				? {
+						...commonDevicePayload,
+						model,
+						sensors: selectedSensors.map((sensor) => ({
+							title: sensor.title,
+							sensorType: sensor.sensorType,
+							unit: sensor.unit,
+							icon: sensor.icon,
+						})),
+						deviceSchema: sensorSelection.deviceSchema,
+						deviceSchemaVersionId: sensorSelection.deviceSchemaVersionId,
+					}
+				: {
+						...commonDevicePayload,
+						model,
+						sensorTemplates: selectedSensors.flatMap((sensor) =>
+							sensor.id ? [sensor.id] : [],
+						),
+					}
 
 		const newDevice = await createDevice(userId, devicePayload)
 
-		await createDeviceIntegrations(newDevice.id, advanced)
+		await createDeviceIntegrations(newDevice.id, submission.advanced)
 
 		return redirect('/profile/me')
 	} catch (error) {
