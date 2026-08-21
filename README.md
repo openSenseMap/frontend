@@ -33,9 +33,7 @@ You can configure the API endpoint using the following environmental variables:
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 To run a local development version, you only need to adjust the `OSEM_API_URL`
-to the one given above. Configure `OPENTOPO_DATA_API_URL` explicitly in
-production and point it to a self-hosted or managed instance; the default public
-instance is intended for development and evaluation.
+to the one given above.
 
 ### Setup Steps
 
