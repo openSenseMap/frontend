@@ -1,4 +1,3 @@
-import { useMediaQuery } from '@mantine/hooks'
 import { Activity, Clock, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -11,16 +10,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '../ui/dialog'
-import {
-	Drawer,
-	DrawerClose,
-	DrawerContent,
-	DrawerDescription,
-	DrawerFooter,
-	DrawerHeader,
-	DrawerTitle,
-	DrawerTrigger,
-} from '../ui/drawer'
 import {
 	Tooltip,
 	TooltipContent,
@@ -37,95 +26,57 @@ export default function EntryLogs({
 	entryLogs: LogEntry[]
 }) {
 	const [open, setOpen] = useState(false)
-	const isDesktop = useMediaQuery('(min-width: 768px)')
 	const { t, i18n } = useTranslation('device-detail-box')
+	const latestEntry = entryLogs.at(-1)
 
-	if (isDesktop) {
-		return (
-			<div className="flex flex-col">
-				<p className="pb-4 font-bold">{t('logs')}</p>
-				<div className="flex items-center">
-					<div className="flex w-full items-start space-x-4">
-						<div className="border-muted-foreground text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4">
-							<Activity className="h-5 w-5" />
-						</div>
-						<div className="grow">
-							<p className="mb-2 text-sm font-medium">
-								{entryLogs[entryLogs.length - 1].content}
-							</p>
-							<div className="text-muted-foreground flex items-center text-xs">
-								<Clock className="mr-1 h-3 w-3" />
-								{new Date(entryLogs[0].createdAt).toLocaleString(i18n.language)}
-							</div>
-						</div>
-					</div>
-					<div className="shrink">
-						<Dialog open={open} onOpenChange={setOpen}>
-							<DialogTrigger asChild>
-								<Button variant="ghost">
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger>
-												{' '}
-												<ExternalLink className="ml-2 h-5 w-5" />
-											</TooltipTrigger>
-											<TooltipContent className="z-auto overflow-visible">
-												<p>{t('show_all_logs')}</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								</Button>
-							</DialogTrigger>
-							<DialogContent className="sm:max-w-2/3">
-								<DialogHeader>
-									<DialogTitle>{t('device_logs')}</DialogTitle>
-									<DialogDescription>{t('logs_owner_hint')}</DialogDescription>
-								</DialogHeader>
-								<LogList entryLogs={entryLogs} locale={i18n.language} />
-							</DialogContent>
-						</Dialog>
-					</div>
-				</div>
-			</div>
-		)
-	}
+	if (!latestEntry) return null
 
 	return (
 		<div className="flex flex-col">
 			<p className="pb-4 font-bold">{t('logs')}</p>
-			<div className="flex items-center">
-				<div className="flex w-full items-start space-x-4">
-					<div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-						<Activity className="text-primary-foreground h-5 w-5" />
+			<div className="flex min-w-0 items-center">
+				<div className="flex min-w-0 flex-1 items-start space-x-4">
+					<div className="border-muted-foreground text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4">
+						<Activity className="h-5 w-5" />
 					</div>
-					<div className="grow">
-						<p className="mb-2 text-sm font-medium">{entryLogs[0].content}</p>
+					<div className="min-w-0 grow">
+						<p className="mb-2 text-sm font-medium wrap-break-word">
+							{latestEntry.content}
+						</p>
 						<div className="text-muted-foreground flex items-center text-xs">
 							<Clock className="mr-1 h-3 w-3" />
-							{new Date(entryLogs[0].createdAt).toLocaleString(i18n.language)}
+							{new Date(latestEntry.createdAt).toLocaleString(i18n.language)}
 						</div>
 					</div>
 				</div>
-				<div className="shrink"></div>
-				<Drawer open={open} onOpenChange={setOpen}>
-					<DrawerTrigger asChild>
-						<Button variant="ghost">
-							<ExternalLink className="ml-2 h-5 w-5" />
-						</Button>
-					</DrawerTrigger>
-					<DrawerContent>
-						<DrawerHeader className="text-left">
-							<DrawerTitle>{t('device_logs')}</DrawerTitle>
-							<DrawerDescription>{t('logs_owner_hint')}</DrawerDescription>
-						</DrawerHeader>
+				<Dialog open={open} onOpenChange={setOpen}>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<DialogTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="shrink-0"
+										aria-label={t('show_all_logs')}
+									>
+										<ExternalLink className="h-5 w-5" />
+									</Button>
+								</DialogTrigger>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>{t('show_all_logs')}</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+					<DialogContent className="sm:max-w-2/3">
+						<DialogHeader>
+							<DialogTitle>{t('device_logs')}</DialogTitle>
+							<DialogDescription>{t('logs_owner_hint')}</DialogDescription>
+						</DialogHeader>
 						<LogList entryLogs={entryLogs} locale={i18n.language} />
-						<DrawerFooter className="pt-2">
-							<DrawerClose asChild>
-								<Button variant="outline">{t('close')}</Button>
-							</DrawerClose>
-						</DrawerFooter>
-					</DrawerContent>
-				</Drawer>
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	)
