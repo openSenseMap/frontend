@@ -196,7 +196,9 @@ export function getSensorTemplateValidationError(
 	sensorTemplates: readonly string[] | undefined,
 ): string | undefined {
 	if (!model || model.toLowerCase() === 'custom') return undefined
-	if (!(model in modelDefinitions)) return `Unknown model: ${model}`
+	if (!Object.hasOwn(modelDefinitions, model)) {
+		return `Unknown model: ${model}`
+	}
 	if (model === 'luftdaten.info' && !sensorTemplates?.length) {
 		return `At least one sensor template is required for model ${model}`
 	}
