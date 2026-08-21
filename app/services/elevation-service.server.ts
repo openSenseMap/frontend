@@ -61,7 +61,7 @@ function parsePositiveInteger(value: string | undefined, fallback: number) {
 }
 
 function coordinateCacheKey(latitude: number, longitude: number) {
-	return `${latitude.toFixed(5)},${longitude.toFixed(5)}`
+	return `${latitude.toFixed(5)},${longitude.toFixed(5)}` // meter-level precision
 }
 
 function datasetMetadata(dataset: string) {
