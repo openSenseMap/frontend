@@ -8,11 +8,12 @@ import {
 import { isValidLocation } from '~/lib/location'
 
 const DEFAULT_API_URL = 'https://api.opentopodata.org/v1'
-const DEFAULT_DATASET = 'eudem25m,mapzen'
+const DEFAULT_DATASETS = 'eudem25m,mapzen'
 const DEFAULT_TIMEOUT_MS = 5_000
-const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1_000
+const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1_000 // 1 day
 const DEFAULT_MIN_REQUEST_INTERVAL_MS = 1_100
 const MAX_CACHE_ENTRIES = 5_000
+const MAX_QUEUED_REQUESTS = 5
 
 const responseSchema = z.object({
 	status: z.string(),
@@ -41,6 +42,7 @@ const inFlight = new Map<string, Promise<TerrainElevationResult>>()
 
 let requestQueue: Promise<void> = Promise.resolve()
 let nextRequestAt = 0
+let queuedRequestCount = 0
 
 export class ElevationLookupError extends Error {
 	constructor(
@@ -100,26 +102,43 @@ function pruneCache(now: number) {
 }
 
 async function withRateLimit<T>(operation: () => Promise<T>): Promise<T> {
+	if (queuedRequestCount >= MAX_QUEUED_REQUESTS) {
+		throw new ElevationLookupError(
+			'rate_limited',
+			'The elevation lookup queue is full.',
+		)
+	}
+
+	queuedRequestCount += 1
+
 	let releaseQueue!: () => void
 	const previousRequest = requestQueue
 	requestQueue = new Promise<void>((resolve) => {
 		releaseQueue = resolve
 	})
-
-	await previousRequest
+	let queueReleased = false
 
 	try {
+		await previousRequest
+
 		const waitMs = Math.max(0, nextRequestAt - Date.now())
 		if (waitMs > 0) await delay(waitMs)
 
-		return await operation()
-	} finally {
 		const minIntervalMs = parsePositiveInteger(
 			process.env.OPENTOPO_DATA_MIN_INTERVAL_MS,
 			DEFAULT_MIN_REQUEST_INTERVAL_MS,
 		)
 		nextRequestAt = Date.now() + minIntervalMs
+		queuedRequestCount -= 1
 		releaseQueue()
+		queueReleased = true
+
+		return await operation()
+	} finally {
+		if (!queueReleased) {
+			queuedRequestCount -= 1
+			releaseQueue()
+		}
 	}
 }
 
@@ -141,7 +160,7 @@ async function requestElevation(
 		/\/$/,
 		'',
 	)
-	const dataset = process.env.OPENTOPO_DATA_DATASET ?? DEFAULT_DATASET
+	const dataset = process.env.OPENTOPO_DATA_DATASET ?? DEFAULT_DATASETS
 	const datasetPath = dataset.split(',').map(encodeURIComponent).join(',')
 	const url = new URL(`${apiUrl}/${datasetPath}`)
 	url.searchParams.set('locations', `${latitude},${longitude}`)
