@@ -14,7 +14,11 @@ import { BaseMap } from '~/components/base-map'
 import Spinner from '~/components/spinner'
 import { useTerrainElevation } from '~/hooks/use-terrain-elevation'
 import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
-import { LOCATION_LIMITS, isValidLocation } from '~/lib/location'
+import {
+	LOCATION_LIMITS,
+	isValidLocation,
+	type DeviceLocationInput,
+} from '~/lib/location'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -23,7 +27,7 @@ export function LocationStep() {
 		setValue,
 		watch,
 		formState: { errors },
-	} = useFormContext()
+	} = useFormContext<DeviceLocationInput>()
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
@@ -59,17 +63,12 @@ export function LocationStep() {
 		longitude: markerLocation?.longitude,
 	})
 
-	const finalHeight =
-		elevation.result === null
-			? null
-			: calculateHeightAboveSeaLevel(
-					elevation.result.elevation,
-					savedHeightAboveGround === '' ||
-						savedHeightAboveGround === undefined ||
-						savedHeightAboveGround === null
-						? undefined
-						: Number(savedHeightAboveGround),
-				)
+	const finalHeight = elevation.result
+		? calculateHeightAboveSeaLevel(
+				elevation.result.elevation,
+				savedHeightAboveGround,
+			)
+		: null
 
 	const handleLatitudeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value.trim()
@@ -145,12 +144,7 @@ export function LocationStep() {
 		[updateMarker],
 	)
 
-	const displayHeightValue =
-		savedHeightAboveGround !== undefined &&
-		savedHeightAboveGround !== null &&
-		savedHeightAboveGround !== ''
-			? String(savedHeightAboveGround)
-			: ''
+	const displayHeightValue = savedHeightAboveGround?.toString() ?? ''
 
 	return (
 		<div className="flex h-full w-full flex-col">
