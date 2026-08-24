@@ -47,6 +47,7 @@ export default function MapHeader({
 								<TooltipTrigger asChild>
 									<Button
 										type="button"
+										variant="topbar"
 										size="topbarPill"
 										className="absolute top-14 left-0 h-11 px-3 lg:static lg:h-10"
 										onClick={onMyAreaClick}
