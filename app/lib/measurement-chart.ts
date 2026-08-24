@@ -15,6 +15,19 @@ interface MeasurementChartMeasurement {
 	locationId?: number | null
 }
 
+interface NormalizedMeasurement {
+	timestamp: number
+	value: number
+	minValue: number | null
+	maxValue: number | null
+	locationId: number | null
+}
+
+interface NormalizedAggregateMeasurement extends NormalizedMeasurement {
+	minValue: number
+	maxValue: number
+}
+
 export interface MeasurementChartSensor {
 	title: string
 	device_name?: string | null
@@ -58,27 +71,46 @@ function toNumericValue(value: unknown) {
 	return Number.isFinite(numericValue) ? numericValue : null
 }
 
-function createPoints(
+// Filters once so that value/min/max series stay index-aligned.
+function normalizeMeasurements(
 	measurements: MeasurementChartMeasurement[],
-	valueKey: 'value' | 'min_value' | 'max_value',
-	includeLocation: boolean,
-) {
+): NormalizedMeasurement[] {
 	return measurements
-		.map((measurement): MeasurementChartPoint | null => {
+		.map((measurement): NormalizedMeasurement | null => {
 			const timestamp = toTimestamp(measurement.time)
-			const value = toNumericValue(measurement[valueKey])
+			const value = toNumericValue(measurement.value)
 
 			if (timestamp === null || value === null) return null
 
 			return {
-				x: timestamp,
 				timestamp,
-				y: value,
-				locationId: includeLocation ? (measurement.locationId ?? null) : null,
+				value,
+				minValue: toNumericValue(measurement.min_value),
+				maxValue: toNumericValue(measurement.max_value),
+				locationId: measurement.locationId ?? null,
 			}
 		})
-		.filter((point): point is MeasurementChartPoint => point !== null)
-		.sort((left, right) => left.x - right.x)
+		.filter((row): row is NormalizedMeasurement => row !== null)
+		.sort((left, right) => left.timestamp - right.timestamp)
+}
+
+function hasAggregateBounds(
+	measurement: NormalizedMeasurement,
+): measurement is NormalizedAggregateMeasurement {
+	return measurement.minValue !== null && measurement.maxValue !== null
+}
+
+function createPoints<T extends NormalizedMeasurement>(
+	measurements: T[],
+	getValue: (measurement: T) => number,
+	includeLocation: boolean,
+): MeasurementChartPoint[] {
+	return measurements.map((measurement) => ({
+		x: measurement.timestamp,
+		timestamp: measurement.timestamp,
+		y: getValue(measurement),
+		locationId: includeLocation ? measurement.locationId : null,
+	}))
 }
 
 export function createMeasurementChartData(
@@ -93,23 +125,36 @@ export function createMeasurementChartData(
 			const label = includeDeviceName
 				? `${sensor.title} (${sensor.device_name})`
 				: sensor.title
-			const baseDataset: MeasurementChartDataset = {
+			const normalizedMeasurements = normalizeMeasurements(sensor.data)
+			const createBaseDataset = (
+				measurements: NormalizedMeasurement[],
+			): MeasurementChartDataset => ({
 				label,
-				data: createPoints(sensor.data, 'value', true),
+				data: createPoints(measurements, ({ value }) => value, true),
 				pointRadius: 1,
 				showLine: false,
 				borderColor: sensor.color,
 				backgroundColor: sensor.color,
 				yAxisID: index === 0 ? 'y' : 'y1',
 				fill: false,
+			})
+
+			if (!isAggregated || sensors.length !== 1) {
+				return [createBaseDataset(normalizedMeasurements)]
 			}
 
-			if (!isAggregated || sensors.length !== 1) return [baseDataset]
+			const aggregateMeasurements =
+				normalizedMeasurements.filter(hasAggregateBounds)
+			const baseDataset = createBaseDataset(aggregateMeasurements)
 
 			const minDataset: MeasurementChartDataset = {
 				...baseDataset,
 				label: `${label} (Min)`,
-				data: createPoints(sensor.data, 'min_value', false),
+				data: createPoints(
+					aggregateMeasurements,
+					({ minValue }) => minValue,
+					false,
+				),
 				borderColor: sensor.color + '33',
 				backgroundColor: sensor.color + '33',
 				fill: 1,
@@ -117,7 +162,11 @@ export function createMeasurementChartData(
 			const maxDataset: MeasurementChartDataset = {
 				...baseDataset,
 				label: `${label} (Max)`,
-				data: createPoints(sensor.data, 'max_value', false),
+				data: createPoints(
+					aggregateMeasurements,
+					({ maxValue }) => maxValue,
+					false,
+				),
 				borderColor: sensor.color + '33',
 				backgroundColor: sensor.color + '33',
 				fill: 1,
