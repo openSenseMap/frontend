@@ -638,7 +638,7 @@ export default function PreferencesSettingsPage() {
 				</div>
 
 				<div className="flex flex-col items-start justify-between gap-3 py-4 last:pb-0 sm:flex-row sm:items-center sm:gap-4">
-					<div className="flex min-w-0 items-start gap-2">
+					<div className="flex w-full min-w-0 items-start gap-2 sm:w-auto">
 						<Checkbox
 							id="newsletterOptIn"
 							name="newsletterOptIn"
