@@ -131,21 +131,32 @@ describe('Luftdaten decoding', () => {
 		},
 	)
 
-	it('rejects multiple values resolving to one destination sensor', async () => {
-		await expect(
-			decodeMeasurements(
-				{
-					sensordatavalues: [
-						{ value_type: 'SPS30_N1', value: '1.0' },
-						{ value_type: 'SPS30_N1', value: '2.0' },
-					],
-				},
-				{ contentType: 'luftdaten', sensors: [nc1] },
-			),
-		).rejects.toThrow('Multiple Luftdaten values resolved to sensor')
+	it('keeps the first value when multiple values resolve to one sensor', async () => {
+		const measurements = await decodeMeasurements(
+			{
+				sensordatavalues: [
+					{ value_type: 'SPS30_N1', value: '1.0' },
+					{ value_type: 'SPS30_N1', value: '2.0' },
+				],
+			},
+			{ contentType: 'luftdaten', sensors: [nc1] },
+		)
+
+		expect(measurements).toHaveLength(1)
+		expect(measurements[0]).toMatchObject({ sensor_id: nc1.id, value: 1 })
 	})
 
-	it('rejects equally specific ambiguous mappings', async () => {
+	it('skips ambiguous legacy mappings but preserves other values', async () => {
+		const measurements = await decodeMeasurements(payload, {
+			contentType: 'luftdaten',
+			sensors: [nc1, { ...nc1, id: 'other-nc1-id' }, nc10],
+		})
+
+		expect(measurements).toHaveLength(1)
+		expect(measurements[0]).toMatchObject({ sensor_id: nc10.id, value: 2 })
+	})
+
+	it('rejects when every mapping is ambiguous', async () => {
 		await expect(
 			decodeMeasurements(
 				{ sensordatavalues: [{ value_type: 'SPS30_N1', value: '1.0' }] },
@@ -154,6 +165,30 @@ describe('Luftdaten decoding', () => {
 					sensors: [nc1, { ...nc1, id: 'other-nc1-id' }],
 				},
 			),
-		).rejects.toThrow('Ambiguous Luftdaten sensor mapping')
+		).rejects.toThrow('No applicable values found')
+	})
+
+	it('skips ambiguous definition mappings but preserves other values', async () => {
+		const measurements = await decodeMeasurements(payload, {
+			contentType: 'luftdaten',
+			sensors: [
+				{
+					...nc1,
+					data: { sensorDefinitionId: 'sps30_nc1' },
+				},
+				{
+					...nc1,
+					id: 'other-nc1-id',
+					data: { sensorDefinitionId: 'sps30_nc1' },
+				},
+				{
+					...nc10,
+					data: { sensorDefinitionId: 'sps30_nc10' },
+				},
+			],
+		})
+
+		expect(measurements).toHaveLength(1)
+		expect(measurements[0]).toMatchObject({ sensor_id: nc10.id, value: 2 })
 	})
 })

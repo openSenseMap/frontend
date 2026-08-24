@@ -24,13 +24,33 @@ describe('hackAIR decoding', () => {
 		},
 	)
 
-	it('rejects equally specific exact matches', async () => {
+	it('skips ambiguous mappings but preserves other readings', async () => {
+		const measurements = await decodeMeasurements(
+			{ reading: { pm10: '10.1', temperature: '21.5' } },
+			{
+				contentType: 'hackair',
+				sensors: [
+					pm10,
+					{ ...pm10, id: 'other-pm10-id' },
+					{ id: 'temperature-id', title: 'Temperatur' },
+				],
+			},
+		)
+
+		expect(measurements).toHaveLength(1)
+		expect(measurements[0]).toMatchObject({
+			sensor_id: 'temperature-id',
+			value: 21.5,
+		})
+	})
+
+	it('rejects when every mapping is ambiguous', async () => {
 		await expect(
 			decodeMeasurements(payload, {
 				contentType: 'hackair',
 				sensors: [pm10, { ...pm10, id: 'other-pm10-id' }],
 			}),
-		).rejects.toThrow('Ambiguous hackAIR sensor mapping')
+		).rejects.toThrow('No applicable values found')
 	})
 
 	it('uses a unique substring match as a legacy fallback', async () => {
