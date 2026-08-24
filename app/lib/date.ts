@@ -2,9 +2,9 @@ const ONE_MINUTE_IN_S = 60
 const ONE_HOUR_IN_S = 60 * ONE_MINUTE_IN_S
 const ONE_DAY_IN_S = 24 * ONE_HOUR_IN_S
 const ONE_WEEK_IN_S = 7 * ONE_DAY_IN_S
-const ONE_MONTH_IN_S = 4 * ONE_WEEK_IN_S
-const ONE_QUARTER_IN_S = 3 * ONE_MONTH_IN_S
-const ONE_YEAR_IN_S = 12 * ONE_MONTH_IN_S
+const ONE_MONTH_IN_S = 31 * ONE_DAY_IN_S
+const ONE_YEAR_IN_S = 365 * ONE_DAY_IN_S
+const ONE_QUARTER_IN_S = ONE_YEAR_IN_S / 4
 
 export const dateDiffToNowInWords = (locale: string, date: Date) => {
 	const r = new Intl.RelativeTimeFormat(locale)
