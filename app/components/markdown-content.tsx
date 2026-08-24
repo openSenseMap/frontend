@@ -11,7 +11,7 @@ export function MarkdownContent({
 }: MarkdownContentProps) {
 	return (
 		<div
-			className={`prose dark:prose-invert max-w-none min-w-0 wrap-anywhere [&_iframe]:max-w-full [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_video]:max-w-full ${className}`}
+			className={`prose dark:prose-invert max-w-none min-w-0 overflow-x-hidden wrap-anywhere ${className}`}
 		>
 			<Markdown
 				options={{

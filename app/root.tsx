@@ -272,7 +272,7 @@ export function ErrorBoundary() {
 			</head>
 			<body className="bg-background text-foreground h-full">
 				{meta()}
-				<div className="flex min-h-dvh w-full items-start justify-center sm:items-center">
+				<div className="flex h-screen w-screen items-center justify-center">
 					<ErrorMessage />
 				</div>
 				<Scripts />

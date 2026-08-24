@@ -155,7 +155,7 @@ export default function ErrorMessage() {
 	}
 
 	return (
-		<div className="flex w-full items-center justify-center p-4 sm:min-h-100">
+		<div className="flex min-h-[400px] w-full items-center justify-center p-4">
 			<Card
 				className={`w-full max-w-md bg-linear-to-br ${getGradient()} border-2 border-white/60 shadow-2xl ring-1 ring-black/10 backdrop-blur-xs dark:border-zinc-700/80`}
 			>
@@ -169,9 +169,7 @@ export default function ErrorMessage() {
 						</p>
 					)}
 					<CardTitle className="text-xl">{title}</CardTitle>
-					<CardDescription className="text-base wrap-break-word">
-						{message}
-					</CardDescription>
+					<CardDescription className="text-base">{message}</CardDescription>
 				</CardHeader>
 
 				<CardContent>

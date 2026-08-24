@@ -51,17 +51,17 @@ export default function Legend({ title, values }: LegendProps) {
 				ref={nodeRef}
 				defaultValue="item-1"
 				onValueChange={() => setIsOpen(!isOpen)}
-				className="absolute right-4 bottom-28 z-10 w-[calc(100vw-2rem)] max-w-sm rounded-lg bg-white shadow-sm sm:bottom-[15%] sm:w-72 lg:w-1/4 xl:w-1/5"
+				className="absolute right-4 bottom-[15%] z-10 w-1/5 rounded-lg bg-white shadow-sm"
 			>
 				<AccordionItem value="item-1">
 					<AccordionTrigger
 						id="legendHandle"
-						className="min-w-0 p-3 text-left font-bold wrap-break-word capitalize sm:p-4"
+						className="p-4 font-bold capitalize"
 					>
 						{isOpen ? title : 'Legende'}
 					</AccordionTrigger>
 					<AccordionContent>
-						<div className="mx-2 px-2 sm:mx-5 sm:px-4">
+						<div className="mx-5 px-4">
 							<div className="relative h-14.5">
 								{values?.map((v, i) => {
 									return (
@@ -69,7 +69,7 @@ export default function Legend({ title, values }: LegendProps) {
 											key={i}
 											className={`absolute top-0 ml-4 flex h-12 flex-col items-center`}
 											style={{
-												right: `min(${v.position}, calc(100% - 2rem))`,
+												right: v.position,
 											}}
 										>
 											<svg

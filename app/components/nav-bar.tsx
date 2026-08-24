@@ -32,29 +32,26 @@ export function NavBar() {
 		}) // prevents empty parts from showing
 
 	return (
-		<div className="dark:bg-dark-background dark:text-dark-text border-b bg-white px-3 py-4 sm:p-4">
-			<div className="flex min-h-16 items-center justify-between gap-3">
-				<div className="flex max-w-(--breakpoint-xl) min-w-0 flex-1 flex-nowrap items-center">
-					<Link to="/explore" className="flex shrink-0 items-center md:pr-4">
+		<div className="dark:bg-dark-background dark:text-dark-text border-b bg-white p-4">
+			<div className="flex h-16 items-center justify-between">
+				<div className="flex max-w-(--breakpoint-xl) flex-wrap items-center justify-between">
+					<Link to="/explore" className="flex items-center md:pr-4">
 						<img
 							src="/img/logo.png"
 							className="mr-3 h-6 sm:h-9"
 							alt="osem Logo"
 						/>
 					</Link>
-					<span
-						className="text-light-green dark:text-dark-green hidden min-w-0 self-center truncate text-xl font-semibold md:block"
-						title={parts.join(' / ')}
-					>
+					<span className="text-light-green dark:text-dark-green hidden self-center text-xl font-semibold whitespace-nowrap md:block">
 						{parts.join(' / ')}
 					</span>
 				</div>
-				<div className="flex shrink-0 items-center gap-2">
+				<div className="flex items-center gap-2">
 					{user ? (
 						<>
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<Button variant="outline" size="icon" className="sm:mx-2">
+									<Button variant="outline" size="icon" className="mx-2">
 										<Plus className="h-4 w-4" />
 									</Button>
 								</DropdownMenuTrigger>
@@ -80,12 +77,12 @@ export function NavBar() {
 								</DropdownMenuContent>
 							</DropdownMenu>
 
-							<div className="px-0 sm:px-4 lg:px-8">
+							<div className="px-8">
 								<Menu />
 							</div>
 						</>
 					) : (
-						<div className="px-0 sm:px-4 lg:px-8">
+						<div className="px-8">
 							<div className="pointer-events-auto box-border h-10 w-10">
 								<button
 									type="button"

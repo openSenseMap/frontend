@@ -17,7 +17,7 @@ interface SearchListItemProps
 }
 
 const searchListItemStyle = cva(
-	'data-[active=true]:bg-light-green relative my-1 flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-2 data-[active=true]:text-white md:h-8 md:min-h-0',
+	'data-[active=true]:bg-light-green relative my-1 flex h-8 items-center gap-2 rounded-lg px-2 data-[active=true]:text-white',
 	{
 		variants: {
 			active: {
@@ -44,10 +44,10 @@ export default function SearchListItem({
 					<kbd>{index + 1}</kbd>
 				</div>
 			)}
-			<div className="h-8 w-8 shrink-0 p-1">
+			<div className="h-8 w-8 p-1">
 				<Icon className="h-full" />
 			</div>
-			<span className="inline-block min-w-0 flex-1 overflow-hidden align-middle text-ellipsis whitespace-nowrap">
+			<span className="inline-block overflow-hidden align-middle text-ellipsis whitespace-nowrap">
 				{name}
 			</span>
 		</div>

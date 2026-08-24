@@ -76,7 +76,7 @@ export function ThemeSelect() {
 				)
 			}}
 		>
-			<SelectTrigger className="border-input bg-background text-foreground w-full sm:w-36">
+			<SelectTrigger className="border-input bg-background text-foreground w-36">
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
