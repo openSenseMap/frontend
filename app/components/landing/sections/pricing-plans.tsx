@@ -17,7 +17,7 @@ export default function PricingPlans() {
 				<div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row sm:gap-5">
 					<div id="left" className="flex w-full flex-col gap-3 sm:w-auto">
 						<a
-							href="http://github.com/openSenseMap/frontend"
+							href="https://github.com/openSenseMap/frontend"
 							rel="noreferrer noopener nofollow"
 							target="_blank"
 							className="flex min-h-11 w-full items-center justify-center rounded-sm border-2 border-solid px-4 py-2 hover:cursor-pointer"
