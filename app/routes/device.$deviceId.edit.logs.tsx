@@ -1,5 +1,6 @@
 import { Save, Trash } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
 	data,
 	redirect,
@@ -60,7 +61,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 				await createLogEntry({ deviceId: deviceID, content, public: false })
 				return data({
 					success: true,
-					message: 'Log added successfully!',
+					message: 'log_added',
 				})
 			}
 			case 'deleteLog': {
@@ -68,7 +69,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 				await deleteLogEntry(logEntryId)
 				return data({
 					success: true,
-					message: 'Log deleted successfully!',
+					message: 'log_deleted',
 				})
 			}
 			case 'togglePublic': {
@@ -77,18 +78,15 @@ export async function action({ request, params }: Route.ActionArgs) {
 				await updateLogEntryVisibility(logEntryId, isPublic === 'true')
 				return data({
 					success: true,
-					message: 'Log visibility updated!',
+					message: 'visibility_updated',
 				})
 			}
 			default:
-				return data({ success: false, message: 'Unknown action.' })
+				return data({ success: false, message: 'unknown_action' })
 		}
 	} catch (error) {
 		console.error('Error processing action:', error)
-		return data(
-			{ success: false, message: 'Something went wrong.' },
-			{ status: 500 },
-		)
+		return data({ success: false, message: 'error' }, { status: 500 })
 	}
 }
 
@@ -96,6 +94,7 @@ export default function Logs() {
 	const { logEntries } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const { toast } = useToast()
+	const { t } = useTranslation('edit-device-logs')
 	const [newLogContent, setNewLogContent] = useState('')
 
 	const submit = useSubmit()
@@ -105,17 +104,17 @@ export default function Logs() {
 		if (actionData) {
 			if (actionData.success) {
 				toast({
-					title: actionData.message,
+					title: t(actionData.message),
 					variant: 'success',
 				})
 			} else {
 				toast({
-					title: actionData.message,
+					title: t(actionData.message),
 					variant: 'destructive',
 				})
 			}
 		}
-	}, [actionData, toast])
+	}, [actionData, t, toast])
 
 	return (
 		<div className="grid grid-rows-1">
@@ -127,7 +126,7 @@ export default function Logs() {
 							{/* Title */}
 							<div className="mt-2 flex justify-between">
 								<div>
-									<h1 className="text-4xl">Device Logs</h1>
+									<h1 className="text-4xl">{t('title')}</h1>
 								</div>
 								<div></div>
 							</div>
@@ -138,7 +137,7 @@ export default function Logs() {
 						<div className="flex space-x-2">
 							<Input
 								name="content"
-								placeholder="Enter log content"
+								placeholder={t('content_placeholder')}
 								type="text"
 								value={newLogContent}
 								onChange={(e) => setNewLogContent(e.target.value)}
@@ -159,10 +158,10 @@ export default function Logs() {
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>Content</TableHead>
-									<TableHead>Created At</TableHead>
-									<TableHead>Public</TableHead>
-									<TableHead>Actions</TableHead>
+									<TableHead>{t('content')}</TableHead>
+									<TableHead>{t('created_at')}</TableHead>
+									<TableHead>{t('public')}</TableHead>
+									<TableHead>{t('actions')}</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>

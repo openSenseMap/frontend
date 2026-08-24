@@ -1,4 +1,4 @@
-import { desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm'
+import { desc, eq, inArray, or, SQL, sql } from 'drizzle-orm'
 import {
 	deviceToLocation,
 	type LastMeasurement,
@@ -8,6 +8,7 @@ import {
 	sensor,
 } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
+import { type MeasurementTiming } from '~/lib/measurement-timing.server'
 
 export interface MeasurementWithLocation {
 	sensor_id: string
@@ -241,6 +242,7 @@ export async function insertMeasurementsWithLocation(
 	deviceId: string,
 	tx: any,
 	options: { shouldReturn?: boolean } = {},
+	timing?: MeasurementTiming | null,
 ): Promise<Measurement[]> {
 	const measuresWithLocationId = measurements.map((measurement) => {
 		const measurementTime = measurement.createdAt || new Date()
@@ -257,6 +259,9 @@ export async function insertMeasurementsWithLocation(
                 order by ${deviceToLocation.time} desc
                 limit 1)`,
 		}
+	})
+	timing?.mark('buildMeasurementInsertRows', {
+		insertRowCount: measuresWithLocationId.length,
 	})
 
 	// Insert measurements with locationIds (may be null for measurements
@@ -284,6 +289,7 @@ export async function insertMeasurementsWithLocation(
 export async function updateLastMeasurements(
 	lastMeasurements: Record<string, NonNullable<LastMeasurement>>,
 	tx: any,
+	timing?: MeasurementTiming | null,
 ) {
 	const sqlChunks: SQL[] = [
 		sql`(case`,
@@ -297,6 +303,9 @@ export async function updateLastMeasurements(
 	]
 
 	const finalSql: SQL = sql.join(sqlChunks, sql.raw(' '))
+	timing?.mark('buildLastMeasurementUpdate', {
+		updateSensorCount: Object.keys(lastMeasurements).length,
+	})
 
 	await tx
 		.update(sensor)

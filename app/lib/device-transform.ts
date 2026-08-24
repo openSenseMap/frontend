@@ -1,5 +1,9 @@
 import { type Device, type Sensor } from '~/db/schema'
+import { type DeviceStatusType } from '~/lib/device-enums'
 import { toIsoString } from '~/utils'
+
+const ACTIVE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000
+const INACTIVE_THRESHOLD_MS = 30 * 24 * 60 * 60 * 1000
 
 export type DeviceWithSensors = Device & {
 	sensors: Sensor[]
@@ -75,6 +79,7 @@ export function transformDeviceToApiFormat(
 		_id: id,
 		grouptag: tags || [],
 		...rest,
+		status: deriveDeviceStatus(sensors),
 		createdAt: toIsoString(box.createdAt)!,
 		updatedAt: toIsoString(box.updatedAt)!,
 		expiresAt: toIsoString(box.expiresAt),
@@ -111,4 +116,30 @@ export function transformDeviceToApiFormat(
 					: null,
 			})) || [],
 	}
+}
+
+export function deriveDeviceStatus(
+	sensors: Sensor[] | null | undefined,
+	now = Date.now(),
+): DeviceStatusType {
+	let latestMeasurementAt: number | null = null
+
+	for (const sensor of sensors ?? []) {
+		const createdAt = sensor.lastMeasurement?.createdAt
+		if (!createdAt) continue
+
+		const timestamp = Date.parse(createdAt)
+		if (!Number.isFinite(timestamp)) continue
+
+		if (latestMeasurementAt === null || timestamp > latestMeasurementAt) {
+			latestMeasurementAt = timestamp
+		}
+	}
+
+	if (latestMeasurementAt === null) return 'old'
+
+	const age = now - latestMeasurementAt
+	if (age < ACTIVE_THRESHOLD_MS) return 'active'
+	if (age < INACTIVE_THRESHOLD_MS) return 'inactive'
+	return 'old'
 }

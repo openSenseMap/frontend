@@ -32,6 +32,7 @@ import { parsePathParams } from '~/lib/request-parsing'
 import { isValidServiceKey } from '~/db/models/integration.server'
 import { postSingleMeasurement } from '~/services/measurement-service.server'
 import { MeasurementLocationSchema } from '~/lib/openapi/schemas/measurement'
+import { createMeasurementTiming } from '~/lib/measurement-timing.server'
 
 const PostSensorMeasurementHeaderParamsSchema = z
 	.object({
@@ -164,7 +165,7 @@ const parsePostSensorMeasurementBody = async (
 		return StandardResponse.badRequest('Invalid JSON request body')
 	}
 
-	const parsed = await PostSensorMeasurementRequestSchema.safeParseAsync(body)
+	const parsed = PostSensorMeasurementRequestSchema.safeParse(body)
 
 	if (!parsed.success) {
 		return StandardResponse.badRequest(
@@ -179,8 +180,13 @@ export const action = async ({
 	request,
 	params,
 }: Route.ActionArgs): Promise<Response> => {
+	const timing = createMeasurementTiming('singleMeasurementWrite', {
+		method: request.method,
+	})
+
 	try {
 		if (request.method !== 'POST') {
+			timing?.finish({ status: 405 })
 			return StandardResponse.methodNotAllowed('Endpoint only supports POST')
 		}
 
@@ -189,37 +195,43 @@ export const action = async ({
 		})
 
 		if (parsedParams instanceof Response) {
+			timing?.finish({ status: parsedParams.status })
 			return parsedParams
 		}
+		timing?.mark('parsePathParams', {
+			deviceId: parsedParams.deviceId,
+			sensorId: parsedParams.sensorId,
+		})
 
 		const parsedBody = await parsePostSensorMeasurementBody(request)
 
 		if (parsedBody instanceof Response) {
+			timing?.finish({ status: parsedBody.status })
 			return parsedBody
 		}
+		timing?.mark('parseBody')
 
 		const authorization = request.headers.get('authorization')
 		const serviceKey = request.headers.get('x-service-key')
 		const isTrustedService = await isValidServiceKey(serviceKey)
+		timing?.mark('serviceKeyLookup', {
+			hasAuthorization: Boolean(authorization),
+			hasServiceKey: Boolean(serviceKey),
+			isTrustedService,
+		})
 
 		await postSingleMeasurement(
 			parsedParams.deviceId,
 			parsedParams.sensorId,
-			//@ts-ignore
 			parsedBody,
 			authorization,
 			isTrustedService,
+			timing,
 		)
+		timing?.mark('postSingleMeasurement')
 
-		const responseParsed = PostSensorMeasurementSuccessResponseSchema.safeParse(
-			'Measurement saved in box',
-		)
-
-		if (!responseParsed.success) {
-			return StandardResponse.internalServerError()
-		}
-
-		return new Response(responseParsed.data, {
+		timing?.finish({ status: 201 })
+		return new Response('Measurement saved in box', {
 			status: 201,
 			headers: {
 				'Content-Type': 'text/plain; charset=utf-8',
@@ -227,27 +239,33 @@ export const action = async ({
 		})
 	} catch (err: any) {
 		if (err.name === 'UnauthorizedError') {
+			timing?.finish({ status: 401, errorName: err.name })
 			return StandardResponse.unauthorized(err.message)
 		}
 
 		if (err.name === 'NotFoundError') {
+			timing?.finish({ status: 404, errorName: err.name })
 			return StandardResponse.notFound(err.message)
 		}
 
 		if (err.name === 'UnprocessableEntityError') {
+			timing?.finish({ status: 422, errorName: err.name })
 			return StandardResponse.unprocessableContent(err.message)
 		}
 
 		if (err.name === 'ModelError' && err.type === 'UnprocessableEntityError') {
+			timing?.finish({ status: 422, errorName: err.name })
 			return StandardResponse.unprocessableContent(err.message)
 		}
 
 		if (err.name === 'ArchivedDeviceError') {
+			timing?.finish({ status: 409, errorName: err.name })
 			return StandardResponse.conflict(
 				err.message || 'Archived devices are read-only',
 			)
 		}
 
+		timing?.finish({ status: 500, errorName: err?.name ?? 'Error' })
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',
 		)

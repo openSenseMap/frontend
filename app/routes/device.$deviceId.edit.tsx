@@ -48,21 +48,33 @@ export default function EditBox() {
 	const { deviceId } = useParams()
 
 	const staticNavItems = [
-		{ title: 'General', href: `/device/${deviceId}/edit/general`, icon: Sheet },
-		{ title: 'Sensors', href: `/device/${deviceId}/edit/sensors`, icon: Cpu },
 		{
-			title: 'Location',
+			title: t('sidebar.general'),
+			href: `/device/${deviceId}/edit/general`,
+			icon: Sheet,
+		},
+		{
+			title: t('sidebar.sensors'),
+			href: `/device/${deviceId}/edit/sensors`,
+			icon: Cpu,
+		},
+		{
+			title: t('sidebar.location'),
 			href: `/device/${deviceId}/edit/location`,
 			icon: MapPin,
 		},
-		{ title: 'Logs', href: `/device/${deviceId}/edit/logs`, icon: NotepadText },
 		{
-			title: 'Security',
+			title: t('sidebar.logs'),
+			href: `/device/${deviceId}/edit/logs`,
+			icon: NotepadText,
+		},
+		{
+			title: t('sidebar.security'),
 			href: `/device/${deviceId}/edit/security`,
 			icon: Lock,
 		},
 		{
-			title: 'Script',
+			title: t('sidebar.script'),
 			href: `/device/${deviceId}/edit/script`,
 			icon: FileText,
 		},
@@ -82,7 +94,7 @@ export default function EditBox() {
 		...staticNavItems,
 		...integrationItems,
 		{
-			title: 'Transfer',
+			title: t('sidebar.transfer'),
 			href: `/device/${deviceId}/edit/transfer`,
 			icon: ArrowRightLeft,
 		},
@@ -139,9 +151,20 @@ export default function EditBox() {
 				</ToastPrimitive.Provider>
 			</div>
 
-			<div className="rounded">
-				<ArrowLeft className="mr-2 inline h-5 w-5" />
-				<Link to="/profile/me">{t('back_to_dashboard')}</Link>
+			<div className="flex items-center justify-between gap-4 rounded">
+				<div>
+					<ArrowLeft className="mr-2 inline h-5 w-5" />
+					<Link to="/profile/me">{t('back_to_dashboard')}</Link>
+				</div>
+				{deviceId && (
+					<Link
+						to={`/explore/${deviceId}`}
+						className="text-primary inline-flex shrink-0 items-center gap-2 text-sm hover:underline"
+					>
+						<MapPin className="h-4 w-4" />
+						{t('show_on_map')}
+					</Link>
+				)}
 			</div>
 
 			<div className="space-y-0.5">
