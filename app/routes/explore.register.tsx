@@ -308,6 +308,10 @@ export default function RegisterDialog() {
 								<Label htmlFor="username">{t('username')}</Label>
 								<Input
 									id="username"
+									aria-invalid={actionErrors?.username ? true : undefined}
+									aria-describedby={
+										actionErrors?.username ? 'username-error' : undefined
+									}
 									placeholder={t('enter_username')}
 									ref={usernameRef}
 									name="username"
@@ -320,7 +324,7 @@ export default function RegisterDialog() {
 								{actionErrors?.username && (
 									<div
 										className="mt-1 text-sm text-red-500"
-										id="password-error"
+										id="username-error"
 									>
 										{t(actionErrors?.username)}
 									</div>
