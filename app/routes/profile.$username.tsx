@@ -18,6 +18,7 @@ import { getInitials } from '~/lib/strings'
 import { getUserId } from '~/services/session-service.server'
 import { claimDevice } from '~/services/transfer-service.server'
 import { userNameFromURl } from '~/services/user-service.server'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 type ActionData = {
 	success: boolean
