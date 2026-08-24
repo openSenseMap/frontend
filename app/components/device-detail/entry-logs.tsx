@@ -27,7 +27,7 @@ export default function EntryLogs({
 }) {
 	const [open, setOpen] = useState(false)
 	const { t, i18n } = useTranslation('device-detail-box')
-	const latestEntry = entryLogs.at(-1)
+	const latestEntry = entryLogs[0]
 
 	if (!latestEntry) return null
 
