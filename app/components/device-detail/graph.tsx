@@ -182,6 +182,7 @@ export default function Graph({
 		[setHoveredPoint],
 	)
 	const handleChartMouseLeave = useCallback(() => {
+		isZoomingRef.current = false
 		setHoveredPointIfChanged(null)
 	}, [setHoveredPointIfChanged])
 
