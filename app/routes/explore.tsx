@@ -9,7 +9,7 @@ import {
 	type MapInstance,
 } from 'react-map-gl/maplibre'
 import {
-	Outlet,
+	useOutlet,
 	useNavigate,
 	useSearchParams,
 	useLoaderData,
@@ -423,6 +423,7 @@ export default function Explore() {
 	const appliedInitialMyAreaRef = useRef(false)
 	const navigate = useNavigate()
 	const location = useLocation()
+	const outlet = useOutlet()
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
 	const [searchParams] = useSearchParams()
 	const [filteredData, setFilteredData] = useState<
@@ -924,11 +925,11 @@ export default function Explore() {
 						/>
 					)}
 
-					<div className="pointer-events-none absolute inset-0 z-50">
-						<div className="pointer-events-auto">
-							<Outlet />
+					{outlet && (
+						<div className="pointer-events-none absolute inset-0 z-50">
+							<div className="pointer-events-auto h-full w-full">{outlet}</div>
 						</div>
-					</div>
+					)}
 				</Map>
 			</MapProvider>
 		</div>

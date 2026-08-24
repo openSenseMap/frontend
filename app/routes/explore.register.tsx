@@ -15,7 +15,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Spinner from '~/components/spinner'
-import ViewportPortal from '~/components/viewport-portal'
 import { Button } from '~/components/ui/button'
 import {
 	Card,
@@ -247,199 +246,189 @@ export default function RegisterDialog() {
 		actionData.emailDeliveryFailed
 	) {
 		return (
-			<ViewportPortal>
-				<div className="fixed inset-0 z-50 flex min-h-dvh items-start justify-center overflow-y-auto p-4 sm:items-center">
-					<Link
-						to={{
-							pathname: '/explore',
-							search: searchParams.toString(),
-						}}
-					>
-						<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
-					</Link>
-					<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
-						<CardHeader>
-							<CardTitle className="text-2xl font-bold">
-								{t('account_created')}
-							</CardTitle>
-							<CardDescription>
-								{t('email_delivery_failed_description')}
-							</CardDescription>
-						</CardHeader>
-						<CardFooter className="flex flex-col items-center gap-2">
-							<Link to="/explore/login" className="w-full">
-								<Button className="bg-light-blue w-full">
-									{t('go_to_login')}
-								</Button>
-							</Link>
-						</CardFooter>
-					</Card>
-				</div>
-			</ViewportPortal>
-		)
-	}
-
-	return (
-		<ViewportPortal>
-			<div className="fixed inset-0 z-50 flex min-h-dvh items-start justify-center overflow-y-auto p-4 sm:items-center">
+			<div className="relative flex h-full w-full items-start justify-center overflow-y-auto p-4 sm:items-center">
 				<Link
 					to={{
 						pathname: '/explore',
 						search: searchParams.toString(),
 					}}
 				>
-					<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
+					<div className="absolute inset-0 z-40 h-full w-full bg-black opacity-25" />
 				</Link>
 				<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
-					{navigation.state === 'loading' && (
-						<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
-							<Spinner />
-						</div>
-					)}
-					<Form method="post" className="space-y-6" noValidate>
-						<CardHeader>
-							<CardTitle className="text-2xl font-bold">
-								{t('register')}
-							</CardTitle>
-							<CardDescription>{t('create_account')}</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="username">{t('username')}</Label>
-								<Input
-									id="username"
-									aria-invalid={actionErrors?.username ? true : undefined}
-									aria-describedby={
-										actionErrors?.username ? 'username-error' : undefined
-									}
-									placeholder={t('enter_username')}
-									ref={usernameRef}
-									name="username"
-									type="text"
-									autoFocus={true}
-								/>
-								<p className="text-muted-foreground text-xs">
-									{t('username_hint')}
-								</p>
-								{actionErrors?.username && (
-									<div
-										className="mt-1 text-sm text-red-500"
-										id="username-error"
-									>
-										{t(actionErrors?.username)}
-									</div>
-								)}
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="email">{t('email')}</Label>
-								<Input
-									id="email"
-									type="email"
-									placeholder={t('enter_email')}
-									ref={emailRef}
-									required
-									autoFocus={true}
-									name="email"
-									autoComplete="email"
-									aria-invalid={actionErrors?.email ? true : undefined}
-									aria-describedby="email-error"
-								/>
-								{actionErrors?.email && (
-									<div className="mt-1 text-sm text-red-500" id="email-error">
-										{t(actionErrors?.email)}
-									</div>
-								)}
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="password">{t('password')}</Label>
-								<Input
-									id="password"
-									type="password"
-									placeholder={t('enter_password')}
-									ref={passwordRef}
-									name="password"
-									autoComplete="new-password"
-									aria-invalid={actionErrors?.password ? true : undefined}
-									aria-describedby="password-error"
-								/>
-								<p className="text-muted-foreground text-xs">
-									{t('password_hint')}
-								</p>
-								{actionErrors?.password && (
-									<div
-										className="mt-1 text-sm text-red-500"
-										id="password-error"
-									>
-										{t(actionErrors?.password)}
-									</div>
-								)}
-							</div>
-							<div className="flex items-start gap-2">
-								<Checkbox
-									id="tosAccepted"
-									name="tosAccepted"
-									value="on"
-									aria-invalid={actionErrors?.tosAccepted ? true : undefined}
-									aria-describedby="tos-error"
-									className="mt-1"
-								/>
-								<Label htmlFor="tosAccepted" className="text-sm leading-5">
-									{t('agree_tos_prefix')}{' '}
-									<Link
-										to="/terms"
-										className="underline"
-										target="_blank"
-										rel="noreferrer"
-									>
-										{t('terms_of_service')}
-									</Link>{' '}
-									{t('agree_tos_suffix')}
-								</Label>
-							</div>
-							<div className="flex items-start gap-2">
-								<Checkbox
-									id="newsletterOptIn"
-									name="newsletterOptIn"
-									value="on"
-									className="mt-1"
-								/>
-								<Label htmlFor="newsletterOptIn" className="text-sm leading-5">
-									{t('newsletter_opt_in')}
-								</Label>
-							</div>
-							<div className="flex items-start gap-2">
-								<Label className="text-sm leading-5">
-									{t('privacy_policy_prefix')}{' '}
-									<Link
-										to="/privacy"
-										className="underline"
-										target="_blank"
-										rel="noreferrer"
-									>
-										{t('privacy_policy')}
-									</Link>
-									{'.'}
-								</Label>
-							</div>
-
-							{actionErrors?.tosAccepted && (
-								<div className="mt-1 text-sm text-red-500" id="tos-error">
-									{t(actionErrors?.tosAccepted)}
-								</div>
-							)}
-						</CardContent>
-						<CardFooter className="flex flex-col items-center gap-2">
-							<Button className="bg-light-blue w-full">{t('register')}</Button>
-							<div className="text-muted-foreground text-center text-sm">
-								{t('already_account')}{' '}
-								<Link to="/explore/login" className="underline">
-									{t('login')}
-								</Link>
-							</div>
-						</CardFooter>
-					</Form>
+					<CardHeader>
+						<CardTitle className="text-2xl font-bold">
+							{t('account_created')}
+						</CardTitle>
+						<CardDescription>
+							{t('email_delivery_failed_description')}
+						</CardDescription>
+					</CardHeader>
+					<CardFooter className="flex flex-col items-center gap-2">
+						<Link to="/explore/login" className="w-full">
+							<Button className="bg-light-blue w-full">
+								{t('go_to_login')}
+							</Button>
+						</Link>
+					</CardFooter>
 				</Card>
 			</div>
-		</ViewportPortal>
+		)
+	}
+
+	return (
+		<div className="relative flex h-full w-full items-start justify-center overflow-y-auto p-4 sm:items-center">
+			<Link
+				to={{
+					pathname: '/explore',
+					search: searchParams.toString(),
+				}}
+			>
+				<div className="absolute inset-0 z-40 h-full w-full bg-black opacity-25" />
+			</Link>
+			<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
+				{navigation.state === 'loading' && (
+					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
+						<Spinner />
+					</div>
+				)}
+				<Form method="post" className="space-y-6" noValidate>
+					<CardHeader>
+						<CardTitle className="text-2xl font-bold">
+							{t('register')}
+						</CardTitle>
+						<CardDescription>{t('create_account')}</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="username">{t('username')}</Label>
+							<Input
+								id="username"
+								aria-invalid={actionErrors?.username ? true : undefined}
+								aria-describedby={
+									actionErrors?.username ? 'username-error' : undefined
+								}
+								placeholder={t('enter_username')}
+								ref={usernameRef}
+								name="username"
+								type="text"
+								autoFocus={true}
+							/>
+							<p className="text-muted-foreground text-xs">
+								{t('username_hint')}
+							</p>
+							{actionErrors?.username && (
+								<div className="mt-1 text-sm text-red-500" id="username-error">
+									{t(actionErrors?.username)}
+								</div>
+							)}
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="email">{t('email')}</Label>
+							<Input
+								id="email"
+								type="email"
+								placeholder={t('enter_email')}
+								ref={emailRef}
+								required
+								autoFocus={true}
+								name="email"
+								autoComplete="email"
+								aria-invalid={actionErrors?.email ? true : undefined}
+								aria-describedby="email-error"
+							/>
+							{actionErrors?.email && (
+								<div className="mt-1 text-sm text-red-500" id="email-error">
+									{t(actionErrors?.email)}
+								</div>
+							)}
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="password">{t('password')}</Label>
+							<Input
+								id="password"
+								type="password"
+								placeholder={t('enter_password')}
+								ref={passwordRef}
+								name="password"
+								autoComplete="new-password"
+								aria-invalid={actionErrors?.password ? true : undefined}
+								aria-describedby="password-error"
+							/>
+							<p className="text-muted-foreground text-xs">
+								{t('password_hint')}
+							</p>
+							{actionErrors?.password && (
+								<div className="mt-1 text-sm text-red-500" id="password-error">
+									{t(actionErrors?.password)}
+								</div>
+							)}
+						</div>
+						<div className="flex items-start gap-2">
+							<Checkbox
+								id="tosAccepted"
+								name="tosAccepted"
+								value="on"
+								aria-invalid={actionErrors?.tosAccepted ? true : undefined}
+								aria-describedby="tos-error"
+								className="mt-1"
+							/>
+							<Label htmlFor="tosAccepted" className="text-sm leading-5">
+								{t('agree_tos_prefix')}{' '}
+								<Link
+									to="/terms"
+									className="underline"
+									target="_blank"
+									rel="noreferrer"
+								>
+									{t('terms_of_service')}
+								</Link>{' '}
+								{t('agree_tos_suffix')}
+							</Label>
+						</div>
+						<div className="flex items-start gap-2">
+							<Checkbox
+								id="newsletterOptIn"
+								name="newsletterOptIn"
+								value="on"
+								className="mt-1"
+							/>
+							<Label htmlFor="newsletterOptIn" className="text-sm leading-5">
+								{t('newsletter_opt_in')}
+							</Label>
+						</div>
+						<div className="flex items-start gap-2">
+							<Label className="text-sm leading-5">
+								{t('privacy_policy_prefix')}{' '}
+								<Link
+									to="/privacy"
+									className="underline"
+									target="_blank"
+									rel="noreferrer"
+								>
+									{t('privacy_policy')}
+								</Link>
+								{'.'}
+							</Label>
+						</div>
+
+						{actionErrors?.tosAccepted && (
+							<div className="mt-1 text-sm text-red-500" id="tos-error">
+								{t(actionErrors?.tosAccepted)}
+							</div>
+						)}
+					</CardContent>
+					<CardFooter className="flex flex-col items-center gap-2">
+						<Button className="bg-light-blue w-full">{t('register')}</Button>
+						<div className="text-muted-foreground text-center text-sm">
+							{t('already_account')}{' '}
+							<Link to="/explore/login" className="underline">
+								{t('login')}
+							</Link>
+						</div>
+					</CardFooter>
+				</Form>
+			</Card>
+		</div>
 	)
 }
