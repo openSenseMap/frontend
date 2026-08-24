@@ -85,14 +85,17 @@ export default function Header() {
 						<LanguageSelector />
 						{/* Collapsible navigation bar */}
 						<button
+							id="navbar-menu-toggle"
 							onClick={() => setOpenMenu(!openMenu)}
-							data-collapse-toggle="navbar-cta"
+							data-collapse-toggle="navbar-mobile-menu"
 							type="button"
 							className="inline-flex size-11 items-center justify-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 focus:outline-hidden lg:hidden"
-							aria-controls="navbar-cta"
+							aria-controls="navbar-mobile-menu"
 							aria-expanded={openMenu}
 						>
-							<span className="sr-only">Open main menu</span>
+							<span className="sr-only">
+								{openMenu ? 'Close main menu' : 'Open main menu'}
+							</span>
 							<svg
 								className="h-6 w-6"
 								aria-hidden="true"
@@ -109,10 +112,11 @@ export default function Header() {
 						</button>
 						{openMenu && (
 							<div
+								id="navbar-mobile-menu"
 								className="ring-opacity-5 absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black"
 								role="menu"
 								aria-orientation="vertical"
-								aria-labelledby="options-menu"
+								aria-labelledby="navbar-menu-toggle"
 							>
 								{links.map((item, index) => (
 									<Link
