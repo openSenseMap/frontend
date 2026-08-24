@@ -112,7 +112,7 @@ export default function Header() {
 						{openMenu && (
 							<div
 								id="navbar-mobile-menu"
-								className="ring-opacity-5 absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black"
+								className="absolute top-full right-2 mt-2 w-48 rounded-md bg-gray-200 py-2 shadow-lg ring-1 ring-black/5"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="navbar-menu-toggle"
