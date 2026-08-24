@@ -18,7 +18,7 @@ export function DatePickerWithRange() {
 	const { i18n } = useTranslation()
 	const [date, setDate] = React.useState<DateRange | undefined>({
 		from: new Date(new Date().getFullYear(), 0, 20),
-		to: new Date(new Date().getFullYear(), 1, 10),
+		to: new Date(new Date().getFullYear(), 1, 9),
 	})
 
 	const dateTimeFormat = new Intl.DateTimeFormat(i18n.language, {
