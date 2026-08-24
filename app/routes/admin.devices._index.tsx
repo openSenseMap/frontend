@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { type Route } from './+types/admin.devices._index'
 import { getDevices } from '~/db/models/device.server'
 import { useTranslation } from 'react-i18next'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 export async function loader({}: Route.LoaderArgs) {
 	const devices = await getDevices('json')
@@ -13,6 +14,7 @@ export default function AdminDevicesIndexRoute({
 }: Route.ComponentProps) {
 	const { devices } = loaderData
 	const { i18n } = useTranslation()
+	const hydrated = useHydrated()
 
 	return (
 		<div className="flex w-full flex-col">
@@ -45,7 +47,8 @@ export default function AdminDevicesIndexRoute({
 								</td>
 								<td className="border-r-2 border-black p-2">{device.status}</td>
 								<td className="border-r-2 border-black p-2">
-									{new Date(device.createdAt).toLocaleString(i18n.language)}
+									{hydrated &&
+										new Date(device.createdAt).toLocaleString(i18n.language)}
 								</td>
 								<td className="border-r-2 border-black p-2">
 									<Link

@@ -15,6 +15,7 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { type Device } from '~/db/schema'
 import { DeviceIdCell } from './device-id-cell'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 export type SenseBox = {
 	id: string
@@ -34,6 +35,8 @@ export function getColumns(
 ): ColumnDef<SenseBox>[] {
 	const { t, i18n } = useTranslation
 	const isOwner = opts?.isOwner ?? false
+	const hydrated = useHydrated()
+
 	return [
 		{
 			accessorKey: 'name',
@@ -90,7 +93,7 @@ export function getColumns(
 			},
 			cell: ({ row }) => {
 				const date = new Date(row.getValue('createdAt'))
-				return <div>{date.toLocaleDateString(i18n.language)}</div>
+				return <div>{hydrated && date.toLocaleDateString(i18n.language)}</div>
 			},
 		},
 		{

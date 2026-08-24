@@ -129,6 +129,7 @@ export default function ProfilePage() {
 
 	const { t, i18n } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
+	const hydrated = useHydrated()
 
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
 
@@ -158,9 +159,10 @@ export default function ProfilePage() {
 							</h4>
 							<p className="text-muted-foreground text-sm">
 								{t('user_since')}{' '}
-								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
-									i18n.language,
-								)}
+								{hydrated &&
+									new Date(profile?.user?.createdAt || '').toLocaleDateString(
+										i18n.language,
+									)}
 							</p>
 						</div>
 					</div>
