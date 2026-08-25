@@ -1,15 +1,12 @@
 import bbox from '@turf/bbox'
 import { point, featureCollection } from '@turf/helpers'
-import { format } from 'date-fns'
 import { type FeatureCollection, type Point } from 'geojson'
 import { CalendarClock } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Source, Layer, useMap, Popup } from 'react-map-gl/maplibre'
 import MapLegend from './mobile-overview-legend'
-import {
-	type LocationPoint,
-	categorizeIntoTrips,
-} from '~/lib/mobile-box-helper'
+import { type LocationPoint, getLatestTrips } from '~/lib/mobile-box-helper'
 
 const FIT_PADDING = 100
 
@@ -121,8 +118,17 @@ export default function MobileOverviewLayer({
 }: {
 	locations: LocationPoint[]
 }) {
-	// Generate trips and assign colors once
-	const trips = useMemo(() => categorizeIntoTrips(locations, 50), [locations])
+	const { i18n } = useTranslation('mobile-map')
+	const tripDateTimeFormatter = useMemo(
+		() =>
+			new Intl.DateTimeFormat(i18n.language, {
+				dateStyle: 'medium',
+				timeStyle: 'short',
+			}),
+		[i18n.language],
+	)
+	// Apply the same trip definition and limit as the server-side overview loader.
+	const trips = useMemo(() => getLatestTrips(locations), [locations])
 
 	// Cluster points within each trip
 	const clusteredTrips = useMemo(() => {
@@ -176,7 +182,7 @@ export default function MobileOverviewLayer({
 
 	// Legend items state
 	const [legendItems, setLegendItems] = useState<
-		{ label: string; color: string }[]
+		{ label: string; color: string; isLatest: boolean }[]
 	>([])
 
 	// State to track the highlighted trip number
@@ -198,7 +204,17 @@ export default function MobileOverviewLayer({
 	const [showOriginalColors, setShowOriginalColors] = useState(true)
 
 	useEffect(() => {
-		if (!clusteredTrips || clusteredTrips.length === 0) return
+		setHighlightedTrip(null)
+		setHoveredCluster(null)
+		setPopupInfo(null)
+
+		if (clusteredTrips.length === 0) {
+			setSourceData(null)
+			setExpandedSourceData(null)
+			setLegendItems([])
+			if (mapRef) mapRef.getCanvas().style.cursor = ''
+			return
+		}
 
 		const colors = generateColors(clusteredTrips.length)
 
@@ -235,15 +251,20 @@ export default function MobileOverviewLayer({
 		)
 
 		// Set legend items for the trips
-		const legend = clusteredTrips.map((_, index) => ({
-			label: `Trip ${index + 1}`,
+		const legend = clusteredTrips.map((trip, index) => ({
+			label: formatTripTimeRange(
+				trip.startTime,
+				trip.endTime,
+				tripDateTimeFormatter,
+			),
 			color: colors[index],
+			isLatest: index === clusteredTrips.length - 1,
 		}))
 
 		setSourceData(featureCollection(points))
 		setExpandedSourceData(featureCollection(expandedPoints))
 		setLegendItems(legend)
-	}, [clusteredTrips])
+	}, [clusteredTrips, mapRef, tripDateTimeFormatter])
 
 	useEffect(() => {
 		if (!mapRef || !sourceData) return
@@ -451,7 +472,7 @@ export default function MobileOverviewLayer({
 						)}
 						<div>
 							<p className="text-primary text-sm font-bold">
-								{format(new Date(popupInfo.startTime), 'Pp')}
+								{tripDateTimeFormatter.format(new Date(popupInfo.startTime))}
 							</p>
 						</div>
 						{popupInfo.isCluster &&
@@ -461,7 +482,7 @@ export default function MobileOverviewLayer({
 										To
 									</span>
 									<p className="text-primary text-sm font-bold">
-										{format(new Date(popupInfo.endTime), 'Pp')}
+										{tripDateTimeFormatter.format(new Date(popupInfo.endTime))}
 									</p>
 								</div>
 							)}
@@ -472,7 +493,7 @@ export default function MobileOverviewLayer({
 			<MapLegend
 				items={legendItems}
 				position="top-right"
-				toggleTrips={() => setShowOriginalColors(!showOriginalColors)}
+				onColorByTripChange={setShowOriginalColors}
 				showOriginalColors={showOriginalColors}
 				onLegendItemHover={(color) => {
 					setHighlightedTrip(
@@ -484,4 +505,12 @@ export default function MobileOverviewLayer({
 			/>
 		</>
 	)
+}
+
+function formatTripTimeRange(
+	startTime: string,
+	endTime: string,
+	dateTimeFormatter: Intl.DateTimeFormat,
+) {
+	return dateTimeFormatter.formatRange(new Date(startTime), new Date(endTime))
 }

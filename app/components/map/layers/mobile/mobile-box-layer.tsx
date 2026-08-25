@@ -1,24 +1,16 @@
-import bbox from '@turf/bbox'
-import {
-	featureCollection,
-	lineString,
-	multiLineString,
-	point,
-} from '@turf/helpers'
-import { type MultiLineString, type Point } from 'geojson'
-import {
-	type CircleLayerSpecification,
-	type LineLayerSpecification,
-} from 'maplibre-gl'
+import { featureCollection, point } from '@turf/helpers'
+import { type Point } from 'geojson'
+import { type CircleLayerSpecification } from 'maplibre-gl'
 import { createContext, useContext, useEffect, useMemo } from 'react'
 import { Layer, Popup, Source, useMap } from 'react-map-gl/maplibre'
 import { HIGH_COLOR, LOW_COLOR, createPalette } from './color-palette'
 import { type Sensor } from '~/db/schema'
+import { validLngLat } from '~/lib/location'
 
 interface CustomGeoJsonProperties {
 	locationId: number
 	value: number
-	createdAt: Date
+	time: string
 	color: string
 }
 
@@ -36,27 +28,30 @@ export default function MobileBoxLayer({
 	maxColor = HIGH_COLOR,
 }: {
 	sensor: Sensor
-	minColor?:
-		| NonNullable<CircleLayerSpecification['paint']>['circle-color']
-		| NonNullable<LineLayerSpecification['paint']>['line-color']
-	maxColor?:
-		| NonNullable<CircleLayerSpecification['paint']>['circle-color']
-		| NonNullable<LineLayerSpecification['paint']>['line-color']
+	minColor?: NonNullable<CircleLayerSpecification['paint']>['circle-color']
+	maxColor?: NonNullable<CircleLayerSpecification['paint']>['circle-color']
 }) {
 	const { hoveredPoint, setHoveredPoint } = useContext(HoveredPointContext)
 	const { osem: mapRef } = useMap()
 
 	const sourceData = useMemo<GeoJSON.FeatureCollection | null>(() => {
 		const sensorData = (sensor.data ?? []) as unknown as {
-			value: string
-			location: { x: number; y: number; id: number }
-			createdAt: Date
+			value: number | string | null
+			location: { x: number; y: number; id: number } | null
+			time: Date | string | null
 		}[]
+		const mappableData = sensorData.filter(
+			(measurement) =>
+				measurement.location !== null &&
+				validLngLat(measurement.location.x, measurement.location.y) &&
+				measurement.value !== null &&
+				Number.isFinite(Number(measurement.value)),
+		)
 
-		if (sensorData.length === 0) return null
+		if (mappableData.length === 0) return null
 
-		const minValue = Math.min(...sensorData.map((d) => Number(d.value)))
-		const maxValue = Math.max(...sensorData.map((d) => Number(d.value)))
+		const minValue = Math.min(...mappableData.map((d) => Number(d.value)))
+		const maxValue = Math.max(...mappableData.map((d) => Number(d.value)))
 		const palette = createPalette(
 			minValue,
 			maxValue,
@@ -64,19 +59,16 @@ export default function MobileBoxLayer({
 			maxColor as string,
 		)
 
-		const points = sensorData.map((measurement) =>
-			point([measurement.location.x, measurement.location.y], {
+		const points = mappableData.map((measurement) =>
+			point([measurement.location!.x, measurement.location!.y], {
 				value: Number(measurement.value),
-				createdAt: new Date(measurement.createdAt),
+				time: measurement.time ? new Date(measurement.time).toISOString() : '',
 				color: palette(Number(measurement.value)).hex(),
-				locationId: measurement.location.id,
+				locationId: measurement.location!.id,
 			}),
 		)
 
-		const line = lineString(points.map((p) => p.geometry.coordinates))
-		const lines = multiLineString([line.geometry.coordinates])
-
-		return featureCollection<Point | MultiLineString>([...points, lines])
+		return featureCollection<Point>(points)
 	}, [maxColor, minColor, sensor.data])
 
 	const hoveredFeature = useMemo(() => {
@@ -91,26 +83,6 @@ export default function MobileBoxLayer({
 			) ?? null
 		)
 	}, [hoveredPoint, sourceData])
-
-	useEffect(() => {
-		if (!mapRef || !sourceData) return
-
-		const bounds = bbox(sourceData).slice(0, 4) as [
-			number,
-			number,
-			number,
-			number,
-		]
-
-		mapRef.fitBounds(bounds, {
-			padding: {
-				top: 100,
-				bottom: 400,
-				left: 500,
-				right: 100,
-			},
-		})
-	}, [mapRef, sourceData])
 
 	useEffect(() => {
 		if (!mapRef) return
@@ -152,17 +124,6 @@ export default function MobileBoxLayer({
 	return (
 		<>
 			<Source id="box-source" type="geojson" data={sourceData}>
-				<Layer
-					id="box-layer-line"
-					source="box-source"
-					type="line"
-					filter={['==', '$type', 'LineString']}
-					paint={{
-						'line-color': '#333',
-						'line-width': 2,
-						'line-opacity': 0.7,
-					}}
-				/>
 				<Layer
 					id="box-layer-point"
 					source="box-source"

@@ -1,5 +1,6 @@
 import { ArrowDownUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { calculateColorRange } from './color-palette'
 import MobileBoxLayer from './mobile-box-layer'
 import { Button } from '~/components/ui/button'
@@ -26,9 +27,9 @@ export default function MobileBoxView({
 	}
 
 	return (
-		<div className="absolute top-10 right-0 flex flex-col gap-4 p-4">
+		<div className="absolute top-80 right-0 flex max-h-[calc(100vh-21rem)] flex-col gap-4 overflow-y-auto p-4">
 			{sensors.map((sensor, index) => (
-				<div key={index} className="flex flex-col items-center gap-4">
+				<div key={sensor.id} className="flex flex-col items-center gap-4">
 					{index === 1 && sensors.length === 2 && (
 						<Button
 							className="self-center rounded-full px-4 py-2"
@@ -86,6 +87,7 @@ function Legend({
 	sensor: SensorWithColor
 	onColorChange?: (min: string, max: string) => void
 }) {
+	const { t } = useTranslation('mobile-map')
 	const { lowColor, highColor } = calculateColorRange(sensor.color)
 
 	const minColorInputRef = useRef<HTMLInputElement>(null)
@@ -95,16 +97,32 @@ function Legend({
 	const [maxColor, setMaxColor] = useState(highColor)
 
 	useEffect(() => {
-		onColorChange && onColorChange(minColor, maxColor)
+		onColorChange?.(minColor, maxColor)
 	}, [minColor, maxColor, onColorChange])
 
-	const sensorData = Array.isArray(sensor.data) ? sensor.data : []
+	const sensorData = Array.isArray(sensor.data)
+		? sensor.data.filter(
+				(measurement) =>
+					measurement.location !== null &&
+					measurement.value !== null &&
+					Number.isFinite(Number(measurement.value)),
+			)
+		: []
 
-	const minValue = Math.min(...sensorData.map((d) => Number(d.value)))
-	const maxValue = Math.max(...sensorData.map((d) => Number(d.value)))
+	const minValue =
+		sensorData.length > 0
+			? Math.min(...sensorData.map((d) => Number(d.value)))
+			: 0
+	const maxValue =
+		sensorData.length > 0
+			? Math.max(...sensorData.map((d) => Number(d.value)))
+			: 0
 
 	return (
 		<div className="z-50 flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-xs">
+			<span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+				{t('sensorValues')}
+			</span>
 			<span className="font-semibold">{sensor.title}</span>
 			<div
 				className="flex w-full items-center justify-between rounded-sm p-1"

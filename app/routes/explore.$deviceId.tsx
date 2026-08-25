@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Outlet, useLoaderData, useMatches } from 'react-router'
+import { Outlet, useLoaderData } from 'react-router'
 import { type Route } from './+types/explore.$deviceId'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import { getDevice } from '~/db/models/device.server'
 import { getSensorsWithLastMeasurement } from '~/db/models/sensor.server'
-import { categorizeIntoTrips } from '~/lib/mobile-box-helper'
+import { getLatestTripPoints } from '~/lib/mobile-box-helper'
 import { getDeviceImageUrl } from '~/lib/s3.server'
 import { getLocale } from '~/middleware/i18next'
 
@@ -24,27 +24,19 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 		params.deviceId,
 	)
 
-	// get only locations from the last 5 trips
+	// Keep the payload and map readable by showing the latest mobile trips.
 	if (device?.exposure === 'mobile' && device?.locations) {
-		// Convert each location's time to ISO string format (explicitly cast time to string)
 		const formattedLocations = device.locations.map((location) => ({
-			time: String(location.time), // Force it to be a string
+			time: String(location.time),
 			geometry: location.geometry,
 		}))
+		const latestPointTimes = new Set(
+			getLatestTripPoints(formattedLocations).map((location) => location.time),
+		)
 
-		// Now you can safely pass the formattedLocations to categorizeIntoTrips
-		const filteredLocations = categorizeIntoTrips(formattedLocations, 60) // 60 seconds as time threshold
-
-		// get the last time of the 5th trip
-		const lastTime =
-			filteredLocations[4]?.points[filteredLocations[4].points.length - 1]?.time
-		// cut all locations from the device to the last time of the 5th trip
-		const cutLocations = device.locations.filter((location) => {
-			const locationTime = String(location.time) // Ensure time is treated as a string
-			return locationTime <= lastTime
-		})
-		// set the locations to the device
-		device.locations = cutLocations
+		device.locations = device.locations.filter((location) =>
+			latestPointTimes.has(String(location.time)),
+		)
 	}
 
 	// Find all sensors from the device response that have the same id as one of the sensor array value
@@ -81,10 +73,6 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 export default function DeviceId() {
 	// Retrieving the data returned by the loader using the useLoaderData hook
 	const data = useLoaderData<typeof loader>()
-	const matches = useMatches()
-	const isSensorView = matches[matches.length - 1].params.sensorId
-		? true
-		: false
 	const [hoveredPoint, setHoveredPoint] = useState(null)
 
 	const setHoveredPointDebug = (point: any) => {
@@ -100,9 +88,8 @@ export default function DeviceId() {
 			<HoveredPointContext.Provider
 				value={{ hoveredPoint, setHoveredPoint: setHoveredPointDebug }}
 			>
-				{/* If the box is mobile, iterate over selected sensors and show trajectory */}
+				{/* Keep the canonical device trips visible while sensors are selected. */}
 				{data.device?.exposure === 'mobile' &&
-					!isSensorView &&
 					Array.isArray(data.device?.locations) &&
 					data.device.locations.length > 0 && (
 						<MobileOverviewLayer
