@@ -16,6 +16,7 @@ import {
 	CalendarPlus,
 	Hash,
 	LandPlot,
+	Mountain,
 	Image as ImageIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -339,6 +340,13 @@ export default function DeviceDetailBox() {
 													: t('unknown')
 											}
 										/>
+										{typeof data.device.height === 'number' ? (
+											<InfoItem
+												icon={Mountain}
+												title={t('height_above_sea_level')}
+												text={`${Math.round(data.device.height)} m`}
+											/>
+										) : null}
 										<InfoItem
 											icon={Cpu}
 											title={t('sensor_model')}
