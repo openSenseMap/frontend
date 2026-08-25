@@ -16,9 +16,15 @@ import { useTerrainElevation } from '~/hooks/use-terrain-elevation'
 import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
 import {
 	LOCATION_LIMITS,
+	deviceLocationInputSchema,
 	isValidLocation,
-	type DeviceLocationInput,
 } from '~/lib/location'
+
+type DeviceLocationFormState = {
+	latitude?: number | string
+	longitude?: number | string
+	heightAboveGround?: number | string
+}
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
@@ -27,7 +33,7 @@ export function LocationStep() {
 		setValue,
 		watch,
 		formState: { errors },
-	} = useFormContext<Partial<DeviceLocationInput>>()
+	} = useFormContext<DeviceLocationFormState>()
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
@@ -62,13 +68,18 @@ export function LocationStep() {
 		latitude: markerLocation?.latitude,
 		longitude: markerLocation?.longitude,
 	})
+	const parsedHeightAboveGround =
+		deviceLocationInputSchema.shape.heightAboveGround.safeParse(
+			savedHeightAboveGround,
+		)
 
-	const finalHeight = elevation.result
-		? calculateHeightAboveSeaLevel(
-				elevation.result.elevation,
-				savedHeightAboveGround,
-			)
-		: null
+	const finalHeight =
+		elevation.result && parsedHeightAboveGround.success
+			? calculateHeightAboveSeaLevel(
+					elevation.result.elevation,
+					parsedHeightAboveGround.data,
+				)
+			: null
 
 	const handleLatitudeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value.trim()
