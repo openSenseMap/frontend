@@ -4,7 +4,9 @@
 	"overrides": [
 		{
 			"files": ["**/tests/**/*.ts"],
-			"rules": {}
+			"rules": {
+				"react-hooks/rules-of-hooks": "off"
+			}
 		}
 	]
 }
