@@ -22,11 +22,9 @@ import {
 	requestContentTypeJsonOrForm,
 	responseContentTypeJson,
 } from '~/middleware/content-type-header.server'
-import {
-	AuthTokensSchema,
-	NewPasswordSchema,
-} from '~/lib/openapi/schemas/auth'
+import { AuthTokensSchema, NewPasswordSchema } from '~/lib/openapi/schemas/auth'
 import { transformUserToApiFormat } from '~/lib/user-transform'
+import { verifyAndRedeemRegistrationChallenge } from '~/lib/altcha.server'
 
 const RegistrationNameSchema = z
 	.string()
@@ -62,6 +60,11 @@ const RegisterUserRequestSchema = z
 				'Whether to request a newsletter subscription. If true, a double opt-in confirmation email is sent before the user is subscribed.',
 			example: true,
 		}),
+
+		altcha: z.string().min(1).meta({
+			description:
+				'Base64-encoded ALTCHA proof-of-work payload obtained from `GET /api/altcha/challenge`.',
+		}),
 	})
 	.meta({
 		id: 'RegisterUserRequest',
@@ -72,8 +75,8 @@ const RegisterUserResponseSchema = AuthTokensSchema.extend({
 	code: z.literal('Created').default('Created'),
 
 	message: z
-			.literal('Successfully registered new user')
-			.default('Successfully registered new user'),
+		.literal('Successfully registered new user')
+		.default('Successfully registered new user'),
 
 	data: z.object({
 		user: UserSchema,
@@ -174,6 +177,13 @@ export const action = async ({ request }: Route.ActionArgs) => {
 		const password = data.password
 		const language = data.language as 'de_DE' | 'en_US'
 		const newsletterOptIn = data.newsletterOptIn
+
+		const challengeVerified = await verifyAndRedeemRegistrationChallenge(
+			data.altcha,
+		)
+		if (!challengeVerified) {
+			return StandardResponse.badRequest('ALTCHA verification failed.')
+		}
 
 		const registration = await registerUser(
 			username,
