@@ -196,7 +196,7 @@ export function LocationStep() {
 					/>
 					{errors.latitude?.message ? (
 						<p className="mt-1 text-sm text-red-600">
-							{String(errors.latitude.message)}
+							{t(String(errors.latitude.message))}
 						</p>
 					) : null}
 				</div>
@@ -217,7 +217,7 @@ export function LocationStep() {
 					/>
 					{errors.longitude?.message ? (
 						<p className="mt-1 text-sm text-red-600">
-							{String(errors.longitude.message)}
+							{t(String(errors.longitude.message))}
 						</p>
 					) : null}
 				</div>
@@ -286,7 +286,7 @@ export function LocationStep() {
 
 					{errors.heightAboveGround?.message ? (
 						<p id="height-error" className="mt-1 text-sm text-red-600">
-							{String(errors.heightAboveGround.message)}
+							{t(String(errors.heightAboveGround.message))}
 						</p>
 					) : null}
 				</div>

@@ -524,7 +524,7 @@ export default function EditLocation() {
 											id="latitude-error"
 											className="mt-1 text-sm text-red-600"
 										>
-											{locationErrors.latitude}
+											{t(locationErrors.latitude)}
 										</p>
 									) : null}
 								</div>
@@ -563,7 +563,7 @@ export default function EditLocation() {
 											id="longitude-error"
 											className="mt-1 text-sm text-red-600"
 										>
-											{locationErrors.longitude}
+											{t(locationErrors.longitude)}
 										</p>
 									) : null}
 								</div>
@@ -672,7 +672,7 @@ export default function EditLocation() {
 
 									{locationErrors.heightAboveGround ? (
 										<p id="height-error" className="mt-1 text-sm text-red-600">
-											{locationErrors.heightAboveGround}
+											{t(locationErrors.heightAboveGround)}
 										</p>
 									) : null}
 

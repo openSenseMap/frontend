@@ -35,6 +35,16 @@ const missingLocationValueToUndefined = (value: unknown) => {
 	return value
 }
 
+const LOCATION_VALIDATION_ERROR_KEYS = {
+	latitudeRequired: 'latitude_required',
+	latitudeInvalid: 'latitude_invalid',
+	latitudeOutOfRange: 'latitude_out_of_range',
+	longitudeRequired: 'longitude_required',
+	longitudeInvalid: 'longitude_invalid',
+	longitudeOutOfRange: 'longitude_out_of_range',
+	heightAboveGroundInvalid: 'height_above_ground_invalid',
+} as const
+
 export const locationCoordinatesSchema = z.object({
 	latitude: z.preprocess(
 		missingLocationValueToUndefined,
@@ -42,16 +52,16 @@ export const locationCoordinatesSchema = z.object({
 			.number({
 				error: (issue) =>
 					issue.input === undefined
-						? 'Latitude is required'
-						: 'Latitude must be a valid number',
+						? LOCATION_VALIDATION_ERROR_KEYS.latitudeRequired
+						: LOCATION_VALIDATION_ERROR_KEYS.latitudeInvalid,
 			})
 			.min(
 				LOCATION_LIMITS.latitude.min,
-				`Latitude must be greater than or equal to ${LOCATION_LIMITS.latitude.min}`,
+				LOCATION_VALIDATION_ERROR_KEYS.latitudeOutOfRange,
 			)
 			.max(
 				LOCATION_LIMITS.latitude.max,
-				`Latitude must be less than or equal to ${LOCATION_LIMITS.latitude.max}`,
+				LOCATION_VALIDATION_ERROR_KEYS.latitudeOutOfRange,
 			),
 	),
 
@@ -61,16 +71,16 @@ export const locationCoordinatesSchema = z.object({
 			.number({
 				error: (issue) =>
 					issue.input === undefined
-						? 'Longitude is required'
-						: 'Longitude must be a valid number',
+						? LOCATION_VALIDATION_ERROR_KEYS.longitudeRequired
+						: LOCATION_VALIDATION_ERROR_KEYS.longitudeInvalid,
 			})
 			.min(
 				LOCATION_LIMITS.longitude.min,
-				`Longitude must be greater than or equal to ${LOCATION_LIMITS.longitude.min}`,
+				LOCATION_VALIDATION_ERROR_KEYS.longitudeOutOfRange,
 			)
 			.max(
 				LOCATION_LIMITS.longitude.max,
-				`Longitude must be less than or equal to ${LOCATION_LIMITS.longitude.max}`,
+				LOCATION_VALIDATION_ERROR_KEYS.longitudeOutOfRange,
 			),
 	),
 })
@@ -82,9 +92,9 @@ export const deviceLocationInputSchema = locationCoordinatesSchema.extend({
 		missingLocationValueToUndefined,
 		z.coerce
 			.number({
-				error: 'Height above ground must be a valid number',
+				error: LOCATION_VALIDATION_ERROR_KEYS.heightAboveGroundInvalid,
 			})
-			.finite('Height above ground must be a finite number')
+			.finite(LOCATION_VALIDATION_ERROR_KEYS.heightAboveGroundInvalid)
 			.optional(),
 	),
 })

@@ -175,7 +175,7 @@ export default function NewDeviceStepper() {
 		if (message) {
 			toast({
 				title: 'Form Error',
-				description: message,
+				description: t(message),
 				variant: 'destructive',
 				duration: 2000,
 			})
