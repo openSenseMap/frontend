@@ -1,5 +1,11 @@
 import * as z from 'zod/v4'
-import { GeoJsonPointSchema, TimestampedGeoJsonPointSchema } from './location'
+import {
+	GeoJsonPointSchema,
+	HeightAboveSeaLevelSchema,
+	LatitudeSchema,
+	LongitudeSchema,
+	TimestampedGeoJsonPointSchema,
+} from './location'
 
 export const ApiSensorSchema = z
 	.looseObject({
@@ -153,15 +159,15 @@ export const ApiDeviceSchema = z
 			description: 'Device model',
 			example: 'homeV2Wifi',
 		}),
-		latitude: z.number().nullable().optional().meta({
+		latitude: LatitudeSchema.nullable().optional().meta({
 			description: 'Device latitude',
 			example: 52.520008,
 		}),
-		longitude: z.number().nullable().optional().meta({
+		longitude: LongitudeSchema.nullable().optional().meta({
 			description: 'Device longitude',
 			example: 13.404954,
 		}),
-		height: z.number().nullable().optional().meta({
+		height: HeightAboveSeaLevelSchema.nullable().optional().meta({
 			description: 'Device height above sea level in meters',
 			example: 66.6,
 		}),

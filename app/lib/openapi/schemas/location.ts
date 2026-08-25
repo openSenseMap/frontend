@@ -19,6 +19,11 @@ export const LatitudeSchema = z
 		example: 51.9123,
 	})
 
+export const HeightAboveSeaLevelSchema = z.number().finite().meta({
+	description: 'Height above sea level in meters.',
+	example: 66.6,
+})
+
 export const CoordinatesSchema = z
 	.tuple([LongitudeSchema, LatitudeSchema])
 	.meta({
@@ -30,7 +35,7 @@ export const CoordinatesSchema = z
 export const CoordinatesWithHeightSchema = z
 	.union([
 		CoordinatesSchema,
-		z.tuple([LongitudeSchema, LatitudeSchema, z.number()]).meta({
+		z.tuple([LongitudeSchema, LatitudeSchema, HeightAboveSeaLevelSchema]).meta({
 			override: { minItems: 3, maxItems: 3, items: false },
 		}),
 	])
@@ -45,10 +50,7 @@ export const LongitudeLatitudeLocationObjectSchema = z
 	.object({
 		longitude: LongitudeSchema,
 		latitude: LatitudeSchema,
-		height: z.number().optional().meta({
-			description: 'Height above sea level in meters.',
-			example: 66.6,
-		}),
+		height: HeightAboveSeaLevelSchema.optional(),
 	})
 	.meta({
 		id: 'LongitudeLatitudeLocationObject',
@@ -60,10 +62,7 @@ export const LocationObjectSchema = z
 	.object({
 		lng: LongitudeSchema,
 		lat: LatitudeSchema,
-		height: z.number().optional().meta({
-			description: 'Height above sea level in meters.',
-			example: 66.6,
-		}),
+		height: HeightAboveSeaLevelSchema.optional(),
 	})
 	.meta({
 		id: 'LocationObject',
