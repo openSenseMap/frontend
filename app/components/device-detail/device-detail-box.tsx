@@ -66,12 +66,7 @@ import {
 	DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { Separator } from '../ui/separator'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { useToast } from '../ui/use-toast'
 import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
@@ -700,18 +695,16 @@ export default function DeviceDetailBox() {
 					}}
 					className="absolute bottom-2.5 left-4 flex cursor-pointer rounded-xl border border-gray-100 bg-white shadow-lg transition-colors duration-300 ease-in-out hover:brightness-90 sm:bottom-7.5 sm:left-2.5 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-90"
 				>
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<div className="px-4 py-2">
-									<ChevronUp />
-								</div>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>{t('open_device_details')}</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<div className="px-4 py-2">
+								<ChevronUp />
+							</div>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>{t('open_device_details')}</p>
+						</TooltipContent>
+					</Tooltip>
 				</div>
 			)}
 		</>
