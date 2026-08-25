@@ -1,12 +1,39 @@
 import z from 'zod/v4'
+import { LOCATION_LIMITS } from '~/lib/location'
 
-export const CoordinatesSchema = z.tuple([z.number(), z.number()]).meta({
-	description: '[longitude, latitude]',
-	example: [7.68123, 51.9123],
-})
+export const LongitudeSchema = z
+	.number()
+	.min(LOCATION_LIMITS.longitude.min)
+	.max(LOCATION_LIMITS.longitude.max)
+	.meta({
+		description: 'Longitude',
+		example: 7.68123,
+	})
+
+export const LatitudeSchema = z
+	.number()
+	.min(LOCATION_LIMITS.latitude.min)
+	.max(LOCATION_LIMITS.latitude.max)
+	.meta({
+		description: 'Latitude',
+		example: 51.9123,
+	})
+
+export const CoordinatesSchema = z
+	.tuple([LongitudeSchema, LatitudeSchema])
+	.meta({
+		description: '[longitude, latitude]',
+		example: [7.68123, 51.9123],
+		override: { minItems: 2, maxItems: 2, items: false },
+	})
 
 export const CoordinatesWithHeightSchema = z
-	.tuple([z.number(), z.number(), z.number().optional()])
+	.union([
+		CoordinatesSchema,
+		z.tuple([LongitudeSchema, LatitudeSchema, z.number()]).meta({
+			override: { minItems: 3, maxItems: 3, items: false },
+		}),
+	])
 	.meta({
 		id: 'CoordinatesWithHeight',
 		description:
@@ -16,14 +43,8 @@ export const CoordinatesWithHeightSchema = z
 
 export const LongitudeLatitudeLocationObjectSchema = z
 	.object({
-		longitude: z.number().meta({
-			description: 'Longitude',
-			example: 7.68123,
-		}),
-		latitude: z.number().meta({
-			description: 'Latitude',
-			example: 51.9123,
-		}),
+		longitude: LongitudeSchema,
+		latitude: LatitudeSchema,
 		height: z.number().optional().meta({
 			description: 'Height above sea level in meters.',
 			example: 66.6,
@@ -37,14 +58,8 @@ export const LongitudeLatitudeLocationObjectSchema = z
 
 export const LocationObjectSchema = z
 	.object({
-		lng: z.number().meta({
-			description: 'Longitude',
-			example: 7.68123,
-		}),
-		lat: z.number().meta({
-			description: 'Latitude',
-			example: 51.9123,
-		}),
+		lng: LongitudeSchema,
+		lat: LatitudeSchema,
 		height: z.number().optional().meta({
 			description: 'Height above sea level in meters.',
 			example: 66.6,
@@ -66,7 +81,7 @@ export const LocationObjectSchema = z
 		}
 	})
 
-const DeviceHeightAboveGroundSchema = z.number().finite().optional().meta({
+export const DeviceHeightAboveGroundSchema = z.number().finite().meta({
 	description:
 		'Device height above the local ground surface in meters, not an absolute height above sea level. The server adds terrain elevation before storing the device height.',
 	example: 3.5,
@@ -75,26 +90,14 @@ const DeviceHeightAboveGroundSchema = z.number().finite().optional().meta({
 export const DeviceLocationInputSchema = z
 	.union([
 		z.object({
-			lng: z.number().meta({
-				description: 'Longitude',
-				example: 7.68123,
-			}),
-			lat: z.number().meta({
-				description: 'Latitude',
-				example: 51.9123,
-			}),
-			height: DeviceHeightAboveGroundSchema,
+			lng: LongitudeSchema,
+			lat: LatitudeSchema,
+			height: DeviceHeightAboveGroundSchema.optional(),
 		}),
 		z.object({
-			longitude: z.number().meta({
-				description: 'Longitude',
-				example: 7.68123,
-			}),
-			latitude: z.number().meta({
-				description: 'Latitude',
-				example: 51.9123,
-			}),
-			height: DeviceHeightAboveGroundSchema,
+			longitude: LongitudeSchema,
+			latitude: LatitudeSchema,
+			height: DeviceHeightAboveGroundSchema.optional(),
 		}),
 	])
 	.transform((location) => {
