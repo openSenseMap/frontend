@@ -17,6 +17,7 @@ import {
 	getDeviceTransfer,
 	createDeviceTransfer,
 } from '~/services/transfer-service.server'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 type LoaderData = {
 	deviceId: string
@@ -144,7 +145,8 @@ export default function EditDeviceTransfer() {
 	const { deviceName, existingTransfer } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
-	const { t } = useTranslation('device-transfer')
+	const { t, i18n } = useTranslation('device-transfer')
+	const hydrated = useHydrated()
 
 	const [copied, setCopied] = useState(false)
 
@@ -293,10 +295,14 @@ export default function EditDeviceTransfer() {
 								<p className="mt-3 text-sm">
 									{t('valid_until')}{' '}
 									<b>
-										{new Date(transferExpiresAt).toLocaleString(t('locale'), {
-											dateStyle: 'medium',
-											timeStyle: 'short',
-										})}
+										{hydrated &&
+											new Date(transferExpiresAt).toLocaleString(
+												i18n.language,
+												{
+													dateStyle: 'medium',
+													timeStyle: 'short',
+												},
+											)}
 									</b>
 								</p>
 							) : null}

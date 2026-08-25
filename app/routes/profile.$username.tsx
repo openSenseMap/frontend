@@ -18,6 +18,7 @@ import { getInitials } from '~/lib/strings'
 import { getUserId } from '~/services/session-service.server'
 import { claimDevice } from '~/services/transfer-service.server'
 import { userNameFromURl } from '~/services/user-service.server'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 type ActionData = {
 	success: boolean
@@ -127,8 +128,9 @@ export default function ProfilePage() {
 		deviceSchemas,
 	} = useLoaderData<typeof loader>()
 
-	const { t } = useTranslation('profile')
+	const { t, i18n } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
+	const hydrated = useHydrated()
 
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
 
@@ -158,9 +160,10 @@ export default function ProfilePage() {
 							</h4>
 							<p className="text-muted-foreground text-sm">
 								{t('user_since')}{' '}
-								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
-									t('locale'),
-								)}
+								{hydrated &&
+									new Date(profile?.user?.createdAt || '').toLocaleDateString(
+										i18n.language,
+									)}
 							</p>
 						</div>
 					</div>
@@ -201,7 +204,7 @@ export default function ProfilePage() {
 
 						{profile?.user?.devices && (
 							<DataTable
-								columns={getColumns(columnsTranslation, { isOwner })}
+								columns={getColumns(columnsTranslation, hydrated, { isOwner })}
 								data={profile.user.devices}
 								getRowClassName={(device) =>
 									device.archivedAt

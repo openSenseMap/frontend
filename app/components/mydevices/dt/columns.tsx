@@ -30,10 +30,12 @@ const colStyle = 'pl-0 dark:text-white'
 
 export function getColumns(
 	useTranslation: UseTranslationResponse<'data-table', any>,
+	hydrated: boolean,
 	opts?: { isOwner?: boolean },
 ): ColumnDef<SenseBox>[] {
-	const { t } = useTranslation
+	const { t, i18n } = useTranslation
 	const isOwner = opts?.isOwner ?? false
+
 	return [
 		{
 			accessorKey: 'name',
@@ -90,7 +92,7 @@ export function getColumns(
 			},
 			cell: ({ row }) => {
 				const date = new Date(row.getValue('createdAt'))
-				return <div>{date.toLocaleDateString()}</div>
+				return <div>{hydrated && date.toLocaleDateString(i18n.language)}</div>
 			},
 		},
 		{
