@@ -123,8 +123,8 @@ export default function MobileOverviewLayer({
 }) {
 	const { i18n } = useTranslation()
 	const dateTimeFormat = new Intl.DateTimeFormat(i18n.language, {
-		hour: 'numeric',
-		minute: '2-digit',
+		dateStyle: 'short',
+		timeStyle: 'short',
 	})
 
 	// Generate trips and assign colors once
