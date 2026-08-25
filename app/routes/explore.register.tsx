@@ -1,5 +1,8 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
+import 'altcha/i18n/de'
+import 'altcha'
+import type {} from 'altcha/types/react'
 import {
 	data,
 	redirect,
@@ -9,7 +12,6 @@ import {
 	useNavigation,
 	useSearchParams,
 } from 'react-router'
-import invariant from 'tiny-invariant'
 import { type Route } from './+types/explore.register'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -24,8 +26,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
+import { ClientOnly } from '~/components/client-only'
 import { getCurrentEffectiveTos } from '~/db/models/tos.server'
-import { getUserByEmail, getUserByUsername } from '~/db/models/user.server'
+import { verifyAndRedeemRegistrationChallenge } from '~/lib/altcha.server'
 import { getLocale } from '~/middleware/i18next'
 import { createUserSession, getUserId } from '~/services/session-service.server'
 import { registerUser } from '~/services/user-service.server'
@@ -37,144 +40,85 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return {}
 }
 
+type RegistrationErrorField =
+	| 'username'
+	| 'email'
+	| 'password'
+	| 'tosAccepted'
+	| 'altcha'
+	| 'form'
+
+function registrationError(
+	field: RegistrationErrorField,
+	code: string,
+	options: { status?: number; challengeRedeemed?: boolean } = {},
+) {
+	const errors: Record<RegistrationErrorField, string | null> = {
+		username: null,
+		email: null,
+		password: null,
+		tosAccepted: null,
+		altcha: null,
+		form: null,
+	}
+	errors[field] = code
+
+	return data(
+		{
+			errors,
+			challengeRedeemed: options.challengeRedeemed ?? false,
+		},
+		{ status: options.status ?? 400 },
+	)
+}
+
 export async function action({ context, request }: Route.ActionArgs) {
 	const formData = await request.formData()
-	const { username, email, password, tosAccepted, newsletterOptIn } =
+	const { username, email, password, tosAccepted, newsletterOptIn, altcha } =
 		Object.fromEntries(formData)
 	const redirectTo = safeRedirect(formData.get('redirectTo'), '/explore')
 
 	if (!username || typeof username !== 'string') {
-		return data(
-			{
-				errors: {
-					username: 'username_required',
-					email: null,
-					password: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
-		)
+		return registrationError('username', 'username_required')
 	}
 
 	//* Validate userName
 	const validateUserName = validateName(username?.toString())
 	if (!validateUserName.isValid) {
-		return data(
-			{
-				errors: {
-					username: validateUserName.errorMsg,
-					password: null,
-					email: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
+		return registrationError(
+			'username',
+			validateUserName.errorMsg ?? 'username_invalid',
 		)
 	}
 
-	const existingUsername = await getUserByUsername(username)
-	if (existingUsername)
-		return data(
-			{
-				errors: {
-					username: 'username_already_taken',
-					email: null,
-					password: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
-		)
-
 	if (!validateEmail(email)) {
-		return data(
-			{
-				errors: {
-					username: null,
-					email: 'email_invalid',
-					password: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
-		)
+		return registrationError('email', 'email_invalid')
 	}
 
 	if (typeof password !== 'string' || password.length === 0) {
-		return data(
-			{
-				errors: {
-					username: null,
-					password: 'password_required',
-					email: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
-		)
+		return registrationError('password', 'password_required')
 	}
 
 	if (password.length < 8) {
-		return data(
-			{
-				errors: {
-					username: null,
-					password: 'password_too_short',
-					email: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
-		)
-	}
-
-	//* check if user exists by email
-	const existingUserByEmail = await getUserByEmail(email)
-	if (existingUserByEmail) {
-		return data(
-			{
-				errors: {
-					username: null,
-					email: 'email_already_taken',
-					password: null,
-					tosAccepted: null,
-				},
-			},
-			{ status: 400 },
-		)
+		return registrationError('password', 'password_too_short')
 	}
 
 	if (tosAccepted !== 'on') {
-		return data(
-			{
-				errors: {
-					username: null,
-					email: null,
-					password: null,
-					tosAccepted: 'tos_must_accept',
-				},
-			},
-			{ status: 400 },
-		)
+		return registrationError('tosAccepted', 'tos_must_accept')
+	}
+
+	const challengeVerified = await verifyAndRedeemRegistrationChallenge(altcha)
+	if (!challengeVerified) {
+		return registrationError('altcha', 'altcha_verification_failed')
 	}
 
 	const tos = await getCurrentEffectiveTos()
 	if (!tos) {
-		return data(
-			{
-				errors: {
-					username: null,
-					email: null,
-					password: null,
-					tosAccepted: 'tos_unavailable',
-				},
-			},
-			{ status: 500 },
-		)
+		return registrationError('tosAccepted', 'tos_unavailable', {
+			status: 500,
+			challengeRedeemed: true,
+		})
 	}
-
-	invariant(typeof username === 'string', 'username must be a string')
 
 	//* get current locale
 	const locale = getLocale(context)
@@ -190,18 +134,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 	)
 
 	if (!result.ok) {
-		return data(
-			{
-				errors: {
-					username: result.field === 'username' ? result.code : null,
-					email: result.field === 'email' ? result.code : null,
-					password: result.field === 'password' ? result.code : null,
-					tosAccepted: result.field === 'tos' ? result.code : null,
-					form: result.field === 'form' ? result.code : null,
-				},
-			},
-			{ status: 400 },
-		)
+		const field = result.field === 'tos' ? 'tosAccepted' : result.field
+		return registrationError(field, result.code, { challengeRedeemed: true })
 	}
 
 	if (!result.emailSent) {
@@ -217,22 +151,29 @@ export async function action({ context, request }: Route.ActionArgs) {
 }
 
 export default function RegisterDialog() {
-	const { t } = useTranslation('register')
+	const { t, i18n } = useTranslation('register')
 	const navigation = useNavigation()
 	const [searchParams] = useSearchParams()
 	const actionData = useActionData<typeof action>()
 	const usernameRef = React.useRef<HTMLInputElement>(null)
 	const emailRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
+	const altchaRef = React.useRef<HTMLElementTagNameMap['altcha-widget']>(null)
 
 	React.useEffect(() => {
 		if (actionData && 'errors' in actionData) {
+			if (actionData.challengeRedeemed || actionData.errors.altcha) {
+				altchaRef.current?.reset()
+			}
+
 			if (actionData.errors?.username) {
 				usernameRef.current?.focus()
 			} else if (actionData.errors?.email) {
 				emailRef.current?.focus()
 			} else if (actionData.errors?.password) {
 				passwordRef.current?.focus()
+			} else if (actionData.errors?.altcha) {
+				altchaRef.current?.focus()
 			}
 		}
 	}, [actionData])
@@ -292,7 +233,7 @@ export default function RegisterDialog() {
 						<Spinner />
 					</div>
 				)}
-				<Form method="post" className="space-y-6" noValidate>
+				<Form method="post" className="space-y-6">
 					<CardHeader>
 						<CardTitle className="text-2xl font-bold">
 							{t('register')}
@@ -360,6 +301,37 @@ export default function RegisterDialog() {
 								</div>
 							)}
 						</div>
+						<div className="space-y-2">
+							<ClientOnly
+								fallback={
+									<div
+										className="text-muted-foreground flex min-h-16 items-center text-sm"
+										aria-busy="true"
+									>
+										{t('altcha_loading')}
+									</div>
+								}
+							>
+								{() => (
+									<altcha-widget
+										ref={altchaRef}
+										challenge="/api/altcha/challenge"
+										configuration={JSON.stringify({
+											validationMessage: t('altcha_required'),
+										})}
+										language={i18n.language.startsWith('de') ? 'de' : 'en'}
+										name="altcha"
+										workers={2}
+										style={{ '--altcha-max-width': '100%', width: '100%' }}
+									/>
+								)}
+							</ClientOnly>
+							{actionErrors?.altcha && (
+								<div className="mt-1 text-sm text-red-500" id="altcha-error">
+									{t(actionErrors.altcha)}
+								</div>
+							)}
+						</div>
 						<div className="flex items-center gap-2">
 							<Checkbox
 								id="tosAccepted"
@@ -409,6 +381,11 @@ export default function RegisterDialog() {
 						{actionErrors?.tosAccepted && (
 							<div className="mt-1 text-sm text-red-500" id="tos-error">
 								{t(actionErrors?.tosAccepted)}
+							</div>
+						)}
+						{actionErrors?.form && (
+							<div className="mt-1 text-sm text-red-500" role="alert">
+								{t(actionErrors.form)}
 							</div>
 						)}
 					</CardContent>
