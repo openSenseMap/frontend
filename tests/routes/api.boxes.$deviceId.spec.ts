@@ -73,8 +73,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 		queryableDevice = await createDevice(
 			{
 				...generateMinimalDevice(),
-				latitude: 123,
-				longitude: 12,
+				latitude: 12,
+				longitude: 123,
 				tags: ['testgroup'],
 				useAuth: false,
 			},
