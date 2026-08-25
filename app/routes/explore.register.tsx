@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type MetaFunction,
 	data,
 	redirect,
 	Form,
@@ -215,10 +214,6 @@ export async function action({ context, request }: Route.ActionArgs) {
 		remember: false,
 		redirectTo,
 	})
-}
-
-export const meta: MetaFunction = () => {
-	return [{ title: 'Explore' }]
 }
 
 export default function RegisterDialog() {

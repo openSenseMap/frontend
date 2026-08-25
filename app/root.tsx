@@ -6,12 +6,10 @@ import { useTranslation } from 'react-i18next'
 import {
 	data,
 	Links,
-	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
 	useRouteLoaderData,
-	type MetaFunction,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
@@ -79,18 +77,6 @@ export const links = () => {
 		{ rel: 'manifest', href: '/manifest.json' },
 	]
 }
-
-export const meta: MetaFunction = () => [
-	{ charset: 'utf-8' },
-	{ title: 'openSenseMap' },
-	{ viewport: 'width=device-width,initial-scale=1' },
-	{ 'theme-color': '#3d843f', media: '(prefers-color-scheme: light)' },
-	{ 'theme-color': '#6fa161', media: '(prefers-color-scheme: dark)' },
-	{
-		description:
-			'The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source.',
-	},
-]
 
 export async function loader({ context, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
@@ -211,6 +197,28 @@ export const useRootRouteLoaderData = () => {
 	return rootData
 }
 
+const meta = () => (
+	<>
+		<title>openSenseMap</title>
+		<meta charSet="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta
+			name="theme-color"
+			content="#3d843f"
+			media="(prefers-color-scheme: light)"
+		/>
+		<meta
+			name="theme-color"
+			content="#6fa161"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta
+			name="description"
+			content="The environmental data platform to promote education, environmental and climate protection, enthusiasm for STEM, citizen science, open data, and open source."
+		/>
+	</>
+)
+
 export default function App({
 	loaderData: { locale, ENV, themePreference, theme },
 }: Route.ComponentProps) {
@@ -229,11 +237,11 @@ export default function App({
 			suppressHydrationWarning
 		>
 			<head>
-				<Meta />
 				<PreventFlashOnWrongTheme themePreference={themePreference} />
 				<Links />
 			</head>
 			<body className="dark:bg-dark-background dark:text-dark-text h-full">
+				{meta()}
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -259,11 +267,11 @@ export function ErrorBoundary() {
 	return (
 		<html className="light h-full" suppressHydrationWarning>
 			<head>
-				<Meta />
 				<PreventFlashOnWrongTheme themePreference="system" />
 				<Links />
 			</head>
 			<body className="bg-background text-foreground h-full">
+				{meta()}
 				<div className="flex h-screen w-screen items-center justify-center">
 					<ErrorMessage />
 				</div>
