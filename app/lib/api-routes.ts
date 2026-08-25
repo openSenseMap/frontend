@@ -8,6 +8,11 @@ type RouteInfo = {
 export const apiRoutes: { noauth: RouteInfo[]; auth: RouteInfo[] } = {
 	noauth: [
 		{
+			path: `altcha/challenge`,
+			method: 'GET',
+			tosExempt: true,
+		},
+		{
 			path: '/',
 			method: 'GET',
 			tosExempt: true,
