@@ -4,7 +4,6 @@ const ONE_DAY_IN_S = 24 * ONE_HOUR_IN_S
 const ONE_WEEK_IN_S = 7 * ONE_DAY_IN_S
 const ONE_MONTH_IN_S = 31 * ONE_DAY_IN_S
 const ONE_YEAR_IN_S = 365 * ONE_DAY_IN_S
-const ONE_QUARTER_IN_S = ONE_YEAR_IN_S / 4
 
 export const dateDiffToNowInWords = (locale: string, date: Date) => {
 	const r = new Intl.RelativeTimeFormat(locale)
@@ -22,9 +21,7 @@ export const dateDiffToNowInWords = (locale: string, date: Date) => {
 		return r.format(-Math.round(diffInSeconds / ONE_DAY_IN_S), 'day')
 	if (absDiffInSeconds < ONE_MONTH_IN_S)
 		return r.format(-Math.round(diffInSeconds / ONE_WEEK_IN_S), 'week')
-	if (absDiffInSeconds < ONE_QUARTER_IN_S)
-		return r.format(-Math.round(diffInSeconds / ONE_MONTH_IN_S), 'month')
 	if (absDiffInSeconds < ONE_YEAR_IN_S)
-		return r.format(-Math.round(diffInSeconds / ONE_QUARTER_IN_S), 'quarter')
+		return r.format(-Math.round(diffInSeconds / ONE_MONTH_IN_S), 'month')
 	return r.format(-Math.round(diffInSeconds / ONE_YEAR_IN_S), 'year')
 }
