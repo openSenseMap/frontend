@@ -3,13 +3,43 @@ import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.users.register'
 import { BASE_URL } from '../../vitest.setup'
 import { deleteUserByEmail } from '~/db/models/user.server'
+import { verifyAndRedeemRegistrationChallenge } from '~/lib/altcha.server'
 import { action as registerAction } from '~/routes/api.users.register'
+
+vi.mock('~/lib/altcha.server', () => ({
+	verifyAndRedeemRegistrationChallenge: vi.fn(),
+}))
 
 const VALID_USER = generateTestUserCredentials()
 const VALID_SECOND_USER = generateTestUserCredentials()
 
 describe('openSenseMap API Routes: /users/register', () => {
+	beforeEach(() => {
+		vi.mocked(verifyAndRedeemRegistrationChallenge).mockResolvedValue(true)
+	})
+
 	describe('/POST', () => {
+		it('should deny registration without a valid ALTCHA proof', async () => {
+			vi.mocked(verifyAndRedeemRegistrationChallenge).mockResolvedValueOnce(
+				false,
+			)
+			const params = new URLSearchParams(VALID_USER)
+			const request = new Request(`${BASE_URL}/users/register`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: params.toString(),
+			})
+
+			const response = (await registerAction({
+				request,
+			} as Route.ActionArgs)) as Response
+
+			expect(response.status).toBe(400)
+			await expect(response.json()).resolves.toMatchObject({
+				message: 'ALTCHA verification failed.',
+			})
+		})
+
 		it('should allow to register a user via POST', async () => {
 			// Arrange
 			const params = new URLSearchParams()
