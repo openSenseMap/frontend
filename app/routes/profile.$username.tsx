@@ -204,7 +204,7 @@ export default function ProfilePage() {
 
 						{profile?.user?.devices && (
 							<DataTable
-								columns={getColumns(columnsTranslation, { isOwner })}
+								columns={getColumns(columnsTranslation, hydrated, { isOwner })}
 								data={profile.user.devices}
 								getRowClassName={(device) =>
 									device.archivedAt

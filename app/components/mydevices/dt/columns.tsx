@@ -15,7 +15,6 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { type Device } from '~/db/schema'
 import { DeviceIdCell } from './device-id-cell'
-import { useHydrated } from '~/hooks/use-hydrated'
 
 export type SenseBox = {
 	id: string
@@ -31,11 +30,11 @@ const colStyle = 'pl-0 dark:text-white'
 
 export function getColumns(
 	useTranslation: UseTranslationResponse<'data-table', any>,
+	hydrated: boolean,
 	opts?: { isOwner?: boolean },
 ): ColumnDef<SenseBox>[] {
 	const { t, i18n } = useTranslation
 	const isOwner = opts?.isOwner ?? false
-	const hydrated = useHydrated()
 
 	return [
 		{
