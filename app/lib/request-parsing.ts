@@ -55,6 +55,7 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 	language: string
 	tosAccepted: boolean
 	newsletterOptIn: boolean
+	altcha: string
 }> {
 	const data = await parseRequestData(request)
 
@@ -64,7 +65,10 @@ export async function parseUserRegistrationData(request: Request): Promise<{
 		password: data.password || '',
 		language: data.language || 'en_US',
 		tosAccepted: parseBoolean(data.tosAccepted),
-		newsletterOptIn: parseBoolean(data.newsletterOptIn ?? data.newsletter_optIn),
+		newsletterOptIn: parseBoolean(
+			data.newsletterOptIn ?? data.newsletter_optIn,
+		),
+		altcha: typeof data.altcha === 'string' ? data.altcha : '',
 	}
 }
 
