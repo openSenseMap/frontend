@@ -19,7 +19,7 @@ interface SensorWithColor extends SensorWithMeasurementData {
 type RawMeasurement = {
 	sensorId: string
 	locationId: bigint | null
-	time: Date
+	time: Date | null
 	value: number | null
 	location: {
 		id: bigint
@@ -48,22 +48,29 @@ function prepareSensorData(
 
 	if (!limitToLatestTrips) return normalizedData
 
-	const locationPoints: LocationPoint[] = normalizedData
-		.filter((measurement) => measurement.location !== null)
-		.map((measurement) => ({
-			geometry: {
-				x: measurement.location!.x,
-				y: measurement.location!.y,
-			},
-			time: measurement.time.toISOString(),
-		}))
+	const locationPoints: LocationPoint[] = normalizedData.flatMap(
+		(measurement) => {
+			if (measurement.location == null || measurement.time === null) return []
+
+			return [
+				{
+					geometry: {
+						x: measurement.location.x,
+						y: measurement.location.y,
+					},
+					time: measurement.time.toISOString(),
+				},
+			]
+		},
+	)
 	const latestPointTimes = new Set(
 		getLatestTripPoints(locationPoints).map((point) => point.time),
 	)
 
 	return normalizedData.filter(
 		(measurement) =>
-			measurement.location !== null &&
+			measurement.location != null &&
+			measurement.time !== null &&
 			latestPointTimes.has(measurement.time.toISOString()),
 	)
 }
