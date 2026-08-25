@@ -103,6 +103,7 @@ function Legend({
 	const sensorData = Array.isArray(sensor.data)
 		? sensor.data.filter(
 				(measurement) =>
+					measurement.location !== null &&
 					measurement.value !== null &&
 					Number.isFinite(Number(measurement.value)),
 			)
