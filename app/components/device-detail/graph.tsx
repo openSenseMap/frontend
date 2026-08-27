@@ -11,7 +11,6 @@ import {
 	type ChartOptions,
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
-// import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useMemo,
@@ -37,12 +36,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { datesHave48HourRange } from '~/lib/utils'
 import { useTranslation } from 'react-i18next'
 
@@ -575,19 +569,17 @@ export default function Graph({
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger>
-												<RefreshCcw
-													onClick={handleResetZoomClick}
-													className="cursor-pointer"
-												/>
-											</TooltipTrigger>
-											<TooltipContent>
-												<p>{t('reset_zoom')}</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<RefreshCcw
+												onClick={handleResetZoomClick}
+												className="cursor-pointer"
+											/>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>{t('reset_zoom')}</p>
+										</TooltipContent>
+									</Tooltip>
 								)}
 							<DropdownMenu>
 								<DropdownMenuTrigger>
