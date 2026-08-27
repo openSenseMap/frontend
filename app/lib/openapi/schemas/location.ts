@@ -1,5 +1,6 @@
 import z from 'zod/v4'
 import { LOCATION_LIMITS } from '~/lib/location'
+import { IsoDateTimeSchema } from './common'
 
 export const LongitudeSchema = z
 	.number()
@@ -19,9 +20,9 @@ export const LatitudeSchema = z
 		example: 51.9123,
 	})
 
-export const HeightAboveSeaLevelSchema = z.number().finite().meta({
-	description: 'Height above sea level in meters.',
-	example: 66.6,
+export const HeightSchema = z.number().finite().meta({
+	description: 'Height in meters. The reference level depends on the context.',
+	example: 3.5,
 })
 
 export const CoordinatesSchema = z
@@ -35,9 +36,18 @@ export const CoordinatesSchema = z
 export const CoordinatesWithHeightSchema = z
 	.union([
 		CoordinatesSchema,
-		z.tuple([LongitudeSchema, LatitudeSchema, HeightAboveSeaLevelSchema]).meta({
-			override: { minItems: 3, maxItems: 3, items: false },
-		}),
+		z
+			.tuple([
+				LongitudeSchema,
+				LatitudeSchema,
+				HeightSchema.meta({
+					description: 'Height above sea level in meters.',
+					example: 66.6,
+				}),
+			])
+			.meta({
+				override: { minItems: 3, maxItems: 3, items: false },
+			}),
 	])
 	.meta({
 		id: 'CoordinatesWithHeight',
@@ -50,7 +60,10 @@ export const LongitudeLatitudeLocationObjectSchema = z
 	.object({
 		longitude: LongitudeSchema,
 		latitude: LatitudeSchema,
-		height: HeightAboveSeaLevelSchema.optional(),
+		height: HeightSchema.optional().meta({
+			description: 'Height above sea level in meters.',
+			example: 66.6,
+		}),
 	})
 	.meta({
 		id: 'LongitudeLatitudeLocationObject',
@@ -62,7 +75,10 @@ export const LocationObjectSchema = z
 	.object({
 		lng: LongitudeSchema,
 		lat: LatitudeSchema,
-		height: HeightAboveSeaLevelSchema.optional(),
+		height: HeightSchema.optional().meta({
+			description: 'Height above sea level in meters.',
+			example: 66.6,
+		}),
 	})
 	.meta({
 		id: 'LocationObject',
@@ -80,23 +96,23 @@ export const LocationObjectSchema = z
 		}
 	})
 
-export const DeviceHeightAboveGroundSchema = z.number().finite().meta({
-	description:
-		'Device height above the local ground surface in meters, not an absolute height above sea level. The server adds terrain elevation before storing the device height.',
-	example: 3.5,
-})
-
 export const DeviceLocationInputSchema = z
 	.union([
 		z.object({
 			lng: LongitudeSchema,
 			lat: LatitudeSchema,
-			height: DeviceHeightAboveGroundSchema.optional(),
+			height: HeightSchema.optional().meta({
+				description: 'Device height above the local ground surface in meters.',
+				example: 3.5,
+			}),
 		}),
 		z.object({
 			longitude: LongitudeSchema,
 			latitude: LatitudeSchema,
-			height: DeviceHeightAboveGroundSchema.optional(),
+			height: HeightSchema.optional().meta({
+				description: 'Device height above the local ground surface in meters.',
+				example: 3.5,
+			}),
 		}),
 	])
 	.transform((location) => {
@@ -125,7 +141,7 @@ export const GeoJsonPointSchema = z
 	})
 
 export const TimestampedGeoJsonPointSchema = GeoJsonPointSchema.extend({
-	timestamp: z.iso.datetime().optional().meta({
+	timestamp: IsoDateTimeSchema.optional().meta({
 		description: 'Timestamp associated with the location.',
 		example: '2023-01-01T00:00:00.000Z',
 	}),

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import {
-	DeviceHeightAboveGroundSchema,
 	DeviceLocationInputSchema,
+	HeightSchema,
 	LatitudeSchema,
 	LongitudeSchema,
 } from '~/lib/openapi/schemas/location'
@@ -12,7 +12,15 @@ const DeviceLocationArrayInputSchema = z
 			override: { minItems: 2, maxItems: 2, items: false },
 		}),
 		z
-			.tuple([LongitudeSchema, LatitudeSchema, DeviceHeightAboveGroundSchema])
+			.tuple([
+				LongitudeSchema,
+				LatitudeSchema,
+				HeightSchema.meta({
+					description:
+						'Device height above the local ground surface in meters.',
+					example: 3.5,
+				}),
+			])
 			.meta({
 				override: { minItems: 3, maxItems: 3, items: false },
 			}),

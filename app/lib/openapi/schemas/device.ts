@@ -1,7 +1,8 @@
 import * as z from 'zod/v4'
+import { IsoDateTimeSchema } from './common'
 import {
 	GeoJsonPointSchema,
-	HeightAboveSeaLevelSchema,
+	HeightSchema,
 	LatitudeSchema,
 	LongitudeSchema,
 	TimestampedGeoJsonPointSchema,
@@ -31,7 +32,7 @@ export const ApiSensorSchema = z
 		}),
 		lastMeasurement: z
 			.object({
-				createdAt: z.iso.datetime().optional().meta({
+				createdAt: IsoDateTimeSchema.optional().meta({
 					example: '2023-01-01T00:00:00.000Z',
 				}),
 				value: z.union([z.string(), z.number()]).nullable().optional().meta({
@@ -167,7 +168,7 @@ export const ApiDeviceSchema = z
 			description: 'Device longitude',
 			example: 13.404954,
 		}),
-		height: HeightAboveSeaLevelSchema.nullable().optional().meta({
+		height: HeightSchema.nullable().optional().meta({
 			description: 'Device height above sea level in meters',
 			example: 66.6,
 		}),
@@ -183,15 +184,15 @@ export const ApiDeviceSchema = z
 			description: 'Device status',
 			example: 'inactive',
 		}),
-		createdAt: z.iso.datetime().optional().meta({
+		createdAt: IsoDateTimeSchema.optional().meta({
 			description: 'Device creation timestamp',
 			example: '2024-01-15T10:30:00.000Z',
 		}),
-		updatedAt: z.iso.datetime().optional().meta({
+		updatedAt: IsoDateTimeSchema.optional().meta({
 			description: 'Device last update timestamp',
 			example: '2024-01-15T10:30:00.000Z',
 		}),
-		expiresAt: z.iso.datetime().nullable().optional().meta({
+		expiresAt: IsoDateTimeSchema.nullable().optional().meta({
 			description: 'Device expiration date',
 			example: '2024-12-31T23:59:59.000Z',
 		}),
@@ -206,7 +207,7 @@ export const ApiDeviceSchema = z
 		currentLocation: TimestampedGeoJsonPointSchema.optional().meta({
 			description: 'Current location as GeoJSON Point-like object',
 		}),
-		lastMeasurementAt: z.iso.datetime().nullable().optional().meta({
+		lastMeasurementAt: IsoDateTimeSchema.nullable().optional().meta({
 			description: 'Last measurement timestamp',
 			example: '2023-01-01T00:00:00.000Z',
 		}),
