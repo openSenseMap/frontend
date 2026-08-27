@@ -11,7 +11,6 @@ import { Label } from '~/components/ui/label'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
@@ -173,26 +172,25 @@ export function GeneralInfoStep() {
 						<Label htmlFor="isTemporary" className="text-base font-medium">
 							{t('temporary')}
 						</Label>
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger
-									type="button"
-									onClick={(e) => {
-										e.preventDefault()
-										e.stopPropagation()
-									}}
-								>
-									<Info />
-								</TooltipTrigger>
-								<TooltipContent>
-									{
-										<p className="text-sm text-gray-500">
-											{t('temporary_info_text')}
-										</p>
-									}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+
+						<Tooltip>
+							<TooltipTrigger
+								type="button"
+								onClick={(e) => {
+									e.preventDefault()
+									e.stopPropagation()
+								}}
+							>
+								<Info />
+							</TooltipTrigger>
+							<TooltipContent>
+								{
+									<p className="text-sm text-gray-500">
+										{t('temporary_info_text')}
+									</p>
+								}
+							</TooltipContent>
+						</Tooltip>
 					</div>
 					{temporaryExpirationDate && (
 						<div className="flex grow items-center space-x-2">

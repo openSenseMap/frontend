@@ -21,12 +21,7 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from '../ui/drawer'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { type LogEntry } from '~/db/schema/log-entry'
@@ -63,17 +58,15 @@ export default function EntryLogs({
 						<Dialog open={open} onOpenChange={setOpen}>
 							<DialogTrigger asChild>
 								<Button variant="ghost">
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger>
-												{' '}
-												<ExternalLink className="ml-2 h-5 w-5" />
-											</TooltipTrigger>
-											<TooltipContent className="z-auto overflow-visible">
-												<p>{t('show_all_logs')}</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											{' '}
+											<ExternalLink className="ml-2 h-5 w-5" />
+										</TooltipTrigger>
+										<TooltipContent className="z-auto overflow-visible">
+											<p>{t('show_all_logs')}</p>
+										</TooltipContent>
+									</Tooltip>
 								</Button>
 							</DialogTrigger>
 							<DialogContent className="sm:max-w-2/3">
