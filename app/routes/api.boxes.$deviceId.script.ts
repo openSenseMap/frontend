@@ -232,7 +232,8 @@ export const loader = async ({
 			url.searchParams.entries(),
 		) as Record<string, FormDataEntryValue>
 
-		return handleSketch(params.deviceId, formEntries)
+		const response = await handleSketch(params.deviceId, formEntries)
+		return response
 	} catch (err: any) {
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',
@@ -247,7 +248,8 @@ export const action = async ({
 	try {
 		const formData = await request.formData()
 		const formEntries = Object.fromEntries(formData.entries())
-		return handleSketch(params.deviceId, formEntries)
+		const response = await handleSketch(params.deviceId, formEntries)
+		return response
 	} catch (err: any) {
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',
