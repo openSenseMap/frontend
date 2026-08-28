@@ -162,7 +162,7 @@ export function GeneralInfoStep() {
 				</div>
 			</div>
 			<div className="space-y-2">
-				<div className="flex items-center space-x-4">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 					<div className="flex items-center space-x-2">
 						<Checkbox
 							id="isTemporary"
@@ -193,7 +193,7 @@ export function GeneralInfoStep() {
 						</Tooltip>
 					</div>
 					{temporaryExpirationDate && (
-						<div className="flex grow items-center space-x-2">
+						<div className="flex min-w-0 grow flex-col gap-2 sm:flex-row sm:items-center">
 							<Label
 								htmlFor="temporaryExpirationDate"
 								className="text-sm font-medium whitespace-nowrap"
