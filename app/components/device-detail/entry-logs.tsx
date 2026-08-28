@@ -10,12 +10,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '../ui/dialog'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { type LogEntry } from '~/db/schema/log-entry'
@@ -50,25 +45,23 @@ export default function EntryLogs({
 					</div>
 				</div>
 				<Dialog open={open} onOpenChange={setOpen}>
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<DialogTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="shrink-0"
-										aria-label={t('show_all_logs')}
-									>
-										<ExternalLink className="h-5 w-5" />
-									</Button>
-								</DialogTrigger>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>{t('show_all_logs')}</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<DialogTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="shrink-0"
+									aria-label={t('show_all_logs')}
+								>
+									<ExternalLink className="h-5 w-5" />
+								</Button>
+							</DialogTrigger>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>{t('show_all_logs')}</p>
+						</TooltipContent>
+					</Tooltip>
 					<DialogContent className="sm:max-w-2/3">
 						<DialogHeader>
 							<DialogTitle>{t('device_logs')}</DialogTitle>

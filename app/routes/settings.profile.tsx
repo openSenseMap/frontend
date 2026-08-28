@@ -20,7 +20,6 @@ import { Switch } from '~/components/ui/switch'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
@@ -412,16 +411,14 @@ export default function EditUserProfilePage() {
 							<div className="flex items-center space-x-2">
 								<Label htmlFor="displayName">{t('displayName')}</Label>
 
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<InfoIcon className="text-muted-foreground h-4 w-4" />
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>{t('if_public')}</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<InfoIcon className="text-muted-foreground h-4 w-4" />
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{t('if_public')}</p>
+									</TooltipContent>
+								</Tooltip>
 							</div>
 
 							<Input
@@ -440,24 +437,22 @@ export default function EditUserProfilePage() {
 							<div className="flex items-center space-x-2">
 								<Label htmlFor="isPublic">{t('public_profile')}</Label>
 
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<InfoIcon className="text-muted-foreground h-4 w-4" />
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>
-												{t('if_activated_public_1')}{' '}
-												<Link to="/profile/me" target="__blank">
-													<span className="underline">
-														{t('if_activated_public_2')}
-													</span>
-												</Link>
-												{t('if_activated_public_3')}
-											</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<InfoIcon className="text-muted-foreground h-4 w-4" />
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>
+											{t('if_activated_public_1')}{' '}
+											<Link to="/profile/me" target="__blank">
+												<span className="underline">
+													{t('if_activated_public_2')}
+												</span>
+											</Link>
+											{t('if_activated_public_3')}
+										</p>
+									</TooltipContent>
+								</Tooltip>
 							</div>
 
 							<Switch

@@ -27,7 +27,6 @@ import { Button } from '~/components/ui/button'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
@@ -225,22 +224,18 @@ export default function NewDeviceStepper() {
 								: {t(stepper.current.label)}
 							</h2>
 							{stepper.current.infoKey && (
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger
-											type="button"
-											onClick={(event: MouseEvent<HTMLButtonElement>) => {
-												event.preventDefault()
-												event.stopPropagation()
-											}}
-										>
-											<Info />
-										</TooltipTrigger>
-										<TooltipContent>
-											{t(stepper.current.infoKey)}
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger
+										type="button"
+										onClick={(event: MouseEvent<HTMLButtonElement>) => {
+											event.preventDefault()
+											event.stopPropagation()
+										}}
+									>
+										<Info />
+									</TooltipTrigger>
+									<TooltipContent>{t(stepper.current.infoKey)}</TooltipContent>
+								</Tooltip>
 							)}
 						</div>
 					</div>

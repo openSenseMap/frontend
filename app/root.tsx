@@ -27,6 +27,7 @@ import {
 	themeCookie,
 } from './services/theme-service.server'
 import { PreventFlashOnWrongTheme } from './components/prevent-theme-flash'
+import { TooltipProvider } from './components/ui/tooltip'
 
 export const middleware: Route.MiddlewareFunction[] = [
 	prometheusMetricsMiddleware,
@@ -242,8 +243,12 @@ export default function App({
 			</head>
 			<body className="dark:bg-dark-background dark:text-dark-text h-full">
 				{meta()}
-				<Outlet />
+
+				<TooltipProvider>
+					<Outlet />
+				</TooltipProvider>
 				<Toaster />
+
 				<ScrollRestoration />
 				<Scripts />
 				<script
