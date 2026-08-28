@@ -79,7 +79,7 @@ export function DataTable<TData, TValue>({
 	const { t } = useTranslation('data-table')
 
 	return (
-		<div>
+		<div className="w-full max-w-full min-w-0 overflow-hidden">
 			<div className="flex items-center py-4">
 				<Input
 					placeholder={t('filter_names')}
@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
 				/>
 			</div>
 
-			<div className="border-border bg-card overflow-hidden rounded-md border">
+			<div className="border-border bg-card max-w-full min-w-0 overflow-hidden rounded-md border">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
