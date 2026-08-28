@@ -1,4 +1,3 @@
-import SketchTemplater from '@sensebox/sketch-templater'
 import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/db/models/device.server'
 
@@ -166,11 +165,21 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-const cfg = {
-	// The domain used in the generation of Arduino sketches
-	ingress_domain: process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',
+let sketchTemplaterInstance: SketchTemplater | null = null
+
+const loadSketchTemplater = async () => {
+	if (!sketchTemplaterInstance) {
+		const { default: SketchTemplater } =
+			await import('@sensebox/sketch-templater')
+		const cfg = {
+			// The domain used in the generation of Arduino sketches
+			ingress_domain: process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',
+		}
+		sketchTemplaterInstance = new SketchTemplater(cfg)
+	}
+	return sketchTemplaterInstance
 }
-const templateSketcher = new SketchTemplater(cfg)
+
 type Box = NonNullable<Awaited<ReturnType<typeof getDevice>>>
 type BoxForSketch = Box & {
 	_id: string
@@ -204,6 +213,7 @@ const handleSketch = async (
 	}
 
 	const boxForSketch = buildBoxForSketch(box, formEntries)
+	const templateSketcher = await loadSketchTemplater()
 	const sketch = templateSketcher.generateSketch(boxForSketch, { encoding: '' })
 	return new Response(sketch, {
 		status: 200,
