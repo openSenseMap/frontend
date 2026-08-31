@@ -55,41 +55,37 @@ export const validateEmail = (email: string): EmailValidation => {
 }
 
 export type PasswordValidation = {
-    isValid: boolean
-    required?: boolean
-    length?: boolean
-    complexity?: boolean
+	isValid: boolean
+	required?: boolean
+	length?: boolean
+	complexity?: boolean
 } & RegistrationInputValidation
 
 export const validatePassword = (password: string): PasswordValidation => {
-    if (password.length === 0)
-        return { isValid: false, required: true, validationKind: 'password' }
+	if (password.length === 0)
+		return { isValid: false, required: true, validationKind: 'password' }
 
-    const isLongEnough = password.length >= 15
-    const meetsComplexity =
-        password.length >= 8 &&
-        /[0-9]/.test(password) &&
-        /[a-z]/.test(password)
+	const isLongEnough = password.length >= 15
+	const meetsComplexity =
+		password.length >= 8 && /[0-9]/.test(password) && /[a-z]/.test(password)
 
-    if (isLongEnough || meetsComplexity)
-        return { isValid: true, validationKind: 'password' }
+	if (isLongEnough || meetsComplexity)
+		return { isValid: true, validationKind: 'password' }
 
-    if (password.length < 8)
-        return { isValid: false, length: true, validationKind: 'password' }
+	if (password.length < 8)
+		return { isValid: false, length: true, validationKind: 'password' }
 
-    return { isValid: false, complexity: true, validationKind: 'password' }
+	return { isValid: false, complexity: true, validationKind: 'password' }
 }
 
 export type TosValidation = {
-  isValid: boolean
-  required?: boolean
+	isValid: boolean
+	required?: boolean
 } & RegistrationInputValidation
 
 export const validateTosAccepted = (tosAccepted: boolean): TosValidation => {
-  if (!tosAccepted) {
-    return { isValid: false, required: true, validationKind: 'tos' }
-  }
-  return { isValid: true, validationKind: 'tos' }
+	if (!tosAccepted) {
+		return { isValid: false, required: true, validationKind: 'tos' }
+	}
+	return { isValid: true, validationKind: 'tos' }
 }
-
-

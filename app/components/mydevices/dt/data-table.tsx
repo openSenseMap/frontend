@@ -79,7 +79,7 @@ export function DataTable<TData, TValue>({
 	const { t } = useTranslation('data-table')
 
 	return (
-		<div>
+		<div className="w-full max-w-full min-w-0 overflow-hidden">
 			<div className="flex items-center py-4">
 				<Input
 					placeholder={t('filter_names')}
@@ -87,11 +87,11 @@ export function DataTable<TData, TValue>({
 					onChange={(event) =>
 						table.getColumn('name')?.setFilterValue(event.target.value)
 					}
-					className="max-w-sm dark:border-white dark:text-white"
+					className="border-input bg-background text-foreground placeholder:text-muted-foreground max-w-sm"
 				/>
 			</div>
 
-			<div className="rounded-md border dark:border-white">
+			<div className="border-border bg-card max-w-full min-w-0 overflow-hidden rounded-md border">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({
 						))}
 					</TableHeader>
 
-					<TableBody className="dark:text-dark-text">
+					<TableBody>
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
 								<TableRow
@@ -121,7 +121,7 @@ export function DataTable<TData, TValue>({
 									{row.getVisibleCells().map((cell, index) => (
 										<TableCell
 											key={cell.id}
-											className={'w-[' + tableColsWidth[index] + '%]'}
+											style={{ width: `${tableColsWidth[index]}%` }}
 										>
 											{flexRender(
 												cell.column.columnDef.cell,
@@ -135,7 +135,7 @@ export function DataTable<TData, TValue>({
 							<TableRow>
 								<TableCell
 									colSpan={columns.length}
-									className="h-24 text-center dark:text-dark-text"
+									className="text-muted-foreground h-24 text-center"
 								>
 									{t('no_results')}
 								</TableCell>
@@ -145,7 +145,7 @@ export function DataTable<TData, TValue>({
 				</Table>
 			</div>
 
-			<div className="flex justify-center py-4 dark:text-dark-text">
+			<div className="text-foreground flex justify-center py-4">
 				<div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
 					<div className="flex flex-wrap items-center space-x-2">
 						<span className="text-sm font-medium">{t('rows_per_page')}</span>
@@ -155,7 +155,7 @@ export function DataTable<TData, TValue>({
 								table.setPageSize(Number(value))
 							}}
 						>
-							<SelectTrigger className="h-8 w-16 dark:border-dark-text">
+							<SelectTrigger className="border-input bg-background text-foreground h-8 w-16">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>

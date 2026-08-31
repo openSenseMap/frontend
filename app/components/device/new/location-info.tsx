@@ -2,21 +2,25 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
-	Map,
+	GeolocateControl,
 	Marker,
 	NavigationControl,
-	GeolocateControl,
 	type MapRef,
 	type MarkerDragEvent,
-} from 'react-map-gl/mapbox'
+} from 'react-map-gl/maplibre'
 import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
-import 'mapbox-gl/dist/mapbox-gl.css'
-
+import { BaseMap } from '~/components/base-map'
+import { LOCATION_LIMITS, isValidLocation } from '~/lib/location'
 
 export function LocationStep() {
 	const mapRef = useRef<MapRef | null>(null)
-	const { register, setValue, watch } = useFormContext()
+	const {
+		register,
+		setValue,
+		watch,
+		formState: { errors },
+	} = useFormContext()
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
@@ -97,21 +101,19 @@ export function LocationStep() {
 	return (
 		<div className="flex h-full w-full flex-col">
 			<div className="grow">
-				<Map
+				<BaseMap
 					ref={mapRef}
 					initialViewState={{
 						latitude: marker.latitude ? Number(marker.latitude) : 51,
 						longitude: marker.longitude ? Number(marker.longitude) : 7,
 						zoom: 3.5,
 					}}
-					mapStyle="mapbox://styles/mapbox/streets-v12"
-					mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
-					style={{
-						width: '100%',
-					}}
 					onClick={onMapClick}
 				>
-					{marker.latitude && marker.longitude && (
+					{isValidLocation({
+						latitude: Number(marker.latitude),
+						longitude: Number(marker.longitude),
+					}) && (
 						<Marker
 							latitude={Number(marker.latitude)}
 							longitude={Number(marker.longitude)}
@@ -122,50 +124,59 @@ export function LocationStep() {
 					)}
 					<NavigationControl position="top-right" showCompass={false} />
 					<GeolocateControl
-						position="top-right"
-						showAccuracyCircle={true}
-						trackUserLocation={true}
+						position="bottom-right"
+						positionOptions={{
+							enableHighAccuracy: true,
+							timeout: 10_000,
+						}}
+						fitBoundsOptions={{
+							maxZoom: 14,
+						}}
 					/>
-				</Map>
+				</BaseMap>
 			</div>
 
-			<div className="flex w-full items-center justify-around bg-gray-50 p-4 dark:bg-gray-800">
-				<div>
+			<div className="bg-background flex w-full flex-col gap-4 p-4 sm:flex-row sm:items-start">
+				<div className="min-w-0 flex-1">
 					<Label htmlFor="latitude">{t('latitude')}</Label>
 					<Input
 						id="latitude"
 						type="number"
 						step="any"
-						{...register('latitude', {
-							valueAsNumber: true,
-							required: 'Latitude is required',
-							min: -90,
-							max: 90,
-						})}
+						min={LOCATION_LIMITS.latitude.min}
+						max={LOCATION_LIMITS.latitude.max}
+						{...register('latitude')}
 						value={marker.latitude === '' ? '' : String(marker.latitude)}
 						onChange={handleLatitudeChange}
 						placeholder={t('enter latitude')}
 						className="w-full rounded-md border p-2"
 					/>
+					{errors.latitude?.message ? (
+						<p className="mt-1 text-sm text-red-600">
+							{String(errors.latitude.message)}
+						</p>
+					) : null}
 				</div>
 
-				<div>
+				<div className="min-w-0 flex-1">
 					<Label htmlFor="longitude">{t('longitude')}</Label>
 					<Input
 						id="longitude"
 						type="number"
 						step="any"
-						{...register('longitude', {
-							valueAsNumber: true,
-							required: 'Longitude is required',
-							min: -180,
-							max: 180,
-						})}
+						min={LOCATION_LIMITS.longitude.min}
+						max={LOCATION_LIMITS.longitude.max}
+						{...register('longitude')}
 						value={marker.longitude === '' ? '' : String(marker.longitude)}
 						onChange={handleLongitudeChange}
 						placeholder={t('enter longitude')}
 						className="w-full rounded-md border p-2"
 					/>
+					{errors.longitude?.message ? (
+						<p className="mt-1 text-sm text-red-600">
+							{String(errors.longitude.message)}
+						</p>
+					) : null}
 				</div>
 			</div>
 		</div>

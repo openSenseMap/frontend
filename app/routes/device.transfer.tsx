@@ -11,7 +11,7 @@ import { type Route } from './+types/device.transfer'
 import Home from '~/components/header/home'
 import { Separator } from '~/components/ui/separator'
 import { getUserId } from '~/services/session-service.server'
-import { claimBox } from '~/services/transfer-service.server'
+import { claimDevice } from '~/services/transfer-service.server'
 
 type ActionData = {
 	success: boolean
@@ -35,7 +35,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	try {
-		const result = await claimBox(userId, token)
+		const result = await claimDevice(userId, token)
 		return {
 			success: true,
 			message: result.message,
@@ -61,7 +61,7 @@ export default function DeviceTransfer() {
 				<Home />
 			</div>
 
-			<div className="font-helvetica mx-auto max-w-5xl space-y-6 p-10 pb-14">
+			<div className="font-helvetica mx-auto max-w-5xl space-y-6 p-4 pb-14 sm:p-6 sm:pb-14 lg:p-10 lg:pb-14">
 				<div className="rounded text-[#676767]">
 					<ArrowLeft className="mr-2 inline h-5 w-5" />
 					<Link to="/profile/me">{t('back_to_dashboard')}</Link>
@@ -93,7 +93,7 @@ export default function DeviceTransfer() {
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							className="bg-light-green dark:bg-dark-green w-60 rounded-md px-4 py-2 text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+							className="bg-light-green dark:bg-dark-green w-full rounded-md px-4 py-2 text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-60"
 						>
 							{isSubmitting ? t('taking_over') : t('take_over_device')}
 						</button>

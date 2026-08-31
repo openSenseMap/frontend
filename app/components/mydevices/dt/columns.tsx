@@ -1,12 +1,7 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import {
-	ArrowUpDown,
-	ClipboardCopy,
-	Ellipsis,
-	LucideMapPin,
-} from 'lucide-react'
+import { ArrowUpDown, Ellipsis, LucideMapPin } from 'lucide-react'
 import { type UseTranslationResponse } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -19,6 +14,7 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { type Device } from '~/db/schema'
+import { DeviceIdCell } from './device-id-cell'
 
 export type SenseBox = {
 	id: string
@@ -34,10 +30,12 @@ const colStyle = 'pl-0 dark:text-white'
 
 export function getColumns(
 	useTranslation: UseTranslationResponse<'data-table', any>,
+	hydrated: boolean,
 	opts?: { isOwner?: boolean },
 ): ColumnDef<SenseBox>[] {
-	const { t } = useTranslation
+	const { t, i18n } = useTranslation
 	const isOwner = opts?.isOwner ?? false
+
 	return [
 		{
 			accessorKey: 'name',
@@ -94,7 +92,7 @@ export function getColumns(
 			},
 			cell: ({ row }) => {
 				const date = new Date(row.getValue('createdAt'))
-				return <div>{date.toLocaleDateString()}</div>
+				return <div>{hydrated && date.toLocaleDateString(i18n.language)}</div>
 			},
 		},
 		{
@@ -110,6 +108,10 @@ export function getColumns(
 						<ArrowUpDown className="ml-2 h-4 w-4" />
 					</Button>
 				)
+			},
+			cell: ({ row }) => {
+				const exposure = row.original.exposure
+				return <div>{t(`exposure_values.${exposure}`)}</div>
 			},
 		},
 		/* {
@@ -130,21 +132,17 @@ export function getColumns(
 		{
 			accessorKey: 'id',
 			header: () => (
-				<div className="pl-0 dark:text-white">{t('device_id')}</div>
+				<div className="text-muted-foreground pl-0">{t('device_id')}</div>
 			),
 			cell: ({ row }) => {
 				const device = row.original
 
 				return (
-					<div className="flex items-center">
-						<code className="rounded-sm bg-[#f9f2f4] px-1 py-[2px] text-[#c7254e]">
-							{device?.id}
-						</code>
-						<ClipboardCopy
-							onClick={() => navigator.clipboard.writeText(device?.id)}
-							className="mr-1 ml-[6px] inline-block h-4 w-4 cursor-pointer align-text-bottom text-[#818a91] dark:text-white"
-						/>
-					</div>
+					<DeviceIdCell
+						deviceId={device.id}
+						copyLabel={t('copy_id')}
+						copiedLabel={t('copied')}
+					/>
 				)
 			},
 		},
@@ -210,7 +208,6 @@ export function getColumns(
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem
-									asChild
 									onClick={() => navigator.clipboard.writeText(device.id)}
 									className="cursor-pointer"
 								>

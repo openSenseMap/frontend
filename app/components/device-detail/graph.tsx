@@ -11,7 +11,6 @@ import {
 	type ChartOptions,
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
-// import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useMemo,
@@ -37,13 +36,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { datesHave48HourRange } from '~/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 ChartJS.register(
 	LineElement,
@@ -89,6 +84,7 @@ export default function Graph({
 }: GraphProps) {
 	const { setHoveredPoint } = useContext(HoveredPointContext)
 	const navigation = useNavigation()
+	const { t, i18n } = useTranslation('graph')
 	const navigate = useNavigate()
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
 	const [offsetPositionY, setOffsetPositionY] = useState(0)
@@ -106,6 +102,13 @@ export default function Graph({
 
 	const nodeRef = useRef<HTMLDivElement>(null)
 	const chartRef = useRef<ChartJS<'scatter'>>(null)
+
+	const dateTimeFormatter = useMemo(() => {
+		return new Intl.DateTimeFormat(i18n.language, {
+			dateStyle: 'medium',
+			timeStyle: 'medium',
+		})
+	}, [i18n.language])
 
 	useEffect(() => {
 		if (chartRef.current) {
@@ -360,12 +363,24 @@ export default function Graph({
 					mode: 'index',
 					intersect: false,
 					callbacks: {
+						title: (tooltipItems: any[]) => {
+							const firstItem = tooltipItems[0]
+
+							if (!firstItem) return ''
+
+							const timestamp = firstItem.raw.x
+
+							return dateTimeFormatter.format(new Date(timestamp))
+						},
+
 						label: (context: any) => {
 							const dataIndex = context.dataIndex
 							const datasetIndex = context.datasetIndex
 							const point = chartData.datasets[datasetIndex].data[dataIndex]
 							const locationId = point.locationId
+
 							setHoveredPoint(locationId)
+
 							return `${context.dataset.label}: ${context.raw.y}`
 						},
 					},
@@ -431,6 +446,7 @@ export default function Graph({
 		chartData.datasets,
 		setHoveredPoint,
 		colorPickerState.open,
+		dateTimeFormatter,
 	])
 
 	function handleColorChange(newColor: string) {
@@ -534,38 +550,36 @@ export default function Graph({
 			>
 				<div
 					ref={nodeRef}
-					className="shadow-zinc-800/5 ring-zinc-900/5 absolute bottom-6 left-4 right-4 top-14 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs md:bottom-[30px] md:left-auto md:right-4 md:top-auto md:h-[35%] md:max-h-[35%] md:w-[60vw]"
+					className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-col gap-2 rounded-xl bg-white px-4 pt-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 md:top-auto md:right-4 md:bottom-7.5 md:left-auto md:h-[35%] md:max-h-[35%] md:w-[60vw] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs"
 				>
 					{navigation.state === 'loading' && (
-						<div className="bg-gray-100/30 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[1.5px]">
+						<div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-100/30 backdrop-blur-[1.5px]">
 							<Spinner />
 						</div>
 					)}
 					<div
-						className="flex cursor-move flex-wrap items-center justify-between gap-2 px-2 pt-2"
+						className="flex cursor-move items-start justify-between gap-2 px-2 pt-2"
 						id="graphTop"
 					>
 						<div className="flex grow flex-wrap items-center gap-2">
 							<DateRangeFilter />
 							<AggregationFilter />
 						</div>
-						<div className="ml-auto flex items-center justify-end gap-4">
+						<div className="flex h-full items-start justify-end gap-4 py-2">
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger>
-												<RefreshCcw
-													onClick={handleResetZoomClick}
-													className="cursor-pointer"
-												/>
-											</TooltipTrigger>
-											<TooltipContent>
-												<p>Reset zoom</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<RefreshCcw
+												onClick={handleResetZoomClick}
+												className="cursor-pointer"
+											/>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>{t('reset_zoom')}</p>
+										</TooltipContent>
+									</Tooltip>
 								)}
 							<DropdownMenu>
 								<DropdownMenuTrigger>
@@ -600,7 +614,7 @@ export default function Graph({
 					<div className="flex min-h-0 w-full flex-1 items-center justify-center">
 						{(sensors[0].data.length === 0 && sensors[1] === undefined) ||
 						(sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
-							<div>There is no data for the selected time period.</div>
+							<div>{t('no_data_in_range')}</div>
 						) : (
 							<ClientOnly fallback={<Spinner />}>
 								{() => (

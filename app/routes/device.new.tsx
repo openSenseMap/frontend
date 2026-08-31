@@ -3,7 +3,7 @@ import { type Route } from './+types/device.new'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
 import { getIntegrations } from '~/db/models/integration.server'
-import { createDevice } from '~/services/devices-service.server'
+import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
 
@@ -51,12 +51,15 @@ export async function action({ request }: Route.ActionArgs) {
 			}),
 
 			...(data['device-selection'].model === 'custom' && {
+				model: data['device-selection'].model,
 				sensors: selectedSensors.map((sensor: any) => ({
 					title: sensor.title,
 					sensorType: sensor.sensorType,
 					unit: sensor.unit,
 					icon: sensor.icon,
 				})),
+				deviceSchema: data['sensor-selection'].deviceSchema,
+				deviceSchemaVersionId: data['sensor-selection'].deviceSchemaVersionId,
 			}),
 		}
 
@@ -73,11 +76,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function NewDevice() {
 	return (
-		<div className="flex h-screen flex-col">
+		<div className="flex h-dvh flex-col">
 			<NavBar />
-			<div className="grow overflow-auto bg-gray-100">
-				<div className="flex h-full w-full justify-center py-10">
-					<div className="dark:text-dark-text flex h-full w-full items-center justify-center rounded-lg p-6 dark:bg-transparent dark:shadow-none">
+			<div className="bg-background min-h-0 grow overflow-auto">
+				<div className="flex h-full w-full justify-center px-3 py-4 sm:px-6 sm:py-8 lg:py-10">
+					<div className="dark:text-dark-text flex h-full w-full items-center justify-center rounded-lg dark:bg-transparent dark:shadow-none">
 						<ValidationStepperForm />
 					</div>
 				</div>

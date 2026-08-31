@@ -1,7 +1,5 @@
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.css?url'
 import moment from 'moment'
-import { Map, MapProvider, Marker } from 'react-map-gl/mapbox'
-import { type LinksFunction } from 'react-router'
+import { MapProvider, Marker } from 'react-map-gl/maplibre'
 import { NavBar } from '~/components/nav-bar'
 import { Badge } from '~/components/ui/badge'
 import {
@@ -12,6 +10,7 @@ import {
 	CardTitle,
 } from '~/components/ui/card'
 import { diffFromCreateDate, getMinuteFormattedString } from '~/utils'
+import { BaseMap } from '~/components/base-map'
 
 let deviceData = {
 	_id: '5b411d0e5dc1ec001b4f11c8',
@@ -88,17 +87,6 @@ let deviceData = {
 	],
 }
 
-//*****************************************
-//* required to view mapbox proberly (Y.Q.)
-export const links: LinksFunction = () => {
-	return [
-		{
-			rel: 'stylesheet',
-			href: mapboxgl,
-		},
-	]
-}
-
 //**********************************
 export default function DeviceDashboard() {
 	//* map marker
@@ -108,15 +96,19 @@ export default function DeviceDashboard() {
 	}
 
 	return (
-		<div className="space-y-6 px-10 pb-16 tracking-wide">
+		<div className="space-y-6 px-4 pb-16 tracking-wide sm:px-6 lg:px-10">
 			<NavBar />
 
 			{/* Left side - device info */}
-			<div className="grid h-[85vh] grid-cols-4 gap-x-4">
-				<Card className="col-span-1 dark:border-[#ffffff] dark:bg-black">
+			<div className="grid grid-cols-1 gap-4 lg:h-[85vh] lg:grid-cols-4">
+				<Card className="min-w-0 lg:col-span-1 lg:overflow-y-auto dark:border-[#ffffff] dark:bg-black">
 					<CardHeader className="space-y-0 p-4 pb-0">
-						<CardTitle className="text-[18px]">{deviceData.name}</CardTitle>
-						<CardDescription>{deviceData._id}</CardDescription>
+						<CardTitle className="truncate text-[18px]" title={deviceData.name}>
+							{deviceData.name}
+						</CardTitle>
+						<CardDescription className="break-all">
+							{deviceData._id}
+						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4 p-4">
 						{/* properties */}
@@ -164,7 +156,7 @@ export default function DeviceDashboard() {
 									alt={'name'}
 									width={250}
 									height={330}
-									className="h-auto w-auto object-cover transition-all hover:scale-105"
+									className="h-auto w-full object-cover transition-all hover:scale-105"
 								/>
 							</div>
 							<p className="pt-1 text-xs">
@@ -176,14 +168,12 @@ export default function DeviceDashboard() {
 						{/* Map view */}
 						<div className="block">
 							<MapProvider>
-								<Map
+								<BaseMap
 									initialViewState={{
 										latitude: marker.latitude,
 										longitude: marker.longitude,
 										zoom: 14,
 									}}
-									mapStyle="mapbox://styles/mapbox/streets-v12"
-									mapboxAccessToken={ENV.MAPBOX_ACCESS_TOKEN}
 									style={{
 										width: '100%',
 										height: '200px',
@@ -194,16 +184,16 @@ export default function DeviceDashboard() {
 										longitude={marker.longitude}
 										latitude={marker.latitude}
 									></Marker>
-								</Map>
+								</BaseMap>
 							</MapProvider>
 						</div>
 					</CardContent>
 				</Card>
 
 				{/* Right side - measurements */}
-				<Card className="col-span-3 dark:border-[#ffffff] dark:bg-black">
+				<Card className="min-w-0 lg:col-span-3 lg:overflow-y-auto dark:border-[#ffffff] dark:bg-black">
 					<CardContent>
-						<div className="mt-4 flex flex-wrap gap-3">
+						<div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
 							{deviceData.sensors.map((sensor: any) => (
 								<Card
 									key={sensor._id}
@@ -211,7 +201,7 @@ export default function DeviceDashboard() {
 								>
 									<CardHeader>
 										<CardTitle className="mb-2">
-											<sensor.icon className="h-5.5 w-5.5 mr-2 inline align-bottom" />
+											<sensor.icon className="mr-2 inline h-5.5 w-5.5 align-bottom" />
 											{sensor.lastMeasurement.value} {sensor.unit}
 										</CardTitle>
 										<CardDescription>

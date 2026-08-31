@@ -1,15 +1,12 @@
 import { useState } from 'react'
-import { MetaFunction, Outlet, useLoaderData, useMatches } from 'react-router'
+import { Outlet, useLoaderData, useMatches } from 'react-router'
 import { type Route } from './+types/explore.$deviceId'
 import DeviceDetailBox from '~/components/device-detail/device-detail-box'
 import { HoveredPointContext } from '~/components/map/layers/mobile/mobile-box-layer'
 import MobileOverviewLayer from '~/components/map/layers/mobile/mobile-overview-layer'
 import { getDevice } from '~/db/models/device.server'
 import { getSensorsWithLastMeasurement } from '~/db/models/sensor.server'
-import {
-	categorizeIntoTrips,
-	type LocationPoint,
-} from '~/lib/mobile-box-helper'
+import { categorizeIntoTrips } from '~/lib/mobile-box-helper'
 import { getDeviceImageUrl } from '~/lib/s3.server'
 import { getLocale } from '~/middleware/i18next'
 
@@ -78,10 +75,6 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 	}
 
 	return data
-}
-
-export const meta: Route.MetaFunction = ({ loaderData }: Route.MetaArgs) => {
-	return [{ title: `${loaderData?.device?.name}` }]
 }
 
 // Defining the component that will render the page

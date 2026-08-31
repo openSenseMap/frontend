@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	type MetaFunction,
 	data,
 	redirect,
 	Form,
@@ -9,6 +8,7 @@ import {
 	useActionData,
 	useNavigation,
 	useSearchParams,
+	useLoaderData,
 } from 'react-router'
 import { type Route } from './+types/explore.login'
 import { Input } from '@/components/ui/input'
@@ -30,9 +30,19 @@ import { createUserSession, getUserId } from '~/services/session-service.server'
 import { safeRedirect } from '~/utils'
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const url = new URL(request.url)
 	const userId = await getUserId(request)
-	if (userId) return redirect('/explore')
-	return {}
+	if (userId) {
+		const redirectTo = safeRedirect(
+			url.searchParams.get('redirectTo'),
+			'/explore',
+		)
+		return redirect(redirectTo)
+	}
+
+	return data({
+		redirectTo: safeRedirect(url.searchParams.get('redirectTo'), '/explore'),
+	})
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -99,12 +109,9 @@ export async function action({ request }: Route.ActionArgs) {
 	})
 }
 
-export const meta: MetaFunction = () => {
-	return [{ title: 'Login' }]
-}
-
 export default function LoginPage() {
 	const [searchParams] = useSearchParams()
+	const loaderData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const identifierRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
@@ -131,22 +138,27 @@ export default function LoginPage() {
 	}, [])
 
 	return (
-		<div className="flex h-screen items-center justify-center">
+		<div className="relative flex h-full w-full items-start justify-center overflow-y-auto p-4 sm:items-center">
 			<Link
 				to={{
 					pathname: '/explore',
 					search: searchParams.toString(),
 				}}
 			>
-				<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
+				<div className="absolute inset-0 z-40 h-full w-full bg-black opacity-25" />
 			</Link>
-			<Card className="z-50 w-full max-w-md">
+			<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
 				{navigation.state === 'loading' && (
 					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
 					</div>
 				)}
 				<Form method="post" className="space-y-6" noValidate>
+					<input
+						type="hidden"
+						name="redirectTo"
+						value={loaderData.redirectTo}
+					/>
 					<CardHeader className="space-y-1 text-center">
 						<CardTitle className="text-2xl font-bold">
 							{t('welcome_back')}
@@ -178,7 +190,7 @@ export default function LoginPage() {
 							)}
 						</div>
 						<div className="space-y-2">
-							<div className="flex items-center justify-between">
+							<div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<Label htmlFor="password"> {t('password_label')}</Label>
 								<Link to="/explore/forgot" className="text-sm underline">
 									{t('forgot_password')}
@@ -211,7 +223,7 @@ export default function LoginPage() {
 						<Button type="submit" className="bg-light-blue w-full">
 							{t('sign_in_button')}
 						</Button>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-center text-sm">
 							{t('no_account_label')}{' '}
 							<Link
 								className="font-medium underline"

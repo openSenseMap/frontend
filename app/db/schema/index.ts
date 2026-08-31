@@ -1,4 +1,5 @@
 export * from './device'
+export * from './device-schema'
 export * from './enum'
 export * from './measurement'
 export * from './password'

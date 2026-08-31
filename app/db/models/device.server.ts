@@ -10,14 +10,19 @@ import {
 	isNull,
 	type ExtractTablesWithRelations,
 	isNotNull,
+	type SQL,
+	gte,
+	lt,
+	exists,
 } from 'drizzle-orm'
-import { type PgTransaction } from 'drizzle-orm/pg-core'
+import { alias, type PgTransaction } from 'drizzle-orm/pg-core'
 import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
 import { type Point } from 'geojson'
 import {
 	device,
 	deviceToLocation,
 	location,
+	measurement,
 	sensor,
 	user,
 	type Device,
@@ -33,6 +38,10 @@ import { messages as NewSenseboxDeviceMessages } from '~/emails/new-device-sense
 import { createDeviceApiKey } from '~/lib/jwt'
 import { sendMail } from '~/lib/mail.server'
 import { getSensorsForModel } from '~/lib/model-definitions'
+import {
+	createOrReusePrivateDeviceSchemaVersionFromUpload,
+	getVisibleDeviceSchemaVersionForCreation,
+} from './device-schema.server'
 
 const BASE_DEVICE_COLUMNS = {
 	id: true,
@@ -57,6 +66,7 @@ const BASE_DEVICE_COLUMNS = {
 	sensorWikiModel: true,
 	public: true,
 	userId: true,
+	deviceSchemaVersionId: true,
 } as const
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
@@ -107,6 +117,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 			},
 			logEntries: {
 				where: (entry, { eq }) => eq(entry.public, true),
+				orderBy: (entry, { desc }) => [desc(entry.createdAt)],
 				columns: {
 					id: true,
 					content: true,
@@ -140,6 +151,72 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 			sensors: true,
 		},
 	})
+}
+
+export type DeviceForMeasurementWrite = Awaited<
+	ReturnType<typeof getDeviceForMeasurementWrite>
+>
+
+export type DeviceForSingleMeasurementWrite = Awaited<
+	ReturnType<typeof getDeviceForSingleMeasurementWrite>
+>
+
+export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
+	return drizzleClient.query.device.findFirst({
+		where: (device, { eq }) => eq(device.id, id),
+		columns: {
+			id: true,
+			archivedAt: true,
+			useAuth: true,
+			apiKey: true,
+		},
+		with: {
+			sensors: {
+				columns: {
+					id: true,
+					title: true,
+					sensorType: true,
+				},
+			},
+		},
+	})
+}
+
+export async function getDeviceForSingleMeasurementWrite({
+	id,
+	sensorId,
+}: Pick<Device, 'id'> & { sensorId: string }) {
+	const prepared = await drizzleClient
+		.select({
+			id: device.id,
+			archivedAt: device.archivedAt,
+			useAuth: device.useAuth,
+			apiKey: device.apiKey,
+			sensorId: sensor.id,
+		})
+		.from(device)
+		.leftJoin(
+			sensor,
+			and(
+				eq(sensor.deviceId, device.id),
+				eq(sensor.id, sql.placeholder('sensorId')),
+			),
+		)
+		.where(eq(device.id, sql.placeholder('deviceId')))
+		.limit(1)
+		.prepare('getDeviceForSingleMeasurementWrite')
+
+	const [row] = await prepared.execute({ deviceId: id, sensorId: sensorId })
+
+	if (!row) return undefined
+
+	return {
+		id: row.id,
+		archivedAt: row.archivedAt,
+		useAuth: row.useAuth,
+		apiKey: row.apiKey,
+		sensors: row.sensorId ? [{ id: row.sensorId }] : [],
+	}
 }
 
 export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
@@ -200,8 +277,46 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			useAuth: true,
 			model: true,
 			apiKey: true,
+			deviceSchemaVersionId: true,
 		},
 	})
+}
+
+export async function detachDeviceSchema({
+	id,
+	userId,
+}: Pick<Device, 'id' | 'userId'>) {
+	const [existingDevice] = await drizzleClient
+		.select()
+		.from(device)
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+		.limit(1)
+
+	if (!existingDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	assertDeviceIsMutable(existingDevice)
+
+	const tags = (existingDevice.tags ?? []).filter(
+		(tag) => !tag.startsWith('schema:'),
+	)
+
+	const [updatedDevice] = await drizzleClient
+		.update(device)
+		.set({
+			tags,
+			deviceSchemaVersionId: null,
+			updatedAt: sql`NOW()`,
+		})
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+		.returning()
+
+	if (!updatedDevice) {
+		throw new DeviceUpdateError(`Device ${id} not found`, 404)
+	}
+
+	return updatedDevice
 }
 
 export type DeviceWithoutSensors = Awaited<
@@ -382,6 +497,9 @@ export async function updateDevice(
 				)
 			}
 
+			let nextSensorOrder =
+				Math.max(...existingSensors.map((sensor) => sensor.order ?? -1)) + 1
+
 			for (const s of args.sensors) {
 				const hasDeleted = 'deleted' in s
 				const hasEdited = 'edited' in s
@@ -418,7 +536,9 @@ export async function updateDevice(
 						sensorType: s.sensorType,
 						icon: s.icon,
 						deviceId,
+						order: nextSensorOrder,
 					})
+					nextSensorOrder += 1
 				} else if (hasEdited && s._id) {
 					const sensorExists = existingSensors.some(
 						(existing) => existing.id === s._id,
@@ -474,7 +594,42 @@ export function getUserDevices(userId: Device['userId']) {
 	})
 }
 
+export function getUserDeviceLocations(userId: Device['userId']) {
+	return drizzleClient.query.device.findMany({
+		where: (device, { and, eq, isNull }) =>
+			and(eq(device.userId, userId), isNull(device.archivedAt)),
+		columns: {
+			id: true,
+			latitude: true,
+			longitude: true,
+		},
+	})
+}
+
+export function getUserDeviceIds(userId: Device['userId']) {
+	return drizzleClient.query.device
+		.findMany({
+			where: (device, { eq }) => eq(device.userId, userId),
+			columns: { id: true },
+		})
+		.then((d) => d.map((d) => d.id))
+}
+
 type DevicesFormat = 'json' | 'geojson'
+
+// Extract the cached ISO timestamp from sensor.lastMeasurement JSON as a
+// PostgreSQL timestamp so it can be compared and aggregated in SQL.
+const cachedLastMeasurementAt = sql<Date | null>`
+	(${sensor.lastMeasurement}->>'createdAt')::timestamptz
+`
+
+const deriveDeviceStatus = (lastMeasurementAt: SQL) => sql<Device['status']>`
+	CASE
+		WHEN ${lastMeasurementAt} > now() - interval '7 days' THEN 'active'::status
+		WHEN ${lastMeasurementAt} > now() - interval '30 days' THEN 'inactive'::status
+		ELSE 'old'::status
+	END
+`
 
 export async function getDevices(format: 'json'): Promise<Device[]>
 export async function getDevices(
@@ -485,19 +640,29 @@ export async function getDevices(
 ): Promise<Device[] | GeoJSON.FeatureCollection<Point>>
 
 export async function getDevices(format: DevicesFormat = 'json') {
-	const devices = await drizzleClient.query.device.findMany({
-		where: (device) => isNull(device.archivedAt),
-		columns: {
-			id: true,
-			name: true,
-			latitude: true,
-			longitude: true,
-			exposure: true,
-			status: true,
-			createdAt: true,
-			tags: true,
-		},
-	})
+	const latestMeasurementAt = sql<Date | null>`max(${cachedLastMeasurementAt})`
+	const rows = await drizzleClient
+		.select({
+			device: {
+				id: device.id,
+				name: device.name,
+				latitude: device.latitude,
+				longitude: device.longitude,
+				exposure: device.exposure,
+				createdAt: device.createdAt,
+				tags: device.tags,
+			},
+			status: deriveDeviceStatus(latestMeasurementAt),
+		})
+		.from(device)
+		.leftJoin(sensor, eq(sensor.deviceId, device.id))
+		.where(isNull(device.archivedAt))
+		.groupBy(device.id)
+
+	const devices = rows.map((row) => ({
+		...row.device,
+		status: row.status,
+	}))
 
 	if (format === 'geojson') {
 		const geojson: GeoJSON.FeatureCollection<Point> = {
@@ -535,10 +700,44 @@ export async function getArchivedDevices() {
 	return devices
 }
 
-export async function getDevicesWithSensors() {
+export type MeasurementTimeRange = {
+	from: Date
+	to: Date
+}
+
+export async function getDevicesWithSensors(options?: {
+	measurementTimeRange?: MeasurementTimeRange
+}) {
+	// exclude archived devices always
+	const conditions: SQL[] = [isNull(device.archivedAt)]
+
+	if (options?.measurementTimeRange) {
+		const sFilter = alias(sensor, 's_filter')
+		const mFilter = alias(measurement, 'm_filter')
+
+		const measurementsExistForDevice = drizzleClient
+			.select({ one: sql`1` })
+			.from(sFilter)
+			.innerJoin(mFilter, eq(mFilter.sensorId, sFilter.id))
+			.where(
+				and(
+					eq(sFilter.deviceId, device.id),
+					gte(mFilter.time, options.measurementTimeRange.from),
+					lt(mFilter.time, options.measurementTimeRange.to),
+				),
+			)
+
+		conditions.push(exists(measurementsExistForDevice))
+	}
+
 	const rows = await drizzleClient
 		.select({
 			device: device,
+			// Keep one result row per sensor, but calculate the newest cached sensor
+			// measurement across the device and derive the same status on every row.
+			status: deriveDeviceStatus(
+				sql`max(${cachedLastMeasurementAt}) over (partition by ${device.id})`,
+			),
 			sensor: {
 				id: sensor.id,
 				title: sensor.title,
@@ -548,7 +747,7 @@ export async function getDevicesWithSensors() {
 		})
 		.from(device)
 		.leftJoin(sensor, eq(sensor.deviceId, device.id))
-		.where(isNull(device.archivedAt))
+		.where(and(...conditions))
 
 	const geojson: GeoJSON.FeatureCollection<Point, any> = {
 		type: 'FeatureCollection',
@@ -559,6 +758,7 @@ export async function getDevicesWithSensors() {
 		Sensor,
 		'id' | 'title' | 'sensorWikiPhenomenon' | 'lastMeasurement'
 	>
+
 	const deviceMap = new Map<
 		string,
 		{ device: Device & { sensors: PartialSensor[] } }
@@ -567,17 +767,21 @@ export async function getDevicesWithSensors() {
 	const resultArray: Array<{ device: Device & { sensors: PartialSensor[] } }> =
 		rows.reduce(
 			(acc, row) => {
-				const device = row.device
-				const sensor = row.sensor
+				const currentDevice = { ...row.device, status: row.status }
+				const currentSensor = row.sensor
 
-				if (!deviceMap.has(device.id)) {
+				if (!deviceMap.has(currentDevice.id)) {
 					const newDevice = {
-						device: { ...device, sensors: sensor ? [sensor] : [] },
+						device: {
+							...currentDevice,
+							sensors: currentSensor ? [currentSensor] : [],
+						},
 					}
-					deviceMap.set(device.id, newDevice)
+
+					deviceMap.set(currentDevice.id, newDevice)
 					acc.push(newDevice)
-				} else if (sensor) {
-					deviceMap.get(device.id)!.device.sensors.push(sensor)
+				} else if (currentSensor) {
+					deviceMap.get(currentDevice.id)!.device.sensors.push(currentSensor)
 				}
 
 				return acc
@@ -585,9 +789,9 @@ export async function getDevicesWithSensors() {
 			[] as Array<{ device: Device & { sensors: PartialSensor[] } }>,
 		)
 
-	for (const device of resultArray) {
-		const coordinates = [device.device.longitude, device.device.latitude]
-		const feature = point(coordinates, device.device)
+	for (const result of resultArray) {
+		const coordinates = [result.device.longitude, result.device.latitude]
+		const feature = point(coordinates, result.device)
 		geojson.features.push(feature)
 	}
 
@@ -676,10 +880,10 @@ const buildWhereClause = function buildWhereClause(
 	if (near && maxDistance !== undefined) {
 		clause.push(
 			sql`ST_DWithin(
-			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326),
-			ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326),
+			ST_SetSRID(ST_MakePoint(${device.longitude}, ${device.latitude}), 4326)::geography,
+			ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326)::geography,
 			${maxDistance}
-		  )`,
+		)`,
 		)
 	}
 
@@ -773,6 +977,9 @@ export async function createDevice(deviceData: any, userId: string) {
 
 			// Determine sensors to use
 			let sensorsToAdd = deviceData.sensors
+			let storedDeviceSchemaVersion = null
+			const isCustomDevice =
+				!deviceData.model || deviceData.model?.toLowerCase() === 'custom'
 
 			// If model and sensors are both specified, reject (backwards compatibility)
 			if (
@@ -808,9 +1015,47 @@ export async function createDevice(deviceData: any, userId: string) {
 				}
 			}
 
-			if (deviceData.model?.toLowerCase() === 'custom' && deviceData.sensors) {
+			if (isCustomDevice && deviceData.sensors) {
 				sensorsToAdd = deviceData.sensors ?? []
 			}
+
+			if (isCustomDevice && deviceData.deviceSchema) {
+				storedDeviceSchemaVersion =
+					await createOrReusePrivateDeviceSchemaVersionFromUpload(
+						tx,
+						userId,
+						deviceData.deviceSchema,
+					)
+
+				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
+			}
+
+			if (isCustomDevice && deviceData.deviceSchemaVersionId) {
+				storedDeviceSchemaVersion =
+					await getVisibleDeviceSchemaVersionForCreation(
+						tx,
+						userId,
+						deviceData.deviceSchemaVersionId,
+					)
+
+				if (!storedDeviceSchemaVersion) {
+					throw new Error('Device schema version not found.')
+				}
+
+				sensorsToAdd = storedDeviceSchemaVersion.content.sensors
+			}
+
+			const schemaTags = storedDeviceSchemaVersion?.content.tags ?? []
+			const schemaIdentityTag = storedDeviceSchemaVersion
+				? `schema:${storedDeviceSchemaVersion.schemaSlug}`
+				: null
+			const tags = Array.from(
+				new Set([
+					...(deviceData.tags ?? []),
+					...schemaTags,
+					...(schemaIdentityTag ? [schemaIdentityTag] : []),
+				]),
+			)
 
 			// Create the device
 			const [createdDevice] = await tx
@@ -819,7 +1064,7 @@ export async function createDevice(deviceData: any, userId: string) {
 					id: deviceData.id,
 					useAuth: deviceData.useAuth ?? true,
 					model: deviceData.model,
-					tags: deviceData.tags,
+					tags,
 					userId: userId,
 					name: deviceData.name,
 					description: deviceData.description,
@@ -832,6 +1077,7 @@ export async function createDevice(deviceData: any, userId: string) {
 						: null,
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
+					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
 				})
 				.returning()
 
@@ -846,7 +1092,7 @@ export async function createDevice(deviceData: any, userId: string) {
 				Array.isArray(sensorsToAdd) &&
 				sensorsToAdd.length > 0
 			) {
-				for (const sensorData of sensorsToAdd) {
+				for (const [index, sensorData] of sensorsToAdd.entries()) {
 					const [newSensor] = await tx
 						.insert(sensor)
 						.values({
@@ -854,7 +1100,14 @@ export async function createDevice(deviceData: any, userId: string) {
 							unit: sensorData.unit,
 							sensorType: sensorData.sensorType,
 							icon: sensorData.icon,
+							sensorWikiType: sensorData.sensorWikiType,
+							sensorWikiPhenomenon: sensorData.sensorWikiPhenomenon,
+							sensorWikiUnit: sensorData.sensorWikiUnit,
 							deviceId: createdDevice.id,
+							data: storedDeviceSchemaVersion
+								? { deviceSchemaSensorId: sensorData.id }
+								: sensorData.data,
+							order: sensorData.order ?? index,
 						})
 						.returning()
 

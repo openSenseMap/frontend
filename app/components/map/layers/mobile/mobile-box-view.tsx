@@ -14,9 +14,7 @@ export default function MobileBoxView({
 }: {
 	sensors: SensorWithColor[]
 }) {
-	console.log('🚀 ~ sensors:', initialSensors)
 	const [sensors, setSensors] = useState<SensorWithColor[]>(initialSensors)
-	console.log('🚀 ~ sensors:', sensors)
 
 	useEffect(() => {
 		setSensors(initialSensors)

@@ -4,7 +4,13 @@ import {
 	type InferInsertModel,
 	type InferSelectModel,
 } from 'drizzle-orm'
-import { pgTable, boolean, text } from 'drizzle-orm/pg-core'
+import {
+	pgTable,
+	boolean,
+	doublePrecision,
+	real,
+	text,
+} from 'drizzle-orm/pg-core'
 import { profileImage } from './profile-image'
 import { user } from './user'
 
@@ -18,13 +24,16 @@ export const profile = pgTable('profile', {
 		.$defaultFn(() => createId()),
 	displayName: text('display_name').notNull(),
 	public: boolean('public').default(false),
+	homeLatitude: doublePrecision('home_latitude'),
+	homeLongitude: doublePrecision('home_longitude'),
+	homeZoom: real('home_zoom').default(10),
 	userId: text('user_id')
 		.notNull()
-		.unique()	
+		.unique()
 		.references(() => user.id, {
 			onDelete: 'cascade',
 			onUpdate: 'cascade',
-	}),
+		}),
 })
 
 /**

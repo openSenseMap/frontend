@@ -48,6 +48,8 @@ COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 
 COPY ./entrypoint.sh /myapp/entrypoint.sh
+
 ADD . .
-RUN chmod +x /myapp/entrypoint.sh
-ENTRYPOINT ["/myapp/entrypoint.sh"]
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]

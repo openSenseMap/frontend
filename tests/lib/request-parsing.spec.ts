@@ -64,7 +64,8 @@ describe('parseUserRegistrationData', () => {
 			email: 'john@example.com',
 			password: 'password123',
 			language: 'de_DE',
-			tosAccepted: true
+			tosAccepted: true,
+			newsletterOptIn: true,
 		}
 		const request = new Request('http://localhost', {
 			method: 'POST',
@@ -78,7 +79,8 @@ describe('parseUserRegistrationData', () => {
 			email: 'john@example.com',
 			password: 'password123',
 			language: 'de_DE',
-			tosAccepted: true
+			tosAccepted: true,
+			newsletterOptIn: true,
 		})
 	})
 
@@ -87,7 +89,7 @@ describe('parseUserRegistrationData', () => {
 			name: 'john_doe',
 			email: 'john@example.com',
 			password: 'password123',
-			tosAccepted: true
+			tosAccepted: true,
 		}
 		const request = new Request('http://localhost', {
 			method: 'POST',
@@ -101,7 +103,33 @@ describe('parseUserRegistrationData', () => {
 			email: 'john@example.com',
 			password: 'password123',
 			language: 'en_US',
-			tosAccepted: true
+			tosAccepted: true,
+			newsletterOptIn: false,
+		})
+	})
+
+	it('should parse form checkbox values for registration consent fields', async () => {
+		const formData = new URLSearchParams({
+			name: 'john_doe',
+			email: 'john@example.com',
+			password: 'password123',
+			tosAccepted: 'on',
+			newsletterOptIn: 'on',
+		})
+		const request = new Request('http://localhost', {
+			method: 'POST',
+			headers: { 'content-type': 'application/x-www-form-urlencoded' },
+			body: formData.toString(),
+		})
+
+		const result = await parseUserRegistrationData(request)
+		expect(result).toEqual({
+			name: 'john_doe',
+			email: 'john@example.com',
+			password: 'password123',
+			language: 'en_US',
+			tosAccepted: true,
+			newsletterOptIn: true,
 		})
 	})
 })

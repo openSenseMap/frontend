@@ -19,6 +19,10 @@ export async function tosUiMiddleware(
 ) {
 	const url = new URL(request.url)
 
+	if (url.pathname === '/metrics') {
+		return next()
+	}
+
 	if (url.pathname.startsWith('/api')) {
 		// handled by tos-api middleware
 		return next()

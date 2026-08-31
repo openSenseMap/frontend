@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Box, Rocket } from 'lucide-react'
 import { useState } from 'react'
-import { type MarkerProps, Marker, useMap } from 'react-map-gl/mapbox'
+import { type MarkerProps, Marker, useMap } from 'react-map-gl/maplibre'
 import { useMatches, useNavigate, useSearchParams } from 'react-router'
 import { useGlobalCompareMode } from '~/components/device-detail/useGlobalCompareMode'
 import { type Device } from '~/db/schema'
@@ -65,7 +65,7 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
 				<motion.div
 					className={cn(
 						'group absolute flex w-fit cursor-pointer items-center rounded-full bg-white p-1 text-sm shadow-sm hover:z-10 hover:shadow-lg',
-						isFullZoom ? '-top-4 -left-4' : '-top-[10px] -left-[10px]',
+						isFullZoom ? '-top-5 -left-5' : '-top-3.75 -left-3.75',
 					)}
 					onClick={() => {
 						if (searchParams.has('sensor')) {

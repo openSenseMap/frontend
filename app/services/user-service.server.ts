@@ -23,9 +23,9 @@ import {
 	getUserByUsername,
 	preparePasswordHash,
 	updateUserEmail,
-	updateUserlocale,
 	updateUserName,
 	updateUserPassword,
+	updateUserPreferencesById,
 	verifyLogin,
 } from '~/db/models/user.server'
 import { actionToken, user, type User } from '~/db/schema'
@@ -41,7 +41,12 @@ import PasswordResetEmail, {
 	subject as PasswordResetEmailSubject,
 } from '~/emails/password-reset'
 import { subject as ResendEmailConfirmationSubject } from '~/emails/resend-email-confirmation'
-
+import {
+	disableNewsletterForUser,
+	hasPendingNewsletterConfirmation,
+	requestNewsletterConfirmation,
+	triggerNewsletterReconfirmationAfterEmailChange,
+} from '~/services/newsletter-service.server'
 
 const ONE_HOUR_MILLIS: number = 60 * 60 * 1000
 
@@ -80,6 +85,7 @@ export const registerUser = async (
 	password: string,
 	language: 'de_DE' | 'en_US',
 	tosAccepted: boolean,
+	newsletterOptIn = false,
 ): Promise<RegisterUserResult> => {
 	const normalizedUsername = username.trim()
 	const normalizedEmail = email.trim().toLowerCase()
@@ -159,6 +165,7 @@ export const registerUser = async (
 		language,
 		password,
 		tos.id,
+		false,
 	)
 
 	if (newUsers.length === 0) {
@@ -176,6 +183,14 @@ export const registerUser = async (
 
 	const newUser = newUsers[0]
 	const lng = (newUser.language?.split('_')[0] as 'de' | 'en') ?? 'en'
+
+	if (newsletterOptIn) {
+		try {
+			await requestNewsletterConfirmation(newUser)
+		} catch (err) {
+			console.error('Failed to send newsletter confirmation email:', err)
+		}
+	}
 
 	const token = await issueEmailConfirmationToken(newUser.id)
 
@@ -223,6 +238,7 @@ export const updateUserDetails = async (
 		name?: string
 		currentPassword?: string
 		newPassword?: string
+		newsletterOptIn?: boolean
 	},
 ): Promise<{
 	updated: boolean
@@ -230,7 +246,14 @@ export const updateUserDetails = async (
 	messages: string[]
 	updatedUser: User
 }> => {
-	const { email, language, name, currentPassword, newPassword } = details
+	const {
+		email,
+		language,
+		name,
+		currentPassword,
+		newPassword,
+		newsletterOptIn,
+	} = details
 	const messages: string[] = []
 
 	if (email && newPassword) {
@@ -310,7 +333,7 @@ export const updateUserDetails = async (
 	}
 
 	if (language && user.language !== language) {
-		await updateUserlocale(user.email, language)
+		await updateUserPreferencesById(user.id, { language: language })
 		messages.push('Language changed.')
 		hasChanges = true
 	}
@@ -349,6 +372,24 @@ export const updateUserDetails = async (
 		messages.push('Password changed. Please sign in with your new password')
 		signOut = true
 		hasChanges = true
+	}
+
+	if (typeof newsletterOptIn === 'boolean') {
+		const newsletterOptInPending = await hasPendingNewsletterConfirmation(
+			user.id,
+		)
+		const newsletterAlreadyRequested =
+			user.newsletterOptIn || newsletterOptInPending
+
+		if (newsletterAlreadyRequested !== newsletterOptIn) {
+			if (newsletterOptIn) {
+				await requestNewsletterConfirmation(user)
+			} else {
+				await disableNewsletterForUser(user)
+			}
+			messages.push('Newsletter preference changed.')
+			hasChanges = true
+		}
 	}
 
 	if (hasChanges) {
@@ -423,24 +464,34 @@ export const confirmEmail = async (
 	if (!token) return 'forbidden'
 	if (now.getTime() > token.expiresAt.getTime()) return 'expired'
 
-	return drizzleClient.transaction(async (tx) => {
+	const result = await drizzleClient.transaction(async (tx) => {
 		const currentUser = await tx.query.user.findFirst({
 			where: (u, { eq }) => eq(u.id, token.userId),
-			columns: {
-				id: true,
-				unconfirmedEmail: true,
-			},
 		})
 
 		if (!currentUser) return 'forbidden' as const
 
 		const pendingEmail = currentUser.unconfirmedEmail?.trim()
+		const previousEmail = currentUser.email
+		const confirmedEmail = pendingEmail
+			? pendingEmail.toLowerCase()
+			: currentUser.email
+		const emailChanged = previousEmail.toLowerCase() !== confirmedEmail
+		// Capture this before replacing it later, so an old newsletter link cannot confirm a new account email.
+		const pendingNewsletterConfirmation = await tx.query.actionToken.findFirst({
+			where: (t, { and, eq, gt }) =>
+				and(
+					eq(t.userId, currentUser.id),
+					eq(t.purpose, 'newsletter_confirmation'),
+					gt(t.expiresAt, now),
+				),
+		})
 
 		if (pendingEmail) {
 			await tx
 				.update(user)
 				.set({
-					email: pendingEmail.toLowerCase(),
+					email: confirmedEmail,
 					unconfirmedEmail: null,
 					emailIsConfirmed: true,
 					updatedAt: now,
@@ -469,8 +520,49 @@ export const confirmEmail = async (
 
 		if (deleted.length === 0) return 'forbidden' as const
 
-		return 'success' as const
+		return {
+			result: 'success' as const,
+			previousEmail,
+			emailChanged,
+			hadPendingNewsletterConfirmation: Boolean(pendingNewsletterConfirmation),
+			wasNewsletterSubscribed: currentUser.newsletterOptIn,
+			userAfterConfirmation: {
+				...currentUser,
+				email: confirmedEmail,
+				unconfirmedEmail: null,
+				emailIsConfirmed: true,
+			},
+		}
 	})
+
+	if (result === 'forbidden') return result
+
+	// Keep account email confirmation independent from external Mailgun sync.
+	if (result.emailChanged && result.wasNewsletterSubscribed) {
+		try {
+			await triggerNewsletterReconfirmationAfterEmailChange(
+				result.userAfterConfirmation,
+				result.previousEmail,
+			)
+		} catch (err) {
+			console.error(
+				'Failed to require newsletter reconfirmation after email change:',
+				err,
+			)
+		}
+	} else if (result.emailChanged && result.hadPendingNewsletterConfirmation) {
+		try {
+			// This issues a new token for the new email and replaces the old pending newsletter token.
+			await requestNewsletterConfirmation(result.userAfterConfirmation)
+		} catch (err) {
+			console.error(
+				'Failed to resend newsletter confirmation after email change:',
+				err,
+			)
+		}
+	}
+
+	return result.result
 }
 
 /**
@@ -605,6 +697,7 @@ export const signIn = async (
 			or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
 		with: {
 			password: true,
+			devices: { columns: { id: true } },
 		},
 	})
 	if (!user) return null
@@ -616,7 +709,13 @@ export const signIn = async (
 	if (!correctPassword) return null
 
 	const { token, refreshToken } = await createToken(user)
-	return { user, jwt: token, refreshToken }
+
+	const mappedUser: any = { ...user }
+	// flatten the device array into the "boxes" property for backwards compatibilty
+	delete mappedUser.password
+	mappedUser.boxes = user.devices.map((d) => d.id)
+
+	return { user: mappedUser as User, jwt: token, refreshToken }
 }
 
 export const userNameToURl = (username: string): string =>

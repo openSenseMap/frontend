@@ -1,10 +1,11 @@
 import { type BoxesDataColumn } from '../lib/api-schemas/boxes-data-query-schema'
 import { validLngLat } from '../lib/location'
-import { assertDeviceIsWritable } from './devices-service.server'
+import { assertDeviceIsWritable } from './device-service.server'
 import {
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
-	getDevice,
+	getDeviceForMeasurementWrite,
+	getDeviceForSingleMeasurementWrite,
 } from '~/db/models/device.server'
 import { saveMeasurements } from '~/db/models/measurement.server'
 import {
@@ -16,6 +17,7 @@ import {
 	decodeMeasurements,
 	hasDecoder,
 } from '~/services/decoding-service.server'
+import { type MeasurementTiming } from '~/lib/measurement-timing.server'
 
 export type DeviceWithSensors = DeviceWithoutSensors & {
 	sensors: SensorWithLatestMeasurement[]
@@ -72,7 +74,7 @@ interface SingleMeasurementBody {
 	value: number
 	createdAt?: string
 	location?:
-		| [number, number, number]
+		| [number, number, number?]
 		| { lat: number; lng: number; height?: number }
 }
 
@@ -135,7 +137,7 @@ export const postNewMeasurements = async (
 		throw new Error('UnsupportedMediaTypeError: Unsupported content-type.')
 	}
 
-	const device = await getDevice({ id: deviceId })
+	const device = await getDeviceForMeasurementWrite({ id: deviceId })
 	if (!device) {
 		throw new Error('NotFoundError: Device not found')
 	}
@@ -173,6 +175,7 @@ export const postSingleMeasurement = async (
 	body: SingleMeasurementBody,
 	authorization?: string | null,
 	isTrustedService?: boolean,
+	timing?: MeasurementTiming | null,
 ): Promise<void> => {
 	try {
 		if (typeof body.value !== 'number' || isNaN(body.value)) {
@@ -180,8 +183,16 @@ export const postSingleMeasurement = async (
 			error.name = 'UnprocessableEntityError'
 			throw error
 		}
+		timing?.mark('validateBody')
 
-		const device = await getDevice({ id: deviceId })
+		const device = await getDeviceForSingleMeasurementWrite({
+			id: deviceId,
+			sensorId,
+		})
+		timing?.mark('deviceLookup', {
+			deviceFound: Boolean(device),
+			sensorCount: device?.sensors.length ?? 0,
+		})
 
 		if (!device) {
 			const error = new Error('Device not found')
@@ -191,12 +202,12 @@ export const postSingleMeasurement = async (
 
 		assertDeviceIsWritable(device)
 
-		const sensor = device.sensors?.find((s: any) => s.id === sensorId)
-		if (!sensor) {
+		if (device.sensors.length === 0) {
 			const error = new Error('Sensor not found on device')
 			error.name = 'NotFoundError'
 			throw error
 		}
+		timing?.mark('validateDeviceAndSensor')
 
 		if (device.useAuth && !isTrustedService) {
 			if (device.apiKey !== authorization) {
@@ -205,6 +216,10 @@ export const postSingleMeasurement = async (
 				throw error
 			}
 		}
+		timing?.mark('authorizeDevice', {
+			deviceUsesAuth: Boolean(device.useAuth),
+			isTrustedService: Boolean(isTrustedService),
+		})
 
 		let timestamp: Date | undefined
 		if (body.createdAt) {
@@ -216,6 +231,7 @@ export const postSingleMeasurement = async (
 				throw error
 			}
 		}
+		timing?.mark('parseTimestamp')
 
 		let locationData: LocationData | null = null
 		if (body.location) {
@@ -227,6 +243,9 @@ export const postSingleMeasurement = async (
 				throw error
 			}
 		}
+		timing?.mark('validateLocation', {
+			hasLocation: Boolean(locationData),
+		})
 
 		const measurements = [
 			{
@@ -236,8 +255,10 @@ export const postSingleMeasurement = async (
 				location: locationData,
 			},
 		]
+		timing?.mark('buildMeasurements')
 
-		await saveMeasurements(device, measurements)
+		await saveMeasurements(device, measurements, timing)
+		timing?.mark('saveMeasurements')
 	} catch (error) {
 		if (
 			error instanceof Error &&
