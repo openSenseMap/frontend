@@ -166,19 +166,35 @@ export const openapi: ZodOpenApiPathItemObject = {
 }
 
 type SketchTemplater = InstanceType<typeof SketchTemplaterConstructor>
+// Both the loading promise as well as the instance are stored, s.t.
+// concurrent requests share them and the module is only imported once.
+// The module is commonjs, so this is required to make it compatible with ESM imports
+let sketchTemplaterLoadPromise: Promise<SketchTemplater> | null = null
 let sketchTemplaterInstance: SketchTemplater | null = null
 
 const loadSketchTemplater = async () => {
-	if (!sketchTemplaterInstance) {
-		const { default: SketchTemplater } =
-			await import('@sensebox/sketch-templater')
-		const cfg = {
-			// The domain used in the generation of Arduino sketches
-			ingress_domain: process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',
+	if (sketchTemplaterInstance) return sketchTemplaterInstance
+	if (sketchTemplaterLoadPromise) return sketchTemplaterLoadPromise
+
+	sketchTemplaterLoadPromise = (async () => {
+		try {
+			const { default: SketchTemplater } =
+				await import('@sensebox/sketch-templater')
+			const cfg = {
+				// The domain used in the generation of Arduino sketches
+				ingress_domain:
+					process.env.INGRESS_DOMAIN || 'ingress.opensensemap.org',
+			}
+			sketchTemplaterInstance = new SketchTemplater(cfg)
+			sketchTemplaterLoadPromise = null
+			return sketchTemplaterInstance
+		} catch (err) {
+			sketchTemplaterLoadPromise = null
+			throw err
 		}
-		sketchTemplaterInstance = new SketchTemplater(cfg)
-	}
-	return sketchTemplaterInstance
+	})()
+
+	return sketchTemplaterLoadPromise
 }
 
 type Box = NonNullable<Awaited<ReturnType<typeof getDevice>>>
