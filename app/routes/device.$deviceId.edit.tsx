@@ -99,11 +99,6 @@ export default function EditBox() {
 			href: `/device/${deviceId}/edit/transfer`,
 			icon: ArrowRightLeft,
 		},
-		{
-			title: 'Delete Measurements',
-			href: `/device/${deviceId}/edit/delete-measurements`,
-			icon: Trash2,
-		},
 	]
 
 	return (

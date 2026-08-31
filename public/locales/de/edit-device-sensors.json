@@ -22,5 +22,10 @@
 	"schema_notice_title": "Dieses Gerät verwendet das Schema {{name}} v{{version}}.",
 	"schema_notice_text": "Phänomen, Einheit und Typ sind gesperrt, damit Messungen vergleichbar bleiben. Du kannst Sensoren weiterhin sortieren und ihre Icons ändern.",
 	"schema_fields_locked": "Dieser Sensor ist durch das Geräteschema definiert. Phänomen, Einheit und Typ sind gesperrt; hier kann nur das Icon geändert werden.",
-	"schema_out_of_sync": "Die aktuellen Sensoren passen nicht mehr zu diesem Schema. Löse das Gerät vom Schema, bevor du Sensoren bearbeitest."
+	"schema_out_of_sync": "Die aktuellen Sensoren passen nicht mehr zu diesem Schema. Löse das Gerät vom Schema, bevor du Sensoren bearbeitest.",
+	"delete_measurements": "Alle Messungen löschen",
+	"confirm_permanent_deletion": "Dadurch werden alle Messungen für alle Sensoren von <b>{{device}}</b> dauerhaft gelöscht. Das Gerät und seine Sensoren bleiben erhalten. Bitte bestätige mit deinem Passwort.",
+	"password": "Passwort",
+	"delete_success": "Alle Messungen wurden erfolgreich gelöscht.",
+	"no_measurements": "Dieses Gerät hat keine Messungen zum Löschen."
 }

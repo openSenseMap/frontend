@@ -19,6 +19,7 @@ import {
 	useNavigation,
 	useOutletContext,
 	useSubmit,
+	data,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.sensors'
@@ -42,10 +43,10 @@ import {
 } from '~/db/models/device.server'
 import { getSharedDeviceSchemaVersion } from '~/db/models/device-schema.server'
 import { assignIcon, getIcon, iconsList } from '~/lib/sensoricons'
-import { getUserId } from '~/services/session-service.server'
+import { getUserEmail, getUserId } from '~/services/session-service.server'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { useToast } from '@/components/ui/use-toast'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { Callout } from '~/components/ui/alert'
 import { Input } from '~/components/ui/input'
@@ -61,8 +62,17 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '~/components/ui/alert-dialog'
+import {
+	Card,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardContent,
+} from '~/components/ui/card'
+import { device } from '~/db/schema'
+import { deleteMeasurementsForDevice } from '~/db/models/measurement.server'
+import { verifyLogin } from '~/db/models/user.server'
 
-//*****************************************************
 export async function loader({ request, params }: Route.LoaderArgs) {
 	//* if user is not logged in, redirect to home
 	const userId = await getUserId(request)
@@ -86,6 +96,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	])
 
 	return {
+		device: device,
 		sensors: rawSensorsData,
 		deviceSchema: deviceSchema
 			? {
@@ -97,13 +108,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	} as any
 }
 
-//*****************************************************
 export async function action({ request, params }: Route.ActionArgs) {
 	const userId = await getUserId(request)
 	if (!userId) return redirect('/')
 
 	const formData = await request.formData()
-	const { intent, updatedSensorsData } = Object.fromEntries(formData)
+	const { intent, updatedSensorsData, passwordConfirm } =
+		Object.fromEntries(formData)
+	invariant(typeof passwordConfirm === 'string', 'password must be a string')
 
 	const deviceId = params.deviceId
 	invariant(deviceId, 'deviceID not found!')
@@ -114,6 +126,27 @@ export async function action({ request, params }: Route.ActionArgs) {
 	if (intent === 'detach-schema') {
 		await detachDeviceSchema({ id: deviceId, userId })
 		return { isUpdated: true, isDetached: true }
+	}
+
+	if (intent === 'delete-measurements') {
+		const userEmail = await getUserEmail(request)
+		invariant(typeof userEmail === 'string', 'email not found')
+		const user = await verifyLogin(userEmail, passwordConfirm)
+		if (!user) {
+			return data(
+				{
+					isUpdated: false,
+					noMeasurements: false,
+					message: 'Invalid password',
+				},
+				{ status: 400 },
+			)
+		}
+		const results = await deleteMeasurementsForDevice(deviceId)
+		return {
+			isUpdated: true,
+			noMeasurements: results.count === 0,
+		}
 	}
 
 	if (typeof updatedSensorsData !== 'string') {
@@ -254,12 +287,12 @@ export async function action({ request, params }: Route.ActionArgs) {
 	return { isUpdated: true }
 }
 
-//**********************************
 export default function EditBoxSensors() {
 	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
 	const submit = useSubmit()
+	const [password, setPassword] = React.useState('')
 	const isSubmitting = navigation.state !== 'idle'
 
 	const { copyToClipboard } = useCopyToClipboard()
@@ -299,6 +332,7 @@ export default function EditBoxSensors() {
 	React.useEffect(() => {
 		//* if sensors data were updated successfully
 		if (actionData && actionData?.isUpdated) {
+			setPassword('')
 			//* show notification when data is successfully updated
 			setToastOpen(true)
 			// window.location.reload();
@@ -321,7 +355,7 @@ export default function EditBoxSensors() {
 				variant: 'destructive',
 			})
 		}
-	}, [actionData, setToastOpen, toast, t]) // eslint-disable-line react-hooks/exhaustive-deps
+	}, [actionData, setToastOpen, toast, t])
 
 	React.useEffect(() => {
 		setSensorsData(originalSensorsData)
@@ -856,6 +890,62 @@ export default function EditBoxSensors() {
 							type="hidden"
 							value={JSON.stringify(sensorsData)}
 						/>
+					</Form>
+					<Form method="post" className="mt-7" noValidate>
+						<Card className="dark:bg-dark-boxes dark:border-white">
+							<CardHeader>
+								<CardTitle className="text-red-500">
+									{t('delete_measurements')}
+								</CardTitle>
+								<CardDescription>
+									<Callout variant="caution">
+										<Trans
+											t={t}
+											i18nKey="confirm_permanent_deletion"
+											values={{ device: data.device.name }}
+											components={{ b: <b /> }}
+										/>
+									</Callout>
+								</CardDescription>
+							</CardHeader>
+
+							<CardContent className="space-y-4">
+								{actionData?.isUpdated && !actionData.noMeasurements && (
+									<Callout variant="tip">{t('delete_success')}</Callout>
+								)}
+
+								{actionData?.isUpdated && actionData.noMeasurements && (
+									<Callout variant="note">{t('no_measurements')}</Callout>
+								)}
+
+								<div className="space-y-2">
+									<Label htmlFor="passwordConfirm">{t('password')}</Label>
+									<Input
+										id="passwordConfirm"
+										name="passwordConfirm"
+										type="password"
+										value={password}
+										onChange={(e) => setPassword(e.target.value)}
+										required
+									/>
+									{actionData?.message?.includes('password') && (
+										<div className="text-sm text-red-500">
+											{actionData.message}
+										</div>
+									)}
+								</div>
+
+								<Button
+									type="submit"
+									variant="destructive"
+									name="intent"
+									value="delete-measurements"
+									disabled={!password}
+								>
+									{t('delete_measurements')}
+								</Button>
+							</CardContent>
+						</Card>
 					</Form>
 				</div>
 			</div>

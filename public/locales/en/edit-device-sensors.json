@@ -22,5 +22,10 @@
 	"schema_notice_title": "This device uses schema {{name}} v{{version}}.",
 	"schema_notice_text": "Phenomenon, unit, and type are locked to keep measurements comparable. You can still reorder sensors and change their icons.",
 	"schema_fields_locked": "This sensor is defined by the device schema. Phenomenon, unit, and type are locked; only the icon can be changed here.",
-	"schema_out_of_sync": "The current sensors no longer match this schema. Detach the device from the schema before editing sensors."
+	"schema_out_of_sync": "The current sensors no longer match this schema. Detach the device from the schema before editing sensors.",
+	"delete_measurements": "Delete all measurements",
+	"confirm_permanent_deletion": "This will permanently delete all measurements for all sensors of <b>{{device}}</b>. The device and its sensors will remain. Please confirm with your password.",
+	"password": "Password",
+	"delete_success": "All measurements have been successfully deleted.",
+	"no_measurements": "This device has no measurements to delete."
 }
