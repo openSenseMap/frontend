@@ -69,7 +69,6 @@ import {
 	CardDescription,
 	CardContent,
 } from '~/components/ui/card'
-import { device } from '~/db/schema'
 import { deleteMeasurementsForDevice } from '~/db/models/measurement.server'
 import { verifyLogin } from '~/db/models/user.server'
 
@@ -115,7 +114,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const { intent, updatedSensorsData, passwordConfirm } =
 		Object.fromEntries(formData)
-	invariant(typeof passwordConfirm === 'string', 'password must be a string')
 
 	const deviceId = params.deviceId
 	invariant(deviceId, 'deviceID not found!')
@@ -129,6 +127,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	}
 
 	if (intent === 'delete-measurements') {
+		invariant(typeof passwordConfirm === 'string', 'password must be a string')
 		const userEmail = await getUserEmail(request)
 		invariant(typeof userEmail === 'string', 'email not found')
 		const user = await verifyLogin(userEmail, passwordConfirm)
@@ -910,9 +909,11 @@ export default function EditBoxSensors() {
 							</CardHeader>
 
 							<CardContent className="space-y-4">
-								{actionData?.isUpdated && !actionData.noMeasurements && (
-									<Callout variant="tip">{t('delete_success')}</Callout>
-								)}
+								{actionData?.isUpdated &&
+									actionData.noMeasurements !== undefined &&
+									!actionData.noMeasurements && (
+										<Callout variant="tip">{t('delete_success')}</Callout>
+									)}
 
 								{actionData?.isUpdated && actionData.noMeasurements && (
 									<Callout variant="note">{t('no_measurements')}</Callout>
