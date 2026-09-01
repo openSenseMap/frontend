@@ -39,7 +39,9 @@ import {
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
-import maplibregl, {
+import {
+	Popup,
+	GeoJSONSource,
 	type LngLatLike,
 	type MapLayerMouseEvent,
 	type MapLibreEvent,
@@ -438,7 +440,7 @@ export default function Explore() {
 
 	const deviceNamePopup = useMemo(
 		() =>
-			new maplibregl.Popup({
+			new Popup({
 				closeButton: false,
 				closeOnClick: false,
 				closeOnMove: true,
@@ -529,7 +531,7 @@ export default function Explore() {
 
 			if (feature.layer?.id === 'devices-clusters-layer') {
 				const zoom = await (
-					map.getSource(feature.source) as maplibregl.GeoJSONSource
+					map.getSource(feature.source) as GeoJSONSource
 				).getClusterExpansionZoom(feature.properties?.cluster_id)
 				map.easeTo({
 					center: coordinates,
