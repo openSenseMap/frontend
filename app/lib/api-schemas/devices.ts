@@ -1,54 +1,72 @@
 import { z } from 'zod'
+import { DeviceModelZodEnum } from '~/lib/device-enums'
+import { getSensorTemplateValidationError } from '~/lib/model-definitions'
 
-export const CreateDeviceSchema = z.object({
-	// public API request shape
-	name: z.string().min(1).max(100),
-	description: z
-		.string()
-		.max(5000, 'Description should not exceed 5000 characters')
-		.optional()
-		.nullable(),
-	exposure: z
-		.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
-		.optional()
-		.default('unknown'),
-	location: z
-		.union([
-			z.array(z.number()).min(2).max(3),
-			z.object({
-				lng: z.number(),
-				lat: z.number(),
-				height: z.number().optional(),
+export const CreateDeviceSchema = z
+	.object({
+		// public API request shape
+		name: z.string().min(1).max(100),
+		description: z
+			.string()
+			.max(5000, 'Description should not exceed 5000 characters')
+			.optional()
+			.nullable(),
+		exposure: z
+			.enum(['indoor', 'outdoor', 'mobile', 'unknown'])
+			.optional()
+			.default('unknown'),
+		location: z
+			.union([
+				z.array(z.number()).min(2).max(3),
+				z.object({
+					lng: z.number(),
+					lat: z.number(),
+					height: z.number().optional(),
+				}),
+			])
+			.transform((loc) => {
+				if (Array.isArray(loc)) return loc
+				return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
 			}),
-		])
-		.transform((loc) => {
-			if (Array.isArray(loc)) return loc
-			return [loc.lng, loc.lat, ...(loc.height ? [loc.height] : [])]
-		}),
-	grouptag: z.array(z.string()).optional().default([]),
-	model: z
-		.enum([
-			'homeV2Lora',
-			'homeV2Ethernet',
-			'homeV2Wifi',
-			'senseBox:Edu',
-			'luftdaten.info',
-			'custom',
-		])
-		.optional()
-		.default('custom'),
-	sensors: z
-		.array(
-			z.object({
-				icon: z.string().optional(),
-				title: z.string().min(1),
-				unit: z.string().min(1),
-				sensorType: z.string().min(1),
-			}),
+		grouptag: z.array(z.string()).optional().default([]),
+		model: DeviceModelZodEnum.optional().default('custom'),
+		sensorTemplates: z.array(z.string()).optional(),
+		sensors: z
+			.array(
+				z.object({
+					icon: z.string().optional(),
+					title: z.string().min(1),
+					unit: z.string().min(1),
+					sensorType: z.string().min(1),
+				}),
+			)
+			.optional()
+			.default([]),
+	})
+	.superRefine((data, ctx) => {
+		if (data.sensors.length > 0 && data.model !== 'custom') {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['sensors'],
+				message:
+					'Parameters model and sensors cannot be specified at the same time.',
+			})
+			return
+		}
+		if (data.sensors.length > 0) return
+
+		const message = getSensorTemplateValidationError(
+			data.model,
+			data.sensorTemplates,
 		)
-		.optional()
-		.default([]),
-})
+		if (message) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['sensorTemplates'],
+				message,
+			})
+		}
+	})
 
 export const DevicesQuerySchema = z.object({
 	format: z
