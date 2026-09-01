@@ -26,6 +26,7 @@
 	"delete_measurements": "Delete all measurements",
 	"confirm_permanent_deletion": "This will permanently delete all measurements for all sensors of <b>{{device}}</b>. The device and its sensors will remain. Please confirm with your password.",
 	"password": "Password",
+	"wrong_password": "Invalid password",
 	"delete_success": "All measurements have been successfully deleted.",
 	"no_measurements": "This device has no measurements to delete."
 }

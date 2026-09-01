@@ -931,7 +931,7 @@ export default function EditBoxSensors() {
 									/>
 									{actionData?.message?.includes('password') && (
 										<div className="text-sm text-red-500">
-											{actionData.message}
+											{t('wrong_password')}
 										</div>
 									)}
 								</div>
@@ -941,7 +941,7 @@ export default function EditBoxSensors() {
 									variant="destructive"
 									name="intent"
 									value="delete-measurements"
-									disabled={!password}
+									disabled={isSubmitting || !password}
 								>
 									{t('delete_measurements')}
 								</Button>
