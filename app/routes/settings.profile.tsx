@@ -20,7 +20,6 @@ import { Switch } from '~/components/ui/switch'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useToast } from '~/components/ui/use-toast'
@@ -406,22 +405,20 @@ export default function EditUserProfilePage() {
 					<AutosaveStatusText status={autosave.status} namespace="settings" />
 				</CardHeader>
 
-				<CardContent className="flex">
-					<div className="w-1/2 justify-center space-y-6">
+				<CardContent className="flex flex-col gap-8 md:flex-row">
+					<div className="w-full justify-center space-y-6 md:w-1/2">
 						<div className="space-y-2">
 							<div className="flex items-center space-x-2">
 								<Label htmlFor="displayName">{t('displayName')}</Label>
 
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<InfoIcon className="text-muted-foreground h-4 w-4" />
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>{t('if_public')}</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<InfoIcon className="text-muted-foreground h-4 w-4" />
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{t('if_public')}</p>
+									</TooltipContent>
+								</Tooltip>
 							</div>
 
 							<Input
@@ -440,24 +437,22 @@ export default function EditUserProfilePage() {
 							<div className="flex items-center space-x-2">
 								<Label htmlFor="isPublic">{t('public_profile')}</Label>
 
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<InfoIcon className="text-muted-foreground h-4 w-4" />
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>
-												{t('if_activated_public_1')}{' '}
-												<Link to="/profile/me" target="__blank">
-													<span className="underline">
-														{t('if_activated_public_2')}
-													</span>
-												</Link>
-												{t('if_activated_public_3')}
-											</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<InfoIcon className="text-muted-foreground h-4 w-4" />
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>
+											{t('if_activated_public_1')}{' '}
+											<Link to="/profile/me" target="__blank">
+												<span className="underline">
+													{t('if_activated_public_2')}
+												</span>
+											</Link>
+											{t('if_activated_public_3')}
+										</p>
+									</TooltipContent>
+								</Tooltip>
 							</div>
 
 							<Switch
@@ -473,17 +468,19 @@ export default function EditUserProfilePage() {
 										{t('public_profile_link')}
 									</Label>
 
-									<div className="flex gap-2">
+									<div className="flex min-w-0 gap-2">
 										<Input
 											id="publicProfileUrl"
 											value={publicProfileUrl}
 											readOnly
+											className="min-w-0"
 											onFocus={(event) => event.target.select()}
 										/>
 
 										<Button
 											type="button"
 											variant="outline"
+											className="shrink-0"
 											onClick={handleCopyPublicProfileUrl}
 										>
 											{copiedValue === publicProfileUrl ? (
@@ -498,8 +495,8 @@ export default function EditUserProfilePage() {
 						</div>
 					</div>
 
-					<div className="flex w-1/2 justify-center">
-						<div className="relative h-52 w-52">
+					<div className="flex w-full justify-center md:w-1/2">
+						<div className="relative h-32 w-32 sm:h-40 sm:w-40 md:h-52 md:w-52">
 							<Avatar className="h-full w-full">
 								<AvatarImage
 									className="aspect-auto h-full w-full rounded-full object-cover"
