@@ -3,6 +3,7 @@ import { type Route } from './+types/device.new'
 import ValidationStepperForm from '~/components/device/new/new-device-stepper'
 import { NavBar } from '~/components/nav-bar'
 import { getIntegrations } from '~/db/models/integration.server'
+import { getActiveSensorWikiAliasEntries } from '~/db/models/sensor-wiki-alias.server'
 import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
@@ -12,9 +13,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (!user) {
 		return redirect('/explore/login')
 	}
-	const integrations = await getIntegrations()
+	const [integrations, sensorWikiAliasEntries] = await Promise.all([
+		getIntegrations(),
+		getActiveSensorWikiAliasEntries(),
+	])
 
-	return { integrations }
+	return { integrations, sensorWikiAliasEntries }
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -57,6 +61,9 @@ export async function action({ request }: Route.ActionArgs) {
 					sensorType: sensor.sensorType,
 					unit: sensor.unit,
 					icon: sensor.icon,
+					sensorWikiType: sensor.sensorWikiType,
+					sensorWikiPhenomenon: sensor.sensorWikiPhenomenon,
+					sensorWikiUnit: sensor.sensorWikiUnit,
 				})),
 				deviceSchema: data['sensor-selection'].deviceSchema,
 				deviceSchemaVersionId: data['sensor-selection'].deviceSchemaVersionId,
