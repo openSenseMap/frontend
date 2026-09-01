@@ -337,6 +337,13 @@
       "when": 1786104483816,
       "tag": "0047_device_schemas",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1787582624572,
+      "tag": "0048_tired_blue_shield",
+      "breakpoints": true
     }
   ]
 }
