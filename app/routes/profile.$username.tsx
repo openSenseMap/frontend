@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/profile.$username'
-import { getColumns } from '~/components/mydevices/dt/columns'
+import { getColumns, type SenseBox } from '~/components/mydevices/dt/columns'
 import { DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
@@ -207,7 +207,7 @@ export default function ProfilePage() {
 								columns={getColumns(columnsTranslation, hydrated, { isOwner })}
 								data={profile.user.devices}
 								getRowClassName={(device) =>
-									device.archivedAt
+									(device as SenseBox)?.archivedAt
 										? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
 										: ''
 								}
