@@ -33,6 +33,7 @@ export class MigrationReport {
 	constructor(
 		readonly runId: string,
 		readonly dryRun: boolean,
+		readonly resumed = false,
 	) {}
 
 	addPhase(result: PhaseResult) {
@@ -56,6 +57,7 @@ export class MigrationReport {
 		return {
 			runId: this.runId,
 			dryRun: this.dryRun,
+			resumed: this.resumed,
 			status: this.status,
 			startedAt: this.startedAt.toISOString(),
 			finishedAt: new Date().toISOString(),
