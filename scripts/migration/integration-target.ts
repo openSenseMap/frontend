@@ -1,4 +1,5 @@
 import postgres, { type JSONValue, type Sql } from 'postgres'
+import { canonicalValue } from './canonical'
 import {
 	type MigratedMqttIntegration,
 	type MigratedTtnIntegration,
@@ -89,29 +90,36 @@ export class IntegrationTarget {
 		)
 	}
 
-	async assertCompatible(expectedDeviceIds: string[], resumed: boolean) {
+	async assertEmpty() {
 		const table = this.kind === 'mqtt' ? 'mqtt_integration' : 'ttn_integration'
 		const rows = await this.sql.unsafe<Array<{ deviceId: string }>>(
 			`SELECT device_id AS "deviceId" FROM ${table}`,
 		)
-		if (!resumed && rows.length > 0) {
-			throw new Error(
-				`${this.kind.toUpperCase()} target is not empty for a new run`,
-			)
+		if (rows.length > 0) {
+			throw new Error(`${this.kind.toUpperCase()} target is not empty`)
 		}
-		const expected = new Set(expectedDeviceIds)
-		const unexpected = rows.filter((row) => !expected.has(row.deviceId))
+	}
+
+	async assertResumable(expectedDeviceIds: ReadonlySet<string>) {
+		const table = this.kind === 'mqtt' ? 'mqtt_integration' : 'ttn_integration'
+		const rows = await this.sql.unsafe<Array<{ deviceId: string }>>(
+			`SELECT device_id AS "deviceId" FROM ${table}`,
+		)
+		const unexpected = rows
+			.map((row) => row.deviceId)
+			.filter((deviceId) => !expectedDeviceIds.has(deviceId))
+			.sort()
 		if (unexpected.length > 0) {
 			throw new Error(
-				`${this.kind.toUpperCase()} target contains ${unexpected.length} device(s) outside this run`,
+				`${this.kind.toUpperCase()} resume target contains unexpected device IDs: ${unexpected.slice(0, 20).join(', ')}`,
 			)
 		}
 	}
 
-	async upsertMqtt(integration: MigratedMqttIntegration, cutoff: Date) {
+	async insertMqtt(integration: MigratedMqttIntegration, cutoff: Date) {
 		if (this.kind !== 'mqtt') throw new Error('Not an MQTT target')
 		if (this.dryRun) return
-		await this.sql`
+		const inserted = await this.sql<Array<{ deviceId: string }>>`
 			INSERT INTO mqtt_integration (
 				id, device_id, enabled, url, topic, message_format,
 				decode_options, connection_options, created_at, updated_at
@@ -130,21 +138,37 @@ export class IntegrationTarget {
 				},
 				${cutoff}, ${cutoff}
 			)
-			ON CONFLICT (device_id) DO UPDATE SET
-				enabled = excluded.enabled,
-				url = excluded.url,
-				topic = excluded.topic,
-				message_format = excluded.message_format,
-				decode_options = excluded.decode_options,
-				connection_options = excluded.connection_options,
-				updated_at = excluded.updated_at
+			ON CONFLICT (device_id) DO NOTHING
+			RETURNING device_id AS "deviceId"
 		`
+		if (inserted.length === 0) {
+			const [existing] = await this.sql<Array<Record<string, unknown>>>`
+				SELECT id, enabled, url, topic, message_format AS "messageFormat",
+					decode_options AS "decodeOptions",
+					connection_options AS "connectionOptions",
+					created_at AS "createdAt", updated_at AS "updatedAt"
+				FROM mqtt_integration WHERE device_id = ${integration.deviceId}
+			`
+			const { deviceId: _deviceId, ...expectedIntegration } = integration
+			const expected = {
+				...expectedIntegration,
+				createdAt: cutoff,
+				updatedAt: cutoff,
+			}
+			if (canonicalValue(existing) !== canonicalValue(expected)) {
+				throw new Error(
+					`Existing MQTT integration for ${integration.deviceId} does not match source`,
+				)
+			}
+			return 'existing' as const
+		}
+		return 'inserted' as const
 	}
 
-	async upsertTtn(integration: MigratedTtnIntegration, cutoff: Date) {
+	async insertTtn(integration: MigratedTtnIntegration, cutoff: Date) {
 		if (this.kind !== 'ttn') throw new Error('Not a TTN target')
 		if (this.dryRun) return
-		await this.sql`
+		const inserted = await this.sql<Array<{ deviceId: string }>>`
 			INSERT INTO ttn_integration (
 				id, device_id, enabled, dev_id, app_id, port, profile,
 				decode_options, created_at, updated_at
@@ -159,15 +183,30 @@ export class IntegrationTarget {
 				},
 				${cutoff}, ${cutoff}
 			)
-			ON CONFLICT (device_id) DO UPDATE SET
-				enabled = excluded.enabled,
-				dev_id = excluded.dev_id,
-				app_id = excluded.app_id,
-				port = excluded.port,
-				profile = excluded.profile,
-				decode_options = excluded.decode_options,
-				updated_at = excluded.updated_at
+			ON CONFLICT (device_id) DO NOTHING
+			RETURNING device_id AS "deviceId"
 		`
+		if (inserted.length === 0) {
+			const [existing] = await this.sql<Array<Record<string, unknown>>>`
+				SELECT id, enabled, dev_id AS "devId", app_id AS "appId", port,
+					profile, decode_options AS "decodeOptions",
+					created_at AS "createdAt", updated_at AS "updatedAt"
+				FROM ttn_integration WHERE device_id = ${integration.deviceId}
+			`
+			const { deviceId: _deviceId, ...expectedIntegration } = integration
+			const expected = {
+				...expectedIntegration,
+				createdAt: cutoff,
+				updatedAt: cutoff,
+			}
+			if (canonicalValue(existing) !== canonicalValue(expected)) {
+				throw new Error(
+					`Existing TTN integration for ${integration.deviceId} does not match source`,
+				)
+			}
+			return 'existing' as const
+		}
+		return 'inserted' as const
 	}
 
 	async disableDevices(deviceIds: string[], cutoff: Date) {
@@ -227,14 +266,6 @@ export class IntegrationTarget {
 			FROM ttn_integration
 		`
 		return rows.map(({ deviceId, ...value }) => ({ deviceId, value }))
-	}
-
-	async deviceIds() {
-		const table = this.kind === 'mqtt' ? 'mqtt_integration' : 'ttn_integration'
-		const rows = await this.sql.unsafe<Array<{ deviceId: string }>>(
-			`SELECT device_id AS "deviceId" FROM ${table}`,
-		)
-		return new Set(rows.map((row) => row.deviceId))
 	}
 
 	async invalidCount() {
