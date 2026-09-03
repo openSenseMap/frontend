@@ -25,7 +25,7 @@ async function main() {
 	const onSigterm = () => abort('SIGTERM')
 	process.once('SIGINT', onSigint)
 	process.once('SIGTERM', onSigterm)
-	const report = new MigrationReport(config.runId, config.dryRun)
+	const report = new MigrationReport(config.runId, config.dryRun, config.resume)
 	const source = new MongoSource(
 		config.mongoUrl,
 		config.mongoDbName,
@@ -78,14 +78,8 @@ async function main() {
 			report,
 			signal: abortController.signal,
 		})
-		if (config.phases.includes('validate')) {
+		if (!config.dryRun) {
 			await app.finishRun(config.runId, 'completed')
-		} else if (!config.dryRun) {
-			report.warn({
-				code: 'run_remains_open_until_validation',
-				message:
-					'The audit run remains running until the validate phase succeeds',
-			})
 		}
 		report.complete()
 	} catch (error) {
