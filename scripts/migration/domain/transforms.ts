@@ -36,6 +36,9 @@ const TARGET_MODELS = new Set([
 ])
 
 const TARGET_EXPOSURES = new Set(['indoor', 'outdoor', 'mobile', 'unknown'])
+const EARLIEST_PLAUSIBLE_LOCATION_TIME = new Date('2010-01-01T00:00:00.000Z')
+const LOCATION_UPDATED_AT_GRACE_MS = 24 * 60 * 60 * 1000
+const MAX_LOCATION_TIMESTAMP_ISSUE_SAMPLES = 10
 const TARGET_TTN_PROFILES = new Set([
 	'json',
 	'debug',
@@ -134,39 +137,216 @@ export function primaryDeviceCoordinates(box: LegacyBox): Coordinates | null {
 	return null
 }
 
-export function deviceLocations(box: LegacyBox, fallbackTime: Date) {
+type LocationTimestampIssueReason =
+	| 'invalid_explicit_timestamp'
+	| 'before_platform_epoch'
+	| 'after_device_updated_at'
+
+type LocationTimestampIssue = {
+	origin: 'locations' | 'currentLocation'
+	index: number | null
+	reason: LocationTimestampIssueReason
+	action: 'discarded' | 'replaced_with_fallback'
+	timestamp: string
+	coordinates: Coordinates
+}
+
+export type DeviceLocationTimestampAnomaly = {
+	count: number
+	reasons: Record<LocationTimestampIssueReason, number>
+	actions: {
+		discarded: number
+		replacedWithFallback: number
+	}
+	minimumAcceptedTimestamp: string
+	maximumAcceptedTimestamp: string
+	samples: Array<Omit<LocationTimestampIssue, 'coordinates'>>
+}
+
+/** Uses stable device metadata fallbacks shared by migration and preflight. */
+function deviceDates(box: LegacyBox) {
+	const createdAt = asDate(
+		box.createdAt,
+		dateFromLegacyId(box._id) ?? new Date(0),
+	)!
+	return { createdAt, updatedAt: asDate(box.updatedAt, createdAt)! }
+}
+
+/** Maps legacy exposure values to the target enum before applying location policy. */
+function deviceExposure(box: LegacyBox): MigratedDevice['exposure'] {
+	const exposure = asTrimmedString(box.exposure)?.toLowerCase() ?? 'unknown'
+	return TARGET_EXPOSURES.has(exposure)
+		? (exposure as MigratedDevice['exposure'])
+		: 'unknown'
+}
+
+/** Serializes only the timestamp value needed for a safe anomaly report. */
+function reportableTimestamp(value: unknown) {
+	if (value instanceof Date && Number.isFinite(value.getTime())) {
+		return value.toISOString()
+	}
+	if (typeof value === 'string' || typeof value === 'number') {
+		return String(value)
+	}
+	return Object.prototype.toString.call(value)
+}
+
+/** Returns the report reason for an explicit timestamp outside the accepted range. */
+function locationTimestampIssueReason(
+	raw: unknown,
+	maximumAcceptedTime: Date,
+): LocationTimestampIssueReason | null {
+	const parsed = asDate(raw)
+	if (!parsed) return 'invalid_explicit_timestamp'
+	if (parsed < EARLIEST_PLAUSIBLE_LOCATION_TIME) {
+		return 'before_platform_epoch'
+	}
+	return parsed > maximumAcceptedTime ? 'after_device_updated_at' : null
+}
+
+/**
+ * Scans locations once using the same timestamp rules for both transformation and
+ * preflight. When `collectLocations` is false it retains only anomaly metadata, so
+ * preflight does not duplicate millions of valid mobile coordinates in memory.
+ */
+function scanDeviceLocations(box: LegacyBox, collectLocations: boolean) {
+	const { createdAt, updatedAt } = deviceDates(box)
+	const maximumAcceptedTime = new Date(
+		updatedAt.getTime() + LOCATION_UPDATED_AT_GRACE_MS,
+	)
+	const retainHistory = deviceExposure(box) === 'mobile'
 	const candidates: NormalizedLocation[] = []
+	let latestCandidate: NormalizedLocation | null = null
+	let usableCandidateCount = 0
+	const issues: LocationTimestampIssue[] = []
+	const addCandidate = (candidate: NormalizedLocation) => {
+		usableCandidateCount++
+		if (!collectLocations) return
+		if (retainHistory) {
+			candidates.push(candidate)
+		} else if (
+			!latestCandidate ||
+			candidate.time.getTime() >= latestCandidate.time.getTime()
+		) {
+			latestCandidate = candidate
+		}
+	}
+
+	const timestamp = (
+		raw: unknown,
+		fallback: Date,
+		metadata: Pick<LocationTimestampIssue, 'origin' | 'index' | 'coordinates'>,
+	) => {
+		if (raw == null) return fallback
+		const reason = locationTimestampIssueReason(raw, maximumAcceptedTime)
+		if (!reason) return asDate(raw)!
+
+		const action =
+			metadata.origin === 'currentLocation'
+				? 'replaced_with_fallback'
+				: 'discarded'
+		issues.push({
+			...metadata,
+			reason,
+			action,
+			timestamp: reportableTimestamp(raw),
+		})
+		return action === 'replaced_with_fallback' ? fallback : null
+	}
+
 	const rawLocations = Array.isArray(box.locations) ? box.locations : []
-	for (const raw of rawLocations) {
+	for (const [index, raw] of rawLocations.entries()) {
 		const coordinates = coordinatesFromLegacy(raw)
 		if (!coordinates) continue
-		const time = asDate(
+		const time = timestamp(
 			raw && typeof raw === 'object'
 				? (raw as { timestamp?: unknown }).timestamp
 				: null,
-			fallbackTime,
-		)!
-		candidates.push({ ...coordinates, time })
+			createdAt,
+			{ origin: 'locations', index, coordinates },
+		)
+		if (!time) continue
+		addCandidate({ ...coordinates, time })
 	}
 
 	const current = coordinatesFromLegacy(box.currentLocation)
 	if (current) {
-		const time = asDate(
+		const time = timestamp(
 			box.currentLocation && typeof box.currentLocation === 'object'
 				? (box.currentLocation as { timestamp?: unknown }).timestamp
 				: null,
-			fallbackTime,
+			updatedAt,
+			{ origin: 'currentLocation', index: null, coordinates: current },
 		)!
-		candidates.push({ ...current, time })
+		addCandidate({ ...current, time })
 	}
 
-	const byTimestamp = new Map<string, NormalizedLocation>()
-	for (const candidate of candidates.sort(
-		(a, b) => a.time.getTime() - b.time.getTime(),
-	)) {
-		byTimestamp.set(candidate.time.toISOString(), candidate)
+	// Preserve one usable coordinate when every historical timestamp was corrupt.
+	if (usableCandidateCount === 0 && issues.length > 0) {
+		const fallbackIssue = issues.at(-1)!
+		fallbackIssue.action = 'replaced_with_fallback'
+		addCandidate({ ...fallbackIssue.coordinates, time: updatedAt })
 	}
-	return [...byTimestamp.values()]
+
+	let locations: NormalizedLocation[] = []
+	if (collectLocations) {
+		if (retainHistory) {
+			const byTimestamp = new Map<string, NormalizedLocation>()
+			for (const candidate of candidates.sort(
+				(a, b) => a.time.getTime() - b.time.getTime(),
+			)) {
+				byTimestamp.set(candidate.time.toISOString(), candidate)
+			}
+			locations = [...byTimestamp.values()]
+		} else if (latestCandidate) {
+			locations = [latestCandidate]
+		}
+	}
+
+	return {
+		locations,
+		issues,
+		maximumAcceptedTime,
+	}
+}
+
+/**
+ * Retains complete, unsampled history for mobile devices and only the latest
+ * normalized location for all other exposure types.
+ */
+export function deviceLocations(box: LegacyBox) {
+	return scanDeviceLocations(box, true).locations
+}
+
+/** Compacts per-entry timestamp issues into one bounded preflight anomaly. */
+export function deviceLocationTimestampAnomaly(
+	box: LegacyBox,
+): DeviceLocationTimestampAnomaly | null {
+	const { issues, maximumAcceptedTime } = scanDeviceLocations(box, false)
+	if (issues.length === 0) return null
+
+	const reasons: DeviceLocationTimestampAnomaly['reasons'] = {
+		invalid_explicit_timestamp: 0,
+		before_platform_epoch: 0,
+		after_device_updated_at: 0,
+	}
+	for (const issue of issues) reasons[issue.reason]++
+
+	return {
+		count: issues.length,
+		reasons,
+		actions: {
+			discarded: issues.filter(({ action }) => action === 'discarded').length,
+			replacedWithFallback: issues.filter(
+				({ action }) => action === 'replaced_with_fallback',
+			).length,
+		},
+		minimumAcceptedTimestamp: EARLIEST_PLAUSIBLE_LOCATION_TIME.toISOString(),
+		maximumAcceptedTimestamp: maximumAcceptedTime.toISOString(),
+		samples: issues
+			.slice(0, MAX_LOCATION_TIMESTAMP_ISSUE_SAMPLES)
+			.map(({ coordinates: _, ...issue }) => issue),
+	}
 }
 
 function normalizeTags(value: unknown): string[] {
@@ -185,8 +365,6 @@ export function transformUser(user: LegacyUser): TransformResult<MigratedUser> {
 	const id = legacyId(user._id)
 	const name = asTrimmedString(user.name)
 	const email = asTrimmedString(user.email)?.toLowerCase() ?? null
-	const unconfirmedEmail =
-		asTrimmedString(user.unconfirmedEmail)?.toLowerCase() ?? null
 	const passwordHash = asTrimmedString(user.hashedPassword)
 	if (!id || !name || !email || !passwordHash) {
 		return {
@@ -212,7 +390,6 @@ export function transformUser(user: LegacyUser): TransformResult<MigratedUser> {
 			id,
 			name,
 			email,
-			unconfirmedEmail,
 			language: asTrimmedString(user.language) ?? 'en_US',
 			role: user.role === 'admin' ? 'admin' : 'user',
 			emailIsConfirmed: user.emailIsConfirmed === true,
@@ -223,6 +400,10 @@ export function transformUser(user: LegacyUser): TransformResult<MigratedUser> {
 			displayName: name,
 		},
 	}
+}
+
+export function sensorOccurrenceKey(deviceId: string, order: number) {
+	return `${deviceId}\0${order}`
 }
 
 function transformSensor(
@@ -253,29 +434,29 @@ function transformSensor(
 export function transformDevice(
 	box: LegacyBox,
 	ownerId: string,
-	validSensorIds?: Set<string>,
+	validSensorIds?: ReadonlySet<string>,
+	sensorTargetIdByOccurrence?: ReadonlyMap<string, string>,
 ): TransformResult<MigratedDevice> {
 	const id = legacyId(box._id)
-	const coordinates = primaryDeviceCoordinates(box)
-	if (!id || !coordinates) {
+	const primaryCoordinates = primaryDeviceCoordinates(box)
+	if (!id || !primaryCoordinates) {
 		return {
 			ok: false,
 			code: id ? 'invalid_device_location' : 'device_missing_id',
-			details: { hasId: Boolean(id), hasLocation: Boolean(coordinates) },
+			details: {
+				hasId: Boolean(id),
+				hasLocation: Boolean(primaryCoordinates),
+			},
 		}
 	}
-	const createdAt = asDate(
-		box.createdAt,
-		dateFromLegacyId(box._id) ?? new Date(0),
-	)!
-	const updatedAt = asDate(box.updatedAt, createdAt)!
+	const { createdAt, updatedAt } = deviceDates(box)
 	const modelValue = asTrimmedString(box.model) ?? 'custom'
 	const model = TARGET_MODELS.has(modelValue) ? modelValue : 'custom'
 	const exposureValue =
 		asTrimmedString(box.exposure)?.toLowerCase() ?? 'unknown'
-	const exposure = TARGET_EXPOSURES.has(exposureValue)
-		? (exposureValue as MigratedDevice['exposure'])
-		: 'unknown'
+	const exposure = deviceExposure(box)
+	const locations = deviceLocations(box)
+	const coordinates = locations.at(-1)!
 	const warnings: string[] = []
 	if (model !== modelValue) warnings.push('unsupported_model_mapped_to_custom')
 	if (exposure !== exposureValue)
@@ -287,8 +468,11 @@ export function transformDevice(
 			if (!raw || typeof raw !== 'object') return
 			const result = transformSensor(raw as LegacySensor, id, order)
 			if (!result.ok) return
-			if (validSensorIds && !validSensorIds.has(result.value.id)) return
-			sensors.push(result.value)
+			const targetId =
+				sensorTargetIdByOccurrence?.get(sensorOccurrenceKey(id, order)) ??
+				result.value.id
+			if (validSensorIds && !validSensorIds.has(targetId)) return
+			sensors.push({ ...result.value, id: targetId })
 			warnings.push(...result.warnings)
 		})
 	}
@@ -311,7 +495,7 @@ export function transformDevice(
 			updatedAt,
 			latitude: coordinates.latitude,
 			longitude: coordinates.longitude,
-			locations: deviceLocations(box, createdAt),
+			locations,
 			sensors,
 		},
 	}
