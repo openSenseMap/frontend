@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
 import {
 	type Collection,
@@ -5,8 +6,10 @@ import {
 	type MongoClient as MongoClientType,
 } from 'mongodb'
 import {
+	deviceLocationTimestampAnomaly,
 	legacyId,
 	primaryDeviceCoordinates,
+	sensorOccurrenceKey,
 	transformUser,
 } from './domain/transforms'
 import {
@@ -22,11 +25,6 @@ const mongodb = createRequire(import.meta.url)(
 	'mongodb',
 ) as typeof import('mongodb')
 const { MongoClient, ObjectId } = mongodb
-
-export type MeasurementCursor = {
-	createdAt: string
-	id?: string
-}
 
 export type MeasurementIndexFingerprint = {
 	name: string
@@ -93,21 +91,63 @@ function idsFromUnknown(value: unknown) {
 	return value.map(legacyId).filter((id): id is string => Boolean(id))
 }
 
+type SensorOccurrence = {
+	deviceId: string
+	order: number
+}
+
+function commonPrefixLength(left: string, right: string) {
+	const limit = Math.min(left.length, right.length)
+	let length = 0
+	while (length < limit && left[length] === right[length]) length++
+	return length
+}
+
+function compareSensorOrigins(sensorId: string) {
+	return (left: SensorOccurrence, right: SensorOccurrence) => {
+		const prefixDifference =
+			commonPrefixLength(sensorId, right.deviceId) -
+			commonPrefixLength(sensorId, left.deviceId)
+		return (
+			prefixDifference ||
+			left.deviceId.localeCompare(right.deviceId) ||
+			left.order - right.order
+		)
+	}
+}
+
+function replacementSensorId(
+	sourceSensorId: string,
+	occurrence: SensorOccurrence,
+	reservedIds: ReadonlySet<string>,
+) {
+	let attempt = 0
+	while (true) {
+		const id = createHash('sha256')
+			.update(
+				`opensensemap-migration-sensor-copy-v1\0${sourceSensorId}\0${occurrence.deviceId}\0${occurrence.order}\0${attempt}`,
+			)
+			.digest('hex')
+			.slice(0, 24)
+		if (!reservedIds.has(id)) return id
+		attempt++
+	}
+}
+
 function addNaturalKeyConflicts(
 	users: LegacyUser[],
 	validUserIds: Set<string>,
+	potentiallyRetainedUserIds: ReadonlySet<string>,
 	anomalies: SourceSnapshot['anomalies'],
 ) {
 	const keys = new Map<string, string[]>()
 	for (const user of users) {
 		const transformed = transformUser(user)
 		if (!transformed.ok) continue
+		if (!potentiallyRetainedUserIds.has(transformed.value.id)) continue
 		for (const key of [
 			`name:${transformed.value.name}`,
 			`email:${transformed.value.email}`,
-			...(transformed.value.unconfirmedEmail
-				? [`email:${transformed.value.unconfirmedEmail}`]
-				: []),
 		]) {
 			const current = keys.get(key) ?? []
 			if (!current.includes(transformed.value.id)) {
@@ -156,6 +196,15 @@ export function buildSourceSnapshot(
 			continue
 		}
 		migratableDeviceIds.add(id)
+		const locationTimestampAnomaly = deviceLocationTimestampAnomaly(box)
+		if (locationTimestampAnomaly) {
+			anomalies.push({
+				code: 'implausible_device_location_timestamps',
+				collection: 'boxes',
+				sourceId: id,
+				details: locationTimestampAnomaly,
+			})
+		}
 	}
 
 	const validUserIds = new Set<string>()
@@ -171,8 +220,6 @@ export function buildSourceSnapshot(
 			})
 		}
 	}
-	addNaturalKeyConflicts(users, validUserIds, anomalies)
-
 	const ownerCandidates = new Map<string, string[]>()
 	for (const user of users) {
 		const userId = legacyId(user._id)
@@ -202,6 +249,19 @@ export function buildSourceSnapshot(
 			})
 		}
 	}
+	const potentiallyRetainedUserIds = new Set<string>()
+	for (const deviceId of migratableDeviceIds) {
+		const candidates = [...new Set(ownerCandidates.get(deviceId) ?? [])]
+		if (candidates.length === 1 && validUserIds.has(candidates[0])) {
+			potentiallyRetainedUserIds.add(candidates[0])
+		}
+	}
+	addNaturalKeyConflicts(
+		users,
+		validUserIds,
+		potentiallyRetainedUserIds,
+		anomalies,
+	)
 
 	const ownerByDeviceId = new Map<string, string | null>()
 	const retainedUserIds = new Set<string>()
@@ -237,7 +297,7 @@ export function buildSourceSnapshot(
 		}
 	}
 
-	const sensorCandidates = new Map<string, string[]>()
+	const sensorCandidates = new Map<string, SensorOccurrence[]>()
 	for (const [deviceId, box] of boxById) {
 		if (!migratableDeviceIds.has(deviceId) || !Array.isArray(box.sensors))
 			continue
@@ -262,21 +322,49 @@ export function buildSourceSnapshot(
 				continue
 			}
 			const candidates = sensorCandidates.get(sensorId) ?? []
-			candidates.push(deviceId)
+			candidates.push({ deviceId, order })
 			sensorCandidates.set(sensorId, candidates)
 		}
 	}
 	const sensorToDeviceId = new Map<string, string | null>()
-	for (const [sensorId, devices] of sensorCandidates) {
-		const uniqueDevices = [...new Set(devices)]
-		if (devices.length === 1) sensorToDeviceId.set(sensorId, uniqueDevices[0])
-		else {
-			sensorToDeviceId.set(sensorId, null)
+	const sensorTargetIdByOccurrence = new Map<string, string>()
+	const reservedSensorIds = new Set(sensorCandidates.keys())
+	for (const [sensorId, occurrences] of [...sensorCandidates].sort(
+		([left], [right]) => left.localeCompare(right),
+	)) {
+		const ordered = [...occurrences].sort(compareSensorOrigins(sensorId))
+		const canonical = ordered[0]
+		sensorToDeviceId.set(sensorId, canonical.deviceId)
+		sensorTargetIdByOccurrence.set(
+			sensorOccurrenceKey(canonical.deviceId, canonical.order),
+			sensorId,
+		)
+		if (ordered.length > 1) {
+			const reassignments = ordered.slice(1).map((occurrence) => {
+				const targetSensorId = replacementSensorId(
+					sensorId,
+					occurrence,
+					reservedSensorIds,
+				)
+				reservedSensorIds.add(targetSensorId)
+				sensorToDeviceId.set(targetSensorId, occurrence.deviceId)
+				sensorTargetIdByOccurrence.set(
+					sensorOccurrenceKey(occurrence.deviceId, occurrence.order),
+					targetSensorId,
+				)
+				return { ...occurrence, targetSensorId }
+			})
 			anomalies.push({
-				code: 'duplicate_sensor_id',
+				code: 'duplicate_sensor_id_reassigned',
 				collection: 'boxes',
 				sourceId: sensorId,
-				details: { deviceIds: uniqueDevices, occurrences: devices.length },
+				details: {
+					deviceIds: [...new Set(ordered.map(({ deviceId }) => deviceId))],
+					occurrences: ordered.length,
+					canonicalDeviceId: canonical.deviceId,
+					canonicalOrder: canonical.order,
+					reassignments,
+				},
 			})
 		}
 	}
@@ -288,6 +376,7 @@ export function buildSourceSnapshot(
 		ownerByDeviceId,
 		retainedUserIds,
 		sensorToDeviceId,
+		sensorTargetIdByOccurrence,
 		migratableDeviceIds,
 		anomalies,
 	}
@@ -418,7 +507,6 @@ export class MongoSource {
 							_id: 1,
 							name: 1,
 							email: 1,
-							unconfirmedEmail: 1,
 							boxes: 1,
 							sharedBoxes: 1,
 							language: 1,
@@ -534,16 +622,14 @@ export class MongoSource {
 		sensorId: string,
 		from: Date,
 		to: Date,
-		resume?: MeasurementCursor,
+		startAfter?: Date,
 	) {
 		const index = await this.measurementIndex()
 		const query: Record<string, unknown> = {
 			sensor_id: sourceIdQuery(sensorId),
-			createdAt: { $gte: from, $lt: to },
-		}
-		if (resume) {
-			const resumeTime = new Date(resume.createdAt)
-			query.createdAt = { $gt: resumeTime, $lt: to }
+			createdAt: startAfter
+				? { $gt: startAfter, $lt: to }
+				: { $gte: from, $lt: to },
 		}
 		const cursor = this.measurementCollection()
 			.find(query)
