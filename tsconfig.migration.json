@@ -1,0 +1,9 @@
+{
+	"extends": "./tsconfig.json",
+	"include": [
+		"scripts/migration/**/*.ts",
+		"tests/migration/**/*.ts",
+		"vitest.migration.config.ts"
+	],
+	"exclude": []
+}
