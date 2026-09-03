@@ -15,8 +15,6 @@ export type Phase = (typeof PHASES)[number]
 
 export type MigrationSourceKind = 'restored-backup' | 'production-readonly'
 
-export type ApiKeyMode = 'preserve' | 'rotate'
-
 export type LegacyId = ObjectId | string
 
 export type LegacyLocation = {
@@ -113,6 +111,7 @@ export type SourceSnapshot = {
 	ownerByDeviceId: Map<string, string | null>
 	retainedUserIds: Set<string>
 	sensorToDeviceId: Map<string, string | null>
+	sensorTargetIdByOccurrence: Map<string, string>
 	migratableDeviceIds: Set<string>
 	anomalies: Array<{
 		code: string
@@ -126,7 +125,6 @@ export type MigratedUser = {
 	id: string
 	name: string
 	email: string
-	unconfirmedEmail: string | null
 	language: string
 	role: 'admin' | 'user'
 	emailIsConfirmed: boolean
@@ -209,17 +207,16 @@ export type Rejection = {
 	details?: Record<string, unknown>
 }
 
-export type CheckpointCounters = {
+export type PhaseCounters = {
 	sourceSeen: number
 	written: number
 	skipped: number
 	rejected: number
 }
 
-export type Checkpoint = CheckpointCounters & {
+export type PhaseProgress = PhaseCounters & {
 	phase: Phase
-	partitionKey: string
-	status: 'pending' | 'running' | 'completed' | 'failed'
+	status: 'running' | 'completed'
 	cursor: Record<string, unknown> | null
 }
 
@@ -234,6 +231,7 @@ export type MigrationConfig = {
 	runId: string
 	phases: Phase[]
 	dryRun: boolean
+	resume: boolean
 	sourceKind: MigrationSourceKind
 	backupId?: string
 	from: Date
@@ -243,7 +241,7 @@ export type MigrationConfig = {
 	writeFreezeConfirmed: boolean
 	manageJobs: boolean
 	refreshAggregates: boolean
-	apiKeyMode: ApiKeyMode
+	skipImages: boolean
 	mongoUrl: string
 	mongoDbName: string
 	appDatabaseUrl: string
@@ -268,7 +266,7 @@ export type SafeLogger = {
 	error(message: string, details?: Record<string, unknown>): void
 }
 
-export type PhaseResult = CheckpointCounters & {
+export type PhaseResult = PhaseCounters & {
 	phase: Phase
 	details?: Record<string, unknown>
 }
