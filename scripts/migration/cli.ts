@@ -1,4 +1,4 @@
-import { PHASES, type ApiKeyMode, type Phase } from './types'
+import { PHASES, type Phase } from './types'
 
 export type CliOptions = {
 	phases?: Phase[]
@@ -8,10 +8,10 @@ export type CliOptions = {
 	runId?: string
 	batchSize?: number
 	dryRun: boolean
+	resume: boolean
 	confirmWriteFreeze: boolean
 	manageJobs?: boolean
 	refreshAggregates?: boolean
-	apiKeyMode?: ApiKeyMode
 	help: boolean
 }
 
@@ -39,6 +39,7 @@ function parsePhases(value: string): Phase[] {
 export function parseArgs(argv: string[]): CliOptions {
 	const options: CliOptions = {
 		dryRun: false,
+		resume: false,
 		confirmWriteFreeze: false,
 		help: false,
 	}
@@ -84,6 +85,9 @@ export function parseArgs(argv: string[]): CliOptions {
 			case '--dry-run':
 				options.dryRun = true
 				break
+			case '--resume':
+				options.resume = true
+				break
 			case '--confirm-write-freeze':
 				options.confirmWriteFreeze = true
 				break
@@ -99,15 +103,6 @@ export function parseArgs(argv: string[]): CliOptions {
 			case '--no-refresh-aggregates':
 				options.refreshAggregates = false
 				break
-			case '--api-key-mode': {
-				const value = readValue(argv, index, argument)
-				if (value !== 'preserve' && value !== 'rotate') {
-					throw new Error('--api-key-mode must be preserve or rotate')
-				}
-				options.apiKeyMode = value
-				index++
-				break
-			}
 			case '--help':
 			case '-h':
 				options.help = true
@@ -127,19 +122,22 @@ Usage:
   npm run migrate:data -- --history-months <n> --to <ISO> [options]
 
 Options:
-  --phase <name[,name]>       Run selected phases; defaults to all
+  --phase <name[,name]>       Select dry-run phases; writes always run all
   --history-months <number>   Derive --from; minimum 12 months
-  --run-id <id>               Stable identifier used for resume/audit
+  --run-id <id>               Unique identifier used for audit records
   --batch-size <number>       Measurement insert batch size
   --dry-run                   Inspect and transform without target writes
+  --resume                    Resume the explicitly identified incomplete run
   --confirm-write-freeze      Confirm that production writes are stopped
   --[no-]manage-jobs          Pause/restore TimescaleDB and pg_cron jobs
   --[no-]refresh-aggregates   Backfill TimescaleDB continuous aggregates
-  --api-key-mode <mode>       preserve (default) or explicit rotate
   --help                      Show this help
 
 Phases: ${PHASES.join(', ')}
 
-Data-writing runs require MIGRATION_SOURCE_KIND=restored-backup and
-MIGRATION_BACKUP_ID. production-readonly is limited to a dry-run preflight.
+New data-writing runs require empty targets. Resumes require --resume and an
+explicit --run-id whose recorded source/configuration identity still matches.
+All writes require MIGRATION_SOURCE_KIND=restored-backup, MIGRATION_BACKUP_ID,
+and every phase in canonical order.
+production-readonly is limited to a dry-run preflight.
 `

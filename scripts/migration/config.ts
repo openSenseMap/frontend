@@ -25,7 +25,7 @@ const environmentSchema = z.object({
 	MIGRATION_WRITE_FREEZE_CONFIRMED: z.enum(['true', 'false']).default('false'),
 	MIGRATION_MANAGE_JOBS: z.enum(['true', 'false']).default('true'),
 	MIGRATION_REFRESH_AGGREGATES: z.enum(['true', 'false']).default('true'),
-	MIGRATION_API_KEY_MODE: z.enum(['preserve', 'rotate']).default('preserve'),
+	MIGRATION_SKIP_IMAGES: z.enum(['true', 'false']).default('false'),
 	MIGRATION_PHASES: z.string().optional(),
 	MIGRATION_REPORT_DIR: z.string().min(1).default('migration-reports'),
 	LEGACY_IMAGE_DIR: z.string().optional(),
@@ -78,6 +78,12 @@ export function parseConfig(
 	cli: CliOptions,
 ): MigrationConfig {
 	const parsed = environmentSchema.parse(environment)
+	if (cli.resume && cli.dryRun) {
+		throw new Error('--resume cannot be combined with --dry-run')
+	}
+	if (cli.resume && !cli.runId) {
+		throw new Error('--resume requires an explicit --run-id')
+	}
 	const phases = cli.phases ??
 		parseEnvironmentPhases(parsed.MIGRATION_PHASES) ?? [...PHASES]
 	if (!parsed.MIGRATION_SOURCE_KIND) {
@@ -94,6 +100,15 @@ export function parseConfig(
 	} else if (!cli.dryRun || phases.length !== 1 || phases[0] !== 'preflight') {
 		throw new Error(
 			'production-readonly sources are limited to --dry-run --phase preflight; data imports must use a restored backup',
+		)
+	}
+	if (
+		!cli.dryRun &&
+		(phases.length !== PHASES.length ||
+			PHASES.some((phase, index) => phases[index] !== phase))
+	) {
+		throw new Error(
+			'One-shot data migrations must run every phase in canonical order; phase selection is only available with --dry-run',
 		)
 	}
 	const to = parseDate(cli.to ?? parsed.MIGRATION_TO, 'MIGRATION_TO/--to')
@@ -143,26 +158,32 @@ export function parseConfig(
 		)
 	}
 
-	const requiredMedia = [
-		parsed.S3_ENDPOINT,
-		parsed.S3_REGION,
-		parsed.S3_BUCKET,
-		parsed.S3_ACCESS_KEY,
-		parsed.S3_SECRET_KEY,
-		parsed.LEGACY_IMAGE_DIR,
-	]
-	if (requiredMedia.some((value) => !value)) {
-		throw new Error(
-			'LEGACY_IMAGE_DIR and all S3_* variables are required for every run',
-		)
-	}
-	const s3: NonNullable<MigrationConfig['s3']> = {
-		endpoint: parsed.S3_ENDPOINT!,
-		region: parsed.S3_REGION!,
-		bucket: parsed.S3_BUCKET!,
-		accessKey: parsed.S3_ACCESS_KEY!,
-		secretKey: parsed.S3_SECRET_KEY!,
-		forcePathStyle: parsed.S3_FORCE_PATH_STYLE === 'true',
+	const skipImages = parsed.MIGRATION_SKIP_IMAGES === 'true'
+	let legacyImageDirectory: string | undefined
+	let s3: MigrationConfig['s3']
+	if (!skipImages) {
+		const requiredMedia = [
+			parsed.S3_ENDPOINT,
+			parsed.S3_REGION,
+			parsed.S3_BUCKET,
+			parsed.S3_ACCESS_KEY,
+			parsed.S3_SECRET_KEY,
+			parsed.LEGACY_IMAGE_DIR,
+		]
+		if (requiredMedia.some((value) => !value)) {
+			throw new Error(
+				'Set MIGRATION_SKIP_IMAGES=true or configure LEGACY_IMAGE_DIR and all S3_* variables',
+			)
+		}
+		legacyImageDirectory = parsed.LEGACY_IMAGE_DIR
+		s3 = {
+			endpoint: parsed.S3_ENDPOINT!,
+			region: parsed.S3_REGION!,
+			bucket: parsed.S3_BUCKET!,
+			accessKey: parsed.S3_ACCESS_KEY!,
+			secretKey: parsed.S3_SECRET_KEY!,
+			forcePathStyle: parsed.S3_FORCE_PATH_STYLE === 'true',
+		}
 	}
 
 	const runId =
@@ -176,7 +197,6 @@ export function parseConfig(
 	}
 	const refreshAggregates =
 		cli.refreshAggregates ?? parsed.MIGRATION_REFRESH_AGGREGATES === 'true'
-	const apiKeyMode = cli.apiKeyMode ?? parsed.MIGRATION_API_KEY_MODE
 	const batchSize = cli.batchSize ?? parsed.MIGRATION_BATCH_SIZE
 	if (batchSize > 10_000) {
 		throw new Error('Migration batch size must not exceed 10000')
@@ -186,6 +206,7 @@ export function parseConfig(
 		runId,
 		phases,
 		dryRun: cli.dryRun,
+		resume: cli.resume,
 		sourceKind: parsed.MIGRATION_SOURCE_KIND,
 		backupId: parsed.MIGRATION_BACKUP_ID,
 		from,
@@ -197,14 +218,14 @@ export function parseConfig(
 			parsed.MIGRATION_WRITE_FREEZE_CONFIRMED === 'true',
 		manageJobs: cli.manageJobs ?? parsed.MIGRATION_MANAGE_JOBS === 'true',
 		refreshAggregates,
-		apiKeyMode,
+		skipImages,
 		mongoUrl: parsed.MONGO_URL,
 		mongoDbName: parsed.MONGO_DB_NAME,
 		appDatabaseUrl,
 		mqttDatabaseUrl: parsed.MQTT_DATABASE_URL,
 		ttnDatabaseUrl: parsed.TTN_DATABASE_URL,
 		pgSsl: parsed.PG_CLIENT_SSL === 'true',
-		legacyImageDirectory: parsed.LEGACY_IMAGE_DIR,
+		legacyImageDirectory,
 		s3,
 		reportDirectory: parsed.MIGRATION_REPORT_DIR,
 	}
@@ -222,7 +243,7 @@ export function redactedConfigHash(config: MigrationConfig) {
 		archiveBefore: config.archiveBefore.toISOString(),
 		manageJobs: config.manageJobs,
 		refreshAggregates: config.refreshAggregates,
-		apiKeyMode: config.apiKeyMode,
+		skipImages: config.skipImages,
 		sourceKind: config.sourceKind,
 		backupId: config.backupId ?? null,
 		mongoDbName: config.mongoDbName,
