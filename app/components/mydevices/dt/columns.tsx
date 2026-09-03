@@ -33,7 +33,7 @@ export function getColumns(
 	useTranslation: UseTranslationResponse<'data-table', any>,
 	hydrated: boolean,
 	opts?: { isOwner?: boolean },
-): ColumnDef<CustomTableFeatures, RowData, unknown>[] {
+): ColumnDef<CustomTableFeatures, SenseBox, unknown>[] {
 	const { t, i18n } = useTranslation
 	const isOwner = opts?.isOwner ?? false
 
@@ -223,5 +223,5 @@ export function getColumns(
 					)
 			},
 		}),
-	]) as ColumnDef<CustomTableFeatures, RowData, unknown>[]
+	])
 }

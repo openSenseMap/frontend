@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/profile.$username'
 import { getColumns, type SenseBox } from '~/components/mydevices/dt/columns'
-import { DataTable } from '~/components/mydevices/dt/data-table'
+import { CustomTableFeatures, DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Badge } from '~/components/ui/badge'
@@ -19,6 +19,7 @@ import { getUserId } from '~/services/session-service.server'
 import { claimDevice } from '~/services/transfer-service.server'
 import { userNameFromURl } from '~/services/user-service.server'
 import { useHydrated } from '~/hooks/use-hydrated'
+import { ColumnDef, RowData } from '@tanstack/react-table'
 
 type ActionData = {
 	success: boolean
@@ -204,10 +205,10 @@ export default function ProfilePage() {
 
 						{profile?.user?.devices && (
 							<DataTable
-								columns={getColumns(columnsTranslation, hydrated, { isOwner })}
+								columns={getColumns(columnsTranslation, hydrated, { isOwner }) as ColumnDef<CustomTableFeatures, RowData, unknown>[]}
 								data={profile.user.devices}
 								getRowClassName={(device) =>
-									(device as SenseBox)?.archivedAt
+									device.archivedAt
 										? 'opacity-60 bg-slate-100 dark:bg-slate-900/40'
 										: ''
 								}

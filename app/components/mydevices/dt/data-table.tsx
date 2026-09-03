@@ -66,7 +66,7 @@ export type CustomTableFeatures = typeof customTableFeatures
 interface DataTableProps<TData extends RowData, TValue extends CellData> {
 	columns: ColumnDef<CustomTableFeatures, RowData, TValue>[]
 	data: TData[]
-	getRowClassName?: (row: RowData) => string
+	getRowClassName?: (row: TData) => string
 }
 
 export function DataTable<TData extends RowData, TValue extends CellData>({
@@ -83,7 +83,7 @@ export function DataTable<TData extends RowData, TValue extends CellData>({
 
 	const table = useTable({
 		features: customTableFeatures,
-		columns: columns as ColumnDef<CustomTableFeatures, RowData, unknown>[],
+		columns: columns as ColumnDef<CustomTableFeatures, TData, unknown>[],
 		data,
 		onSortingChange: setSorting,
 		onColumnFiltersChange: setColumnFilters,
