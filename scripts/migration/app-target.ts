@@ -16,7 +16,7 @@ import {
 	type Rejection,
 } from './types'
 
-const SCRIPT_VERSION = '0.6.0'
+const SCRIPT_VERSION = '0.7.0'
 export const ORPHAN_USER_ID = 'system_orphan_user'
 
 const MIGRATION_CAGGS = [
@@ -989,14 +989,16 @@ export class AppTarget {
 				INSERT INTO device (
 					id, name, image, website, description, tags, link, use_auth,
 					"apiKey", exposure, status, model, public, created_at, updated_at,
-					archived_at, orphaned_at, latitude, longitude, user_id
+					archived_at, orphaned_at, latitude, longitude, height_above_ground,
+					terrain_elevation, terrain_elevation_dataset, user_id
 				) VALUES (
 					${device.id}, ${device.name}, NULL, NULL, ${device.description},
 					${device.tags}, ${device.link}, ${device.useAuth}, ${apiKey},
 					${device.exposure}, 'old', ${device.model}, ${device.public},
 					${device.createdAt}, ${device.updatedAt}, NULL,
 					${device.userId === ORPHAN_USER_ID ? cutoff : null},
-					${device.latitude}, ${device.longitude}, ${device.userId}
+					${device.latitude}, ${device.longitude}, ${device.heightAboveGround},
+					NULL, NULL, ${device.userId}
 				)
 			`
 
@@ -1057,7 +1059,10 @@ export class AppTarget {
 				use_auth AS "useAuth", "apiKey", exposure, status, model, public,
 				created_at AS "createdAt", updated_at AS "updatedAt",
 				archived_at AS "archivedAt", orphaned_at AS "orphanedAt",
-				latitude, longitude, user_id AS "userId",
+				latitude, longitude, height_above_ground AS "heightAboveGround",
+				terrain_elevation AS "terrainElevation",
+				terrain_elevation_dataset AS "terrainElevationDataset",
+				user_id AS "userId",
 				device_schema_version_id AS "deviceSchemaVersionId"
 			FROM device WHERE id = ${device.id}
 		`
@@ -1080,6 +1085,9 @@ export class AppTarget {
 			orphanedAt: device.userId === ORPHAN_USER_ID ? cutoff : null,
 			latitude: device.latitude,
 			longitude: device.longitude,
+			heightAboveGround: device.heightAboveGround,
+			terrainElevation: null,
+			terrainElevationDataset: null,
 			userId: device.userId,
 			deviceSchemaVersionId: null,
 		}
@@ -2079,6 +2087,9 @@ export class AppTarget {
 					updatedAt: Date
 					latitude: number
 					longitude: number
+					heightAboveGround: number | null
+					terrainElevation: number | null
+					terrainElevationDataset: string | null
 					userId: string
 					deviceSchemaVersionId: string | null
 				}>
@@ -2087,7 +2098,11 @@ export class AppTarget {
 					d.use_auth AS "useAuth", d.exposure, d.model, d.public,
 					d.created_at AT TIME ZONE 'UTC' AS "createdAt",
 					d.updated_at AT TIME ZONE 'UTC' AS "updatedAt",
-					d.latitude, d.longitude, d.user_id AS "userId",
+					d.latitude, d.longitude,
+					d.height_above_ground AS "heightAboveGround",
+					d.terrain_elevation AS "terrainElevation",
+					d.terrain_elevation_dataset AS "terrainElevationDataset",
+					d.user_id AS "userId",
 					d.device_schema_version_id AS "deviceSchemaVersionId"
 				FROM device d
 				JOIN osem_migration.entity e

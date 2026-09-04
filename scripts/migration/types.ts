@@ -160,6 +160,7 @@ export type MigratedDevice = {
 	updatedAt: Date
 	latitude: number
 	longitude: number
+	heightAboveGround: number | null
 	locations: NormalizedLocation[]
 	sensors: MigratedSensor[]
 }

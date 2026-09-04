@@ -381,6 +381,9 @@ export function expectedSourceDerivedEntities(snapshot: SourceSnapshot) {
 			updatedAt: value.updatedAt,
 			latitude: value.latitude,
 			longitude: value.longitude,
+			heightAboveGround: value.heightAboveGround,
+			terrainElevation: null,
+			terrainElevationDataset: null,
 			userId: value.userId,
 			deviceSchemaVersionId: null,
 		})

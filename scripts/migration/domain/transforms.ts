@@ -137,6 +137,55 @@ export function primaryDeviceCoordinates(box: LegacyBox): Coordinates | null {
 	return null
 }
 
+type LegacyHeightAboveGround = {
+	value: number | null
+	malformed: boolean
+}
+
+/**
+ * Reads the optional third GeoJSON coordinate used by legacy boxes for height
+ * above ground. Missing heights remain null; present non-finite/non-numeric values
+ * are marked malformed so the migration can retain an audit warning.
+ */
+function heightAboveGroundFromLegacyLocation(
+	value: unknown,
+): LegacyHeightAboveGround {
+	if (!value || typeof value !== 'object') {
+		return { value: null, malformed: false }
+	}
+	const coordinates = (value as { coordinates?: unknown }).coordinates
+	if (!Array.isArray(coordinates) || coordinates.length < 3) {
+		return { value: null, malformed: false }
+	}
+	const height = coordinates[2]
+	if (height == null) return { value: null, malformed: false }
+	return typeof height === 'number' && Number.isFinite(height)
+		? { value: height, malformed: false }
+		: { value: null, malformed: true }
+}
+
+/**
+ * Selects height from the same preferred legacy location as the device position:
+ * currentLocation first, otherwise the newest valid historical location.
+ */
+function primaryDeviceHeightAboveGround(
+	box: LegacyBox,
+): LegacyHeightAboveGround {
+	if (coordinatesFromLegacy(box.currentLocation)) {
+		return heightAboveGroundFromLegacyLocation(box.currentLocation)
+	}
+	if (!Array.isArray(box.locations)) {
+		return { value: null, malformed: false }
+	}
+	for (let index = box.locations.length - 1; index >= 0; index--) {
+		const location = box.locations[index]
+		if (coordinatesFromLegacy(location)) {
+			return heightAboveGroundFromLegacyLocation(location)
+		}
+	}
+	return { value: null, malformed: false }
+}
+
 type LocationTimestampIssueReason =
 	| 'invalid_explicit_timestamp'
 	| 'before_platform_epoch'
@@ -457,10 +506,13 @@ export function transformDevice(
 	const exposure = deviceExposure(box)
 	const locations = deviceLocations(box)
 	const coordinates = locations.at(-1)!
+	const heightAboveGround = primaryDeviceHeightAboveGround(box)
 	const warnings: string[] = []
 	if (model !== modelValue) warnings.push('unsupported_model_mapped_to_custom')
 	if (exposure !== exposureValue)
 		warnings.push('invalid_exposure_mapped_to_unknown')
+	if (heightAboveGround.malformed)
+		warnings.push('invalid_height_above_ground_omitted')
 
 	const sensors: MigratedSensor[] = []
 	if (Array.isArray(box.sensors)) {
@@ -495,6 +547,7 @@ export function transformDevice(
 			updatedAt,
 			latitude: coordinates.latitude,
 			longitude: coordinates.longitude,
+			heightAboveGround: heightAboveGround.value,
 			locations,
 			sensors,
 		},
