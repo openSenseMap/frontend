@@ -8,7 +8,7 @@ import { type Device, type User } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
 import { loader, action } from '~/routes/api.boxes'
 import { registerUser } from '~/services/user-service.server'
-import { resolveDeviceHeightAboveSeaLevel } from '~/services/elevation-service.server'
+import { getTerrainElevation } from '~/services/elevation-service.server'
 import { applyElevationConsentChoice } from '~/db/models/elevation-consent.server'
 
 const TEST_TERRAIN_ELEVATION = vi.hoisted(() => 250)
@@ -24,16 +24,14 @@ vi.mock('~/services/elevation-service.server', async (importOriginal) => {
 
 	return {
 		...actual,
-		resolveDeviceHeightAboveSeaLevel: vi.fn(
-			async (
-				_latitude: number,
-				_longitude: number,
-				heightAboveGround: number,
-			) => ({
-				heightAboveSeaLevel: TEST_TERRAIN_ELEVATION + heightAboveGround,
-				dataset: TEST_ELEVATION_DATASET,
-			}),
-		),
+		getTerrainElevation: vi.fn(async (latitude: number, longitude: number) => ({
+			elevation: TEST_TERRAIN_ELEVATION,
+			dataset: TEST_ELEVATION_DATASET,
+			datum: null,
+			attribution: null,
+			latitude,
+			longitude,
+		})),
 	}
 })
 
@@ -141,7 +139,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 					latitude: 51.969,
 					longitude: 7.596,
 					heightAboveGround: 2.5,
-					heightAboveSeaLevel: -12.5,
+					terrainElevation: -15,
 					exposure: 'outdoor',
 					model: 'custom',
 					sensors: [],
@@ -170,7 +168,9 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(response.status).toBe(200)
 			expect(feature).toBeDefined()
 			expect(feature.properties.height).toBe(-12.5)
-			expect(feature.properties.heightAboveGround).toBe(2.5)
+			expect(feature.properties.heightAboveGround).toBeUndefined()
+			expect(feature.properties.terrainElevation).toBeUndefined()
+			expect(feature.properties.terrainElevationDataset).toBeUndefined()
 			expect(feature.properties.heightAboveSeaLevel).toBe(-12.5)
 			expect(feature.geometry.coordinates).toEqual([7.596, 51.969, -12.5])
 		})
@@ -762,9 +762,8 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(responseData.height).toBe(expectedHeight)
 			expect(responseData.heightAboveGround).toBe(loc[2])
 			expect(responseData.heightAboveSeaLevel).toBe(expectedHeight)
-			expect(responseData.heightAboveSeaLevelDataset).toBe(
-				TEST_ELEVATION_DATASET,
-			)
+			expect(responseData.terrainElevation).toBe(TEST_TERRAIN_ELEVATION)
+			expect(responseData.terrainElevationDataset).toBe(TEST_ELEVATION_DATASET)
 			expect(responseData.currentLocation.coordinates).toEqual([
 				loc[0],
 				loc[1],
@@ -811,9 +810,8 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(responseData.height).toBe(TEST_TERRAIN_ELEVATION)
 			expect(responseData.heightAboveGround).toBe(0)
 			expect(responseData.heightAboveSeaLevel).toBe(TEST_TERRAIN_ELEVATION)
-			expect(responseData.heightAboveSeaLevelDataset).toBe(
-				TEST_ELEVATION_DATASET,
-			)
+			expect(responseData.terrainElevation).toBe(TEST_TERRAIN_ELEVATION)
+			expect(responseData.terrainElevationDataset).toBe(TEST_ELEVATION_DATASET)
 			expect(responseData.currentLocation.coordinates).toEqual([
 				loc.lng,
 				loc.lat,
@@ -834,7 +832,7 @@ describe('openSenseMap API Routes: /boxes', () => {
 		})
 
 		it('should retain height above ground when elevation lookup fails', async () => {
-			vi.mocked(resolveDeviceHeightAboveSeaLevel).mockRejectedValueOnce(
+			vi.mocked(getTerrainElevation).mockRejectedValueOnce(
 				new Error('Elevation unavailable'),
 			)
 			const request = new Request(BASE_URL, {
@@ -854,15 +852,16 @@ describe('openSenseMap API Routes: /boxes', () => {
 			expect(response.status).toBe(201)
 			expect(responseData.heightAboveGround).toBe(5)
 			expect(responseData.heightAboveSeaLevel).toBeNull()
-			expect(responseData.heightAboveSeaLevelDataset).toBeNull()
+			expect(responseData.terrainElevation).toBeNull()
+			expect(responseData.terrainElevationDataset).toBeNull()
 			expect(responseData.height).toBeNull()
 			expect(responseData.currentLocation.coordinates).toEqual([7.6, 51.9])
 		})
 
 		it('should not request elevation without consent', async () => {
 			vi.mocked(applyElevationConsentChoice).mockResolvedValueOnce(false)
-			const calculateHeight = vi.mocked(resolveDeviceHeightAboveSeaLevel)
-			calculateHeight.mockClear()
+			const elevationLookup = vi.mocked(getTerrainElevation)
+			elevationLookup.mockClear()
 
 			const request = new Request(BASE_URL, {
 				method: 'POST',
@@ -879,10 +878,11 @@ describe('openSenseMap API Routes: /boxes', () => {
 			if (responseData._id) createdDeviceIds.push(responseData._id)
 
 			expect(response.status).toBe(201)
-			expect(calculateHeight).not.toHaveBeenCalled()
+			expect(elevationLookup).not.toHaveBeenCalled()
 			expect(responseData.heightAboveGround).toBe(5)
 			expect(responseData.heightAboveSeaLevel).toBeNull()
-			expect(responseData.heightAboveSeaLevelDataset).toBeNull()
+			expect(responseData.terrainElevation).toBeNull()
+			expect(responseData.terrainElevationDataset).toBeNull()
 		})
 
 		it('should reject a new box with invalid coords', async () => {
