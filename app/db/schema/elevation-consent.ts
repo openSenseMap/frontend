@@ -1,9 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import {
-	type InferInsertModel,
-	type InferSelectModel,
-	relations,
-} from 'drizzle-orm'
+import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm'
 import { index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { user } from './user'
 
@@ -28,16 +24,6 @@ export const elevationConsent = pgTable(
 	},
 	(t) => ({
 		userIdx: index('elevation_consent_user_idx').on(t.userId),
-	}),
-)
-
-export const elevationConsentRelations = relations(
-	elevationConsent,
-	({ one }) => ({
-		user: one(user, {
-			fields: [elevationConsent.userId],
-			references: [user.id],
-		}),
 	}),
 )
 

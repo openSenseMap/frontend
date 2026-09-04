@@ -42,6 +42,7 @@ import {
 	createOrReusePrivateDeviceSchemaVersionFromUpload,
 	getVisibleDeviceSchemaVersionForCreation,
 } from './device-schema.server'
+import { calculatedDeviceHeightAboveSeaLevel } from './device-height'
 import { toGeoJsonPosition } from '~/lib/location'
 
 const BASE_DEVICE_COLUMNS = {
@@ -691,17 +692,6 @@ type DeviceMapProperties = Pick<
 }
 
 type DeviceListItem = DeviceMapProperties & Pick<Device, 'createdAt'>
-
-function calculatedDeviceHeightAboveSeaLevel() {
-	return sql<number | null>`
-		CASE
-			WHEN ${device.terrainElevation} IS NULL
-				OR ${device.heightAboveGround} IS NULL
-			THEN NULL
-			ELSE ${device.terrainElevation} + ${device.heightAboveGround}
-		END
-	`
-}
 
 // Extract the cached ISO timestamp from sensor.lastMeasurement JSON as a
 // PostgreSQL timestamp so it can be compared and aggregated in SQL.

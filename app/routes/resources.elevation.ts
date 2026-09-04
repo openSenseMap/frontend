@@ -10,7 +10,6 @@ import {
 import { getUserId } from '~/services/session-service.server'
 import {
 	grantCurrentElevationConsent,
-	hasCurrentElevationConsent,
 	withdrawElevationConsent,
 } from '~/db/models/elevation-consent.server'
 
@@ -39,33 +38,6 @@ async function lookupElevation(latitude: number, longitude: number) {
 			{ status: code === 'unavailable' ? 404 : 503 },
 		)
 	}
-}
-
-export async function loader({ request }: Route.LoaderArgs) {
-	const userId = await getUserId(request)
-	if (!userId) throw new Response('Unauthorized', { status: 401 })
-
-	const url = new URL(request.url)
-	const parsed = locationCoordinatesSchema.safeParse({
-		latitude: url.searchParams.get('latitude'),
-		longitude: url.searchParams.get('longitude'),
-	})
-
-	if (!parsed.success) {
-		return data<ElevationResourceResponse>(
-			{ ok: false, error: 'invalid_location' },
-			{ status: 400 },
-		)
-	}
-
-	if (!(await hasCurrentElevationConsent(userId))) {
-		return data<ElevationResourceResponse>(
-			{ ok: false, error: 'consent_required' },
-			{ status: 403 },
-		)
-	}
-
-	return lookupElevation(parsed.data.latitude, parsed.data.longitude)
 }
 
 export async function action({ request }: Route.ActionArgs) {

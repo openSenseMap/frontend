@@ -31,10 +31,10 @@ export function SummaryInfo() {
 		debounceMs: 0,
 	})
 	const terrainElevation = elevation.result?.elevation ?? null
-	const hasTerrainElevation = terrainElevation !== null
-	const finalHeight = hasTerrainElevation
-		? calculateHeightAboveSeaLevel(terrainElevation, heightAboveGround)
-		: null
+	const finalHeight = calculateHeightAboveSeaLevel(
+		terrainElevation,
+		heightAboveGround,
+	)
 	const modelLabel =
 		formData.model === 'luftdaten.info' ? 'Sensor.Community' : formData.model
 

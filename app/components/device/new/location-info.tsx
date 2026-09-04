@@ -16,7 +16,6 @@ import { Label } from '~/components/ui/label'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { BaseMap } from '~/components/base-map'
@@ -269,20 +268,18 @@ export function LocationStep() {
 						<Label htmlFor="heightAboveGround">
 							{t('height_above_ground')} ({t('optional')})
 						</Label>
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger
-									type="button"
-									aria-label={t('height_info_label')}
-									className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none"
-								>
-									<Info className="h-4 w-4" aria-hidden="true" />
-								</TooltipTrigger>
-								<TooltipContent className="max-w-xs">
-									{t('height_info_text')}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger
+								type="button"
+								aria-label={t('height_info_label')}
+								className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+							>
+								<Info className="h-4 w-4" aria-hidden="true" />
+							</TooltipTrigger>
+							<TooltipContent className="max-w-xs">
+								{t('height_info_text')}
+							</TooltipContent>
+						</Tooltip>
 					</div>
 					<Input
 						id="heightAboveGround"
@@ -325,20 +322,18 @@ export function LocationStep() {
 									}}
 								/>
 							</Label>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger
-										type="button"
-										aria-label={t('elevation_consent_info_label')}
-										className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-0.5 shrink-0 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
-									>
-										<Info className="h-4 w-4" aria-hidden="true" />
-									</TooltipTrigger>
-									<TooltipContent className="max-w-xs">
-										{t('elevation_consent_required')}
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger
+									type="button"
+									aria-label={t('elevation_consent_info_label')}
+									className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-0.5 shrink-0 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+								>
+									<Info className="h-4 w-4" aria-hidden="true" />
+								</TooltipTrigger>
+								<TooltipContent className="max-w-xs">
+									{t('elevation_consent_required')}
+								</TooltipContent>
+							</Tooltip>
 						</div>
 					</div>
 

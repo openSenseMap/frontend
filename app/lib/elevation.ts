@@ -27,17 +27,10 @@ export type ElevationResourceResponse =
 	  }
 
 export function calculateHeightAboveSeaLevel(
-	terrainElevation: number,
-	heightAboveGround?: number | null,
-) {
-	return terrainElevation + (heightAboveGround ?? 0)
-}
-
-export function calculateDeviceHeightAboveSeaLevel(
 	terrainElevation: number | null | undefined,
 	heightAboveGround: number | null | undefined,
 ) {
 	if (terrainElevation == null || heightAboveGround == null) return null
 
-	return calculateHeightAboveSeaLevel(terrainElevation, heightAboveGround)
+	return terrainElevation + heightAboveGround
 }

@@ -7,7 +7,6 @@ import {
 import { pgTable, boolean, text, timestamp } from 'drizzle-orm/pg-core'
 import { actionToken } from './action-token'
 import { device } from './device'
-import { elevationConsent } from './elevation-consent'
 import { password } from './password'
 import { profile } from './profile'
 import { refreshToken } from './refreshToken'
@@ -55,7 +54,6 @@ export const userRelations = relations(user, ({ one, many }) => ({
 	devices: many(device),
 	refreshToken: many(refreshToken),
 	actionTokens: many(actionToken),
-	elevationConsents: many(elevationConsent),
 }))
 
 /**

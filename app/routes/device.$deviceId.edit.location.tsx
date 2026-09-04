@@ -86,15 +86,7 @@ type MarkerValue = {
 }
 
 export type LocationActionData =
-	| {
-			ok: true
-			location: StoredDeviceLocation
-			heightAboveGround: number | null
-			terrainElevation: TerrainElevationResult | null
-			elevationLookupConsent: boolean
-			errors: null
-			savedAt: string
-	  }
+	| { ok: true }
 	| {
 			ok: false
 			errors: DeviceLocationInputFieldErrors
@@ -110,10 +102,6 @@ type LocationAutosaveValues = {
 type InitialLocationValues = LocationAutosaveValues & {
 	latitude: number
 	longitude: number
-}
-
-type StoredDeviceLocation = LocationCoordinates & {
-	heightAboveSeaLevel: number | null
 }
 
 //*****************************************************
@@ -188,7 +176,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 	let terrainElevationDataset = coordinatesChanged
 		? null
 		: device.terrainElevationDataset
-	let terrainElevationResult: TerrainElevationResult | null = null
 
 	if (
 		heightAboveGround !== null &&
@@ -196,7 +183,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 		terrainElevationValue === null
 	) {
 		try {
-			terrainElevationResult = await getTerrainElevation(
+			const terrainElevationResult = await getTerrainElevation(
 				parsed.data.latitude,
 				parsed.data.longitude,
 			)
@@ -210,11 +197,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 		}
 	}
 
-	const heightAboveSeaLevel =
-		terrainElevationValue === null || heightAboveGround === null
-			? null
-			: calculateHeightAboveSeaLevel(terrainElevationValue, heightAboveGround)
-
 	await updateDeviceLocation({
 		id,
 		latitude: parsed.data.latitude,
@@ -224,19 +206,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 		terrainElevationDataset,
 	})
 
-	return data({
-		ok: true as const,
-		location: {
-			latitude: parsed.data.latitude,
-			longitude: parsed.data.longitude,
-			heightAboveSeaLevel,
-		},
-		heightAboveGround,
-		terrainElevation: terrainElevationResult,
-		elevationLookupConsent: mayLookupElevation,
-		errors: null,
-		savedAt: new Date().toISOString(),
-	})
+	return data({ ok: true as const })
 }
 
 //**********************************
@@ -273,6 +243,25 @@ export default function EditLocation() {
 		() => parseHeightInput(heightAboveGroundInput),
 		[heightAboveGroundInput],
 	)
+	const initialTerrainElevation = useMemo<TerrainElevationResult | null>(
+		() =>
+			device.terrainElevation === null
+				? null
+				: {
+						elevation: device.terrainElevation,
+						dataset: device.terrainElevationDataset ?? 'unknown',
+						datum: null,
+						attribution: null,
+						latitude: device.latitude,
+						longitude: device.longitude,
+					},
+		[
+			device.latitude,
+			device.longitude,
+			device.terrainElevation,
+			device.terrainElevationDataset,
+		],
+	)
 
 	const currentLocation = useMemo<LocationCoordinates | null>(() => {
 		const candidate = {
@@ -289,6 +278,7 @@ export default function EditLocation() {
 	const elevation = useTerrainElevation({
 		latitude: shouldResolveElevation ? currentLocation.latitude : undefined,
 		longitude: shouldResolveElevation ? currentLocation.longitude : undefined,
+		initialResult: initialTerrainElevation,
 	})
 
 	const originalLocationRef = useRef<LocationAutosaveValues>({
@@ -458,9 +448,7 @@ export default function EditLocation() {
 	}
 
 	const finalHeight =
-		elevationLookupConsent &&
-		elevation.result &&
-		parsedHeightAboveGround !== undefined
+		elevationLookupConsent && elevation.result
 			? calculateHeightAboveSeaLevel(
 					elevation.result.elevation,
 					parsedHeightAboveGround,

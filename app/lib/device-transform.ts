@@ -1,6 +1,6 @@
 import { type Device, type Sensor } from '~/db/schema'
 import { type DeviceStatusType } from '~/lib/device-enums'
-import { calculateDeviceHeightAboveSeaLevel } from '~/lib/elevation'
+import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
 import { toIsoString } from '~/utils'
 
 const ACTIVE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000
@@ -97,7 +97,7 @@ export function transformDeviceToApiFormat(
 	const heightAboveSeaLevel =
 		selectedHeightAboveSeaLevel !== undefined
 			? selectedHeightAboveSeaLevel
-			: calculateDeviceHeightAboveSeaLevel(
+			: calculateHeightAboveSeaLevel(
 					box.terrainElevation,
 					box.heightAboveGround,
 				)

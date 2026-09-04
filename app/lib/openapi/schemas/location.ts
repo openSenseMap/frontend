@@ -127,7 +127,7 @@ export const DeviceLocationInputSchema = z
 	.meta({
 		id: 'DeviceLocationInput',
 		description:
-			'Device coordinates with an optional height above ground. The supplied value is persisted as height above ground. The server also attempts to resolve and persist the calculated height above sea level; if terrain elevation is unavailable, that derived value remains unset without failing the write. When height is omitted during an update, the existing above-ground height is retained.',
+			'Device coordinates with an optional height above ground. The supplied value is persisted as height above ground. The server also attempts to resolve and persist the terrain elevation and its source dataset; height above sea level is calculated from those atomic values when needed. If terrain elevation is unavailable, height above sea level remains unset without failing the write. When height is omitted during an update, the existing above-ground height is retained.',
 	})
 
 export const GeoJsonPointSchema = z

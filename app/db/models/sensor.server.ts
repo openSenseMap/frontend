@@ -8,6 +8,7 @@ import {
 } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 import { type BoxesDataQueryParams } from '~/lib/api-schemas/boxes-data-query-schema'
+import { calculatedDeviceHeightAboveSeaLevel } from './device-height'
 // import { point } from "@turf/helpers";
 // import type { Point } from "geojson";
 
@@ -269,14 +270,7 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 			deviceExposure: device.exposure,
 			deviceLat: device.latitude,
 			deviceLon: device.longitude,
-			deviceHeight: sql<number | null>`
-				CASE
-					WHEN ${device.terrainElevation} IS NULL
-						OR ${device.heightAboveGround} IS NULL
-					THEN NULL
-					ELSE ${device.terrainElevation} + ${device.heightAboveGround}
-				END
-			`,
+			deviceHeight: calculatedDeviceHeightAboveSeaLevel(),
 			sensorId: sensor.id,
 			sensorTitle: sensor.title,
 			sensorUnit: sensor.unit,
