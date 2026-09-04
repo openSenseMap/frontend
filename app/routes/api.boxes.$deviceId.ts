@@ -464,31 +464,37 @@ async function put(request: Request, user: User, deviceId: string) {
 			? body.location.height
 			: currentDevice.heightAboveGround
 
-		if (heightWasSupplied || coordinatesChanged) {
+		if (heightWasSupplied) {
+			locationData.heightAboveGround = heightAboveGround ?? null
+		}
+
+		if (coordinatesChanged) {
 			locationData.heightAboveGround = heightAboveGround ?? null
 			locationData.terrainElevation = null
 			locationData.terrainElevationDataset = null
+		}
 
-			if (
-				heightAboveGround !== null &&
-				heightAboveGround !== undefined &&
-				mayLookupElevation
-			) {
-				try {
-					const elevationResult = await getTerrainElevation(
-						body.location.lat,
-						body.location.lng,
-					)
-					locationData.terrainElevation = elevationResult.elevation
-					locationData.terrainElevationDataset = elevationResult.dataset
-				} catch (error) {
-					console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
-						error: error instanceof ElevationLookupError ? error.code : error,
-						deviceId,
-						latitude: body.location.lat,
-						longitude: body.location.lng,
-					})
-				}
+		const shouldLookupElevation =
+			heightAboveGround !== null &&
+			heightAboveGround !== undefined &&
+			mayLookupElevation &&
+			(coordinatesChanged || currentDevice.terrainElevation === null)
+
+		if (shouldLookupElevation) {
+			try {
+				const elevationResult = await getTerrainElevation(
+					body.location.lat,
+					body.location.lng,
+				)
+				locationData.terrainElevation = elevationResult.elevation
+				locationData.terrainElevationDataset = elevationResult.dataset
+			} catch (error) {
+				console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
+					error: error instanceof ElevationLookupError ? error.code : error,
+					deviceId,
+					latitude: body.location.lat,
+					longitude: body.location.lng,
+				})
 			}
 		}
 	}

@@ -328,6 +328,21 @@ export type DeviceWithoutSensors = Awaited<
 	ReturnType<typeof getDeviceWithoutSensors>
 >
 
+export function getDeviceLocationForEdit({ id }: Pick<Device, 'id'>) {
+	return drizzleClient.query.device.findFirst({
+		where: (device, { eq }) => eq(device.id, id),
+		columns: {
+			id: true,
+			latitude: true,
+			longitude: true,
+			heightAboveGround: true,
+			terrainElevation: true,
+			terrainElevationDataset: true,
+			userId: true,
+		},
+	})
+}
+
 export async function updateDeviceLocation({
 	id,
 	latitude,
@@ -345,7 +360,7 @@ export async function updateDeviceLocation({
 	| 'terrainElevationDataset'
 >) {
 	const [existingDevice] = await drizzleClient
-		.select()
+		.select({ id: device.id, archivedAt: device.archivedAt })
 		.from(device)
 		.where(eq(device.id, id))
 		.limit(1)

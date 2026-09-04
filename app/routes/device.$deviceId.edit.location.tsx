@@ -10,7 +10,7 @@ import { data, Link, redirect, useLoaderData } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.location'
 import {
-	getDeviceWithoutSensors,
+	getDeviceLocationForEdit,
 	updateDeviceLocation,
 } from '~/db/models/device.server'
 import { getUserId } from '~/services/session-service.server'
@@ -124,7 +124,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const deviceID = params.deviceId
 	invariant(typeof deviceID === 'string', 'Device id not found.')
 
-	const deviceData = await getDeviceWithoutSensors({ id: deviceID })
+	const deviceData = await getDeviceLocationForEdit({ id: deviceID })
 
 	if (!deviceData) {
 		throw new Response('Device not found', { status: 404 })
@@ -147,7 +147,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const id = params.deviceId
 	invariant(typeof id === 'string', 'Device id not found.')
 
-	const device = await getDeviceWithoutSensors({ id })
+	const device = await getDeviceLocationForEdit({ id })
 
 	if (!device) {
 		throw new Response('Device not found', { status: 404 })
@@ -179,19 +179,29 @@ export async function action({ request, params }: Route.ActionArgs) {
 		userId,
 		consentChoice,
 	)
-	let terrainElevation: TerrainElevationResult | null = null
-	let heightAboveSeaLevel: number | null = null
+	const coordinatesChanged =
+		parsed.data.latitude !== device.latitude ||
+		parsed.data.longitude !== device.longitude
+	let terrainElevationValue = coordinatesChanged
+		? null
+		: device.terrainElevation
+	let terrainElevationDataset = coordinatesChanged
+		? null
+		: device.terrainElevationDataset
+	let terrainElevationResult: TerrainElevationResult | null = null
 
-	if (heightAboveGround !== null && mayLookupElevation) {
+	if (
+		heightAboveGround !== null &&
+		mayLookupElevation &&
+		terrainElevationValue === null
+	) {
 		try {
-			terrainElevation = await getTerrainElevation(
+			terrainElevationResult = await getTerrainElevation(
 				parsed.data.latitude,
 				parsed.data.longitude,
 			)
-			heightAboveSeaLevel = calculateHeightAboveSeaLevel(
-				terrainElevation.elevation,
-				heightAboveGround,
-			)
+			terrainElevationValue = terrainElevationResult.elevation
+			terrainElevationDataset = terrainElevationResult.dataset
 		} catch (error) {
 			console.warn(
 				'Could not calculate device height above sea level:',
@@ -200,13 +210,18 @@ export async function action({ request, params }: Route.ActionArgs) {
 		}
 	}
 
+	const heightAboveSeaLevel =
+		terrainElevationValue === null || heightAboveGround === null
+			? null
+			: calculateHeightAboveSeaLevel(terrainElevationValue, heightAboveGround)
+
 	await updateDeviceLocation({
 		id,
 		latitude: parsed.data.latitude,
 		longitude: parsed.data.longitude,
 		heightAboveGround,
-		terrainElevation: terrainElevation?.elevation ?? null,
-		terrainElevationDataset: terrainElevation?.dataset ?? null,
+		terrainElevation: terrainElevationValue,
+		terrainElevationDataset,
 	})
 
 	return data({
@@ -217,7 +232,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 			heightAboveSeaLevel,
 		},
 		heightAboveGround,
-		terrainElevation,
+		terrainElevation: terrainElevationResult,
 		elevationLookupConsent: mayLookupElevation,
 		errors: null,
 		savedAt: new Date().toISOString(),
