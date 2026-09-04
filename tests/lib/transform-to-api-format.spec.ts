@@ -23,6 +23,7 @@ describe('transformDeviceToApiFormat', () => {
 		longitude: -122.4194,
 		heightAboveGround: 3.25,
 		heightAboveSeaLevel: 18.25,
+		heightAboveSeaLevelDataset: 'eudem25m',
 		useAuth: true,
 		public: false,
 		status: 'active',
@@ -67,6 +68,7 @@ describe('transformDeviceToApiFormat', () => {
 			longitude: -122.4194,
 			heightAboveGround: 3.25,
 			heightAboveSeaLevel: 18.25,
+			heightAboveSeaLevelDataset: 'eudem25m',
 			height: 18.25,
 			useAuth: true,
 			public: false,
@@ -262,6 +264,9 @@ describe('transformDeviceToApiFormat', () => {
 		expect(result.height).toBe(mockDevice.heightAboveSeaLevel)
 		expect(result.heightAboveGround).toBe(mockDevice.heightAboveGround)
 		expect(result.heightAboveSeaLevel).toBe(mockDevice.heightAboveSeaLevel)
+		expect(result.heightAboveSeaLevelDataset).toBe(
+			mockDevice.heightAboveSeaLevelDataset,
+		)
 		expect(result.useAuth).toBe(mockDevice.useAuth)
 		expect(result.public).toBe(mockDevice.public)
 		expect(result.status).toBe(mockDevice.status)
