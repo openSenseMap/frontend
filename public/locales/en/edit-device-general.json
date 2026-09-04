@@ -37,6 +37,8 @@
 	"enter_height": "Enter height above sea level (m)",
 	"enter_height_above_ground": "Enter height above ground (m)",
 	"height_info_text": "Height relative to the estimated ground surface in meters. Leave blank if no device height should be stored. When available, the estimated terrain elevation is used to calculate the height above sea level.",
+	"elevation_lookup_consent": "I consent to the transmission of the device coordinates to OpenTopoData to retrieve the height above sea level. See the <privacyLink>privacy policy</privacyLink> for details.",
+	"elevation_consent_required": "Without consent, the height above ground will still be saved, but the height above sea level cannot be calculated.",
 	"terrain_elevation": "Estimated surface elevation",
 	"final_height": "Calculated height above sea level",
 	"fetching_elevation": "Fetching estimated surface elevation...",
