@@ -221,8 +221,8 @@ export function LocationStep() {
 				</BaseMap>
 			</div>
 
-			<div className="bg-background flex w-full flex-col gap-4 p-4 sm:flex-row sm:items-start">
-				<div className="min-w-0 flex-1">
+			<div className="bg-background grid w-full gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
+				<div>
 					<Label htmlFor="latitude">{t('latitude')}</Label>
 					<Input
 						id="latitude"
@@ -243,7 +243,7 @@ export function LocationStep() {
 					) : null}
 				</div>
 
-				<div className="min-w-0 flex-1">
+				<div>
 					<Label htmlFor="longitude">{t('longitude')}</Label>
 					<Input
 						id="longitude"
