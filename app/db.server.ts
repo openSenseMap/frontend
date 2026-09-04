@@ -1,4 +1,10 @@
-import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import { type ExtractTablesWithRelations } from 'drizzle-orm'
+import { type PgTransaction } from 'drizzle-orm/pg-core'
+import {
+	drizzle,
+	type PostgresJsDatabase,
+	type PostgresJsQueryResultHKT,
+} from 'drizzle-orm/postgres-js'
 import postgres, { type Sql } from 'postgres'
 import invariant from 'tiny-invariant'
 import * as schema from './db/schema'
@@ -57,3 +63,9 @@ function parsePoolSize(value: string | undefined): number {
 }
 
 export { drizzleClient, pg }
+
+export type DatabaseTransaction = PgTransaction<
+	PostgresJsQueryResultHKT,
+	typeof schema,
+	ExtractTablesWithRelations<typeof schema>
+>
