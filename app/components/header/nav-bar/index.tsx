@@ -1,4 +1,3 @@
-import { useMediaQuery } from '@mantine/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SearchIcon, XIcon } from 'lucide-react'
 import { useState, useEffect, useRef, createContext } from 'react'
@@ -59,15 +58,28 @@ export default function NavBar(props: NavBarProps) {
 		}
 	}, [open])
 
-	const isDesktop = useMediaQuery('(min-width: 768px)')
-
 	return (
-		<div className="pointer-events-auto relative w-full max-w-176">
+		<div className="pointer-events-auto relative w-11 shrink-0 lg:w-full lg:max-w-176">
+			<button
+				type="button"
+				onClick={() => setOpen(true)}
+				aria-label={t('placeholder') || 'Search'}
+				aria-expanded={open}
+				className={cn(
+					topbarSurface({ shape: 'circle' }),
+					'flex items-center justify-center focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 focus-visible:outline-hidden lg:hidden',
+					open && 'invisible',
+				)}
+			>
+				<SearchIcon className="size-6" aria-hidden="true" />
+			</button>
+
 			<motion.div
 				layout
 				className={cn(
 					topbarSurface({ shape: 'panel' }),
-					'w-full overflow-hidden px-3 md:px-4',
+					'fixed top-16 right-3 left-3 w-auto overflow-hidden px-3 lg:relative lg:inset-auto lg:w-full lg:px-4',
+					!open && 'hidden lg:block',
 				)}
 				animate={{
 					borderRadius: open ? 16 : 999,
@@ -83,7 +95,7 @@ export default function NavBar(props: NavBarProps) {
 					},
 				}}
 			>
-				<div className="flex h-11 w-full items-center gap-2 text-black md:gap-4 dark:text-zinc-200">
+				<div className="flex h-11 w-full items-center gap-2 text-black lg:gap-4 dark:text-zinc-200">
 					<SearchIcon className="h-6 w-6 shrink-0 dark:text-zinc-200" />
 
 					<input
@@ -91,12 +103,12 @@ export default function NavBar(props: NavBarProps) {
 						placeholder={t('placeholder') || undefined}
 						onFocus={() => setOpen(true)}
 						onChange={(e) => setSearchString(e.target.value)}
-						className="h-full w-full flex-1 border-none bg-transparent focus:border-none focus:ring-0 focus:outline-hidden dark:text-zinc-200"
+						className="h-full min-w-0 flex-1 border-none bg-transparent focus:border-none focus:ring-0 focus:outline-hidden dark:text-zinc-200"
 						value={searchString}
 					/>
 
 					{!open && (
-						<span className="hidden flex-none text-xs font-semibold text-gray-400 md:block">
+						<span className="hidden flex-none text-xs font-semibold text-gray-400 lg:block">
 							<kbd>ctrl</kbd> + <kbd>K</kbd>
 						</span>
 					)}
@@ -110,7 +122,7 @@ export default function NavBar(props: NavBarProps) {
 								inputRef.current?.blur()
 							}}
 							aria-label="Close search"
-							className="rounded-full p-1 hover:bg-black/5 dark:hover:bg-white/10"
+							className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-black/5 lg:mr-0 lg:size-8 dark:hover:bg-white/10"
 						>
 							<XIcon className="h-5 w-5" />
 						</button>
@@ -154,8 +166,8 @@ export default function NavBar(props: NavBarProps) {
 					</AnimatePresence>
 				</NavbarContext.Provider>
 			</motion.div>
-			{!open && isDesktop && (
-				<div className="flex w-full items-center justify-center">
+			{!open && (
+				<div className="hidden w-full items-center justify-center lg:flex">
 					<FilterVisualization />
 				</div>
 			)}

@@ -121,6 +121,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 			},
 			logEntries: {
 				where: (entry, { eq }) => eq(entry.public, true),
+				orderBy: (entry, { desc }) => [desc(entry.createdAt)],
 				columns: {
 					id: true,
 					content: true,

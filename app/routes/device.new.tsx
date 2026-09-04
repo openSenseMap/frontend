@@ -150,11 +150,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function NewDevice() {
 	return (
-		<div className="flex h-screen flex-col">
+		<div className="flex h-dvh flex-col">
 			<NavBar />
-			<div className="bg-background grow overflow-auto">
-				<div className="flex h-full w-full justify-center py-10">
-					<div className="dark:text-dark-text flex h-full w-full items-center justify-center rounded-lg p-6 dark:bg-transparent dark:shadow-none">
+			<div className="bg-background min-h-0 grow overflow-auto">
+				<div className="flex h-full w-full justify-center px-3 py-4 sm:px-6 sm:py-8 lg:py-10">
+					<div className="dark:text-dark-text flex h-full w-full items-center justify-center rounded-lg dark:bg-transparent dark:shadow-none">
 						<ValidationStepperForm />
 					</div>
 				</div>
