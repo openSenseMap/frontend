@@ -257,7 +257,7 @@ export async function saveMeasurements(
 
 		const locations =
 			deviceLocationUpdates.length > 0
-				? await findOrCreateLocations(deviceLocationUpdates)
+				? await findOrCreateLocations(deviceLocationUpdates, tx)
 				: []
 		timing?.mark('findOrCreateLocations', {
 			locationCount: locations.length,
@@ -268,6 +268,7 @@ export async function saveMeasurements(
 				deviceLocationUpdates,
 				minimalDevice.id,
 				locations,
+				tx,
 			)
 		}
 		timing?.mark('addLocationUpdates')

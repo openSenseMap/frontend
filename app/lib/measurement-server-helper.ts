@@ -1,4 +1,4 @@
-import { desc, eq, inArray, or, SQL, sql } from 'drizzle-orm'
+import { desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm'
 import {
 	deviceToLocation,
 	type LastMeasurement,
@@ -7,7 +7,7 @@ import {
 	measurement,
 	sensor,
 } from '~/db/schema'
-import { drizzleClient } from '~/db.server'
+import { type DatabaseTransaction } from '~/db.server'
 import { type MeasurementTiming } from '~/lib/measurement-timing.server'
 
 export interface MeasurementWithLocation {
@@ -66,72 +66,71 @@ export function getLocationUpdates(
  */
 export async function findOrCreateLocations(
 	locationUpdates: DeviceLocationUpdate[],
+	tx: DatabaseTransaction,
 ): Promise<LocationWithId[]> {
 	const newLocations = locationUpdates.map((update) => update.location)
 
 	let foundLocations: LocationWithId[] = []
 
-	await drizzleClient.transaction(async (tx) => {
-		const existingLocations = await tx
-			.select({ id: location.id, location: location.location })
-			.from(location)
-			.where(
-				or(
-					...newLocations.map(
-						(newLocation) =>
-							sql`ST_EQUALS(
+	const existingLocations = await tx
+		.select({ id: location.id, location: location.location })
+		.from(location)
+		.where(
+			or(
+				...newLocations.map(
+					(newLocation) =>
+						sql`ST_EQUALS(
               ${location.location},
               ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)
             )`,
-					),
 				),
-			)
-
-		foundLocations = existingLocations.map((location) => {
-			return {
-				lng: location.location.x,
-				lat: location.location.y,
-				height: undefined,
-				id: location.id,
-			}
-		})
-
-		const toInsert = newLocations.filter(
-			(newLocation) => !foundLocationsContain(foundLocations, newLocation),
-		)
-		const uniqueToInsert = toInsert.filter(
-			(newLocation, index, arr) =>
-				arr.findIndex(
-					(candidate) =>
-						candidate.lng === newLocation.lng &&
-						candidate.lat === newLocation.lat,
-				) === index,
+			),
 		)
 
-		const inserted =
-			uniqueToInsert.length > 0
-				? await tx
-						.insert(location)
-						.values(
-							uniqueToInsert.map((newLocation) => {
-								return {
-									location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
-								}
-							}),
-						)
-						.onConflictDoNothing()
-						.returning()
-				: []
-
-		inserted.forEach((value) =>
-			foundLocations.push({
-				lng: value.location.x,
-				lat: value.location.y,
-				height: undefined,
-				id: value.id,
-			}),
-		)
+	foundLocations = existingLocations.map((location) => {
+		return {
+			lng: location.location.x,
+			lat: location.location.y,
+			height: undefined,
+			id: location.id,
+		}
 	})
+
+	const toInsert = newLocations.filter(
+		(newLocation) => !foundLocationsContain(foundLocations, newLocation),
+	)
+	const uniqueToInsert = toInsert.filter(
+		(newLocation, index, arr) =>
+			arr.findIndex(
+				(candidate) =>
+					candidate.lng === newLocation.lng &&
+					candidate.lat === newLocation.lat,
+			) === index,
+	)
+
+	const inserted =
+		uniqueToInsert.length > 0
+			? await tx
+					.insert(location)
+					.values(
+						uniqueToInsert.map((newLocation) => {
+							return {
+								location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
+							}
+						}),
+					)
+					.onConflictDoNothing()
+					.returning()
+			: []
+
+	inserted.forEach((value) =>
+		foundLocations.push({
+			lng: value.location.x,
+			lat: value.location.y,
+			height: undefined,
+			id: value.id,
+		}),
+	)
 
 	return foundLocations
 }
@@ -171,38 +170,34 @@ export async function addLocationUpdates(
 	deviceLocationUpdates: DeviceLocationUpdate[],
 	deviceId: string,
 	locations: LocationWithId[],
+	tx: DatabaseTransaction,
 ) {
-	await drizzleClient.transaction(async (tx) => {
-		let filteredUpdates = await filterLocationUpdates(
-			deviceLocationUpdates,
-			deviceId,
-			tx,
-		)
+	const filteredUpdates = await filterLocationUpdates(
+		deviceLocationUpdates,
+		deviceId,
+		tx,
+	)
 
-		filteredUpdates
-			.filter((update) => !foundLocationsContain(locations, update.location))
-			.forEach((update) => {
-				throw new Error(`Location ID for location ${update.location} not found,
+	filteredUpdates
+		.filter((update) => !foundLocationsContain(locations, update.location))
+		.forEach((update) => {
+			throw new Error(`Location ID for location ${update.location} not found,
         even though it should've been inserted`)
-			})
+		})
 
-		if (filteredUpdates.length > 0)
-			await tx
-				.insert(deviceToLocation)
-				.values(
-					filteredUpdates.map((update) => {
-						return {
-							deviceId: deviceId,
-							locationId: foundLocationsGet(
-								locations,
-								update.location,
-							) as bigint,
-							time: update.time,
-						}
-					}),
-				)
-				.onConflictDoNothing()
-	})
+	if (filteredUpdates.length > 0)
+		await tx
+			.insert(deviceToLocation)
+			.values(
+				filteredUpdates.map((update) => {
+					return {
+						deviceId: deviceId,
+						locationId: foundLocationsGet(locations, update.location) as bigint,
+						time: update.time,
+					}
+				}),
+			)
+			.onConflictDoNothing()
 }
 
 /**
@@ -212,7 +207,7 @@ export async function addLocationUpdates(
 export async function filterLocationUpdates(
 	deviceLocationUpdates: DeviceLocationUpdate[],
 	deviceId: string,
-	tx: any,
+	tx: DatabaseTransaction,
 ): Promise<DeviceLocationUpdate[]> {
 	const currentLatestLocation = await tx
 		.select({ time: deviceToLocation.time })
@@ -240,7 +235,7 @@ export async function insertMeasurementsWithLocation(
 	measurements: MeasurementWithLocation[],
 	locations: LocationWithId[],
 	deviceId: string,
-	tx: any,
+	tx: DatabaseTransaction,
 	options: { shouldReturn?: boolean } = {},
 	timing?: MeasurementTiming | null,
 ): Promise<Measurement[]> {
@@ -288,7 +283,7 @@ export async function insertMeasurementsWithLocation(
  */
 export async function updateLastMeasurements(
 	lastMeasurements: Record<string, NonNullable<LastMeasurement>>,
-	tx: any,
+	tx: DatabaseTransaction,
 	timing?: MeasurementTiming | null,
 ) {
 	const sqlChunks: SQL[] = [
