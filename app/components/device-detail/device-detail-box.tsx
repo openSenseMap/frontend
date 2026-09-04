@@ -76,6 +76,7 @@ import { type SensorWithLatestMeasurement } from '~/db/schema'
 import { getArchiveLink } from '~/lib/archive-link'
 import { type loader } from '~/routes/explore.$deviceId'
 import { dateDiffToNowInWords } from '~/lib/date'
+import { calculateDeviceHeightAboveSeaLevel } from '~/lib/elevation'
 
 export interface MeasurementProps {
 	sensorId: string
@@ -186,6 +187,11 @@ export default function DeviceDetailBox() {
 	}, [refreshOn, refreshSecond])
 
 	if (!data.device) return null
+
+	const heightAboveSeaLevel = calculateDeviceHeightAboveSeaLevel(
+		data.device.terrainElevation,
+		data.device.heightAboveGround,
+	)
 
 	return (
 		<>
@@ -333,11 +339,11 @@ export default function DeviceDetailBox() {
 													: t('unknown')
 											}
 										/>
-										{typeof data.device.heightAboveSeaLevel === 'number' ? (
+										{heightAboveSeaLevel !== null ? (
 											<InfoItem
 												icon={Mountain}
 												title={t('height_above_sea_level')}
-												text={`${Math.round(data.device.heightAboveSeaLevel)} m`}
+												text={`${Math.round(heightAboveSeaLevel)} m`}
 											/>
 										) : null}
 										<InfoItem

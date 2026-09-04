@@ -1,7 +1,6 @@
 import { setTimeout as delay } from 'node:timers/promises'
 import { z } from 'zod'
 import {
-	calculateHeightAboveSeaLevel,
 	type ElevationLookupErrorCode,
 	type TerrainElevationResult,
 } from '~/lib/elevation'
@@ -274,20 +273,4 @@ export function getTerrainElevation(
 	inFlight.set(key, request)
 
 	return request.then((result) => ({ ...result, latitude, longitude }))
-}
-
-export async function resolveDeviceHeightAboveSeaLevel(
-	latitude: number,
-	longitude: number,
-	heightAboveGround: number,
-) {
-	const terrainElevation = await getTerrainElevation(latitude, longitude)
-
-	return {
-		heightAboveSeaLevel: calculateHeightAboveSeaLevel(
-			terrainElevation.elevation,
-			heightAboveGround,
-		),
-		dataset: terrainElevation.dataset,
-	}
 }

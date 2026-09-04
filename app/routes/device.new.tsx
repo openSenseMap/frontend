@@ -6,7 +6,6 @@ import { getIntegrations } from '~/db/models/integration.server'
 import { createDevice } from '~/services/device-service.server'
 import { createDeviceIntegrations } from '~/services/integration-service.server'
 import { getUser, getUserId } from '~/services/session-service.server'
-import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
 import { newDeviceSubmissionSchema } from '~/lib/new-device-form'
 import {
 	ElevationLookupError,
@@ -75,8 +74,8 @@ export async function action({ request }: Route.ActionArgs) {
 	const selectedSensors = sensorSelection.selectedSensors
 	const { latitude, longitude, heightAboveGround, elevationLookupConsent } =
 		submission.location
-	let heightAboveSeaLevel: number | null = null
-	let heightAboveSeaLevelDataset: string | null = null
+	let terrainElevation: number | null = null
+	let terrainElevationDataset: string | null = null
 	const mayLookupElevation = await applyElevationConsentChoice(
 		userId,
 		elevationLookupConsent,
@@ -84,12 +83,9 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (heightAboveGround !== undefined && mayLookupElevation) {
 		try {
-			const terrainElevation = await getTerrainElevation(latitude, longitude)
-			heightAboveSeaLevel = calculateHeightAboveSeaLevel(
-				terrainElevation.elevation,
-				heightAboveGround,
-			)
-			heightAboveSeaLevelDataset = terrainElevation.dataset
+			const elevationResult = await getTerrainElevation(latitude, longitude)
+			terrainElevation = elevationResult.elevation
+			terrainElevationDataset = elevationResult.dataset
 		} catch (error) {
 			console.warn(
 				'Could not calculate device height above sea level:',
@@ -108,8 +104,8 @@ export async function action({ request }: Route.ActionArgs) {
 			latitude,
 			longitude,
 			heightAboveGround: heightAboveGround ?? null,
-			heightAboveSeaLevel,
-			heightAboveSeaLevelDataset,
+			terrainElevation,
+			terrainElevationDataset,
 		}
 
 		const devicePayload =

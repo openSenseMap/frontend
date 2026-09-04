@@ -1,11 +1,19 @@
 import { type Device, type Sensor } from '~/db/schema'
 import { type DeviceStatusType } from '~/lib/device-enums'
+import { calculateDeviceHeightAboveSeaLevel } from '~/lib/elevation'
 import { toIsoString } from '~/utils'
 
 const ACTIVE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000
 const INACTIVE_THRESHOLD_MS = 30 * 24 * 60 * 60 * 1000
 
-export type DeviceWithSensors = Device & {
+export type DeviceWithSensors = Omit<
+	Device,
+	'heightAboveGround' | 'terrainElevation' | 'terrainElevationDataset'
+> & {
+	heightAboveGround?: number | null
+	terrainElevation?: number | null
+	terrainElevationDataset?: string | null
+	heightAboveSeaLevel?: number | null
 	sensors: Sensor[]
 }
 
@@ -21,9 +29,10 @@ export type TransformedDevice = {
 	model: string | null
 	latitude: number
 	longitude: number
-	heightAboveGround: number | null
+	heightAboveGround?: number | null
 	heightAboveSeaLevel: number | null
-	heightAboveSeaLevelDataset: string | null
+	terrainElevation?: number | null
+	terrainElevationDataset?: string | null
 	/** Legacy alias for heightAboveSeaLevel. */
 	height: number | null
 	useAuth: boolean | null
@@ -76,18 +85,33 @@ export type TransformedDevice = {
 export function transformDeviceToApiFormat(
 	box: DeviceWithSensors,
 ): TransformedDevice {
-	const { id, tags, sensors, apiKey, ...rest } = box
+	const {
+		id,
+		tags,
+		sensors,
+		apiKey,
+		heightAboveSeaLevel: selectedHeightAboveSeaLevel,
+		...rest
+	} = box
 	const timestamp = box.updatedAt.toISOString()
+	const heightAboveSeaLevel =
+		selectedHeightAboveSeaLevel !== undefined
+			? selectedHeightAboveSeaLevel
+			: calculateDeviceHeightAboveSeaLevel(
+					box.terrainElevation,
+					box.heightAboveGround,
+				)
 	const coordinates =
-		box.heightAboveSeaLevel === null || box.heightAboveSeaLevel === undefined
+		heightAboveSeaLevel === null
 			? [box.longitude, box.latitude]
-			: [box.longitude, box.latitude, box.heightAboveSeaLevel]
+			: [box.longitude, box.latitude, heightAboveSeaLevel]
 
 	return {
 		_id: id,
 		grouptag: tags || [],
 		...rest,
-		height: box.heightAboveSeaLevel,
+		heightAboveSeaLevel,
+		height: heightAboveSeaLevel,
 		status: deriveDeviceStatus(sensors),
 		createdAt: toIsoString(box.createdAt)!,
 		updatedAt: toIsoString(box.updatedAt)!,

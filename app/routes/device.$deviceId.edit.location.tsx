@@ -5,7 +5,7 @@ import {
 	Marker,
 	NavigationControl,
 } from 'react-map-gl/maplibre'
-import { data, redirect, useLoaderData } from 'react-router'
+import { data, Link, redirect, useLoaderData } from 'react-router'
 
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/device.$deviceId.edit.location'
@@ -24,7 +24,6 @@ import {
 	type LocationCoordinates,
 } from '~/lib/location'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import {
 	useAutosaveFetcher,
 	AUTOSAVE_DELAY_MS,
@@ -206,8 +205,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 		latitude: parsed.data.latitude,
 		longitude: parsed.data.longitude,
 		heightAboveGround,
-		heightAboveSeaLevel,
-		heightAboveSeaLevelDataset: terrainElevation?.dataset ?? null,
+		terrainElevation: terrainElevation?.elevation ?? null,
+		terrainElevationDataset: terrainElevation?.dataset ?? null,
 	})
 
 	return data({

@@ -32,3 +32,12 @@ export function calculateHeightAboveSeaLevel(
 ) {
 	return terrainElevation + (heightAboveGround ?? 0)
 }
+
+export function calculateDeviceHeightAboveSeaLevel(
+	terrainElevation: number | null | undefined,
+	heightAboveGround: number | null | undefined,
+) {
+	if (terrainElevation == null || heightAboveGround == null) return null
+
+	return calculateHeightAboveSeaLevel(terrainElevation, heightAboveGround)
+}

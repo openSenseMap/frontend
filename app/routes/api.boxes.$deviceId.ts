@@ -29,7 +29,7 @@ import {
 	DeviceSensorUpdateSchema,
 	DeviceAddonsUpdateSchema,
 	ApiDeviceSchema,
-	DeviceSensorUpdate,
+	type DeviceSensorUpdate,
 } from '~/lib/openapi/schemas/device'
 import { ExposureSchema } from '~/lib/api-schemas/query'
 import {
@@ -41,7 +41,7 @@ import { DeviceLocationInputSchema } from '~/lib/openapi/schemas/location'
 import { ElevationLookupConsentSchema } from '~/lib/openapi/schemas/consent'
 import {
 	ElevationLookupError,
-	resolveDeviceHeightAboveSeaLevel,
+	getTerrainElevation,
 } from '~/services/elevation-service.server'
 import { applyElevationConsentChoice } from '~/db/models/elevation-consent.server'
 
@@ -466,8 +466,8 @@ async function put(request: Request, user: User, deviceId: string) {
 
 		if (heightWasSupplied || coordinatesChanged) {
 			locationData.heightAboveGround = heightAboveGround ?? null
-			locationData.heightAboveSeaLevel = null
-			locationData.heightAboveSeaLevelDataset = null
+			locationData.terrainElevation = null
+			locationData.terrainElevationDataset = null
 
 			if (
 				heightAboveGround !== null &&
@@ -475,13 +475,12 @@ async function put(request: Request, user: User, deviceId: string) {
 				mayLookupElevation
 			) {
 				try {
-					const resolvedHeight = await resolveDeviceHeightAboveSeaLevel(
+					const elevationResult = await getTerrainElevation(
 						body.location.lat,
 						body.location.lng,
-						heightAboveGround,
 					)
-					locationData.heightAboveSeaLevel = resolvedHeight.heightAboveSeaLevel
-					locationData.heightAboveSeaLevelDataset = resolvedHeight.dataset
+					locationData.terrainElevation = elevationResult.elevation
+					locationData.terrainElevationDataset = elevationResult.dataset
 				} catch (error) {
 					console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
 						error: error instanceof ElevationLookupError ? error.code : error,

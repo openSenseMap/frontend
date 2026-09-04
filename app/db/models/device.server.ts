@@ -57,8 +57,8 @@ const BASE_DEVICE_COLUMNS = {
 	latitude: true,
 	longitude: true,
 	heightAboveGround: true,
-	heightAboveSeaLevel: true,
-	heightAboveSeaLevelDataset: true,
+	terrainElevation: true,
+	terrainElevationDataset: true,
 	status: true,
 	createdAt: true,
 	updatedAt: true,
@@ -75,9 +75,9 @@ const BASE_DEVICE_COLUMNS = {
 
 const DEVICE_COLUMNS_WITH_SENSORS = {
 	...BASE_DEVICE_COLUMNS,
-	useAuth: true,
-	public: true,
-	userId: true,
+	heightAboveGround: false,
+	terrainElevation: false,
+	terrainElevationDataset: false,
 } as const
 
 export class DeviceUpdateError extends Error {
@@ -237,9 +237,6 @@ export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
-			heightAboveGround: true,
-			heightAboveSeaLevel: true,
-			heightAboveSeaLevelDataset: true,
 			userId: true,
 		},
 	})
@@ -281,8 +278,6 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			latitude: true,
 			longitude: true,
 			heightAboveGround: true,
-			heightAboveSeaLevel: true,
-			heightAboveSeaLevelDataset: true,
 			userId: true,
 			useAuth: true,
 			model: true,
@@ -338,16 +333,16 @@ export async function updateDeviceLocation({
 	latitude,
 	longitude,
 	heightAboveGround,
-	heightAboveSeaLevel,
-	heightAboveSeaLevelDataset,
+	terrainElevation,
+	terrainElevationDataset,
 }: Pick<
 	Device,
 	| 'id'
 	| 'latitude'
 	| 'longitude'
 	| 'heightAboveGround'
-	| 'heightAboveSeaLevel'
-	| 'heightAboveSeaLevelDataset'
+	| 'terrainElevation'
+	| 'terrainElevationDataset'
 >) {
 	const [existingDevice] = await drizzleClient
 		.select()
@@ -367,8 +362,8 @@ export async function updateDeviceLocation({
 			latitude,
 			longitude,
 			heightAboveGround,
-			heightAboveSeaLevel,
-			heightAboveSeaLevelDataset,
+			terrainElevation,
+			terrainElevationDataset,
 			updatedAt: sql`NOW()`,
 		})
 		.where(eq(device.id, id))
@@ -388,8 +383,8 @@ export type UpdateDeviceArgs = {
 		lat: number
 		lng: number
 		heightAboveGround?: number | null
-		heightAboveSeaLevel?: number | null
-		heightAboveSeaLevelDataset?: string | null
+		terrainElevation?: number | null
+		terrainElevationDataset?: string | null
 	}
 	sensors?: SensorUpdateArgs[]
 }
@@ -462,8 +457,8 @@ export async function updateDevice(
 				lat,
 				lng,
 				heightAboveGround,
-				heightAboveSeaLevel,
-				heightAboveSeaLevelDataset,
+				terrainElevation,
+				terrainElevationDataset,
 			} = args.location
 			const pointWKT = `POINT(${lng} ${lat})`
 
@@ -506,14 +501,12 @@ export async function updateDevice(
 			if (heightAboveGround !== undefined) {
 				setColumns['heightAboveGround'] = heightAboveGround
 			}
-			if (heightAboveSeaLevel !== undefined) {
-				setColumns['heightAboveSeaLevel'] = heightAboveSeaLevel
-				setColumns['heightAboveSeaLevelDataset'] =
-					heightAboveSeaLevel === null
-						? null
-						: (heightAboveSeaLevelDataset ?? null)
-			} else if (heightAboveSeaLevelDataset !== undefined) {
-				setColumns['heightAboveSeaLevelDataset'] = heightAboveSeaLevelDataset
+			if (terrainElevation !== undefined) {
+				setColumns['terrainElevation'] = terrainElevation
+				setColumns['terrainElevationDataset'] =
+					terrainElevation === null ? null : (terrainElevationDataset ?? null)
+			} else if (terrainElevationDataset !== undefined) {
+				setColumns['terrainElevationDataset'] = terrainElevationDataset
 			}
 		}
 
@@ -640,6 +633,11 @@ export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
 		where: (device, { eq }) => eq(device.userId, userId),
 		columns: DEVICE_COLUMNS_WITH_SENSORS,
+		extras: {
+			heightAboveSeaLevel: calculatedDeviceHeightAboveSeaLevel().as(
+				'height_above_sea_level',
+			),
+		},
 		with: {
 			sensors: true,
 		},
@@ -669,6 +667,27 @@ export function getUserDeviceIds(userId: Device['userId']) {
 
 type DevicesFormat = 'json' | 'geojson'
 
+type DeviceMapProperties = Pick<
+	Device,
+	'id' | 'name' | 'latitude' | 'longitude' | 'exposure' | 'tags'
+> & {
+	heightAboveSeaLevel: number | null
+	status: Device['status']
+}
+
+type DeviceListItem = DeviceMapProperties & Pick<Device, 'createdAt'>
+
+function calculatedDeviceHeightAboveSeaLevel() {
+	return sql<number | null>`
+		CASE
+			WHEN ${device.terrainElevation} IS NULL
+				OR ${device.heightAboveGround} IS NULL
+			THEN NULL
+			ELSE ${device.terrainElevation} + ${device.heightAboveGround}
+		END
+	`
+}
+
 // Extract the cached ISO timestamp from sensor.lastMeasurement JSON as a
 // PostgreSQL timestamp so it can be compared and aggregated in SQL.
 const cachedLastMeasurementAt = sql<Date | null>`
@@ -683,13 +702,15 @@ const deriveDeviceStatus = (lastMeasurementAt: SQL) => sql<Device['status']>`
 	END
 `
 
-export async function getDevices(format: 'json'): Promise<Device[]>
+export async function getDevices(format: 'json'): Promise<DeviceListItem[]>
 export async function getDevices(
 	format: 'geojson',
-): Promise<GeoJSON.FeatureCollection<Point>>
+): Promise<GeoJSON.FeatureCollection<Point, DeviceMapProperties>>
 export async function getDevices(
 	format?: DevicesFormat,
-): Promise<Device[] | GeoJSON.FeatureCollection<Point>>
+): Promise<
+	DeviceListItem[] | GeoJSON.FeatureCollection<Point, DeviceMapProperties>
+>
 
 export async function getDevices(format: DevicesFormat = 'json') {
 	const latestMeasurementAt = sql<Date | null>`max(${cachedLastMeasurementAt})`
@@ -700,9 +721,7 @@ export async function getDevices(format: DevicesFormat = 'json') {
 				name: device.name,
 				latitude: device.latitude,
 				longitude: device.longitude,
-				heightAboveGround: device.heightAboveGround,
-				heightAboveSeaLevel: device.heightAboveSeaLevel,
-				heightAboveSeaLevelDataset: device.heightAboveSeaLevelDataset,
+				heightAboveSeaLevel: calculatedDeviceHeightAboveSeaLevel(),
 				exposure: device.exposure,
 				createdAt: device.createdAt,
 				tags: device.tags,
@@ -749,14 +768,16 @@ export async function getArchivedDevices() {
 			name: true,
 			latitude: true,
 			longitude: true,
-			heightAboveGround: true,
-			heightAboveSeaLevel: true,
-			heightAboveSeaLevelDataset: true,
 			exposure: true,
 			status: true,
 			createdAt: true,
 			tags: true,
 			archivedAt: true,
+		},
+		extras: {
+			heightAboveSeaLevel: calculatedDeviceHeightAboveSeaLevel().as(
+				'height_above_sea_level',
+			),
 		},
 	})
 	return devices
@@ -794,7 +815,15 @@ export async function getDevicesWithSensors(options?: {
 
 	const rows = await drizzleClient
 		.select({
-			device: device,
+			device: {
+				id: device.id,
+				name: device.name,
+				latitude: device.latitude,
+				longitude: device.longitude,
+				heightAboveSeaLevel: calculatedDeviceHeightAboveSeaLevel(),
+				exposure: device.exposure,
+				tags: device.tags,
+			},
 			// Keep one result row per sensor, but calculate the newest cached sensor
 			// measurement across the device and derive the same status on every row.
 			status: deriveDeviceStatus(
@@ -823,33 +852,36 @@ export async function getDevicesWithSensors(options?: {
 
 	const deviceMap = new Map<
 		string,
-		{ device: Device & { sensors: PartialSensor[] } }
+		{ device: DeviceMapProperties & { sensors: PartialSensor[] } }
 	>()
 
-	const resultArray: Array<{ device: Device & { sensors: PartialSensor[] } }> =
-		rows.reduce(
-			(acc, row) => {
-				const currentDevice = { ...row.device, status: row.status }
-				const currentSensor = row.sensor
+	const resultArray: Array<{
+		device: DeviceMapProperties & { sensors: PartialSensor[] }
+	}> = rows.reduce(
+		(acc, row) => {
+			const currentDevice = { ...row.device, status: row.status }
+			const currentSensor = row.sensor
 
-				if (!deviceMap.has(currentDevice.id)) {
-					const newDevice = {
-						device: {
-							...currentDevice,
-							sensors: currentSensor ? [currentSensor] : [],
-						},
-					}
-
-					deviceMap.set(currentDevice.id, newDevice)
-					acc.push(newDevice)
-				} else if (currentSensor) {
-					deviceMap.get(currentDevice.id)!.device.sensors.push(currentSensor)
+			if (!deviceMap.has(currentDevice.id)) {
+				const newDevice = {
+					device: {
+						...currentDevice,
+						sensors: currentSensor ? [currentSensor] : [],
+					},
 				}
 
-				return acc
-			},
-			[] as Array<{ device: Device & { sensors: PartialSensor[] } }>,
-		)
+				deviceMap.set(currentDevice.id, newDevice)
+				acc.push(newDevice)
+			} else if (currentSensor) {
+				deviceMap.get(currentDevice.id)!.device.sensors.push(currentSensor)
+			}
+
+			return acc
+		},
+		[] as Array<{
+			device: DeviceMapProperties & { sensors: PartialSensor[] }
+		}>,
+	)
 
 	for (const result of resultArray) {
 		const coordinates = toGeoJsonPosition(
@@ -990,9 +1022,6 @@ const MINIMAL_COLUMNS = {
 	exposure: true,
 	longitude: true,
 	latitude: true,
-	heightAboveGround: true,
-	heightAboveSeaLevel: true,
-	heightAboveSeaLevelDataset: true,
 }
 
 const DEFAULT_COLUMNS = {
@@ -1008,9 +1037,6 @@ const DEFAULT_COLUMNS = {
 	updatedAt: true,
 	longitude: true,
 	latitude: true,
-	heightAboveGround: true,
-	heightAboveSeaLevel: true,
-	heightAboveSeaLevelDataset: true,
 }
 
 export async function findDevices(
@@ -1027,6 +1053,11 @@ export async function findDevices(
 	}
 	const devices = await drizzleClient.query.device.findMany({
 		...(Object.keys(columns).length !== 0 && { columns }),
+		extras: {
+			heightAboveSeaLevel: calculatedDeviceHeightAboveSeaLevel().as(
+				'height_above_sea_level',
+			),
+		},
 		...(Object.keys(relations).length !== 0 && { with: relations }),
 		...(Object.keys(whereClause).length !== 0 && {
 			where: (_, { and }) => and(...whereClause),
@@ -1150,11 +1181,11 @@ export async function createDevice(deviceData: any, userId: string) {
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
 					heightAboveGround: deviceData.heightAboveGround ?? null,
-					heightAboveSeaLevel: deviceData.heightAboveSeaLevel ?? null,
-					heightAboveSeaLevelDataset:
-						deviceData.heightAboveSeaLevel == null
+					terrainElevation: deviceData.terrainElevation ?? null,
+					terrainElevationDataset:
+						deviceData.terrainElevation == null
 							? null
-							: (deviceData.heightAboveSeaLevelDataset ?? null),
+							: (deviceData.terrainElevationDataset ?? null),
 					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
 				})
 				.returning()

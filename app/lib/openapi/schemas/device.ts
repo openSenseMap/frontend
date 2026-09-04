@@ -189,12 +189,17 @@ export const ApiDeviceSchema = z
 		}),
 		heightAboveSeaLevel: HeightSchema.nullable().optional().meta({
 			description:
-				'Calculated device height above sea level in meters. Null when no above-ground height was supplied or terrain elevation could not be resolved.',
+				'Device height above sea level in meters, calculated from terrainElevation and heightAboveGround. Null when either source value is unavailable.',
 			example: 66.6,
 		}),
-		heightAboveSeaLevelDataset: z.string().nullable().optional().meta({
+		terrainElevation: HeightSchema.nullable().optional().meta({
 			description:
-				'OpenTopoData dataset used to calculate heightAboveSeaLevel. Null when no calculated height is available.',
+				'Terrain elevation in meters returned by the elevation service.',
+			example: 63.1,
+		}),
+		terrainElevationDataset: z.string().nullable().optional().meta({
+			description:
+				'OpenTopoData dataset from which terrainElevation was retrieved. Null when no terrain elevation is available.',
 			example: 'eudem25m',
 		}),
 		useAuth: z.boolean().optional().meta({

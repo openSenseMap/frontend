@@ -269,7 +269,14 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 			deviceExposure: device.exposure,
 			deviceLat: device.latitude,
 			deviceLon: device.longitude,
-			deviceHeight: device.heightAboveSeaLevel,
+			deviceHeight: sql<number | null>`
+				CASE
+					WHEN ${device.terrainElevation} IS NULL
+						OR ${device.heightAboveGround} IS NULL
+					THEN NULL
+					ELSE ${device.terrainElevation} + ${device.heightAboveGround}
+				END
+			`,
 			sensorId: sensor.id,
 			sensorTitle: sensor.title,
 			sensorUnit: sensor.unit,
