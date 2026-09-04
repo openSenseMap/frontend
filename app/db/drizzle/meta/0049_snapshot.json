@@ -1,6 +1,6 @@
 {
-  "id": "c4ff857b-8a2e-435c-9e9e-e1f9e6f280b7",
-  "prevId": "3285f8be-bd73-4ead-b46a-8a783965c4d7",
+  "id": "e1f155ba-a9a5-431a-b585-45e75fa23a87",
+  "prevId": "c4ff857b-8a2e-435c-9e9e-e1f9e6f280b7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -137,8 +137,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "height": {
-          "name": "height",
+        "height_above_ground": {
+          "name": "height_above_ground",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height_above_sea_level": {
+          "name": "height_above_sea_level",
           "type": "double precision",
           "primaryKey": false,
           "notNull": false

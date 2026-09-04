@@ -105,7 +105,6 @@ export type DeviceLocationInputFieldErrors = {
 	latitude?: string
 	longitude?: string
 	heightAboveGround?: string
-	elevation?: string
 }
 
 export function parseDeviceLocationInputFormData(formData: FormData):

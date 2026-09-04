@@ -64,14 +64,18 @@ export function LocationStep() {
 		return isValidLocation(candidate) ? candidate : null
 	}, [marker.latitude, marker.longitude])
 
-	const elevation = useTerrainElevation({
-		latitude: markerLocation?.latitude,
-		longitude: markerLocation?.longitude,
-	})
 	const parsedHeightAboveGround =
 		deviceLocationInputSchema.shape.heightAboveGround.safeParse(
 			savedHeightAboveGround,
 		)
+	const shouldResolveElevation =
+		markerLocation !== null &&
+		parsedHeightAboveGround.success &&
+		parsedHeightAboveGround.data !== undefined
+	const elevation = useTerrainElevation({
+		latitude: shouldResolveElevation ? markerLocation.latitude : undefined,
+		longitude: shouldResolveElevation ? markerLocation.longitude : undefined,
+	})
 
 	const finalHeight =
 		elevation.result && parsedHeightAboveGround.success

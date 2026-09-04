@@ -269,7 +269,7 @@ export async function findMatchingSensors(params: BoxesDataQueryParams) {
 			deviceExposure: device.exposure,
 			deviceLat: device.latitude,
 			deviceLon: device.longitude,
-			deviceHeight: device.height,
+			deviceHeight: device.heightAboveSeaLevel,
 			sensorId: sensor.id,
 			sensorTitle: sensor.title,
 			sensorUnit: sensor.unit,

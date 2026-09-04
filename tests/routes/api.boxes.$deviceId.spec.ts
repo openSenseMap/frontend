@@ -15,6 +15,7 @@ import {
 	action as deviceAction,
 } from '~/routes/api.boxes.$deviceId'
 import { registerUser } from '~/services/user-service.server'
+import { calculateDeviceHeightAboveSeaLevel } from '~/services/elevation-service.server'
 
 const TEST_TERRAIN_ELEVATION = vi.hoisted(() => 250)
 
@@ -24,11 +25,13 @@ vi.mock('~/services/elevation-service.server', async (importOriginal) => {
 
 	return {
 		...actual,
-		calculateDeviceHeightAboveSeaLevel: async (
-			_latitude: number,
-			_longitude: number,
-			heightAboveGround: number,
-		) => TEST_TERRAIN_ELEVATION + heightAboveGround,
+		calculateDeviceHeightAboveSeaLevel: vi.fn(
+			async (
+				_latitude: number,
+				_longitude: number,
+				heightAboveGround: number,
+			) => TEST_TERRAIN_ELEVATION + heightAboveGround,
+		),
 	}
 })
 
@@ -179,6 +182,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			expect(data.description).toBe(update_payload.description)
 			expect(data.access_token).not.toBeNull()
 			expect(data.height).toBe(expectedHeight)
+			expect(data.heightAboveGround).toBe(update_payload.location.height)
+			expect(data.heightAboveSeaLevel).toBe(expectedHeight)
 			expect(data.currentLocation).toEqual({
 				type: 'Point',
 				coordinates: [
@@ -205,12 +210,13 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			])
 		})
 
-		it('should preserve height when PUT omits it', async () => {
+		it('should preserve above-ground height and recalculate sea-level height when coordinates change', async () => {
 			await updateDeviceLocation({
 				id: queryableDevice.id,
 				latitude: queryableDevice.latitude,
 				longitude: queryableDevice.longitude,
-				height: 32.5,
+				heightAboveGround: 7.5,
+				heightAboveSeaLevel: 32.5,
 			})
 
 			const update_payload = {
@@ -248,16 +254,19 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 			expect(data.grouptag).toEqual(update_payload.grouptag)
 
 			expect(data.description).toBe(update_payload.description)
-			expect(data.height).toBe(32.5)
+			const expectedHeight = TEST_TERRAIN_ELEVATION + 7.5
+			expect(data.heightAboveGround).toBe(7.5)
+			expect(data.heightAboveSeaLevel).toBe(expectedHeight)
+			expect(data.height).toBe(expectedHeight)
 			expect(data.currentLocation.coordinates).toEqual([
 				update_payload.location.lng,
 				update_payload.location.lat,
-				32.5,
+				expectedHeight,
 			])
 			expect(data.loc[0].geometry.coordinates).toEqual([
 				update_payload.location.lng,
 				update_payload.location.lat,
-				32.5,
+				expectedHeight,
 			])
 
 			//TODO: this fails, check if we actually need timestamps in images
@@ -289,6 +298,8 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 
 			expect(response.status).toBe(200)
 			expect(data.height).toBe(TEST_TERRAIN_ELEVATION)
+			expect(data.heightAboveGround).toBe(0)
+			expect(data.heightAboveSeaLevel).toBe(TEST_TERRAIN_ELEVATION)
 			expect(data.currentLocation.coordinates).toEqual([
 				13.405,
 				52.52,
@@ -307,11 +318,42 @@ describe('openSenseMap API Routes: /boxes/:deviceId', () => {
 
 			expect(getResponse.status).toBe(200)
 			expect(persisted.height).toBe(TEST_TERRAIN_ELEVATION)
+			expect(persisted.heightAboveGround).toBe(0)
+			expect(persisted.heightAboveSeaLevel).toBe(TEST_TERRAIN_ELEVATION)
 			expect(persisted.currentLocation.coordinates).toEqual([
 				13.405,
 				52.52,
 				TEST_TERRAIN_ELEVATION,
 			])
+		})
+
+		it('should retain height above ground when elevation lookup fails', async () => {
+			vi.mocked(calculateDeviceHeightAboveSeaLevel).mockRejectedValueOnce(
+				new Error('Elevation unavailable'),
+			)
+			const updatePayload = {
+				location: { lat: 54.18, lng: 7.89, height: 5 },
+			}
+			const request = new Request(`${BASE_URL}/${queryableDevice.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${jwt}`,
+				},
+				body: JSON.stringify(updatePayload),
+			})
+
+			const response = await deviceAction({
+				request,
+				params: { deviceId: queryableDevice.id },
+			} as Route.ActionArgs)
+			const responseData = await response.json()
+
+			expect(response.status).toBe(200)
+			expect(responseData.heightAboveGround).toBe(5)
+			expect(responseData.heightAboveSeaLevel).toBeNull()
+			expect(responseData.height).toBeNull()
+			expect(responseData.currentLocation.coordinates).toEqual([7.89, 54.18])
 		})
 
 		it('should remove image when deleteImage=true', async () => {

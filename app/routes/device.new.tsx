@@ -15,10 +15,7 @@ import {
 
 export type NewDeviceActionData = {
 	ok: false
-	error:
-		| 'invalid_device_form'
-		| 'elevation_required_error'
-		| 'device_creation_failed'
+	error: 'invalid_device_form' | 'device_creation_failed'
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -72,26 +69,22 @@ export async function action({ request }: Route.ActionArgs) {
 	const sensorSelection = submission['sensor-selection']
 	const selectedSensors = sensorSelection.selectedSensors
 	const { latitude, longitude, heightAboveGround } = submission.location
-	let terrainElevation
+	let heightAboveSeaLevel: number | null = null
 
-	try {
-		terrainElevation = await getTerrainElevation(latitude, longitude)
-	} catch (error) {
-		console.error(
-			'Could not calculate device height above sea level:',
-			error instanceof ElevationLookupError ? error.code : error,
-		)
-
-		return responseData<NewDeviceActionData>(
-			{ ok: false, error: 'elevation_required_error' },
-			{ status: 503 },
-		)
+	if (heightAboveGround !== undefined) {
+		try {
+			const terrainElevation = await getTerrainElevation(latitude, longitude)
+			heightAboveSeaLevel = calculateHeightAboveSeaLevel(
+				terrainElevation.elevation,
+				heightAboveGround,
+			)
+		} catch (error) {
+			console.warn(
+				'Could not calculate device height above sea level:',
+				error instanceof ElevationLookupError ? error.code : error,
+			)
+		}
 	}
-
-	const finalHeight = calculateHeightAboveSeaLevel(
-		terrainElevation.elevation,
-		heightAboveGround,
-	)
 
 	try {
 		const commonDevicePayload = {
@@ -102,7 +95,8 @@ export async function action({ request }: Route.ActionArgs) {
 			tags: generalInfo.tags?.map((tag) => tag.value) ?? [],
 			latitude,
 			longitude,
-			height: finalHeight,
+			heightAboveGround: heightAboveGround ?? null,
+			heightAboveSeaLevel,
 		}
 
 		const devicePayload =

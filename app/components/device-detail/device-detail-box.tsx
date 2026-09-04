@@ -338,11 +338,11 @@ export default function DeviceDetailBox() {
 													: t('unknown')
 											}
 										/>
-										{typeof data.device.height === 'number' ? (
+										{typeof data.device.heightAboveSeaLevel === 'number' ? (
 											<InfoItem
 												icon={Mountain}
 												title={t('height_above_sea_level')}
-												text={`${Math.round(data.device.height)} m`}
+												text={`${Math.round(data.device.heightAboveSeaLevel)} m`}
 											/>
 										) : null}
 										<InfoItem

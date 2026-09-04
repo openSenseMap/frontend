@@ -12,8 +12,6 @@ import { deleteDevice, updateDevice } from '~/services/device-service.server'
 import { z } from 'zod'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import {
-	BadGatewayErrorSchema,
-	badGatewayResponse,
 	BadRequestErrorSchema,
 	badRequestResponse,
 	ForbiddenErrorSchema,
@@ -177,7 +175,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Update device',
 		description:
-			'Updates a device. Requires JWT authorization. An optional location height is interpreted as height above ground; the response contains the calculated height above sea level.',
+			'Updates a device. Requires JWT authorization. An optional location height is interpreted and stored as height above ground. Height above sea level is recalculated when needed and terrain elevation is available; lookup failure does not fail the update.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -214,11 +212,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
-
-			502: badGatewayResponse(
-				BadGatewayErrorSchema,
-				'Terrain elevation could not be resolved for the supplied device location.',
-			),
 
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
@@ -448,30 +441,41 @@ async function put(request: Request, user: User, deviceId: string) {
 	}
 
 	// Prepare location if provided
-	let locationData: { lat: number; lng: number; height?: number } | undefined
+	let locationData: UpdateDeviceArgs['location']
 	if (body.location) {
 		locationData = {
 			lat: body.location.lat,
 			lng: body.location.lng,
 		}
-		if (body.location.height !== undefined) {
-			try {
-				locationData.height = await calculateDeviceHeightAboveSeaLevel(
-					body.location.lat,
-					body.location.lng,
-					body.location.height,
-				)
-			} catch (error) {
-				console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
-					error: error instanceof ElevationLookupError ? error.code : error,
-					deviceId,
-					latitude: body.location.lat,
-					longitude: body.location.lng,
-				})
 
-				return StandardResponse.badGateway(
-					'Terrain elevation could not be resolved for the supplied device location.',
-				)
+		const coordinatesChanged =
+			body.location.lat !== currentDevice.latitude ||
+			body.location.lng !== currentDevice.longitude
+		const heightWasSupplied = body.location.height !== undefined
+		const heightAboveGround = heightWasSupplied
+			? body.location.height
+			: currentDevice.heightAboveGround
+
+		if (heightWasSupplied || coordinatesChanged) {
+			locationData.heightAboveGround = heightAboveGround ?? null
+			locationData.heightAboveSeaLevel = null
+
+			if (heightAboveGround !== null && heightAboveGround !== undefined) {
+				try {
+					locationData.heightAboveSeaLevel =
+						await calculateDeviceHeightAboveSeaLevel(
+							body.location.lat,
+							body.location.lng,
+							heightAboveGround,
+						)
+				} catch (error) {
+					console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
+						error: error instanceof ElevationLookupError ? error.code : error,
+						deviceId,
+						latitude: body.location.lat,
+						longitude: body.location.lng,
+					})
+				}
 			}
 		}
 	}

@@ -15,8 +15,6 @@ import {
 	DevicesResponseSchema,
 } from '~/lib/openapi/schemas/device'
 import {
-	BadGatewayErrorSchema,
-	badGatewayResponse,
 	BadRequestErrorSchema,
 	badRequestResponse,
 	ForbiddenErrorSchema,
@@ -95,7 +93,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Create a new device',
 		description:
-			'Creates a new device with optional sensors. An optional location height is interpreted as height above ground; the response contains the calculated height above sea level.',
+			'Creates a new device with optional sensors. An optional location height is interpreted and stored as height above ground. Height above sea level is calculated when terrain elevation is available; an elevation lookup failure does not fail device creation.',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
@@ -130,11 +128,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 			405: methodNotAllowedResponse(
 				MethodNotAllowedErrorSchema,
 				'Method not allowed.',
-			),
-
-			502: badGatewayResponse(
-				BadGatewayErrorSchema,
-				'Terrain elevation could not be resolved for the supplied device location.',
 			),
 
 			500: internalServerErrorResponse(
@@ -184,12 +177,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 				geometry: {
 					type: 'Point',
 					coordinates:
-						device.height === null
+						device.heightAboveSeaLevel === null
 							? [device.longitude, device.latitude]
-							: [device.longitude, device.latitude, device.height],
+							: [device.longitude, device.latitude, device.heightAboveSeaLevel],
 				},
 				properties: {
 					...device,
+					height: device.heightAboveSeaLevel,
 				},
 			})),
 		}
@@ -200,11 +194,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 		})
 	}
-	return Response.json(devices, {
-		headers: {
-			'Content-Type': 'application/json; charset=utf-8',
+	return Response.json(
+		devices.map((device) => ({
+			...device,
+			height: device.heightAboveSeaLevel,
+		})),
+		{
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+			},
 		},
-	})
+	)
 }
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -241,7 +241,7 @@ async function post(request: Request, user: User) {
 
 		const validatedData = validationResult.data
 		const sensorsProvided = validatedData.sensors?.length > 0
-		// Request height is relative to ground; persisted height is above sea level.
+		// Request height is relative to ground; sea-level height is best-effort.
 		const [longitude, latitude, heightAboveGround] = validatedData.location
 		let heightAboveSeaLevel: number | null = null
 
@@ -258,10 +258,6 @@ async function post(request: Request, user: User) {
 					latitude,
 					longitude,
 				})
-
-				return StandardResponse.badGateway(
-					'Terrain elevation could not be resolved for the supplied device location.',
-				)
 			}
 		}
 
@@ -272,7 +268,8 @@ async function post(request: Request, user: User) {
 				model: sensorsProvided ? undefined : validatedData.model,
 				latitude: latitude,
 				longitude: longitude,
-				height: heightAboveSeaLevel,
+				heightAboveGround: heightAboveGround ?? null,
+				heightAboveSeaLevel,
 				tags: validatedData.grouptag,
 				sensors: sensorsProvided
 					? validatedData.sensors.map((s) => ({

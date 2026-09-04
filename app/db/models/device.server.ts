@@ -56,7 +56,8 @@ const BASE_DEVICE_COLUMNS = {
 	model: true,
 	latitude: true,
 	longitude: true,
-	height: true,
+	heightAboveGround: true,
+	heightAboveSeaLevel: true,
 	status: true,
 	createdAt: true,
 	updatedAt: true,
@@ -234,7 +235,8 @@ export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
-			height: true,
+			heightAboveGround: true,
+			heightAboveSeaLevel: true,
 			userId: true,
 		},
 	})
@@ -275,7 +277,8 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			updatedAt: true,
 			latitude: true,
 			longitude: true,
-			height: true,
+			heightAboveGround: true,
+			heightAboveSeaLevel: true,
 			userId: true,
 			useAuth: true,
 			model: true,
@@ -330,8 +333,12 @@ export async function updateDeviceLocation({
 	id,
 	latitude,
 	longitude,
-	height,
-}: Pick<Device, 'id' | 'latitude' | 'longitude' | 'height'>) {
+	heightAboveGround,
+	heightAboveSeaLevel,
+}: Pick<
+	Device,
+	'id' | 'latitude' | 'longitude' | 'heightAboveGround' | 'heightAboveSeaLevel'
+>) {
 	const [existingDevice] = await drizzleClient
 		.select()
 		.from(device)
@@ -346,7 +353,13 @@ export async function updateDeviceLocation({
 
 	return drizzleClient
 		.update(device)
-		.set({ latitude, longitude, height, updatedAt: sql`NOW()` })
+		.set({
+			latitude,
+			longitude,
+			heightAboveGround,
+			heightAboveSeaLevel,
+			updatedAt: sql`NOW()`,
+		})
 		.where(eq(device.id, id))
 }
 
@@ -360,7 +373,12 @@ export type UpdateDeviceArgs = {
 	image?: string
 	model?: string
 	useAuth?: boolean
-	location?: { lat: number; lng: number; height?: number }
+	location?: {
+		lat: number
+		lng: number
+		heightAboveGround?: number | null
+		heightAboveSeaLevel?: number | null
+	}
 	sensors?: SensorUpdateArgs[]
 }
 
@@ -428,7 +446,7 @@ export async function updateDevice(
 		}
 
 		if (args.location) {
-			const { lat, lng, height } = args.location
+			const { lat, lng, heightAboveGround, heightAboveSeaLevel } = args.location
 			const pointWKT = `POINT(${lng} ${lat})`
 
 			const [existingLocation] = await tx
@@ -467,8 +485,11 @@ export async function updateDevice(
 
 			setColumns['latitude'] = lat
 			setColumns['longitude'] = lng
-			if (height !== undefined) {
-				setColumns['height'] = height
+			if (heightAboveGround !== undefined) {
+				setColumns['heightAboveGround'] = heightAboveGround
+			}
+			if (heightAboveSeaLevel !== undefined) {
+				setColumns['heightAboveSeaLevel'] = heightAboveSeaLevel
 			}
 		}
 
@@ -655,7 +676,8 @@ export async function getDevices(format: DevicesFormat = 'json') {
 				name: device.name,
 				latitude: device.latitude,
 				longitude: device.longitude,
-				height: device.height,
+				heightAboveGround: device.heightAboveGround,
+				heightAboveSeaLevel: device.heightAboveSeaLevel,
 				exposure: device.exposure,
 				createdAt: device.createdAt,
 				tags: device.tags,
@@ -682,7 +704,7 @@ export async function getDevices(format: DevicesFormat = 'json') {
 			const coordinates = toGeoJsonPosition(
 				device.longitude,
 				device.latitude,
-				device.height,
+				device.heightAboveSeaLevel,
 			)
 			const feature = point(coordinates, device)
 			geojson.features.push(feature)
@@ -702,7 +724,8 @@ export async function getArchivedDevices() {
 			name: true,
 			latitude: true,
 			longitude: true,
-			height: true,
+			heightAboveGround: true,
+			heightAboveSeaLevel: true,
 			exposure: true,
 			status: true,
 			createdAt: true,
@@ -806,7 +829,7 @@ export async function getDevicesWithSensors(options?: {
 		const coordinates = toGeoJsonPosition(
 			result.device.longitude,
 			result.device.latitude,
-			result.device.height,
+			result.device.heightAboveSeaLevel,
 		)
 		const feature = point(coordinates, result.device)
 		geojson.features.push(feature)
@@ -941,7 +964,8 @@ const MINIMAL_COLUMNS = {
 	exposure: true,
 	longitude: true,
 	latitude: true,
-	height: true,
+	heightAboveGround: true,
+	heightAboveSeaLevel: true,
 }
 
 const DEFAULT_COLUMNS = {
@@ -957,7 +981,8 @@ const DEFAULT_COLUMNS = {
 	updatedAt: true,
 	longitude: true,
 	latitude: true,
-	height: true,
+	heightAboveGround: true,
+	heightAboveSeaLevel: true,
 }
 
 export async function findDevices(
@@ -1096,7 +1121,8 @@ export async function createDevice(deviceData: any, userId: string) {
 						: null,
 					latitude: deviceData.latitude,
 					longitude: deviceData.longitude,
-					height: deviceData.height ?? null,
+					heightAboveGround: deviceData.heightAboveGround ?? null,
+					heightAboveSeaLevel: deviceData.heightAboveSeaLevel ?? null,
 					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
 				})
 				.returning()

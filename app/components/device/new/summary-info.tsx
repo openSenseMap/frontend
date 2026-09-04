@@ -22,9 +22,10 @@ export function SummaryInfo() {
 			: null
 	const latitude = Number(formData.latitude)
 	const longitude = Number(formData.longitude)
+	const shouldResolveElevation = heightAboveGround !== null
 	const elevation = useTerrainElevation({
-		latitude,
-		longitude,
+		latitude: shouldResolveElevation ? latitude : undefined,
+		longitude: shouldResolveElevation ? longitude : undefined,
 		debounceMs: 0,
 	})
 	const terrainElevation = elevation.result?.elevation ?? null
@@ -63,9 +64,11 @@ export function SummaryInfo() {
 					value:
 						finalHeight !== null
 							? `${Math.round(finalHeight)} m`
-							: elevation.status === 'loading'
-								? t('fetching_elevation')
-								: t('elevation_unavailable'),
+							: !shouldResolveElevation
+								? t('height_not_set')
+								: elevation.status === 'loading'
+									? t('fetching_elevation')
+									: t('elevation_unavailable'),
 				},
 			],
 		},

@@ -21,7 +21,8 @@ describe('transformDeviceToApiFormat', () => {
 		model: 'custom',
 		latitude: 37.7749,
 		longitude: -122.4194,
-		height: 18.25,
+		heightAboveGround: 3.25,
+		heightAboveSeaLevel: 18.25,
 		useAuth: true,
 		public: false,
 		status: 'active',
@@ -64,6 +65,8 @@ describe('transformDeviceToApiFormat', () => {
 			model: 'custom',
 			latitude: 37.7749,
 			longitude: -122.4194,
+			heightAboveGround: 3.25,
+			heightAboveSeaLevel: 18.25,
 			height: 18.25,
 			useAuth: true,
 			public: false,
@@ -194,7 +197,7 @@ describe('transformDeviceToApiFormat', () => {
 	test('preserves zero height in both location coordinate formats', () => {
 		const result = transformDeviceToApiFormat({
 			...mockDevice,
-			height: 0,
+			heightAboveSeaLevel: 0,
 		} as any)
 
 		expect(result.height).toBe(0)
@@ -203,11 +206,11 @@ describe('transformDeviceToApiFormat', () => {
 	})
 
 	test.each([null, undefined])(
-		'omits the third coordinate when height is %s',
+		'omits the third coordinate when height above sea level is %s',
 		(height) => {
 			const result = transformDeviceToApiFormat({
 				...mockDevice,
-				height,
+				heightAboveSeaLevel: height,
 			} as any)
 
 			expect(result.currentLocation.coordinates).toEqual([-122.4194, 37.7749])
@@ -256,7 +259,9 @@ describe('transformDeviceToApiFormat', () => {
 		expect(result.model).toBe(mockDevice.model)
 		expect(result.latitude).toBe(mockDevice.latitude)
 		expect(result.longitude).toBe(mockDevice.longitude)
-		expect(result.height).toBe(mockDevice.height)
+		expect(result.height).toBe(mockDevice.heightAboveSeaLevel)
+		expect(result.heightAboveGround).toBe(mockDevice.heightAboveGround)
+		expect(result.heightAboveSeaLevel).toBe(mockDevice.heightAboveSeaLevel)
 		expect(result.useAuth).toBe(mockDevice.useAuth)
 		expect(result.public).toBe(mockDevice.public)
 		expect(result.status).toBe(mockDevice.status)

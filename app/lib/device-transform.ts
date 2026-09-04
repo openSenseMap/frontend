@@ -21,6 +21,9 @@ export type TransformedDevice = {
 	model: string | null
 	latitude: number
 	longitude: number
+	heightAboveGround: number | null
+	heightAboveSeaLevel: number | null
+	/** Legacy alias for heightAboveSeaLevel. */
 	height: number | null
 	useAuth: boolean | null
 	access_token: string | null
@@ -75,14 +78,15 @@ export function transformDeviceToApiFormat(
 	const { id, tags, sensors, apiKey, ...rest } = box
 	const timestamp = box.updatedAt.toISOString()
 	const coordinates =
-		box.height === null || box.height === undefined
+		box.heightAboveSeaLevel === null || box.heightAboveSeaLevel === undefined
 			? [box.longitude, box.latitude]
-			: [box.longitude, box.latitude, box.height]
+			: [box.longitude, box.latitude, box.heightAboveSeaLevel]
 
 	return {
 		_id: id,
 		grouptag: tags || [],
 		...rest,
+		height: box.heightAboveSeaLevel,
 		status: deriveDeviceStatus(sensors),
 		createdAt: toIsoString(box.createdAt)!,
 		updatedAt: toIsoString(box.updatedAt)!,

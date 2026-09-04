@@ -58,18 +58,27 @@ export const DeviceSensorUpdateSchema = z
 				'Existing sensor id. `_id` is used by the legacy API and is preferred for backwards compatibility.',
 			example: '60a13611a877b3001b8ffd59',
 		}),
-		new: z.union([z.literal(true), z.literal('true')]).optional().meta({
-			description: 'Whether this sensor should be created as new.',
-			example: true,
-		}),
-		edited: z.union([z.literal(true), z.literal('true')]).optional().meta({
-			description: 'Whether this sensor should be created or updated.',
-			example: true,
-		}),
-		deleted: z.union([z.literal(true), z.literal('true')]).optional().meta({
-			description: 'Whether this sensor should be deleted.',
-			example: true,
-		}),
+		new: z
+			.union([z.literal(true), z.literal('true')])
+			.optional()
+			.meta({
+				description: 'Whether this sensor should be created as new.',
+				example: true,
+			}),
+		edited: z
+			.union([z.literal(true), z.literal('true')])
+			.optional()
+			.meta({
+				description: 'Whether this sensor should be created or updated.',
+				example: true,
+			}),
+		deleted: z
+			.union([z.literal(true), z.literal('true')])
+			.optional()
+			.meta({
+				description: 'Whether this sensor should be deleted.',
+				example: true,
+			}),
 		title: z.string().optional().meta({
 			example: 'PM10',
 		}),
@@ -86,7 +95,7 @@ export const DeviceSensorUpdateSchema = z
 	})
 	.transform(({ id, ...sensor }) => ({
 		...sensor,
-		...(sensor._id ?? id ? { _id: sensor._id ?? id } : {}),
+		...((sensor._id ?? id) ? { _id: sensor._id ?? id } : {}),
 	}))
 	.meta({
 		id: 'DeviceSensorUpdate',
@@ -169,7 +178,18 @@ export const ApiDeviceSchema = z
 			example: 13.404954,
 		}),
 		height: HeightSchema.nullable().optional().meta({
-			description: 'Device height above sea level in meters',
+			description:
+				'Device height above sea level in meters. Kept as a legacy alias for heightAboveSeaLevel.',
+			example: 66.6,
+		}),
+		heightAboveGround: HeightSchema.nullable().optional().meta({
+			description:
+				'User-provided device height above the local ground surface in meters.',
+			example: 3.5,
+		}),
+		heightAboveSeaLevel: HeightSchema.nullable().optional().meta({
+			description:
+				'Calculated device height above sea level in meters. Null when no above-ground height was supplied or terrain elevation could not be resolved.',
 			example: 66.6,
 		}),
 		useAuth: z.boolean().optional().meta({
