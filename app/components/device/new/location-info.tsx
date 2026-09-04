@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+import { Info } from 'lucide-react'
 import {
 	GeolocateControl,
 	Marker,
@@ -9,11 +11,19 @@ import {
 	type MarkerDragEvent,
 } from 'react-map-gl/maplibre'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '~/components/ui/tooltip'
 import { BaseMap } from '~/components/base-map'
 import Spinner from '~/components/spinner'
 import { useTerrainElevation } from '~/hooks/use-terrain-elevation'
 import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
+import { withdrawElevationConsent } from '~/lib/elevation-consent.client'
 import {
 	LOCATION_LIMITS,
 	deviceLocationInputSchema,
@@ -24,6 +34,7 @@ type DeviceLocationFormState = {
 	latitude?: number | string
 	longitude?: number | string
 	heightAboveGround?: number | string
+	elevationLookupConsent?: boolean
 }
 
 export function LocationStep() {
@@ -38,6 +49,7 @@ export function LocationStep() {
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
 	const savedHeightAboveGround = watch('heightAboveGround')
+	const elevationLookupConsent = watch('elevationLookupConsent') === true
 
 	const [marker, setMarker] = useState<{
 		latitude: number | string
@@ -69,6 +81,7 @@ export function LocationStep() {
 			savedHeightAboveGround,
 		)
 	const shouldResolveElevation =
+		elevationLookupConsent &&
 		markerLocation !== null &&
 		parsedHeightAboveGround.success &&
 		parsedHeightAboveGround.data !== undefined
@@ -122,6 +135,20 @@ export function LocationStep() {
 			value === '' || !Number.isFinite(parsedValue) ? undefined : parsedValue,
 			{ shouldDirty: true, shouldValidate: true },
 		)
+	}
+
+	const handleElevationConsentChange = (checked: boolean | 'indeterminate') => {
+		const consentGranted = checked === true
+		setValue('elevationLookupConsent', consentGranted, {
+			shouldDirty: true,
+			shouldValidate: true,
+		})
+
+		if (!consentGranted) {
+			void withdrawElevationConsent().catch((error) => {
+				console.warn('Could not withdraw elevation lookup consent:', error)
+			})
+		}
 	}
 
 	const updateMarker = useCallback(
@@ -238,9 +265,25 @@ export function LocationStep() {
 				</div>
 
 				<div>
-					<Label htmlFor="heightAboveGround">
-						{t('height_above_ground')} ({t('optional')})
-					</Label>
+					<div className="flex items-center gap-1.5">
+						<Label htmlFor="heightAboveGround">
+							{t('height_above_ground')} ({t('optional')})
+						</Label>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger
+									type="button"
+									aria-label={t('height_info_label')}
+									className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+								>
+									<Info className="h-4 w-4" aria-hidden="true" />
+								</TooltipTrigger>
+								<TooltipContent className="max-w-xs">
+									{t('height_info_text')}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
 					<Input
 						id="heightAboveGround"
 						type="number"
@@ -252,9 +295,52 @@ export function LocationStep() {
 						aria-describedby="height-info height-error"
 						className="w-full rounded-md border p-2"
 					/>
-					<p id="height-info" className="text-muted-foreground mt-1 text-xs">
+					<p id="height-info" className="sr-only">
 						{t('height_info_text')}
 					</p>
+
+					<div className="mt-3 flex items-start gap-2">
+						<Checkbox
+							id="elevationLookupConsent"
+							checked={elevationLookupConsent}
+							onCheckedChange={handleElevationConsentChange}
+						/>
+						<div className="flex min-w-0 flex-1 items-start gap-1.5">
+							<Label
+								htmlFor="elevationLookupConsent"
+								className="text-sm leading-5 font-normal"
+							>
+								<Trans
+									i18nKey="elevation_lookup_consent"
+									ns="newdevice"
+									components={{
+										privacyLink: (
+											<Link
+												to="/privacy"
+												target="_blank"
+												rel="noreferrer"
+												className="underline"
+											/>
+										),
+									}}
+								/>
+							</Label>
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger
+										type="button"
+										aria-label={t('elevation_consent_info_label')}
+										className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-0.5 shrink-0 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+									>
+										<Info className="h-4 w-4" aria-hidden="true" />
+									</TooltipTrigger>
+									<TooltipContent className="max-w-xs">
+										{t('elevation_consent_required')}
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						</div>
+					</div>
 
 					{elevation.status === 'loading' ? (
 						<div className="mt-2 flex items-center gap-2">

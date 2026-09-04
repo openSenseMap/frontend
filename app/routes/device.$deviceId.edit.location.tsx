@@ -23,7 +23,8 @@ import {
 	type DeviceLocationInputFieldErrors,
 	type LocationCoordinates,
 } from '~/lib/location'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import {
 	useAutosaveFetcher,
 	AUTOSAVE_DELAY_MS,
@@ -39,6 +40,13 @@ import {
 	ElevationLookupError,
 	getTerrainElevation,
 } from '~/services/elevation-service.server'
+import { Checkbox } from '~/components/ui/checkbox'
+import { Label } from '~/components/ui/label'
+import { withdrawElevationConsent as withdrawElevationConsentFromClient } from '~/lib/elevation-consent.client'
+import {
+	applyElevationConsentChoice,
+	hasCurrentElevationConsent,
+} from '~/db/models/elevation-consent.server'
 
 function parseNumberInput(value: string): number | null {
 	if (value.trim() === '') return null
@@ -69,6 +77,7 @@ function normalizeLocationValues(values: LocationAutosaveValues) {
 		latitude: normalizeCoordinate(values.latitude),
 		longitude: normalizeCoordinate(values.longitude),
 		heightAboveGround: values.heightAboveGround,
+		elevationLookupConsent: values.elevationLookupConsent,
 	}
 }
 
@@ -83,6 +92,7 @@ export type LocationActionData =
 			location: StoredDeviceLocation
 			heightAboveGround: number | null
 			terrainElevation: TerrainElevationResult | null
+			elevationLookupConsent: boolean
 			errors: null
 			savedAt: string
 	  }
@@ -95,6 +105,7 @@ type LocationAutosaveValues = {
 	latitude: number | null
 	longitude: number | null
 	heightAboveGround: number | null | undefined
+	elevationLookupConsent: boolean
 }
 
 type InitialLocationValues = LocationAutosaveValues & {
@@ -124,7 +135,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw new Response('Forbidden', { status: 403 })
 	}
 
-	return { device: deviceData }
+	const hasElevationConsent = await hasCurrentElevationConsent(userId)
+
+	return { device: deviceData, hasElevationConsent }
 }
 
 //*****************************************************
@@ -160,10 +173,17 @@ export async function action({ request, params }: Route.ActionArgs) {
 	}
 
 	const heightAboveGround = parsed.data.heightAboveGround ?? null
+	const rawConsent = formData.get('elevationLookupConsent')
+	const consentChoice =
+		rawConsent === 'true' ? true : rawConsent === 'false' ? false : undefined
+	const mayLookupElevation = await applyElevationConsentChoice(
+		userId,
+		consentChoice,
+	)
 	let terrainElevation: TerrainElevationResult | null = null
 	let heightAboveSeaLevel: number | null = null
 
-	if (heightAboveGround !== null) {
+	if (heightAboveGround !== null && mayLookupElevation) {
 		try {
 			terrainElevation = await getTerrainElevation(
 				parsed.data.latitude,
@@ -187,6 +207,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 		longitude: parsed.data.longitude,
 		heightAboveGround,
 		heightAboveSeaLevel,
+		heightAboveSeaLevelDataset: terrainElevation?.dataset ?? null,
 	})
 
 	return data({
@@ -198,6 +219,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 		},
 		heightAboveGround,
 		terrainElevation,
+		elevationLookupConsent: mayLookupElevation,
 		errors: null,
 		savedAt: new Date().toISOString(),
 	})
@@ -205,7 +227,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 //**********************************
 export default function EditLocation() {
-	const { device } = useLoaderData<typeof loader>()
+	const { device, hasElevationConsent } = useLoaderData<typeof loader>()
 	const { t } = useTranslation('edit-device-general')
 	const initialHeightAboveGround = device.heightAboveGround
 
@@ -214,8 +236,14 @@ export default function EditLocation() {
 			latitude: device.latitude,
 			longitude: device.longitude,
 			heightAboveGround: initialHeightAboveGround,
+			elevationLookupConsent: hasElevationConsent,
 		}),
-		[device.latitude, device.longitude, initialHeightAboveGround],
+		[
+			device.latitude,
+			device.longitude,
+			initialHeightAboveGround,
+			hasElevationConsent,
+		],
 	)
 
 	const [marker, setMarker] = useState<MarkerValue>({
@@ -225,6 +253,8 @@ export default function EditLocation() {
 	const [heightAboveGroundInput, setHeightAboveGroundInput] = useState(
 		initialHeightAboveGround == null ? '' : String(initialHeightAboveGround),
 	)
+	const [elevationLookupConsent, setElevationLookupConsent] =
+		useState(hasElevationConsent)
 	const parsedHeightAboveGround = useMemo(
 		() => parseHeightInput(heightAboveGroundInput),
 		[heightAboveGroundInput],
@@ -239,7 +269,9 @@ export default function EditLocation() {
 		return isValidLocation(candidate) ? candidate : null
 	}, [marker.latitude, marker.longitude])
 	const shouldResolveElevation =
-		currentLocation !== null && typeof parsedHeightAboveGround === 'number'
+		elevationLookupConsent &&
+		currentLocation !== null &&
+		typeof parsedHeightAboveGround === 'number'
 	const elevation = useTerrainElevation({
 		latitude: shouldResolveElevation ? currentLocation.latitude : undefined,
 		longitude: shouldResolveElevation ? currentLocation.longitude : undefined,
@@ -249,6 +281,7 @@ export default function EditLocation() {
 		latitude: device.latitude,
 		longitude: device.longitude,
 		heightAboveGround: initialHeightAboveGround,
+		elevationLookupConsent: hasElevationConsent,
 	})
 
 	const originalLocation = originalLocationRef.current
@@ -269,6 +302,7 @@ export default function EditLocation() {
 				values.heightAboveGround == null
 					? ''
 					: String(values.heightAboveGround),
+			elevationLookupConsent: String(values.elevationLookupConsent),
 		}
 	}, [])
 
@@ -294,8 +328,14 @@ export default function EditLocation() {
 				latitude: marker.latitude,
 				longitude: marker.longitude,
 				heightAboveGround: parsedHeightAboveGround,
+				elevationLookupConsent,
 			}),
-		[marker.latitude, marker.longitude, parsedHeightAboveGround],
+		[
+			marker.latitude,
+			marker.longitude,
+			parsedHeightAboveGround,
+			elevationLookupConsent,
+		],
 	)
 
 	const initialAutosaveValues = useMemo<LocationAutosaveValues>(
@@ -380,6 +420,17 @@ export default function EditLocation() {
 		setHeightAboveGroundInput(event.target.value)
 	}
 
+	const onElevationConsentChange = (checked: boolean | 'indeterminate') => {
+		const consentGranted = checked === true
+		setElevationLookupConsent(consentGranted)
+
+		if (!consentGranted) {
+			void withdrawElevationConsentFromClient().catch((error) => {
+				console.warn('Could not withdraw elevation lookup consent:', error)
+			})
+		}
+	}
+
 	const resetToOriginalLocation = () => {
 		setMarker({
 			latitude: originalLocation.latitude,
@@ -393,7 +444,9 @@ export default function EditLocation() {
 	}
 
 	const finalHeight =
-		elevation.result && parsedHeightAboveGround !== undefined
+		elevationLookupConsent &&
+		elevation.result &&
+		parsedHeightAboveGround !== undefined
 			? calculateHeightAboveSeaLevel(
 					elevation.result.elevation,
 					parsedHeightAboveGround,
@@ -563,6 +616,38 @@ export default function EditLocation() {
 									>
 										{t('height_info_text')}
 									</p>
+									<div className="mt-3 flex items-start gap-2">
+										<Checkbox
+											id="elevationLookupConsent"
+											checked={elevationLookupConsent}
+											onCheckedChange={onElevationConsentChange}
+										/>
+										<Label
+											htmlFor="elevationLookupConsent"
+											className="text-sm leading-5 font-normal"
+										>
+											<Trans
+												i18nKey="elevation_lookup_consent"
+												ns="edit-device-general"
+												components={{
+													privacyLink: (
+														<Link
+															to="/privacy"
+															target="_blank"
+															rel="noreferrer"
+															className="underline"
+														/>
+													),
+												}}
+											/>
+										</Label>
+									</div>
+									{typeof parsedHeightAboveGround === 'number' &&
+									!elevationLookupConsent ? (
+										<p className="mt-2 text-sm text-amber-600">
+											{t('elevation_consent_required')}
+										</p>
+									) : null}
 									<div id="height-status" aria-live="polite">
 										{elevation.status === 'loading' ? (
 											<div className="mt-2 flex items-center gap-2">

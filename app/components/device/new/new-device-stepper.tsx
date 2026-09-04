@@ -37,17 +37,14 @@ import { type action, type loader } from '~/routes/device.new'
 import {
 	advancedSchema,
 	deviceSelectionSchema,
+	newDeviceLocationSubmissionSchema,
 	sensorSelectionSchema,
 } from '~/lib/new-device-form'
-import {
-	deviceLocationInputSchema,
-	type DeviceLocationInput,
-} from '~/lib/location'
 import { generalInfoSchema, type GeneralInfoData } from '~/lib/device-general'
 
 const formSchema = z.union([
 	generalInfoSchema,
-	deviceLocationInputSchema,
+	newDeviceLocationSubmissionSchema,
 	deviceSelectionSchema,
 	sensorSelectionSchema,
 	advancedSchema,
@@ -65,7 +62,7 @@ export const Stepper = defineStepper([
 		id: 'location',
 		label: 'location',
 		infoKey: 'location_info_text',
-		schema: deviceLocationInputSchema,
+		schema: newDeviceLocationSubmissionSchema,
 		index: 1,
 	},
 	{
@@ -101,21 +98,25 @@ export const Stepper = defineStepper([
 type DeviceData = z.infer<typeof deviceSelectionSchema>
 type SensorData = z.infer<typeof sensorSelectionSchema>
 type AdvancedData = z.infer<typeof advancedSchema>
+type LocationData = z.infer<typeof newDeviceLocationSubmissionSchema>
 
 type FormData =
 	| GeneralInfoData
-	| DeviceLocationInput
+	| LocationData
 	| DeviceData
 	| SensorData
 	| AdvancedData
 
 export default function NewDeviceStepper() {
-	const { integrations } = useLoaderData<typeof loader>()
+	const { integrations, hasElevationConsent } = useLoaderData<typeof loader>()
 	const submit = useSubmit()
 	const [formData, setFormData] = useState<Record<string, any>>({})
 	const stepper = Stepper.useStepper()
 	const form = useForm({
 		mode: 'onTouched',
+		defaultValues: {
+			elevationLookupConsent: hasElevationConsent,
+		},
 		resolver: zodResolver<
 			z.input<typeof formSchema>,
 			any,

@@ -3,6 +3,11 @@ import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
 import { generalInfoSchema } from '~/lib/device-general'
 import { deviceLocationInputSchema } from '~/lib/location'
 
+export const newDeviceLocationSubmissionSchema =
+	deviceLocationInputSchema.extend({
+		elevationLookupConsent: z.boolean().optional(),
+	})
+
 export const sensorSchema = z.object({
 	title: z.string().min(1, 'Sensor title is required'),
 	unit: z.string().min(1, 'Sensor unit is required'),
@@ -52,7 +57,7 @@ export const advancedSchema = z.record(z.string(), z.unknown())
 export const newDeviceSubmissionSchema = z
 	.object({
 		'general-info': generalInfoSchema,
-		location: deviceLocationInputSchema,
+		location: newDeviceLocationSubmissionSchema,
 		'device-selection': deviceSelectionSchema,
 		'sensor-selection': sensorSelectionSchema,
 		advanced: advancedSchema,

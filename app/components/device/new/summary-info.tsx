@@ -22,7 +22,9 @@ export function SummaryInfo() {
 			: null
 	const latitude = Number(formData.latitude)
 	const longitude = Number(formData.longitude)
-	const shouldResolveElevation = heightAboveGround !== null
+	const elevationLookupConsent = formData.elevationLookupConsent === true
+	const shouldResolveElevation =
+		heightAboveGround !== null && elevationLookupConsent
 	const elevation = useTerrainElevation({
 		latitude: shouldResolveElevation ? latitude : undefined,
 		longitude: shouldResolveElevation ? longitude : undefined,
@@ -65,7 +67,9 @@ export function SummaryInfo() {
 						finalHeight !== null
 							? `${Math.round(finalHeight)} m`
 							: !shouldResolveElevation
-								? t('height_not_set')
+								? heightAboveGround === null
+									? t('height_not_set')
+									: t('elevation_consent_required')
 								: elevation.status === 'loading'
 									? t('fetching_elevation')
 									: t('elevation_unavailable'),

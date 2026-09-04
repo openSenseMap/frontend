@@ -5,6 +5,7 @@ import {
 	LatitudeSchema,
 	LongitudeSchema,
 } from '~/lib/openapi/schemas/location'
+import { ElevationLookupConsentSchema } from '~/lib/openapi/schemas/consent'
 
 const DeviceLocationArrayInputSchema = z
 	.union([
@@ -53,6 +54,7 @@ export const CreateDeviceSchema = z.object({
 				...(loc.height !== undefined ? [loc.height] : []),
 			]
 		}),
+	elevationLookupConsent: ElevationLookupConsentSchema.optional(),
 	grouptag: z.array(z.string()).optional().default([]),
 	model: z
 		.enum([

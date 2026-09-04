@@ -85,13 +85,18 @@ export function useTerrainElevation({
 		setState({ status: 'loading', result: null, error: null })
 
 		const timeout = window.setTimeout(async () => {
-			const url = new URL('/resources/elevation', window.location.origin)
-			url.searchParams.set('latitude', String(location.latitude))
-			url.searchParams.set('longitude', String(location.longitude))
-
 			try {
-				const response = await fetch(url, {
-					headers: { Accept: 'application/json' },
+				const response = await fetch('/resources/elevation', {
+					method: 'POST',
+					headers: {
+						Accept: 'application/json',
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						latitude: location.latitude,
+						longitude: location.longitude,
+						consent: true,
+					}),
 					signal: controller.signal,
 				})
 				const payload = (await response.json()) as ElevationResourceResponse

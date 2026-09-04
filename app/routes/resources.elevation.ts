@@ -1,4 +1,5 @@
 import { data } from 'react-router'
+import { z } from 'zod'
 import { type Route } from './+types/resources.elevation'
 import { type ElevationResourceResponse } from '~/lib/elevation'
 import { locationCoordinatesSchema } from '~/lib/location'
@@ -7,29 +8,19 @@ import {
 	getTerrainElevation,
 } from '~/services/elevation-service.server'
 import { getUserId } from '~/services/session-service.server'
+import {
+	grantCurrentElevationConsent,
+	hasCurrentElevationConsent,
+	withdrawElevationConsent,
+} from '~/db/models/elevation-consent.server'
 
-export async function loader({ request }: Route.LoaderArgs) {
-	const userId = await getUserId(request)
-	if (!userId) throw new Response('Unauthorized', { status: 401 })
+const elevationLookupRequestSchema = locationCoordinatesSchema.extend({
+	consent: z.literal(true),
+})
 
-	const url = new URL(request.url)
-	const parsed = locationCoordinatesSchema.safeParse({
-		latitude: url.searchParams.get('latitude'),
-		longitude: url.searchParams.get('longitude'),
-	})
-
-	if (!parsed.success) {
-		return data<ElevationResourceResponse>(
-			{ ok: false, error: 'invalid_location' },
-			{ status: 400 },
-		)
-	}
-
+async function lookupElevation(latitude: number, longitude: number) {
 	try {
-		const result = await getTerrainElevation(
-			parsed.data.latitude,
-			parsed.data.longitude,
-		)
+		const result = await getTerrainElevation(latitude, longitude)
 
 		return data<ElevationResourceResponse>(
 			{ ok: true, result },
@@ -48,4 +39,70 @@ export async function loader({ request }: Route.LoaderArgs) {
 			{ status: code === 'unavailable' ? 404 : 503 },
 		)
 	}
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+	const userId = await getUserId(request)
+	if (!userId) throw new Response('Unauthorized', { status: 401 })
+
+	const url = new URL(request.url)
+	const parsed = locationCoordinatesSchema.safeParse({
+		latitude: url.searchParams.get('latitude'),
+		longitude: url.searchParams.get('longitude'),
+	})
+
+	if (!parsed.success) {
+		return data<ElevationResourceResponse>(
+			{ ok: false, error: 'invalid_location' },
+			{ status: 400 },
+		)
+	}
+
+	if (!(await hasCurrentElevationConsent(userId))) {
+		return data<ElevationResourceResponse>(
+			{ ok: false, error: 'consent_required' },
+			{ status: 403 },
+		)
+	}
+
+	return lookupElevation(parsed.data.latitude, parsed.data.longitude)
+}
+
+export async function action({ request }: Route.ActionArgs) {
+	const userId = await getUserId(request)
+	if (!userId) throw new Response('Unauthorized', { status: 401 })
+
+	let body: unknown
+
+	try {
+		body = await request.json()
+	} catch {
+		return data<ElevationResourceResponse>(
+			{ ok: false, error: 'invalid_location' },
+			{ status: 400 },
+		)
+	}
+
+	if (
+		typeof body === 'object' &&
+		body !== null &&
+		'consent' in body &&
+		body.consent === false
+	) {
+		await withdrawElevationConsent(userId)
+		return new Response(null, { status: 204 })
+	}
+
+	const parsed = elevationLookupRequestSchema.safeParse(body)
+
+	if (!parsed.success) {
+		return data<ElevationResourceResponse>(
+			{ ok: false, error: 'invalid_location' },
+			{ status: 400 },
+		)
+	}
+
+	await grantCurrentElevationConsent(userId)
+
+	return lookupElevation(parsed.data.latitude, parsed.data.longitude)
 }

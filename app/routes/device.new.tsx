@@ -12,6 +12,10 @@ import {
 	ElevationLookupError,
 	getTerrainElevation,
 } from '~/services/elevation-service.server'
+import {
+	applyElevationConsentChoice,
+	hasCurrentElevationConsent,
+} from '~/db/models/elevation-consent.server'
 
 export type NewDeviceActionData = {
 	ok: false
@@ -24,8 +28,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		return redirect('/explore/login')
 	}
 	const integrations = await getIntegrations()
+	const hasElevationConsent = await hasCurrentElevationConsent(user.id)
 
-	return { integrations }
+	return { integrations, hasElevationConsent }
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -68,16 +73,23 @@ export async function action({ request }: Route.ActionArgs) {
 	const { model } = submission['device-selection']
 	const sensorSelection = submission['sensor-selection']
 	const selectedSensors = sensorSelection.selectedSensors
-	const { latitude, longitude, heightAboveGround } = submission.location
+	const { latitude, longitude, heightAboveGround, elevationLookupConsent } =
+		submission.location
 	let heightAboveSeaLevel: number | null = null
+	let heightAboveSeaLevelDataset: string | null = null
+	const mayLookupElevation = await applyElevationConsentChoice(
+		userId,
+		elevationLookupConsent,
+	)
 
-	if (heightAboveGround !== undefined) {
+	if (heightAboveGround !== undefined && mayLookupElevation) {
 		try {
 			const terrainElevation = await getTerrainElevation(latitude, longitude)
 			heightAboveSeaLevel = calculateHeightAboveSeaLevel(
 				terrainElevation.elevation,
 				heightAboveGround,
 			)
+			heightAboveSeaLevelDataset = terrainElevation.dataset
 		} catch (error) {
 			console.warn(
 				'Could not calculate device height above sea level:',
@@ -97,6 +109,7 @@ export async function action({ request }: Route.ActionArgs) {
 			longitude,
 			heightAboveGround: heightAboveGround ?? null,
 			heightAboveSeaLevel,
+			heightAboveSeaLevelDataset,
 		}
 
 		const devicePayload =

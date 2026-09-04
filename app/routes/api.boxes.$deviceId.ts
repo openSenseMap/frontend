@@ -38,10 +38,12 @@ import {
 } from '~/middleware/content-type-header.server'
 import { parseJsonBody } from '~/lib/request-parsing'
 import { DeviceLocationInputSchema } from '~/lib/openapi/schemas/location'
+import { ElevationLookupConsentSchema } from '~/lib/openapi/schemas/consent'
 import {
-	calculateDeviceHeightAboveSeaLevel,
 	ElevationLookupError,
+	resolveDeviceHeightAboveSeaLevel,
 } from '~/services/elevation-service.server'
+import { applyElevationConsentChoice } from '~/db/models/elevation-consent.server'
 
 const messages = {
 	conflictingSensorsAndAddons:
@@ -89,6 +91,8 @@ const UpdateDeviceRequestSchema = z
 		}),
 
 		location: DeviceLocationInputSchema.optional(),
+
+		elevationLookupConsent: ElevationLookupConsentSchema.optional(),
 
 		grouptag: z
 			.union([z.string(), z.array(z.string())])
@@ -175,7 +179,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Update device',
 		description:
-			'Updates a device. Requires JWT authorization. An optional location height is interpreted and stored as height above ground. Height above sea level is recalculated when needed and terrain elevation is available; lookup failure does not fail the update.',
+			'Updates a device. Requires JWT authorization. An optional location height is interpreted and stored as height above ground. Coordinates are sent to OpenTopoData and height above sea level is recalculated only when the authenticated user has granted the current elevation lookup consent. A missing consent or lookup failure does not fail the update.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -442,6 +446,10 @@ async function put(request: Request, user: User, deviceId: string) {
 
 	// Prepare location if provided
 	let locationData: UpdateDeviceArgs['location']
+	const mayLookupElevation =
+		body.location || body.elevationLookupConsent !== undefined
+			? await applyElevationConsentChoice(user.id, body.elevationLookupConsent)
+			: false
 	if (body.location) {
 		locationData = {
 			lat: body.location.lat,
@@ -459,15 +467,21 @@ async function put(request: Request, user: User, deviceId: string) {
 		if (heightWasSupplied || coordinatesChanged) {
 			locationData.heightAboveGround = heightAboveGround ?? null
 			locationData.heightAboveSeaLevel = null
+			locationData.heightAboveSeaLevelDataset = null
 
-			if (heightAboveGround !== null && heightAboveGround !== undefined) {
+			if (
+				heightAboveGround !== null &&
+				heightAboveGround !== undefined &&
+				mayLookupElevation
+			) {
 				try {
-					locationData.heightAboveSeaLevel =
-						await calculateDeviceHeightAboveSeaLevel(
-							body.location.lat,
-							body.location.lng,
-							heightAboveGround,
-						)
+					const resolvedHeight = await resolveDeviceHeightAboveSeaLevel(
+						body.location.lat,
+						body.location.lng,
+						heightAboveGround,
+					)
+					locationData.heightAboveSeaLevel = resolvedHeight.heightAboveSeaLevel
+					locationData.heightAboveSeaLevelDataset = resolvedHeight.dataset
 				} catch (error) {
 					console.warn('PUT /boxes/:deviceId terrain elevation lookup failed', {
 						error: error instanceof ElevationLookupError ? error.code : error,

@@ -32,9 +32,10 @@ import {
 	CreateDeviceSchema,
 } from '~/lib/api-schemas/devices'
 import {
-	calculateDeviceHeightAboveSeaLevel,
 	ElevationLookupError,
+	resolveDeviceHeightAboveSeaLevel,
 } from '~/services/elevation-service.server'
+import { applyElevationConsentChoice } from '~/db/models/elevation-consent.server'
 
 const DevicesQueryParamsSchema = DevicesQuerySchema.meta({
 	id: 'DevicesQueryParams',
@@ -93,7 +94,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Create a new device',
 		description:
-			'Creates a new device with optional sensors. An optional location height is interpreted and stored as height above ground. Height above sea level is calculated when terrain elevation is available; an elevation lookup failure does not fail device creation.',
+			'Creates a new device with optional sensors. An optional location height is interpreted and stored as height above ground. Coordinates are sent to OpenTopoData and height above sea level is calculated only when the authenticated user has granted the current elevation lookup consent. A missing consent or lookup failure does not fail device creation.',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {
@@ -244,14 +245,21 @@ async function post(request: Request, user: User) {
 		// Request height is relative to ground; sea-level height is best-effort.
 		const [longitude, latitude, heightAboveGround] = validatedData.location
 		let heightAboveSeaLevel: number | null = null
+		let heightAboveSeaLevelDataset: string | null = null
+		const mayLookupElevation = await applyElevationConsentChoice(
+			user.id,
+			validatedData.elevationLookupConsent,
+		)
 
-		if (heightAboveGround !== undefined) {
+		if (heightAboveGround !== undefined && mayLookupElevation) {
 			try {
-				heightAboveSeaLevel = await calculateDeviceHeightAboveSeaLevel(
+				const resolvedHeight = await resolveDeviceHeightAboveSeaLevel(
 					latitude,
 					longitude,
 					heightAboveGround,
 				)
+				heightAboveSeaLevel = resolvedHeight.heightAboveSeaLevel
+				heightAboveSeaLevelDataset = resolvedHeight.dataset
 			} catch (error) {
 				console.warn('POST /boxes terrain elevation lookup failed', {
 					error: error instanceof ElevationLookupError ? error.code : error,
@@ -270,6 +278,7 @@ async function post(request: Request, user: User) {
 				longitude: longitude,
 				heightAboveGround: heightAboveGround ?? null,
 				heightAboveSeaLevel,
+				heightAboveSeaLevelDataset,
 				tags: validatedData.grouptag,
 				sensors: sensorsProvided
 					? validatedData.sensors.map((s) => ({

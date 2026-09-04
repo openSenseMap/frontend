@@ -9,6 +9,7 @@ export type TerrainElevationResult = {
 
 export type ElevationLookupErrorCode =
 	| 'invalid_location'
+	| 'consent_required'
 	| 'unavailable'
 	| 'rate_limited'
 	| 'timeout'
