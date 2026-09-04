@@ -54,6 +54,7 @@ export const device = pgTable('device', {
 	longitude: doublePrecision('longitude').notNull(),
 	heightAboveGround: doublePrecision('height_above_ground'),
 	heightAboveSeaLevel: doublePrecision('height_above_sea_level'),
+	heightAboveSeaLevelDataset: text('height_above_sea_level_dataset'),
 	sensorWikiModel: text('sensor_wiki_model'),
 	userId: text('user_id')
 		.notNull()

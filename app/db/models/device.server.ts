@@ -58,6 +58,7 @@ const BASE_DEVICE_COLUMNS = {
 	longitude: true,
 	heightAboveGround: true,
 	heightAboveSeaLevel: true,
+	heightAboveSeaLevelDataset: true,
 	status: true,
 	createdAt: true,
 	updatedAt: true,
@@ -237,6 +238,7 @@ export function getUserDevice({ id, userId }: Pick<Device, 'id' | 'userId'>) {
 			longitude: true,
 			heightAboveGround: true,
 			heightAboveSeaLevel: true,
+			heightAboveSeaLevelDataset: true,
 			userId: true,
 		},
 	})
@@ -279,6 +281,7 @@ export function getDeviceWithoutSensors({ id }: Pick<Device, 'id'>) {
 			longitude: true,
 			heightAboveGround: true,
 			heightAboveSeaLevel: true,
+			heightAboveSeaLevelDataset: true,
 			userId: true,
 			useAuth: true,
 			model: true,
@@ -335,9 +338,15 @@ export async function updateDeviceLocation({
 	longitude,
 	heightAboveGround,
 	heightAboveSeaLevel,
+	heightAboveSeaLevelDataset,
 }: Pick<
 	Device,
-	'id' | 'latitude' | 'longitude' | 'heightAboveGround' | 'heightAboveSeaLevel'
+	| 'id'
+	| 'latitude'
+	| 'longitude'
+	| 'heightAboveGround'
+	| 'heightAboveSeaLevel'
+	| 'heightAboveSeaLevelDataset'
 >) {
 	const [existingDevice] = await drizzleClient
 		.select()
@@ -358,6 +367,7 @@ export async function updateDeviceLocation({
 			longitude,
 			heightAboveGround,
 			heightAboveSeaLevel,
+			heightAboveSeaLevelDataset,
 			updatedAt: sql`NOW()`,
 		})
 		.where(eq(device.id, id))
@@ -378,6 +388,7 @@ export type UpdateDeviceArgs = {
 		lng: number
 		heightAboveGround?: number | null
 		heightAboveSeaLevel?: number | null
+		heightAboveSeaLevelDataset?: string | null
 	}
 	sensors?: SensorUpdateArgs[]
 }
@@ -446,7 +457,13 @@ export async function updateDevice(
 		}
 
 		if (args.location) {
-			const { lat, lng, heightAboveGround, heightAboveSeaLevel } = args.location
+			const {
+				lat,
+				lng,
+				heightAboveGround,
+				heightAboveSeaLevel,
+				heightAboveSeaLevelDataset,
+			} = args.location
 			const pointWKT = `POINT(${lng} ${lat})`
 
 			const [existingLocation] = await tx
@@ -490,6 +507,12 @@ export async function updateDevice(
 			}
 			if (heightAboveSeaLevel !== undefined) {
 				setColumns['heightAboveSeaLevel'] = heightAboveSeaLevel
+				setColumns['heightAboveSeaLevelDataset'] =
+					heightAboveSeaLevel === null
+						? null
+						: (heightAboveSeaLevelDataset ?? null)
+			} else if (heightAboveSeaLevelDataset !== undefined) {
+				setColumns['heightAboveSeaLevelDataset'] = heightAboveSeaLevelDataset
 			}
 		}
 
@@ -678,6 +701,7 @@ export async function getDevices(format: DevicesFormat = 'json') {
 				longitude: device.longitude,
 				heightAboveGround: device.heightAboveGround,
 				heightAboveSeaLevel: device.heightAboveSeaLevel,
+				heightAboveSeaLevelDataset: device.heightAboveSeaLevelDataset,
 				exposure: device.exposure,
 				createdAt: device.createdAt,
 				tags: device.tags,
@@ -726,6 +750,7 @@ export async function getArchivedDevices() {
 			longitude: true,
 			heightAboveGround: true,
 			heightAboveSeaLevel: true,
+			heightAboveSeaLevelDataset: true,
 			exposure: true,
 			status: true,
 			createdAt: true,
@@ -966,6 +991,7 @@ const MINIMAL_COLUMNS = {
 	latitude: true,
 	heightAboveGround: true,
 	heightAboveSeaLevel: true,
+	heightAboveSeaLevelDataset: true,
 }
 
 const DEFAULT_COLUMNS = {
@@ -983,6 +1009,7 @@ const DEFAULT_COLUMNS = {
 	latitude: true,
 	heightAboveGround: true,
 	heightAboveSeaLevel: true,
+	heightAboveSeaLevelDataset: true,
 }
 
 export async function findDevices(
@@ -1123,6 +1150,10 @@ export async function createDevice(deviceData: any, userId: string) {
 					longitude: deviceData.longitude,
 					heightAboveGround: deviceData.heightAboveGround ?? null,
 					heightAboveSeaLevel: deviceData.heightAboveSeaLevel ?? null,
+					heightAboveSeaLevelDataset:
+						deviceData.heightAboveSeaLevel == null
+							? null
+							: (deviceData.heightAboveSeaLevelDataset ?? null),
 					deviceSchemaVersionId: storedDeviceSchemaVersion?.id,
 				})
 				.returning()

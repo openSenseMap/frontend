@@ -192,6 +192,11 @@ export const ApiDeviceSchema = z
 				'Calculated device height above sea level in meters. Null when no above-ground height was supplied or terrain elevation could not be resolved.',
 			example: 66.6,
 		}),
+		heightAboveSeaLevelDataset: z.string().nullable().optional().meta({
+			description:
+				'OpenTopoData dataset used to calculate heightAboveSeaLevel. Null when no calculated height is available.',
+			example: 'eudem25m',
+		}),
 		useAuth: z.boolean().optional().meta({
 			description: 'Whether the device requires authentication',
 			example: true,

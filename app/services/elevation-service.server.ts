@@ -276,15 +276,18 @@ export function getTerrainElevation(
 	return request.then((result) => ({ ...result, latitude, longitude }))
 }
 
-export async function calculateDeviceHeightAboveSeaLevel(
+export async function resolveDeviceHeightAboveSeaLevel(
 	latitude: number,
 	longitude: number,
 	heightAboveGround: number,
 ) {
 	const terrainElevation = await getTerrainElevation(latitude, longitude)
 
-	return calculateHeightAboveSeaLevel(
-		terrainElevation.elevation,
-		heightAboveGround,
-	)
+	return {
+		heightAboveSeaLevel: calculateHeightAboveSeaLevel(
+			terrainElevation.elevation,
+			heightAboveGround,
+		),
+		dataset: terrainElevation.dataset,
+	}
 }

@@ -31,6 +31,7 @@ export const CreateDeviceServiceSchema = z
 		longitude: z.number(),
 		heightAboveGround: z.number().optional().nullable(),
 		heightAboveSeaLevel: z.number().optional().nullable(),
+		heightAboveSeaLevelDataset: z.string().optional().nullable(),
 		model: z
 			.enum([
 				'homeV2Lora',

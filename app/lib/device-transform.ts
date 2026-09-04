@@ -23,6 +23,7 @@ export type TransformedDevice = {
 	longitude: number
 	heightAboveGround: number | null
 	heightAboveSeaLevel: number | null
+	heightAboveSeaLevelDataset: string | null
 	/** Legacy alias for heightAboveSeaLevel. */
 	height: number | null
 	useAuth: boolean | null
