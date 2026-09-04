@@ -2,8 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { elevationConsent } from '~/db/schema/elevation-consent'
 import { drizzleClient } from '~/db.server'
 
-export const ELEVATION_CONSENT_PROCESSOR = 'opentopodata' as const
-// Increment this whenever the processor, purpose, or displayed consent text changes.
+// Increment this whenever the recipient, purpose, or displayed consent text changes.
 export const CURRENT_ELEVATION_CONSENT_VERSION = 'opentopodata-v1'
 
 export async function hasCurrentElevationConsent(userId: string) {
@@ -11,7 +10,6 @@ export async function hasCurrentElevationConsent(userId: string) {
 		where: (record, { and, eq, isNull }) =>
 			and(
 				eq(record.userId, userId),
-				eq(record.processor, ELEVATION_CONSENT_PROCESSOR),
 				eq(record.consentVersion, CURRENT_ELEVATION_CONSENT_VERSION),
 				isNull(record.withdrawnAt),
 			),
@@ -34,14 +32,12 @@ export async function grantCurrentElevationConsent(
 			.where(
 				and(
 					eq(elevationConsent.userId, userId),
-					eq(elevationConsent.processor, ELEVATION_CONSENT_PROCESSOR),
 					isNull(elevationConsent.withdrawnAt),
 				),
 			)
 
 		await tx.insert(elevationConsent).values({
 			userId,
-			processor: ELEVATION_CONSENT_PROCESSOR,
 			consentVersion: CURRENT_ELEVATION_CONSENT_VERSION,
 			acceptedAt: now,
 		})
@@ -58,7 +54,6 @@ export async function withdrawElevationConsent(
 		.where(
 			and(
 				eq(elevationConsent.userId, userId),
-				eq(elevationConsent.processor, ELEVATION_CONSENT_PROCESSOR),
 				isNull(elevationConsent.withdrawnAt),
 			),
 		)

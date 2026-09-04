@@ -20,7 +20,6 @@ export const elevationConsent = pgTable(
 				onDelete: 'cascade',
 				onUpdate: 'cascade',
 			}),
-		processor: text('processor').$type<'opentopodata'>().notNull(),
 		consentVersion: text('consent_version').notNull(),
 		acceptedAt: timestamp('accepted_at', { withTimezone: true })
 			.defaultNow()
@@ -28,10 +27,7 @@ export const elevationConsent = pgTable(
 		withdrawnAt: timestamp('withdrawn_at', { withTimezone: true }),
 	},
 	(t) => ({
-		userProcessorIdx: index('elevation_consent_user_processor_idx').on(
-			t.userId,
-			t.processor,
-		),
+		userIdx: index('elevation_consent_user_idx').on(t.userId),
 	}),
 )
 
