@@ -111,7 +111,7 @@
 	"mqtt_connect_options_info": "Eine json-kodierte Zeichenkette mit Optionen, die an den MQTT-Client übergeben werden",
 	"loading": "Lade",
 	"location": "Standort",
-	"location_info_text": "Wähle den Standort des Geräts auf der Karte oder gib Breiten- und Längengrad manuell ein. Optional kannst du die Höhe des Geräts über dem Boden angeben. Eine geschätzte Oberflächenhöhe wird addiert, um die in openSenseMap gespeicherte Höhe zu berechnen.",
+	"location_info_text": "Wähle den Standort des Geräts auf der Karte oder gib Breiten- und Längengrad manuell ein. Optional kannst du die Höhe des Geräts über dem Boden angeben. Eine geschätzte Oberflächenhöhe wird addiert, um die Gerätehöhe über dem Meeresspiegel zu berechnen.",
 	"location_text": "Klicke auf die Karte, um einen Standort für dein Gerät auszuwählen, oder gib die Koordinaten manuell ein.",
 	"search_placeholder": "Suche",
 	"latitude": "Breitengrad",

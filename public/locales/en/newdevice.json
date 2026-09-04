@@ -111,7 +111,7 @@
 	"mqtt_connect_options_info": "A json encoded string with options to supply to the MQTT client",
 	"loading": "Loading",
 	"location": "Location",
-	"location_info_text": "Select the device's location by clicking on the map or entering latitude and longitude manually. You can optionally enter the device height above ground. An estimated surface elevation is added to calculate the height stored by openSenseMap.",
+	"location_info_text": "Select the device's location by clicking on the map or entering latitude and longitude manually. You can optionally enter the device height above ground. An estimated surface elevation is added to calculate the device height above sea level.",
 	"location_text": "Click on the map to choose a location for your device, or enter its coordinates manually.",
 	"search_placeholder": "Search",
 	"latitude": "Latitude",
