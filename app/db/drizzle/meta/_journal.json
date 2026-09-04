@@ -341,43 +341,8 @@
     {
       "idx": 48,
       "version": "7",
-      "when": 1786973529786,
-      "tag": "0048_giant_carnage",
-      "breakpoints": true
-    },
-    {
-      "idx": 49,
-      "version": "7",
-      "when": 1788441195379,
-      "tag": "0049_low_eddie_brock",
-      "breakpoints": true
-    },
-    {
-      "idx": 50,
-      "version": "7",
-      "when": 1788443875242,
-      "tag": "0050_large_nomad",
-      "breakpoints": true
-    },
-    {
-      "idx": 51,
-      "version": "7",
-      "when": 1788506377762,
-      "tag": "0051_dry_scalphunter",
-      "breakpoints": true
-    },
-    {
-      "idx": 52,
-      "version": "7",
-      "when": 1788509146061,
-      "tag": "0052_spotty_tarot",
-      "breakpoints": true
-    },
-    {
-      "idx": 53,
-      "version": "7",
-      "when": 1788510225227,
-      "tag": "0053_regular_stryfe",
+      "when": 1788511701007,
+      "tag": "0048_device_location_height",
       "breakpoints": true
     }
   ]

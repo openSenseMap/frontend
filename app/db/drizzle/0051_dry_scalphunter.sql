@@ -1,1 +1,0 @@
-ALTER TABLE "device" ADD COLUMN "height_above_sea_level_dataset" text;

@@ -2,7 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { elevationConsent } from '~/db/schema/elevation-consent'
 import { drizzleClient } from '~/db.server'
 
-// Increment this whenever the recipient, purpose, or displayed consent text changes.
+// Increment this when the displayed consent text changes.
 export const CURRENT_ELEVATION_CONSENT_VERSION = 'opentopodata-v1'
 
 export async function hasCurrentElevationConsent(userId: string) {

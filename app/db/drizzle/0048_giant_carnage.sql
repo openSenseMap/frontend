@@ -1,1 +1,0 @@
-ALTER TABLE "device" ADD COLUMN "height" double precision;
