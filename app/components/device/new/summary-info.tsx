@@ -37,6 +37,19 @@ export function SummaryInfo() {
 	)
 	const modelLabel =
 		formData.model === 'luftdaten.info' ? 'Sensor.Community' : formData.model
+	let heightSummary: string
+
+	if (heightAboveGround === null) {
+		heightSummary = t('height_not_set')
+	} else if (!elevationLookupConsent) {
+		heightSummary = t('elevation_consent_required')
+	} else if (elevation.status === 'loading') {
+		heightSummary = t('fetching_elevation')
+	} else if (finalHeight !== null) {
+		heightSummary = `${Math.round(finalHeight)} m`
+	} else {
+		heightSummary = t('elevation_unavailable')
+	}
 
 	const sections = [
 		{
@@ -63,16 +76,7 @@ export function SummaryInfo() {
 				},
 				{
 					label: 'final_height',
-					value:
-						finalHeight !== null
-							? `${Math.round(finalHeight)} m`
-							: !shouldResolveElevation
-								? heightAboveGround === null
-									? t('height_not_set')
-									: t('elevation_consent_required')
-								: elevation.status === 'loading'
-									? t('fetching_elevation')
-									: t('elevation_unavailable'),
+					value: heightSummary,
 				},
 			],
 		},
