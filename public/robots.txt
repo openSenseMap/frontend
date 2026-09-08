@@ -5,4 +5,3 @@ Disallow: /api
 Disallow: /settings
 Disallow: /device
 Disallow: /metrics
-Sitemap: https://yourdomain.com/sitemap.xml
