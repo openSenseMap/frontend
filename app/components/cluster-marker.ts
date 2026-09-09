@@ -1,5 +1,5 @@
 import { type Feature, type Point } from 'geojson'
-import maplibregl from 'maplibre-gl'
+import { Map, Marker } from 'maplibre-gl'
 
 const colors = [
 	{ color: '#4EAF47', opacity: 1 },
@@ -11,7 +11,7 @@ const colors = [
  */
 export const ClusterMarker = (props: {
 	clusterFeature: Feature<Point, any>
-	map: maplibregl.Map
+	map: Map
 	sourceId?: string
 }) => {
 	const { clusterFeature, map, sourceId = 'osem-devices' } = props
@@ -104,8 +104,7 @@ export const ClusterMarker = (props: {
 				</text>
 			</svg>`
 
-
-    e.style.cursor = 'pointer'
+	e.style.cursor = 'pointer'
 	e.addEventListener('click', async (event) => {
 		event.stopPropagation()
 
@@ -126,5 +125,5 @@ export const ClusterMarker = (props: {
 		})
 	})
 
-	return new maplibregl.Marker({ element: e }).setLngLat([longitude, latitude])
+	return new Marker({ element: e }).setLngLat([longitude, latitude])
 }

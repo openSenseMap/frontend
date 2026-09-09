@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import {
+	GeolocateControl,
 	NavigationControl,
 	type MapProps,
 	type MapRef,
@@ -33,6 +34,16 @@ const Map = forwardRef<MapRef, MapProps>(
 				>
 					{children}
 					<NavigationControl position="bottom-right" showCompass={false} />
+					<GeolocateControl
+						position="bottom-right"
+						positionOptions={{
+							enableHighAccuracy: true,
+							timeout: 10_000,
+						}}
+						fitBoundsOptions={{
+							maxZoom: 14,
+						}}
+					/>
 				</BaseMap>
 			</div>
 		)

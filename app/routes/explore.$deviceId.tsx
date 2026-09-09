@@ -77,10 +77,6 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 	return data
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }: Route.MetaArgs) => {
-	return [{ title: `${loaderData?.device?.name}` }]
-}
-
 // Defining the component that will render the page
 export default function DeviceId() {
 	// Retrieving the data returned by the loader using the useLoaderData hook

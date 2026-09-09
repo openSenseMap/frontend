@@ -2,7 +2,7 @@ import { useForm, getInputProps, getFormProps } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod/v4'
 import { type FileUpload, parseFormData } from '@mjackson/form-data-parser'
 import { eq } from 'drizzle-orm'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	data,
@@ -14,7 +14,6 @@ import {
 } from 'react-router'
 import { z } from 'zod'
 import { type Route } from './+types/settings.profile.photo'
-import { LabelButton } from '~/components/label-button'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import {
@@ -118,6 +117,7 @@ export async function action({ request }: Route.ActionArgs) {
 export default function PhotoChooserModal() {
 	const data = useLoaderData<typeof loader>()
 	const [newImageSrc, setNewImageSrc] = useState<string | null>(null)
+	const fileInputRef = useRef<HTMLInputElement>(null)
 	const navigate = useNavigate()
 	const actionData = useActionData<typeof action>()
 	const [form, { photoFile }] = useForm({
@@ -166,10 +166,11 @@ export default function PhotoChooserModal() {
 					{/* <ErrorList errors={photoFile.errors} id={photoFile.id} /> */}
 					<input
 						{...getInputProps(photoFile, { type: 'file' })}
+						ref={fileInputRef}
 						type="file"
 						accept="image/*"
 						className="sr-only"
-						tabIndex={newImageSrc ? -1 : 0}
+						tabIndex={-1}
 						onChange={(e) => {
 							const file = e.currentTarget.files?.[0]
 							if (file) {
@@ -188,7 +189,12 @@ export default function PhotoChooserModal() {
 						</div>
 					) : (
 						<div className="flex gap-4">
-							<LabelButton htmlFor={photoFile.id}>{t('change')}</LabelButton>
+							<Button
+								type="button"
+								onClick={() => fileInputRef.current?.click()}
+							>
+								{t('change')}
+							</Button>
 						</div>
 					)}
 					{/* <ErrorList errors={form.errors} /> */}

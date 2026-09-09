@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { type DeviceExposureType } from '~/db/schema'
+import { type DeviceExposureType } from '../device-enums'
 import { StandardResponse } from '~/lib/responses'
 
 export type BoxesDataColumn =

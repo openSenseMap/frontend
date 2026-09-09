@@ -21,6 +21,7 @@ import { location } from './location'
 import { logEntry } from './log-entry'
 import { sensor } from './sensor'
 import { user } from './user'
+import { deviceSchemaVersion } from './device-schema'
 
 /**
  * Table
@@ -58,6 +59,13 @@ export const device = pgTable('device', {
 			onDelete: 'cascade',
 			onUpdate: 'cascade',
 		}),
+	deviceSchemaVersionId: text('device_schema_version_id').references(
+		() => deviceSchemaVersion.id,
+		{
+			onDelete: 'set null',
+			onUpdate: 'cascade',
+		},
+	),
 })
 
 // Many-to-many relation between device - location

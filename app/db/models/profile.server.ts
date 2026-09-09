@@ -35,18 +35,30 @@ export async function getProfileByUsername(username: string) {
 
 export async function updateProfile(
 	id: Profile['id'],
-	displayName: Profile['displayName'],
-	visibility: Profile['public'],
+	values: {
+		displayName: Profile['displayName']
+		public: boolean
+		homeLatitude?: number | null
+		homeLongitude?: number | null
+		homeZoom?: number | null
+	},
 ) {
-	try {
-		const result = await drizzleClient
-			.update(profile)
-			.set({ displayName, public: visibility })
-			.where(eq(profile.id, id))
-		return result
-	} catch (error) {
-		throw error
+	const updateValues: Partial<Profile> = {
+		displayName: values.displayName,
+		public: values.public,
 	}
+
+	if ('homeLatitude' in values) updateValues.homeLatitude = values.homeLatitude
+	if ('homeLongitude' in values) updateValues.homeLongitude = values.homeLongitude
+	if ('homeZoom' in values) updateValues.homeZoom = values.homeZoom
+
+	const [updatedProfile] = await drizzleClient
+		.update(profile)
+		.set(updateValues)
+		.where(eq(profile.id, id))
+		.returning()
+
+	return updatedProfile
 }
 
 export async function createProfile(

@@ -6,6 +6,7 @@
 	"outdoor": "outdoor",
 	"mobile": "mobile",
 	"unknown": "unknown",
+	"name_is_required": "A device name is required",
 	"description": "Description",
 	"markdown_supported": "Markdown is supported.",
 	"preview": "Preview",
@@ -15,5 +16,13 @@
 	"accepted_formats": "Accepted formats",
 	"add": "Add",
 	"delete_device": "Delete device",
-	"delete_device_confirm_info": "If you really want to delete your station, please type your current password - all measurements will be deleted as well."
+	"delete_device_confirm_info": "If you really want to delete your station, please type your current password - all measurements will be deleted as well.",
+	"saving": "Saving...",
+	"save_changes": "Save changes",
+	"saved": "Saved",
+	"autosave_failed": "Automatic saving failed. Please try again.",
+	"unsaved_changes": "Unsaved changes",
+	"longitude": "Longitude",
+	"latitude": "Latitude",
+	"reset_to_original_location": "Reset to original location"
 }

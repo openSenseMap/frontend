@@ -118,7 +118,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 	}
 
 	const formData = await request.formData()
-	console.log('formData', formData)
 	const configStr = formData.get('integrationConfig')
 
 	if (!configStr) {

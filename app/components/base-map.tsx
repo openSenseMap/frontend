@@ -10,6 +10,10 @@ import {
 import SpaceBackground from './map/space-background'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useTranslation } from 'react-i18next'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import { setWorkerUrl } from 'maplibre-gl'
+
+setWorkerUrl(workerUrl);
 
 export const BaseMap = forwardRef<MapRef, MapProps>(
 	({ onLoad, ...props }: MapProps, ref: ForwardedRef<MapRef>) => {

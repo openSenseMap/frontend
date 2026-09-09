@@ -121,10 +121,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-export const meta: MetaFunction = () => {
-	return [{ title: 'Password reset' }]
-}
-
 export default function PasswordResetRoute() {
 	const { token } = useLoaderData() as LoaderData
 	const actionData = useActionData() as ActionData | undefined
@@ -143,7 +139,7 @@ export default function PasswordResetRoute() {
 
 	if (!token) {
 		return (
-			<div className="flex h-screen items-center justify-center">
+			<div className="relative flex min-h-dvh items-start justify-center p-4 sm:items-center">
 				<Link
 					to={{
 						pathname: '/explore',
@@ -153,7 +149,7 @@ export default function PasswordResetRoute() {
 					<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
 				</Link>
 
-				<Card className="z-50 w-full max-w-md">
+				<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
 					<CardHeader className="space-y-1 text-center">
 						<CardTitle className="text-2xl font-bold">
 							{t('reset_link_invalid_title')}
@@ -168,7 +164,7 @@ export default function PasswordResetRoute() {
 								{t('back_to_login')}
 							</Button>
 						</Link>
-						<Link to="/explore/forgot-password" className="w-full">
+						<Link to="/explore/forgot" className="w-full">
 							<Button variant="outline" className="w-full">
 								{t('request_new_reset_link')}
 							</Button>
@@ -180,7 +176,7 @@ export default function PasswordResetRoute() {
 	}
 
 	return (
-		<div className="flex h-screen items-center justify-center">
+		<div className="relative flex min-h-dvh items-start justify-center p-4 sm:items-center">
 			<Link
 				to={{
 					pathname: '/explore',
@@ -190,7 +186,7 @@ export default function PasswordResetRoute() {
 				<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
 			</Link>
 
-			<Card className="z-50 w-full max-w-md">
+			<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
 				{busy && (
 					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
@@ -292,7 +288,7 @@ export default function PasswordResetRoute() {
 								{t('set_password_button')}
 							</Button>
 
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-center text-sm">
 								{t('remember_password')}{' '}
 								<Link
 									className="font-medium underline"

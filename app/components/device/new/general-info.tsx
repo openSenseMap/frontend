@@ -11,9 +11,9 @@ import { Label } from '~/components/ui/label'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
+import { cn } from '~/lib/utils'
 
 type ExposureOption = 'outdoor' | 'indoor' | 'mobile' | 'unknown'
 
@@ -111,7 +111,7 @@ export function GeneralInfoStep() {
 		- Temperature
 
 		[${t('project_website')}](https://example.com)`}
-						className="min-h-[220px] w-full rounded-md border p-3 font-mono text-sm"
+						className="min-h-55 w-full rounded-md border p-3 font-mono text-sm"
 					/>
 					<div className="text-muted-foreground text-sm">
 						{description.length} / 5000
@@ -123,7 +123,7 @@ export function GeneralInfoStep() {
 
 				<div className="space-y-2">
 					<Label>{t('preview')}</Label>
-					<div className="min-h-[220px] rounded-md border p-3">
+					<div className="min-h-55 rounded-md border p-3">
 						{description.trim() ? (
 							<MarkdownContent>{description}</MarkdownContent>
 						) : (
@@ -140,23 +140,29 @@ export function GeneralInfoStep() {
 					{exposureOptions.map((option) => (
 						<Button
 							key={option.value}
-							type="button" // Prevent form submission
+							type="button"
 							onClick={() => setValue('exposure', option.value)}
-							variant={'outline'}
-							className={`flex items-center gap-2 transition-all duration-200 ease-in-out ${
+							variant="outline"
+							aria-pressed={currentExposure === option.value}
+							className={cn(
+								'flex items-center gap-2 transition-all duration-200 ease-in-out',
 								currentExposure === option.value
-									? 'bg-green-100 shadow-md hover:bg-green-100'
-									: 'hover:bg-gray-100'
-							}`}
+									? [
+											'border-primary bg-primary/10 text-primary ring-primary/40 shadow-md ring-2',
+											'hover:bg-primary/15',
+											'dark:border-primary dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/25',
+										]
+									: 'hover:bg-muted',
+							)}
 						>
 							{option.icon}
-							<span className="text-sm">{t(option.label)}</span>
+							<span className="text-sm">{option.label}</span>
 						</Button>
 					))}
 				</div>
 			</div>
 			<div className="space-y-2">
-				<div className="flex items-center space-x-4">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 					<div className="flex items-center space-x-2">
 						<Checkbox
 							id="isTemporary"
@@ -166,29 +172,28 @@ export function GeneralInfoStep() {
 						<Label htmlFor="isTemporary" className="text-base font-medium">
 							{t('temporary')}
 						</Label>
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger
-									type="button"
-									onClick={(e) => {
-										e.preventDefault()
-										e.stopPropagation()
-									}}
-								>
-									<Info />
-								</TooltipTrigger>
-								<TooltipContent>
-									{
-										<p className="text-sm text-gray-500">
-											{t('temporary_info_text')}
-										</p>
-									}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+
+						<Tooltip>
+							<TooltipTrigger
+								type="button"
+								onClick={(e) => {
+									e.preventDefault()
+									e.stopPropagation()
+								}}
+							>
+								<Info />
+							</TooltipTrigger>
+							<TooltipContent>
+								{
+									<p className="text-sm text-gray-500">
+										{t('temporary_info_text')}
+									</p>
+								}
+							</TooltipContent>
+						</Tooltip>
 					</div>
 					{temporaryExpirationDate && (
-						<div className="flex grow items-center space-x-2">
+						<div className="flex min-w-0 grow flex-col gap-2 sm:flex-row sm:items-center">
 							<Label
 								htmlFor="temporaryExpirationDate"
 								className="text-sm font-medium whitespace-nowrap"

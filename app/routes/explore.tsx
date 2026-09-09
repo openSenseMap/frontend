@@ -10,27 +10,40 @@ import {
 	type ViewStateChangeEvent,
 } from 'react-map-gl/maplibre'
 import {
-	Outlet,
+	useOutlet,
 	useNavigate,
 	useSearchParams,
 	useLoaderData,
 	useParams,
+	useLocation,
 } from 'react-router'
 import { type Route } from './+types/explore'
-import Header from '~/components/header'
 import Map from '~/components/map'
 import { phenomenonLayers, defaultLayer } from '~/components/map/layers'
 import Legend, { type LegendValue } from '~/components/map/legend'
-import { getDevices, getDevicesWithSensors } from '~/db/models/device.server'
+import {
+	getDevices,
+	getDevicesWithSensors,
+	getUserDeviceLocations,
+} from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
 import { getProfileByUserId } from '~/db/models/profile.server'
 import { getSensors } from '~/db/models/sensor.server'
 import { type Device } from '~/db/schema'
 import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
+import {
+	getValidMapViewport,
+	MAP_ZOOM_LIMITS,
+	validLngLat,
+	type MapViewport,
+} from '~/lib/location'
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
-import maplibregl, {
+import {
+	Popup,
+	type GeoJSONSource,
+	type Marker,
 	type LngLatLike,
 	type MapLayerMouseEvent,
 	type MapLibreEvent,
@@ -42,20 +55,39 @@ import maplibregl, {
 } from 'maplibre-gl'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
 import { ClusterMarker } from '~/components/cluster-marker'
-// import MapHeader from '~/components/map/topbar'
-// import { getMeasurementsCount } from '~/db/models/measurement.server'
+import MapHeader from '~/components/map/topbar'
+import { getMeasurementsCount } from '~/db/models/measurement.server'
 import { getTags } from '~/services/device-service.server'
 import { getPhenomena } from '~/db/models/phenomena.server'
-// import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
+import { DOWNLOAD_FILTER_KEYS } from '~/components/header/download'
 
 const INITIAL_VIEW_STATE = {
 	zoom: 2,
-	latitude: 7,
-	longitude: 52,
+	latitude: 51.961563,
+	longitude: 7.628202,
 } as const
 
+const MAX_MY_AREA_LATITUDE_SPAN = 35
+const MAX_MY_AREA_LONGITUDE_SPAN = 60
+
+type MyAreaTarget =
+	| {
+			type: 'view'
+			view: MapViewport
+	  }
+	| {
+			type: 'bounds'
+			bounds: [[number, number], [number, number]]
+	  }
+
+type OwnedDeviceLocation = {
+	id: string
+	latitude: number
+	longitude: number
+}
+
 type ClusterMarkerRecord = {
-	marker: maplibregl.Marker
+	marker: Marker
 	signature: string
 }
 
@@ -68,49 +100,133 @@ function parseMapHash(hash: string) {
 
 	const [, zoom, latitude, longitude] = match
 
-	return {
-		zoom: Number(zoom),
+	return getValidMapViewport({
 		latitude: Number(latitude),
 		longitude: Number(longitude),
+		zoom: Number(zoom),
+	})
+}
+
+function getHomeView(
+	profile: Awaited<ReturnType<typeof getProfileByUserId>> | null,
+) {
+	if (!profile) return null
+
+	return getValidMapViewport({
+		latitude: profile.homeLatitude,
+		longitude: profile.homeLongitude,
+		zoom: profile.homeZoom,
+	})
+}
+
+function getOwnedDevicesAreaTarget(
+	devices: OwnedDeviceLocation[],
+): MyAreaTarget | null {
+	const validDevices = devices.filter(({ longitude, latitude }) =>
+		validLngLat(longitude, latitude),
+	)
+
+	if (validDevices.length === 0) return null
+
+	if (validDevices.length === 1) {
+		const { longitude, latitude } = validDevices[0]
+
+		return {
+			type: 'view',
+			view: {
+				longitude,
+				latitude,
+				zoom: MAP_ZOOM_LIMITS.default,
+			},
+		}
+	}
+
+	const [firstDevice, ...remainingDevices] = validDevices
+	let west = firstDevice.longitude
+	let east = firstDevice.longitude
+	let south = firstDevice.latitude
+	let north = firstDevice.latitude
+
+	for (const device of remainingDevices) {
+		west = Math.min(west, device.longitude)
+		east = Math.max(east, device.longitude)
+		south = Math.min(south, device.latitude)
+		north = Math.max(north, device.latitude)
+	}
+
+	const latitudeSpan = Math.abs(north - south)
+	const longitudeSpan = Math.abs(east - west)
+
+	if (
+		latitudeSpan > MAX_MY_AREA_LATITUDE_SPAN ||
+		longitudeSpan > MAX_MY_AREA_LONGITUDE_SPAN
+	) {
+		return null
+	}
+
+	return {
+		type: 'bounds',
+		bounds: [
+			[west, south],
+			[east, north],
+		],
 	}
 }
 
-// function parseCsv(value: FormDataEntryValue | null): string[] {
-// 	if (typeof value !== 'string') return []
+function parseCsv(value: FormDataEntryValue | null): string[] {
+	if (typeof value !== 'string') return []
 
-// 	return value
-// 		.split(',')
-// 		.map((item) => item.trim())
-// 		.filter(Boolean)
-// }
+	return value
+		.split(',')
+		.map((item) => item.trim())
+		.filter(Boolean)
+}
 
-// function getDownloadFilterParams(formData: FormData) {
-// 	const filterParams = new URLSearchParams()
+function getDownloadFilterParams(formData: FormData) {
+	const filterParams = new URLSearchParams()
 
-// 	for (const key of DOWNLOAD_FILTER_KEYS) {
-// 		const value = formData.get(key)
+	for (const key of DOWNLOAD_FILTER_KEYS) {
+		const value = formData.get(key)
 
-// 		if (typeof value === 'string' && value.length > 0) {
-// 			filterParams.set(key, value)
-// 		}
-// 	}
+		if (typeof value === 'string' && value.length > 0) {
+			filterParams.set(key, value)
+		}
+	}
 
-// 	return filterParams
-// }
+	return filterParams
+}
 
 export async function action({ request }: { request: Request }) {
 	const deviceLimit = 50
 	const sensorIds: Array<string> = []
 	const measurements: Array<object> = []
+
 	const formdata = await request.formData()
-	const deviceIds = (formdata.get('devices') as string).split(',')
-	const format = formdata.get('format') as string
-	const aggregate = formdata.get('aggregate') as string
+
+	const deviceIds = parseCsv(formdata.get('devices'))
+	const format = String(formdata.get('format') ?? 'csv')
+	const aggregate = String(formdata.get('aggregate') ?? 'raw')
+
 	const includeFields = {
 		title: formdata.get('title') === 'on',
 		unit: formdata.get('unit') === 'on',
 		value: formdata.get('value') === 'on',
 		timestamp: formdata.get('timestamp') === 'on',
+	}
+
+	const filterParams = getDownloadFilterParams(formdata)
+
+	const selectedPhenomena = parseCsv(formdata.get('phenomenon')).map(
+		(phenomenon) => phenomenon.toLowerCase(),
+	)
+
+	const measurementTimeRange =
+		getMeasurementTimeRangeFromSearchParams(filterParams)
+
+	if (deviceIds.length === 0) {
+		return Response.json({
+			error: 'No devices selected.',
+		})
 	}
 
 	if (deviceIds.length >= deviceLimit) {
@@ -119,14 +235,30 @@ export async function action({ request }: { request: Request }) {
 			link: 'https://archive.opensensemap.org/',
 		})
 	}
-	for (const device of deviceIds) {
-		const sensors = await getSensors(device)
-		for (const sensor of sensors) {
+
+	for (const deviceId of deviceIds) {
+		const sensors = await getSensors(deviceId)
+
+		const filteredSensors =
+			selectedPhenomena.length > 0
+				? sensors.filter((sensor) =>
+						selectedPhenomena.includes(sensor.title?.toLowerCase() ?? ''),
+					)
+				: sensors
+
+		for (const sensor of filteredSensors) {
 			sensorIds.push(sensor.id)
-			const measurement = await getMeasurement(sensor.id, aggregate)
+
+			const measurement = await getMeasurement(
+				sensor.id,
+				aggregate,
+				measurementTimeRange?.from,
+				measurementTimeRange?.to,
+			)
+
 			measurement.map((m: any) => {
-				m['title'] = sensor.title
-				m['unit'] = sensor.unit
+				m.title = sensor.title
+				m.unit = sensor.unit
 			})
 
 			measurements.push(measurement)
@@ -148,7 +280,6 @@ export async function action({ request }: { request: Request }) {
 		fileName = result.fileName
 		contentType = result.contentType
 	} else {
-		// txt format
 		const result = getTXT(measurements, includeFields)
 		content = result.content
 		fileName = result.fileName
@@ -161,6 +292,61 @@ export async function action({ request }: { request: Request }) {
 	})
 }
 
+export type MeasurementTimeRange = {
+	from: Date
+	to: Date
+}
+
+function startOfUtcDate(date: string) {
+	const [year, month, day] = date.split('-').map(Number)
+	return new Date(Date.UTC(year, month - 1, day))
+}
+
+function addUtcDays(date: Date, days: number) {
+	const next = new Date(date)
+	next.setUTCDate(next.getUTCDate() + days)
+	return next
+}
+
+export function getMeasurementTimeRangeFromSearchParams(
+	searchParams: URLSearchParams,
+): MeasurementTimeRange | undefined {
+	const timeMode = searchParams.get('timeMode')
+
+	if (timeMode === 'pointintime') {
+		const date = searchParams.get('date')
+
+		if (!date) return undefined
+
+		const from = startOfUtcDate(date)
+		const to = addUtcDays(from, 1)
+
+		return {
+			from,
+			to,
+		}
+	}
+
+	if (timeMode === 'timeperiod') {
+		const fromParam = searchParams.get('from')
+		const toParam = searchParams.get('to')
+
+		if (!fromParam || !toParam) return undefined
+
+		const from = startOfUtcDate(fromParam)
+		const to = addUtcDays(startOfUtcDate(toParam), 1)
+
+		if (from > to) return undefined
+
+		return {
+			from,
+			to,
+		}
+	}
+
+	return undefined
+}
+
 export async function loader({ context, request }: Route.LoaderArgs) {
 	//* Get filter params
 	let locale = getLocale(context)
@@ -168,10 +354,20 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	const filterParams = url.search
 	const urlFilterParams = new URLSearchParams(url.search)
 
+	const measurementTimeRange =
+		getMeasurementTimeRangeFromSearchParams(urlFilterParams)
+
 	// check if sensors are queried - if not get devices only to reduce load
-	const devices = !urlFilterParams.get('phenomenon')
-		? await getDevices('geojson')
-		: await getDevicesWithSensors()
+	const needsSensors =
+		Boolean(urlFilterParams.get('phenomenon')) || Boolean(measurementTimeRange)
+
+	const devices = needsSensors
+		? await getDevicesWithSensors({ measurementTimeRange })
+		: await getDevices('geojson')
+
+	const availableTags = await getTags()
+
+	const measurementCount = await getMeasurementsCount()
 
 	const session = await getUserSession(request)
 	const message = session.get('global_message') || null
@@ -179,32 +375,42 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	var filteredDevices = getFilteredDevices(devices, urlFilterParams)
 
 	const user = await getUser(request)
-	//const phenomena = await getPhenomena();
+	const phenomena = await getPhenomena()
 
 	if (user) {
-		const profile = await getProfileByUserId(user.id)
+		const [profile, userDeviceLocations] = await Promise.all([
+			getProfileByUserId(user.id),
+			getUserDeviceLocations(user.id),
+		])
 		const userLocale = user.language
 			? user.language.split(/[_-]/)[0].toLowerCase()
 			: 'en'
+
 		return {
 			devices,
+			availableTags,
+			phenomena,
+			measurementCount,
 			user,
 			profile,
+			userDeviceLocations,
 			filteredDevices,
 			filterParams,
 			locale: userLocale,
-			//phenomena
 		}
 	}
 	return {
 		devices,
+		availableTags,
+		phenomena,
+		measurementCount,
 		user,
 		profile: null,
+		userDeviceLocations: [],
 		filterParams,
 		filteredDevices,
 		message,
 		locale,
-		//phenomena,
 	}
 }
 
@@ -216,20 +422,23 @@ if (process.env.NODE_ENV === 'production') {
 
 export default function Explore() {
 	// data from our loader
-	const { devices, filteredDevices } = useLoaderData<typeof loader>()
+	const {
+		devices,
+		availableTags,
+		filteredDevices,
+		measurementCount,
+		user,
+		profile,
+		userDeviceLocations,
+	} = useLoaderData<typeof loader>()
 	const mapRef = useRef<MapRef | null>(null)
+	const appliedInitialMyAreaRef = useRef(false)
 	// MapLibre markers are imperative DOM nodes, so refs avoid stale React state.
 	const clusterMarkersRef = useRef<Record<string, ClusterMarkerRecord>>({})
 	const visibleClusterIdsRef = useRef<Set<string>>(new Set())
 	const navigate = useNavigate()
-	// const [showSearch, setShowSearch] = useState<boolean>(false);
-	const clusterMarkers = useMemo<Record<string, maplibregl.Marker>>(
-		() => ({}),
-		[],
-	)
-	const [onScreenClusterMarkers, setOnScreenClusterMarkers] = useState<
-		Record<string, maplibregl.Marker>
-	>({})
+	const location = useLocation()
+	const outlet = useOutlet()
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
 	const [searchParams] = useSearchParams()
 	const [filteredData, setFilteredData] = useState<
@@ -244,71 +453,16 @@ export default function Explore() {
 
 	const deviceNamePopup = useMemo(
 		() =>
-			new maplibregl.Popup({
+			new Popup({
 				closeButton: false,
 				closeOnClick: false,
 				closeOnMove: true,
 				anchor: 'left',
-				offset: [15, 0],
+				offset: [15, -25],
+				className: 'device-name-popup',
 			}),
 		[],
 	)
-
-	//listen to search params change
-	// useEffect(() => {
-	//   //filters devices for pheno
-	//   if (searchParams.has("mapPheno") && searchParams.get("mapPheno") != "all") {
-	//     let sensorsFiltered: any = [];
-	//     let currentParam = searchParams.get("mapPheno");
-	//     //check if pheno exists in sensor-wiki data
-	//     let pheno = data.phenomena.filter(
-	//       (pheno: any) => pheno.slug == currentParam?.toString(),
-	//     );
-	//     if (pheno[0]) {
-	//       setSelectedPheno(pheno[0]);
-	//       data.devices.features.forEach((device: any) => {
-	//         device.properties.sensors.forEach((sensor: Sensor) => {
-	//           if (
-	//             sensor.sensorWikiPhenomenon == currentParam &&
-	//             sensor.lastMeasurement
-	//           ) {
-	//             const lastMeasurementDate = new Date(
-	//               //@ts-ignore
-	//               sensor.lastMeasurement.createdAt,
-	//             );
-	//             //take only measurements in the last 10mins
-	//             //@ts-ignore
-	//             if (currentDate < lastMeasurementDate) {
-	//               sensorsFiltered.push({
-	//                 ...device,
-	//                 properties: {
-	//                   ...device.properties,
-	//                   sensor: {
-	//                     ...sensor,
-	//                     lastMeasurement: {
-	//                       //@ts-ignore
-	//                       value: parseFloat(sensor.lastMeasurement.value),
-	//                       //@ts-ignore
-	//                       createdAt: sensor.lastMeasurement.createdAt,
-	//                     },
-	//                   },
-	//                 },
-	//               });
-	//             }
-	//           }
-	//         });
-	//         return false;
-	//       });
-	//       setFilteredData({
-	//         type: "FeatureCollection",
-	//         features: sensorsFiltered,
-	//       });
-	//     }
-	//   } else {
-	//     setSelectedPheno(undefined);
-	//   }
-	//   // eslint-disable-next-line react-hooks/exhaustive-deps
-	// }, [searchParams]);
 
 	function calculateLabelPositions(length: number): string[] {
 		const positions: string[] = []
@@ -390,7 +544,7 @@ export default function Explore() {
 
 			if (feature.layer?.id === 'devices-clusters-layer') {
 				const zoom = await (
-					map.getSource(feature.source) as maplibregl.GeoJSONSource
+					map.getSource(feature.source) as GeoJSONSource
 				).getClusterExpansionZoom(feature.properties?.cluster_id)
 				map.easeTo({
 					center: coordinates,
@@ -401,6 +555,37 @@ export default function Explore() {
 			}
 		}
 	}
+
+	const flyToView = useCallback(
+		(view: { zoom: number; latitude: number; longitude: number }) => {
+			mapRef.current?.flyTo({
+				center: [view.longitude, view.latitude],
+				zoom: view.zoom,
+				duration: 900,
+				essential: true,
+			})
+		},
+		[],
+	)
+
+	const flyToHash = useCallback(
+		(hash: string) => {
+			const view = parseMapHash(hash)
+
+			if (!view) return
+
+			flyToView(view)
+		},
+		[flyToView],
+	)
+
+	useEffect(() => {
+		flyToHash(location.hash)
+	}, [location.hash, flyToHash])
+
+	const handleHomeClick = useCallback(() => {
+		flyToView(INITIAL_VIEW_STATE)
+	}, [flyToView])
 
 	const handleMouseMove = useCallback(
 		(e: MapLayerMouseEvent) => {
@@ -431,7 +616,7 @@ export default function Explore() {
 				}
 				deviceNamePopup
 					.setLngLat(coordinates as LngLatLike)
-					.setHTML(feature.properties.name)
+					.setText(feature.properties.name ?? '')
 					.addTo(e.target)
 			} else {
 				e.target.getCanvas().style.cursor = ''
@@ -456,19 +641,40 @@ export default function Explore() {
 
 	//* fly to device location when url inludes deviceId
 	const { deviceId } = useParams()
-	var deviceLoc: any
 	let selectedDevice: any
 	if (deviceId) {
 		selectedDevice = (devices as any).features.find(
 			(device: any) => device.properties.id === deviceId,
 		)
-		deviceLoc = [
-			selectedDevice?.properties.latitude,
-			selectedDevice?.properties.longitude,
-		]
 	}
 
 	const selectedDeviceId = selectedDevice?.properties.id
+	const selectedDeviceView = selectedDevice
+		? {
+				latitude: selectedDevice.properties.latitude,
+				longitude: selectedDevice.properties.longitude,
+				zoom: 10,
+			}
+		: null
+	const hashView = parseMapHash(location.hash)
+	const homeView = getHomeView(profile)
+	const ownedDevicesAreaTarget = useMemo(
+		() => getOwnedDevicesAreaTarget(userDeviceLocations),
+		[userDeviceLocations],
+	)
+	const myAreaTarget = homeView
+		? ({
+				type: 'view',
+				view: homeView,
+			} satisfies MyAreaTarget)
+		: ownedDevicesAreaTarget
+	const initialViewState =
+		selectedDeviceView ?? hashView ?? homeView ?? INITIAL_VIEW_STATE
+	const shouldApplyInitialMyArea =
+		!selectedDeviceView &&
+		!hashView &&
+		!homeView &&
+		Boolean(ownedDevicesAreaTarget)
 
 	const deviceLayerFilter: FilterSpecification = selectedDeviceId
 		? [
@@ -478,56 +684,94 @@ export default function Explore() {
 			]
 		: ['!', ['has', 'point_count']]
 
+	const focusMyArea = useCallback(
+		(target: MyAreaTarget | null = myAreaTarget, animate = true) => {
+			if (!target) return
+
+			if (target.type === 'view') {
+				mapRef.current?.flyTo({
+					center: [target.view.longitude, target.view.latitude],
+					zoom: target.view.zoom,
+					duration: animate ? 900 : 0,
+					essential: true,
+				})
+				return
+			}
+
+			mapRef.current?.fitBounds(target.bounds, {
+				padding: 80,
+				maxZoom: 12,
+				duration: animate ? 900 : 0,
+				essential: true,
+			})
+		},
+		[myAreaTarget],
+	)
+
 	const buildLayerFromPheno = () => {
 		//TODO: ADD VALUES TO DEFAULTLAYER FROM selectedPheno.ROV or min/max from values.
 		return defaultLayer
 	}
 
 	const loadImageIfNotExists = async (
-		map: MapInstance,
+		map: MapLibreMap,
 		id: string,
 		url: string,
+		options?: Partial<StyleImageMetadata>,
 	) => {
-		if (!map.getImage(id)) {
-			const imgResponse = await map.loadImage(url)
-			map.addImage(id, imgResponse.data)
-		}
+		if (map.hasImage(id)) return
+
+		const image = await map.loadImage(url)
+
+		map.addImage(id, image.data, options)
 	}
 
 	const handleMapLoad = async (e: MapLibreEvent) => {
 		const map = e.target
+		const retinaImageOptions = { pixelRatio: 2 }
 		await Promise.allSettled([
 			loadImageIfNotExists(
 				map,
 				'osem-device-active',
 				'/img/device_marker_active.png',
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-device-inactive',
 				'/img/device_marker_inactive.png',
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-device-old',
 				'/img/device_marker_old.png',
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-mobile-active',
 				'/img/mobile_marker_active.png',
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-mobile-inactive',
 				'/img/mobile_marker_inactive.png',
+				retinaImageOptions,
 			),
 			loadImageIfNotExists(
 				map,
 				'osem-mobile-old',
 				'/img/mobile_marker_old.png',
+				retinaImageOptions,
 			),
 		])
+
+		if (shouldApplyInitialMyArea && !appliedInitialMyAreaRef.current) {
+			appliedInitialMyAreaRef.current = true
+			focusMyArea(ownedDevicesAreaTarget, false)
+		}
 	}
 
 	const removeAllClusterMarkers = useCallback(() => {
@@ -651,8 +895,14 @@ export default function Explore() {
 	return (
 		<div className="h-full w-full">
 			<MapProvider>
-				<Header devices={devices} />
-
+				<MapHeader
+					devices={filteredDevices}
+					measurementCount={measurementCount}
+					onHomeClick={handleHomeClick}
+					onMyAreaClick={() => focusMyArea(myAreaTarget)}
+					canFocusMyArea={Boolean(myAreaTarget)}
+				/>
+				{/* <Header devices={devices} /> */}
 				{selectedPheno && (
 					<Legend
 						title={selectedPheno.label.item[0].text}
@@ -674,11 +924,7 @@ export default function Explore() {
 					onMove={handleMapMove}
 					onMoveEnd={handleMapMove}
 					ref={mapRef}
-					initialViewState={
-						deviceId
-							? { latitude: deviceLoc[0], longitude: deviceLoc[1], zoom: 10 }
-							: { latitude: 7, longitude: 52, zoom: 2 }
-					}
+					initialViewState={initialViewState}
 				>
 					{!selectedPheno && (
 						<Source
@@ -749,6 +995,7 @@ export default function Explore() {
 										],
 									],
 									'icon-size': 1,
+									'icon-anchor': 'bottom',
 									'icon-allow-overlap': true,
 								}}
 								paint={{
@@ -786,11 +1033,11 @@ export default function Explore() {
 						/>
 					)}
 
-					<div className="pointer-events-none absolute inset-0 z-10">
-						<div className="pointer-events-auto">
-							<Outlet />
+					{outlet && (
+						<div className="pointer-events-none absolute inset-0 z-50">
+							<div className="pointer-events-auto h-full w-full">{outlet}</div>
 						</div>
-					</div>
+					)}
 				</Map>
 			</MapProvider>
 		</div>

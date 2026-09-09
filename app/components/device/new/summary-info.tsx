@@ -1,13 +1,14 @@
 import { MapPin, Tag, Smartphone, Cpu, Cog } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
 export function SummaryInfo() {
 	const { getValues } = useFormContext()
 	const formData = getValues()
 	const { t } = useTranslation('newdevice')
+	const modelLabel =
+		formData.model === 'luftdaten.info' ? 'Sensor.Community' : formData.model
 
 	const sections = [
 		{
@@ -37,7 +38,7 @@ export function SummaryInfo() {
 		{
 			title: 'Device',
 			icon: <Smartphone className="h-5 w-5" />,
-			data: [{ label: 'Model', value: formData.model }],
+			data: [{ label: 'Model', value: modelLabel }],
 		},
 		{
 			title: 'Sensors',

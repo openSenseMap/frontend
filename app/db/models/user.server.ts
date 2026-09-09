@@ -11,6 +11,7 @@ import {
 	device,
 } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
+import { ThemePreference } from '~/lib/theme'
 
 export async function getUserById(id: User['id']) {
 	return drizzleClient.query.user.findFirst({
@@ -117,16 +118,50 @@ export async function updateUserPassword(
 		.returning()
 }
 
-export async function updateUserlocale(
-	email: User['email'],
-	language: User['language'],
+type UpdateUserPreferencesArgs = {
+	language?: User['language']
+	themePreference?: ThemePreference
+	newsletterOptIn?: User['newsletterOptIn']
+}
+
+export async function updateUserPreferencesById(
+	id: User['id'],
+	args: UpdateUserPreferencesArgs,
 ) {
-	return drizzleClient
+	const values: Partial<
+		Pick<User, 'language' | 'themePreference' | 'newsletterOptIn'>
+	> = {}
+
+	if (args.language !== undefined) {
+		values.language = args.language
+	}
+
+	if (args.themePreference !== undefined) {
+		values.themePreference = args.themePreference
+	}
+
+	if (args.newsletterOptIn !== undefined) {
+		values.newsletterOptIn = args.newsletterOptIn
+	}
+
+	if (Object.keys(values).length === 0) {
+		throw new Error('No user preference fields provided')
+	}
+
+	const [updated] = await drizzleClient
 		.update(user)
 		.set({
-			language: language,
+			...values,
+			updatedAt: sql`NOW()`,
 		})
-		.where(eq(user.email, email))
+		.where(eq(user.id, id))
+		.returning()
+
+	if (!updated) {
+		throw new Error(`User ${id} not found`)
+	}
+
+	return updated
 }
 
 type UpdateUserArgs = {
@@ -206,6 +241,7 @@ export async function createUser(
 	language: User['language'],
 	password: string,
 	tosVersionId?: string,
+	newsletterOptIn = false,
 ) {
 	const hashedPassword = await bcrypt.hash(preparePasswordHash(password), 13) // make salt_factor configurable oSeM API uses 13 by default
 
@@ -219,6 +255,7 @@ export async function createUser(
 				unconfirmedEmail: email,
 				acceptedTosVersionId: tosVersionId,
 				acceptedTosAt: new Date(),
+				newsletterOptIn,
 			})
 			.returning()
 		await t.insert(passwordTable).values({

@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import { Fragment, useEffect } from 'react'
 import { useLoaderData, useNavigate } from 'react-router'
-import { DeviceExposureZodEnum, DeviceStatusZodEnum } from '~/db/schema/enum'
+import { DeviceExposureZodEnum, DeviceStatusZodEnum } from '~/lib/device-enums'
 import { type loader } from '~/routes/explore'
 
 const FILTER_KEYS = new Set(['exposure', 'status', 'tags'])

@@ -9,6 +9,8 @@ import {
 	data,
 	redirect,
 	useSearchParams,
+	useSubmit,
+	useNavigation,
 } from 'react-router'
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/settings.account'
@@ -24,24 +26,26 @@ import {
 } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '~/components/ui/select'
 import { useToast } from '~/components/ui/use-toast'
 import {
 	getUserById,
 	updateUserEmail,
 	updateUserName,
-	updateUserlocale,
 	verifyLogin,
 	getUserByAnyEmail,
+	updateUserPassword,
 } from '~/db/models/user.server'
 import { getUserId } from '~/services/session-service.server'
 import { resendEmailConfirmation } from '~/services/user-service.server'
+import { validatePassLength, validatePassType } from '~/utils'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '~/components/ui/dialog'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
@@ -63,6 +67,68 @@ export async function action({ request }: Route.ActionArgs) {
 	const user = await getUserById(userId)
 	if (!user) return redirect('/')
 
+	if (intent === 'update-password') {
+		const currPass = String(formData.get('currentPassword') ?? '')
+		const newPass = String(formData.get('newPassword') ?? '')
+		const confirmPass = String(formData.get('newPasswordConfirm') ?? '')
+		const passwordsList = [currPass, newPass, confirmPass]
+
+		const checkPasswordsType = validatePassType(passwordsList)
+		if (!checkPasswordsType.isValid) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'Password is required.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		const validatePasswordsLength = validatePassLength(passwordsList)
+		if (!validatePasswordsLength.isValid) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'Password must be at least 8 characters long.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		if (newPass !== confirmPass) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'New passwords do not match.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		const ok = await verifyLogin(user.email, currPass)
+		if (!ok) {
+			return data(
+				{
+					intent,
+					success: false,
+					message: 'Current password is incorrect.',
+				},
+				{ status: 400 },
+			)
+		}
+
+		await updateUserPassword(userId, newPass)
+
+		return data({
+			intent,
+			success: true,
+			message: 'Password updated successfully.',
+		})
+	}
+
 	if (intent === 'resend-verification') {
 		try {
 			const result = await resendEmailConfirmation(user)
@@ -78,12 +144,10 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const name = String(formData.get('name') ?? '').trim()
 	const email = String(formData.get('email') ?? '').trim()
-	const language = String(formData.get('language') ?? '').trim()
 	const currentPassword = String(formData.get('passwordUpdate') ?? '')
 
 	invariant(typeof name === 'string', 'name must be a string')
 	invariant(typeof email === 'string', 'email must be a string')
-	invariant(typeof language === 'string', 'language must be a string')
 	invariant(typeof currentPassword === 'string', 'password must be a string')
 
 	const pendingEmail = (user.unconfirmedEmail ?? '').trim()
@@ -95,10 +159,8 @@ export async function action({ request }: Route.ActionArgs) {
 			(!hasPendingEmail && email !== user.email))
 
 	const wantsNameChange = name.length > 0 && name !== user.name
-	const wantsLanguageChange = language.length > 0 && language !== user.language
 
-	const wantsAnyChange =
-		wantsNameChange || wantsLanguageChange || wantsEmailChange
+	const wantsAnyChange = wantsNameChange || wantsEmailChange
 
 	if (!wantsAnyChange) {
 		return data(
@@ -160,10 +222,6 @@ export async function action({ request }: Route.ActionArgs) {
 		await updateUserName(user.email, name)
 	}
 
-	if (wantsLanguageChange) {
-		await updateUserlocale(user.email, language)
-	}
-
 	if (wantsEmailChange) {
 		const [updatedUser] = await updateUserEmail(user, email)
 
@@ -198,7 +256,8 @@ export async function action({ request }: Route.ActionArgs) {
 export default function EditUserProfilePage() {
 	const userData = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
-	const fetcher = useFetcher<typeof action>()
+	const resendFetcher = useFetcher<typeof action>()
+	const passwordFetcher = useFetcher<typeof action>()
 	const { toast } = useToast()
 	const { t } = useTranslation('settings')
 
@@ -213,7 +272,14 @@ export default function EditUserProfilePage() {
 			toast({ title: t('verification_link_invalid'), variant: 'destructive' })
 	}, [params, toast, t])
 
+	const submit = useSubmit()
+	const navigation = useNavigation()
+
+	const profileFormRef = useRef<HTMLFormElement>(null)
 	const passwordUpdRef = useRef<HTMLInputElement>(null)
+
+	const [emailConfirmOpen, setEmailConfirmOpen] = useState(false)
+	const [emailPassword, setEmailPassword] = useState('')
 
 	const { pendingEmail, hasPendingEmail, emailShown, showConfirmed } =
 		useMemo(() => {
@@ -231,11 +297,39 @@ export default function EditUserProfilePage() {
 
 	const [name, setName] = useState(userData?.name ?? '')
 	const [email, setEmail] = useState(emailShown)
-	const [lang, setLang] = useState(userData?.language ?? 'en_US')
+
+	const emailChanged = email.trim() !== emailShown.trim()
+
+	function submitProfileWithPassword() {
+		if (!profileFormRef.current) return
+
+		const formData = new FormData(profileFormRef.current)
+
+		formData.set('intent', 'update-profile')
+		formData.set('passwordUpdate', emailPassword)
+
+		submit(formData, { method: 'post' })
+	}
+
+	function handleSaveClick(event: React.MouseEvent<HTMLButtonElement>) {
+		if (!emailChanged) return
+
+		event.preventDefault()
+		setEmailConfirmOpen(true)
+
+		window.requestAnimationFrame(() => {
+			passwordUpdRef.current?.focus()
+		})
+	}
+	const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
+
+	const passwordFormRef = useRef<HTMLFormElement>(null)
+	const currPassRef = useRef<HTMLInputElement>(null)
+	const newPassRef = useRef<HTMLInputElement>(null)
+	const confirmPassRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
 		setName(userData?.name ?? '')
-		setLang(userData?.language ?? 'en_US')
 		setEmail(emailShown)
 	}, [userData, emailShown])
 
@@ -245,7 +339,12 @@ export default function EditUserProfilePage() {
 
 		if (actionData.errors?.passwordUpdate) {
 			toast({ title: t('invalid_password'), variant: 'destructive' })
-			passwordUpdRef.current?.focus()
+			setEmailConfirmOpen(true)
+
+			window.requestAnimationFrame(() => {
+				passwordUpdRef.current?.focus()
+			})
+
 			return
 		}
 
@@ -262,15 +361,39 @@ export default function EditUserProfilePage() {
 			return
 		}
 
+		setEmailConfirmOpen(false)
+		setEmailPassword('')
+
 		toast({ title: t('profile_successfully_updated'), variant: 'success' })
 	}, [actionData, toast, t])
 
 	useEffect(() => {
-		if (fetcher.state !== 'idle' || !fetcher.data) return
-		if (fetcher.data.intent !== 'resend-verification') return
-		if (!('code' in fetcher.data)) return
+		if (passwordFetcher.state !== 'idle' || !passwordFetcher.data) return
+		if (passwordFetcher.data.intent !== 'update-password') return
+		if (!('success' in passwordFetcher.data)) return
 
-		const { code } = fetcher.data
+		if (passwordFetcher.data.success) {
+			passwordFormRef.current?.reset()
+			toast({ title: passwordFetcher.data.message, variant: 'success' })
+			setPasswordDialogOpen(false)
+			return
+		}
+
+		toast({
+			title: passwordFetcher.data.message,
+			variant: 'destructive',
+			description: t('try_again'),
+		})
+
+		currPassRef.current?.focus()
+	}, [passwordFetcher.state, passwordFetcher.data, toast, t])
+
+	useEffect(() => {
+		if (resendFetcher.state !== 'idle' || !resendFetcher.data) return
+		if (resendFetcher.data.intent !== 'resend-verification') return
+		if (!('code' in resendFetcher.data)) return
+
+		const { code } = resendFetcher.data
 		if (code === 'Ok') {
 			toast({ title: t('verification_email_sent'), variant: 'success' })
 		} else if (code === 'UnprocessableContent') {
@@ -278,133 +401,271 @@ export default function EditUserProfilePage() {
 		} else {
 			toast({ title: t('verification_email_failed'), variant: 'destructive' })
 		}
-	}, [fetcher.state, fetcher.data, toast, t])
+	}, [resendFetcher.state, resendFetcher.data, toast, t])
 
 	const saveDisabled =
-		name === (userData?.name ?? '') &&
-		lang === (userData?.language ?? 'en_US') &&
-		email.trim() === emailShown.trim()
+		name === (userData?.name ?? '') && email.trim() === emailShown.trim()
 
 	return (
-		<Form method="post" className="space-y-6" noValidate>
-			<Card className="dark:bg-dark-boxes dark:border-white">
-				<CardHeader>
-					<CardTitle>{t('account_information')}</CardTitle>
-					<CardDescription>{t('update_basic_details')}</CardDescription>
-				</CardHeader>
-				<CardContent className="grid gap-6">
-					<div className="grid gap-2">
-						<Label htmlFor="name">{t('name')}</Label>
-						<Input
-							id="name"
-							required
-							name="name"
-							type="text"
-							placeholder={t('enter_name')}
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-						/>
-						{name !== (userData?.name ?? '') && (
-							<Callout variant="warning">
-								<Trans
-									i18nKey="username_change_warning"
-									ns="settings"
-									values={{ oldUsername: userData?.name ?? '' }}
-									components={{ strong: <strong />, code: <code /> }}
-								/>
-							</Callout>
-						)}
-					</div>
+		<>
+			<Form ref={profileFormRef} method="post" className="space-y-6" noValidate>
+				<Card className="border-border">
+					<CardHeader>
+						<CardTitle>{t('account_information')}</CardTitle>
+						<CardDescription>{t('update_basic_details')}</CardDescription>
+					</CardHeader>
+					<CardContent className="grid gap-6">
+						<div className="grid gap-2">
+							<Label htmlFor="name">{t('name')}</Label>
+							<Input
+								id="name"
+								required
+								name="name"
+								type="text"
+								placeholder={t('enter_name')}
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+							/>
+							{name !== (userData?.name ?? '') && (
+								<Callout variant="warning">
+									<Trans
+										i18nKey="username_change_warning"
+										ns="settings"
+										values={{ oldUsername: userData?.name ?? '' }}
+										components={{ strong: <strong />, code: <code /> }}
+									/>
+								</Callout>
+							)}
+						</div>
 
-					<div className="grid gap-2">
-						<Label htmlFor="email">{t('email')}</Label>
-						<Input
-							id="email"
-							name="email"
-							placeholder={t('enter_email')}
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-						/>
+						<div className="grid gap-2">
+							<Label htmlFor="email">{t('email')}</Label>
+							<Input
+								id="email"
+								name="email"
+								placeholder={t('enter_email')}
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+							/>
 
-						{showConfirmed ? (
-							<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
-								<span className="inline-flex gap-1">
-									<CheckLine /> {t('email_confirmed')}
-								</span>
-							</p>
-						) : (
-							<div className="flex items-center justify-between gap-3">
-								<p className="flex items-center gap-1 text-sm text-orange-500 dark:text-amber-400">
+							{showConfirmed ? (
+								<p className="flex items-center gap-1 text-sm text-green-500 dark:text-green-300">
 									<span className="inline-flex gap-1">
-										<OctagonAlert />{' '}
-										{hasPendingEmail
-											? t('email_not_confirmed')
-											: t('email_not_confirmed')}
+										<CheckLine /> {t('email_confirmed')}
 									</span>
 								</p>
+							) : (
+								<div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+									<p className="min-w-0 text-sm text-orange-500 dark:text-amber-400">
+										<span className="inline-flex items-start gap-1">
+											<OctagonAlert />{' '}
+											{hasPendingEmail
+												? t('email_not_confirmed')
+												: t('email_not_confirmed')}
+										</span>
+									</p>
 
-								<Button
-									type="button"
-									variant="default"
-									size="sm"
-									disabled={fetcher.state === 'submitting'}
-									onClick={() => {
-										void fetcher.submit(
-											{ intent: 'resend-verification' },
-											{ method: 'post' },
-										)
-									}}
-								>
-									{fetcher.state === 'submitting'
-										? t('sending')
-										: t('resend_verification')}
-								</Button>
+									<Button
+										type="button"
+										variant="default"
+										size="sm"
+										className="w-full sm:w-auto"
+										disabled={resendFetcher.state === 'submitting'}
+										onClick={() => {
+											void resendFetcher.submit(
+												{ intent: 'resend-verification' },
+												{ method: 'post' },
+											)
+										}}
+									>
+										{resendFetcher.state === 'submitting'
+											? t('sending')
+											: t('resend_verification')}
+									</Button>
+								</div>
+							)}
+
+							{hasPendingEmail ? (
+								<p className="text-muted-foreground text-sm">
+									{t('email_change_pending_hint', {
+										pendingEmail,
+										currentEmail: userData?.email ?? '',
+									})}
+								</p>
+							) : null}
+						</div>
+
+						<div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between dark:border-white">
+							<div className="min-w-0 space-y-1">
+								<p className="font-medium">{t('update_password')}</p>
+								<p className="text-muted-foreground text-sm">
+									{t('update_password_description')}
+								</p>
 							</div>
-						)}
 
-						{hasPendingEmail ? (
-							<p className="text-muted-foreground text-sm">
-								{t('email_change_pending_hint', {
-									pendingEmail,
-									currentEmail: userData?.email ?? '',
-								})}
-							</p>
-						) : null}
-					</div>
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full shrink-0 sm:w-auto"
+								onClick={() => setPasswordDialogOpen(true)}
+							>
+								{t('update_password')}
+							</Button>
+						</div>
+					</CardContent>
 
-					<div className="grid gap-2">
-						<Label htmlFor="language">{t('language')}</Label>
-						<Select value={lang} onValueChange={setLang} name="language">
-							<SelectTrigger className="dark:border-white">
-								<SelectValue placeholder={t('select_language')} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="en_US">English</SelectItem>
-								<SelectItem value="de_DE">Deutsch</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+					<CardFooter>
+						<Button
+							type="submit"
+							disabled={saveDisabled}
+							onClick={handleSaveClick}
+						>
+							{t('save_changes')}
+						</Button>
+					</CardFooter>
+				</Card>
+			</Form>
+
+			<Dialog
+				open={emailConfirmOpen}
+				onOpenChange={(open) => {
+					setEmailConfirmOpen(open)
+
+					if (!open) {
+						setEmailPassword('')
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>{t('confirm_email_change')}</DialogTitle>
+						<DialogDescription>
+							{t('confirm_email_change_description', {
+								currentEmail: userData?.email ?? '',
+								newEmail: email,
+							})}
+						</DialogDescription>
+					</DialogHeader>
 
 					<div className="grid gap-2">
 						<Label htmlFor="passwordUpdate">{t('confirm_password')}</Label>
 						<Input
-							autoComplete="current-password"
 							ref={passwordUpdRef}
 							id="passwordUpdate"
-							placeholder={t('enter_current_password')}
-							type="password"
 							name="passwordUpdate"
+							type="password"
+							autoComplete="current-password"
+							placeholder={t('enter_current_password')}
+							value={emailPassword}
+							onChange={(event) => setEmailPassword(event.target.value)}
+							onKeyDown={(event) => {
+								if (event.key === 'Enter') {
+									event.preventDefault()
+									submitProfileWithPassword()
+								}
+							}}
 						/>
 					</div>
-				</CardContent>
 
-				<CardFooter>
-					<Button type="submit" disabled={saveDisabled}>
-						{t('save_changes')}
-					</Button>
-				</CardFooter>
-			</Card>
-		</Form>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => {
+								setEmailConfirmOpen(false)
+								setEmailPassword('')
+							}}
+						>
+							{t('cancel')}
+						</Button>
+
+						<Button
+							type="button"
+							disabled={!emailPassword || navigation.state === 'submitting'}
+							onClick={submitProfileWithPassword}
+						>
+							{navigation.state === 'submitting' ? t('saving') : t('confirm')}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+			<Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>{t('update_password')}</DialogTitle>
+						<DialogDescription>
+							{t('update_password_description')}
+						</DialogDescription>
+					</DialogHeader>
+
+					<passwordFetcher.Form
+						method="post"
+						className="space-y-4"
+						noValidate
+						ref={passwordFormRef}
+					>
+						<input type="hidden" name="intent" value="update-password" />
+
+						<div className="space-y-2">
+							<Label htmlFor="currentPassword">{t('current_password')}</Label>
+							<Input
+								ref={currPassRef}
+								id="currentPassword"
+								name="currentPassword"
+								placeholder={t('enter_current_password')}
+								type="password"
+								autoComplete="current-password"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="newPassword">{t('new_password')}</Label>
+							<Input
+								ref={newPassRef}
+								id="newPassword"
+								name="newPassword"
+								placeholder={t('enter_new_password')}
+								type="password"
+								autoComplete="new-password"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="newPasswordConfirm">
+								{t('confirm_password')}
+							</Label>
+							<Input
+								ref={confirmPassRef}
+								id="newPasswordConfirm"
+								name="newPasswordConfirm"
+								placeholder={t('confirm_new_password')}
+								type="password"
+								autoComplete="new-password"
+							/>
+						</div>
+
+						<div className="flex justify-end gap-2 pt-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setPasswordDialogOpen(false)}
+							>
+								{t('cancel')}
+							</Button>
+
+							<Button
+								type="submit"
+								disabled={passwordFetcher.state === 'submitting'}
+							>
+								{passwordFetcher.state === 'submitting'
+									? t('saving')
+									: t('save_changes')}
+							</Button>
+						</div>
+					</passwordFetcher.Form>
+				</DialogContent>
+			</Dialog>
+		</>
 	)
 }
