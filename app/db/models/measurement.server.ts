@@ -202,7 +202,7 @@ export async function saveMeasurements(
 			throw error
 		}
 
-		const measurementTime = new Date(m.createdAt || Date.now())
+		const measurementTime = new Date(m.createdAt || now)
 
 		if (measurementTime.getTime() > now.getTime() + maxFutureTime) {
 			const error = new Error(
