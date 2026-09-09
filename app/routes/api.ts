@@ -2,10 +2,14 @@ import { type Route } from '../+types/root'
 import * as z from 'zod/v4'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import { apiRoutes as routes } from '~/lib/api-routes'
+import { apiRateLimitMiddleware } from '~/middleware/rate-limit-api.server'
 import { tosApiMiddleware } from '~/middleware/tos-api.server'
 
 export { routes }
-export const middleware: Route.MiddlewareFunction[] = [tosApiMiddleware]
+export const middleware: Route.MiddlewareFunction[] = [
+	apiRateLimitMiddleware,
+	tosApiMiddleware,
+]
 
 const ApiIndexResponseSchema = z.string().meta({
 	id: 'ApiIndexResponse',

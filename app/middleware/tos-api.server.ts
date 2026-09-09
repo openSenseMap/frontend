@@ -1,8 +1,11 @@
 import { getTosRequirementForUser } from '~/db/models/tos.server'
+import {
+	compileApiRoutes,
+	findApiRoute,
+	type CompiledApiRoute,
+} from '~/lib/api-route-matching'
 import { apiRoutes } from '~/lib/api-routes'
 import { getUserFromJwt } from '~/lib/jwt'
-
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
 function json(body: unknown, status = 200) {
 	return new Response(JSON.stringify(body), {
@@ -11,41 +14,17 @@ function json(body: unknown, status = 200) {
 	})
 }
 
-type CompiledRule = {
-	method: HttpMethod | '*'
-	matcher: RegExp
-}
-
-/**
- * Convert a route pattern like "/api/users/me/boxes/:boxId"
- * into a regex like ^/api/users/me/boxes/[^/]+$
- */
-function routeToRegex(apiPathPattern: string) {
-	const escaped = apiPathPattern
-		.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // escape regex special chars
-		.replace(/\\:([A-Za-z0-9_]+)/g, '[^/]+') // replace ":param" segments
-	return new RegExp(`^${escaped}$`)
-}
-
 /**
  * Build allowlist from route metadata:
  * - `auth` routes with `tosExempt: true` bypass ToS checks
  */
-const API_TOS_ALLOWLIST: CompiledRule[] = [
-	...apiRoutes.auth
-		.filter((r: any) => r.tosExempt)
-		.map((r: any) => ({
-			method: r.method as HttpMethod,
-			matcher: routeToRegex(`/api/${r.path}`),
-		})),
-]
+const API_TOS_ALLOWLIST: CompiledApiRoute[] = compileApiRoutes({
+	noauth: [],
+	auth: apiRoutes.auth.filter((route) => route.tosExempt),
+})
 
 function isAllowedApi(request: Request, pathname: string) {
-	const method = request.method as HttpMethod
-	return API_TOS_ALLOWLIST.some((rule) => {
-		if (rule.method !== '*' && rule.method !== method) return false
-		return rule.matcher.test(pathname)
-	})
+	return Boolean(findApiRoute(request, pathname, API_TOS_ALLOWLIST))
 }
 
 export async function tosApiMiddleware(
@@ -53,6 +32,7 @@ export async function tosApiMiddleware(
 	next: () => Promise<Response>,
 ) {
 	const url = new URL(request.url)
+	if (!url.pathname.startsWith('/api')) return next()
 
 	const jwtUser = await getUserFromJwt(request)
 	if (typeof jwtUser !== 'object') return next()
