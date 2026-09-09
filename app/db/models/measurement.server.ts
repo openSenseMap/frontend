@@ -212,6 +212,7 @@ export async function saveMeasurements(
 			;(error as any).type = 'UnprocessableEntityError'
 			throw error
 		}
+		m.createdAt = measurementTime
 
 		if (
 			!lastMeasurements[m.sensor_id] ||
@@ -278,8 +279,7 @@ export async function saveMeasurements(
 			locations,
 			minimalDevice.id,
 			tx,
-			{ shouldReturn: false },
-			timing,
+			{ shouldReturn: false, timing: timing },
 		)
 		timing?.mark('insertMeasurements')
 		await updateLastMeasurements(lastMeasurements, tx, timing)

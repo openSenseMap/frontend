@@ -236,26 +236,28 @@ export async function insertMeasurementsWithLocation(
 	locations: LocationWithId[],
 	deviceId: string,
 	tx: DatabaseTransaction,
-	options: { shouldReturn?: boolean } = {},
-	timing?: MeasurementTiming | null,
+	options: { shouldReturn?: boolean; timing?: MeasurementTiming | null } = {},
 ): Promise<Measurement[]> {
 	const measuresWithLocationId = measurements.map((measurement) => {
-		const measurementTime = measurement.createdAt || new Date()
+		assert(
+			measurement.createdAt !== undefined,
+			'Measurement must have a createdAt date',
+		)
 		return {
 			sensorId: measurement.sensor_id,
 			value: measurement.value,
-			time: measurementTime,
+			time: measurement.createdAt,
 			locationId: measurement.location
 				? foundLocationsGet(locations, measurement.location)
 				: sql`(select ${deviceToLocation.locationId}
                 from ${deviceToLocation}
                 where ${deviceToLocation.deviceId} = ${deviceId}
-                  and ${deviceToLocation.time} <= ${measurementTime.toISOString()}
+                  and ${deviceToLocation.time} <= ${measurement.createdAt.toISOString()}
                 order by ${deviceToLocation.time} desc
                 limit 1)`,
 		}
 	})
-	timing?.mark('buildMeasurementInsertRows', {
+	options?.timing?.mark('buildMeasurementInsertRows', {
 		insertRowCount: measuresWithLocationId.length,
 	})
 
