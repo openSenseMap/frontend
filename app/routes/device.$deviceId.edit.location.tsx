@@ -632,6 +632,14 @@ export default function EditLocation() {
 												i18nKey="elevation_lookup_consent"
 												ns="edit-device-general"
 												components={{
+													openTopoDataLink: (
+														<a
+															href="https://www.opentopodata.org/"
+															target="_blank"
+															rel="noreferrer"
+															className="underline"
+														/>
+													),
 													privacyLink: (
 														<Link
 															to="/privacy"

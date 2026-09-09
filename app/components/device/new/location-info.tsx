@@ -311,6 +311,14 @@ export function LocationStep() {
 									i18nKey="elevation_lookup_consent"
 									ns="newdevice"
 									components={{
+										openTopoDataLink: (
+											<a
+												href="https://www.opentopodata.org/"
+												target="_blank"
+												rel="noreferrer"
+												className="underline"
+											/>
+										),
 										privacyLink: (
 											<Link
 												to="/privacy"
