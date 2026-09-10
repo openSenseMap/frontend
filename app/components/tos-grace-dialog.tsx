@@ -45,6 +45,7 @@ export function TosGraceDialog({ tos }: { tos: GraceTos }) {
 
 	const acceptBy = new Date(tos.acceptBy).toLocaleDateString(i18n.language, {
 		dateStyle: 'long',
+		timeZone: 'UTC',
 	})
 	const suppressPrompt =
 		pathname === '/terms' ||
