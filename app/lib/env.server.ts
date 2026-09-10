@@ -10,6 +10,12 @@ const schema = z.object({
 		.optional(),
 	SESSION_SECRET: z.string(),
 	NOMINATIM_SEARCH_API: z.string(),
+	OPENTOPO_DATA_API_URL: z.string().url().optional(),
+	OPENTOPO_DATA_DATASET: z
+		.string()
+		.regex(/^[a-zA-Z0-9_-]+(?:,[a-zA-Z0-9_-]+)*$/)
+		.optional(),
+	OPENTOPO_DATA_MIN_INTERVAL_MS: z.string().regex(/^\d+$/).optional(),
 	OSEM_API_URL: z.string().url(),
 	DIRECTUS_URL: z.string().url(),
 	SENSORWIKI_API_URL: z.string().url(),
