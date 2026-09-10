@@ -138,16 +138,16 @@ export default function LoginPage() {
 	}, [])
 
 	return (
-		<div className="flex h-screen items-center justify-center">
+		<div className="relative flex h-full w-full items-start justify-center overflow-y-auto p-4 sm:items-center">
 			<Link
 				to={{
 					pathname: '/explore',
 					search: searchParams.toString(),
 				}}
 			>
-				<div className="fixed inset-0 z-40 h-full w-full bg-black opacity-25" />
+				<div className="absolute inset-0 z-40 h-full w-full bg-black opacity-25" />
 			</Link>
-			<Card className="z-50 w-full max-w-md">
+			<Card className="relative z-50 my-auto w-full max-w-md min-w-0">
 				{navigation.state === 'loading' && (
 					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs dark:bg-zinc-800/30">
 						<Spinner />
@@ -190,7 +190,7 @@ export default function LoginPage() {
 							)}
 						</div>
 						<div className="space-y-2">
-							<div className="flex items-center justify-between">
+							<div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
 								<Label htmlFor="password"> {t('password_label')}</Label>
 								<Link to="/explore/forgot" className="text-sm underline">
 									{t('forgot_password')}
@@ -223,7 +223,7 @@ export default function LoginPage() {
 						<Button type="submit" className="bg-light-blue w-full">
 							{t('sign_in_button')}
 						</Button>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-center text-sm">
 							{t('no_account_label')}{' '}
 							<Link
 								className="font-medium underline"

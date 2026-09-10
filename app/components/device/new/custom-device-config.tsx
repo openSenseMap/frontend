@@ -186,13 +186,19 @@ export function CustomDeviceConfig() {
 	return (
 		<div className="space-y-4 p-2">
 			<Tabs defaultValue="schema" className="space-y-4">
-				<TabsList className="grid w-full grid-cols-3">
-					<TabsTrigger value="schema">{t('device_schema_tab')}</TabsTrigger>
-					<TabsTrigger value="manual">{t('manual_sensors_tab')}</TabsTrigger>
-					<TabsTrigger value="selected">
-						{t('selected_sensors_tab', { count: sensors.length })}
-					</TabsTrigger>
-				</TabsList>
+				<div className="overflow-x-auto pb-1">
+					<TabsList className="h-auto w-full min-w-max justify-evenly">
+						<TabsTrigger value="schema" className="shrink-0">
+							{t('device_schema_tab')}
+						</TabsTrigger>
+						<TabsTrigger value="manual" className="shrink-0">
+							{t('manual_sensors_tab')}
+						</TabsTrigger>
+						<TabsTrigger value="selected" className="shrink-0">
+							{t('selected_sensors_tab', { count: sensors.length })}
+						</TabsTrigger>
+					</TabsList>
+				</div>
 
 				<TabsContent value="schema" className="space-y-4">
 					<div className="border-border bg-muted/20 rounded-lg border border-dashed p-4">
@@ -281,11 +287,11 @@ export function CustomDeviceConfig() {
 									{t('device_schema_example_download')}
 								</a>
 							</div>
-							<div className="flex items-center gap-2">
+							<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
 								<Input
 									type="file"
 									accept="application/json,.json"
-									className="max-w-64"
+									className="w-full max-w-none sm:max-w-64"
 									onChange={(event) => {
 										const file = event.target.files?.[0]
 										if (file) void importDeviceSchema(file)

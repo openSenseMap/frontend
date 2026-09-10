@@ -28,8 +28,8 @@ export default function MapHeader({
 
 	return (
 		<header className="pointer-events-none absolute top-0 left-0 z-20 w-full">
-			<div className="pointer-events-auto flex min-h-14 w-full items-start justify-between gap-4 px-3 py-2">
-				<div className="flex items-center gap-3">
+			<div className="pointer-events-auto grid min-h-14 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 px-3 py-2 lg:flex lg:items-start lg:justify-between lg:gap-4">
+				<div className="relative flex min-w-0 items-center gap-1 lg:gap-3">
 					<Home
 						deviceCount={devices.features.length}
 						measurementCount={measurementCount ?? 0}
@@ -43,6 +43,7 @@ export default function MapHeader({
 									type="button"
 									variant="topbar"
 									size="topbarPill"
+									className="absolute top-14 left-0 h-11 px-3 lg:static lg:h-10"
 									onClick={onMyAreaClick}
 									aria-label={t('zoomToMyArea')}
 								>
@@ -57,17 +58,17 @@ export default function MapHeader({
 					)}
 				</div>
 
-				<div className="flex min-w-0 flex-1 justify-center">
+				<div className="flex min-w-0 justify-end lg:flex-1 lg:justify-center">
 					<NavBar devices={devices} />
 				</div>
 
-				<div className="flex shrink-0 items-center gap-4">
+				<div className="flex min-w-0 items-center justify-end gap-1 lg:shrink-0 lg:gap-4">
 					<LanguageSelector />
 					<ThemeToggle />
 
-					<div className="h-7 w-px bg-black/10 dark:bg-white/15" />
+					<div className="hidden h-7 w-px bg-black/10 lg:block dark:bg-white/15" />
 
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-1 lg:gap-2">
 						<Info />
 						<Menu devices={devices} />
 					</div>
