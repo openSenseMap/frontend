@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type Feature, type FeatureCollection, type Point } from 'geojson'
+import { type FeatureCollection, type Point } from 'geojson'
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
 	type MapRef,
 	MapProvider,
 	Layer,
 	Source,
-	type MapInstance,
 	type ViewStateChangeEvent,
 } from 'react-map-gl/maplibre'
 import {
@@ -48,13 +48,16 @@ import {
 	type MapLayerMouseEvent,
 	type MapLibreEvent,
 	type MapSourceDataEvent,
-	type MapStyleDataEvent,
+	type MapGeoJSONFeature,
 	type MapLibreMap,
 	type StyleImageMetadata,
 	type FilterSpecification,
 } from 'maplibre-gl'
 import BoxMarker from '~/components/map/layers/cluster/box-marker'
-import { ClusterMarker } from '~/components/cluster-marker'
+import {
+	createClusterMarker,
+	type ClusterFeature,
+} from '~/components/cluster-marker'
 import MapHeader from '~/components/map/topbar'
 import { getMeasurementsCount } from '~/db/models/measurement.server'
 import { getTags } from '~/services/device-service.server'
@@ -69,6 +72,8 @@ const INITIAL_VIEW_STATE = {
 
 const MAX_MY_AREA_LATITUDE_SPAN = 35
 const MAX_MY_AREA_LONGITUDE_SPAN = 60
+const DEVICE_SOURCE_ID = 'osem-devices'
+const DEVICE_CLUSTER_LAYER_ID = 'devices-clusters-layer'
 
 type MyAreaTarget =
 	| {
@@ -89,6 +94,84 @@ type OwnedDeviceLocation = {
 type ClusterMarkerRecord = {
 	marker: Marker
 	signature: string
+}
+
+/** Normalizes untyped MapLibre aggregate values before SVG calculations. */
+function toClusterCount(value: unknown) {
+	const count = Number(value)
+
+	return Number.isFinite(count) && count >= 0 ? count : 0
+}
+
+/**
+ * Converts MapLibre's loosely typed query result into the validated shape the
+ * marker renderer expects. Invalid cluster IDs, counts, or coordinates are
+ * ignored instead of producing broken SVG paths or map positions.
+ */
+function parseClusterFeature(
+	feature: Pick<MapGeoJSONFeature, 'geometry' | 'properties'>,
+): ClusterFeature | null {
+	if (feature.geometry.type !== 'Point' || !feature.properties?.cluster)
+		return null
+
+	const [longitude, latitude] = feature.geometry.coordinates
+	const clusterId = Number(feature.properties.cluster_id)
+	const pointCount = Number(feature.properties.point_count)
+
+	if (
+		!Number.isFinite(longitude) ||
+		!Number.isFinite(latitude) ||
+		!Number.isSafeInteger(clusterId) ||
+		!Number.isFinite(pointCount) ||
+		pointCount <= 0
+	) {
+		return null
+	}
+
+	return {
+		type: 'Feature',
+		geometry: {
+			type: 'Point',
+			coordinates: [longitude, latitude],
+		},
+		properties: {
+			cluster: true,
+			cluster_id: clusterId,
+			point_count: pointCount,
+			active: toClusterCount(feature.properties.active),
+			inactive: toClusterCount(feature.properties.inactive),
+			old: toClusterCount(feature.properties.old),
+		},
+	}
+}
+
+/**
+ * Expands both HTML-marker and canvas-layer cluster activations consistently.
+ * The source identity check prevents an old async result moving a replaced map.
+ */
+async function zoomToCluster(map: MapLibreMap, cluster: ClusterFeature) {
+	const source = map.getSource(DEVICE_SOURCE_ID)
+	if (!source || source.type !== 'geojson') return
+
+	try {
+		const expansionZoom = await (
+			source as GeoJSONSource
+		).getClusterExpansionZoom(cluster.properties.cluster_id)
+
+		// The source may have been replaced while the worker resolved the request.
+		if (map.getSource(DEVICE_SOURCE_ID) !== source) return
+		if (!Number.isFinite(expansionZoom)) return
+
+		const [longitude, latitude] = cluster.geometry.coordinates
+		map.easeTo({
+			center: [longitude, latitude],
+			zoom: Math.min(expansionZoom, map.getMaxZoom()),
+			duration: 200,
+			essential: true,
+		})
+	} catch (error) {
+		console.error('Failed to expand device cluster:', error)
+	}
 }
 
 function parseMapHash(hash: string) {
@@ -431,11 +514,12 @@ export default function Explore() {
 		profile,
 		userDeviceLocations,
 	} = useLoaderData<typeof loader>()
+	const { t } = useTranslation()
 	const mapRef = useRef<MapRef | null>(null)
 	const appliedInitialMyAreaRef = useRef(false)
 	// MapLibre markers are imperative DOM nodes, so refs avoid stale React state.
 	const clusterMarkersRef = useRef<Record<string, ClusterMarkerRecord>>({})
-	const visibleClusterIdsRef = useRef<Set<string>>(new Set())
+	const clusterZoomRef = useRef<number | null>(null)
 	const navigate = useNavigate()
 	const location = useLocation()
 	const outlet = useOutlet()
@@ -517,7 +601,7 @@ export default function Explore() {
 	//   ],
 	// ]);
 
-	const onMapClick = async (e: MapLayerMouseEvent) => {
+	const onMapClick = (e: MapLayerMouseEvent) => {
 		if (e.features && e.features.length > 0) {
 			const feature = e.features[0]
 			const map = e.target
@@ -542,16 +626,9 @@ export default function Explore() {
 				)
 			}
 
-			if (feature.layer?.id === 'devices-clusters-layer') {
-				const zoom = await (
-					map.getSource(feature.source) as GeoJSONSource
-				).getClusterExpansionZoom(feature.properties?.cluster_id)
-				map.easeTo({
-					center: coordinates,
-					zoom: zoom,
-					duration: 200,
-					essential: true,
-				})
+			if (feature.layer?.id === DEVICE_CLUSTER_LAYER_ID) {
+				const cluster = parseClusterFeature(feature)
+				if (cluster) void zoomToCluster(map, cluster)
 			}
 		}
 	}
@@ -599,12 +676,12 @@ export default function Explore() {
 					return
 				if (hoveredFeatureId)
 					e.target.setFeatureState(
-						{ source: 'osem-devices', id: hoveredFeatureId },
+						{ source: DEVICE_SOURCE_ID, id: hoveredFeatureId },
 						{ hover: false },
 					)
 				setHoveredFeatureId(feature.id)
 				e.target.setFeatureState(
-					{ source: 'osem-devices', id: feature.id },
+					{ source: DEVICE_SOURCE_ID, id: feature.id },
 					{ hover: true },
 				)
 				const coordinates = (feature.geometry as Point).coordinates.slice()
@@ -630,7 +707,7 @@ export default function Explore() {
 			deviceNamePopup.remove()
 			if (hoveredFeatureId) {
 				e.target.setFeatureState(
-					{ source: 'osem-devices', id: hoveredFeatureId },
+					{ source: DEVICE_SOURCE_ID, id: hoveredFeatureId },
 					{ hover: false },
 				)
 			}
@@ -774,46 +851,67 @@ export default function Explore() {
 		}
 	}
 
+	/**
+	 * Detaches every imperative marker and resets the registry. This is used when
+	 * the cluster layer is hidden and when the Explore map unmounts.
+	 */
 	const removeAllClusterMarkers = useCallback(() => {
-		// Used when the cluster layer is hidden or the explore map unmounts.
 		for (const { marker } of Object.values(clusterMarkersRef.current)) {
 			marker.remove()
 		}
 
 		clusterMarkersRef.current = {}
-		visibleClusterIdsRef.current = new Set()
+		clusterZoomRef.current = null
 	}, [])
 
+	/**
+	 * Reconciles the attached HTML markers with MapLibre's current cluster index.
+	 * The registry contains attached markers only: changed records are replaced,
+	 * and records absent from the next ID set are detached and deleted.
+	 */
 	const updateClusterMarkers = useCallback(
-		(map: MapInstance) => {
-			if (selectedPheno || !map.getLayer('devices-clusters-layer')) {
+		(map: MapLibreMap) => {
+			const source = map.getSource(DEVICE_SOURCE_ID)
+			if (selectedPheno || !map.getLayer(DEVICE_CLUSTER_LAYER_ID) || !source) {
 				removeAllClusterMarkers()
 				return
 			}
 
-			// Sync against rendered features so removed layer clusters lose their HTML marker.
-			const renderedClusters = map.queryRenderedFeatures({
-				layers: ['devices-clusters-layer'],
+			// Wait for a complete cluster index instead of reconciling partial data.
+			if (!map.isSourceLoaded(DEVICE_SOURCE_ID)) return
+
+			// Full-viewport rendered-feature queries omit clusters under globe
+			// projection. Source queries include those clusters; duplicate
+			// tile-boundary features are removed by cluster ID below.
+			const clusterFeatures = map.querySourceFeatures(DEVICE_SOURCE_ID, {
+				filter: ['has', 'point_count'],
 			})
-			const nextVisibleClusterIds = new Set<string>()
+			const nextClusterIds = new Set<string>()
 
-			for (const feature of renderedClusters) {
-				const props = feature.properties
-				if (!props?.cluster) continue
+			for (const sourceFeature of clusterFeatures) {
+				const cluster = parseClusterFeature(sourceFeature)
+				if (!cluster) continue
 
-				const id = String(props.cluster_id)
-				if (nextVisibleClusterIds.has(id)) continue
+				const { properties, geometry } = cluster
+				const id = String(properties.cluster_id)
+				if (nextClusterIds.has(id)) continue
 
-				const coordinates = (feature.geometry as Point).coordinates
-				// Count or position changes require a fresh SVG donut.
-				const signature = [
-					props.point_count,
-					props.active,
-					props.inactive,
-					props.old,
-					coordinates[0],
-					coordinates[1],
-				].join(':')
+				const ariaLabel = t('map_cluster_marker_label', {
+					count: properties.point_count,
+					active: properties.active,
+					inactive: properties.inactive,
+					old: properties.old,
+				})
+				// Data, position, or language changes require a fresh DOM marker.
+				const signature = JSON.stringify([
+					properties.point_count,
+					properties.active,
+					properties.inactive,
+					properties.old,
+					geometry.coordinates[0],
+					geometry.coordinates[1],
+					ariaLabel,
+				])
 				let record: ClusterMarkerRecord | undefined =
 					clusterMarkersRef.current[id]
 
@@ -826,47 +924,65 @@ export default function Explore() {
 				if (!record) {
 					record = {
 						signature,
-						marker: ClusterMarker({
-							clusterFeature: feature as Feature<Point, any>,
-							map,
-						}),
+						marker: createClusterMarker({
+							clusterFeature: cluster,
+							ariaLabel,
+							onActivate: () => void zoomToCluster(map, cluster),
+						}).addTo(map),
 					}
 					clusterMarkersRef.current[id] = record
 				}
 
-				record.marker.setLngLat([coordinates[0], coordinates[1]])
-
-				if (!visibleClusterIdsRef.current.has(id)) {
-					record.marker.addTo(map)
-				}
-
-				nextVisibleClusterIds.add(id)
+				nextClusterIds.add(id)
 			}
 
-			for (const id of visibleClusterIdsRef.current) {
-				if (!nextVisibleClusterIds.has(id)) {
-					clusterMarkersRef.current[id]?.marker.remove()
-				}
-			}
+			for (const [id, { marker }] of Object.entries(
+				clusterMarkersRef.current,
+			)) {
+				if (nextClusterIds.has(id)) continue
 
-			visibleClusterIdsRef.current = nextVisibleClusterIds
+				marker.remove()
+				delete clusterMarkersRef.current[id]
+			}
 		},
-		[removeAllClusterMarkers, selectedPheno],
+		[removeAllClusterMarkers, selectedPheno, t],
 	)
 
-	const handleMapData = useCallback(
-		(e: MapSourceDataEvent | MapStyleDataEvent) => {
-			if (e.dataType === 'source' && e.sourceId !== 'osem-devices') return
+	const handleMapSourceData = useCallback(
+		(e: MapSourceDataEvent) => {
+			if (e.sourceId !== DEVICE_SOURCE_ID || !e.isSourceLoaded) return
 
 			// Source updates can create or remove clusters without a user move.
-			updateClusterMarkers(e.target as MapInstance)
+			updateClusterMarkers(e.target)
 		},
 		[updateClusterMarkers],
 	)
 
-	const handleMapMove = useCallback(
+	const handleMapZoom = useCallback(
 		(e: ViewStateChangeEvent) => {
-			// Keep HTML markers aligned while MapLibre reclusters during movement.
+			// Clusters change at integer zoom levels; avoid a source query every frame.
+			const clusterZoom = Math.floor(e.target.getZoom())
+			if (clusterZoomRef.current === clusterZoom) return
+
+			clusterZoomRef.current = clusterZoom
+			updateClusterMarkers(e.target)
+		},
+		[updateClusterMarkers],
+	)
+
+	const handleMapMoveEnd = useCallback(
+		(e: ViewStateChangeEvent) => {
+			clusterZoomRef.current = Math.floor(e.target.getZoom())
+			updateClusterMarkers(e.target)
+		},
+		[updateClusterMarkers],
+	)
+
+	const handleMapIdle = useCallback(
+		(e: MapLibreEvent) => {
+			// Data events may fire before the cluster layer has rendered its first frame.
+			// Sync again once rendering is complete so initial, far-zoom clusters appear.
+			clusterZoomRef.current = Math.floor(e.target.getZoom())
 			updateClusterMarkers(e.target)
 		},
 		[updateClusterMarkers],
@@ -881,8 +997,8 @@ export default function Explore() {
 		const map = mapRef.current?.getMap()
 		if (!map) return
 
-		// Filters swap source data, so resync the rendered cluster markers.
-		updateClusterMarkers(map as MapInstance)
+		// Filters swap source data, so resync once its new cluster index is ready.
+		updateClusterMarkers(map)
 	}, [
 		filteredDevices,
 		removeAllClusterMarkers,
@@ -914,21 +1030,22 @@ export default function Explore() {
 					interactiveLayerIds={
 						selectedPheno
 							? ['phenomenon-layer']
-							: ['devices-symbol-layer', 'devices-clusters-layer']
+							: ['devices-symbol-layer', DEVICE_CLUSTER_LAYER_ID]
 					}
 					onClick={onMapClick}
 					onMouseMove={handleMouseMove}
 					onMouseLeave={handleMouseLeave}
 					onLoad={handleMapLoad}
-					onData={handleMapData}
-					onMove={handleMapMove}
-					onMoveEnd={handleMapMove}
+					onSourceData={handleMapSourceData}
+					onZoom={handleMapZoom}
+					onMoveEnd={handleMapMoveEnd}
+					onIdle={handleMapIdle}
 					ref={mapRef}
 					initialViewState={initialViewState}
 				>
 					{!selectedPheno && (
 						<Source
-							id="osem-devices"
+							id={DEVICE_SOURCE_ID}
 							type="geojson"
 							data={filteredDevices as FeatureCollection<Point, Device>}
 							promoteId="id"
@@ -945,12 +1062,13 @@ export default function Explore() {
 								],
 								old: ['+', ['case', ['==', ['get', 'status'], 'old'], 1, 0]],
 							}}
-							clusterMinPoints={5}
+							clusterMinPoints={2}
 						>
+							{/* This transparent layer keeps clusters queryable and provides a
+							    canvas hit target; the visible donut is an HTML marker. */}
 							<Layer
 								type="circle"
-								id="devices-clusters-layer"
-								source="osem-clusters"
+								id={DEVICE_CLUSTER_LAYER_ID}
 								filter={['has', 'point_count']}
 								paint={{
 									'circle-radius': [
@@ -968,7 +1086,7 @@ export default function Explore() {
 							<Layer
 								type="symbol"
 								id="devices-symbol-layer"
-								source="osem-devices"
+								source={DEVICE_SOURCE_ID}
 								filter={deviceLayerFilter}
 								layout={{
 									'icon-image': [
