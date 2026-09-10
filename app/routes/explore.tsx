@@ -877,6 +877,10 @@ export default function Explore() {
 				return
 			}
 
+			// A zoom transition can temporarily keep parent and child tiles
+			// renderable. Querying both would create markers for two cluster levels.
+			if (map.isZooming()) return
+
 			// Wait for a complete cluster index instead of reconciling partial data.
 			if (!map.isSourceLoaded(DEVICE_SOURCE_ID)) return
 
@@ -897,7 +901,7 @@ export default function Explore() {
 				if (nextClusterIds.has(id)) continue
 
 				const ariaLabel = t('map_cluster_marker_label', {
-					count: properties.point_count,
+					total: properties.point_count,
 					active: properties.active,
 					inactive: properties.inactive,
 					old: properties.old,
@@ -960,11 +964,21 @@ export default function Explore() {
 
 	const handleMapZoom = useCallback(
 		(e: ViewStateChangeEvent) => {
-			// Clusters change at integer zoom levels; avoid a source query every frame.
+			// Clusters change at integer zoom levels. Clear the previous generation
+			// immediately, but wait until zooming ends before querying source tiles.
 			const clusterZoom = Math.floor(e.target.getZoom())
 			if (clusterZoomRef.current === clusterZoom) return
 
+			removeAllClusterMarkers()
+			// removeAllClusterMarkers resets this ref, so record the new level last.
 			clusterZoomRef.current = clusterZoom
+		},
+		[removeAllClusterMarkers],
+	)
+
+	const handleMapZoomEnd = useCallback(
+		(e: ViewStateChangeEvent) => {
+			clusterZoomRef.current = Math.floor(e.target.getZoom())
 			updateClusterMarkers(e.target)
 		},
 		[updateClusterMarkers],
@@ -1038,6 +1052,7 @@ export default function Explore() {
 					onLoad={handleMapLoad}
 					onSourceData={handleMapSourceData}
 					onZoom={handleMapZoom}
+					onZoomEnd={handleMapZoomEnd}
 					onMoveEnd={handleMapMoveEnd}
 					onIdle={handleMapIdle}
 					ref={mapRef}

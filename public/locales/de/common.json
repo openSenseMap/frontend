@@ -11,5 +11,5 @@
 	"go_back": "Zurück",
 	"go_home": "Zur Startseite",
 	"try_again": "Erneut versuchen",
-	"map_cluster_marker_label": "In eine Gruppe von {{count}} Geräten hineinzoomen: {{active}} aktiv, {{inactive}} inaktiv, {{old}} alt."
+	"map_cluster_marker_label": "In eine Gruppe von {{total}} Geräten hineinzoomen: {{active}} aktiv, {{inactive}} inaktiv, {{old}} alt."
 }
