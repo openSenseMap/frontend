@@ -9,6 +9,7 @@ import {
 } from '~/db/schema'
 import { type DatabaseTransaction } from '~/db.server'
 import { type MeasurementTiming } from '~/lib/measurement-timing.server'
+import invariant from 'tiny-invariant'
 
 export interface MeasurementWithLocation {
 	sensor_id: string
@@ -239,7 +240,7 @@ export async function insertMeasurementsWithLocation(
 	options: { shouldReturn?: boolean; timing?: MeasurementTiming | null } = {},
 ): Promise<Measurement[]> {
 	const measuresWithLocationId = measurements.map((measurement) => {
-		assert(
+		invariant(
 			measurement.createdAt !== undefined,
 			'Measurement must have a createdAt date',
 		)
