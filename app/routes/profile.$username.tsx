@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/profile.$username'
-import { getColumns } from '~/components/mydevices/dt/columns'
-import { DataTable } from '~/components/mydevices/dt/data-table'
+import { getColumns, type SenseBox } from '~/components/mydevices/dt/columns'
+import { CustomTableFeatures, DataTable } from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Badge } from '~/components/ui/badge'
@@ -18,6 +18,8 @@ import { getInitials } from '~/lib/strings'
 import { getUserId } from '~/services/session-service.server'
 import { claimDevice } from '~/services/transfer-service.server'
 import { userNameFromURl } from '~/services/user-service.server'
+import { useHydrated } from '~/hooks/use-hydrated'
+import { ColumnDef, RowData } from '@tanstack/react-table'
 
 type ActionData = {
 	success: boolean
@@ -127,18 +129,19 @@ export default function ProfilePage() {
 		deviceSchemas,
 	} = useLoaderData<typeof loader>()
 
-	const { t } = useTranslation('profile')
+	const { t, i18n } = useTranslation('profile')
 	const columnsTranslation = useTranslation('data-table')
+	const hydrated = useHydrated()
 
 	const isOwner = !!profile?.userId && requestingUserId === profile.userId
 
 	return (
 		<div className="bg-background text-foreground min-h-screen">
 			<NavBar />
-			<div className="flex w-full flex-col gap-6 p-8 md:flex-row md:gap-8 md:pt-4">
-				<div className="border-border bg-card text-card-foreground flex w-full flex-col gap-6 rounded-xl border p-6 shadow-sm md:w-1/3">
+			<div className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:flex-row lg:gap-8 lg:p-8 lg:pt-4">
+				<div className="border-border bg-card text-card-foreground flex w-full min-w-0 flex-col gap-6 rounded-xl border p-4 shadow-sm sm:p-6 lg:w-1/3">
 					<div className="flex items-center gap-4">
-						<Avatar className="h-16 w-16">
+						<Avatar className="h-16 w-16 shrink-0">
 							{profile?.profileImage?.id ? (
 								<AvatarImage
 									className="aspect-auto h-full w-full rounded-full object-cover"
@@ -149,18 +152,19 @@ export default function ProfilePage() {
 								{getInitials(profile?.displayName ?? '')}
 							</AvatarFallback>
 						</Avatar>
-						<div>
-							<h3 className="text-title text-2xl font-semibold">
+						<div className="min-w-0">
+							<h3 className="text-title text-2xl font-semibold wrap-break-word">
 								{profile?.displayName || ''}
 							</h3>
-							<h4 className="text-foreground text-lg">
+							<h4 className="text-foreground text-lg wrap-break-word">
 								{profile?.user?.name || ''}
 							</h4>
 							<p className="text-muted-foreground text-sm">
 								{t('user_since')}{' '}
-								{new Date(profile?.user?.createdAt || '').toLocaleDateString(
-									t('locale'),
-								)}
+								{hydrated &&
+									new Date(profile?.user?.createdAt || '').toLocaleDateString(
+										i18n.language,
+									)}
 							</p>
 						</div>
 					</div>
@@ -193,15 +197,15 @@ export default function ProfilePage() {
 					</div>
 				</div>
 
-				<div className="flex w-full flex-col gap-6 md:w-2/3">
-					<div className="border-border bg-card text-card-foreground rounded-xl border p-6 shadow-sm">
-						<div className="text-primary mb-4 text-3xl font-semibold">
+				<div className="flex w-full max-w-full min-w-0 flex-col gap-6 lg:w-2/3">
+					<div className="border-border bg-card text-card-foreground max-w-full min-w-0 overflow-hidden rounded-xl border p-4 shadow-sm sm:p-6">
+						<div className="text-primary mb-4 text-2xl font-semibold sm:text-3xl">
 							{t('devices')}
 						</div>
 
 						{profile?.user?.devices && (
 							<DataTable
-								columns={getColumns(columnsTranslation, { isOwner })}
+								columns={getColumns(columnsTranslation, hydrated, { isOwner }) as ColumnDef<CustomTableFeatures, RowData, unknown>[]}
 								data={profile.user.devices}
 								getRowClassName={(device) =>
 									device.archivedAt
@@ -213,8 +217,8 @@ export default function ProfilePage() {
 					</div>
 
 					{deviceSchemas.length > 0 && (
-						<div className="border-border bg-card text-card-foreground rounded-xl border p-6 shadow-sm">
-							<div className="text-primary mb-4 text-3xl font-semibold">
+						<div className="border-border bg-card text-card-foreground min-w-0 rounded-xl border p-4 shadow-sm sm:p-6">
+							<div className="text-primary mb-4 text-2xl font-semibold sm:text-3xl">
 								{t('device_schemas')}
 							</div>
 							<div className="space-y-3">

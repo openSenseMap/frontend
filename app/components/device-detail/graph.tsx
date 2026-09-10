@@ -11,7 +11,6 @@ import {
 	type ChartOptions,
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
-// import { de, enGB } from "date-fns/locale";
 import { Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useMemo,
@@ -37,12 +36,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { datesHave48HourRange } from '~/lib/utils'
 import { useTranslation } from 'react-i18next'
 
@@ -564,30 +558,28 @@ export default function Graph({
 						</div>
 					)}
 					<div
-						className="flex cursor-move flex-wrap items-center justify-between gap-2 px-2 pt-2"
+						className="flex cursor-move items-start justify-between gap-2 px-2 pt-2"
 						id="graphTop"
 					>
 						<div className="flex grow flex-wrap items-center gap-2">
 							<DateRangeFilter />
 							<AggregationFilter />
 						</div>
-						<div className="ml-auto flex items-center justify-end gap-4">
+						<div className="flex h-full items-start justify-end gap-4 py-2">
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger>
-												<RefreshCcw
-													onClick={handleResetZoomClick}
-													className="cursor-pointer"
-												/>
-											</TooltipTrigger>
-											<TooltipContent>
-												<p>{t('reset_zoom')}</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<RefreshCcw
+												onClick={handleResetZoomClick}
+												className="cursor-pointer"
+											/>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>{t('reset_zoom')}</p>
+										</TooltipContent>
+									</Tooltip>
 								)}
 							<DropdownMenu>
 								<DropdownMenuTrigger>

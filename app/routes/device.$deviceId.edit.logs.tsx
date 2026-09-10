@@ -32,6 +32,7 @@ import {
 } from '~/db/models/log-entry.server'
 import { type LogEntry } from '~/db/schema/log-entry'
 import { getUserId } from '~/services/session-service.server'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const userId = await getUserId(request)
@@ -94,8 +95,9 @@ export default function Logs() {
 	const { logEntries } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const { toast } = useToast()
-	const { t } = useTranslation('edit-device-logs')
+	const { t, i18n } = useTranslation('edit-device-logs')
 	const [newLogContent, setNewLogContent] = useState('')
+	const hydrated = useHydrated()
 
 	const submit = useSubmit()
 
@@ -169,7 +171,10 @@ export default function Logs() {
 									<TableRow key={logEntry.id}>
 										<TableCell>{logEntry.content}</TableCell>
 										<TableCell>
-											{new Date(logEntry.createdAt).toLocaleString()}
+											{hydrated &&
+												new Date(logEntry.createdAt).toLocaleString(
+													i18n.language,
+												)}
 										</TableCell>
 										<TableCell>
 											<Form method="post">

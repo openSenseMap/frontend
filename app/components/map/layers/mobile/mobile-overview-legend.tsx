@@ -7,7 +7,6 @@ import { Switch } from '~/components/ui/switch'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { MOBILE_TRIP_LIMIT } from '~/lib/mobile-box-helper'
@@ -47,21 +46,19 @@ export default function MapLegend({
 		>
 			<div className="flex items-center justify-between">
 				<h3 className="text-sm font-semibold">{t('recentTrips')}</h3>
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button variant="ghost" size="icon" className="h-7 w-7">
-								<Info className="h-4 w-4" />
-								<span className="sr-only">{t('tripExplanationLabel')}</span>
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent side="bottom">
-							<p className="max-w-64">
-								{t('tripExplanation', { count: MOBILE_TRIP_LIMIT })}
-							</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button variant="ghost" size="icon" className="h-7 w-7">
+							<Info className="h-4 w-4" />
+							<span className="sr-only">{t('tripExplanationLabel')}</span>
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent side="bottom">
+						<p className="max-w-64">
+							{t('tripExplanation', { count: MOBILE_TRIP_LIMIT })}
+						</p>
+					</TooltipContent>
+				</Tooltip>
 			</div>
 			<div className="mt-1 flex items-center justify-between gap-3">
 				<label

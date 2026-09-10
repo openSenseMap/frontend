@@ -9,7 +9,7 @@ import {
 	type MapInstance,
 } from 'react-map-gl/maplibre'
 import {
-	Outlet,
+	useOutlet,
 	useNavigate,
 	useSearchParams,
 	useLoaderData,
@@ -39,7 +39,9 @@ import {
 import { getLocale } from '~/middleware/i18next'
 import { getUser, getUserSession } from '~/services/session-service.server'
 import { getFilteredDevices } from '~/utils'
-import maplibregl, {
+import {
+	Popup,
+	GeoJSONSource,
 	type LngLatLike,
 	type MapLayerMouseEvent,
 	type MapLibreEvent,
@@ -423,6 +425,7 @@ export default function Explore() {
 	const appliedInitialMyAreaRef = useRef(false)
 	const navigate = useNavigate()
 	const location = useLocation()
+	const outlet = useOutlet()
 	const [selectedPheno, setSelectedPheno] = useState<any | undefined>(undefined)
 	const [searchParams] = useSearchParams()
 	const [filteredData, setFilteredData] = useState<
@@ -437,7 +440,7 @@ export default function Explore() {
 
 	const deviceNamePopup = useMemo(
 		() =>
-			new maplibregl.Popup({
+			new Popup({
 				closeButton: false,
 				closeOnClick: false,
 				closeOnMove: true,
@@ -528,7 +531,7 @@ export default function Explore() {
 
 			if (feature.layer?.id === 'devices-clusters-layer') {
 				const zoom = await (
-					map.getSource(feature.source) as maplibregl.GeoJSONSource
+					map.getSource(feature.source) as GeoJSONSource
 				).getClusterExpansionZoom(feature.properties?.cluster_id)
 				map.easeTo({
 					center: coordinates,
@@ -924,11 +927,11 @@ export default function Explore() {
 						/>
 					)}
 
-					<div className="pointer-events-none absolute inset-0 z-50">
-						<div className="pointer-events-auto">
-							<Outlet />
+					{outlet && (
+						<div className="pointer-events-none absolute inset-0 z-50">
+							<div className="pointer-events-auto h-full w-full">{outlet}</div>
 						</div>
-					</div>
+					)}
 				</Map>
 			</MapProvider>
 		</div>
