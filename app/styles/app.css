@@ -232,6 +232,34 @@ kbd {
 	border-left-color: var(--popover);
 }
 
+.osem-cluster-marker {
+	/* The map style stays dark in both app themes, so clusters do too. */
+	--osem-cluster-background: #091413;
+	--osem-cluster-border: #2a403b;
+	--osem-cluster-foreground: #d2d1d0;
+	--osem-cluster-focus-ring: #6fa161;
+
+	appearance: none;
+	background: transparent;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	display: block;
+	line-height: 0;
+	padding: 0;
+}
+
+.osem-cluster-marker:focus-visible {
+	outline: 3px solid var(--osem-cluster-focus-ring);
+	outline-offset: 2px;
+}
+
+/* Transparent markers must also leave pointer and keyboard navigation. */
+.osem-cluster-marker.maplibregl-marker-covered {
+	pointer-events: none;
+	visibility: hidden;
+}
+
 .map-space-shell {
 	position: fixed;
 	inset: 0;
