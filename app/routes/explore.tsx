@@ -74,6 +74,7 @@ const MAX_MY_AREA_LATITUDE_SPAN = 35
 const MAX_MY_AREA_LONGITUDE_SPAN = 60
 const DEVICE_SOURCE_ID = 'osem-devices'
 const DEVICE_CLUSTER_LAYER_ID = 'devices-clusters-layer'
+const MIN_CLUSTER_SIZE = 5
 
 type MyAreaTarget =
 	| {
@@ -1077,7 +1078,7 @@ export default function Explore() {
 								],
 								old: ['+', ['case', ['==', ['get', 'status'], 'old'], 1, 0]],
 							}}
-							clusterMinPoints={2}
+							clusterMinPoints={MIN_CLUSTER_SIZE}
 						>
 							{/* This transparent layer keeps clusters queryable and provides a
 							    canvas hit target; the visible donut is an HTML marker. */}
