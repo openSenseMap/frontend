@@ -103,6 +103,13 @@ jobs:
       - name: 🧐 Report Coverage
         uses: davelosert/vitest-coverage-report-action@v2
 
+      - name: Upload PostgreSQL logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: postgres-logs
+          path: /tmp/postgres-logs/postgresql.log
+
       - name: 🗑️ Cleanup
         if: always()
         run: docker compose down
