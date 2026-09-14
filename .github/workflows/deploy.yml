@@ -81,6 +81,11 @@ jobs:
       - name: 📥 Install deps
         run: npm install
 
+      - name: setup postgres logs folder
+        run: |
+          mkdir -p ./postgres-logs
+          chmod 777 ./postgres-logs
+
       - name: 🐳 Docker compose
         # we need a postgres container for runnign the tests
         # the sleep is just there to give time for postgres to get started
