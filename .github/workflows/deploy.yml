@@ -84,7 +84,7 @@ jobs:
       - name: setup postgres logs folder
         run: |
           mkdir -p ./postgres-logs
-          chmod 777 ./postgres-logs
+          chown -R 999:999 ./postgres-logs
 
       - name: 🐳 Docker compose
         # we need a postgres container for runnign the tests
@@ -109,7 +109,9 @@ jobs:
         uses: davelosert/vitest-coverage-report-action@v2
 
       - name: Fix postgres log permissions
-        run: sudo chown -R root:root ./postgres-logs
+        run: |
+          chown -R root:root ./postgres-logs
+          chmod -R a+rX ./postgres-logs
 
       - name: Upload PostgreSQL logs
         if: always()
