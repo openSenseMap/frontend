@@ -23,13 +23,13 @@ instructions:
 
 You can configure the API endpoint using the following environmental variables:
 
-| ENV                           | Default value                                            |
-| ----------------------------- | -------------------------------------------------------- |
-| OSEM_API_URL                  | https://api.testing.opensensemap.org                     |
-| DATABASE_URL                  | `postgresql://postgres:postgres@localhost:5432/postgres` |
-| OPENTOPO_DATA_API_URL         | `https://api.opentopodata.org/v1`                        |
-| OPENTOPO_DATA_DATASET         | `eudem25m,mapzen`                                        |
-| OPENTOPO_DATA_MIN_INTERVAL_MS | `1100`                                                   |
+| ENV                  | Default value                                            |
+| -------------------- | -------------------------------------------------------- |
+| OSEM_API_URL         | https://api.testing.opensensemap.org                     |
+| DATABASE_URL         | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| GPXZ_API_URL         | `https://api-eu.gpxz.io/v1/elevation/otd-compat`         |
+| GPXZ_MIN_INTERVAL_MS | `1100`                                                   |
+| GPXZ_API_KEY         | `YOUR_GPXZ_API_KEY`                                      |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
 To run a local development version, you only need to adjust the `OSEM_API_URL`

@@ -199,8 +199,8 @@ export const ApiDeviceSchema = z
 		}),
 		terrainElevationDataset: z.string().nullable().optional().meta({
 			description:
-				'OpenTopoData dataset from which terrainElevation was retrieved. Null when no terrain elevation is available.',
-			example: 'eudem25m',
+				'GPXZ dataset from which terrainElevation was retrieved. Null when no terrain elevation is available.',
+			example: 'germany_nrw_1m_dtm',
 		}),
 		useAuth: z.boolean().optional().meta({
 			description: 'Whether the device requires authentication',

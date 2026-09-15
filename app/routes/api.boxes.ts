@@ -94,7 +94,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Create a new device',
 		description:
-			'Creates a new device with optional sensors. An optional location height is interpreted and stored as height above ground. Coordinates are sent to OpenTopoData and height above sea level is calculated only when the authenticated user has granted the current elevation lookup consent. A missing consent or lookup failure does not fail device creation.',
+			'Creates a new device with optional sensors. An optional location height is interpreted and stored as height above ground. Coordinates are sent to GPXZ and height above sea level is calculated only when the authenticated user has granted the current elevation lookup consent. A missing consent or lookup failure does not fail device creation.',
 		security: [{ bearerAuth: [] }],
 
 		requestBody: {

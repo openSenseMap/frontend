@@ -3,7 +3,7 @@ import { elevationConsent } from '~/db/schema/elevation-consent'
 import { drizzleClient } from '~/db.server'
 
 // Increment this when the displayed consent text changes.
-export const CURRENT_ELEVATION_CONSENT_VERSION = 'opentopodata-v1'
+export const CURRENT_ELEVATION_CONSENT_VERSION = 'gpxz-v1'
 
 export async function hasCurrentElevationConsent(userId: string) {
 	const consent = await drizzleClient.query.elevationConsent.findFirst({

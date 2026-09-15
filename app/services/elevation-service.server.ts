@@ -6,8 +6,7 @@ import {
 } from '~/lib/elevation'
 import { isValidLocation } from '~/lib/location'
 
-const DEFAULT_API_URL = 'https://api.opentopodata.org/v1'
-const DEFAULT_DATASETS = 'eudem25m,mapzen'
+const DEFAULT_API_URL = 'https://api-eu.gpxz.io/v1/elevation/otd-compat'
 const DEFAULT_TIMEOUT_MS = 5_000
 const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1_000 // 1 day
 const DEFAULT_MIN_REQUEST_INTERVAL_MS = 1_100
@@ -20,7 +19,7 @@ const responseSchema = z.object({
 	results: z
 		.array(
 			z.object({
-				elevation: z.number().finite().nullable(),
+				elevation: z.number().finite(),
 				dataset: z.string(),
 				location: z.object({
 					lat: z.number().finite(),
@@ -64,28 +63,7 @@ function coordinateCacheKey(latitude: number, longitude: number) {
 }
 
 function datasetMetadata(dataset: string) {
-	if (dataset.startsWith('eudem')) {
-		return {
-			datum: 'EVRS2000',
-			attribution: 'OpenTopoData / EU-DEM / Copernicus',
-		}
-	}
-
-	if (dataset.startsWith('srtm')) {
-		return {
-			datum: 'EGM96',
-			attribution: 'OpenTopoData / NASA SRTM',
-		}
-	}
-
-	if (dataset === 'mapzen') {
-		return {
-			datum: 'EGM96',
-			attribution: 'OpenTopoData / Mapzen terrain data',
-		}
-	}
-
-	return { datum: null, attribution: null }
+	return { datum: 'EGM2008', attribution: 'GPXZ elevation dataset ' + dataset }
 }
 
 function pruneCache(now: number) {
@@ -124,7 +102,7 @@ async function withRateLimit<T>(operation: () => Promise<T>): Promise<T> {
 		if (waitMs > 0) await delay(waitMs)
 
 		const minIntervalMs = parsePositiveInteger(
-			process.env.OPENTOPO_DATA_MIN_INTERVAL_MS,
+			process.env.GPXZ_MIN_INTERVAL_MS,
 			DEFAULT_MIN_REQUEST_INTERVAL_MS,
 		)
 		nextRequestAt = Date.now() + minIntervalMs
@@ -145,45 +123,50 @@ async function requestElevation(
 	latitude: number,
 	longitude: number,
 ): Promise<TerrainElevationResult> {
-	if (
-		process.env.NODE_ENV === 'production' &&
-		!process.env.OPENTOPO_DATA_API_URL
-	) {
+	if (process.env.NODE_ENV === 'production' && !process.env.GPXZ_API_URL) {
 		throw new ElevationLookupError(
 			'upstream_error',
-			'OPENTOPO_DATA_API_URL must be configured.',
+			'GPXZ_API_URL must be configured.',
+		)
+	}
+	if (!process.env.GPXZ_API_KEY) {
+		throw new ElevationLookupError(
+			'upstream_error',
+			'GPXZ_API_KEY must be configured.',
 		)
 	}
 
-	const apiUrl = (process.env.OPENTOPO_DATA_API_URL ?? DEFAULT_API_URL).replace(
+	const apiUrl = (process.env.GPXZ_API_URL ?? DEFAULT_API_URL).replace(
 		/\/$/,
 		'',
 	)
-	const dataset = process.env.OPENTOPO_DATA_DATASET ?? DEFAULT_DATASETS
-	const datasetPath = dataset.split(',').map(encodeURIComponent).join(',')
-	const url = new URL(`${apiUrl}/${datasetPath}`)
+	const url = new URL(`${apiUrl}`)
 	url.searchParams.set('locations', `${latitude},${longitude}`)
+
+	const api_key = process.env.GPXZ_API_KEY
 
 	const controller = new AbortController()
 	const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS)
 
 	try {
+		const headers: Record<string, string> = {
+			Accept: 'application/json',
+			'x-api-key': api_key ?? '',
+		}
+
 		const response = await fetch(url, {
-			headers: { Accept: 'application/json' },
+			headers: headers,
 			signal: controller.signal,
 		})
 
 		if (response.status === 429) {
-			throw new ElevationLookupError(
-				'rate_limited',
-				'OpenTopoData rate limit reached.',
-			)
+			throw new ElevationLookupError('rate_limited', 'GPXZ rate limit reached.')
 		}
 
 		if (!response.ok) {
 			throw new ElevationLookupError(
 				'upstream_error',
-				`OpenTopoData responded with HTTP ${response.status}.`,
+				`GPXZ responded with HTTP ${response.status}.`,
 			)
 		}
 
@@ -192,7 +175,7 @@ async function requestElevation(
 		if (!parsed.success || parsed.data.status !== 'OK') {
 			throw new ElevationLookupError(
 				'invalid_response',
-				'OpenTopoData returned an invalid response.',
+				'GPXZ returned an invalid response.',
 			)
 		}
 
@@ -218,13 +201,13 @@ async function requestElevation(
 		if (controller.signal.aborted) {
 			throw new ElevationLookupError(
 				'timeout',
-				'OpenTopoData did not respond in time.',
+				'GPXZ api did not respond in time.',
 			)
 		}
 
 		throw new ElevationLookupError(
 			'upstream_error',
-			'OpenTopoData could not be reached.',
+			'GPXZ api could not be reached.',
 		)
 	} finally {
 		clearTimeout(timeout)

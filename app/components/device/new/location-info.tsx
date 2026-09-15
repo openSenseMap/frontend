@@ -311,9 +311,9 @@ export function LocationStep() {
 									i18nKey="elevation_lookup_consent"
 									ns="newdevice"
 									components={{
-										openTopoDataLink: (
+										gpxzLink: (
 											<a
-												href="https://www.opentopodata.org/"
+												href="https://https://www.gpxz.io/"
 												target="_blank"
 												rel="noreferrer"
 												className="underline"

@@ -632,9 +632,9 @@ export default function EditLocation() {
 												i18nKey="elevation_lookup_consent"
 												ns="edit-device-general"
 												components={{
-													openTopoDataLink: (
+													gpxzLink: (
 														<a
-															href="https://www.opentopodata.org/"
+															href="https://https://www.gpxz.io/"
 															target="_blank"
 															rel="noreferrer"
 															className="underline"

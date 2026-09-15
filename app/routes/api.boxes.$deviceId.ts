@@ -179,7 +179,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Update device',
 		description:
-			'Updates a device. Requires JWT authorization. An optional location height is interpreted and stored as height above ground. Coordinates are sent to OpenTopoData and height above sea level is recalculated only when the authenticated user has granted the current elevation lookup consent. A missing consent or lookup failure does not fail the update.',
+			'Updates a device. Requires JWT authorization. An optional location height is interpreted and stored as height above ground. Coordinates are sent to GPXZ and height above sea level is recalculated only when the authenticated user has granted the current elevation lookup consent. A missing consent or lookup failure does not fail the update.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
