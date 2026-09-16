@@ -120,7 +120,10 @@ export async function findOrCreateLocations(
 							}
 						}),
 					)
-					.onConflictDoNothing()
+					.onConflictDoUpdate({
+						target: location.location,
+						set: { location: sql`excluded.location` },
+					})
 					.returning()
 			: []
 
