@@ -113,7 +113,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: postgres-logs
-          path: ./postgres-logs/
+          path: /tmp/postgres-logs/
 
       - name: 🗑️ Cleanup
         if: always()
