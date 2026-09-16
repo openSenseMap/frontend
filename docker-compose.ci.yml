@@ -6,13 +6,6 @@ services:
     command:
       - -cshared_preload_libraries=timescaledb,pg_cron
       - -ccron.database_name=postgres
-      - -clogging_collector=on
-      - -clog_directory=/home/postgres/logs
-      - -clog_statement=all
-      - -clog_lock_waits=on
-      - -cdeadlock_timeout=1s
-      - -clog_min_duration_statement=0
-      - -clog_line_prefix='%m [%p] %q%u@%d '
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -22,4 +15,4 @@ services:
       - '5432:5432'
     volumes:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./postgres-logs:/home/postgres/logs
+      - ./postgres-logs:/var/log/postgresql
