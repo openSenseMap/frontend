@@ -250,8 +250,6 @@ export default function EditLocation() {
 				: {
 						elevation: device.terrainElevation,
 						dataset: device.terrainElevationDataset ?? 'unknown',
-						datum: null,
-						attribution: null,
 						latitude: device.latitude,
 						longitude: device.longitude,
 					},
@@ -634,7 +632,7 @@ export default function EditLocation() {
 												components={{
 													gpxzLink: (
 														<a
-															href="https://https://www.gpxz.io/"
+															href="https://www.gpxz.io/"
 															target="_blank"
 															rel="noreferrer"
 															className="underline"
@@ -692,11 +690,14 @@ export default function EditLocation() {
 												) : null}
 												<div className="text-xs">
 													{t('elevation_source')}:{' '}
-													{elevation.result.attribution ??
-														elevation.result.dataset}
-													{elevation.result.datum
-														? ` (${elevation.result.datum})`
-														: ''}
+													<a
+														href="https://www.gpxz.io/credit"
+														target="_blank"
+														rel="noreferrer"
+														className="underline"
+													>
+														{elevation.result.dataset}
+													</a>
 												</div>
 											</div>
 										) : null}
