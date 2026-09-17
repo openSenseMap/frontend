@@ -313,7 +313,7 @@ export function LocationStep() {
 									components={{
 										gpxzLink: (
 											<a
-												href="https://https://www.gpxz.io/"
+												href="https://www.gpxz.io/"
 												target="_blank"
 												rel="noreferrer"
 												className="underline"
@@ -356,11 +356,7 @@ export function LocationStep() {
 						</div>
 					) : elevation.status === 'error' ? (
 						<div className="mt-2 text-sm text-amber-600">
-							<p>
-								{elevation.error === 'unavailable'
-									? t('elevation_unavailable')
-									: t('elevation_error')}
-							</p>
+							<p>{t('elevation_error')}</p>
 							<button
 								type="button"
 								onClick={elevation.retry}
@@ -382,8 +378,14 @@ export function LocationStep() {
 							) : null}
 							<div className="text-xs">
 								{t('elevation_source')}:{' '}
-								{elevation.result.attribution ?? elevation.result.dataset}
-								{elevation.result.datum ? ` (${elevation.result.datum})` : ''}
+								<a
+									href="https://www.gpxz.io/credit"
+									target="_blank"
+									rel="noreferrer"
+									className="underline"
+								>
+									{elevation.result.dataset}
+								</a>
 							</div>
 						</div>
 					) : null}
