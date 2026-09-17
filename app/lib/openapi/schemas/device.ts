@@ -199,7 +199,7 @@ export const ApiDeviceSchema = z
 		}),
 		terrainElevationDataset: z.string().nullable().optional().meta({
 			description:
-				'GPXZ dataset from which terrainElevation was retrieved. Null when no terrain elevation is available.',
+				'GPXZ data source identifier from which terrainElevation was retrieved. Null when no terrain elevation is available.',
 			example: 'germany_nrw_1m_dtm',
 		}),
 		useAuth: z.boolean().optional().meta({
