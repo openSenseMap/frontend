@@ -1,7 +1,10 @@
 import { data } from 'react-router'
 import { z } from 'zod'
 import { type Route } from './+types/resources.elevation'
-import { type ElevationResourceResponse } from '~/lib/elevation'
+import {
+	type ElevationLookupErrorCode,
+	type ElevationResourceResponse,
+} from '~/lib/elevation'
 import { locationCoordinatesSchema } from '~/lib/location'
 import {
 	ElevationLookupError,
@@ -16,6 +19,21 @@ import {
 const elevationLookupRequestSchema = locationCoordinatesSchema.extend({
 	consent: z.literal(true),
 })
+
+function statusForElevationError(code: ElevationLookupErrorCode) {
+	switch (code) {
+		case 'invalid_location':
+			return 400
+		case 'consent_required':
+			return 403
+		case 'rate_limited':
+			return 503
+		case 'timeout':
+			return 504
+		default:
+			return 502
+	}
+}
 
 async function lookupElevation(latitude: number, longitude: number) {
 	try {
@@ -32,10 +50,11 @@ async function lookupElevation(latitude: number, longitude: number) {
 	} catch (error) {
 		const code =
 			error instanceof ElevationLookupError ? error.code : 'upstream_error'
+		const status = statusForElevationError(code)
 
 		return data<ElevationResourceResponse>(
 			{ ok: false, error: code },
-			{ status: code === 'unavailable' ? 404 : 503 },
+			{ status },
 		)
 	}
 }
