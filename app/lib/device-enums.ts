@@ -9,11 +9,27 @@ export const DEVICE_EXPOSURE_VALUES = [
 
 export const DEVICE_STATUS_VALUES = ['active', 'inactive', 'old'] as const
 
+export const DEVICE_MODEL_VALUES = [
+	'homeV2Lora',
+	'homeV2Ethernet',
+	'homeV2Wifi',
+	'homeEthernet',
+	'homeWifi',
+	'homeEthernetFeinstaub',
+	'homeWifiFeinstaub',
+	'luftdaten.info',
+	'hackair_home_v2',
+	'senseBox:Edu',
+	'custom',
+] as const
+
 export const DeviceExposureZodEnum = z.enum(DEVICE_EXPOSURE_VALUES)
 export const DeviceStatusZodEnum = z.enum(DEVICE_STATUS_VALUES)
+export const DeviceModelZodEnum = z.enum(DEVICE_MODEL_VALUES)
 
 export type DeviceExposureType = z.infer<typeof DeviceExposureZodEnum>
 export type DeviceStatusType = z.infer<typeof DeviceStatusZodEnum>
+export type DeviceModelType = z.infer<typeof DeviceModelZodEnum>
 
 export function parseDeviceExposure(value: unknown): DeviceExposureType | null {
 	const normalized = typeof value === 'string' ? value.toLowerCase() : value

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 import { type Route } from '../../.react-router/types/app/routes/+types/api.boxes.$deviceId'
 import { BASE_URL } from '../../vitest.setup'
 import {
