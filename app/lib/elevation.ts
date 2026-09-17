@@ -1,8 +1,6 @@
 export type TerrainElevationResult = {
 	elevation: number
 	dataset: string
-	datum: string | null
-	attribution: string | null
 	latitude: number
 	longitude: number
 }
@@ -10,7 +8,6 @@ export type TerrainElevationResult = {
 export type ElevationLookupErrorCode =
 	| 'invalid_location'
 	| 'consent_required'
-	| 'unavailable'
 	| 'rate_limited'
 	| 'timeout'
 	| 'upstream_error'
