@@ -69,9 +69,7 @@ async function requestElevation(
 
 	const apiUrl = process.env.GPXZ_API_URL ?? DEFAULT_API_URL
 	const apiKey = process.env.GPXZ_API_KEY
-
-	const controller = new AbortController()
-	const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS)
+	const signal = AbortSignal.timeout(DEFAULT_TIMEOUT_MS)
 
 	try {
 		const headers: Record<string, string> = {
@@ -87,7 +85,7 @@ async function requestElevation(
 				latlons: `${latitude},${longitude}`,
 				bathymetry: true,
 			}),
-			signal: controller.signal,
+			signal,
 		})
 
 		if (response.status === 429) {
@@ -128,7 +126,7 @@ async function requestElevation(
 	} catch (error) {
 		if (error instanceof ElevationLookupError) throw error
 
-		if (controller.signal.aborted) {
+		if (signal.aborted) {
 			throw new ElevationLookupError(
 				'timeout',
 				'GPXZ API did not respond in time.',
@@ -139,8 +137,6 @@ async function requestElevation(
 			'upstream_error',
 			'GPXZ API could not be reached.',
 		)
-	} finally {
-		clearTimeout(timeout)
 	}
 }
 
