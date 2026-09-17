@@ -11,7 +11,7 @@ const schema = z.object({
 	SESSION_SECRET: z.string(),
 	NOMINATIM_SEARCH_API: z.string(),
 	GPXZ_API_URL: z.string().url().optional(),
-	GPXZ_MIN_INTERVAL_MS: z.string().regex(/^\d+$/).optional(),
+	GPXZ_API_KEY: z.string().min(1).optional(),
 	OSEM_API_URL: z.string().url(),
 	DIRECTUS_URL: z.string().url(),
 	SENSORWIKI_API_URL: z.string().url(),
