@@ -83,7 +83,6 @@ async function requestElevation(
 			headers,
 			body: JSON.stringify({
 				latlons: `${latitude},${longitude}`,
-				bathymetry: true,
 			}),
 			signal,
 		})
