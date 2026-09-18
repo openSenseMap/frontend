@@ -46,11 +46,10 @@ type DownloadActionData =
 
 type DeviceFeature = {
 	geometry?: {
-		coordinates?: [number, number]
+		coordinates?: number[]
 	}
 	properties?: {
 		id?: string | number
-		[key: string]: unknown
 	}
 }
 
@@ -69,6 +68,8 @@ type DownloadFields = {
 	unit: boolean
 	value: boolean
 	timestamp: boolean
+	latitude: boolean
+	longitude: boolean
 }
 
 const DEFAULT_FIELDS: DownloadFields = {
@@ -76,6 +77,8 @@ const DEFAULT_FIELDS: DownloadFields = {
 	unit: true,
 	value: true,
 	timestamp: true,
+	latitude: true,
+	longitude: true,
 }
 
 export const DOWNLOAD_FILTER_KEYS = new Set([
@@ -187,7 +190,7 @@ export default function Download({
 	const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	const [format, setFormat] = useState('csv')
-	const [aggregate, setAggregate] = useState('10m')
+	const [aggregate, setAggregate] = useState('raw')
 	const [fields, setFields] = useState<DownloadFields>(DEFAULT_FIELDS)
 
 	const [isDownloadReady, setIsDownloadReady] = useState(false)
@@ -234,6 +237,11 @@ export default function Download({
 
 	const handleAggregateChange = (value: string) => {
 		setAggregate(value)
+		setFields((currentFields) => ({
+			...currentFields,
+			latitude: value === 'raw',
+			longitude: value === 'raw',
+		}))
 		resetResultState()
 	}
 
@@ -404,27 +412,39 @@ export default function Download({
 							{t('fieldsToInclude')}
 						</legend>
 
-						{Object.entries(fields).map(([field, checked]) => (
-							<div key={field} className="flex items-center space-x-2">
-								<Checkbox
-									id={field}
-									name={field}
-									value="on"
-									checked={checked}
-									onCheckedChange={(nextChecked) =>
-										handleFieldChange(
-											field as keyof DownloadFields,
-											nextChecked,
-										)
-									}
-								/>
+						{Object.entries(fields).map(([field, checked]) => {
+							const isCoordinateField =
+								field === 'latitude' || field === 'longitude'
 
-								<Label htmlFor={field} className="cursor-pointer">
-									{t(field)}
-								</Label>
-							</div>
-						))}
+							return (
+								<div key={field} className="flex items-center space-x-2">
+									<Checkbox
+										id={field}
+										name={field}
+										value="on"
+										checked={checked}
+										disabled={isCoordinateField && aggregate !== 'raw'}
+										onCheckedChange={(nextChecked) =>
+											handleFieldChange(
+												field as keyof DownloadFields,
+												nextChecked,
+											)
+										}
+									/>
+
+									<Label htmlFor={field} className="cursor-pointer">
+										{t(field)}
+									</Label>
+								</div>
+							)
+						})}
 					</fieldset>
+
+					{aggregate !== 'raw' && (
+						<p className="text-muted-foreground text-sm">
+							{t('coordinatesRawOnly')}
+						</p>
+					)}
 
 					<div className="flex min-h-16 items-center justify-center text-center">
 						{isBusy ? (
