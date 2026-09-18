@@ -73,11 +73,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 export default function DeviceId() {
 	// Retrieving the data returned by the loader using the useLoaderData hook
 	const data = useLoaderData<typeof loader>()
-	const [hoveredPoint, setHoveredPoint] = useState(null)
-
-	const setHoveredPointDebug = (point: any) => {
-		setHoveredPoint(point)
-	}
+	const [hoveredPoint, setHoveredPoint] = useState<number | null>(null)
 
 	if (!data?.device && !data.sensors) {
 		return null
@@ -85,9 +81,7 @@ export default function DeviceId() {
 
 	return (
 		<>
-			<HoveredPointContext.Provider
-				value={{ hoveredPoint, setHoveredPoint: setHoveredPointDebug }}
-			>
+			<HoveredPointContext.Provider value={{ hoveredPoint, setHoveredPoint }}>
 				{/* Keep the canonical device trips visible while sensors are selected. */}
 				{data.device?.exposure === 'mobile' &&
 					Array.isArray(data.device?.locations) &&
