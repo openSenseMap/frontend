@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1128.0",
-    "@aws-sdk/s3-request-presigner": "^3.1128.0",
+    "@aws-sdk/s3-request-presigner": "^3.1131.0",
     "@base-ui/react": "^1.7.0",
     "@conform-to/react": "^1.21.1",
     "@conform-to/zod": "^1.21.1",
@@ -112,7 +112,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "19.2.8",
     "react-draggable": "^4.7.1",
-    "react-email": "^6.9.3",
+    "react-email": "^6.9.5",
     "react-globe.gl": "^2.38.0",
     "react-hook-form": "^7.87.0",
     "react-i18next": "^17.0.13",
@@ -134,7 +134,7 @@
   "devDependencies": {
     "@epic-web/config": "^3.2.1",
     "@playwright/test": "^1.62.1",
-    "@react-email/ui": "^6.9.3",
+    "@react-email/ui": "^6.9.5",
     "@react-router/dev": "8.3.0",
     "@react-router/fs-routes": "8.3.0",
     "@tailwindcss/forms": "^0.5.11",
