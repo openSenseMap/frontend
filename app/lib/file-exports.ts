@@ -21,6 +21,8 @@ export const getCSV = (measurements: any, includeFields: any) => {
 		includeFields.value ? 'Value' : null,
 		includeFields.unit ? 'Unit' : null,
 		includeFields.timestamp ? 'Timestamp' : null,
+		includeFields.latitude ? 'Latitude' : null,
+		includeFields.longitude ? 'Longitude' : null,
 	]
 
 	// Generate CSV rows
@@ -32,6 +34,8 @@ export const getCSV = (measurements: any, includeFields: any) => {
 				includeFields.value ? m.value : null,
 				includeFields.unit ? m.unit : null,
 				includeFields.timestamp ? formatter.format(new Date(m.time)) : null,
+				includeFields.latitude ? (m.location?.y ?? null) : null,
+				includeFields.longitude ? (m.location?.x ?? null) : null,
 			].join(',')
 			csvrows.push(rows)
 		})
@@ -67,6 +71,9 @@ export const getJSON = (measurements: any, includeFields: any) => {
 			if (includeFields.unit) filteredItem.unit = m.unit
 			if (includeFields.timestamp)
 				filteredItem.timestamp = formatter.format(new Date(m.time))
+			if (includeFields.latitude) filteredItem.latitude = m.location?.y ?? null
+			if (includeFields.longitude)
+				filteredItem.longitude = m.location?.x ?? null
 
 			groupData.push(filteredItem)
 		})
@@ -103,6 +110,12 @@ export const getTXT = (measurements: any, includeFields: any) => {
 			}
 			if (includeFields.timestamp) {
 				rows += `Timestamp: ${formatter.format(new Date(m.time))}\n`
+			}
+			if (includeFields.latitude) {
+				rows += `Latitude: ${m.location?.y ?? ''}\n`
+			}
+			if (includeFields.longitude) {
+				rows += `Longitude: ${m.location?.x ?? ''}\n`
 			}
 			rows += `\n`
 			textrows.push(rows)
