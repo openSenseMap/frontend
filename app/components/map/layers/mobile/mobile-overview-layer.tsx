@@ -1,12 +1,13 @@
 import bbox from '@turf/bbox'
-import { point, featureCollection } from '@turf/helpers'
-import { type FeatureCollection, type Point } from 'geojson'
+import { featureCollection, lineString, point } from '@turf/helpers'
+import { type FeatureCollection, type LineString, type Point } from 'geojson'
 import { CalendarClock } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Source, Layer, useMap, Popup } from 'react-map-gl/maplibre'
 import MapLegend from './mobile-overview-legend'
-import { type LocationPoint, getLatestTrips } from '~/lib/mobile-box-helper'
+import { type LocationPoint, type Trip } from '~/lib/mobile-box-helper'
+import { validLngLat } from '~/lib/location'
 
 const FIT_PADDING = 100
 
@@ -82,7 +83,7 @@ function calculateClusterCenter(cluster: LocationPoint[], clusterId: string) {
 		cluster.reduce((sum, point) => sum + point.geometry.y, 0) / cluster.length
 
 	// Sort by timestamp to get earliest and latest
-	const sortedByTime = cluster.sort(
+	const sortedByTime = [...cluster].sort(
 		(a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
 	)
 
@@ -108,17 +109,31 @@ function generateColors(count: number): string[] {
 		'#ffd92f',
 	]
 	while (colors.length < count) {
-		colors.push(...colors)
+		const hue = Math.round((colors.length * 137.508) % 360)
+		colors.push(`hsl(${hue}, 58%, 52%)`)
 	}
 	return colors.slice(0, count)
 }
 
+type OverviewProperties = {
+	color: string
+	tripNumber: number
+	timestamp: string
+	pointCount?: number
+	isCluster?: boolean
+	startTime: string
+	endTime: string
+	clusterId?: string
+}
+
 export default function MobileOverviewLayer({
-	locations,
+	trips,
+	muted = false,
 }: {
-	locations: LocationPoint[]
+	trips: Trip[]
+	muted?: boolean
 }) {
-	const { i18n } = useTranslation('mobile-map')
+	const { t, i18n } = useTranslation('mobile-map')
 	const tripDateTimeFormatter = useMemo(
 		() =>
 			new Intl.DateTimeFormat(i18n.language, {
@@ -127,9 +142,6 @@ export default function MobileOverviewLayer({
 			}),
 		[i18n.language],
 	)
-	// Apply the same trip definition and limit as the server-side overview loader.
-	const trips = useMemo(() => getLatestTrips(locations), [locations])
-
 	// Cluster points within each trip
 	const clusteredTrips = useMemo(() => {
 		if (!trips || trips.length === 0) return []
@@ -153,37 +165,7 @@ export default function MobileOverviewLayer({
 		})
 	}, [trips])
 
-	const [sourceData, setSourceData] = useState<FeatureCollection<
-		Point,
-		{
-			color: string
-			tripNumber: number
-			timestamp: string
-			pointCount?: number
-			isCluster?: boolean
-			startTime?: string
-			endTime?: string
-			clusterId?: string
-		}
-	> | null>(null)
-
-	const [expandedSourceData, setExpandedSourceData] =
-		useState<FeatureCollection<
-			Point,
-			{
-				color: string
-				tripNumber: number
-				timestamp: string
-				clusterId: string
-			}
-		> | null>(null)
-
 	const { osem: mapRef } = useMap()
-
-	// Legend items state
-	const [legendItems, setLegendItems] = useState<
-		{ label: string; color: string; isLatest: boolean }[]
-	>([])
 
 	// State to track the highlighted trip number
 	const [highlightedTrip, setHighlightedTrip] = useState<number | null>(null)
@@ -200,23 +182,48 @@ export default function MobileOverviewLayer({
 		pointCount?: number
 		isCluster?: boolean
 	} | null>(null)
+	const [interactionSourceData, setInteractionSourceData] =
+		useState<FeatureCollection<Point | LineString, OverviewProperties> | null>(
+			null,
+		)
 
 	const [showOriginalColors, setShowOriginalColors] = useState(true)
+	const showTripColors = showOriginalColors && !muted
 
-	useEffect(() => {
-		setHighlightedTrip(null)
-		setHoveredCluster(null)
-		setPopupInfo(null)
-
+	const { sourceData, expandedSourceData, legendItems } = useMemo(() => {
 		if (clusteredTrips.length === 0) {
-			setSourceData(null)
-			setExpandedSourceData(null)
-			setLegendItems([])
-			if (mapRef) mapRef.getCanvas().style.cursor = ''
-			return
+			return {
+				sourceData: null,
+				expandedSourceData: null,
+				legendItems: [],
+			}
 		}
 
 		const colors = generateColors(clusteredTrips.length)
+		const lines = clusteredTrips.flatMap((trip, index) => {
+			const routeCoordinates = trip.points
+				.filter(
+					(routePoint) =>
+						Number.isFinite(new Date(routePoint.time).getTime()) &&
+						validLngLat(routePoint.geometry.x, routePoint.geometry.y),
+				)
+				.map(
+					(routePoint) =>
+						[routePoint.geometry.x, routePoint.geometry.y] as [number, number],
+				)
+
+			if (routeCoordinates.length < 2) return []
+
+			return [
+				lineString(routeCoordinates, {
+					color: colors[index],
+					tripNumber: index + 1,
+					timestamp: trip.startTime,
+					startTime: trip.startTime,
+					endTime: trip.endTime,
+				}),
+			]
+		})
 
 		// Convert clustered trips into GeoJSON Points
 		const points = clusteredTrips.flatMap((trip, index) =>
@@ -261,10 +268,25 @@ export default function MobileOverviewLayer({
 			isLatest: index === clusteredTrips.length - 1,
 		}))
 
-		setSourceData(featureCollection(points))
-		setExpandedSourceData(featureCollection(expandedPoints))
-		setLegendItems(legend)
-	}, [clusteredTrips, mapRef, tripDateTimeFormatter])
+		return {
+			sourceData: featureCollection<Point | LineString, OverviewProperties>([
+				...lines,
+				...points,
+			]),
+			expandedSourceData: featureCollection(expandedPoints),
+			legendItems: legend,
+		}
+	}, [clusteredTrips, tripDateTimeFormatter])
+	const interactionIsCurrent = interactionSourceData === sourceData
+	const activeHighlightedTrip = interactionIsCurrent ? highlightedTrip : null
+	const activeHoveredCluster = interactionIsCurrent ? hoveredCluster : null
+	const activePopupInfo = interactionIsCurrent ? popupInfo : null
+	const clearInteraction = useCallback(() => {
+		setInteractionSourceData(null)
+		setHighlightedTrip(null)
+		setHoveredCluster(null)
+		setPopupInfo(null)
+	}, [])
 
 	useEffect(() => {
 		if (!mapRef || !sourceData) return
@@ -287,14 +309,13 @@ export default function MobileOverviewLayer({
 
 	const handleHover = useCallback(
 		(event: any) => {
-			if (!showOriginalColors) {
-				setHighlightedTrip(null)
-				setPopupInfo(null)
-				setHoveredCluster(null)
+			if (!showTripColors) {
+				clearInteraction()
 				return
 			}
 
 			if (event.features && event.features.length > 0) {
+				setInteractionSourceData(sourceData)
 				const feature = event.features[0]
 				const {
 					tripNumber,
@@ -313,7 +334,10 @@ export default function MobileOverviewLayer({
 					setHoveredCluster(null)
 				}
 
-				const [longitude, latitude] = feature.geometry.coordinates
+				const [longitude, latitude] =
+					feature.geometry.type === 'Point'
+						? feature.geometry.coordinates
+						: [event.lngLat.lng, event.lngLat.lat]
 				setPopupInfo({
 					longitude,
 					latitude,
@@ -323,19 +347,20 @@ export default function MobileOverviewLayer({
 					isCluster,
 				})
 			} else {
-				setHighlightedTrip(null)
-				setPopupInfo(null)
-				setHoveredCluster(null)
+				clearInteraction()
 			}
 		},
-		[showOriginalColors],
+		[clearInteraction, showTripColors, sourceData],
 	)
 
 	useEffect(() => {
 		if (!mapRef) return
 
+		if (!showTripColors) return
+
+		const interactiveLayers = ['box-overview-route-layer', 'box-overview-layer']
 		const onMouseMove = (event: any) => {
-			if (!showOriginalColors) {
+			if (!showTripColors) {
 				mapRef.getCanvas().style.cursor = ''
 				return
 			}
@@ -345,21 +370,24 @@ export default function MobileOverviewLayer({
 		}
 
 		const onMouseLeave = () => {
-			if (!showOriginalColors) return
+			if (!showTripColors) return
 			mapRef.getCanvas().style.cursor = ''
-			setHighlightedTrip(null)
-			setPopupInfo(null)
-			setHoveredCluster(null)
+			clearInteraction()
 		}
 
-		mapRef.on('mousemove', 'box-overview-layer', onMouseMove)
-		mapRef.on('mouseleave', 'box-overview-layer', onMouseLeave)
+		interactiveLayers.forEach((layerId) => {
+			mapRef.on('mousemove', layerId, onMouseMove)
+			mapRef.on('mouseleave', layerId, onMouseLeave)
+		})
 
 		return () => {
-			mapRef.off('mousemove', 'box-overview-layer', onMouseMove)
-			mapRef.off('mouseleave', 'box-overview-layer', onMouseLeave)
+			interactiveLayers.forEach((layerId) => {
+				mapRef.off('mousemove', layerId, onMouseMove)
+				mapRef.off('mouseleave', layerId, onMouseLeave)
+			})
+			mapRef.getCanvas().style.cursor = ''
 		}
-	}, [mapRef, handleHover, showOriginalColors])
+	}, [clearInteraction, mapRef, handleHover, showTripColors])
 
 	if (!sourceData) return null
 
@@ -367,68 +395,123 @@ export default function MobileOverviewLayer({
 		<>
 			<Source id="box-overview-source" type="geojson" data={sourceData}>
 				<Layer
-					id="box-overview-layer"
-					type="circle"
+					id="box-overview-route-layer"
+					type="line"
 					source="box-overview-source"
+					filter={['==', '$type', 'LineString']}
+					layout={{
+						'line-cap': 'round',
+						'line-join': 'round',
+					}}
 					paint={{
-						'circle-color': showOriginalColors ? ['get', 'color'] : '#888',
-						'circle-radius': [
-							'case',
-							['get', 'isCluster'],
-							[
-								'interpolate',
-								['linear'],
-								['get', 'pointCount'],
-								1,
-								5, // Single point: radius 5
-								10,
-								8, // 10 points: radius 8
-								50,
-								12, // 50 points: radius 12
-								100,
-								16, // 100+ points: radius 16
-							],
-							3, // Non-cluster points: radius 3
-						],
-						'circle-opacity': showOriginalColors
-							? ['case', ['==', ['get', 'tripNumber'], highlightedTrip], 1, 0.5]
-							: 1,
-						'circle-stroke-width': [
-							'case',
-							['get', 'isCluster'],
-							2, // Clusters have stroke
-							0, // Individual points don't
-						],
-						'circle-stroke-color': '#222',
-						'circle-stroke-opacity': showOriginalColors
-							? ['case', ['==', ['get', 'tripNumber'], highlightedTrip], 1, 0.3]
-							: 1,
+						'line-color': muted
+							? '#6b7280'
+							: showOriginalColors
+								? ['get', 'color']
+								: '#888',
+						'line-width': muted
+							? 4
+							: [
+									'case',
+									['==', ['get', 'tripNumber'], activeHighlightedTrip],
+									5,
+									3,
+								],
+						'line-opacity': muted
+							? 0.65
+							: showOriginalColors
+								? [
+										'case',
+										['==', ['get', 'tripNumber'], activeHighlightedTrip],
+										1,
+										0.65,
+									]
+								: 0.7,
 					}}
 				/>
+				{!muted && (
+					<Layer
+						id="box-overview-layer"
+						type="circle"
+						source="box-overview-source"
+						filter={['==', '$type', 'Point']}
+						paint={{
+							'circle-color': showTripColors ? ['get', 'color'] : '#888',
+							'circle-radius': [
+								'case',
+								['get', 'isCluster'],
+								[
+									'interpolate',
+									['linear'],
+									['get', 'pointCount'],
+									1,
+									5, // Single point: radius 5
+									10,
+									8, // 10 points: radius 8
+									50,
+									12, // 50 points: radius 12
+									100,
+									16, // 100+ points: radius 16
+								],
+								3, // Non-cluster points: radius 3
+							],
+							'circle-opacity': showOriginalColors
+								? [
+										'case',
+										['==', ['get', 'tripNumber'], activeHighlightedTrip],
+										1,
+										0.5,
+									]
+								: 1,
+							'circle-stroke-width': [
+								'case',
+								['get', 'isCluster'],
+								2, // Clusters have stroke
+								0, // Individual points don't
+							],
+							'circle-stroke-color': '#222',
+							'circle-stroke-opacity': showOriginalColors
+								? [
+										'case',
+										['==', ['get', 'tripNumber'], activeHighlightedTrip],
+										1,
+										0.3,
+									]
+								: 1,
+						}}
+					/>
+				)}
 
 				{/* Text layer for cluster point counts */}
-				<Layer
-					id="box-overview-cluster-text"
-					type="symbol"
-					source="box-overview-source"
-					filter={['get', 'isCluster']}
-					layout={{
-						'text-field': ['get', 'pointCount'],
-						'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-						'text-size': 11,
-						'text-allow-overlap': true,
-					}}
-					paint={{
-						'text-color': '#211',
-						'text-opacity': showOriginalColors
-							? ['case', ['==', ['get', 'tripNumber'], highlightedTrip], 1, 0.7]
-							: 1,
-					}}
-				/>
+				{!muted && (
+					<Layer
+						id="box-overview-cluster-text"
+						type="symbol"
+						source="box-overview-source"
+						filter={['get', 'isCluster']}
+						layout={{
+							'text-field': ['get', 'pointCount'],
+							'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+							'text-size': 11,
+							'text-allow-overlap': true,
+						}}
+						paint={{
+							'text-color': '#211',
+							'text-opacity': showOriginalColors
+								? [
+										'case',
+										['==', ['get', 'tripNumber'], activeHighlightedTrip],
+										1,
+										0.7,
+									]
+								: 1,
+						}}
+					/>
+				)}
 			</Source>
 
 			{/* Expanded cluster points - shown on hover */}
-			{hoveredCluster && expandedSourceData && (
+			{showTripColors && activeHoveredCluster && expandedSourceData && (
 				<Source
 					id="box-overview-expanded-source"
 					type="geojson"
@@ -438,7 +521,7 @@ export default function MobileOverviewLayer({
 						id="box-overview-expanded-layer"
 						type="circle"
 						source="box-overview-expanded-source"
-						filter={['==', ['get', 'clusterId'], hoveredCluster]}
+						filter={['==', ['get', 'clusterId'], activeHoveredCluster]}
 						paint={{
 							'circle-color': ['get', 'color'],
 							'circle-radius': 4,
@@ -451,10 +534,10 @@ export default function MobileOverviewLayer({
 				</Source>
 			)}
 
-			{highlightedTrip && popupInfo && (
+			{showTripColors && activeHighlightedTrip && activePopupInfo && (
 				<Popup
-					longitude={popupInfo.longitude}
-					latitude={popupInfo.latitude}
+					longitude={activePopupInfo.longitude}
+					latitude={activePopupInfo.latitude}
 					closeButton={false}
 					closeOnClick={false}
 					anchor="top"
@@ -463,46 +546,62 @@ export default function MobileOverviewLayer({
 						<CalendarClock className="text-primary h-4 w-4" />
 					</div>
 					<div className="space-y-1 text-center">
-						{popupInfo.isCluster && (
+						{activePopupInfo.isCluster && (
 							<div className="mb-2">
 								<p className="text-muted-foreground text-xs font-medium">
-									Cluster of {popupInfo.pointCount} points
+									{t('clusterPoints', {
+										count: activePopupInfo.pointCount,
+									})}
 								</p>
 							</div>
 						)}
 						<div>
 							<p className="text-primary text-sm font-bold">
-								{tripDateTimeFormatter.format(new Date(popupInfo.startTime))}
+								{tripDateTimeFormatter.format(
+									new Date(activePopupInfo.startTime),
+								)}
 							</p>
 						</div>
-						{popupInfo.isCluster &&
-							popupInfo.startTime !== popupInfo.endTime && (
-								<div>
-									<span className="text-muted-foreground text-xs font-medium">
-										To
-									</span>
-									<p className="text-primary text-sm font-bold">
-										{tripDateTimeFormatter.format(new Date(popupInfo.endTime))}
-									</p>
-								</div>
-							)}
+						{activePopupInfo.startTime !== activePopupInfo.endTime && (
+							<div>
+								<span className="text-muted-foreground text-xs font-medium">
+									{t('to')}
+								</span>
+								<p className="text-primary text-sm font-bold">
+									{tripDateTimeFormatter.format(
+										new Date(activePopupInfo.endTime),
+									)}
+								</p>
+							</div>
+						)}
 					</div>
 				</Popup>
 			)}
 
-			<MapLegend
-				items={legendItems}
-				position="top-right"
-				onColorByTripChange={setShowOriginalColors}
-				showOriginalColors={showOriginalColors}
-				onLegendItemHover={(color) => {
-					setHighlightedTrip(
-						color
-							? legendItems.findIndex((item) => item.color === color) + 1
-							: null,
-					)
-				}}
-			/>
+			{!muted && (
+				<MapLegend
+					items={legendItems}
+					position="top-right"
+					onColorByTripChange={(enabled) => {
+						clearInteraction()
+						setShowOriginalColors(enabled)
+					}}
+					showOriginalColors={showOriginalColors}
+					onLegendItemHover={(color) => {
+						if (!color) {
+							clearInteraction()
+							return
+						}
+
+						setInteractionSourceData(sourceData)
+						setHoveredCluster(null)
+						setPopupInfo(null)
+						setHighlightedTrip(
+							legendItems.findIndex((item) => item.color === color) + 1,
+						)
+					}}
+				/>
+			)}
 		</>
 	)
 }

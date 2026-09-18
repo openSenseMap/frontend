@@ -7,5 +7,7 @@
 	"visibleTrips": "Visible trips",
 	"latest": "Latest",
 	"latestTripAriaLabel": "{{label}}, latest trip",
-	"sensorValues": "Sensor values"
+	"sensorValues": "Sensor values",
+	"clusterPoints": "Cluster of {{count}} points",
+	"to": "To"
 }

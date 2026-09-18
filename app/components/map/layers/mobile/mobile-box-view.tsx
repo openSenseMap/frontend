@@ -1,10 +1,15 @@
 import { ArrowDownUp } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { calculateColorRange } from './color-palette'
 import MobileBoxLayer from './mobile-box-layer'
+import {
+	getSensorTrajectoryValueRange,
+	type SensorTrajectoryMeasurement,
+} from './mobile-sensor-trajectory'
 import { Button } from '~/components/ui/button'
 import { type Sensor } from '~/db/schema'
+import { type Trip } from '~/lib/mobile-box-helper'
 
 interface SensorWithColor extends Sensor {
 	color: string // Add the color property
@@ -12,18 +17,31 @@ interface SensorWithColor extends Sensor {
 
 export default function MobileBoxView({
 	sensors: initialSensors,
+	trips,
 }: {
 	sensors: SensorWithColor[]
+	trips: Trip[]
 }) {
-	const [sensors, setSensors] = useState<SensorWithColor[]>(initialSensors)
+	const [primarySensorId, setPrimarySensorId] = useState<string | null>(null)
+	const sensors = useMemo(() => {
+		if (!primarySensorId || initialSensors[0]?.id === primarySensorId) {
+			return initialSensors
+		}
 
-	useEffect(() => {
-		setSensors(initialSensors)
-	}, [initialSensors])
+		const primarySensor = initialSensors.find(
+			(sensor) => sensor.id === primarySensorId,
+		)
+		return primarySensor
+			? [
+					primarySensor,
+					...initialSensors.filter((sensor) => sensor.id !== primarySensorId),
+				]
+			: initialSensors
+	}, [initialSensors, primarySensorId])
 
 	// Toggle the order of sensors
 	const switchSensors = () => {
-		setSensors((prevSensors) => [...prevSensors].reverse())
+		setPrimarySensorId(sensors[1]?.id ?? null)
 	}
 
 	return (
@@ -39,7 +57,7 @@ export default function MobileBoxView({
 							<ArrowDownUp />
 						</Button>
 					)}
-					<SensorView sensor={sensor} index={index} />
+					<SensorView sensor={sensor} index={index} trips={trips} />
 				</div>
 			))}
 		</div>
@@ -49,9 +67,11 @@ export default function MobileBoxView({
 function SensorView({
 	sensor,
 	index,
+	trips,
 }: {
 	sensor: SensorWithColor
 	index: number
+	trips: Trip[]
 }) {
 	const { lowColor, highColor } = calculateColorRange(sensor.color) // Calculate dynamically
 
@@ -62,6 +82,7 @@ function SensorView({
 		<>
 			<Legend
 				sensor={sensor}
+				trips={trips}
 				key={'Legend_' + sensor.id}
 				onColorChange={(min, max) => {
 					setMinColor(min)
@@ -71,6 +92,7 @@ function SensorView({
 			{index < 1 && (
 				<MobileBoxLayer
 					sensor={sensor}
+					trips={trips}
 					key={sensor.id}
 					minColor={minColor}
 					maxColor={maxColor}
@@ -82,9 +104,11 @@ function SensorView({
 
 function Legend({
 	sensor,
+	trips,
 	onColorChange,
 }: {
 	sensor: SensorWithColor
+	trips: Trip[]
 	onColorChange?: (min: string, max: string) => void
 }) {
 	const { t } = useTranslation('mobile-map')
@@ -100,23 +124,16 @@ function Legend({
 		onColorChange?.(minColor, maxColor)
 	}, [minColor, maxColor, onColorChange])
 
-	const sensorData = Array.isArray(sensor.data)
-		? sensor.data.filter(
-				(measurement) =>
-					measurement.location !== null &&
-					measurement.value !== null &&
-					Number.isFinite(Number(measurement.value)),
-			)
-		: []
-
-	const minValue =
-		sensorData.length > 0
-			? Math.min(...sensorData.map((d) => Number(d.value)))
-			: 0
-	const maxValue =
-		sensorData.length > 0
-			? Math.max(...sensorData.map((d) => Number(d.value)))
-			: 0
+	const { minValue, maxValue } = useMemo(
+		() =>
+			getSensorTrajectoryValueRange(
+				(Array.isArray(sensor.data)
+					? sensor.data
+					: []) as SensorTrajectoryMeasurement[],
+				trips,
+			),
+		[sensor.data, trips],
+	)
 
 	return (
 		<div className="z-50 flex w-40 flex-col gap-2 rounded-lg border-gray-200 bg-white p-2 shadow-xs">
@@ -134,7 +151,7 @@ function Legend({
 					className="cursor-pointer rounded bg-white px-0.5 shadow-xs"
 					onClick={() => minColorInputRef.current?.click()}
 				>
-					{minValue}
+					{minValue ?? '–'}
 					{sensor.unit}
 					<input
 						type="color"
@@ -148,7 +165,7 @@ function Legend({
 					className="cursor-pointer rounded bg-white px-0.5 shadow-xs"
 					onClick={() => maxColorInputRef.current?.click()}
 				>
-					{maxValue}
+					{maxValue ?? '–'}
 					{sensor.unit}
 					<input
 						className="hidden"

@@ -1,16 +1,16 @@
-import { addDays } from 'date-fns'
-import { redirect, useLoaderData } from 'react-router'
+import { useMemo } from 'react'
+import { redirect, useLoaderData, useRouteLoaderData } from 'react-router'
 import { type Route } from './+types/explore.$deviceId.$sensorId.$'
+import { type loader as deviceLoader } from './explore.$deviceId'
 import Graph from '~/components/device-detail/graph'
 import MobileBoxView from '~/components/map/layers/mobile/mobile-box-view'
 import { getDevice } from '~/db/models/device.server'
 import { getMeasurement } from '~/db/models/measurement.query.server'
 import { getSensor } from '~/db/models/sensor.server'
 import { type SensorWithMeasurementData } from '~/db/schema'
-import {
-	getLatestTripPoints,
-	type LocationPoint,
-} from '~/lib/mobile-box-helper'
+import { isTimeWithinTrips, type Trip } from '~/lib/mobile-box-helper'
+
+const EMPTY_TRIPS: Trip[] = []
 
 interface SensorWithColor extends SensorWithMeasurementData {
 	color: string
@@ -18,10 +18,10 @@ interface SensorWithColor extends SensorWithMeasurementData {
 
 type RawMeasurement = {
 	sensorId: string
-	locationId: bigint | null
+	locationId?: bigint | null
 	time: Date | null
 	value: number | null
-	location: {
+	location?: {
 		id: bigint
 		x: number
 		y: number
@@ -31,13 +31,12 @@ type RawMeasurement = {
 function prepareSensorData(
 	measurements: RawMeasurement[],
 	sensorId: string,
-	limitToLatestTrips: boolean,
 ): SensorWithMeasurementData['data'] {
-	const normalizedData = measurements.map((measurement) => ({
+	return measurements.map((measurement) => ({
 		...measurement,
 		sensorId,
 		locationId:
-			measurement.locationId === null ? null : Number(measurement.locationId),
+			measurement.locationId == null ? null : Number(measurement.locationId),
 		location: measurement.location
 			? {
 					...measurement.location,
@@ -45,34 +44,6 @@ function prepareSensorData(
 				}
 			: null,
 	}))
-
-	if (!limitToLatestTrips) return normalizedData
-
-	const locationPoints: LocationPoint[] = normalizedData.flatMap(
-		(measurement) => {
-			if (measurement.location == null || measurement.time === null) return []
-
-			return [
-				{
-					geometry: {
-						x: measurement.location.x,
-						y: measurement.location.y,
-					},
-					time: measurement.time.toISOString(),
-				},
-			]
-		},
-	)
-	const latestPointTimes = new Set(
-		getLatestTripPoints(locationPoints).map((point) => point.time),
-	)
-
-	return normalizedData.filter(
-		(measurement) =>
-			measurement.location != null &&
-			measurement.time !== null &&
-			latestPointTimes.has(measurement.time.toISOString()),
-	)
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -103,14 +74,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		sensorId,
 		aggregation,
 		startDate ? new Date(startDate) : undefined,
-		endDate ? addDays(new Date(endDate), 1) : undefined,
+		endDate ? new Date(endDate) : undefined,
 	)
 
-	sensor1.data = prepareSensorData(
-		sensor1Data as RawMeasurement[],
-		sensorId,
-		device.exposure === 'mobile' && !startDate,
-	)
+	sensor1.data = prepareSensorData(sensor1Data as RawMeasurement[], sensorId)
 	sensor1.color = sensor1.color || '#8da0cb'
 
 	let sensor2: SensorWithColor | null = null
@@ -121,14 +88,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			sensorId2,
 			aggregation,
 			startDate ? new Date(startDate) : undefined,
-			endDate ? addDays(new Date(endDate), 1) : undefined,
+			endDate ? new Date(endDate) : undefined,
 		)
 
-		sensor2.data = prepareSensorData(
-			sensor2Data as RawMeasurement[],
-			sensorId2,
-			device.exposure === 'mobile' && !startDate,
-		)
+		sensor2.data = prepareSensorData(sensor2Data as RawMeasurement[], sensorId2)
 		sensor2.color = sensor2.color || '#fc8d62'
 	}
 
@@ -143,17 +106,46 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export default function SensorView() {
 	const loaderData = useLoaderData<typeof loader>()
+	const deviceData = useRouteLoaderData<typeof deviceLoader>(
+		'routes/explore.$deviceId',
+	)
+	const trips = deviceData?.mobileTrips ?? EMPTY_TRIPS
+	const sensors = useMemo(() => {
+		if (
+			loaderData.device.exposure !== 'mobile' ||
+			loaderData.aggregation !== 'raw' ||
+			trips.length === 0 ||
+			!deviceData
+		) {
+			return loaderData.sensors
+		}
+
+		return loaderData.sensors.map((sensor) => ({
+			...sensor,
+			data: Array.isArray(sensor.data)
+				? sensor.data.filter((measurement) =>
+						isTimeWithinTrips(measurement.time, trips),
+					)
+				: [],
+		}))
+	}, [
+		deviceData,
+		loaderData.aggregation,
+		loaderData.device.exposure,
+		loaderData.sensors,
+		trips,
+	])
 
 	return (
 		<>
 			<Graph
 				aggregation={loaderData.aggregation}
-				sensors={loaderData.sensors}
+				sensors={sensors}
 				startDate={loaderData.startDate ?? undefined}
 				endDate={loaderData.endDate ?? undefined}
 			/>
 			{loaderData.device?.exposure === 'mobile' && (
-				<MobileBoxView sensors={loaderData.sensors} />
+				<MobileBoxView sensors={sensors} trips={trips} />
 			)}
 		</>
 	)

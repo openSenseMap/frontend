@@ -7,5 +7,7 @@
 	"visibleTrips": "Sichtbare Fahrten",
 	"latest": "Neueste",
 	"latestTripAriaLabel": "{{label}}, neueste Fahrt",
-	"sensorValues": "Sensorwerte"
+	"sensorValues": "Sensorwerte",
+	"clusterPoints": "Cluster aus {{count}} Punkten",
+	"to": "Bis"
 }
