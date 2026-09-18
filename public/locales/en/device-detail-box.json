@@ -21,6 +21,7 @@
 		"mobile": "Mobile"
 	},
 	"unknown": "Unknown",
+	"height_above_sea_level": "Height above sea level",
 	"sensor_model": "Sensor model",
 	"last_updated": "Last updated",
 	"created_at": "Created at",

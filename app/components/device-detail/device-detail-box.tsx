@@ -14,6 +14,7 @@ import {
 	CalendarPlus,
 	Hash,
 	LandPlot,
+	Mountain,
 	Image as ImageIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -75,6 +76,7 @@ import { type SensorWithLatestMeasurement } from '~/db/schema'
 import { getArchiveLink } from '~/lib/archive-link'
 import { type loader } from '~/routes/explore.$deviceId'
 import { dateDiffToNowInWords } from '~/lib/date'
+import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
 
 export interface MeasurementProps {
 	sensorId: string
@@ -185,6 +187,11 @@ export default function DeviceDetailBox() {
 	}, [refreshOn, refreshSecond])
 
 	if (!data.device) return null
+
+	const heightAboveSeaLevel = calculateHeightAboveSeaLevel(
+		data.device.terrainElevation,
+		data.device.heightAboveGround,
+	)
 
 	return (
 		<>
@@ -332,6 +339,13 @@ export default function DeviceDetailBox() {
 													: t('unknown')
 											}
 										/>
+										{heightAboveSeaLevel !== null ? (
+											<InfoItem
+												icon={Mountain}
+												title={t('height_above_sea_level')}
+												text={`${Math.round(heightAboveSeaLevel)} m`}
+											/>
+										) : null}
 										<InfoItem
 											icon={Cpu}
 											title={t('sensor_model')}
