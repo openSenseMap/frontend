@@ -39,9 +39,23 @@ export async function action({
 		)
 	}
 
+	const userId = await getUserId(request)
+	if (!userId) return redirect('/')
+
 	const deviceId = params['deviceId']
 	if (deviceId === undefined)
 		return StandardResponse.badRequest('deviceId must be set but is undefined')
+
+	const device = await getDevice({ id: deviceId })
+	if (!device) return StandardResponse.badRequest('device not found')
+
+	if (device.userId !== userId) {
+		return StandardResponse.forbidden('User does not own this device')
+	}
+
+	const deviceApiKey = device.apiKey
+	if (!deviceApiKey)
+		return StandardResponse.badRequest('device api key not found')
 
 	const formData = await request.formData()
 	const contentType = formData.get('contentType')
@@ -55,8 +69,6 @@ export async function action({
 		return StandardResponse.badRequest(
 			'measurement data is either not set or has a wrong type',
 		)
-	const deviceApiKey = (await getDevice({ id: deviceId }))?.apiKey
-	if (!deviceApiKey) return StandardResponse.badRequest('device not found')
 
 	try {
 		await postNewMeasurements(deviceId, measurementData, {
