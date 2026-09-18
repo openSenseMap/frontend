@@ -68,8 +68,7 @@ type DownloadFields = {
 	unit: boolean
 	value: boolean
 	timestamp: boolean
-	latitude: boolean
-	longitude: boolean
+	coordinates: boolean
 }
 
 const DEFAULT_FIELDS: DownloadFields = {
@@ -77,8 +76,7 @@ const DEFAULT_FIELDS: DownloadFields = {
 	unit: true,
 	value: true,
 	timestamp: true,
-	latitude: true,
-	longitude: true,
+	coordinates: true,
 }
 
 export const DOWNLOAD_FILTER_KEYS = new Set([
@@ -239,8 +237,7 @@ export default function Download({
 		setAggregate(value)
 		setFields((currentFields) => ({
 			...currentFields,
-			latitude: value === 'raw',
-			longitude: value === 'raw',
+			coordinates: value === 'raw',
 		}))
 		resetResultState()
 	}
@@ -413,8 +410,7 @@ export default function Download({
 						</legend>
 
 						{Object.entries(fields).map(([field, checked]) => {
-							const isCoordinateField =
-								field === 'latitude' || field === 'longitude'
+							const isCoordinateField = field === 'coordinates'
 
 							return (
 								<div key={field} className="flex items-center space-x-2">
