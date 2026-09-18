@@ -19,14 +19,15 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 		throw new Response('Device not found', { status: 502 })
 	}
 
-	const [loadedDevice, sensorsWithLastestMeasurement] = await Promise.all([
-		getDevice({ id: params.deviceId }),
-		getSensorsWithLastMeasurement(params.deviceId),
-	])
-	const locations =
+	const loadedDevicePromise = getDevice({ id: params.deviceId })
+	const sensorsPromise = getSensorsWithLastMeasurement(params.deviceId)
+	const locationsPromise = loadedDevicePromise.then((loadedDevice) =>
 		loadedDevice?.exposure === 'mobile'
-			? await getDeviceLocations({ id: params.deviceId })
-			: []
+			? getDeviceLocations({ id: params.deviceId })
+			: [],
+	)
+	const [loadedDevice, sensorsWithLastestMeasurement, locations] =
+		await Promise.all([loadedDevicePromise, sensorsPromise, locationsPromise])
 	const device = loadedDevice ? { ...loadedDevice, locations } : loadedDevice
 
 	// get only locations from the last 5 trips
