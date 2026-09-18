@@ -1,4 +1,4 @@
-import type { ChartData, ChartDataset, Point } from 'chart.js'
+import { type ChartData, type ChartDataset, type Point } from 'chart.js'
 
 export interface MeasurementChartPoint extends Point {
 	x: number
@@ -42,7 +42,7 @@ export type MeasurementChartDataset = ChartDataset<
 	label: string
 	data: MeasurementChartPoint[]
 	pointRadius: number
-	showLine: false
+	showLine: boolean
 	borderColor: string
 	backgroundColor: string
 	yAxisID: string
