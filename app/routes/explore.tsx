@@ -1170,11 +1170,11 @@ export default function Explore() {
 						/>
 					)}
 
-					{outlet && (
-						<div className="pointer-events-none absolute inset-0 z-50">
-							<div className="pointer-events-auto h-full w-full">{outlet}</div>
+					<div className="pointer-events-none absolute inset-0 z-50">
+						<div className="h-full w-full [&>*]:pointer-events-auto">
+							{outlet}
 						</div>
-					)}
+					</div>
 				</Map>
 			</MapProvider>
 		</div>
