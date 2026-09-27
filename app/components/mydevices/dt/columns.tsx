@@ -1,6 +1,10 @@
 'use client'
 
-import { createColumnHelper, type RowData, type ColumnDef } from '@tanstack/react-table'
+import {
+	createColumnHelper,
+	type RowData,
+	type ColumnDef,
+} from '@tanstack/react-table'
 import { ArrowUpDown, Ellipsis, LucideMapPin } from 'lucide-react'
 import { type UseTranslationResponse } from 'react-i18next'
 import { Link } from 'react-router'
