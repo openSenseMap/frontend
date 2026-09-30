@@ -1,5 +1,6 @@
 import { PassThrough } from 'stream'
 import { createReadableStreamFromReadable } from '@react-router/node'
+import * as Sentry from '@sentry/react-router'
 import { isbot } from 'isbot'
 import {
 	renderToPipeableStream,
@@ -19,7 +20,7 @@ export const STREAM_TIMEOUT = 5_000
 init()
 global.ENV = getEnv()
 
-export default async function handleRequest(
+async function handleRequest(
 	request: Request,
 	responseStatusCode: number,
 	responseHeaders: Headers,
@@ -56,7 +57,7 @@ export default async function handleRequest(
 						}),
 					)
 
-					pipe(body)
+					pipe(Sentry.getMetaTagTransformer(body))
 				},
 				onShellError: (err: unknown) => {
 					reject(err)
@@ -73,3 +74,11 @@ export default async function handleRequest(
 		setTimeout(abort, STREAM_TIMEOUT + 1_000)
 	})
 }
+
+export default Sentry.wrapSentryHandleRequest(handleRequest)
+
+export const handleError = Sentry.createSentryHandleError({ logErrors: true })
+
+export const instrumentations = [
+	Sentry.createSentryServerInstrumentation({ captureErrors: false }),
+]
