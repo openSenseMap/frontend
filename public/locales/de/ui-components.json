@@ -8,5 +8,9 @@
 	},
 	"array_field": {
 		"add_item": "Eintrag hinzufügen"
+	},
+	"password": {
+		"show": "Passwort anzeigen",
+		"hide": "Passwort ausblenden"
 	}
 }
