@@ -290,12 +290,15 @@ export async function action({ request }: { request: Request }) {
 	const deviceIds = parseCsv(formdata.get('devices'))
 	const format = String(formdata.get('format') ?? 'csv')
 	const aggregate = String(formdata.get('aggregate') ?? 'raw')
+	const includeCoordinates =
+		aggregate === 'raw' && formdata.get('coordinates') === 'on'
 
 	const includeFields = {
 		title: formdata.get('title') === 'on',
 		unit: formdata.get('unit') === 'on',
 		value: formdata.get('value') === 'on',
 		timestamp: formdata.get('timestamp') === 'on',
+		coordinates: includeCoordinates,
 	}
 
 	const filterParams = getDownloadFilterParams(formdata)
