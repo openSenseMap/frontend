@@ -7,6 +7,7 @@
 		"callout_title_caution": "Caution"
 	},
 	"array_field": {
-		"add_item": "Add item"
+		"add_item": "Add item",
+		"remove_item": "Remove item"
 	}
 }
