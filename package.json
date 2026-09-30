@@ -136,7 +136,7 @@
     "@playwright/test": "^1.62.1",
     "@react-email/ui": "^6.9.5",
     "@react-router/dev": "8.3.0",
-    "@react-router/fs-routes": "8.3.0",
+    "@react-router/fs-routes": "8.4.0",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
