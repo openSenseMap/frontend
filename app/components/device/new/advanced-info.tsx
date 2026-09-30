@@ -3,7 +3,11 @@ import validator from '@rjsf/validator-ajv8'
 import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { ArrayFieldTemplate } from '~/components/rjsf/arrayFieldTemplate'
+import {
+	ArrayFieldRemoveButton,
+	ArrayFieldTemplate,
+	ArrayFieldItemTemplate,
+} from '~/components/rjsf/arrayFieldTemplate'
 import { CheckboxWidget } from '~/components/rjsf/checkboxWidget'
 import { FieldTemplate } from '~/components/rjsf/fieldTemplate'
 import { BaseInputTemplate } from '~/components/rjsf/inputTemplate'
@@ -113,11 +117,16 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
 
 									{schema && (
 										<Form
+											tagName="div"
 											widgets={{ CheckboxWidget }}
 											templates={{
 												FieldTemplate,
 												ArrayFieldTemplate,
+												ArrayFieldItemTemplate,
 												BaseInputTemplate,
+												ButtonTemplates: {
+													RemoveButton: ArrayFieldRemoveButton,
+												},
 											}}
 											schema={schema.schema}
 											uiSchema={schema.uiSchema}
