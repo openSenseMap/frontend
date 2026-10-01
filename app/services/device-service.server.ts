@@ -11,6 +11,7 @@ import {
 import { verifyLogin } from '~/db/models/user.server'
 import { type Device, type User } from '~/db/schema'
 import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
+import { UiDeviceModelZodEnum } from '~/lib/device-enums'
 import { deleteDeviceImage } from '~/lib/s3.server'
 
 export const CreateDeviceServiceSchema = z
@@ -32,16 +33,7 @@ export const CreateDeviceServiceSchema = z
 		heightAboveGround: z.number().optional().nullable(),
 		terrainElevation: z.number().optional().nullable(),
 		terrainElevationDataset: z.string().optional().nullable(),
-		model: z
-			.enum([
-				'homeV2Lora',
-				'homeV2Ethernet',
-				'homeV2Wifi',
-				'senseBox:Edu',
-				'luftdaten.info',
-				'custom',
-			])
-			.optional(),
+		model: UiDeviceModelZodEnum.optional(),
 		sensorTemplates: z.array(z.string()).optional(),
 		sensors: z
 			.array(
