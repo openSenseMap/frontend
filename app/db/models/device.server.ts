@@ -645,6 +645,15 @@ export function deleteDevice({ id }: Pick<Device, 'id'>) {
 	return drizzleClient.delete(device).where(eq(device.id, id))
 }
 
+export function deleteUserDevice({
+	id,
+	userId,
+}: Pick<Device, 'id' | 'userId'>) {
+	return drizzleClient
+		.delete(device)
+		.where(and(eq(device.id, id), eq(device.userId, userId)))
+}
+
 export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
 		where: (device, { eq }) => eq(device.userId, userId),

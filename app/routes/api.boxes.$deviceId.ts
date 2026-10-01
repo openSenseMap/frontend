@@ -20,6 +20,8 @@ import {
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
 	notFoundResponse,
+	UnsupportedMediaTypeErrorSchema,
+	unsupportedMediaTypeResponse,
 	UnauthorizedErrorSchema,
 	unauthorizedResponse,
 } from '~/lib/openapi/errors'
@@ -141,6 +143,19 @@ const DeleteDeviceRequestSchema = z
 		id: 'DeleteDeviceRequest',
 		description: 'Device deletion confirmation payload.',
 	})
+
+const deleteDeviceSuccessMessage =
+	'device and all associated measurements marked for deletion' as const
+
+const DeleteDeviceResponseSchema = z
+	.object({
+		code: z.literal('Ok'),
+		message: z.literal(deleteDeviceSuccessMessage),
+	})
+	.meta({
+		id: 'DeleteDeviceResponse',
+	})
+
 export const openapi: ZodOpenApiPathItemObject = {
 	get: {
 		tags: ['Devices'],
@@ -228,7 +243,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Delete device',
 		description:
-			'Deletes a device. Requires JWT authorization and the current user password.',
+			'Deletes a device owned by the current user. Requires JWT authorization and the current user password.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
@@ -249,9 +264,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Device deleted successfully.',
 				content: {
 					'application/json': {
-						schema: z.null().meta({
-							description: 'JSON null response indicating successful deletion.',
-						}),
+						schema: DeleteDeviceResponseSchema,
 					},
 				},
 			},
@@ -268,10 +281,15 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			403: forbiddenResponse(
 				ForbiddenErrorSchema,
-				'Invalid or missing JWT authorization.',
+				'Invalid or missing JWT authorization, or the current user does not own the device.',
 			),
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
+
+			415: unsupportedMediaTypeResponse(
+				UnsupportedMediaTypeErrorSchema,
+				'Unsupported content type. Use application/json.',
+			),
 
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
@@ -560,6 +578,10 @@ async function del(request: Request, user: User, deviceId: string) {
 		return StandardResponse.notFound('Device not found')
 	}
 
+	if (device.userId !== user.id) {
+		return StandardResponse.forbidden(messages.deviceNotOwned)
+	}
+
 	const parsedBody = await parseJsonBody(request, DeleteDeviceRequestSchema)
 	if (parsedBody instanceof Response) return parsedBody
 
@@ -570,11 +592,22 @@ async function del(request: Request, user: User, deviceId: string) {
 			parsedBody.password,
 		)
 
-		if (deleted === 'unauthorized') {
+		if (deleted === 'not-owner') {
+			return StandardResponse.forbidden(messages.deviceNotOwned)
+		}
+
+		if (deleted === 'invalid-password') {
 			return StandardResponse.unauthorized('Password incorrect')
 		}
 
-		return StandardResponse.ok(null)
+		if (deleted === 'not-found') {
+			return StandardResponse.notFound('Device not found')
+		}
+
+		return StandardResponse.ok({
+			code: 'Ok',
+			message: deleteDeviceSuccessMessage,
+		})
 	} catch {
 		return StandardResponse.internalServerError()
 	}
