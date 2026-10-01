@@ -1100,14 +1100,11 @@ export async function createDevice(deviceData: any, userId: string) {
 				)
 			}
 
-			// If model is specified but sensors are not, get sensors from model layout
-			if (deviceData.model && !deviceData.sensors) {
-				const modelSensors = getSensorsForModel(deviceData.model as any)
+			// If a predefined model is specified without sensors, use its layout.
+			if (deviceData.model && !deviceData.sensors && !isCustomDevice) {
+				const modelSensors = getSensorsForModel(deviceData.model)
 
-				if (
-					!Array.isArray(modelSensors) &&
-					deviceData.model?.toLowerCase() !== 'custom'
-				) {
+				if (!modelSensors || modelSensors.length === 0) {
 					throw new Error(`Unknown model: ${deviceData.model}`)
 				}
 
