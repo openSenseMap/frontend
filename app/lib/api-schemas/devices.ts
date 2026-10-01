@@ -6,6 +6,7 @@ import {
 	LongitudeSchema,
 } from '~/lib/openapi/schemas/location'
 import { ElevationLookupConsentSchema } from '~/lib/openapi/schemas/consent'
+import { ApiDeviceModelZodEnum } from '~/lib/device-enums'
 
 const DeviceLocationArrayInputSchema = z
 	.union([
@@ -56,17 +57,7 @@ export const CreateDeviceSchema = z.object({
 		}),
 	elevationLookupConsent: ElevationLookupConsentSchema.optional(),
 	grouptag: z.array(z.string()).optional().default([]),
-	model: z
-		.enum([
-			'homeV2Lora',
-			'homeV2Ethernet',
-			'homeV2Wifi',
-			'senseBox:Edu',
-			'luftdaten.info',
-			'custom',
-		])
-		.optional()
-		.default('custom'),
+	model: ApiDeviceModelZodEnum.optional().default('custom'),
 	sensors: z
 		.array(
 			z.object({
