@@ -21,10 +21,15 @@ const senseBoxHomeV2: readonly SensorKey[] = [
 	'scd30_co2',
 	'dps310_pressure',
 	'sps30_pm1',
+	'sps30_pm25',
 	'sps30_pm4',
 	'sps30_pm10',
-	'sps30_pm25',
 ] as const
+
+const luftdatenSds011 = [
+	'sds011_pm10',
+	'sds011_pm25',
+] as const satisfies readonly SensorKey[]
 
 export const modelDefinitions = {
 	senseBoxHomeV2,
@@ -127,11 +132,40 @@ export const modelDefinitions = {
 		'sds011_pm10',
 		'sds011_pm25',
 	] as const satisfies readonly SensorKey[],
+
+	luftdaten_sds011: luftdatenSds011,
+
+	luftdaten_sds011_dht11: [
+		...luftdatenSds011,
+		'dht11_temperature',
+		'dht11_humidity',
+	] as const satisfies readonly SensorKey[],
+
+	luftdaten_sds011_dht22: [
+		...luftdatenSds011,
+		'dht22_temperature',
+		'dht22_humidity',
+	] as const satisfies readonly SensorKey[],
+
+	luftdaten_sds011_bmp180: [
+		...luftdatenSds011,
+		'bmp180_temperature',
+		'bmp180_pressure_pa',
+	] as const satisfies readonly SensorKey[],
+
+	luftdaten_sds011_bme280: [
+		...luftdatenSds011,
+		'bme280_temperature',
+		'bme280_humidity',
+		'bme280_pressure_pa',
+	] as const satisfies readonly SensorKey[],
+
+	hackair_home_v2: luftdatenSds011,
 } as const
 
-export const getSensorsForModel = (model: keyof typeof modelDefinitions) => {
-	const keys = modelDefinitions[model]
-	if (!keys) return []
+export const getSensorsForModel = (model: string) => {
+	const keys = modelDefinitions[model as keyof typeof modelDefinitions]
+	if (!keys) return undefined
 
 	return keys.map((key) => ({
 		id: key,
