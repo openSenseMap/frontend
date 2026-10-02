@@ -8,5 +8,9 @@
 	},
 	"array_field": {
 		"add_item": "Add item"
+	},
+	"password": {
+		"show": "Show password",
+		"hide": "Hide password"
 	}
 }
