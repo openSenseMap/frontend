@@ -71,6 +71,7 @@ export async function getIntegrationServiceStatuses(): Promise<
 					`${intg.serviceUrl.replace(/\/+$/, '')}/meta`,
 					{
 						method: 'GET',
+						redirect: 'error',
 						headers: {
 							Accept: 'application/json',
 							'x-service-key': serviceKey,
