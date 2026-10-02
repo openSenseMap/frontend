@@ -197,7 +197,7 @@ export default function EditIntegration() {
 			<h1 className="mb-4 text-4xl">{intg.name}</h1>
 
 			{intg.description && (
-				<p className="mb-6 text-gray-600">{intg.description}</p>
+				<p className="text-muted-foreground mb-6">{intg.description}</p>
 			)}
 
 			<Form
