@@ -78,6 +78,15 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
 				const config = watch(`${intg.slug}Config`) ?? {}
 				const isLoading = loading[intg.slug] ?? false
 				const schema = schemas[intg.slug]
+				const registrationUiSchema = schema
+					? {
+							...schema.uiSchema,
+							enabled: {
+								...schema.uiSchema?.enabled,
+								'ui:widget': 'hidden',
+							},
+						}
+					: undefined
 
 				return (
 					<Card key={intg.id} className="mb-6 w-full">
@@ -96,7 +105,7 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
 									htmlFor={`${intg.slug}Enabled`}
 									className="text-base font-semibold"
 								>
-									{t('enable')} {intg.name}
+									{t('add_integration', { integration: intg.name })}
 								</Label>
 								<Switch
 									id={`${intg.slug}Enabled`}
@@ -129,14 +138,18 @@ export function AdvancedStep({ integrations }: AdvancedStepProps) {
 												},
 											}}
 											schema={schema.schema}
-											uiSchema={schema.uiSchema}
+											uiSchema={registrationUiSchema}
 											validator={validator}
 											formData={config}
 											onChange={(e) => {
-												setValue(`${intg.slug}Config`, e.formData, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												setValue(
+													`${intg.slug}Config`,
+													{ ...e.formData, enabled: true },
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}}
 											onSubmit={() => {}}
 										>
