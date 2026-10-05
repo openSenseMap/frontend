@@ -13,7 +13,8 @@ instructions:
 
 ### System Requirements
 
-- [Node.js](https://nodejs.org/) >= 24.0.0 (see [.nvmrc](./.nvmrc))
+- [Node.js](https://nodejs.org/) >= 24.0.0 (see
+  [.node-version](./.node-version))
 - [npm](https://npmjs.com/) >= 11.0.0
 - [nvm](https://github.com/nvm-sh/nvm) >= 4.0.0
 - [git](https://git-scm.com/) >= 2.38.0
@@ -38,7 +39,8 @@ above. Elevation lookup additionally requires a GPXZ API key.
 
 1. Clone the repo: `git clone https://github.com/openSenseMap/frontend`
 2. Copy `.env.example` into `.env`
-3. Run `nvm use` to use the npm version referred to in [.nvmrc](./.nvmrc)
+3. Activate the Node.js version listed in [.node-version](./.node-version) with
+   your preferred version manager
 4. Run `npm install` to install dependencies
 5. Optionally run `docker compose up` to start a docker container running your
    local postgres DB (`docker compose up -d` for running container in
@@ -51,9 +53,10 @@ above. Elevation lookup additionally requires a GPXZ API key.
 
 ### Linting and formatting
 
-This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for
-linting and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for
-formatting.The configurations in `oxfmt.config.ts` and `.oxlintrc.json` extend
+This project uses [Vite+](https://viteplus.dev/) to run
+[Oxlint](https://oxc.rs/docs/guide/usage/linter.html) and
+[Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html). Their configuration
+lives in `vite.config.ts` and extends
 [@epic-web/config/](https://github.com/epicweb-dev/config).
 
 Run formatting:
@@ -75,8 +78,10 @@ Exemplary VSCode config:
     "source.fixAll.oxc": "always"
   },
   "oxc.enable": true,
-  "oxc.fmt.configPath": "./oxfmt.config.ts",
-  "oxc.configPath": "./oxlintrc.json",
+  "oxc.fmt.configPath": "./vite.config.ts",
+  "oxc.fmt.disableNestedConfig": true,
+  "oxc.configPath": "./vite.config.ts",
+  "oxc.disableNestedConfig": true,
   "[typescript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
