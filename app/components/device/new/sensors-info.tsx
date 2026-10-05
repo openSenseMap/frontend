@@ -2,7 +2,6 @@ import { Cpu } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 import { CustomDeviceConfig } from './custom-device-config'
 import {
 	Accordion,
@@ -15,26 +14,9 @@ import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 import { getSensorsForModel } from '~/lib/model-definitions'
 import { cn } from '~/lib/utils'
-import { uploadedDeviceSchemaV1 } from '~/lib/device-schemas/device-schema-v1'
+import { type Sensor } from '~/lib/new-device-form'
 
-export const sensorSchema = z.object({
-	title: z.string(),
-	unit: z.string(),
-	sensorType: z.string(),
-	icon: z.string().optional(),
-	image: z.string().optional(),
-	id: z.string().optional(),
-	sensorWikiType: z.string().optional(),
-	sensorWikiPhenomenon: z.string().optional(),
-	sensorWikiUnit: z.string().optional(),
-})
-
-export const customDeviceSchemaUploadSchema = uploadedDeviceSchemaV1.optional()
-
-export type Sensor = z.infer<typeof sensorSchema>
-export type CustomDeviceSchemaUpload = z.infer<
-	typeof customDeviceSchemaUploadSchema
->
+export type { CustomDeviceSchemaUpload, Sensor } from '~/lib/new-device-form'
 
 type SensorGroup = {
 	sensorType: string
