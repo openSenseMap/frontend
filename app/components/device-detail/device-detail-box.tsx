@@ -14,6 +14,7 @@ import {
 	CalendarPlus,
 	Hash,
 	LandPlot,
+	Mountain,
 	Image as ImageIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -75,6 +76,7 @@ import { type SensorWithLatestMeasurement } from '~/db/schema'
 import { getArchiveLink } from '~/lib/archive-link'
 import { type loader } from '~/routes/explore.$deviceId'
 import { dateDiffToNowInWords } from '~/lib/date'
+import { calculateHeightAboveSeaLevel } from '~/lib/elevation'
 
 export interface MeasurementProps {
 	sensorId: string
@@ -186,6 +188,11 @@ export default function DeviceDetailBox() {
 
 	if (!data.device) return null
 
+	const heightAboveSeaLevel = calculateHeightAboveSeaLevel(
+		data.device.terrainElevation,
+		data.device.heightAboveGround,
+	)
+
 	return (
 		<>
 			{open && (
@@ -199,12 +206,12 @@ export default function DeviceDetailBox() {
 				>
 					<div
 						ref={nodeRef}
-						className="absolute top-14 right-4 bottom-6 left-4 z-40 flex flex-row px-4 py-2 md:top-auto md:bottom-7.5 md:left-2.5 md:max-h-[calc(100vh-8rem)] md:w-1/3 md:p-0"
+						className="absolute top-30 right-4 bottom-6 left-4 z-40 flex flex-row px-4 py-2 lg:top-auto lg:bottom-7.5 lg:left-2.5 lg:max-h-[calc(100dvh-8rem)] lg:w-[min(28rem,calc(100vw-2rem))] lg:p-0"
 					>
 						<div
 							id="deviceDetailBox"
 							className={
-								'relative float-left flex h-full max-h-[calc(100vh-4rem)] w-auto flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 md:max-h-[calc(100vh-8rem)] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs'
+								'relative float-left flex h-full max-h-[calc(100dvh-4rem)] w-full min-w-0 flex-col gap-4 rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 lg:max-h-[calc(100dvh-8rem)] dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95 dark:ring-white dark:backdrop-blur-xs'
 							}
 						>
 							{navigation.state === 'loading' && (
@@ -223,7 +230,7 @@ export default function DeviceDetailBox() {
 											: 'h-4 w-4 rounded-full bg-red-500'
 									}
 								></div>
-								<div className="flex flex-1 text-center text-xl text-zinc-600 dark:dark:text-zinc-100">
+								<div className="min-w-0 flex-1 truncate text-center text-xl text-zinc-600 dark:dark:text-zinc-100">
 									{data.device.name}
 								</div>
 								<AlertDialog>
@@ -306,7 +313,7 @@ export default function DeviceDetailBox() {
 								/>
 							</div>
 							<div className="no-scrollbar relative flex-1 overflow-y-scroll">
-								<div className="space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
+								<div className="space-y-4 md:flex md:space-y-0 md:space-x-4">
 									<div className="md:w-1/2">
 										{data.deviceImageUrl ? (
 											<img
@@ -320,7 +327,7 @@ export default function DeviceDetailBox() {
 											</div>
 										)}
 									</div>
-									<div className="space-y-2 sm:w-1/2">
+									<div className="space-y-2 md:w-1/2">
 										<InfoItem
 											icon={LandPlot}
 											title={t('exposure')}
@@ -332,6 +339,13 @@ export default function DeviceDetailBox() {
 													: t('unknown')
 											}
 										/>
+										{heightAboveSeaLevel !== null ? (
+											<InfoItem
+												icon={Mountain}
+												title={t('height_above_sea_level')}
+												text={`${Math.round(heightAboveSeaLevel)} m`}
+											/>
+										) : null}
 										<InfoItem
 											icon={Cpu}
 											title={t('sensor_model')}
@@ -486,7 +500,7 @@ export default function DeviceDetailBox() {
 														</AlertDescription>
 													</Alert>
 												)}
-												<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+												<div className="grid gap-4 md:grid-cols-2">
 													{sensors &&
 														sensors.map(
 															(sensor: SensorWithLatestMeasurement) => {

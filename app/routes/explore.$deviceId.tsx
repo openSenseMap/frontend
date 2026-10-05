@@ -85,11 +85,7 @@ export default function DeviceId() {
 	const isSensorView = matches[matches.length - 1].params.sensorId
 		? true
 		: false
-	const [hoveredPoint, setHoveredPoint] = useState(null)
-
-	const setHoveredPointDebug = (point: any) => {
-		setHoveredPoint(point)
-	}
+	const [hoveredPoint, setHoveredPoint] = useState<number | null>(null)
 
 	if (!data?.device && !data.sensors) {
 		return null
@@ -97,9 +93,7 @@ export default function DeviceId() {
 
 	return (
 		<>
-			<HoveredPointContext.Provider
-				value={{ hoveredPoint, setHoveredPoint: setHoveredPointDebug }}
-			>
+			<HoveredPointContext.Provider value={{ hoveredPoint, setHoveredPoint }}>
 				{/* If the box is mobile, iterate over selected sensors and show trajectory */}
 				{data.device?.exposure === 'mobile' &&
 					!isSensorView &&

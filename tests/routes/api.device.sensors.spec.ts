@@ -12,6 +12,7 @@ import { type User, type Device } from '~/db/schema'
 import { createToken } from '~/lib/jwt'
 import { action as deviceUpdateAction } from '~/routes/api.boxes.$deviceId'
 import { registerUser } from '~/services/user-service.server'
+import { generateTestUserCredentials } from 'tests/data/generate_test_user'
 
 const DEVICE_TEST_USER = generateTestUserCredentials()
 
@@ -36,8 +37,6 @@ describe('Device Sensors API: updating sensors', () => {
 			'en_US',
 			true,
 		)
-
-		expect(registration.ok).toBe(true)
 
 		if (!registration.ok) {
 			throw new Error(

@@ -180,7 +180,7 @@ export default function EditDeviceTransfer() {
 						<div>
 							<div className="mt-2 flex justify-between">
 								<div className="space-y-0.5">
-									<h1 className="text-4xl">Transfer</h1>
+									<h1 className="text-3xl sm:text-4xl">Transfer</h1>
 									<p className="text-muted-foreground">
 										{t('transfer_device')}
 									</p>
@@ -265,15 +265,15 @@ export default function EditDeviceTransfer() {
 							</p>
 							<p className="mt-2">{t('give_token')}</p>
 
-							<div className="mt-2 flex items-center gap-2">
-								<code className="block flex-1 rounded bg-white px-3 py-2 text-base">
+							<div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+								<code className="block min-w-0 flex-1 overflow-hidden rounded bg-white px-3 py-2 text-base text-ellipsis whitespace-nowrap">
 									{transferToken}
 								</code>
 
 								<button
 									type="button"
 									onClick={handleCopyToken}
-									className="inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
+									className="inline-flex shrink-0 items-center justify-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
 									aria-label={copied ? t('copied') : t('copy')}
 									title={copied ? t('copied') : t('copy')}
 								>

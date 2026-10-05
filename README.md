@@ -6,7 +6,6 @@ running as a public beta at
 
 <img width="1510" height="858" alt="Screenshot OSeM" src="https://github.com/user-attachments/assets/70da4cff-1751-4a13-89e8-607a5198df37">
 
-
 ## Project setup
 
 If you do need to set the project up locally yourself, feel free to follow these
@@ -28,10 +27,12 @@ You can configure the API endpoint using the following environmental variables:
 | ------------ | -------------------------------------------------------- |
 | OSEM_API_URL | https://api.testing.opensensemap.org                     |
 | DATABASE_URL | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| GPXZ_API_URL | `https://api-eu.gpxz.io/v1/elevation/points`             |
+| GPXZ_API_KEY | `YOUR_GPXZ_API_KEY`                                      |
 
 You can create a copy of `.env.example`, rename it to `.env` and set the values.
-To run a local development version, you only need to adjust the `OSEM_API_URL`
-to the one given above.
+To run a local development version, adjust `OSEM_API_URL` to the one given
+above. Elevation lookup additionally requires a GPXZ API key.
 
 ### Setup Steps
 
@@ -163,11 +164,10 @@ flexibility to adjust the outputs to the needs of the respective use case.
 
 ##### Documenting an API Route
 
-API route documentation is generated from route-local `zod-openapi`
-definitions. Each API route can export an `openapi` object that describes the
-route's OpenAPI path item. Request bodies, response bodies, path parameters,
-query parameters, and headers should be described with Zod schemas wherever
-possible.
+API route documentation is generated from route-local `zod-openapi` definitions.
+Each API route can export an `openapi` object that describes the route's OpenAPI
+path item. Request bodies, response bodies, path parameters, query parameters,
+and headers should be described with Zod schemas wherever possible.
 
 The main benefit of this approach is that schemas can be shared between
 validation and documentation. This keeps the OpenAPI documentation closer to the

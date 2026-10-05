@@ -31,6 +31,9 @@ export const CreateDeviceServiceSchema = z
 		tags: z.array(z.string()).optional().default([]),
 		latitude: z.number(),
 		longitude: z.number(),
+		heightAboveGround: z.number().optional().nullable(),
+		terrainElevation: z.number().optional().nullable(),
+		terrainElevationDataset: z.string().optional().nullable(),
 		model: DeviceModelZodEnum.optional(),
 		sensorTemplates: z.array(z.string()).optional(),
 		sensors: z

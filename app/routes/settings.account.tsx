@@ -456,9 +456,9 @@ export default function EditUserProfilePage() {
 									</span>
 								</p>
 							) : (
-								<div className="flex items-center justify-between gap-3">
-									<p className="flex items-center gap-1 text-sm text-orange-500 dark:text-amber-400">
-										<span className="inline-flex gap-1">
+								<div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+									<p className="min-w-0 text-sm text-orange-500 dark:text-amber-400">
+										<span className="inline-flex items-start gap-1">
 											<OctagonAlert />{' '}
 											{hasPendingEmail
 												? t('email_not_confirmed')
@@ -470,6 +470,7 @@ export default function EditUserProfilePage() {
 										type="button"
 										variant="default"
 										size="sm"
+										className="w-full sm:w-auto"
 										disabled={resendFetcher.state === 'submitting'}
 										onClick={() => {
 											void resendFetcher.submit(
@@ -495,8 +496,8 @@ export default function EditUserProfilePage() {
 							) : null}
 						</div>
 
-						<div className="flex items-center justify-between gap-4 rounded-lg border p-4 dark:border-white">
-							<div className="space-y-1">
+						<div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between dark:border-white">
+							<div className="min-w-0 space-y-1">
 								<p className="font-medium">{t('update_password')}</p>
 								<p className="text-muted-foreground text-sm">
 									{t('update_password_description')}
@@ -506,6 +507,7 @@ export default function EditUserProfilePage() {
 							<Button
 								type="button"
 								variant="outline"
+								className="w-full shrink-0 sm:w-auto"
 								onClick={() => setPasswordDialogOpen(true)}
 							>
 								{t('update_password')}
