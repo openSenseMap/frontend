@@ -37,6 +37,11 @@ const senseBoxHomeV2: readonly SensorKey[] = [
 	'sps30_pm25',
 ] as const
 
+const luftdatenSds011 = [
+	'sds011_pm10',
+	'sds011_pm25',
+] as const satisfies readonly SensorKey[]
+
 export const modelDefinitions = {
 	senseBoxHomeV2,
 	homeV2Lora: senseBoxHomeV2,
@@ -70,6 +75,28 @@ export const modelDefinitions = {
 	] as const satisfies readonly SensorKey[],
 
 	'luftdaten.info': luftdatenSensorDefinitionKeys,
+	luftdaten_sds011: luftdatenSds011,
+	luftdaten_sds011_dht11: [
+		...luftdatenSds011,
+		'dht11_temperature',
+		'dht11_humidity',
+	] as const satisfies readonly SensorKey[],
+	luftdaten_sds011_dht22: [
+		...luftdatenSds011,
+		'dht22_temperature',
+		'dht22_humidity',
+	] as const satisfies readonly SensorKey[],
+	luftdaten_sds011_bmp180: [
+		...luftdatenSds011,
+		'bmp180_temperature',
+		'bmp180_pressure_pa',
+	] as const satisfies readonly SensorKey[],
+	luftdaten_sds011_bme280: [
+		...luftdatenSds011,
+		'bme280_temperature',
+		'bme280_humidity',
+		'bme280_pressure_pa',
+	] as const satisfies readonly SensorKey[],
 	hackair_home_v2: ['sds011_pm10', 'sds011_pm25'] as const,
 
 	homeEthernet: [
