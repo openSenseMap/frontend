@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DeviceModelZodEnum } from '~/lib/device-enums'
+import { ApiDeviceModelZodSchema } from '~/lib/device-enums'
 import { getSensorTemplateValidationError } from '~/lib/model-definitions'
 import { ElevationLookupConsentSchema } from '~/lib/openapi/schemas/consent'
 import {
@@ -59,7 +59,7 @@ export const CreateDeviceSchema = z
 			}),
 		elevationLookupConsent: ElevationLookupConsentSchema.optional(),
 		grouptag: z.array(z.string()).optional().default([]),
-		model: DeviceModelZodEnum.optional().default('custom'),
+		model: ApiDeviceModelZodSchema.optional().default('custom'),
 		sensorTemplates: z.array(z.string()).optional(),
 		sensors: z
 			.array(
