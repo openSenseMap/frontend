@@ -756,12 +756,7 @@ const sensorDefinitionMetadata = {
 	sen55_nox: {
 		phenomenon: 'nitrogen-oxides-index',
 		decoderMappings: {
-			luftdaten: [
-				{ valueType: 'SHT3X_co2_ppm' },
-				{ valueType: 'SEN5X_nox' },
-				{ valueType: 'SEN55_nox' },
-				{ valueType: 'SEN55_co2_ppm' },
-			],
+			luftdaten: [{ valueType: 'SEN5X_nox' }, { valueType: 'SEN55_nox' }],
 		},
 	},
 	pms1003_pm10: {
