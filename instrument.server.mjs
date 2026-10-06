@@ -17,4 +17,12 @@ if (process.env.SENTRY_DSN) {
 		release: process.env.SENTRY_RELEASE,
 		tracesSampleRate,
 	})
+
+	Sentry.logger.info('Sentry server instrumentation initialized', {
+		service: 'opensensemap-frontend',
+		environment:
+			process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? 'unknown',
+		release: process.env.SENTRY_RELEASE ?? 'unversioned',
+		traces_sample_rate: tracesSampleRate,
+	})
 }
