@@ -1092,13 +1092,15 @@ export async function createDevice(deviceData: any, userId: string) {
 			let storedDeviceSchemaVersion = null
 			const isCustomDevice =
 				!deviceData.model || deviceData.model?.toLowerCase() === 'custom'
+			const hasExplicitSensors =
+				Array.isArray(deviceData.sensors) && deviceData.sensors.length > 0
 			const usesSensorDefinitions =
-				Boolean(deviceData.model) && !isCustomDevice && !deviceData.sensors
+				Boolean(deviceData.model) && !isCustomDevice && !hasExplicitSensors
 
 			// If model and sensors are both specified, reject (backwards compatibility)
 			if (
 				deviceData.model &&
-				deviceData.sensors &&
+				hasExplicitSensors &&
 				deviceData.model.toLowerCase() !== 'custom'
 			) {
 				throw new Error(
@@ -1107,7 +1109,7 @@ export async function createDevice(deviceData: any, userId: string) {
 			}
 
 			// If model is specified but sensors are not, get sensors from model layout
-			if (deviceData.model && !deviceData.sensors) {
+			if (deviceData.model && !hasExplicitSensors) {
 				const sensorTemplateError = getSensorTemplateValidationError(
 					deviceData.model,
 					deviceData.sensorTemplates,
@@ -1129,7 +1131,7 @@ export async function createDevice(deviceData: any, userId: string) {
 				sensorsToAdd = modelSensors
 			}
 
-			if (isCustomDevice && deviceData.sensors) {
+			if (isCustomDevice && hasExplicitSensors) {
 				sensorsToAdd = deviceData.sensors ?? []
 			}
 
@@ -1217,7 +1219,13 @@ export async function createDevice(deviceData: any, userId: string) {
 						sensorData.data &&
 						typeof sensorData.data === 'object' &&
 						!Array.isArray(sensorData.data)
-							? sensorData.data
+							? Object.fromEntries(
+									Object.entries(sensorData.data).filter(
+										([key]) =>
+											key !== 'sensorDefinitionId' &&
+											key !== 'deviceSchemaSensorId',
+									),
+								)
 							: {}
 					const sensorMetadata = storedDeviceSchemaVersion
 						? {
@@ -1232,11 +1240,7 @@ export async function createDevice(deviceData: any, userId: string) {
 							: sensorData.data &&
 								  typeof sensorData.data === 'object' &&
 								  !Array.isArray(sensorData.data)
-								? Object.fromEntries(
-										Object.entries(sensorData.data).filter(
-											([key]) => key !== 'sensorDefinitionId',
-										),
-									)
+								? existingSensorData
 								: sensorData.data
 
 					const [newSensor] = await tx
@@ -1280,6 +1284,11 @@ export async function createDevice(deviceData: any, userId: string) {
 		const lng = (usr.language?.split('_')[0] as 'de' | 'en') ?? 'en'
 		switch (newDevice.model) {
 			case 'luftdaten.info':
+			case 'luftdaten_sds011':
+			case 'luftdaten_sds011_bme280':
+			case 'luftdaten_sds011_bmp180':
+			case 'luftdaten_sds011_dht11':
+			case 'luftdaten_sds011_dht22':
 				await sendMail({
 					recipientAddress: usr.email,
 					recipientName: usr.name,
