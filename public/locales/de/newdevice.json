@@ -103,6 +103,7 @@
 	"ttn_decode_options_info": "Ein JSON-Array mit der Decoderkonfiguration, die für einige Profile benötigt wird.",
 	"ttn_port_info": "Der TTN-Port, für eingehende Nachrichten. Optional, wenn nicht angegeben, werden alle Ports verwendet.",
 	"enable": "Aktiviere",
+	"add_integration": "{{integration}}-Integration hinzufügen",
 	"mqtt_info_text": "Die openSenseMap bietet einen <0>MQTT</0>-Client für die Verbindung zu öffentlichen providern. Die Dokumentationen für die Parameter findest du <1>hier</1>. Bitte beachte, dass nur der Empfang von Messungen über MQTT möglich ist.",
 	"mqtt_url_info": "Die URL zum MQTT-Server.",
 	"mqtt_topic_info": "Das MQTT-Topic, das abonniert werden soll.",
