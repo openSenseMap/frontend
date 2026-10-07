@@ -23,8 +23,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from '~/components/ui/card'
-import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
+import { PasswordInput } from '~/components/ui/password-input'
 
 import { getUserId } from '~/services/session-service.server'
 import { resetPassword } from '~/services/user-service.server'
@@ -233,11 +233,10 @@ export default function PasswordResetRoute() {
 
 							<div className="space-y-2">
 								<Label htmlFor="newPassword">{t('new_password_label')}</Label>
-								<Input
+								<PasswordInput
 									ref={newPasswordRef}
 									id="newPassword"
 									name="newPassword"
-									type="password"
 									autoComplete="new-password"
 									aria-invalid={
 										actionData?.errors?.newPassword ? true : undefined
@@ -258,10 +257,9 @@ export default function PasswordResetRoute() {
 								<Label htmlFor="confirmPassword">
 									{t('confirm_password_label')}
 								</Label>
-								<Input
+								<PasswordInput
 									id="confirmPassword"
 									name="confirmPassword"
-									type="password"
 									autoComplete="new-password"
 									aria-invalid={
 										actionData?.errors?.confirmPassword ? true : undefined
