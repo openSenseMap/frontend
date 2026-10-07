@@ -13,6 +13,7 @@ import {
 import { type Route } from './+types/explore.login'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
 import Spinner from '~/components/spinner'
 import { Button } from '~/components/ui/button'
 import {
@@ -196,11 +197,10 @@ export default function LoginPage() {
 									{t('forgot_password')}
 								</Link>
 							</div>
-							<Input
+							<PasswordInput
 								id="password"
 								ref={passwordRef}
 								name="password"
-								type="password"
 								autoComplete="current-password"
 								aria-invalid={actionData?.errors?.password ? true : undefined}
 								aria-describedby="password-error"
