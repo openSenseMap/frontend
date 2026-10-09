@@ -56,7 +56,7 @@ jobs:
           run-install: true
 
       - name: 🔎 Type check
-        run: vp run typecheck --if-present
+        run: vp run typecheck
 
   vitest:
     name: ⚡ Test
