@@ -8,6 +8,8 @@ RUN vp install --frozen-lockfile
 COPY --chown=vp:vp . .
 RUN vp run build
 
+RUN cp "$(vp env which node | head -1)" /tmp/node
+
 FROM ghcr.io/voidzero-dev/vite-plus:latest AS deps
 
 WORKDIR /myapp
